@@ -632,8 +632,10 @@ public class PredicateExpressionVisitorImpl
 		}
 
 		if (Objects.equals(
-			_getEntityField(left, objectDefinition).getType(),
-			EntityField.Type.DATE_TIME)) {
+				_getEntityField(
+					left, objectDefinition
+				).getType(),
+				EntityField.Type.DATE_TIME)) {
 
 			return DateTimeExpressionConverterUtil.getDateTimePredicate(
 				_getColumn(left, objectDefinition), operation,
