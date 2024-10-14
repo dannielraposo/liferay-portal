@@ -17,6 +17,7 @@ import com.liferay.object.related.models.ObjectRelatedModelsPredicateProvider;
 import com.liferay.object.related.models.ObjectRelatedModelsPredicateProviderRegistry;
 import com.liferay.object.relationship.util.ObjectRelationshipUtil;
 import com.liferay.object.rest.internal.util.BinaryExpressionConverterUtil;
+import com.liferay.object.rest.internal.util.DateTimeExpressionConverterUtil;
 import com.liferay.object.rest.odata.entity.v1_0.provider.EntityModelProvider;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalServiceUtil;
@@ -628,6 +629,15 @@ public class PredicateExpressionVisitorImpl
 
 		if (predicate != null) {
 			return predicate;
+		}
+
+		if (Objects.equals(
+			_getEntityField(left, objectDefinition).getType(),
+			EntityField.Type.DATE_TIME)) {
+
+			return DateTimeExpressionConverterUtil.getDateTimePredicate(
+				_getColumn(left, objectDefinition), operation,
+				_getValue(left, objectDefinition, right));
 		}
 
 		return BinaryExpressionConverterUtil.getExpressionPredicate(
