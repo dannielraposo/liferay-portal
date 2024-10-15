@@ -635,7 +635,7 @@ public class PredicateExpressionVisitorImpl
 				_getEntityField(
 					left, objectDefinition
 				).getType(),
-				EntityField.Type.DATE_TIME)) {
+				EntityField.Type.DATE_TIME) && (Objects.equals(DBManagerUtil.getDBType(), DBType.MYSQL))) {
 
 			return DateTimeExpressionConverterUtil.getDateTimePredicate(
 				_getColumn(left, objectDefinition), operation,
