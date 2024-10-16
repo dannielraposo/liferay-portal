@@ -15,6 +15,7 @@ import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.expression.Expression;
 import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.portal.odata.filter.expression.BinaryExpression;
+import com.liferay.portal.odata.filter.expression.ExpressionVisitException;
 
 import java.util.List;
 import java.util.function.Function;
@@ -64,6 +65,15 @@ public class TaxonomyCategoryIdsFieldPredicateProvider
 				TransformUtil.transformToArray(
 					rights, assetCategoryId -> (Long)assetCategoryId,
 					Long.class)));
+	}
+
+	@Override
+	public Predicate getInPredicate(
+			Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
+			Object left, List<Object> rights)
+		throws ExpressionVisitException {
+
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

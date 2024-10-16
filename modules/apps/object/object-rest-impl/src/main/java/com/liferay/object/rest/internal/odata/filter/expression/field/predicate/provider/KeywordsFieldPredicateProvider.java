@@ -17,6 +17,7 @@ import com.liferay.petra.sql.dsl.expression.Expression;
 import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.odata.filter.expression.BinaryExpression;
+import com.liferay.portal.odata.filter.expression.ExpressionVisitException;
 
 import java.util.List;
 import java.util.function.Function;
@@ -65,6 +66,15 @@ public class KeywordsFieldPredicateProvider implements FieldPredicateProvider {
 			AssetTagTable.INSTANCE.name.in(
 				TransformUtil.transformToArray(
 					rights, String::valueOf, Object.class)));
+	}
+
+	@Override
+	public Predicate getInPredicate(
+			Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
+			Object left, List<Object> rights)
+		throws ExpressionVisitException {
+
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

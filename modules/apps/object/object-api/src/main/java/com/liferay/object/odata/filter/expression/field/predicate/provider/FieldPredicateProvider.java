@@ -8,6 +8,7 @@ package com.liferay.object.odata.filter.expression.field.predicate.provider;
 import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.portal.odata.filter.expression.BinaryExpression;
+import com.liferay.portal.odata.filter.expression.ExpressionVisitException;
 
 import java.util.List;
 import java.util.function.Function;
@@ -29,6 +30,10 @@ public interface FieldPredicateProvider {
 	public Predicate getInPredicate(
 		Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
 		List<Object> rights);
+
+	public Predicate getInPredicate(
+		Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
+		Object left, List<Object> rights);
 
 	public Predicate getStartsWithPredicate(
 		Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
