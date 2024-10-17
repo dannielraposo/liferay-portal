@@ -19,24 +19,29 @@ import java.util.function.Function;
 public interface FieldPredicateProvider {
 
 	public Predicate getBinaryExpressionPredicate(
-		Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
-		Object left, long objectDefinitionId,
-		BinaryExpression.Operation operation, Object right);
+			Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
+			Object left, long objectDefinitionId,
+			BinaryExpression.Operation operation, Object right)
+		throws ExpressionVisitException;
 
 	public Predicate getContainsPredicate(
-		Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
-		Object fieldValue);
+			Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
+			Object fieldValue)
+		throws ExpressionVisitException;
 
 	public Predicate getInPredicate(
-		Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
-		List<Object> rights);
+			Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
+			List<Object> rights)
+		throws ExpressionVisitException;
 
 	public Predicate getInPredicate(
-		Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
-		Object left, List<Object> rights);
+			Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
+			Object left, List<Object> rights)
+		throws ExpressionVisitException;
 
 	public Predicate getStartsWithPredicate(
-		Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
-		Object fieldValue);
+			Function<String, Column<?, ?>> objectDefinitionColumnSupplier,
+			Object fieldValue)
+		throws ExpressionVisitException;
 
 }
