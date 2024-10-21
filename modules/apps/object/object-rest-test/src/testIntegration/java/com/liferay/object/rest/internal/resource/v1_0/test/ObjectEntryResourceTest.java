@@ -5298,7 +5298,8 @@ public class ObjectEntryResourceTest {
 				_objectDefinition1);
 			_assertFilterString(
 				_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1,
-				URLCodec.encodeURL(dateFieldName + " eq 2023-09-20T10:00:00.999Z"),
+				URLCodec.encodeURL(
+					dateFieldName + " eq 2023-09-20T10:00:00.999Z"),
 				_objectDefinition1);
 
 			_assertFilterString(
@@ -5307,7 +5308,8 @@ public class ObjectEntryResourceTest {
 				_objectDefinition1);
 			_assertFilterString(
 				_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_2,
-				URLCodec.encodeURL(dateFieldName + " eq 2023-09-20T10:05:00.999Z"),
+				URLCodec.encodeURL(
+					dateFieldName + " eq 2023-09-20T10:05:00.999Z"),
 				_objectDefinition1);
 
 			// Test case for 'ge' (greater than or equal)
@@ -5327,15 +5329,16 @@ public class ObjectEntryResourceTest {
 				_objectDefinition1);
 			_assertFilterString(
 				_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_2,
-				URLCodec.encodeURL(dateFieldName + " gt 2023-09-20T10:00:00.999Z"),
+				URLCodec.encodeURL(
+					dateFieldName + " gt 2023-09-20T10:00:00.999Z"),
 				_objectDefinition1);
-
 
 			// Test case for 'in' (multiple values)
 
 			_assertFilteredObjectEntries(
 				2,
-				dateFieldName + " in (2023-09-20T10:05:00Z,2023-09-20T10:00:00Z)");
+				dateFieldName +
+					" in (2023-09-20T10:05:00Z,2023-09-20T10:00:00Z)");
 
 			// Test case for 'isNotEmpty' (check that dateModified is not null)
 
@@ -5358,7 +5361,8 @@ public class ObjectEntryResourceTest {
 				_objectDefinition1);
 			_assertFilterString(
 				_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1,
-				URLCodec.encodeURL(dateFieldName + " lt 2023-09-20T10:05:00.999Z"),
+				URLCodec.encodeURL(
+					dateFieldName + " lt 2023-09-20T10:05:00.999Z"),
 				_objectDefinition1);
 
 			// Test case for 'ne' (not equal)
