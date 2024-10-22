@@ -75,7 +75,7 @@ public class SystemDateFieldPredicateProvider
 		}
 		catch (ParseException parseException) {
 			throw new ExpressionVisitException(
-				"Error parsing date " + valueString, parseException);
+				"Unable to parse date " + valueString, parseException);
 		}
 	}
 
