@@ -1987,7 +1987,12 @@ public class RESTBuilder {
 
 		int index = absolutePathString.indexOf("/liferay-portal/");
 
-		if (index == -1) {
+		if ((index == -1) ||
+			!Files.exists(
+				Paths.get(
+					absolutePathString.substring(0, index), "liferay-portal",
+					"build", "node", "lib", "cli.js"))) {
+
 			return "npm";
 		}
 
