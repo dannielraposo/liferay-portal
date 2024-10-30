@@ -17,6 +17,7 @@ import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
+import com.liferay.petra.sql.dsl.expression.Expression;
 import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.petra.sql.dsl.query.FromStep;
 import com.liferay.petra.string.StringBundler;
@@ -79,8 +80,8 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 					objectDefinition2, objectFieldLocalService),
 				objectDefinition2DynamicObjectDefinitionTable,
 				objectDefinition2ExtensionDynamicObjectDefinitionTable,
-				DSLQueryFactoryUtil.select(objectRelationshipColumn),
-				predicate);
+				DSLQueryFactoryUtil.select(objectRelationshipColumn), predicate,
+				objectRelationshipColumn);
 		}
 
 		DynamicObjectDefinitionTable dynamicObjectDefinitionTable =
@@ -104,7 +105,7 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 					DSLQueryFactoryUtil.select(
 						objectDefinition1DynamicObjectDefinitionTable.
 							getPrimaryKeyColumn()),
-					predicate)
+					predicate, objectRelationshipColumn)
 			));
 	}
 
@@ -163,15 +164,20 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 				dynamicObjectDefinitionLocalizationTable,
 			DynamicObjectDefinitionTable dynamicObjectDefinitionTable,
 			DynamicObjectDefinitionTable extensionDynamicObjectDefinitionTable,
-			FromStep fromStep, Predicate predicate)
+			FromStep fromStep, Predicate predicate,
+			Column<?, ?> relationshipColumn)
 		throws PortalException {
+
+		ObjectEntryTable objectEntryTable1 = ObjectEntryTable.INSTANCE;
+		ObjectEntryTable objectEntryTable2 = ObjectEntryTable.INSTANCE.as(
+			"Object2");
 
 		return column.in(
 			fromStep.from(
 				dynamicObjectDefinitionTable
 			).innerJoinON(
-				ObjectEntryTable.INSTANCE,
-				ObjectEntryTable.INSTANCE.objectEntryId.eq(
+				objectEntryTable2,
+				objectEntryTable2.objectEntryId.eq(
 					dynamicObjectDefinitionTable.getPrimaryKeyColumn())
 			).innerJoinON(
 				extensionDynamicObjectDefinitionTable,
@@ -179,6 +185,10 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 				).eq(
 					extensionDynamicObjectDefinitionTable.getPrimaryKeyColumn()
 				)
+			).innerJoinON(
+				objectEntryTable1,
+				objectEntryTable1.objectEntryId.eq(
+					(Expression<Long>)relationshipColumn)
 			).leftJoinOn(
 				dynamicObjectDefinitionLocalizationTable,
 				ObjectEntrySearchUtil.getLeftJoinLocalizationTablePredicate(
