@@ -3,33 +3,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {HeadlessAdminTaxonomyClient} from '../../../apps/headless/headless-admin-taxonomy/headless-admin-taxonomy-client-js/src/main/resources/META-INF/resources/node';
 import {ApiHelpers} from './ApiHelpers';
-
-interface postSiteTaxonomyVocabularyProps {
-	assetTypes?: AssetType[];
-	name: string;
-	siteId: string;
-}
 
 export interface postTaxonomyVocabularyTaxonomyCategoryProps {
 	name: string;
 	name_i18n?: {['ES-es']: string};
 	vocabularyId: number;
-}
-
-interface patchTaxonomyCategoryProps {
-	id: number;
-	name: string;
-}
-
-interface postAssetLibraryKeywordProps {
-	depotEntryId: string;
-	name: string;
-}
-
-interface postSiteKeywordProps {
-	name: string;
-	siteId: string;
 }
 
 export class HeadlessAdminTaxonomyApiHelper {
@@ -44,13 +24,15 @@ export class HeadlessAdminTaxonomyApiHelper {
 	/**
 	 * It allows getting a category by vocabulary.
 	 *
-	 * @param name the name of the category
 	 * @param vocabularyId the parent vocabulary id
 	 */
 
 	async getTaxonomyCategoryByVocabularyId(vocabularyId: number) {
-		return this.apiHelpers.get(
-			`${this.apiHelpers.baseUrl}${this.basePath}/taxonomy-vocabularies/${vocabularyId}/taxonomy-categories`
+		const headlessAdminTaxonomyClient =
+			await this.apiHelpers.buildRestClient(HeadlessAdminTaxonomyClient);
+
+		return headlessAdminTaxonomyClient.taxonomyCategory.getTaxonomyVocabularyTaxonomyCategoriesPage(
+			{taxonomyVocabularyId: vocabularyId}
 		);
 	}
 
@@ -60,9 +42,12 @@ export class HeadlessAdminTaxonomyApiHelper {
 	 * @param siteId the id of the site in which the vocabulary will be created
 	 */
 
-	async getTaxonomyVocabularyBySiteId(siteId: string) {
-		return this.apiHelpers.get(
-			`${this.apiHelpers.baseUrl}${this.basePath}/sites/${siteId}/taxonomy-vocabularies`
+	async getTaxonomyVocabularyBySiteId(siteId: any) {
+		const headlessAdminTaxonomyClient =
+			await this.apiHelpers.buildRestClient(HeadlessAdminTaxonomyClient);
+
+		return headlessAdminTaxonomyClient.taxonomyVocabulary.getSiteTaxonomyVocabulariesPage(
+			{siteId}
 		);
 	}
 
@@ -78,10 +63,19 @@ export class HeadlessAdminTaxonomyApiHelper {
 		assetTypes,
 		name,
 		siteId,
-	}: postSiteTaxonomyVocabularyProps): Promise<{id: number}> {
-		return this.apiHelpers.post(
-			`${this.apiHelpers.baseUrl}${this.basePath}/sites/${siteId}/taxonomy-vocabularies`,
-			{data: {assetTypes, name}}
+	}: {
+		assetTypes?: AssetType[];
+		name: string;
+		siteId: any;
+	}) {
+		const headlessAdminTaxonomyClient =
+			await this.apiHelpers.buildRestClient(HeadlessAdminTaxonomyClient);
+
+		return headlessAdminTaxonomyClient.taxonomyVocabulary.postSiteTaxonomyVocabulary(
+			{
+				requestBody: {assetTypes, name},
+				siteId,
+			}
 		);
 	}
 
@@ -89,6 +83,7 @@ export class HeadlessAdminTaxonomyApiHelper {
 	 * It allows creating a category inside a vocabulary.
 	 *
 	 * @param name the name of the category
+	 * @param name_i18n the name of the category
 	 * @param vocabularyId the parent vocabulary id
 	 */
 
@@ -96,10 +91,19 @@ export class HeadlessAdminTaxonomyApiHelper {
 		name,
 		name_i18n,
 		vocabularyId,
-	}: postTaxonomyVocabularyTaxonomyCategoryProps): Promise<{id: number}> {
-		return this.apiHelpers.post(
-			`${this.apiHelpers.baseUrl}${this.basePath}/taxonomy-vocabularies/${vocabularyId}/taxonomy-categories`,
-			{data: {name, name_i18n}}
+	}: {
+		name: string;
+		name_i18n: Record<string, string>;
+		vocabularyId: number;
+	}) {
+		const headlessAdminTaxonomyClient =
+			await this.apiHelpers.buildRestClient(HeadlessAdminTaxonomyClient);
+
+		return headlessAdminTaxonomyClient.taxonomyCategory.postTaxonomyVocabularyTaxonomyCategory(
+			{
+				requestBody: {name, name_i18n},
+				taxonomyVocabularyId: vocabularyId,
+			}
 		);
 	}
 
@@ -110,13 +114,12 @@ export class HeadlessAdminTaxonomyApiHelper {
 	 * @param id the category id
 	 */
 
-	async patchTaxonomyCategory({
-		id,
-		name,
-	}: patchTaxonomyCategoryProps): Promise<{id: number}> {
-		return this.apiHelpers.patch(
-			`${this.apiHelpers.baseUrl}${this.basePath}/taxonomy-categories/${id}`,
-			{name}
+	async patchTaxonomyCategory({id, name}: {id: any; name: string}) {
+		const headlessAdminTaxonomyClient =
+			await this.apiHelpers.buildRestClient(HeadlessAdminTaxonomyClient);
+
+		return headlessAdminTaxonomyClient.taxonomyCategory.patchTaxonomyCategory(
+			{requestBody: {name}, taxonomyCategoryId: id}
 		);
 	}
 
@@ -127,31 +130,37 @@ export class HeadlessAdminTaxonomyApiHelper {
 	 * @param siteId the id of the site in which the tag will be created
 	 */
 
-	async postSiteKeyword({
-		name,
-		siteId,
-	}: postSiteKeywordProps): Promise<{id: number}> {
-		return this.apiHelpers.post(
-			`${this.apiHelpers.baseUrl}${this.basePath}/sites/${siteId}/keywords`,
-			{data: {name}}
-		);
+	async postSiteKeyword({name, siteId}: {name: string; siteId: any}) {
+		const headlessAdminTaxonomyClient =
+			await this.apiHelpers.buildRestClient(HeadlessAdminTaxonomyClient);
+
+		return headlessAdminTaxonomyClient.keyword.postSiteKeyword({
+			requestBody: {name},
+			siteId,
+		});
 	}
 
 	/**
 	 * It allows creating a tag inside an asset library
 	 *
 	 * @param name the name of the tag
-	 * @param assetLibraryId the id of the asset library in which the tag will be created
+	 * @param depotEntryId the id of the asset library in which the tag will be created
 	 */
 
 	async postAssetLibraryKeyword({
 		depotEntryId,
 		name,
-	}: postAssetLibraryKeywordProps): Promise<{id: number}> {
-		return this.apiHelpers.post(
-			`${this.apiHelpers.baseUrl}${this.basePath}/asset-libraries/${depotEntryId}/keywords`,
-			{data: {name}}
-		);
+	}: {
+		depotEntryId: any;
+		name: string;
+	}) {
+		const headlessAdminTaxonomyClient =
+			await this.apiHelpers.buildRestClient(HeadlessAdminTaxonomyClient);
+
+		return headlessAdminTaxonomyClient.keyword.postAssetLibraryKeyword({
+			assetLibraryId: depotEntryId,
+			requestBody: {name},
+		});
 	}
 
 	/**
@@ -161,8 +170,11 @@ export class HeadlessAdminTaxonomyApiHelper {
 	 */
 
 	async deleteKeyword({id}: {id: number}) {
-		return this.apiHelpers.delete(
-			`${this.apiHelpers.baseUrl}${this.basePath}/keywords/${id}`
-		);
+		const headlessAdminTaxonomyClient =
+			await this.apiHelpers.buildRestClient(HeadlessAdminTaxonomyClient);
+
+		return headlessAdminTaxonomyClient.keyword.deleteKeyword({
+			keywordId: id,
+		});
 	}
 }

@@ -34,7 +34,7 @@ type TChannel = {
 type TCategory = {
 	checked?: boolean;
 	externalReferenceCode?: string;
-	id: number;
+	id: any;
 	label?: string;
 	name: string;
 	value?: string;
