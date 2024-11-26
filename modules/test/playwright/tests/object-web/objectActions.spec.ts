@@ -10,7 +10,7 @@ import {
 	ObjectAction,
 	ObjectActionApi,
 	ObjectDefinition,
-} from '../../../../apps/object/object-admin-rest-client-js';
+} from '@liferay/object-admin-rest-client-js';
 import {dataApiHelpersTest} from '../../fixtures/dataApiHelpersTest';
 import {editObjectDefinitionPagesTest} from '../../fixtures/editObjectDefinitionPagesTest';
 import {loginTest} from '../../fixtures/loginTest';

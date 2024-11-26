@@ -10,7 +10,7 @@ import {
 	ObjectFolderApi,
 	ObjectRelationship,
 	ObjectRelationshipApi,
-} from '../../../../apps/object/object-admin-rest-client-js';
+} from '@liferay/object-admin-rest-client-js';
 import {collectionsPagesTest} from '../../fixtures/collectionsPagesTest';
 import {dataApiHelpersTest} from '../../fixtures/dataApiHelpersTest';
 import {featureFlagsTest} from '../../fixtures/featureFlagsTest';

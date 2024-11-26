@@ -8,7 +8,7 @@ import {expect, mergeTests} from '@playwright/test';
 import {
 	ObjectRelationship,
 	ObjectRelationshipApi,
-} from '../../../../apps/object/object-admin-rest-client-js';
+} from '@liferay/object-admin-rest-client-js';
 import {dataApiHelpersTest} from '../../fixtures/dataApiHelpersTest';
 import {loginTest} from '../../fixtures/loginTest';
 import {objectPagesTest} from '../../fixtures/objectPagesTest';

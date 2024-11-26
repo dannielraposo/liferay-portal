@@ -11,7 +11,7 @@ import {
 	ObjectDefinitionApi,
 	ObjectField,
 	ObjectRelationship,
-} from '../../../../apps/object/object-admin-rest-client-js';
+} from '@liferay/object-admin-rest-client-js';
 import {dataApiHelpersTest} from '../../fixtures/dataApiHelpersTest';
 import {featureFlagsTest} from '../../fixtures/featureFlagsTest';
 import {loginTest} from '../../fixtures/loginTest';

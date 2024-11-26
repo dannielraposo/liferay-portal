@@ -9,7 +9,7 @@ import {
 	ObjectDefinitionApi,
 	ObjectValidationRule,
 	ObjectValidationRuleApi,
-} from '../../../../apps/object/object-admin-rest-client-js';
+} from '@liferay/object-admin-rest-client-js';
 import {apiHelpersTest} from '../../fixtures/apiHelpersTest';
 import {displayPageTemplatesPagesTest} from '../../fixtures/displayPageTemplatesPagesTest';
 import {featureFlagsTest} from '../../fixtures/featureFlagsTest';

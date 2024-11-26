@@ -5,7 +5,7 @@
 
 import {FrameLocator, Locator, Page, expect} from '@playwright/test';
 
-import {ObjectField} from '../../../../../apps/object/object-admin-rest-client-js';
+import {ObjectField} from '@liferay/object-admin-rest-client-js';
 import {PORTLET_URLS} from '../../../utils/portletUrls';
 
 export class ViewObjectEntriesPage {

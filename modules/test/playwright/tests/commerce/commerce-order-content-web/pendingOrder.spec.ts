@@ -5,7 +5,7 @@
 
 import {expect, mergeTests} from '@playwright/test';
 
-import {ObjectActionApi} from '../../../../../apps/object/object-admin-rest-client-js';
+import {ObjectActionApi} from '@liferay/object-admin-rest-client-js';
 import {applicationsMenuPageTest} from '../../../fixtures/applicationsMenuPageTest';
 import {commercePagesTest} from '../../../fixtures/commercePagesTest';
 import {dataApiHelpersTest} from '../../../fixtures/dataApiHelpersTest';

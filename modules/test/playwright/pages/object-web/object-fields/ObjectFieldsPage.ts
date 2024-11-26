@@ -5,7 +5,7 @@
 
 import {Locator, Page} from '@playwright/test';
 
-import {ObjectField} from '../../../../../apps/object/object-admin-rest-client-js';
+import {ObjectField} from '@liferay/object-admin-rest-client-js';
 import {CreateObjectField} from '../../../helpers/ObjectAdminApiHelper';
 import {ViewObjectDefinitionsPage} from '../ViewObjectDefinitionsPage';
 

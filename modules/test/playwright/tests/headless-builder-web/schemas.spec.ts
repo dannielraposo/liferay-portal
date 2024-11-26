@@ -10,7 +10,7 @@ import {
 	ObjectDefinitionApi,
 	ObjectField,
 	ObjectRelationship,
-} from '../../../../apps/object/object-admin-rest-client-js';
+} from '@liferay/object-admin-rest-client-js';
 import {dataApiHelpersTest} from '../../fixtures/dataApiHelpersTest';
 import {loginTest} from '../../fixtures/loginTest';
 import {waitForLoading} from '../osb-faro-web/utils/loading';

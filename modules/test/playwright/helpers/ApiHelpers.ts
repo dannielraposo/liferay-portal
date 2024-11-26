@@ -10,7 +10,7 @@ import {
 	ObjectDefinitionApi,
 	ObjectFolderApi,
 	ObjectRelationshipApi,
-} from '../../../apps/object/object-admin-rest-client-js';
+} from '@liferay/object-admin-rest-client-js';
 import {liferayConfig} from '../liferay.config';
 import {ApiBuilderHelper} from './ApiBuilderHelper';
 import {DataEngineApiHelper} from './DataEngineApiHelper';

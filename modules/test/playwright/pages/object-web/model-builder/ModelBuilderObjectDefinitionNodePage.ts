@@ -8,7 +8,7 @@ import {expect} from '@playwright/test';
 import {
 	ObjectField,
 	ObjectRelationship,
-} from '../../../../../apps/object/object-admin-rest-client-js';
+} from '@liferay/object-admin-rest-client-js';
 import {CreateObjectField} from '../../../helpers/ObjectAdminApiHelper';
 
 import type {Locator, Page} from '@playwright/test';
