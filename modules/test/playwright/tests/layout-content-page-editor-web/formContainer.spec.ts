@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {expect, mergeTests} from '@playwright/test';
+import path from 'path';
+
 import {
 	ObjectDefinitionApi,
 	ObjectValidationRule,
 	ObjectValidationRuleApi,
-} from '@liferay/object-admin-rest-client-js';
-import {expect, mergeTests} from '@playwright/test';
-import path from 'path';
-
+} from '../../../../apps/object/object-admin-rest-client-js';
 import {apiHelpersTest} from '../../fixtures/apiHelpersTest';
 import {displayPageTemplatesPagesTest} from '../../fixtures/displayPageTemplatesPagesTest';
 import {documentLibraryPagesTest} from '../../fixtures/documentLibraryPages.fixtures';

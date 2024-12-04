@@ -9,8 +9,7 @@ import {
 	ObjectField,
 	ObjectFolder,
 	ObjectFolderApi,
-} from '@liferay/object-admin-rest-client-js';
-
+} from '../../../apps/object/object-admin-rest-client-js';
 import {getRandomInt} from '../utils/getRandomInt';
 import {ApiHelpers} from './ApiHelpers';
 
