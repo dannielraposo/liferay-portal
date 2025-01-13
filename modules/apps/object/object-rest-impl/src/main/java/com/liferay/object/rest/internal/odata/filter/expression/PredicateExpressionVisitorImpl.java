@@ -104,7 +104,7 @@ public class PredicateExpressionVisitorImpl
 
 		Predicate predicate = null;
 
-		if (_isComplexProperExpression(left)) {
+		if (_isComplexOrRelatedErcProperExpression(left)) {
 			predicate = _getObjectRelationshipPredicate(
 				left,
 				(objectFieldName, relatedObjectDefinition) -> _getPredicate(
@@ -190,7 +190,7 @@ public class PredicateExpressionVisitorImpl
 		if (Objects.equals(ListExpression.Operation.IN, operation)) {
 			Predicate predicate = null;
 
-			if (_isComplexProperExpression(left)) {
+			if (_isComplexOrRelatedErcProperExpression(left)) {
 				predicate = _getObjectRelationshipPredicate(
 					left,
 					(objectFieldName, relatedObjectDefinition) ->
@@ -273,7 +273,7 @@ public class PredicateExpressionVisitorImpl
 			Predicate predicate = null;
 
 			if (type == MethodExpression.Type.CONTAINS) {
-				if (_isComplexProperExpression(left)) {
+				if (_isComplexOrRelatedErcProperExpression(left)) {
 					predicate = _getObjectRelationshipPredicate(
 						left,
 						(objectFieldName, relatedObjectDefinition) -> _contains(
@@ -289,7 +289,7 @@ public class PredicateExpressionVisitorImpl
 				}
 			}
 			else if (type == MethodExpression.Type.STARTS_WITH) {
-				if (_isComplexProperExpression(left)) {
+				if (_isComplexOrRelatedErcProperExpression(left)) {
 					predicate = _getObjectRelationshipPredicate(
 						left,
 						(objectFieldName, relatedObjectDefinition) ->
@@ -504,11 +504,27 @@ public class PredicateExpressionVisitorImpl
 		UnsafeBiFunction<String, ObjectDefinition, Predicate, Exception>
 			unsafeBiFunction) {
 
-		List<String> leftParts = ListUtil.fromString(
-			(String)left, StringPool.SLASH);
+		boolean erc_relationship = false;
+		List<String> objectRelationshipNames;
+		String string = (String)left;
+		String updatedLeft;
 
-		List<String> objectRelationshipNames = new ArrayList<>(
-			leftParts.subList(0, leftParts.size() - 1));
+		if (string.matches("^r_.+_c_.+ERC$")) {
+			objectRelationshipNames = new ArrayList<>(
+				Collections.singleton(string.split("_c_")[0].substring(2)));
+
+			erc_relationship = true;
+			updatedLeft = string;
+		}
+		else {
+			List<String> leftParts = ListUtil.fromString(
+				(String)left, StringPool.SLASH);
+
+			objectRelationshipNames = new ArrayList<>(
+				leftParts.subList(0, leftParts.size() - 1));
+
+			updatedLeft = leftParts.get(leftParts.size() - 1);
+		}
 
 		List<ObjectValuePair<ObjectRelationship, ObjectDefinition>>
 			objectValuePairs = _getObjectValuePairs(
@@ -518,13 +534,18 @@ public class PredicateExpressionVisitorImpl
 			objectValuePairs.remove(0);
 
 		try {
+			ObjectDefinition relatedObjectDefinition = _objectDefinition;
+
+			if (!erc_relationship) {
+				relatedObjectDefinition =
+					ObjectRelationshipUtil.getRelatedObjectDefinition(
+						objectValuePair.getValue(), objectValuePair.getKey());
+			}
+
 			return _getObjectRelationshipPredicate(
 				objectValuePair.getValue(), objectValuePairs,
 				objectValuePair.getKey(),
-				unsafeBiFunction.apply(
-					leftParts.get(leftParts.size() - 1),
-					ObjectRelationshipUtil.getRelatedObjectDefinition(
-						objectValuePair.getValue(), objectValuePair.getKey())));
+				unsafeBiFunction.apply(updatedLeft, relatedObjectDefinition));
 		}
 		catch (InvalidFilterException invalidFilterException) {
 			throw invalidFilterException;
@@ -766,11 +787,17 @@ public class PredicateExpressionVisitorImpl
 		return StringUtil.merge(relationshipsNames, StringPool.SLASH);
 	}
 
-	private boolean _isComplexProperExpression(Object object) {
+	private boolean _isComplexOrRelatedErcProperExpression(Object object) {
 		if (object instanceof String) {
 			String string = (String)object;
 
-			return string.contains(StringPool.SLASH);
+			if (string.contains(StringPool.SLASH) ||
+				string.matches("^r_.+_c_.+ERC$")) {
+
+				return true;
+			}
+
+			return false;
 		}
 
 		return false;
