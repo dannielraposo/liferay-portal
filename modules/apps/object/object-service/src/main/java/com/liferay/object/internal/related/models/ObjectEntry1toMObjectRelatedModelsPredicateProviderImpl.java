@@ -170,14 +170,14 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 
 		ObjectEntryTable objectEntryTable1 = ObjectEntryTable.INSTANCE;
 		ObjectEntryTable objectEntryTable2 = ObjectEntryTable.INSTANCE.as(
-			"Object2");
+			"ParentObjectEntry");
 
 		return column.in(
 			fromStep.from(
 				dynamicObjectDefinitionTable
 			).innerJoinON(
-				objectEntryTable2,
-				objectEntryTable2.objectEntryId.eq(
+				objectEntryTable1,
+				objectEntryTable1.objectEntryId.eq(
 					dynamicObjectDefinitionTable.getPrimaryKeyColumn())
 			).innerJoinON(
 				extensionDynamicObjectDefinitionTable,
@@ -186,8 +186,8 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 					extensionDynamicObjectDefinitionTable.getPrimaryKeyColumn()
 				)
 			).innerJoinON(
-				objectEntryTable1,
-				objectEntryTable1.objectEntryId.eq(
+				objectEntryTable2,
+				objectEntryTable2.objectEntryId.eq(
 					(Expression<Long>)relationshipColumn)
 			).leftJoinOn(
 				dynamicObjectDefinitionLocalizationTable,
