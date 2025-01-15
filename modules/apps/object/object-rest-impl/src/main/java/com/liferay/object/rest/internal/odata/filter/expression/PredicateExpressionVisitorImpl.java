@@ -10,6 +10,7 @@ import com.liferay.object.field.business.type.ObjectFieldBusinessType;
 import com.liferay.object.field.business.type.ObjectFieldBusinessTypeRegistry;
 import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectEntryTable;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.odata.filter.expression.field.predicate.provider.FieldPredicateProvider;
@@ -414,6 +415,18 @@ public class PredicateExpressionVisitorImpl
 
 	private Column<?, Object> _getColumn(
 		Object fieldName, ObjectDefinition objectDefinition) {
+
+		if (fieldName.toString(
+			).matches(
+				"^r_.+_c_.+ERC$"
+			) && !objectDefinition.equals(_objectDefinition)) {
+
+			return (Column<?, Object>)ObjectEntryTable.INSTANCE.as(
+				"ParentObjectEntry"
+			).getColumn(
+				"externalReferenceCode"
+			);
+		}
 
 		EntityField entityField = _getEntityField(fieldName, objectDefinition);
 
