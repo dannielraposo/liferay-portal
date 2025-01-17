@@ -1,0 +1,165 @@
+{
+	"enableLocalization": true,
+	"externalReferenceCode": "all-fields-object-erc",
+	"label": {
+		"en_US": "All Fields"
+	},
+	"name": "AllFields",
+	"objectFields": [
+		{
+			"DBType": "Boolean",
+			"externalReferenceCode": "boolean-erc",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"label": {
+				"en_US": "Boolean"
+			},
+			"localized": false,
+			"name": "boolean",
+			"required": false,
+			"type": "Boolean"
+		},
+		{
+			"DBType": "DateTime",
+			"externalReferenceCode": "date-time-erc",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"label": {
+				"en_US": "Date And Time"
+			},
+			"localized": false,
+			"name": "dateAndTime",
+			"objectFieldSettings": [
+				{
+					"name": "timeStorage",
+					"value": "convertToUTC"
+				}
+			],
+			"readOnlyConditionExpression": "",
+			"required": false,
+			"type": "DateTime"
+		},
+		{
+			"DBType": "Date",
+			"externalReferenceCode": "date-erc",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"label": {
+				"en_US": "Date"
+			},
+			"localized": false,
+			"name": "date",
+			"required": false,
+			"type": "Date"
+		},
+		{
+			"DBType": "Clob",
+			"businessType": "LongText",
+			"externalReferenceCode": "long-text-erc",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"label": {
+				"en_US": "Long Text"
+			},
+			"localized": true,
+			"name": "longText",
+			"required": false,
+			"type": "Clob"
+		},
+		{
+			"DBType": "Long",
+			"businessType": "Attachment",
+			"externalReferenceCode": "computer-file-upload-erc",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"label": {
+				"en_US": "Computer File"
+			},
+			"localized": false,
+			"name": "fileUpload",
+			"objectFieldSettings": [
+				{
+					"name": "acceptedFileExtensions",
+					"value": "jpeg, jpg, pdf, png"
+				},
+				{
+					"name": "maximumFileSize",
+					"value": 2
+				},
+				{
+					"name": "fileSource",
+					"value": "userComputer"
+				},
+				{
+					"name": "showFilesInDocumentsAndMedia",
+					"value": true
+				},
+				{
+					"name": "storageDLFolderPath",
+					"value": "/FileUpload"
+				}
+			],
+			"type": "Long"
+		},
+		{
+			"DBType": "Long",
+			"businessType": "Attachment",
+			"externalReferenceCode": "dl-file-upload-erc",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"label": {
+				"en_US": "DL File"
+			},
+			"localized": false,
+			"name": "dlFileUpload",
+			"objectFieldSettings": [
+				{
+					"name": "acceptedFileExtensions",
+					"value": "pdf"
+				},
+				{
+					"name": "maximumFileSize",
+					"value": 100
+				},
+				{
+					"name": "fileSource",
+					"value": "documentsAndMedia"
+				}
+			],
+			"type": "Long"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"externalReferenceCode": "text-erc",
+			"indexed": true,
+			"indexedAsKeyword": true,
+			"label": {
+				"en_US": "Text"
+			},
+			"localized": true,
+			"name": "text",
+			"required": false,
+			"type": "String"
+		},
+		{
+			"DBType": "Clob",
+			"businessType": "RichText",
+			"externalReferenceCode": "rich-text-erc",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"label": {
+				"en_US": "Rich Text"
+			},
+			"localized": true,
+			"name": "richText",
+			"required": false,
+			"type": "Clob"
+		}
+	],
+	"panelCategoryKey": "site_administration.content",
+	"pluralLabel": {
+		"en_US": "All Fields"
+	},
+	"scope": "site"
+}

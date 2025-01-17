@@ -1,0 +1,17 @@
+{
+	"object-entries": [
+		{
+			"externalReferenceCode": "lemon-basket-entry-1",
+			"lemonBasketColor": "White",
+			"lemonDimensions": "large, medium",
+			"material": "plastic"
+		},
+		{
+			"externalReferenceCode": "lemon-basket-entry-2",
+			"lemonBasketColor": "Brown",
+			"lemonDimensions": "large",
+			"material": "carton"
+		}
+	],
+	"objectDefinitionName": "LemonBasket"
+}
