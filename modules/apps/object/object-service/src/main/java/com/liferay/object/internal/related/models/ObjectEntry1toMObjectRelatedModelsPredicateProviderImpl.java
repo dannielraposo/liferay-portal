@@ -20,6 +20,7 @@ import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.expression.Expression;
 import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.petra.sql.dsl.query.FromStep;
+import com.liferay.petra.sql.dsl.query.JoinStep;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 
@@ -105,7 +106,7 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 					DSLQueryFactoryUtil.select(
 						objectDefinition1DynamicObjectDefinitionTable.
 							getPrimaryKeyColumn()),
-					predicate, objectRelationshipColumn)
+					predicate, null)
 			));
 	}
 
@@ -169,27 +170,33 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 		throws PortalException {
 
 		ObjectEntryTable objectEntryTable1 = ObjectEntryTable.INSTANCE;
-		ObjectEntryTable objectEntryTable2 = ObjectEntryTable.INSTANCE.as(
-			"ParentObjectEntry");
 
-		return column.in(
-			fromStep.from(
-				dynamicObjectDefinitionTable
-			).innerJoinON(
-				objectEntryTable1,
-				objectEntryTable1.objectEntryId.eq(
-					dynamicObjectDefinitionTable.getPrimaryKeyColumn())
-			).innerJoinON(
-				extensionDynamicObjectDefinitionTable,
-				dynamicObjectDefinitionTable.getPrimaryKeyColumn(
-				).eq(
-					extensionDynamicObjectDefinitionTable.getPrimaryKeyColumn()
-				)
-			).innerJoinON(
+		JoinStep query = fromStep.from(
+			dynamicObjectDefinitionTable
+		).innerJoinON(
+			objectEntryTable1,
+			objectEntryTable1.objectEntryId.eq(
+				dynamicObjectDefinitionTable.getPrimaryKeyColumn())
+		).innerJoinON(
+			extensionDynamicObjectDefinitionTable,
+			dynamicObjectDefinitionTable.getPrimaryKeyColumn(
+			).eq(
+				extensionDynamicObjectDefinitionTable.getPrimaryKeyColumn()
+			)
+		);
+
+		if (relationshipColumn != null) {
+			ObjectEntryTable objectEntryTable2 = ObjectEntryTable.INSTANCE.as(
+				"ParentObjectEntry");
+
+			query = query.innerJoinON(
 				objectEntryTable2,
 				objectEntryTable2.objectEntryId.eq(
-					(Expression<Long>)relationshipColumn)
-			).leftJoinOn(
+					(Expression<Long>)relationshipColumn));
+		}
+
+		return column.in(
+			query.leftJoinOn(
 				dynamicObjectDefinitionLocalizationTable,
 				ObjectEntrySearchUtil.getLeftJoinLocalizationTablePredicate(
 					dynamicObjectDefinitionLocalizationTable,
