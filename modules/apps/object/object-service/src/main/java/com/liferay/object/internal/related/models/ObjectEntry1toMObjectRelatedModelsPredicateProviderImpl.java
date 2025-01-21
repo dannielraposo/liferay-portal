@@ -181,6 +181,11 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 			).eq(
 				extensionDynamicObjectDefinitionTable.getPrimaryKeyColumn()
 			)
+		).leftJoinOn(
+			dynamicObjectDefinitionLocalizationTable,
+			ObjectEntrySearchUtil.getLeftJoinLocalizationTablePredicate(
+				dynamicObjectDefinitionLocalizationTable,
+				dynamicObjectDefinitionTable)
 		);
 
 		if (relationshipColumn != null) {
@@ -193,15 +198,7 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 					(Expression<Long>)relationshipColumn));
 		}
 
-		return column.in(
-			joinStep.leftJoinOn(
-				dynamicObjectDefinitionLocalizationTable,
-				ObjectEntrySearchUtil.getLeftJoinLocalizationTablePredicate(
-					dynamicObjectDefinitionLocalizationTable,
-					dynamicObjectDefinitionTable)
-			).where(
-				predicate
-			));
+		return column.in(joinStep.where(predicate));
 	}
 
 }
