@@ -169,13 +169,11 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 			Column<?, ?> relationshipColumn)
 		throws PortalException {
 
-		ObjectEntryTable objectEntryTable1 = ObjectEntryTable.INSTANCE;
-
-		JoinStep query = fromStep.from(
+		JoinStep joinStep = fromStep.from(
 			dynamicObjectDefinitionTable
 		).innerJoinON(
-			objectEntryTable1,
-			objectEntryTable1.objectEntryId.eq(
+			ObjectEntryTable.INSTANCE,
+			ObjectEntryTable.INSTANCE.objectEntryId.eq(
 				dynamicObjectDefinitionTable.getPrimaryKeyColumn())
 		).innerJoinON(
 			extensionDynamicObjectDefinitionTable,
@@ -186,17 +184,17 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 		);
 
 		if (relationshipColumn != null) {
-			ObjectEntryTable objectEntryTable2 = ObjectEntryTable.INSTANCE.as(
+			ObjectEntryTable objectEntryTable = ObjectEntryTable.INSTANCE.as(
 				"ParentObjectEntry");
 
-			query = query.innerJoinON(
-				objectEntryTable2,
-				objectEntryTable2.objectEntryId.eq(
+			joinStep = joinStep.innerJoinON(
+				objectEntryTable,
+				objectEntryTable.objectEntryId.eq(
 					(Expression<Long>)relationshipColumn));
 		}
 
 		return column.in(
-			query.leftJoinOn(
+			joinStep.leftJoinOn(
 				dynamicObjectDefinitionLocalizationTable,
 				ObjectEntrySearchUtil.getLeftJoinLocalizationTablePredicate(
 					dynamicObjectDefinitionLocalizationTable,
