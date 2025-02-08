@@ -9,5 +9,6 @@ clientDir: "../headless-site-client/src/main/java"
 compatibilityVersion: 7
 forcePredictableOperationId: true
 generateBatch: false
+generateClientJS: true
 generateGraphQL: false
 testDir: "../headless-site-test/src/testIntegration/java"
