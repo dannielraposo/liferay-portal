@@ -31,12 +31,21 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
+import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.ResourceActionLocalService;
+import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
+import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -45,12 +54,19 @@ import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.search.test.rule.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.crud.VulcanCRUDItemDelegate;
+import com.liferay.portal.vulcan.crud.VulcanCRUDItemDelegateBuilder;
+import com.liferay.portal.vulcan.crud.VulcanCRUDItemDelegateBuilderRegistry;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
 import java.io.File;
 
 import java.lang.reflect.Method;
+
+import java.net.URI;
 
 import java.text.DateFormat;
 
@@ -61,13 +77,19 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -76,6 +98,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * @author Javier Gamarra
@@ -86,8 +111,9 @@ public abstract class BaseBlogPostingImageResourceTestCase {
 
 	@ClassRule
 	@Rule
-	public static final LiferayIntegrationTestRule liferayIntegrationTestRule =
-		new LiferayIntegrationTestRule();
+	public static AggregateTestRule aggregateTestRule = new AggregateTestRule(
+		new LiferayIntegrationTestRule(),
+		PermissionCheckerMethodTestRule.INSTANCE);
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
@@ -321,6 +347,212 @@ public abstract class BaseBlogPostingImageResourceTestCase {
 
 		assertEquals(postBlogPostingImage, getBlogPostingImage);
 		assertValid(getBlogPostingImage);
+	}
+
+	@Test
+	public void testGetBlogPostingImageMatchesVulcanCRUDItemDelegateGetItem()
+		throws Exception {
+
+		BlogPostingImage postBlogPostingImage =
+			testGetBlogPostingImage_addBlogPostingImage();
+
+		String endpoint = StringBundler.concat(
+			"/headless-delivery/v1.0/blog-posting-images/{blogPostingImageId}".
+				replace(
+					"{blogPostingImageId}",
+					String.valueOf(postBlogPostingImage.getId())));
+
+		String apiResponse = HTTPTestUtil.invokeToString(
+			null, endpoint, Http.Method.GET);
+
+		URI requestUri = UriBuilder.fromPath(
+			"http://localhost:8080/o" + endpoint
+		).build();
+
+		VulcanCRUDItemDelegateBuilder vulcanCRUDItemDelegateBuilder =
+			_vulcanCRUDItemDelegateBuilderRegistry.builder(
+				testCompany,
+				"com.liferay.headless.delivery.dto.v1_0.BlogPostingImage");
+
+		if (vulcanCRUDItemDelegateBuilder != null) {
+			VulcanCRUDItemDelegate vulcanCRUDItemDelegate =
+				vulcanCRUDItemDelegateBuilder.acceptLanguage(
+					new AcceptLanguage() {
+
+						@Override
+						public List<Locale> getLocales() {
+							return Arrays.asList(LocaleUtil.getDefault());
+						}
+
+						@Override
+						public String getPreferredLanguageId() {
+							return LocaleUtil.toLanguageId(
+								LocaleUtil.getDefault());
+						}
+
+						@Override
+						public Locale getPreferredLocale() {
+							return LocaleUtil.getDefault();
+						}
+
+					}
+				).groupLocalService(
+					_groupLocalService
+				).httpServletRequest(
+					new MockHttpServletRequest() {
+						{
+							setScheme("http");
+							setServerName("localhost");
+							setServerPort(8080);
+							setRequestURI(endpoint);
+							setMethod(HttpMethod.GET);
+							addHeader(
+								"User-Agent",
+								"mozilla/5.0 (windows nt 6.3; trident/7.0; rv 11.0) like gecko");
+						}
+
+						@Override
+						public StringBuffer getRequestURL() {
+							return new StringBuffer(requestUri.toString());
+						}
+
+					}
+				).httpServletResponse(
+					new MockHttpServletResponse()
+				).resourceActionLocalService(
+					_resourceActionLocalService
+				).resourcePermissionLocalService(
+					_resourcePermissionLocalService
+				).roleLocalService(
+					_roleLocalService
+				).scopeChecker(
+					null
+				).uriInfo(
+					new UriInfo() {
+
+						@Override
+						public String getPath() {
+							return "v1.0/blog-posting-images/{blogPostingImageId}".
+								replace(
+									"{blogPostingImageId}",
+									String.valueOf(
+										postBlogPostingImage.getId()));
+						}
+
+						@Override
+						public String getPath(boolean decode) {
+							return getPath();
+						}
+
+						@Override
+						public List<PathSegment> getPathSegments() {
+							return Collections.emptyList();
+						}
+
+						@Override
+						public List<PathSegment> getPathSegments(
+							boolean decode) {
+
+							return getPathSegments();
+						}
+
+						@Override
+						public URI getRequestUri() {
+							return requestUri;
+						}
+
+						@Override
+						public UriBuilder getRequestUriBuilder() {
+							return UriBuilder.fromUri(requestUri);
+						}
+
+						@Override
+						public URI getAbsolutePath() {
+							return requestUri;
+						}
+
+						@Override
+						public UriBuilder getAbsolutePathBuilder() {
+							return UriBuilder.fromUri(requestUri);
+						}
+
+						@Override
+						public URI getBaseUri() {
+							return requestUri;
+						}
+
+						@Override
+						public UriBuilder getBaseUriBuilder() {
+							return UriBuilder.fromUri(getBaseUri());
+						}
+
+						@Override
+						public MultivaluedMap<String, String>
+							getPathParameters() {
+
+							return new MultivaluedHashMap<>();
+						}
+
+						@Override
+						public MultivaluedMap<String, String> getPathParameters(
+							boolean decode) {
+
+							return getPathParameters();
+						}
+
+						@Override
+						public MultivaluedMap<String, String>
+							getQueryParameters() {
+
+							return new MultivaluedHashMap<>();
+						}
+
+						@Override
+						public MultivaluedMap<String, String>
+							getQueryParameters(boolean decode) {
+
+							return getQueryParameters();
+						}
+
+						@Override
+						public List<String> getMatchedURIs() {
+							return Collections.emptyList();
+						}
+
+						@Override
+						public List<String> getMatchedURIs(boolean decode) {
+							return getMatchedURIs();
+						}
+
+						@Override
+						public List<Object> getMatchedResources() {
+							return Collections.emptyList();
+						}
+
+						@Override
+						public URI resolve(URI requestUri) {
+							return getBaseUri().resolve(requestUri);
+						}
+
+						@Override
+						public URI relativize(URI uri) {
+							return getBaseUri().relativize(requestUri);
+						}
+
+					}
+				).user(
+					TestPropsValues.getUser()
+				).build();
+
+			String vulcanResponse = vulcanCRUDItemDelegate.getItem(
+				postBlogPostingImage.getId()
+			).toString();
+
+			Assert.assertTrue(
+				equals(
+					BlogPostingImageSerDes.toDTO(apiResponse),
+					BlogPostingImageSerDes.toDTO(vulcanResponse)));
+		}
 	}
 
 	protected BlogPostingImage testGetBlogPostingImage_addBlogPostingImage()
@@ -2387,5 +2619,24 @@ public abstract class BaseBlogPostingImageResourceTestCase {
 	@Inject
 	private com.liferay.headless.delivery.resource.v1_0.BlogPostingImageResource
 		_blogPostingImageResource;
+
+	@Inject
+	private GroupLocalService _groupLocalService;
+
+	@Inject
+	private ResourceActionLocalService _resourceActionLocalService;
+
+	@Inject
+	private ResourcePermissionLocalService _resourcePermissionLocalService;
+
+	@Inject
+	private RoleLocalService _roleLocalService;
+
+	@Inject
+	private UserLocalService _userLocalService;
+
+	@Inject
+	private VulcanCRUDItemDelegateBuilderRegistry
+		_vulcanCRUDItemDelegateBuilderRegistry;
 
 }
