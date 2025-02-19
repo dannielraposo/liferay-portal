@@ -132,6 +132,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.HttpMethod;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -1405,13 +1406,13 @@ public abstract class Base${schemaName}ResourceTestCase {
 						"${configYAML.application.baseURI}/${openAPIYAML.info.version}${javaMethodSignature.path}".replace("{${schemaVarName}Id}", String.valueOf(post${schemaName}.getId()))
 					);
 
-					JSONObject jsonObjectAPI = HTTPTestUtil.invokeToJSONObject(
+					String apiResponse = HTTPTestUtil.invokeToString(
 						null,
 						endpoint,
 						Http.Method.GET
 					);
 
-					URI uri = UriBuilder.fromPath("http://localhost:8080/o" + endpoint).build();
+					URI requestUri = UriBuilder.fromPath("http://localhost:8080/o" + endpoint).build();
 
 					VulcanCRUDItemDelegateBuilder vulcanCRUDItemDelegateBuilder =
 						_vulcanCRUDItemDelegateBuilderRegistry.builder(
@@ -1440,7 +1441,20 @@ public abstract class Base${schemaName}ResourceTestCase {
 							).groupLocalService(
 								_groupLocalService
 							).httpServletRequest(
-								new MockHttpServletRequest()
+								new MockHttpServletRequest() {
+									{
+										setScheme("http");
+										setServerName("localhost");
+										setServerPort(8080);
+										setRequestURI(endpoint);
+										setMethod(HttpMethod.GET);
+										addHeader("User-Agent", "mozilla/5.0 (windows nt 6.3; trident/7.0; rv 11.0) like gecko");
+									}
+									@Override
+									public StringBuffer getRequestURL() {
+										return new StringBuffer(requestUri.toString());
+									}
+								}
 							).httpServletResponse(
 								new MockHttpServletResponse()
 							).resourceActionLocalService(
@@ -1475,27 +1489,27 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 									@Override
 									public URI getRequestUri() {
-										return uri;
+										return requestUri;
 									}
 
 									@Override
 									public UriBuilder getRequestUriBuilder() {
-										return UriBuilder.fromUri(uri);
+										return UriBuilder.fromUri(requestUri);
 									}
 
 									@Override
 									public URI getAbsolutePath() {
-										return uri;
+										return requestUri;
 									}
 
 									@Override
 									public UriBuilder getAbsolutePathBuilder() {
-										return UriBuilder.fromUri(uri);
+										return UriBuilder.fromUri(requestUri);
 									}
 
 									@Override
 									public URI getBaseUri() {
-										return uri;
+										return requestUri;
 									}
 
 									@Override
@@ -1539,23 +1553,22 @@ public abstract class Base${schemaName}ResourceTestCase {
 									}
 
 									@Override
-									public URI resolve(URI uri) {
-										return getBaseUri().resolve(uri);
+									public URI resolve(URI requestUri) {
+										return getBaseUri().resolve(requestUri);
 									}
 
 									@Override
 									public URI relativize(URI uri) {
-										return getBaseUri().relativize(uri);
+										return getBaseUri().relativize(requestUri);
 									}
 								}
 							).user(
 								TestPropsValues.getUser()
 							).build();
 
-						JSONObject jsonObjectVulcan = JSONFactoryUtil.createJSONObject(
-							vulcanCRUDItemDelegate.getItem(post${schemaName}.getId()).toString());
+						String vulcanResponse = vulcanCRUDItemDelegate.getItem(post${schemaName}.getId()).toString();
 
-						Assert.assertTrue(JSONUtil.equals(jsonObjectAPI, jsonObjectVulcan));
+						Assert.assertTrue(equals(${schemaName}SerDes.toDTO(apiResponse), ${schemaName}SerDes.toDTO(vulcanResponse)));
 					}
 				}
 			</#if>
