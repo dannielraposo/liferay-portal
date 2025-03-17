@@ -3,277 +3,153 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import http from 'http';
+import {ObjectSerializer} from '../model/models';
 
-import localVarRequest from 'request';
-/* tslint:disable:no-unused-locals */
-import {
-	Authentication,
-	Interceptor,
-	ObjectSerializer,
-	VoidAuth,
-} from '../model/models';
 		import {CTProcess} from '../model/cTProcess';
 		import {PageCTProcess} from '../model/pageCTProcess';
 
 import {HttpError} from './apis';
-const defaultBasePath = 'http://localhost';
 
 /**
  * @author David Truong
  * @generated
  */
 
-export enum CTProcessApiApiKeys {}
-
 export class CTProcessApi {
-	protected _basePath = defaultBasePath;
+	protected _basePath: string;
 	protected _defaultHeaders: any = {};
-	protected _useQuerystring: boolean = false;
 
-	protected authentications = {
-		default: <Authentication>new VoidAuth(),
-	};
-
-	protected interceptors: Interceptor[] = [];
-
-	constructor(basePath?: string);
-	constructor(
-		basePathOrUsername: string,
-		password?: string,
-		basePath?: string
-	) {
-		if (password) {
-			if (basePath) {
-				this.basePath = basePath;
-			}
+	constructor(basePath?: string) {
+		if (basePath) {
+			this._basePath = basePath;
 		}
-		else {
-			if (basePathOrUsername) {
-				this.basePath = basePathOrUsername;
-			}
-		}
-	}
-
-	set useQuerystring(value: boolean) {
-		this._useQuerystring = value;
-	}
-
-	set basePath(basePath: string) {
-		this._basePath = basePath;
 	}
 
 	set defaultHeaders(defaultHeaders: any) {
 		this._defaultHeaders = defaultHeaders;
 	}
 
-	get defaultHeaders() {
-		return this._defaultHeaders;
-	}
-
-	get basePath() {
-		return this._basePath;
-	}
-
-	public setDefaultAuthentication(auth: Authentication) {
-		this.authentications.default = auth;
-	}
-
-	public setApiKey(key: CTProcessApiApiKeys, value: string) {
-		(this.authentications as any)[CTProcessApiApiKeys[key]].apiKey =
-			value;
-	}
-
-	public addInterceptor(interceptor: Interceptor) {
-		this.interceptors.push(interceptor);
-	}
-
 		/**
 		 * 
-				 * @param ctProcessId 
+				 * @param ctProcessId
+		 * @param headers Optional custom request headers
 		 */
 		public async deleteCTProcess(
 					ctProcessId: number,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body?: any;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/change-tracking-rest/v1.0/ct-processes/{ctProcessId}'
-						.replace(
-							'{' + 'ctProcessId' + '}',
-							encodeURIComponent(String(ctProcessId))
-						)
+			const localVarPath = this._basePath + '/change-tracking-rest/v1.0/ct-processes/{ctProcessId}'
+						.replace('{ctProcessId}',encodeURIComponent(ctProcessId))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (ctProcessId === null || ctProcessId === undefined) {
 							throw new Error('Required parameter ctProcessId was null or undefined when calling deleteCTProcess.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'DELETE',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body?: any; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: await response.json(), response};
+					} else {
+						return {body: await response.text(), response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param ctProcessId 
+				 * @param ctProcessId
+		 * @param headers Optional custom request headers
 		 */
 		public async getCTProcess(
 					ctProcessId: number,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: CTProcess;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/change-tracking-rest/v1.0/ct-processes/{ctProcessId}'
-						.replace(
-							'{' + 'ctProcessId' + '}',
-							encodeURIComponent(String(ctProcessId))
-						)
+			const localVarPath = this._basePath + '/change-tracking-rest/v1.0/ct-processes/{ctProcessId}'
+						.replace('{ctProcessId}',encodeURIComponent(ctProcessId))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (ctProcessId === null || ctProcessId === undefined) {
 							throw new Error('Required parameter ctProcessId was null or undefined when calling getCTProcess.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: CTProcess; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "CTProcess"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param filter 
-				 * @param page 
-				 * @param pageSize 
-				 * @param search 
-				 * @param sort 
-				 * @param status 
+				 * @param filter
+				 * @param page
+				 * @param pageSize
+				 * @param search
+				 * @param sort
+				 * @param status
+		 * @param headers Optional custom request headers
 		 */
 		public async getCTProcessesPage(
 					filter?: string,
@@ -282,197 +158,132 @@ export class CTProcessApi {
 					search?: string,
 					sort?: string,
 					status?: Array<number>,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: PageCTProcess;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/change-tracking-rest/v1.0/ct-processes'
+			const localVarPath = this._basePath + '/change-tracking-rest/v1.0/ct-processes'
 																								;
+
 			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 					if (filter !== undefined) {
-						localVarQueryParameters['filter'] = ObjectSerializer.serialize(filter, "string");
+						localVarQueryParameters['filter'] = JSON.stringify(ObjectSerializer.serialize(filter, "string"));
 					}
 					if (page !== undefined) {
-						localVarQueryParameters['page'] = ObjectSerializer.serialize(page, "number");
+						localVarQueryParameters['page'] = JSON.stringify(ObjectSerializer.serialize(page, "number"));
 					}
 					if (pageSize !== undefined) {
-						localVarQueryParameters['pageSize'] = ObjectSerializer.serialize(pageSize, "number");
+						localVarQueryParameters['pageSize'] = JSON.stringify(ObjectSerializer.serialize(pageSize, "number"));
 					}
 					if (search !== undefined) {
-						localVarQueryParameters['search'] = ObjectSerializer.serialize(search, "string");
+						localVarQueryParameters['search'] = JSON.stringify(ObjectSerializer.serialize(search, "string"));
 					}
 					if (sort !== undefined) {
-						localVarQueryParameters['sort'] = ObjectSerializer.serialize(sort, "string");
+						localVarQueryParameters['sort'] = JSON.stringify(ObjectSerializer.serialize(sort, "string"));
 					}
 					if (status !== undefined) {
-						localVarQueryParameters['status'] = ObjectSerializer.serialize(status, "Array<number>");
+						localVarQueryParameters['status'] = JSON.stringify(ObjectSerializer.serialize(status, "Array<number>"));
 					}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: PageCTProcess; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "PageCTProcess"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param ctProcessId 
-				 * @param description 
-				 * @param name 
+				 * @param ctProcessId
+				 * @param description
+				 * @param name
+		 * @param headers Optional custom request headers
 		 */
 		public async postCTProcessRevert(
 					ctProcessId: number,
 					description?: string,
 					name?: string,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body?: any;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/change-tracking-rest/v1.0/ct-processes/{ctProcessId}/revert'
-						.replace(
-							'{' + 'ctProcessId' + '}',
-							encodeURIComponent(String(ctProcessId))
-						)
+			const localVarPath = this._basePath + '/change-tracking-rest/v1.0/ct-processes/{ctProcessId}/revert'
+						.replace('{ctProcessId}',encodeURIComponent(ctProcessId))
 												;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (ctProcessId === null || ctProcessId === undefined) {
 							throw new Error('Required parameter ctProcessId was null or undefined when calling postCTProcessRevert.');
 						}
+
+			const localVarQueryParameters: any = {};
+
 					if (description !== undefined) {
-						localVarQueryParameters['description'] = ObjectSerializer.serialize(description, "string");
+						localVarQueryParameters['description'] = JSON.stringify(ObjectSerializer.serialize(description, "string"));
 					}
 					if (name !== undefined) {
-						localVarQueryParameters['name'] = ObjectSerializer.serialize(name, "string");
+						localVarQueryParameters['name'] = JSON.stringify(ObjectSerializer.serialize(name, "string"));
 					}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'POST',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body?: any; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: await response.json(), response};
+					} else {
+						return {body: await response.text(), response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 }

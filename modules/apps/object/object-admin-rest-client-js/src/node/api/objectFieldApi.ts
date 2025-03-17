@@ -3,188 +3,97 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import http from 'http';
+import {ObjectSerializer} from '../model/models';
 
-import localVarRequest from 'request';
-/* tslint:disable:no-unused-locals */
-import {
-	Authentication,
-	Interceptor,
-	ObjectSerializer,
-	VoidAuth,
-} from '../model/models';
 		import {ObjectField} from '../model/objectField';
 		import {PageObjectField} from '../model/pageObjectField';
 
 import {HttpError} from './apis';
-const defaultBasePath = 'http://localhost';
 
 /**
  * @author Javier Gamarra
  * @generated
  */
 
-export enum ObjectFieldApiApiKeys {}
-
 export class ObjectFieldApi {
-	protected _basePath = defaultBasePath;
+	protected _basePath: string;
 	protected _defaultHeaders: any = {};
-	protected _useQuerystring: boolean = false;
 
-	protected authentications = {
-		default: <Authentication>new VoidAuth(),
-	};
-
-	protected interceptors: Interceptor[] = [];
-
-	constructor(basePath?: string);
-	constructor(
-		basePathOrUsername: string,
-		password?: string,
-		basePath?: string
-	) {
-		if (password) {
-			if (basePath) {
-				this.basePath = basePath;
-			}
+	constructor(basePath?: string) {
+		if (basePath) {
+			this._basePath = basePath;
 		}
-		else {
-			if (basePathOrUsername) {
-				this.basePath = basePathOrUsername;
-			}
-		}
-	}
-
-	set useQuerystring(value: boolean) {
-		this._useQuerystring = value;
-	}
-
-	set basePath(basePath: string) {
-		this._basePath = basePath;
 	}
 
 	set defaultHeaders(defaultHeaders: any) {
 		this._defaultHeaders = defaultHeaders;
 	}
 
-	get defaultHeaders() {
-		return this._defaultHeaders;
-	}
-
-	get basePath() {
-		return this._basePath;
-	}
-
-	public setDefaultAuthentication(auth: Authentication) {
-		this.authentications.default = auth;
-	}
-
-	public setApiKey(key: ObjectFieldApiApiKeys, value: string) {
-		(this.authentications as any)[ObjectFieldApiApiKeys[key]].apiKey =
-			value;
-	}
-
-	public addInterceptor(interceptor: Interceptor) {
-		this.interceptors.push(interceptor);
-	}
-
 		/**
 		 * 
-				 * @param objectFieldId 
+				 * @param objectFieldId
+		 * @param headers Optional custom request headers
 		 */
 		public async deleteObjectField(
 					objectFieldId: number,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body?: any;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-fields/{objectFieldId}'
-						.replace(
-							'{' + 'objectFieldId' + '}',
-							encodeURIComponent(String(objectFieldId))
-						)
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-fields/{objectFieldId}'
+						.replace('{objectFieldId}',encodeURIComponent(objectFieldId))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (objectFieldId === null || objectFieldId === undefined) {
 							throw new Error('Required parameter objectFieldId was null or undefined when calling deleteObjectField.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'DELETE',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body?: any; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: await response.json(), response};
+					} else {
+						return {body: await response.text(), response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param externalReferenceCode 
-				 * @param filter 
-				 * @param page 
-				 * @param pageSize 
-				 * @param search 
-				 * @param sort 
+				 * @param externalReferenceCode
+				 * @param filter
+				 * @param page
+				 * @param pageSize
+				 * @param search
+				 * @param sort
+		 * @param headers Optional custom request headers
 		 */
 		public async getObjectDefinitionByExternalReferenceCodeObjectFieldsPage(
 					externalReferenceCode: string,
@@ -193,112 +102,79 @@ export class ObjectFieldApi {
 					pageSize?: number,
 					search?: string,
 					sort?: string,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: PageObjectField;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-definitions/by-external-reference-code/{externalReferenceCode}/object-fields'
-						.replace(
-							'{' + 'externalReferenceCode' + '}',
-							encodeURIComponent(String(externalReferenceCode))
-						)
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-definitions/by-external-reference-code/{externalReferenceCode}/object-fields'
+						.replace('{externalReferenceCode}',encodeURIComponent(externalReferenceCode))
 																								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (externalReferenceCode === null || externalReferenceCode === undefined) {
 							throw new Error('Required parameter externalReferenceCode was null or undefined when calling getObjectDefinitionByExternalReferenceCodeObjectFieldsPage.');
 						}
+
+			const localVarQueryParameters: any = {};
+
 					if (filter !== undefined) {
-						localVarQueryParameters['filter'] = ObjectSerializer.serialize(filter, "string");
+						localVarQueryParameters['filter'] = JSON.stringify(ObjectSerializer.serialize(filter, "string"));
 					}
 					if (page !== undefined) {
-						localVarQueryParameters['page'] = ObjectSerializer.serialize(page, "number");
+						localVarQueryParameters['page'] = JSON.stringify(ObjectSerializer.serialize(page, "number"));
 					}
 					if (pageSize !== undefined) {
-						localVarQueryParameters['pageSize'] = ObjectSerializer.serialize(pageSize, "number");
+						localVarQueryParameters['pageSize'] = JSON.stringify(ObjectSerializer.serialize(pageSize, "number"));
 					}
 					if (search !== undefined) {
-						localVarQueryParameters['search'] = ObjectSerializer.serialize(search, "string");
+						localVarQueryParameters['search'] = JSON.stringify(ObjectSerializer.serialize(search, "string"));
 					}
 					if (sort !== undefined) {
-						localVarQueryParameters['sort'] = ObjectSerializer.serialize(sort, "string");
+						localVarQueryParameters['sort'] = JSON.stringify(ObjectSerializer.serialize(sort, "string"));
 					}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: PageObjectField; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "PageObjectField"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param objectDefinitionId 
-				 * @param filter 
-				 * @param page 
-				 * @param pageSize 
-				 * @param search 
-				 * @param sort 
+				 * @param objectDefinitionId
+				 * @param filter
+				 * @param page
+				 * @param pageSize
+				 * @param search
+				 * @param sort
+		 * @param headers Optional custom request headers
 		 */
 		public async getObjectDefinitionObjectFieldsPage(
 					objectDefinitionId: number,
@@ -307,559 +183,540 @@ export class ObjectFieldApi {
 					pageSize?: number,
 					search?: string,
 					sort?: string,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: PageObjectField;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-definitions/{objectDefinitionId}/object-fields'
-						.replace(
-							'{' + 'objectDefinitionId' + '}',
-							encodeURIComponent(String(objectDefinitionId))
-						)
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-definitions/{objectDefinitionId}/object-fields'
+						.replace('{objectDefinitionId}',encodeURIComponent(objectDefinitionId))
 																								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (objectDefinitionId === null || objectDefinitionId === undefined) {
 							throw new Error('Required parameter objectDefinitionId was null or undefined when calling getObjectDefinitionObjectFieldsPage.');
 						}
+
+			const localVarQueryParameters: any = {};
+
 					if (filter !== undefined) {
-						localVarQueryParameters['filter'] = ObjectSerializer.serialize(filter, "string");
+						localVarQueryParameters['filter'] = JSON.stringify(ObjectSerializer.serialize(filter, "string"));
 					}
 					if (page !== undefined) {
-						localVarQueryParameters['page'] = ObjectSerializer.serialize(page, "number");
+						localVarQueryParameters['page'] = JSON.stringify(ObjectSerializer.serialize(page, "number"));
 					}
 					if (pageSize !== undefined) {
-						localVarQueryParameters['pageSize'] = ObjectSerializer.serialize(pageSize, "number");
+						localVarQueryParameters['pageSize'] = JSON.stringify(ObjectSerializer.serialize(pageSize, "number"));
 					}
 					if (search !== undefined) {
-						localVarQueryParameters['search'] = ObjectSerializer.serialize(search, "string");
+						localVarQueryParameters['search'] = JSON.stringify(ObjectSerializer.serialize(search, "string"));
 					}
 					if (sort !== undefined) {
-						localVarQueryParameters['sort'] = ObjectSerializer.serialize(sort, "string");
+						localVarQueryParameters['sort'] = JSON.stringify(ObjectSerializer.serialize(sort, "string"));
 					}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: PageObjectField; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "PageObjectField"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param objectFieldId 
+				 * @param objectFieldId
+		 * @param headers Optional custom request headers
 		 */
 		public async getObjectField(
 					objectFieldId: number,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectField;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-fields/{objectFieldId}'
-						.replace(
-							'{' + 'objectFieldId' + '}',
-							encodeURIComponent(String(objectFieldId))
-						)
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-fields/{objectFieldId}'
+						.replace('{objectFieldId}',encodeURIComponent(objectFieldId))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (objectFieldId === null || objectFieldId === undefined) {
 							throw new Error('Required parameter objectFieldId was null or undefined when calling getObjectField.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectField; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectField"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param objectFieldId 
-				 * @param ObjectField 
+				 * @param objectFieldId
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async patchObjectField(
+		public async patchObjectFieldWithContentType(
 					objectFieldId: number,
-					ObjectField?: ObjectField,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectField?: ObjectField
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectField?: ObjectField
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectField;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-fields/{objectFieldId}'
-						.replace(
-							'{' + 'objectFieldId' + '}',
-							encodeURIComponent(String(objectFieldId))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-fields/{objectFieldId}'
+						.replace('{objectFieldId}',encodeURIComponent(objectFieldId))
+				;
 
 						if (objectFieldId === null || objectFieldId === undefined) {
 							throw new Error('Required parameter objectFieldId was null or undefined when calling patchObjectField.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectField, "ObjectField"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectField, "ObjectField"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectField, "ObjectField"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'PATCH',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectField; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectField"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param objectFieldId
+						 * @param objectField
+					 */
+					public async patchObjectField(
+								objectFieldId: number,
+							objectField?: ObjectField,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectField;
+						response: Response;
+					}> {
+						return this.patchObjectFieldWithContentType(
+									objectFieldId,
+							{
+								type: 'application/json',
+								parameters: {
+										objectField: objectField
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param externalReferenceCode 
-				 * @param ObjectField 
+				 * @param externalReferenceCode
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async postObjectDefinitionByExternalReferenceCodeObjectField(
+		public async postObjectDefinitionByExternalReferenceCodeObjectFieldWithContentType(
 					externalReferenceCode: string,
-					ObjectField?: ObjectField,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectField?: ObjectField
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectField?: ObjectField
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectField;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-definitions/by-external-reference-code/{externalReferenceCode}/object-fields'
-						.replace(
-							'{' + 'externalReferenceCode' + '}',
-							encodeURIComponent(String(externalReferenceCode))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-definitions/by-external-reference-code/{externalReferenceCode}/object-fields'
+						.replace('{externalReferenceCode}',encodeURIComponent(externalReferenceCode))
+				;
 
 						if (externalReferenceCode === null || externalReferenceCode === undefined) {
 							throw new Error('Required parameter externalReferenceCode was null or undefined when calling postObjectDefinitionByExternalReferenceCodeObjectField.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectField, "ObjectField"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectField, "ObjectField"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectField, "ObjectField"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'POST',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectField; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectField"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param externalReferenceCode
+						 * @param objectField
+					 */
+					public async postObjectDefinitionByExternalReferenceCodeObjectField(
+								externalReferenceCode: string,
+							objectField?: ObjectField,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectField;
+						response: Response;
+					}> {
+						return this.postObjectDefinitionByExternalReferenceCodeObjectFieldWithContentType(
+									externalReferenceCode,
+							{
+								type: 'application/json',
+								parameters: {
+										objectField: objectField
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param objectDefinitionId 
-				 * @param ObjectField 
+				 * @param objectDefinitionId
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async postObjectDefinitionObjectField(
+		public async postObjectDefinitionObjectFieldWithContentType(
 					objectDefinitionId: number,
-					ObjectField?: ObjectField,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectField?: ObjectField
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectField?: ObjectField
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectField;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-definitions/{objectDefinitionId}/object-fields'
-						.replace(
-							'{' + 'objectDefinitionId' + '}',
-							encodeURIComponent(String(objectDefinitionId))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-definitions/{objectDefinitionId}/object-fields'
+						.replace('{objectDefinitionId}',encodeURIComponent(objectDefinitionId))
+				;
 
 						if (objectDefinitionId === null || objectDefinitionId === undefined) {
 							throw new Error('Required parameter objectDefinitionId was null or undefined when calling postObjectDefinitionObjectField.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectField, "ObjectField"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectField, "ObjectField"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectField, "ObjectField"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'POST',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectField; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectField"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param objectDefinitionId
+						 * @param objectField
+					 */
+					public async postObjectDefinitionObjectField(
+								objectDefinitionId: number,
+							objectField?: ObjectField,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectField;
+						response: Response;
+					}> {
+						return this.postObjectDefinitionObjectFieldWithContentType(
+									objectDefinitionId,
+							{
+								type: 'application/json',
+								parameters: {
+										objectField: objectField
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param objectFieldId 
-				 * @param ObjectField 
+				 * @param objectFieldId
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async putObjectField(
+		public async putObjectFieldWithContentType(
 					objectFieldId: number,
-					ObjectField?: ObjectField,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectField?: ObjectField
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectField?: ObjectField
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectField;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-fields/{objectFieldId}'
-						.replace(
-							'{' + 'objectFieldId' + '}',
-							encodeURIComponent(String(objectFieldId))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-fields/{objectFieldId}'
+						.replace('{objectFieldId}',encodeURIComponent(objectFieldId))
+				;
 
 						if (objectFieldId === null || objectFieldId === undefined) {
 							throw new Error('Required parameter objectFieldId was null or undefined when calling putObjectField.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectField, "ObjectField"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectField, "ObjectField"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectField, "ObjectField"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'PUT',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectField; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectField"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param objectFieldId
+						 * @param objectField
+					 */
+					public async putObjectField(
+								objectFieldId: number,
+							objectField?: ObjectField,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectField;
+						response: Response;
+					}> {
+						return this.putObjectFieldWithContentType(
+									objectFieldId,
+							{
+								type: 'application/json',
+								parameters: {
+										objectField: objectField
+								}
+							},
+							headers
+						);
+					}
 }

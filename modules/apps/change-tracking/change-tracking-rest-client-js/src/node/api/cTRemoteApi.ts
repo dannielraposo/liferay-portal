@@ -3,634 +3,513 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import http from 'http';
+import {ObjectSerializer} from '../model/models';
 
-import localVarRequest from 'request';
-/* tslint:disable:no-unused-locals */
-import {
-	Authentication,
-	Interceptor,
-	ObjectSerializer,
-	VoidAuth,
-} from '../model/models';
 		import {CTRemote} from '../model/cTRemote';
 		import {PageCTRemote} from '../model/pageCTRemote';
 
 import {HttpError} from './apis';
-const defaultBasePath = 'http://localhost';
 
 /**
  * @author David Truong
  * @generated
  */
 
-export enum CTRemoteApiApiKeys {}
-
 export class CTRemoteApi {
-	protected _basePath = defaultBasePath;
+	protected _basePath: string;
 	protected _defaultHeaders: any = {};
-	protected _useQuerystring: boolean = false;
 
-	protected authentications = {
-		default: <Authentication>new VoidAuth(),
-	};
-
-	protected interceptors: Interceptor[] = [];
-
-	constructor(basePath?: string);
-	constructor(
-		basePathOrUsername: string,
-		password?: string,
-		basePath?: string
-	) {
-		if (password) {
-			if (basePath) {
-				this.basePath = basePath;
-			}
+	constructor(basePath?: string) {
+		if (basePath) {
+			this._basePath = basePath;
 		}
-		else {
-			if (basePathOrUsername) {
-				this.basePath = basePathOrUsername;
-			}
-		}
-	}
-
-	set useQuerystring(value: boolean) {
-		this._useQuerystring = value;
-	}
-
-	set basePath(basePath: string) {
-		this._basePath = basePath;
 	}
 
 	set defaultHeaders(defaultHeaders: any) {
 		this._defaultHeaders = defaultHeaders;
 	}
 
-	get defaultHeaders() {
-		return this._defaultHeaders;
-	}
-
-	get basePath() {
-		return this._basePath;
-	}
-
-	public setDefaultAuthentication(auth: Authentication) {
-		this.authentications.default = auth;
-	}
-
-	public setApiKey(key: CTRemoteApiApiKeys, value: string) {
-		(this.authentications as any)[CTRemoteApiApiKeys[key]].apiKey =
-			value;
-	}
-
-	public addInterceptor(interceptor: Interceptor) {
-		this.interceptors.push(interceptor);
-	}
-
 		/**
 		 * 
-				 * @param id 
+				 * @param id
+		 * @param headers Optional custom request headers
 		 */
 		public async deleteCTRemote(
 					id: number,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body?: any;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/change-tracking-rest/v1.0/ct-remotes/{id}'
-						.replace(
-							'{' + 'id' + '}',
-							encodeURIComponent(String(id))
-						)
+			const localVarPath = this._basePath + '/change-tracking-rest/v1.0/ct-remotes/{id}'
+						.replace('{id}',encodeURIComponent(id))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (id === null || id === undefined) {
 							throw new Error('Required parameter id was null or undefined when calling deleteCTRemote.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'DELETE',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body?: any; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: await response.json(), response};
+					} else {
+						return {body: await response.text(), response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param id 
+				 * @param id
+		 * @param headers Optional custom request headers
 		 */
 		public async getCTRemote(
 					id: number,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: CTRemote;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/change-tracking-rest/v1.0/ct-remotes/{id}'
-						.replace(
-							'{' + 'id' + '}',
-							encodeURIComponent(String(id))
-						)
+			const localVarPath = this._basePath + '/change-tracking-rest/v1.0/ct-remotes/{id}'
+						.replace('{id}',encodeURIComponent(id))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (id === null || id === undefined) {
 							throw new Error('Required parameter id was null or undefined when calling getCTRemote.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: CTRemote; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "CTRemote"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param page 
-				 * @param pageSize 
-				 * @param search 
-				 * @param sort 
+				 * @param page
+				 * @param pageSize
+				 * @param search
+				 * @param sort
+		 * @param headers Optional custom request headers
 		 */
 		public async getCTRemotesPage(
 					page?: number,
 					pageSize?: number,
 					search?: string,
 					sort?: string,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: PageCTRemote;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/change-tracking-rest/v1.0/ct-remotes'
+			const localVarPath = this._basePath + '/change-tracking-rest/v1.0/ct-remotes'
 																;
+
 			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 					if (page !== undefined) {
-						localVarQueryParameters['page'] = ObjectSerializer.serialize(page, "number");
+						localVarQueryParameters['page'] = JSON.stringify(ObjectSerializer.serialize(page, "number"));
 					}
 					if (pageSize !== undefined) {
-						localVarQueryParameters['pageSize'] = ObjectSerializer.serialize(pageSize, "number");
+						localVarQueryParameters['pageSize'] = JSON.stringify(ObjectSerializer.serialize(pageSize, "number"));
 					}
 					if (search !== undefined) {
-						localVarQueryParameters['search'] = ObjectSerializer.serialize(search, "string");
+						localVarQueryParameters['search'] = JSON.stringify(ObjectSerializer.serialize(search, "string"));
 					}
 					if (sort !== undefined) {
-						localVarQueryParameters['sort'] = ObjectSerializer.serialize(sort, "string");
+						localVarQueryParameters['sort'] = JSON.stringify(ObjectSerializer.serialize(sort, "string"));
 					}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: PageCTRemote; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "PageCTRemote"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param id 
-				 * @param CTRemote 
+				 * @param id
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async patchCTRemote(
+		public async patchCTRemoteWithContentType(
 					id: number,
-					CTRemote?: CTRemote,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											cTRemote?: CTRemote
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											cTRemote?: CTRemote
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: CTRemote;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/change-tracking-rest/v1.0/ct-remotes/{id}'
-						.replace(
-							'{' + 'id' + '}',
-							encodeURIComponent(String(id))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/change-tracking-rest/v1.0/ct-remotes/{id}'
+						.replace('{id}',encodeURIComponent(id))
+				;
 
 						if (id === null || id === undefined) {
 							throw new Error('Required parameter id was null or undefined when calling patchCTRemote.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(CTRemote, "CTRemote"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.cTRemote, "CTRemote"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.cTRemote, "CTRemote"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'PATCH',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: CTRemote; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "CTRemote"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param id
+						 * @param cTRemote
+					 */
+					public async patchCTRemote(
+								id: number,
+							cTRemote?: CTRemote,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: CTRemote;
+						response: Response;
+					}> {
+						return this.patchCTRemoteWithContentType(
+									id,
+							{
+								type: 'application/json',
+								parameters: {
+										cTRemote: cTRemote
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param CTRemote 
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async postCTRemote(
-					CTRemote?: CTRemote,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+		public async postCTRemoteWithContentType(
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											cTRemote?: CTRemote
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											cTRemote?: CTRemote
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: CTRemote;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/change-tracking-rest/v1.0/ct-remotes'
-				;
+			const localVarPath = this._basePath + '/change-tracking-rest/v1.0/ct-remotes'
+;
+
 			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(CTRemote, "CTRemote"),
-				headers: localVarHeaderParams,
-				json: true,
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.cTRemote, "CTRemote"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.cTRemote, "CTRemote"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'POST',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: CTRemote; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "CTRemote"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+						 * @param cTRemote
+					 */
+					public async postCTRemote(
+							cTRemote?: CTRemote,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: CTRemote;
+						response: Response;
+					}> {
+						return this.postCTRemoteWithContentType(
+							{
+								type: 'application/json',
+								parameters: {
+										cTRemote: cTRemote
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param id 
-				 * @param CTRemote 
+				 * @param id
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async putCTRemote(
+		public async putCTRemoteWithContentType(
 					id: number,
-					CTRemote?: CTRemote,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											cTRemote?: CTRemote
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											cTRemote?: CTRemote
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: CTRemote;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/change-tracking-rest/v1.0/ct-remotes/{id}'
-						.replace(
-							'{' + 'id' + '}',
-							encodeURIComponent(String(id))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/change-tracking-rest/v1.0/ct-remotes/{id}'
+						.replace('{id}',encodeURIComponent(id))
+				;
 
 						if (id === null || id === undefined) {
 							throw new Error('Required parameter id was null or undefined when calling putCTRemote.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(CTRemote, "CTRemote"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.cTRemote, "CTRemote"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.cTRemote, "CTRemote"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'PUT',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: CTRemote; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "CTRemote"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param id
+						 * @param cTRemote
+					 */
+					public async putCTRemote(
+								id: number,
+							cTRemote?: CTRemote,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: CTRemote;
+						response: Response;
+					}> {
+						return this.putCTRemoteWithContentType(
+									id,
+							{
+								type: 'application/json',
+								parameters: {
+										cTRemote: cTRemote
+								}
+							},
+							headers
+						);
+					}
 }

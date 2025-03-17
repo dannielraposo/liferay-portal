@@ -3,692 +3,593 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import http from 'http';
+import {ObjectSerializer} from '../model/models';
 
-import localVarRequest from 'request';
-/* tslint:disable:no-unused-locals */
-import {
-	Authentication,
-	Interceptor,
-	ObjectSerializer,
-	VoidAuth,
-} from '../model/models';
 		import {PageTestEntity} from '../model/pageTestEntity';
 		import {TestEntity} from '../model/testEntity';
 
 import {HttpError} from './apis';
-const defaultBasePath = 'http://localhost';
 
 /**
  * @author Alejandro Tardín
  * @generated
  */
 
-export enum TestEntityApiApiKeys {}
-
 export class TestEntityApi {
-	protected _basePath = defaultBasePath;
+	protected _basePath: string;
 	protected _defaultHeaders: any = {};
-	protected _useQuerystring: boolean = false;
 
-	protected authentications = {
-		default: <Authentication>new VoidAuth(),
-	};
-
-	protected interceptors: Interceptor[] = [];
-
-	constructor(basePath?: string);
-	constructor(
-		basePathOrUsername: string,
-		password?: string,
-		basePath?: string
-	) {
-		if (password) {
-			if (basePath) {
-				this.basePath = basePath;
-			}
+	constructor(basePath?: string) {
+		if (basePath) {
+			this._basePath = basePath;
 		}
-		else {
-			if (basePathOrUsername) {
-				this.basePath = basePathOrUsername;
-			}
-		}
-	}
-
-	set useQuerystring(value: boolean) {
-		this._useQuerystring = value;
-	}
-
-	set basePath(basePath: string) {
-		this._basePath = basePath;
 	}
 
 	set defaultHeaders(defaultHeaders: any) {
 		this._defaultHeaders = defaultHeaders;
 	}
 
-	get defaultHeaders() {
-		return this._defaultHeaders;
-	}
-
-	get basePath() {
-		return this._basePath;
-	}
-
-	public setDefaultAuthentication(auth: Authentication) {
-		this.authentications.default = auth;
-	}
-
-	public setApiKey(key: TestEntityApiApiKeys, value: string) {
-		(this.authentications as any)[TestEntityApiApiKeys[key]].apiKey =
-			value;
-	}
-
-	public addInterceptor(interceptor: Interceptor) {
-		this.interceptors.push(interceptor);
-	}
-
 		/**
 		 * 
+		 * @param headers Optional custom request headers
 		 */
 		public async getTestEntitiesPage(
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: PageTestEntity;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/test/v1.0/test-entities'
+			const localVarPath = this._basePath + '/test/v1.0/test-entities'
 ;
+
 			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: PageTestEntity; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "PageTestEntity"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param testEntityId 
+				 * @param testEntityId
+		 * @param headers Optional custom request headers
 		 */
 		public async getTestEntity(
 					testEntityId: number,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: TestEntity;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/test/v1.0/test-entities/{testEntityId}'
-						.replace(
-							'{' + 'testEntityId' + '}',
-							encodeURIComponent(String(testEntityId))
-						)
+			const localVarPath = this._basePath + '/test/v1.0/test-entities/{testEntityId}'
+						.replace('{testEntityId}',encodeURIComponent(testEntityId))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (testEntityId === null || testEntityId === undefined) {
 							throw new Error('Required parameter testEntityId was null or undefined when calling getTestEntity.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: TestEntity; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "TestEntity"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * Retrieves the count.
+		 * @param headers Optional custom request headers
 		 */
 		public async getTestEntityCount(
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: number;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/test/v1.0/test-entities/count'
+			const localVarPath = this._basePath + '/test/v1.0/test-entities/count'
 ;
+
 			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['text/plain'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: number; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'text/plain'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "number"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param testEntityId 
-				 * @param optionalParameter 
-				 * @param TestEntity 
+				 * @param testEntityId
+				 * @param optionalParameter
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async patchTestEntity(
+		public async patchTestEntityWithContentType(
 					testEntityId: number,
 					optionalParameter?: number,
-					TestEntity?: TestEntity,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											testEntity?: TestEntity
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											testEntity?: TestEntity
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: TestEntity;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/test/v1.0/test-entities/{testEntityId}'
-						.replace(
-							'{' + 'testEntityId' + '}',
-							encodeURIComponent(String(testEntityId))
-						)
-												;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/test/v1.0/test-entities/{testEntityId}'
+						.replace('{testEntityId}',encodeURIComponent(testEntityId))
+								;
 
 						if (testEntityId === null || testEntityId === undefined) {
 							throw new Error('Required parameter testEntityId was null or undefined when calling patchTestEntity.');
 						}
+
+			const localVarQueryParameters: any = {};
+
 					if (optionalParameter !== undefined) {
-						localVarQueryParameters['optionalParameter'] = ObjectSerializer.serialize(optionalParameter, "number");
+						localVarQueryParameters['optionalParameter'] = JSON.stringify(ObjectSerializer.serialize(optionalParameter, "number"));
 					}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(TestEntity, "TestEntity"),
-				headers: localVarHeaderParams,
-				json: true,
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.testEntity, "TestEntity"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.testEntity, "TestEntity"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'PATCH',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: TestEntity; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "TestEntity"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param testEntityId
+							 * @param optionalParameter
+						 * @param testEntity
+					 */
+					public async patchTestEntity(
+								testEntityId: number,
+								optionalParameter?: number,
+							testEntity?: TestEntity,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: TestEntity;
+						response: Response;
+					}> {
+						return this.patchTestEntityWithContentType(
+									testEntityId,
+									optionalParameter,
+							{
+								type: 'application/json',
+								parameters: {
+										testEntity: testEntity
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param body 
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async postReservedWord(
-					body?: boolean,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+		public async postReservedWordWithContentType(
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											body?: boolean
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											body?: boolean
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body?: any;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/test/v1.0/reserved-word'
-				;
+			const localVarPath = this._basePath + '/test/v1.0/reserved-word'
+;
+
 			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-			const localVarFormParams: any = {};
 
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(body, "boolean"),
-				headers: localVarHeaderParams,
-				json: true,
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.body, "boolean"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.body, "boolean"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'POST',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body?: any; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
-						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+				headers:
+					Object.assign({}, this._defaultHeaders
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: await response.json(), response};
+					} else {
+						return {body: await response.text(), response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+						 * @param body
+					 */
+					public async postReservedWord(
+							body?: boolean,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body?: any;
+						response: Response;
+					}> {
+						return this.postReservedWordWithContentType(
+							{
+								type: 'application/json',
+								parameters: {
+										body: body
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param TestEntity 
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async postTestEntity(
-					TestEntity?: TestEntity,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+		public async postTestEntityWithContentType(
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											testEntity?: TestEntity
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											testEntity?: TestEntity
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: TestEntity;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/test/v1.0/test-entities'
-				;
+			const localVarPath = this._basePath + '/test/v1.0/test-entities'
+;
+
 			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(TestEntity, "TestEntity"),
-				headers: localVarHeaderParams,
-				json: true,
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.testEntity, "TestEntity"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.testEntity, "TestEntity"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'POST',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: TestEntity; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "TestEntity"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+						 * @param testEntity
+					 */
+					public async postTestEntity(
+							testEntity?: TestEntity,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: TestEntity;
+						response: Response;
+					}> {
+						return this.postTestEntityWithContentType(
+							{
+								type: 'application/json',
+								parameters: {
+										testEntity: testEntity
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param testEntityId 
-				 * @param optionalParameter 
-				 * @param TestEntity 
+				 * @param testEntityId
+				 * @param optionalParameter
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async putTestEntity(
+		public async putTestEntityWithContentType(
 					testEntityId: number,
 					optionalParameter?: number,
-					TestEntity?: TestEntity,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											testEntity?: TestEntity
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											testEntity?: TestEntity
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: TestEntity;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/test/v1.0/test-entities/{testEntityId}'
-						.replace(
-							'{' + 'testEntityId' + '}',
-							encodeURIComponent(String(testEntityId))
-						)
-												;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/test/v1.0/test-entities/{testEntityId}'
+						.replace('{testEntityId}',encodeURIComponent(testEntityId))
+								;
 
 						if (testEntityId === null || testEntityId === undefined) {
 							throw new Error('Required parameter testEntityId was null or undefined when calling putTestEntity.');
 						}
+
+			const localVarQueryParameters: any = {};
+
 					if (optionalParameter !== undefined) {
-						localVarQueryParameters['optionalParameter'] = ObjectSerializer.serialize(optionalParameter, "number");
+						localVarQueryParameters['optionalParameter'] = JSON.stringify(ObjectSerializer.serialize(optionalParameter, "number"));
 					}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(TestEntity, "TestEntity"),
-				headers: localVarHeaderParams,
-				json: true,
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.testEntity, "TestEntity"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.testEntity, "TestEntity"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'PUT',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: TestEntity; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "TestEntity"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param testEntityId
+							 * @param optionalParameter
+						 * @param testEntity
+					 */
+					public async putTestEntity(
+								testEntityId: number,
+								optionalParameter?: number,
+							testEntity?: TestEntity,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: TestEntity;
+						response: Response;
+					}> {
+						return this.putTestEntityWithContentType(
+									testEntityId,
+									optionalParameter,
+							{
+								type: 'application/json',
+								parameters: {
+										testEntity: testEntity
+								}
+							},
+							headers
+						);
+					}
 }

@@ -3,812 +3,670 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import http from 'http';
+import {ObjectSerializer} from '../model/models';
 
-import localVarRequest from 'request';
-/* tslint:disable:no-unused-locals */
-import {
-	Authentication,
-	Interceptor,
-	ObjectSerializer,
-	VoidAuth,
-} from '../model/models';
 		import {ObjectFolder} from '../model/objectFolder';
 		import {PageObjectFolder} from '../model/pageObjectFolder';
 
 import {HttpError} from './apis';
-const defaultBasePath = 'http://localhost';
 
 /**
  * @author Javier Gamarra
  * @generated
  */
 
-export enum ObjectFolderApiApiKeys {}
-
 export class ObjectFolderApi {
-	protected _basePath = defaultBasePath;
+	protected _basePath: string;
 	protected _defaultHeaders: any = {};
-	protected _useQuerystring: boolean = false;
 
-	protected authentications = {
-		default: <Authentication>new VoidAuth(),
-	};
-
-	protected interceptors: Interceptor[] = [];
-
-	constructor(basePath?: string);
-	constructor(
-		basePathOrUsername: string,
-		password?: string,
-		basePath?: string
-	) {
-		if (password) {
-			if (basePath) {
-				this.basePath = basePath;
-			}
+	constructor(basePath?: string) {
+		if (basePath) {
+			this._basePath = basePath;
 		}
-		else {
-			if (basePathOrUsername) {
-				this.basePath = basePathOrUsername;
-			}
-		}
-	}
-
-	set useQuerystring(value: boolean) {
-		this._useQuerystring = value;
-	}
-
-	set basePath(basePath: string) {
-		this._basePath = basePath;
 	}
 
 	set defaultHeaders(defaultHeaders: any) {
 		this._defaultHeaders = defaultHeaders;
 	}
 
-	get defaultHeaders() {
-		return this._defaultHeaders;
-	}
-
-	get basePath() {
-		return this._basePath;
-	}
-
-	public setDefaultAuthentication(auth: Authentication) {
-		this.authentications.default = auth;
-	}
-
-	public setApiKey(key: ObjectFolderApiApiKeys, value: string) {
-		(this.authentications as any)[ObjectFolderApiApiKeys[key]].apiKey =
-			value;
-	}
-
-	public addInterceptor(interceptor: Interceptor) {
-		this.interceptors.push(interceptor);
-	}
-
 		/**
 		 * 
-				 * @param objectFolderId 
+				 * @param objectFolderId
+		 * @param headers Optional custom request headers
 		 */
 		public async deleteObjectFolder(
 					objectFolderId: number,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body?: any;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-folders/{objectFolderId}'
-						.replace(
-							'{' + 'objectFolderId' + '}',
-							encodeURIComponent(String(objectFolderId))
-						)
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-folders/{objectFolderId}'
+						.replace('{objectFolderId}',encodeURIComponent(objectFolderId))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (objectFolderId === null || objectFolderId === undefined) {
 							throw new Error('Required parameter objectFolderId was null or undefined when calling deleteObjectFolder.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'DELETE',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body?: any; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: await response.json(), response};
+					} else {
+						return {body: await response.text(), response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param objectFolderId 
+				 * @param objectFolderId
+		 * @param headers Optional custom request headers
 		 */
 		public async getObjectFolder(
 					objectFolderId: number,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectFolder;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-folders/{objectFolderId}'
-						.replace(
-							'{' + 'objectFolderId' + '}',
-							encodeURIComponent(String(objectFolderId))
-						)
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-folders/{objectFolderId}'
+						.replace('{objectFolderId}',encodeURIComponent(objectFolderId))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (objectFolderId === null || objectFolderId === undefined) {
 							throw new Error('Required parameter objectFolderId was null or undefined when calling getObjectFolder.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectFolder; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectFolder"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param externalReferenceCode 
+				 * @param externalReferenceCode
+		 * @param headers Optional custom request headers
 		 */
 		public async getObjectFolderByExternalReferenceCode(
 					externalReferenceCode: string,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectFolder;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-folders/by-external-reference-code/{externalReferenceCode}'
-						.replace(
-							'{' + 'externalReferenceCode' + '}',
-							encodeURIComponent(String(externalReferenceCode))
-						)
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-folders/by-external-reference-code/{externalReferenceCode}'
+						.replace('{externalReferenceCode}',encodeURIComponent(externalReferenceCode))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (externalReferenceCode === null || externalReferenceCode === undefined) {
 							throw new Error('Required parameter externalReferenceCode was null or undefined when calling getObjectFolderByExternalReferenceCode.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectFolder; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectFolder"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param page 
-				 * @param pageSize 
-				 * @param search 
-				 * @param Accept_Language 
+				 * @param page
+				 * @param pageSize
+				 * @param search
+				 * @param Accept_Language
+		 * @param headers Optional custom request headers
 		 */
 		public async getObjectFoldersPage(
 					page?: number,
 					pageSize?: number,
 					search?: string,
 					Accept_Language?: string,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: PageObjectFolder;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-folders'
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-folders'
 																;
+
 			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 					if (page !== undefined) {
-						localVarQueryParameters['page'] = ObjectSerializer.serialize(page, "number");
+						localVarQueryParameters['page'] = JSON.stringify(ObjectSerializer.serialize(page, "number"));
 					}
 					if (pageSize !== undefined) {
-						localVarQueryParameters['pageSize'] = ObjectSerializer.serialize(pageSize, "number");
+						localVarQueryParameters['pageSize'] = JSON.stringify(ObjectSerializer.serialize(pageSize, "number"));
 					}
 					if (search !== undefined) {
-						localVarQueryParameters['search'] = ObjectSerializer.serialize(search, "string");
+						localVarQueryParameters['search'] = JSON.stringify(ObjectSerializer.serialize(search, "string"));
 					}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: PageObjectFolder; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "PageObjectFolder"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param objectFolderId 
-				 * @param ObjectFolder 
+				 * @param objectFolderId
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async patchObjectFolder(
+		public async patchObjectFolderWithContentType(
 					objectFolderId: number,
-					ObjectFolder?: ObjectFolder,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectFolder?: ObjectFolder
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectFolder?: ObjectFolder
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectFolder;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-folders/{objectFolderId}'
-						.replace(
-							'{' + 'objectFolderId' + '}',
-							encodeURIComponent(String(objectFolderId))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-folders/{objectFolderId}'
+						.replace('{objectFolderId}',encodeURIComponent(objectFolderId))
+				;
 
 						if (objectFolderId === null || objectFolderId === undefined) {
 							throw new Error('Required parameter objectFolderId was null or undefined when calling patchObjectFolder.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectFolder, "ObjectFolder"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectFolder, "ObjectFolder"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectFolder, "ObjectFolder"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'PATCH',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectFolder; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectFolder"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param objectFolderId
+						 * @param objectFolder
+					 */
+					public async patchObjectFolder(
+								objectFolderId: number,
+							objectFolder?: ObjectFolder,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectFolder;
+						response: Response;
+					}> {
+						return this.patchObjectFolderWithContentType(
+									objectFolderId,
+							{
+								type: 'application/json',
+								parameters: {
+										objectFolder: objectFolder
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param ObjectFolder 
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async postObjectFolder(
-					ObjectFolder?: ObjectFolder,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+		public async postObjectFolderWithContentType(
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectFolder?: ObjectFolder
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectFolder?: ObjectFolder
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectFolder;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-folders'
-				;
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-folders'
+;
+
 			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectFolder, "ObjectFolder"),
-				headers: localVarHeaderParams,
-				json: true,
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectFolder, "ObjectFolder"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectFolder, "ObjectFolder"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'POST',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectFolder; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectFolder"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+						 * @param objectFolder
+					 */
+					public async postObjectFolder(
+							objectFolder?: ObjectFolder,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectFolder;
+						response: Response;
+					}> {
+						return this.postObjectFolderWithContentType(
+							{
+								type: 'application/json',
+								parameters: {
+										objectFolder: objectFolder
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param objectFolderId 
-				 * @param ObjectFolder 
+				 * @param objectFolderId
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async putObjectFolder(
+		public async putObjectFolderWithContentType(
 					objectFolderId: number,
-					ObjectFolder?: ObjectFolder,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectFolder?: ObjectFolder
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectFolder?: ObjectFolder
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectFolder;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-folders/{objectFolderId}'
-						.replace(
-							'{' + 'objectFolderId' + '}',
-							encodeURIComponent(String(objectFolderId))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-folders/{objectFolderId}'
+						.replace('{objectFolderId}',encodeURIComponent(objectFolderId))
+				;
 
 						if (objectFolderId === null || objectFolderId === undefined) {
 							throw new Error('Required parameter objectFolderId was null or undefined when calling putObjectFolder.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectFolder, "ObjectFolder"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectFolder, "ObjectFolder"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectFolder, "ObjectFolder"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'PUT',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectFolder; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectFolder"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param objectFolderId
+						 * @param objectFolder
+					 */
+					public async putObjectFolder(
+								objectFolderId: number,
+							objectFolder?: ObjectFolder,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectFolder;
+						response: Response;
+					}> {
+						return this.putObjectFolderWithContentType(
+									objectFolderId,
+							{
+								type: 'application/json',
+								parameters: {
+										objectFolder: objectFolder
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param externalReferenceCode 
-				 * @param ObjectFolder 
+				 * @param externalReferenceCode
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async putObjectFolderByExternalReferenceCode(
+		public async putObjectFolderByExternalReferenceCodeWithContentType(
 					externalReferenceCode: string,
-					ObjectFolder?: ObjectFolder,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectFolder?: ObjectFolder
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectFolder?: ObjectFolder
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectFolder;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-folders/by-external-reference-code/{externalReferenceCode}'
-						.replace(
-							'{' + 'externalReferenceCode' + '}',
-							encodeURIComponent(String(externalReferenceCode))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-folders/by-external-reference-code/{externalReferenceCode}'
+						.replace('{externalReferenceCode}',encodeURIComponent(externalReferenceCode))
+				;
 
 						if (externalReferenceCode === null || externalReferenceCode === undefined) {
 							throw new Error('Required parameter externalReferenceCode was null or undefined when calling putObjectFolderByExternalReferenceCode.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectFolder, "ObjectFolder"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectFolder, "ObjectFolder"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectFolder, "ObjectFolder"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'PUT',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectFolder; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectFolder"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param externalReferenceCode
+						 * @param objectFolder
+					 */
+					public async putObjectFolderByExternalReferenceCode(
+								externalReferenceCode: string,
+							objectFolder?: ObjectFolder,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectFolder;
+						response: Response;
+					}> {
+						return this.putObjectFolderByExternalReferenceCodeWithContentType(
+									externalReferenceCode,
+							{
+								type: 'application/json',
+								parameters: {
+										objectFolder: objectFolder
+								}
+							},
+							headers
+						);
+					}
 }

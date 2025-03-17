@@ -3,188 +3,97 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import http from 'http';
+import {ObjectSerializer} from '../model/models';
 
-import localVarRequest from 'request';
-/* tslint:disable:no-unused-locals */
-import {
-	Authentication,
-	Interceptor,
-	ObjectSerializer,
-	VoidAuth,
-} from '../model/models';
 		import {ObjectRelationship} from '../model/objectRelationship';
 		import {PageObjectRelationship} from '../model/pageObjectRelationship';
 
 import {HttpError} from './apis';
-const defaultBasePath = 'http://localhost';
 
 /**
  * @author Javier Gamarra
  * @generated
  */
 
-export enum ObjectRelationshipApiApiKeys {}
-
 export class ObjectRelationshipApi {
-	protected _basePath = defaultBasePath;
+	protected _basePath: string;
 	protected _defaultHeaders: any = {};
-	protected _useQuerystring: boolean = false;
 
-	protected authentications = {
-		default: <Authentication>new VoidAuth(),
-	};
-
-	protected interceptors: Interceptor[] = [];
-
-	constructor(basePath?: string);
-	constructor(
-		basePathOrUsername: string,
-		password?: string,
-		basePath?: string
-	) {
-		if (password) {
-			if (basePath) {
-				this.basePath = basePath;
-			}
+	constructor(basePath?: string) {
+		if (basePath) {
+			this._basePath = basePath;
 		}
-		else {
-			if (basePathOrUsername) {
-				this.basePath = basePathOrUsername;
-			}
-		}
-	}
-
-	set useQuerystring(value: boolean) {
-		this._useQuerystring = value;
-	}
-
-	set basePath(basePath: string) {
-		this._basePath = basePath;
 	}
 
 	set defaultHeaders(defaultHeaders: any) {
 		this._defaultHeaders = defaultHeaders;
 	}
 
-	get defaultHeaders() {
-		return this._defaultHeaders;
-	}
-
-	get basePath() {
-		return this._basePath;
-	}
-
-	public setDefaultAuthentication(auth: Authentication) {
-		this.authentications.default = auth;
-	}
-
-	public setApiKey(key: ObjectRelationshipApiApiKeys, value: string) {
-		(this.authentications as any)[ObjectRelationshipApiApiKeys[key]].apiKey =
-			value;
-	}
-
-	public addInterceptor(interceptor: Interceptor) {
-		this.interceptors.push(interceptor);
-	}
-
 		/**
 		 * 
-				 * @param objectRelationshipId 
+				 * @param objectRelationshipId
+		 * @param headers Optional custom request headers
 		 */
 		public async deleteObjectRelationship(
 					objectRelationshipId: number,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body?: any;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-relationships/{objectRelationshipId}'
-						.replace(
-							'{' + 'objectRelationshipId' + '}',
-							encodeURIComponent(String(objectRelationshipId))
-						)
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-relationships/{objectRelationshipId}'
+						.replace('{objectRelationshipId}',encodeURIComponent(objectRelationshipId))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (objectRelationshipId === null || objectRelationshipId === undefined) {
 							throw new Error('Required parameter objectRelationshipId was null or undefined when calling deleteObjectRelationship.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'DELETE',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body?: any; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: await response.json(), response};
+					} else {
+						return {body: await response.text(), response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param externalReferenceCode 
-				 * @param filter 
-				 * @param page 
-				 * @param pageSize 
-				 * @param search 
-				 * @param sort 
+				 * @param externalReferenceCode
+				 * @param filter
+				 * @param page
+				 * @param pageSize
+				 * @param search
+				 * @param sort
+		 * @param headers Optional custom request headers
 		 */
 		public async getObjectDefinitionByExternalReferenceCodeObjectRelationshipsPage(
 					externalReferenceCode: string,
@@ -193,112 +102,79 @@ export class ObjectRelationshipApi {
 					pageSize?: number,
 					search?: string,
 					sort?: string,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: PageObjectRelationship;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-definitions/by-external-reference-code/{externalReferenceCode}/object-relationships'
-						.replace(
-							'{' + 'externalReferenceCode' + '}',
-							encodeURIComponent(String(externalReferenceCode))
-						)
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-definitions/by-external-reference-code/{externalReferenceCode}/object-relationships'
+						.replace('{externalReferenceCode}',encodeURIComponent(externalReferenceCode))
 																								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (externalReferenceCode === null || externalReferenceCode === undefined) {
 							throw new Error('Required parameter externalReferenceCode was null or undefined when calling getObjectDefinitionByExternalReferenceCodeObjectRelationshipsPage.');
 						}
+
+			const localVarQueryParameters: any = {};
+
 					if (filter !== undefined) {
-						localVarQueryParameters['filter'] = ObjectSerializer.serialize(filter, "string");
+						localVarQueryParameters['filter'] = JSON.stringify(ObjectSerializer.serialize(filter, "string"));
 					}
 					if (page !== undefined) {
-						localVarQueryParameters['page'] = ObjectSerializer.serialize(page, "number");
+						localVarQueryParameters['page'] = JSON.stringify(ObjectSerializer.serialize(page, "number"));
 					}
 					if (pageSize !== undefined) {
-						localVarQueryParameters['pageSize'] = ObjectSerializer.serialize(pageSize, "number");
+						localVarQueryParameters['pageSize'] = JSON.stringify(ObjectSerializer.serialize(pageSize, "number"));
 					}
 					if (search !== undefined) {
-						localVarQueryParameters['search'] = ObjectSerializer.serialize(search, "string");
+						localVarQueryParameters['search'] = JSON.stringify(ObjectSerializer.serialize(search, "string"));
 					}
 					if (sort !== undefined) {
-						localVarQueryParameters['sort'] = ObjectSerializer.serialize(sort, "string");
+						localVarQueryParameters['sort'] = JSON.stringify(ObjectSerializer.serialize(sort, "string"));
 					}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: PageObjectRelationship; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "PageObjectRelationship"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param objectDefinitionId 
-				 * @param filter 
-				 * @param page 
-				 * @param pageSize 
-				 * @param search 
-				 * @param sort 
+				 * @param objectDefinitionId
+				 * @param filter
+				 * @param page
+				 * @param pageSize
+				 * @param search
+				 * @param sort
+		 * @param headers Optional custom request headers
 		 */
 		public async getObjectDefinitionObjectRelationshipsPage(
 					objectDefinitionId: number,
@@ -307,559 +183,540 @@ export class ObjectRelationshipApi {
 					pageSize?: number,
 					search?: string,
 					sort?: string,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: PageObjectRelationship;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-definitions/{objectDefinitionId}/object-relationships'
-						.replace(
-							'{' + 'objectDefinitionId' + '}',
-							encodeURIComponent(String(objectDefinitionId))
-						)
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-definitions/{objectDefinitionId}/object-relationships'
+						.replace('{objectDefinitionId}',encodeURIComponent(objectDefinitionId))
 																								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (objectDefinitionId === null || objectDefinitionId === undefined) {
 							throw new Error('Required parameter objectDefinitionId was null or undefined when calling getObjectDefinitionObjectRelationshipsPage.');
 						}
+
+			const localVarQueryParameters: any = {};
+
 					if (filter !== undefined) {
-						localVarQueryParameters['filter'] = ObjectSerializer.serialize(filter, "string");
+						localVarQueryParameters['filter'] = JSON.stringify(ObjectSerializer.serialize(filter, "string"));
 					}
 					if (page !== undefined) {
-						localVarQueryParameters['page'] = ObjectSerializer.serialize(page, "number");
+						localVarQueryParameters['page'] = JSON.stringify(ObjectSerializer.serialize(page, "number"));
 					}
 					if (pageSize !== undefined) {
-						localVarQueryParameters['pageSize'] = ObjectSerializer.serialize(pageSize, "number");
+						localVarQueryParameters['pageSize'] = JSON.stringify(ObjectSerializer.serialize(pageSize, "number"));
 					}
 					if (search !== undefined) {
-						localVarQueryParameters['search'] = ObjectSerializer.serialize(search, "string");
+						localVarQueryParameters['search'] = JSON.stringify(ObjectSerializer.serialize(search, "string"));
 					}
 					if (sort !== undefined) {
-						localVarQueryParameters['sort'] = ObjectSerializer.serialize(sort, "string");
+						localVarQueryParameters['sort'] = JSON.stringify(ObjectSerializer.serialize(sort, "string"));
 					}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: PageObjectRelationship; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "PageObjectRelationship"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param objectRelationshipId 
+				 * @param objectRelationshipId
+		 * @param headers Optional custom request headers
 		 */
 		public async getObjectRelationship(
 					objectRelationshipId: number,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectRelationship;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-relationships/{objectRelationshipId}'
-						.replace(
-							'{' + 'objectRelationshipId' + '}',
-							encodeURIComponent(String(objectRelationshipId))
-						)
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-relationships/{objectRelationshipId}'
+						.replace('{objectRelationshipId}',encodeURIComponent(objectRelationshipId))
 				;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
 
 						if (objectRelationshipId === null || objectRelationshipId === undefined) {
 							throw new Error('Required parameter objectRelationshipId was null or undefined when calling getObjectRelationship.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'GET',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectRelationship; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectRelationship"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
 		/**
 		 * 
-				 * @param externalReferenceCode 
-				 * @param ObjectRelationship 
+				 * @param externalReferenceCode
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async postObjectDefinitionByExternalReferenceCodeObjectRelationship(
+		public async postObjectDefinitionByExternalReferenceCodeObjectRelationshipWithContentType(
 					externalReferenceCode: string,
-					ObjectRelationship?: ObjectRelationship,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectRelationship?: ObjectRelationship
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectRelationship?: ObjectRelationship
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectRelationship;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-definitions/by-external-reference-code/{externalReferenceCode}/object-relationships'
-						.replace(
-							'{' + 'externalReferenceCode' + '}',
-							encodeURIComponent(String(externalReferenceCode))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-definitions/by-external-reference-code/{externalReferenceCode}/object-relationships'
+						.replace('{externalReferenceCode}',encodeURIComponent(externalReferenceCode))
+				;
 
 						if (externalReferenceCode === null || externalReferenceCode === undefined) {
 							throw new Error('Required parameter externalReferenceCode was null or undefined when calling postObjectDefinitionByExternalReferenceCodeObjectRelationship.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectRelationship, "ObjectRelationship"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectRelationship, "ObjectRelationship"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectRelationship, "ObjectRelationship"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'POST',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectRelationship; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectRelationship"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param externalReferenceCode
+						 * @param objectRelationship
+					 */
+					public async postObjectDefinitionByExternalReferenceCodeObjectRelationship(
+								externalReferenceCode: string,
+							objectRelationship?: ObjectRelationship,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectRelationship;
+						response: Response;
+					}> {
+						return this.postObjectDefinitionByExternalReferenceCodeObjectRelationshipWithContentType(
+									externalReferenceCode,
+							{
+								type: 'application/json',
+								parameters: {
+										objectRelationship: objectRelationship
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param objectDefinitionId 
-				 * @param ObjectRelationship 
+				 * @param objectDefinitionId
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async postObjectDefinitionObjectRelationship(
+		public async postObjectDefinitionObjectRelationshipWithContentType(
 					objectDefinitionId: number,
-					ObjectRelationship?: ObjectRelationship,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectRelationship?: ObjectRelationship
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectRelationship?: ObjectRelationship
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectRelationship;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-definitions/{objectDefinitionId}/object-relationships'
-						.replace(
-							'{' + 'objectDefinitionId' + '}',
-							encodeURIComponent(String(objectDefinitionId))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-definitions/{objectDefinitionId}/object-relationships'
+						.replace('{objectDefinitionId}',encodeURIComponent(objectDefinitionId))
+				;
 
 						if (objectDefinitionId === null || objectDefinitionId === undefined) {
 							throw new Error('Required parameter objectDefinitionId was null or undefined when calling postObjectDefinitionObjectRelationship.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectRelationship, "ObjectRelationship"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectRelationship, "ObjectRelationship"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectRelationship, "ObjectRelationship"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'POST',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectRelationship; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectRelationship"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param objectDefinitionId
+						 * @param objectRelationship
+					 */
+					public async postObjectDefinitionObjectRelationship(
+								objectDefinitionId: number,
+							objectRelationship?: ObjectRelationship,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectRelationship;
+						response: Response;
+					}> {
+						return this.postObjectDefinitionObjectRelationshipWithContentType(
+									objectDefinitionId,
+							{
+								type: 'application/json',
+								parameters: {
+										objectRelationship: objectRelationship
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param objectRelationshipId 
-				 * @param ObjectRelationship 
+				 * @param objectRelationshipId
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async putObjectRelationship(
+		public async putObjectRelationshipWithContentType(
 					objectRelationshipId: number,
-					ObjectRelationship?: ObjectRelationship,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectRelationship?: ObjectRelationship
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectRelationship?: ObjectRelationship
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectRelationship;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-relationships/{objectRelationshipId}'
-						.replace(
-							'{' + 'objectRelationshipId' + '}',
-							encodeURIComponent(String(objectRelationshipId))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-relationships/{objectRelationshipId}'
+						.replace('{objectRelationshipId}',encodeURIComponent(objectRelationshipId))
+				;
 
 						if (objectRelationshipId === null || objectRelationshipId === undefined) {
 							throw new Error('Required parameter objectRelationshipId was null or undefined when calling putObjectRelationship.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectRelationship, "ObjectRelationship"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectRelationship, "ObjectRelationship"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectRelationship, "ObjectRelationship"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'PUT',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectRelationship; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectRelationship"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param objectRelationshipId
+						 * @param objectRelationship
+					 */
+					public async putObjectRelationship(
+								objectRelationshipId: number,
+							objectRelationship?: ObjectRelationship,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectRelationship;
+						response: Response;
+					}> {
+						return this.putObjectRelationshipWithContentType(
+									objectRelationshipId,
+							{
+								type: 'application/json',
+								parameters: {
+										objectRelationship: objectRelationship
+								}
+							},
+							headers
+						);
+					}
 		/**
 		 * 
-				 * @param externalReferenceCode 
-				 * @param ObjectRelationship 
+				 * @param externalReferenceCode
+		 		* @param requestBody Request body that can be one of multiple content types
+		 * @param headers Optional custom request headers
 		 */
-		public async putObjectRelationshipByExternalReferenceCode(
+		public async putObjectRelationshipByExternalReferenceCodeWithContentType(
 					externalReferenceCode: string,
-					ObjectRelationship?: ObjectRelationship,
-			options: {
-				headers: {[name: string]: string};
-			} = {headers: {}}
+				requestBody:
+						{
+									type: 'application/xml',
+									parameters: {
+											objectRelationship?: ObjectRelationship
+									}
+						}
+							|
+						{
+									type: 'application/json',
+									parameters: {
+											objectRelationship?: ObjectRelationship
+									}
+						}
+							,
+			headers?: {[name: string]: string}
 		): Promise<{
 				body: ObjectRelationship;
-			response: http.IncomingMessage;
+			response: Response;
 		}> {
-			const localVarPath = this.basePath + '/object-admin/v1.0/object-relationships/by-external-reference-code/{externalReferenceCode}'
-						.replace(
-							'{' + 'externalReferenceCode' + '}',
-							encodeURIComponent(String(externalReferenceCode))
-						)
-								;
-			const localVarQueryParameters: any = {};
-			const localVarHeaderParams: any = (<any>Object).assign({}, this._defaultHeaders);
-				const responseContentTypes = ['application/json', 'application/xml'];
-				if (responseContentTypes.indexOf('application/json') >= 0) {
-					localVarHeaderParams.Accept = 'application/json';
-				} else {
-					localVarHeaderParams.Accept = responseContentTypes.join(',');
-				}
-			const localVarFormParams: any = {};
+			const localVarPath = this._basePath + '/object-admin/v1.0/object-relationships/by-external-reference-code/{externalReferenceCode}'
+						.replace('{externalReferenceCode}',encodeURIComponent(externalReferenceCode))
+				;
 
 						if (externalReferenceCode === null || externalReferenceCode === undefined) {
 							throw new Error('Required parameter externalReferenceCode was null or undefined when calling putObjectRelationshipByExternalReferenceCode.');
 						}
-			(<any>Object).assign(localVarHeaderParams, options.headers);
 
-			const localVarUseFormData = false;
+			const localVarQueryParameters: any = {};
 
-			const localVarRequestOptions: localVarRequest.Options = {
-						body: ObjectSerializer.serialize(ObjectRelationship, "ObjectRelationship"),
-				headers: localVarHeaderParams,
-				json: true,
+
+			const queryString = Object.keys(localVarQueryParameters).length
+				? '?' + new URLSearchParams(localVarQueryParameters).toString()
+				: '';
+
+				let body;
+						if (requestBody.type === 'application/xml') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectRelationship, "ObjectRelationship"));
+						}
+						if (requestBody.type === 'application/json') {
+								body = JSON.stringify(ObjectSerializer.serialize(requestBody.parameters.objectRelationship, "ObjectRelationship"));
+						}
+
+			const response = await fetch(localVarPath + queryString, {
 				method: 'PUT',
-				qs: localVarQueryParameters,
-				uri: localVarPath,
-				useQuerystring: this._useQuerystring
-			};
-
-			let authenticationPromise = Promise.resolve();
-			authenticationPromise = authenticationPromise.then(() => this.authentications.default.applyToRequest(localVarRequestOptions));
-
-			let interceptorPromise = authenticationPromise;
-			for (const interceptor of this.interceptors) {
-				interceptorPromise = interceptorPromise.then(() => interceptor(localVarRequestOptions));
-			}
-
-			return interceptorPromise.then(() => {
-				if (Object.keys(localVarFormParams).length) {
-					if (localVarUseFormData) {
-						(<any>localVarRequestOptions).formData = localVarFormParams;
-					} else {
-						localVarRequestOptions.form = localVarFormParams;
-					}
-				}
-				return new Promise<{  body: ObjectRelationship; response: http.IncomingMessage;}>((resolve, reject) => {
-					localVarRequest(localVarRequestOptions, (error, response, body) => {
-						if (error) {
-							reject(error);
+				headers:
+					Object.assign({}, this._defaultHeaders
+						,{
+								Accept: 'application/json'
 						}
-						else {
-							if (
-								response.statusCode &&
-								response.statusCode >= 200 &&
-								response.statusCode <= 299
-							) {
-								resolve({body, response});
-							}
-							else {
-								reject(
-									new HttpError(
-										body,
-										response,
-										response.statusCode
-									)
-								);
-							}
-						}
-					}
-				);
+					,headers || {}
+					)
+					,body: body
 			});
-		});
-	}
+
+			if (response.ok) {
+				const contentType = response.headers.get('content-type') || '';
+
+					if (contentType.includes('application/json')) {
+						return {body: ObjectSerializer.deserialize(await response.json(), "ObjectRelationship"), response};
+					} else {
+						return {body: await response.text() as any, response};
+					}
+			} else {
+				throw new HttpError(
+					await response.text(),
+					response,
+					response.status
+				);
+			}
+		}
+
+					/**
+					 *  - Default method for JSON body
+							 * @param externalReferenceCode
+						 * @param objectRelationship
+					 */
+					public async putObjectRelationshipByExternalReferenceCode(
+								externalReferenceCode: string,
+							objectRelationship?: ObjectRelationship,
+						headers?: {[name: string]: string}
+					): Promise<{
+							body: ObjectRelationship;
+						response: Response;
+					}> {
+						return this.putObjectRelationshipByExternalReferenceCodeWithContentType(
+									externalReferenceCode,
+							{
+								type: 'application/json',
+								parameters: {
+										objectRelationship: objectRelationship
+								}
+							},
+							headers
+						);
+					}
 }

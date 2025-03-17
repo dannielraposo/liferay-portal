@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import * as http from 'http';
-
 	import {CTCollectionApi} from './cTCollectionApi';
 	import {CTEntryApi} from './cTEntryApi';
 	import {CTProcessApi} from './cTProcessApi';
@@ -22,9 +20,9 @@ import * as http from 'http';
 
 export class HttpError extends Error {
 	constructor(
-		public response: http.IncomingMessage,
 		public body: any,
-		public statusCode?: number
+		public response: Response,
+		public statusCode: number
 	) {
 		super('HTTP request failed');
 		this.name = 'HttpError';

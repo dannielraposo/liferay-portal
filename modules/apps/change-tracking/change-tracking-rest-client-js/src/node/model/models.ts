@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import localVarRequest from 'request';
-
 	import {CTCollection} from './cTCollection';
 	import {CTEntry} from './cTEntry';
 	import {CTProcess} from './cTProcess';
@@ -33,14 +31,6 @@ import localVarRequest from 'request';
  * @author David Truong
  * @generated
  */
-
-export interface RequestDetailedFile {
-	options?: {
-		contentType?: string;
-		filename?: string;
-	};
-	value: Buffer;
-}
 
 /* tslint:disable:no-unused-variable */
 const primitives = [
@@ -263,100 +253,3 @@ export class ObjectSerializer {
 		}
 	}
 }
-
-export interface Authentication {
-
-	/**
-	 * Apply authentication settings to header and query params.
-	 */
-	applyToRequest(
-		requestOptions: localVarRequest.Options
-	): Promise<void> | void;
-}
-
-export class HttpBasicAuth implements Authentication {
-	public password: string = '';
-	public username: string = '';
-
-	applyToRequest(requestOptions: localVarRequest.Options): void {
-		requestOptions.auth = {
-			password: this.password,
-			username: this.username,
-		};
-	}
-}
-
-export class HttpBearerAuth implements Authentication {
-	public accessToken: string | (() => string) = '';
-
-	applyToRequest(requestOptions: localVarRequest.Options): void {
-		if (requestOptions && requestOptions.headers) {
-			const accessToken =
-				typeof this.accessToken === 'function'
-					? this.accessToken()
-					: this.accessToken;
-			requestOptions.headers['Authorization'] = 'Bearer ' + accessToken;
-		}
-	}
-}
-
-export class ApiKeyAuth implements Authentication {
-	public apiKey: string = '';
-
-	constructor(
-		private location: string,
-		private paramName: string
-	) {}
-
-	applyToRequest(requestOptions: localVarRequest.Options): void {
-		if (this.location === 'query') {
-			(<any>requestOptions.qs)[this.paramName] = this.apiKey;
-		}
-		else if (
-			this.location === 'header' &&
-			requestOptions &&
-			requestOptions.headers
-		) {
-			requestOptions.headers[this.paramName] = this.apiKey;
-		}
-		else if (
-			this.location === 'cookie' &&
-			requestOptions &&
-			requestOptions.headers
-		) {
-			if (requestOptions.headers['Cookie']) {
-				requestOptions.headers['Cookie'] +=
-					'; ' +
-					this.paramName +
-					'=' +
-					encodeURIComponent(this.apiKey);
-			}
-			else {
-				requestOptions.headers['Cookie'] =
-					this.paramName + '=' + encodeURIComponent(this.apiKey);
-			}
-		}
-	}
-}
-
-export class OAuth implements Authentication {
-	public accessToken: string = '';
-
-	applyToRequest(requestOptions: localVarRequest.Options): void {
-		if (requestOptions && requestOptions.headers) {
-			requestOptions.headers['Authorization'] =
-				'Bearer ' + this.accessToken;
-		}
-	}
-}
-
-export class VoidAuth implements Authentication {
-	public password: string = '';
-	public username: string = '';
-
-	applyToRequest(_: localVarRequest.Options): void {}
-}
-
-export type Interceptor = (
-	requestOptions: localVarRequest.Options
-) => Promise<void> | void;
