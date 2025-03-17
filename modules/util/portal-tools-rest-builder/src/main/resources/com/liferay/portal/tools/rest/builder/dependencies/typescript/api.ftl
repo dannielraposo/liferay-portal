@@ -169,9 +169,13 @@ export class ${className} {
 						}
 					</#if>
 					<#if operationData.bodyParameters?has_content>
-						,(requestBody && requestBody.type !== 'multipart/form-data') ? {
-							'Content-Type': requestBody.type
-						} : {}
+						<#list operationData.bodyParameters?keys as requestBodyContentType>
+							<#if requestBodyContentType == 'multipart/form-data'>
+								,(requestBody && requestBody.type !== 'multipart/form-data') ? {
+									'Content-Type': requestBody.type
+								} : {}
+							</#if>
+						</#list>
 					</#if>
 					,headers || {}
 					)
