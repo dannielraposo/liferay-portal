@@ -9,6 +9,7 @@
 	"description": "",
 	"devDependencies": {
 		"@axe-core/playwright": "^4.9.1",
+		"@liferay/headless-site-client-js": "../../apps/headless/headless-site/headless-site-client-js",
 		"@liferay/object-admin-rest-client-js": "../../apps/object/object-admin-rest-client-js",
 		"@liferay/portal-tools-rest-builder-test-client-js": "../../util/portal-tools-rest-builder-test-client-js",
 		"@playwright/test": "1.45.2",
