@@ -246,6 +246,8 @@ export class TestEntityApi {
 						,{
 								Accept: 'application/json'
 						}
+							,(requestBody.type !== 'multipart/form-data') ?
+								{'Content-Type': requestBody.type} : {}
 					,headers || {}
 					)
 					,body: body
@@ -343,6 +345,8 @@ export class TestEntityApi {
 				method: 'POST',
 				headers:
 					Object.assign({}, this._defaultHeaders
+							,(requestBody.type !== 'multipart/form-data') ?
+								{'Content-Type': requestBody.type} : {}
 					,headers || {}
 					)
 					,body: body
@@ -437,6 +441,8 @@ export class TestEntityApi {
 						,{
 								Accept: 'application/json'
 						}
+							,(requestBody.type !== 'multipart/form-data') ?
+								{'Content-Type': requestBody.type} : {}
 					,headers || {}
 					)
 					,body: body
@@ -543,6 +549,8 @@ export class TestEntityApi {
 						,{
 								Accept: 'application/json'
 						}
+							,(requestBody.type !== 'multipart/form-data') ?
+								{'Content-Type': requestBody.type} : {}
 					,headers || {}
 					)
 					,body: body

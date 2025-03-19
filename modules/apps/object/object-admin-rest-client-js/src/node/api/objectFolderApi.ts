@@ -321,6 +321,8 @@ export class ObjectFolderApi {
 						,{
 								Accept: 'application/json'
 						}
+							,(requestBody.type !== 'multipart/form-data') ?
+								{'Content-Type': requestBody.type} : {}
 					,headers || {}
 					)
 					,body: body
@@ -418,6 +420,8 @@ export class ObjectFolderApi {
 						,{
 								Accept: 'application/json'
 						}
+							,(requestBody.type !== 'multipart/form-data') ?
+								{'Content-Type': requestBody.type} : {}
 					,headers || {}
 					)
 					,body: body
@@ -519,6 +523,8 @@ export class ObjectFolderApi {
 						,{
 								Accept: 'application/json'
 						}
+							,(requestBody.type !== 'multipart/form-data') ?
+								{'Content-Type': requestBody.type} : {}
 					,headers || {}
 					)
 					,body: body
@@ -623,6 +629,8 @@ export class ObjectFolderApi {
 						,{
 								Accept: 'application/json'
 						}
+							,(requestBody.type !== 'multipart/form-data') ?
+								{'Content-Type': requestBody.type} : {}
 					,headers || {}
 					)
 					,body: body
