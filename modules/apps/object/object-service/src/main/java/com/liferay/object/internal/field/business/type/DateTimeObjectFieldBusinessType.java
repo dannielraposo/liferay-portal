@@ -229,10 +229,11 @@ public class DateTimeObjectFieldBusinessType
 			return null;
 		}
 
+		String sourceTimeZoneId = value.endsWith("Z") ? StringPool.UTC :
+			ObjectFieldSettingUtil.getTimeZoneId(objectFieldSettings, user);
+
 		return Timestamp.valueOf(
-			_getLocalDateTime(
-				ObjectFieldSettingUtil.getTimeZoneId(objectFieldSettings, user),
-				StringPool.UTC, value));
+			_getLocalDateTime(sourceTimeZoneId, StringPool.UTC, value));
 	}
 
 	@Reference
