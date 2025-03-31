@@ -30,15 +30,12 @@ import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.vulcan.util.DateTimeUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
 import java.math.BigDecimal;
 
 import java.sql.Timestamp;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 import java.util.Collections;
 import java.util.Date;
@@ -178,42 +175,6 @@ public class ObjectFieldUtil {
 		return StringBundler.concat(
 			"object.field.auto.increment#", objectField.getCompanyId(),
 			StringPool.POUND, objectField.getObjectFieldId());
-	}
-
-	public static String getDateTimePattern(String value) {
-		if (value.length() == 10) {
-			return "yyyy-MM-dd";
-		}
-		else if (value.length() == 16) {
-			return "yyyy-MM-dd HH:mm";
-		}
-		else if (value.length() == 20) {
-			return "yyyy-MM-dd'T'HH:mm:ss'Z'";
-		}
-		else if (value.length() == 21) {
-			return "yyyy-MM-dd HH:mm:ss.S";
-		}
-		else if (value.length() == 23) {
-			if (value.charAt(10) == 'T') {
-				return "yyyy-MM-dd'T'HH:mm:ss.SSS";
-			}
-
-			return "yyyy-MM-dd HH:mm:ss.SSS";
-		}
-		else if ((value.length() == 24) && (value.charAt(10) == 'T')) {
-			return "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-		}
-		else if ((value.length() == 27) && (value.charAt(26) == 'M')) {
-			return "dd-MMM-yyyy hh:mm:ss.SSS a";
-		}
-		else if ((value.length() == 28) && (value.charAt(23) == '+')) {
-			return "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-		}
-		else if (value.length() == 28) {
-			return "EEE MMM dd HH:mm:ss zzz yyyy";
-		}
-
-		return DateUtil.ISO_8601_PATTERN;
 	}
 
 	public static boolean isMetadata(String objectFieldName) {
@@ -447,18 +408,10 @@ public class ObjectFieldUtil {
 
 			Date existingValueDate = new Date(timestamp.getTime());
 
-			DateFormat dateFormat = new SimpleDateFormat(
-				getDateTimePattern((String)value));
+			Date valueDate = DateTimeUtil.toDate((String)value);
 
-			try {
-				Date valueDate = dateFormat.parse((String)value);
-
-				if (DateUtil.equals(existingValueDate, valueDate)) {
-					return;
-				}
-			}
-			catch (ParseException parseException) {
-				throw new RuntimeException(parseException);
+			if (DateUtil.equals(existingValueDate, valueDate)) {
+				return;
 			}
 		}
 		else {

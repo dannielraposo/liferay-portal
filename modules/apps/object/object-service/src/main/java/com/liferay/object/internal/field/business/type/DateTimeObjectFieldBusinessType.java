@@ -10,9 +10,7 @@ import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.constants.ObjectFieldSettingConstants;
 import com.liferay.object.field.business.type.ObjectFieldBusinessType;
 import com.liferay.object.field.setting.util.ObjectFieldSettingUtil;
-import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectField;
-import com.liferay.object.model.ObjectFieldSetting;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
@@ -22,17 +20,14 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.extension.PropertyDefinition;
+import com.liferay.portal.vulcan.util.DateTimeUtil;
 
 import java.sql.Timestamp;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -94,8 +89,7 @@ public class DateTimeObjectFieldBusinessType
 				localizedValues.put(
 					entry.getKey(),
 					dateTimeFormatter.format(
-						_getLocalDateTime(
-							StringPool.UTC,
+						DateTimeUtil.toLocalDateTime(
 							ObjectFieldSettingUtil.getTimeZoneId(
 								objectField.getObjectFieldSettings(), user),
 							GetterUtil.getString(entry.getValue()))));
@@ -111,8 +105,7 @@ public class DateTimeObjectFieldBusinessType
 		}
 
 		return dateTimeFormatter.format(
-			_getLocalDateTime(
-				StringPool.UTC,
+			DateTimeUtil.toLocalDateTime(
 				ObjectFieldSettingUtil.getTimeZoneId(
 					objectField.getObjectFieldSettings(), user),
 				value));
@@ -141,8 +134,9 @@ public class DateTimeObjectFieldBusinessType
 		for (Map.Entry<String, Object> entry : localizedValues.entrySet()) {
 			localizedValues.put(
 				entry.getKey(),
-				_getTimestamp(
-					objectField.getObjectFieldSettings(), user,
+				DateTimeUtil.toTimestamp(
+					ObjectFieldSettingUtil.getTimeZoneId(
+						objectField.getObjectFieldSettings(), user),
 					GetterUtil.getString(entry.getValue())));
 		}
 
@@ -191,43 +185,11 @@ public class DateTimeObjectFieldBusinessType
 			return new Timestamp(date.getTime());
 		}
 
-		return _getTimestamp(
-			objectField.getObjectFieldSettings(),
-			_userLocalService.getUser(userId), String.valueOf(value));
-	}
-
-	private LocalDateTime _getLocalDateTime(
-		String sourceTimeZoneId, String targetTimeZoneId, String value) {
-
-		LocalDateTime localDateTime = LocalDateTime.parse(
-			value,
-			DateTimeFormatter.ofPattern(
-				ObjectFieldUtil.getDateTimePattern(value)));
-
-		if (Validator.isNull(sourceTimeZoneId) ||
-			Validator.isNull(targetTimeZoneId)) {
-
-			return localDateTime;
-		}
-
-		ZonedDateTime zonedDateTime = ZonedDateTime.of(
-			localDateTime, ZoneId.of(sourceTimeZoneId));
-
-		return LocalDateTime.ofInstant(
-			zonedDateTime.toInstant(), ZoneId.of(targetTimeZoneId));
-	}
-
-	private Timestamp _getTimestamp(
-		List<ObjectFieldSetting> objectFieldSettings, User user, String value) {
-
-		if (Validator.isNull(value)) {
-			return null;
-		}
-
-		return Timestamp.valueOf(
-			_getLocalDateTime(
-				ObjectFieldSettingUtil.getTimeZoneId(objectFieldSettings, user),
-				StringPool.UTC, value));
+		return DateTimeUtil.toTimestamp(
+			ObjectFieldSettingUtil.getTimeZoneId(
+				objectField.getObjectFieldSettings(),
+				_userLocalService.getUser(userId)),
+			String.valueOf(value));
 	}
 
 	@Reference
