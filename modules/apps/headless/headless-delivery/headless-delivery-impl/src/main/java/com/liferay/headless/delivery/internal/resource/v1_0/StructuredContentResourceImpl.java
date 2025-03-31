@@ -115,7 +115,7 @@ import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.permission.ModelPermissionsUtil;
 import com.liferay.portal.vulcan.util.ContentLanguageUtil;
-import com.liferay.portal.vulcan.util.LocalDateTimeUtil;
+import com.liferay.portal.vulcan.util.DateTimeUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 import com.liferay.portal.vulcan.util.SearchUtil;
 import com.liferay.ratings.kernel.service.RatingsEntryLocalService;
@@ -512,7 +512,7 @@ public class StructuredContentResourceImpl
 		_validateContentFields(
 			structuredContent.getContentFields(), ddmStructure);
 
-		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
+		LocalDateTime localDateTime = DateTimeUtil.toLocalDateTime(
 			structuredContent.getDatePublished(),
 			journalArticle.getDisplayDate(),
 			ZoneId.of(contextUser.getTimeZoneId()));
@@ -760,7 +760,7 @@ public class StructuredContentResourceImpl
 		DDMStructure ddmStructure = _ddmStructureService.getStructure(
 			structuredContent.getContentStructureId());
 
-		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
+		LocalDateTime localDateTime = DateTimeUtil.toLocalDateTime(
 			structuredContent.getDatePublished(), null,
 			ZoneId.of(contextUser.getTimeZoneId()));
 
@@ -1387,7 +1387,7 @@ public class StructuredContentResourceImpl
 		_validateContentFields(
 			structuredContent.getContentFields(), ddmStructure);
 
-		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
+		LocalDateTime localDateTime = DateTimeUtil.toLocalDateTime(
 			structuredContent.getDatePublished(),
 			journalArticle.getDisplayDate(),
 			ZoneId.of(contextUser.getTimeZoneId()));

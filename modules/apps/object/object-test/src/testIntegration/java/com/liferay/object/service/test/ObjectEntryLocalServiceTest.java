@@ -192,7 +192,7 @@ import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portal.vulcan.util.LocalDateTimeUtil;
+import com.liferay.portal.vulcan.util.DateTimeUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
 import java.io.Closeable;
@@ -3810,20 +3810,20 @@ public class ObjectEntryLocalServiceTest {
 			_objectEntryLocalService.getSystemValues(objectEntry);
 
 		Assert.assertEquals(
-			LocalDateTimeUtil.toLocalDateTime(
+			DateTimeUtil.toLocalDateTime(
 				objectEntry.getCreateDate()
 			).toLocalDate(),
-			LocalDateTimeUtil.toLocalDateTime(
+			DateTimeUtil.toLocalDateTime(
 				(Date)systemValues.get("createDate")
 			).toLocalDate());
 		Assert.assertEquals(
 			objectEntry.getExternalReferenceCode(),
 			systemValues.get("externalReferenceCode"));
 		Assert.assertEquals(
-			LocalDateTimeUtil.toLocalDateTime(
+			DateTimeUtil.toLocalDateTime(
 				objectEntry.getModifiedDate()
 			).toLocalDate(),
-			LocalDateTimeUtil.toLocalDateTime(
+			DateTimeUtil.toLocalDateTime(
 				(Date)systemValues.get("modifiedDate")
 			).toLocalDate());
 		Assert.assertEquals(

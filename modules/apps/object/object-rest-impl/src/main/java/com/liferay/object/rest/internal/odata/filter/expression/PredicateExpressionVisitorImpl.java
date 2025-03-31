@@ -8,7 +8,6 @@ package com.liferay.object.rest.internal.odata.filter.expression;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.field.business.type.ObjectFieldBusinessType;
 import com.liferay.object.field.business.type.ObjectFieldBusinessTypeRegistry;
-import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
@@ -35,7 +34,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
@@ -59,6 +57,7 @@ import com.liferay.portal.odata.filter.expression.MethodExpression;
 import com.liferay.portal.odata.filter.expression.PrimitivePropertyExpression;
 import com.liferay.portal.odata.filter.expression.PropertyExpression;
 import com.liferay.portal.odata.filter.expression.UnaryExpression;
+import com.liferay.portal.vulcan.util.DateTimeUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -230,11 +229,7 @@ public class PredicateExpressionVisitorImpl
 					 LiteralExpression.Type.DATE_TIME,
 					 literalExpression.getType())) {
 
-			return GetterUtil.getDate(
-				literalExpression.getText(),
-				DateFormatFactoryUtil.getSimpleDateFormat(
-					ObjectFieldUtil.getDateTimePattern(
-						literalExpression.getText())));
+			return DateTimeUtil.toDate(literalExpression.getText());
 		}
 		else if (Objects.equals(
 					LiteralExpression.Type.DOUBLE,

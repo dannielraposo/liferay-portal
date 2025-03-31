@@ -20,7 +20,6 @@ import com.liferay.list.type.model.ListTypeEntry;
 import com.liferay.list.type.service.ListTypeEntryLocalService;
 import com.liferay.object.constants.ObjectActionTriggerConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
-import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.info.field.converter.ObjectFieldInfoFieldConverter;
 import com.liferay.object.info.field.type.util.ObjectFieldInfoFieldTypeUtil;
 import com.liferay.object.info.item.ObjectEntryInfoItemFields;
@@ -54,9 +53,7 @@ import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import com.liferay.portal.vulcan.util.DateTimeUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -533,10 +530,7 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 		else if (objectField.compareBusinessType(
 					ObjectFieldConstants.BUSINESS_TYPE_DATE_TIME)) {
 
-			return LocalDateTime.parse(
-				value.toString(),
-				DateTimeFormatter.ofPattern(
-					ObjectFieldUtil.getDateTimePattern(value.toString())));
+			return DateTimeUtil.toLocalDateTime(value.toString());
 		}
 		else if (objectField.compareBusinessType(
 					ObjectFieldConstants.BUSINESS_TYPE_MULTISELECT_PICKLIST)) {
