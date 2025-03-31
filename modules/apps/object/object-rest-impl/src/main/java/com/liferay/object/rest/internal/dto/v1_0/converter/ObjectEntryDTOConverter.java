@@ -545,26 +545,6 @@ public class ObjectEntryDTOConverter
 		}
 	}
 
-	private String _getDateString(
-		ObjectField objectField, Timestamp timestamp) {
-
-		String pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-
-		if (objectField.compareBusinessType(
-				ObjectFieldConstants.BUSINESS_TYPE_DATE) ||
-			StringUtil.equals(
-				ObjectFieldSettingUtil.getValue(
-					ObjectFieldSettingConstants.NAME_TIME_STORAGE, objectField),
-				ObjectFieldSettingConstants.VALUE_CONVERT_TO_UTC)) {
-
-			pattern += "'Z'";
-		}
-
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
-		return simpleDateFormat.format(timestamp);
-	}
-
 	private DTOConverterContext _getDTOConverterContext(
 		DTOConverterContext dtoConverterContext, long objectEntryId) {
 
@@ -900,7 +880,11 @@ public class ObjectEntryDTOConverter
 				return null;
 			}
 
-			return _getDateString(objectField, timestamp);
+			return new SimpleDateFormat(
+				"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+			).format(
+				timestamp
+			);
 		}
 		else if (objectField.compareBusinessType(
 					ObjectFieldConstants.BUSINESS_TYPE_MULTISELECT_PICKLIST)) {
