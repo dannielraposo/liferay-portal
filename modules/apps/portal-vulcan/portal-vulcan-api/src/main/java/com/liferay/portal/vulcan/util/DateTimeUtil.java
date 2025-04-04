@@ -141,7 +141,7 @@ public class DateTimeUtil {
 	}
 
 	private static String _getDateTimePattern(String value) {
-		if (Validator.isNull(value)) {
+		if (Validator.isNull(value) || (value.length() < 10)) {
 			return null;
 		}
 
@@ -154,7 +154,7 @@ public class DateTimeUtil {
 			}
 		}
 
-		if ((value.length() > 10) && (value.charAt(10) == 'T')) {
+		if (value.charAt(10) == 'T') {
 			if (value.length() == 16) {
 				return "yyyy-MM-dd'T'HH:mm";
 			}
@@ -177,9 +177,7 @@ public class DateTimeUtil {
 			return null;
 		}
 
-		if ((value.length() > 10) &&
-			((value.charAt(10) == ' ') || (value.charAt(11) == ' '))) {
-
+		if ((value.charAt(10) == ' ') || (value.charAt(11) == ' ')) {
 			if (value.length() == 16) {
 				return "yyyy-MM-dd HH:mm";
 			}
