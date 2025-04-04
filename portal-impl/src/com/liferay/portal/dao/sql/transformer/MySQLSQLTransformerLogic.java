@@ -22,7 +22,7 @@ public class MySQLSQLTransformerLogic extends BaseSQLTransformerLogic {
 		Function[] functions = {
 			getAggregationFunction(), getBitwiseCheckFunction(),
 			getBooleanFunction(), getCastClobTextFunction(),
-			getCastLongFunction(), getCastTextFunction(),
+			getCastLongFunction(), getCastTextFunction(), getDivideFunction(),
 			getDropTableIfExistsTextFunction(), getIntegerDivisionFunction(),
 			getNullDateFunction()
 		};

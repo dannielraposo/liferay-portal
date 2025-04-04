@@ -26,7 +26,7 @@ public class OracleSQLTransformerLogic extends BaseSQLTransformerLogic {
 		Function[] functions = {
 			getAggregationFunction(), getBooleanFunction(),
 			getCastClobTextFunction(), getCastLongFunction(),
-			getCastTextFunction(), getConcatFunction(),
+			getCastTextFunction(), getConcatFunction(), getDivideFunction(),
 			getDropTableIfExistsTextFunction(), getIntegerDivisionFunction(),
 			getNullDateFunction(), _getEscapeFunction(),
 			_getNotEqualsBlankStringFunction()
@@ -44,6 +44,15 @@ public class OracleSQLTransformerLogic extends BaseSQLTransformerLogic {
 		SQLFunctionTransformer sqlFunctionTransformer =
 			new SQLFunctionTransformer(
 				"CONCAT(", StringPool.BLANK, " || ", StringPool.BLANK);
+
+		return sqlFunctionTransformer::transform;
+	}
+
+	@Override
+	protected Function<String, String> getDivideFunction() {
+		SQLFunctionTransformer sqlFunctionTransformer =
+			new SQLFunctionTransformer(
+				"DIVIDE(", StringPool.BLANK, " / NULLIF(", ", 0)");
 
 		return sqlFunctionTransformer::transform;
 	}

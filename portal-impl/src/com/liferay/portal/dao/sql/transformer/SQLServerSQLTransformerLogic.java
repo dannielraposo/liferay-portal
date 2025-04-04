@@ -5,6 +5,7 @@
 
 package com.liferay.portal.dao.sql.transformer;
 
+import com.liferay.portal.internal.dao.sql.transformer.SQLFunctionTransformer;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.util.ArrayUtil;
 
@@ -24,9 +25,10 @@ public class SQLServerSQLTransformerLogic extends BaseSQLTransformerLogic {
 			getAggregationFunction(), getBitwiseCheckFunction(),
 			getBooleanFunction(), getCastClobTextFunction(),
 			getCastLongFunction(), getCastTextFunction(), getConcatFunction(),
-			getDropTableIfExistsTextFunction(), getInstrFunction(),
-			getIntegerDivisionFunction(), getLengthFunction(), getModFunction(),
-			getNullDateFunction(), getSubstrFunction()
+			getDivideFunction(), getDropTableIfExistsTextFunction(),
+			getInstrFunction(), getIntegerDivisionFunction(),
+			getLengthFunction(), getModFunction(), getNullDateFunction(),
+			getSubstrFunction()
 		};
 
 		if (!db.isSupportsStringCaseSensitiveQuery()) {
@@ -34,6 +36,16 @@ public class SQLServerSQLTransformerLogic extends BaseSQLTransformerLogic {
 		}
 
 		setFunctions(functions);
+	}
+
+	@Override
+	protected Function<String, String> getDivideFunction() {
+		SQLFunctionTransformer sqlFunctionTransformer =
+			new SQLFunctionTransformer(
+				"DIVIDE(", "CAST(", " AS DECIMAL) / NULLIF(CAST(",
+				" AS DECIMAL), 0)");
+
+		return sqlFunctionTransformer::transform;
 	}
 
 	@Override

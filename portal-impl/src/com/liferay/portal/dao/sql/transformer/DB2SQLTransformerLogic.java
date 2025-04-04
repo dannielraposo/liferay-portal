@@ -27,7 +27,7 @@ public class DB2SQLTransformerLogic extends BaseSQLTransformerLogic {
 		Function[] functions = {
 			getAggregationFunction(), getBooleanFunction(),
 			getCastClobTextFunction(), getCastLongFunction(),
-			getCastTextFunction(), getConcatFunction(),
+			getCastTextFunction(), getConcatFunction(), getDivideFunction(),
 			getDropTableIfExistsTextFunction(), getIntegerDivisionFunction(),
 			getNullDateFunction(), _getCaseWhenThenFunction(),
 			_getLikeFunction(), _getSelectFunction()
@@ -45,6 +45,16 @@ public class DB2SQLTransformerLogic extends BaseSQLTransformerLogic {
 		SQLFunctionTransformer sqlFunctionTransformer =
 			new SQLFunctionTransformer(
 				"CONCAT(", StringPool.BLANK, " CONCAT ", StringPool.BLANK);
+
+		return sqlFunctionTransformer::transform;
+	}
+
+	@Override
+	protected Function<String, String> getDivideFunction() {
+		SQLFunctionTransformer sqlFunctionTransformer =
+			new SQLFunctionTransformer(
+				"DIVIDE(", "CAST(", " AS DECIMAL) / NULLIF(CAST(",
+				" AS DECIMAL), 0)");
 
 		return sqlFunctionTransformer::transform;
 	}

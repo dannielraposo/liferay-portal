@@ -98,6 +98,14 @@ public abstract class BaseSQLTransformerLogic implements SQLTransformerLogic {
 		return sqlFunctionTransformer::transform;
 	}
 
+	protected Function<String, String> getDivideFunction() {
+		SQLFunctionTransformer sqlFunctionTransformer =
+			new SQLFunctionTransformer(
+				"DIVIDE(", StringPool.BLANK, " / ", StringPool.BLANK);
+
+		return sqlFunctionTransformer::transform;
+	}
+
 	protected Function<String, String> getDropTableIfExistsTextFunction() {
 		Pattern pattern = getDropTableIfExistsTextPattern();
 

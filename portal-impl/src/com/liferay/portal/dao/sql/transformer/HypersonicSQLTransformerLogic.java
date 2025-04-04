@@ -5,6 +5,7 @@
 
 package com.liferay.portal.dao.sql.transformer;
 
+import com.liferay.portal.internal.dao.sql.transformer.SQLFunctionTransformer;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -24,8 +25,9 @@ public class HypersonicSQLTransformerLogic extends BaseSQLTransformerLogic {
 		Function[] functions = {
 			getAggregationFunction(), getBooleanFunction(),
 			getCastClobTextFunction(), getCastLongFunction(),
-			getCastTextFunction(), getDropTableIfExistsTextFunction(),
-			getIntegerDivisionFunction(), getNullDateFunction()
+			getCastTextFunction(), getDivideFunction(),
+			getDropTableIfExistsTextFunction(), getIntegerDivisionFunction(),
+			getNullDateFunction()
 		};
 
 		if (!db.isSupportsStringCaseSensitiveQuery()) {
@@ -33,6 +35,16 @@ public class HypersonicSQLTransformerLogic extends BaseSQLTransformerLogic {
 		}
 
 		setFunctions(functions);
+	}
+
+	@Override
+	protected Function<String, String> getDivideFunction() {
+		SQLFunctionTransformer sqlFunctionTransformer =
+			new SQLFunctionTransformer(
+				"DIVIDE(", "CAST(", " AS DOUBLE) / NULLIF(CAST(",
+				" AS DOUBLE), 0)");
+
+		return sqlFunctionTransformer::transform;
 	}
 
 	@Override
