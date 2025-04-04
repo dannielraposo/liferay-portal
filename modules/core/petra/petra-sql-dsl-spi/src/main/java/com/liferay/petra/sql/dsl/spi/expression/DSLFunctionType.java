@@ -29,7 +29,8 @@ public class DSLFunctionType {
 	public static final DSLFunctionType CONCAT = new DSLFunctionType(
 		"CONCAT(", ")");
 
-	public static final DSLFunctionType DIVISION = new DSLFunctionType(" / ");
+	public static final DSLFunctionType DIVISION = new DSLFunctionType(
+		"DIVIDE(", ")");
 
 	public static final DSLFunctionType LOWER = new DSLFunctionType(
 		"LOWER(", ")");
