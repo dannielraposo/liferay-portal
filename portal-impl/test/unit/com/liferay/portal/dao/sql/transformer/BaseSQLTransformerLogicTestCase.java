@@ -83,6 +83,13 @@ public abstract class BaseSQLTransformerLogicTestCase {
 	}
 
 	@Test
+	public void testReplaceDivide() {
+		Assert.assertEquals(
+			"select foo / bar from Foo",
+			sqlTransformer.transform("select DIVIDE(foo,bar) from Foo"));
+	}
+
+	@Test
 	public void testReplaceDropTableIfExistsText() {
 		Assert.assertEquals(
 			getDropTableIfExistsTextTransformedSQL(),

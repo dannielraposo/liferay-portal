@@ -55,6 +55,14 @@ public class DB2SQLTransformerLogicTest
 				"select * from Foo where foo LIKE CONCAT(CAST_TEXT(bar),?)"));
 	}
 
+	@Test
+	public void testReplaceDivide() {
+		Assert.assertEquals(
+			"select CAST(foo AS DECIMAL) / NULLIF(CAST(bar AS DECIMAL), 0) " +
+				"from Foo",
+			sqlTransformer.transform("select DIVIDE(foo,bar) from Foo"));
+	}
+
 	@Override
 	@Test
 	public void testReplaceModWithExtraWhitespace() {

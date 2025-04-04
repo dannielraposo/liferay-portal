@@ -43,6 +43,14 @@ public class HypersonicSQLTransformerLogicTest
 			sqlTransformer.transform(getBitwiseCheckOriginalSQL()));
 	}
 
+	@Test
+	public void testReplaceDivide() {
+		Assert.assertEquals(
+			"select CAST(foo AS DOUBLE) / NULLIF(CAST(bar AS DOUBLE), 0) " +
+				"from Foo",
+			sqlTransformer.transform("select DIVIDE(foo,bar) from Foo"));
+	}
+
 	@Override
 	@Test
 	public void testReplaceModWithExtraWhitespace() {

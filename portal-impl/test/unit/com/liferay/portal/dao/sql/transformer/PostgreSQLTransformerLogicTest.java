@@ -42,6 +42,14 @@ public class PostgreSQLTransformerLogicTest
 				"select foo from Foo order by AGGREGATION_BOOLEAN_MIN(foo)"));
 	}
 
+	@Test
+	public void testReplaceDivide() {
+		Assert.assertEquals(
+			"select CAST(foo AS DECIMAL) / NULLIF(CAST(bar AS DECIMAL), 0) " +
+				"from Foo",
+			sqlTransformer.transform("select DIVIDE(foo,bar) from Foo"));
+	}
+
 	@Override
 	@Test
 	public void testReplaceModWithExtraWhitespace() {

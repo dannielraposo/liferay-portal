@@ -46,6 +46,13 @@ public class OracleSQLTransformerLogicTest
 	}
 
 	@Test
+	public void testReplaceDivide() {
+		Assert.assertEquals(
+			"select foo / NULLIF(bar, 0) from Foo",
+			sqlTransformer.transform("select DIVIDE(foo,bar) from Foo"));
+	}
+
+	@Test
 	public void testReplaceEscape() {
 		Assert.assertEquals(
 			"select foo from Foo where foo LIKE ? ESCAPE '\\'",

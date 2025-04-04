@@ -9,8 +9,10 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
+import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.Test;
 
 /**
  * @author Manuel de la Peña
@@ -30,6 +32,14 @@ public class SQLServerSQLTransformerLogicTest
 	@Override
 	public String getDropTableIfExistsTextTransformedSQL() {
 		return "IF OBJECT_ID('Foo', 'U') IS NOT NULL DROP TABLE Foo";
+	}
+
+	@Test
+	public void testReplaceDivide() {
+		Assert.assertEquals(
+			"select CAST(foo AS DECIMAL) / NULLIF(CAST(bar AS DECIMAL), 0) " +
+				"from Foo",
+			sqlTransformer.transform("select DIVIDE(foo,bar) from Foo"));
 	}
 
 	@Override
