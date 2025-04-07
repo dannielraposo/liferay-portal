@@ -37,11 +37,7 @@ public class DateTimeUtil {
 	}
 
 	public static LocalDateTime toLocalDateTime(Date date) {
-		return toLocalDateTime(date, null);
-	}
-
-	public static LocalDateTime toLocalDateTime(Date date, Date defaultDate) {
-		return toLocalDateTime(date, defaultDate, ZoneId.systemDefault());
+		return toLocalDateTime(date, null, ZoneId.systemDefault());
 	}
 
 	public static LocalDateTime toLocalDateTime(
