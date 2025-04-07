@@ -68,7 +68,7 @@ public class DateTimeUtil {
 	}
 
 	public static LocalDateTime toLocalDateTime(String value) {
-		return toZonedDateTime(
+		return _toZonedDateTime(
 			null, value
 		).toLocalDateTime();
 	}
@@ -76,13 +76,13 @@ public class DateTimeUtil {
 	public static LocalDateTime toLocalDateTime(
 		String timeZoneId, String value) {
 
-		return toZonedDateTime(
+		return _toZonedDateTime(
 			timeZoneId, value
 		).toLocalDateTime();
 	}
 
 	public static Timestamp toTimestamp(String timeZoneId, String value) {
-		return toTimestamp(toZonedDateTime(timeZoneId, value));
+		return toTimestamp(_toZonedDateTime(timeZoneId, value));
 	}
 
 	public static Timestamp toTimestamp(ZonedDateTime zonedDateTime) {
@@ -90,10 +90,10 @@ public class DateTimeUtil {
 	}
 
 	public static ZonedDateTime toZonedDateTime(String value) {
-		return toZonedDateTime(null, value);
+		return _toZonedDateTime(null, value);
 	}
 
-	public static ZonedDateTime toZonedDateTime(
+	private static ZonedDateTime _toZonedDateTime(
 		String timeZoneId, String value) {
 
 		String dateTimePattern = _getDateTimePattern(value);
