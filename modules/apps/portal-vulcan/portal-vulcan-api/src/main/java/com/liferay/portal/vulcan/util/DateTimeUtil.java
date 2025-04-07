@@ -76,10 +76,8 @@ public class DateTimeUtil {
 	}
 
 	public static Timestamp toTimestamp(String timeZoneId, String value) {
-		return toTimestamp(_toZonedDateTime(timeZoneId, value));
-	}
+		ZonedDateTime zonedDateTime = _toZonedDateTime(timeZoneId, value);
 
-	public static Timestamp toTimestamp(ZonedDateTime zonedDateTime) {
 		return Timestamp.from(zonedDateTime.toInstant());
 	}
 
