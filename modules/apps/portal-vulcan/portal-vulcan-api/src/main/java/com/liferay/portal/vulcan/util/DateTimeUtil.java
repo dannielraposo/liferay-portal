@@ -27,10 +27,8 @@ import java.util.Date;
 public class DateTimeUtil {
 
 	public static Date toDate(String value) {
-		return toDate(_toZonedDateTime(null, value));
-	}
+		ZonedDateTime zonedDateTime = _toZonedDateTime(null, value);
 
-	public static Date toDate(ZonedDateTime zonedDateTime) {
 		if (zonedDateTime == null) {
 			return null;
 		}
