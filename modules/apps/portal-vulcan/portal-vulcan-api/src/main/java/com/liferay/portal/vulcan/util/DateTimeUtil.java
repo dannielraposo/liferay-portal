@@ -93,53 +93,6 @@ public class DateTimeUtil {
 		return _toZonedDateTime(null, value);
 	}
 
-	private static ZonedDateTime _toZonedDateTime(
-		String timeZoneId, String value) {
-
-		String dateTimePattern = _getDateTimePattern(value);
-
-		if (dateTimePattern == null) {
-			throw new IllegalArgumentException(
-				"Unable to parse date-time from " + value);
-		}
-
-		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
-			dateTimePattern);
-
-		if (dateTimePattern.length() == 10) {
-			LocalDateTime localDateTime = LocalDate.parse(
-				value, dateTimeFormatter
-			).atStartOfDay();
-
-			return localDateTime.atZone(ZoneId.of(StringPool.UTC));
-		}
-
-		if (dateTimePattern.contains("XXX") ||
-			dateTimePattern.contains("zzz")) {
-
-			try {
-				return ZonedDateTime.parse(value, dateTimeFormatter);
-			}
-			catch (DateTimeParseException dateTimeParseException) {
-				throw new RuntimeException(dateTimeParseException);
-			}
-		}
-
-		try {
-			LocalDateTime localDateTime = LocalDateTime.parse(
-				value, dateTimeFormatter);
-
-			if (timeZoneId == null) {
-				return localDateTime.atZone(ZoneId.of(StringPool.UTC));
-			}
-
-			return localDateTime.atZone(ZoneId.of(timeZoneId));
-		}
-		catch (DateTimeParseException dateTimeParseException) {
-			throw new RuntimeException(dateTimeParseException);
-		}
-	}
-
 	private static String _getDateTimePattern(String value) {
 		if (Validator.isNull(value) || (value.length() < 10)) {
 			return null;
@@ -210,6 +163,53 @@ public class DateTimeUtil {
 		}
 
 		return null;
+	}
+
+	private static ZonedDateTime _toZonedDateTime(
+		String timeZoneId, String value) {
+
+		String dateTimePattern = _getDateTimePattern(value);
+
+		if (dateTimePattern == null) {
+			throw new IllegalArgumentException(
+				"Unable to parse date-time from " + value);
+		}
+
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
+			dateTimePattern);
+
+		if (dateTimePattern.length() == 10) {
+			LocalDateTime localDateTime = LocalDate.parse(
+				value, dateTimeFormatter
+			).atStartOfDay();
+
+			return localDateTime.atZone(ZoneId.of(StringPool.UTC));
+		}
+
+		if (dateTimePattern.contains("XXX") ||
+			dateTimePattern.contains("zzz")) {
+
+			try {
+				return ZonedDateTime.parse(value, dateTimeFormatter);
+			}
+			catch (DateTimeParseException dateTimeParseException) {
+				throw new RuntimeException(dateTimeParseException);
+			}
+		}
+
+		try {
+			LocalDateTime localDateTime = LocalDateTime.parse(
+				value, dateTimeFormatter);
+
+			if (timeZoneId == null) {
+				return localDateTime.atZone(ZoneId.of(StringPool.UTC));
+			}
+
+			return localDateTime.atZone(ZoneId.of(timeZoneId));
+		}
+		catch (DateTimeParseException dateTimeParseException) {
+			throw new RuntimeException(dateTimeParseException);
+		}
 	}
 
 }
