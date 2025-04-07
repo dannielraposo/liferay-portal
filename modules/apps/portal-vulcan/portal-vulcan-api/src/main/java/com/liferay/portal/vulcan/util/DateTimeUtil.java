@@ -27,7 +27,7 @@ import java.util.Date;
 public class DateTimeUtil {
 
 	public static Date toDate(String value) {
-		return toDate(toZonedDateTime(value));
+		return toDate(_toZonedDateTime(null, value));
 	}
 
 	public static Date toDate(ZonedDateTime zonedDateTime) {
@@ -87,10 +87,6 @@ public class DateTimeUtil {
 
 	public static Timestamp toTimestamp(ZonedDateTime zonedDateTime) {
 		return Timestamp.from(zonedDateTime.toInstant());
-	}
-
-	public static ZonedDateTime toZonedDateTime(String value) {
-		return _toZonedDateTime(null, value);
 	}
 
 	private static String _getDateTimePattern(String value) {
