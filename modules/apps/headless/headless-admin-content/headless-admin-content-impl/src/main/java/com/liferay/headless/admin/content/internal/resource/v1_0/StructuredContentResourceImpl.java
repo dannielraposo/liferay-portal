@@ -68,6 +68,7 @@ import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 import com.liferay.portal.vulcan.util.DateTimeUtil;
 import com.liferay.portal.vulcan.util.EntityExtensionUtil;
+import com.liferay.portal.vulcan.util.LocalDateTimeUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 import com.liferay.portal.vulcan.util.SearchUtil;
 
@@ -278,7 +279,7 @@ public class StructuredContentResourceImpl
 		_validateContentFields(
 			structuredContent.getContentFields(), ddmStructure);
 
-		LocalDateTime localDateTime = DateTimeUtil.toLocalDateTime(
+		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
 			structuredContent.getDatePublished(), null,
 			ZoneId.of(contextUser.getTimeZoneId()));
 

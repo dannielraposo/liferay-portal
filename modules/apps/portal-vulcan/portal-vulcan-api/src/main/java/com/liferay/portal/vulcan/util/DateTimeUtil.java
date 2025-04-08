@@ -36,31 +36,6 @@ public class DateTimeUtil {
 		return Date.from(zonedDateTime.toInstant());
 	}
 
-	public static LocalDateTime toLocalDateTime(Date date) {
-		return toLocalDateTime(date, null, ZoneId.systemDefault());
-	}
-
-	public static LocalDateTime toLocalDateTime(
-		Date date, Date defaultDate, ZoneId zoneId) {
-
-		Instant instant = null;
-
-		if (date == null) {
-			if (defaultDate == null) {
-				defaultDate = new Date();
-			}
-
-			instant = defaultDate.toInstant();
-		}
-		else {
-			instant = date.toInstant();
-		}
-
-		ZonedDateTime zonedDateTime = instant.atZone(zoneId);
-
-		return zonedDateTime.toLocalDateTime();
-	}
-
 	public static LocalDateTime toLocalDateTime(String value) {
 		return _toZonedDateTime(
 			null, value

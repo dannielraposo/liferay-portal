@@ -51,6 +51,7 @@ import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.DateTimeUtil;
+import com.liferay.portal.vulcan.util.LocalDateTimeUtil;
 import com.liferay.portal.vulcan.util.SearchUtil;
 import com.liferay.ratings.kernel.service.RatingsEntryLocalService;
 
@@ -313,7 +314,7 @@ public class BlogPostingResourceImpl extends BaseBlogPostingResourceImpl {
 			String externalReferenceCode, long groupId, BlogPosting blogPosting)
 		throws Exception {
 
-		LocalDateTime localDateTime = DateTimeUtil.toLocalDateTime(
+		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
 			blogPosting.getDatePublished(), null,
 			ZoneId.of(contextUser.getTimeZoneId()));
 		Image image = blogPosting.getImage();
@@ -443,7 +444,7 @@ public class BlogPostingResourceImpl extends BaseBlogPostingResourceImpl {
 			BlogsEntry blogsEntry, BlogPosting blogPosting)
 		throws Exception {
 
-		LocalDateTime localDateTime = DateTimeUtil.toLocalDateTime(
+		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
 			blogPosting.getDatePublished(), null,
 			ZoneId.of(contextUser.getTimeZoneId()));
 		Image image = blogPosting.getImage();
