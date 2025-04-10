@@ -3,6 +3,17 @@
 
 <service-builder auto-import-default-references="false" auto-namespace-tables="false" package-path="com.liferay.portal.tools.service.builder.test">
 	<namespace>SBTest</namespace>
+	<entity local-service="true" name="ArithmeticEntry" remote-service="false">
+
+		<!-- PK fields -->
+
+		<column name="arithmeticEntryId" primary="true" type="long" />
+
+		<!-- Other fields -->
+
+		<column name="number1" type="long" />
+		<column name="number2" type="long" />
+	</entity>
 	<entity local-service="false" name="AutoEscapeEntry" remote-service="false">
 
 		<!-- PK fields -->
