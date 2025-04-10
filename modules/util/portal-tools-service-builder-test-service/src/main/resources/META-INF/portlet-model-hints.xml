@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 
 <model-hints>
+	<model name="com.liferay.portal.tools.service.builder.test.model.ArithmeticEntry">
+		<field name="arithmeticEntryId" type="long" />
+		<field name="number1" type="long" />
+		<field name="number2" type="long" />
+	</model>
 	<model name="com.liferay.portal.tools.service.builder.test.model.AutoEscapeEntry">
 		<field name="autoEscapeEntryId" type="long" />
 		<field name="autoEscapeDisabledColumn" type="String">

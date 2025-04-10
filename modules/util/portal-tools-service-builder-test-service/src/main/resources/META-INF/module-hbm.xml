@@ -2,6 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping auto-import="false" default-lazy="false">
+	<import class="com.liferay.portal.tools.service.builder.test.model.ArithmeticEntry" />
 	<import class="com.liferay.portal.tools.service.builder.test.model.AutoEscapeEntry" />
 	<import class="com.liferay.portal.tools.service.builder.test.model.BigDecimalEntry" />
 	<import class="com.liferay.portal.tools.service.builder.test.model.CacheDisabledEntry" />
@@ -35,6 +36,13 @@
 	<import class="com.liferay.portal.tools.service.builder.test.model.UndefinedDefaultOrderEntry" />
 	<import class="com.liferay.portal.tools.service.builder.test.model.VersionedEntry" />
 	<import class="com.liferay.portal.tools.service.builder.test.model.VersionedEntryVersion" />
+	<class name="com.liferay.portal.tools.service.builder.test.model.impl.ArithmeticEntryImpl" table="ArithmeticEntry">
+		<id access="com.liferay.portal.dao.orm.hibernate.MethodPropertyAccessor" name="arithmeticEntryId" type="long">
+			<generator class="assigned" />
+		</id>
+		<property access="com.liferay.portal.dao.orm.hibernate.MethodPropertyAccessor" name="number1" type="com.liferay.portal.dao.orm.hibernate.LongType" />
+		<property access="com.liferay.portal.dao.orm.hibernate.MethodPropertyAccessor" name="number2" type="com.liferay.portal.dao.orm.hibernate.LongType" />
+	</class>
 	<class name="com.liferay.portal.tools.service.builder.test.model.impl.AutoEscapeEntryImpl" table="AutoEscapeEntry">
 		<id access="com.liferay.portal.dao.orm.hibernate.MethodPropertyAccessor" name="autoEscapeEntryId" type="long">
 			<generator class="assigned" />

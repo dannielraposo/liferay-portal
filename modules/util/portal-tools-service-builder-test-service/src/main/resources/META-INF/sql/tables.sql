@@ -1,3 +1,9 @@
+create table ArithmeticEntry (
+	arithmeticEntryId LONG not null primary key,
+	number1 LONG,
+	number2 LONG
+);
+
 create table AutoEscapeEntry (
 	autoEscapeEntryId LONG not null primary key,
 	autoEscapeDisabledColumn VARCHAR(75) null,
