@@ -521,12 +521,13 @@ public class SQLDSLTest {
 				DSLFunctionFactoryUtil.lower(
 					MainExampleTable.INSTANCE.nameColumn)));
 		Assert.assertEquals(
-			"MainExample.mainExampleId / ?",
+			"DIVIDE(MainExample.mainExampleId, ?)",
 			String.valueOf(
 				DSLFunctionFactoryUtil.divide(
 					MainExampleTable.INSTANCE.mainExampleIdColumn, 2L)));
 		Assert.assertEquals(
-			"MainExample.mainExampleId / ReferenceExample.referenceExampleId",
+			"DIVIDE(MainExample.mainExampleId, " +
+				"ReferenceExample.referenceExampleId)",
 			String.valueOf(
 				DSLFunctionFactoryUtil.divide(
 					MainExampleTable.INSTANCE.mainExampleIdColumn,
