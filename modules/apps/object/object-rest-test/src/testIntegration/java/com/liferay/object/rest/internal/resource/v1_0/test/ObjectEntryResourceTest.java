@@ -129,6 +129,7 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.ModelPermissionsFactory;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -185,6 +186,8 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import java.math.BigDecimal;
+
+import java.sql.Timestamp;
 
 import java.text.DateFormat;
 
@@ -9118,6 +9121,131 @@ public class ObjectEntryResourceTest {
 				_objectDefinitionLocalService.updateObjectDefinition(
 					_objectDefinition1);
 		}
+	}
+
+	@Test
+	@TestInfo("LPD-53245")
+	public void testPostPutCustomObjectEntry() throws Exception {
+		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
+			_objectDefinition2, _OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2);
+
+		_objectRelationship1 = ObjectRelationshipTestUtil.addObjectRelationship(
+			_objectDefinition2, _objectDefinition1, TestPropsValues.getUserId(),
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		String objectRelationshipERCObjectFieldName =
+			ObjectFieldSettingUtil.getValue(
+				ObjectFieldSettingConstants.
+					NAME_OBJECT_RELATIONSHIP_ERC_OBJECT_FIELD_NAME,
+				_objectFieldLocalService.getObjectField(
+					_objectRelationship1.getObjectFieldId2()));
+
+		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				_OBJECT_FIELD_NAME_1, RandomTestUtil.randomString()
+			).put(
+				_OBJECT_FIELD_NAME_BOOLEAN, RandomTestUtil.randomBoolean()
+			).put(
+				_OBJECT_FIELD_NAME_DATE,
+				_dateTimeDateFormat.format(RandomTestUtil.nextDate())
+			).put(
+				_OBJECT_FIELD_NAME_DECIMAL, RandomTestUtil.randomFloat()
+			).put(
+				_OBJECT_FIELD_NAME_INTEGER, _OBJECT_FIELD_VALUE_1
+			).put(
+				_OBJECT_FIELD_NAME_LONG_INTEGER,
+				RandomTestUtil.randomLong(
+					ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MIN,
+					ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MAX)
+			).put(
+				_OBJECT_FIELD_NAME_LONG_TEXT, RandomTestUtil.randomString()
+			).put(
+				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+				JSONUtil.putAll(_LIST_TYPE_ENTRY_KEY_1, _LIST_TYPE_ENTRY_KEY_2)
+			).put(
+				_OBJECT_FIELD_NAME_PICKLIST, _LIST_TYPE_ENTRY_KEY_1
+			).put(
+				_OBJECT_FIELD_NAME_PRECISION_DECIMAL,
+				BigDecimal.valueOf(RandomTestUtil.randomDouble())
+			).put(
+				_OBJECT_FIELD_NAME_TEXT, RandomTestUtil.randomString()
+			).put(
+				objectRelationshipERCObjectFieldName,
+				_objectEntry2.getExternalReferenceCode()
+			).put(
+				"externalReferenceCode", _ERC_VALUE_1
+			).toString(),
+			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
+
+		jsonObject = HTTPTestUtil.invokeToJSONObject(
+			null,
+			_objectDefinition1.getRESTContextPath() + StringPool.SLASH +
+				jsonObject.getString("id"),
+			Http.Method.GET);
+
+		HTTPTestUtil.invokeToJSONObject(
+			JSONFactoryUtil.getNullJSON(),
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
+				jsonObject.getString("id")),
+			Http.Method.PUT);
+
+		JSONAssert.assertEquals(
+			JSONUtil.put(
+				_OBJECT_FIELD_NAME_1, GetterUtil.getString(null)
+			).put(
+				_OBJECT_FIELD_NAME_BOOLEAN, GetterUtil.getBoolean(null)
+			).put(
+				_OBJECT_FIELD_NAME_DATE, (Timestamp)null
+			).put(
+				_OBJECT_FIELD_NAME_DECIMAL, GetterUtil.getDouble(null)
+			).put(
+				_OBJECT_FIELD_NAME_INTEGER, GetterUtil.getInteger(null)
+			).put(
+				_OBJECT_FIELD_NAME_LONG_INTEGER, GetterUtil.getInteger(null)
+			).put(
+				_OBJECT_FIELD_NAME_LONG_TEXT, (String)null
+			).put(
+				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST, Collections.emptyList()
+			).put(
+				_OBJECT_FIELD_NAME_PICKLIST, (String)null
+			).put(
+				_OBJECT_FIELD_NAME_PRECISION_DECIMAL, GetterUtil.getDouble(null)
+			).put(
+				_OBJECT_FIELD_NAME_TEXT, GetterUtil.getString(null)
+			).put(
+				objectRelationshipERCObjectFieldName,
+				_objectEntry2.getExternalReferenceCode()
+			).put(
+				"externalReferenceCode", _ERC_VALUE_1
+			).toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				null,
+				_objectDefinition1.getRESTContextPath() + StringPool.SLASH +
+					jsonObject.getString("id"),
+				Http.Method.GET
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		jsonObject.remove("actions");
+		jsonObject.remove("dateModified");
+
+		HTTPTestUtil.invokeToJSONObject(
+			jsonObject.toString(),
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
+				jsonObject.getString("id")),
+			Http.Method.PUT);
+
+		JSONAssert.assertEquals(
+			jsonObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				null,
+				_objectDefinition1.getRESTContextPath() + StringPool.SLASH +
+					jsonObject.getString("id"),
+				Http.Method.GET
+			).toString(),
+			JSONCompareMode.LENIENT);
 	}
 
 	@Test
