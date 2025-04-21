@@ -201,6 +201,15 @@ public class ObjectEntryServiceUtil {
 			groupId, objectDefinitionId, actionId);
 	}
 
+	public static ObjectEntry partialUpdateObjectEntry(
+			long objectEntryId, Map<String, Serializable> values,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().partialUpdateObjectEntry(
+			objectEntryId, values, serviceContext);
+	}
+
 	public static ObjectEntry updateObjectEntry(
 			long objectEntryId, Map<String, Serializable> values,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
