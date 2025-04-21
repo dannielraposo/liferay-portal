@@ -1607,120 +1607,8 @@ public class ObjectEntryLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		User user = _userLocalService.getUser(userId);
-
-		ObjectEntry objectEntry = objectEntryPersistence.findByPrimaryKey(
-			objectEntryId);
-
-		ObjectDefinition objectDefinition =
-			_objectDefinitionPersistence.findByPrimaryKey(
-				objectEntry.getObjectDefinitionId());
-
-		_contributeValues(
-			objectEntry.getGroupId(), objectDefinition, userId, values);
-
-		Map<ObjectField, Set<DLFileEntry>> dlFileEntriesMap = new HashMap<>();
-
-		_validateValues(
-			objectEntry.getDefaultLanguageId(), dlFileEntriesMap,
-			objectEntry.getValues(), objectEntry.getGroupId(),
-			user.isGuestUser(), objectDefinition,
-			objectEntry.getObjectEntryId(),
-			_objectFieldLocalService.getObjectFields(
-				objectDefinition.getObjectDefinitionId()),
-			serviceContext, objectEntry.getStatus(), userId, null, values);
-
-		_addDLFileEntries(
-			dlFileEntriesMap, objectDefinition, objectEntryId, serviceContext,
-			userId, values);
-
-		int workflowAction = serviceContext.getWorkflowAction();
-
-		_validateWorkflowAction(
-			objectDefinition.isEnableObjectEntryDraft(), objectDefinition,
-			objectEntry.getStatus(), workflowAction);
-
-		Map<String, Serializable> transientValues = objectEntry.getValues();
-
-		_deleteFromLocalizationTable(objectDefinition, objectEntryId);
-		_insertIntoLocalizationTable(
-			new HashMap<>(), objectDefinition, objectEntryId, values);
-		_updateTable(
-			_getDynamicObjectDefinitionTable(
-				objectEntry.getObjectDefinitionId()),
-			objectEntryId, values);
-		_updateTable(
-			_getExtensionDynamicObjectDefinitionTable(
-				objectEntry.getObjectDefinitionId()),
-			objectEntryId, values);
-
-		objectEntryPersistence.clearCache(SetUtil.fromArray(objectEntryId));
-
-		objectEntry = objectEntryPersistence.findByPrimaryKey(objectEntryId);
-
-		_setExternalReferenceCode(objectEntry, values);
-
-		objectEntry.setModifiedDate(serviceContext.getModifiedDate(null));
-
-		_setRootObjectEntryId(objectDefinition, objectEntry, values);
-
-		if ((workflowAction == WorkflowConstants.ACTION_SAVE_DRAFT) &&
-			!objectEntry.isPending()) {
-
-			objectEntry.setStatus(WorkflowConstants.STATUS_DRAFT);
-			objectEntry.setStatusByUserId(user.getUserId());
-			objectEntry.setStatusDate(serviceContext.getModifiedDate(null));
-		}
-
-		objectEntry.setTransientValues(transientValues);
-
-		ObjectEntry originalObjectEntry = objectEntry.cloneWithOriginalValues();
-
-		try {
-			if (workflowAction == WorkflowConstants.ACTION_SAVE_DRAFT) {
-				ObjectEntryThreadLocal.setSkipObjectValidationRules(true);
-			}
-
-			objectEntry = objectEntryPersistence.update(objectEntry);
-		}
-		finally {
-			ObjectEntryThreadLocal.setSkipObjectValidationRules(false);
-		}
-
-		_updateAsset(
-			serviceContext.getUserId(), objectEntry,
-			serviceContext.getAssetCategoryIds(),
-			serviceContext.getAssetTagNames(),
-			serviceContext.getAssetLinkEntryIds(),
-			serviceContext.getAssetPriority(), serviceContext);
-
-		_addFriendlyURLEntry(
-			objectDefinition, objectEntry, serviceContext, values);
-
-		_startWorkflowInstance(userId, objectEntry, serviceContext, true);
-
-		_updateResourcePermissions(
-			objectDefinition, objectEntry, serviceContext);
-
-		_deleteFileEntries(
-			objectEntry.getValues(), objectEntry.getObjectDefinitionId(),
-			transientValues);
-
-		_executeObjectActions(
-			objectEntry.getCompanyId(),
-			ObjectActionTriggerConstants.KEY_ON_AFTER_UPDATE, objectDefinition,
-			objectEntry, originalObjectEntry, serviceContext.getLanguageId(),
-			user);
-
-		_deleteTempFileEntries(dlFileEntriesMap);
-
-		if (objectEntry.isPending() || originalObjectEntry.isDraft()) {
-			_updateLatestObjectEntryVersion(objectDefinition, objectEntry);
-
-			return objectEntry;
-		}
-
-		return _addObjectEntryVersion(objectDefinition, objectEntry);
+		return _updateObjectEntry(
+			false, objectEntryId, serviceContext, userId, values);
 	}
 
 	@Override
@@ -1803,124 +1691,8 @@ public class ObjectEntryLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		User user = _userLocalService.getUser(userId);
-
-		ObjectEntry objectEntry = objectEntryPersistence.findByPrimaryKey(
-			objectEntryId);
-
-		ObjectDefinition objectDefinition =
-			_objectDefinitionPersistence.findByPrimaryKey(
-				objectEntry.getObjectDefinitionId());
-
-		_contributeValues(
-			objectEntry.getGroupId(), objectDefinition, userId, values);
-
-		Map<ObjectField, Set<DLFileEntry>> dlFileEntriesMap = new HashMap<>();
-
-		_validateValues(
-			objectEntry.getDefaultLanguageId(), dlFileEntriesMap,
-			objectEntry.getValues(), objectEntry.getGroupId(),
-			user.isGuestUser(), objectDefinition,
-			objectEntry.getObjectEntryId(),
-			_objectFieldLocalService.getObjectFields(
-				objectDefinition.getObjectDefinitionId()),
-			serviceContext, objectEntry.getStatus(), userId, null, values);
-
-		_addDLFileEntries(
-			dlFileEntriesMap, objectDefinition, objectEntryId, serviceContext,
-			userId, values);
-
-		int workflowAction = serviceContext.getWorkflowAction();
-
-		_validateWorkflowAction(
-			objectDefinition.isEnableObjectEntryDraft(), objectDefinition,
-			objectEntry.getStatus(), workflowAction);
-
-		_fillDefaultValue(
-			objectEntry.getDefaultLanguageId(),
-			objectDefinition.getObjectDefinitionId(), values);
-
-		Map<String, Serializable> transientValues = objectEntry.getValues();
-
-		_deleteFromLocalizationTable(objectDefinition, objectEntryId);
-		_insertIntoLocalizationTable(
-			new HashMap<>(), objectDefinition, objectEntryId, values);
-		_updateTable(
-			_getDynamicObjectDefinitionTable(
-				objectEntry.getObjectDefinitionId()),
-			objectEntryId, values);
-		_updateTable(
-			_getExtensionDynamicObjectDefinitionTable(
-				objectEntry.getObjectDefinitionId()),
-			objectEntryId, values);
-
-		objectEntryPersistence.clearCache(SetUtil.fromArray(objectEntryId));
-
-		objectEntry = objectEntryPersistence.findByPrimaryKey(objectEntryId);
-
-		_setExternalReferenceCode(objectEntry, values);
-
-		objectEntry.setModifiedDate(serviceContext.getModifiedDate(null));
-
-		_setRootObjectEntryId(objectDefinition, objectEntry, values);
-
-		if ((workflowAction == WorkflowConstants.ACTION_SAVE_DRAFT) &&
-			!objectEntry.isPending()) {
-
-			objectEntry.setStatus(WorkflowConstants.STATUS_DRAFT);
-			objectEntry.setStatusByUserId(user.getUserId());
-			objectEntry.setStatusDate(serviceContext.getModifiedDate(null));
-		}
-
-		objectEntry.setTransientValues(transientValues);
-
-		ObjectEntry originalObjectEntry = objectEntry.cloneWithOriginalValues();
-
-		try {
-			if (workflowAction == WorkflowConstants.ACTION_SAVE_DRAFT) {
-				ObjectEntryThreadLocal.setSkipObjectValidationRules(true);
-			}
-
-			objectEntry = objectEntryPersistence.update(objectEntry);
-		}
-		finally {
-			ObjectEntryThreadLocal.setSkipObjectValidationRules(false);
-		}
-
-		_updateAsset(
-			serviceContext.getUserId(), objectEntry,
-			serviceContext.getAssetCategoryIds(),
-			serviceContext.getAssetTagNames(),
-			serviceContext.getAssetLinkEntryIds(),
-			serviceContext.getAssetPriority(), serviceContext);
-
-		_addFriendlyURLEntry(
-			objectDefinition, objectEntry, serviceContext, values);
-
-		_startWorkflowInstance(userId, objectEntry, serviceContext, true);
-
-		_updateResourcePermissions(
-			objectDefinition, objectEntry, serviceContext);
-
-		_deleteFileEntries(
-			objectEntry.getValues(), objectEntry.getObjectDefinitionId(),
-			transientValues);
-
-		_executeObjectActions(
-			objectEntry.getCompanyId(),
-			ObjectActionTriggerConstants.KEY_ON_AFTER_UPDATE, objectDefinition,
-			objectEntry, originalObjectEntry, serviceContext.getLanguageId(),
-			user);
-
-		_deleteTempFileEntries(dlFileEntriesMap);
-
-		if (objectEntry.isPending() || originalObjectEntry.isDraft()) {
-			_updateLatestObjectEntryVersion(objectDefinition, objectEntry);
-
-			return objectEntry;
-		}
-
-		return _addObjectEntryVersion(objectDefinition, objectEntry);
+		return _updateObjectEntry(
+			true, objectEntryId, serviceContext, userId, values);
 	}
 
 	@Override
@@ -5290,6 +5062,134 @@ public class ObjectEntryLocalServiceImpl
 
 		_objectEntryVersionLocalService.updateLatestObjectEntryVersion(
 			objectEntry);
+	}
+
+	private ObjectEntry _updateObjectEntry(
+			boolean fillDefaultValue, long objectEntryId,
+			ServiceContext serviceContext, long userId,
+			Map<String, Serializable> values)
+		throws PortalException {
+
+		User user = _userLocalService.getUser(userId);
+
+		ObjectEntry objectEntry = objectEntryPersistence.findByPrimaryKey(
+			objectEntryId);
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionPersistence.findByPrimaryKey(
+				objectEntry.getObjectDefinitionId());
+
+		_contributeValues(
+			objectEntry.getGroupId(), objectDefinition, userId, values);
+
+		Map<ObjectField, Set<DLFileEntry>> dlFileEntriesMap = new HashMap<>();
+
+		_validateValues(
+			objectEntry.getDefaultLanguageId(), dlFileEntriesMap,
+			objectEntry.getValues(), objectEntry.getGroupId(),
+			user.isGuestUser(), objectDefinition,
+			objectEntry.getObjectEntryId(),
+			_objectFieldLocalService.getObjectFields(
+				objectDefinition.getObjectDefinitionId()),
+			serviceContext, objectEntry.getStatus(), userId, null, values);
+
+		_addDLFileEntries(
+			dlFileEntriesMap, objectDefinition, objectEntryId, serviceContext,
+			userId, values);
+
+		int workflowAction = serviceContext.getWorkflowAction();
+
+		_validateWorkflowAction(
+			objectDefinition.isEnableObjectEntryDraft(), objectDefinition,
+			objectEntry.getStatus(), workflowAction);
+
+		if (fillDefaultValue) {
+			_fillDefaultValue(
+				objectEntry.getDefaultLanguageId(),
+				objectDefinition.getObjectDefinitionId(), values);
+		}
+
+		Map<String, Serializable> transientValues = objectEntry.getValues();
+
+		_deleteFromLocalizationTable(objectDefinition, objectEntryId);
+		_insertIntoLocalizationTable(
+			new HashMap<>(), objectDefinition, objectEntryId, values);
+		_updateTable(
+			_getDynamicObjectDefinitionTable(
+				objectEntry.getObjectDefinitionId()),
+			objectEntryId, values);
+		_updateTable(
+			_getExtensionDynamicObjectDefinitionTable(
+				objectEntry.getObjectDefinitionId()),
+			objectEntryId, values);
+
+		objectEntryPersistence.clearCache(SetUtil.fromArray(objectEntryId));
+
+		objectEntry = objectEntryPersistence.findByPrimaryKey(objectEntryId);
+
+		_setExternalReferenceCode(objectEntry, values);
+
+		objectEntry.setModifiedDate(serviceContext.getModifiedDate(null));
+
+		_setRootObjectEntryId(objectDefinition, objectEntry, values);
+
+		if ((workflowAction == WorkflowConstants.ACTION_SAVE_DRAFT) &&
+			!objectEntry.isPending()) {
+
+			objectEntry.setStatus(WorkflowConstants.STATUS_DRAFT);
+			objectEntry.setStatusByUserId(user.getUserId());
+			objectEntry.setStatusDate(serviceContext.getModifiedDate(null));
+		}
+
+		objectEntry.setTransientValues(transientValues);
+
+		ObjectEntry originalObjectEntry = objectEntry.cloneWithOriginalValues();
+
+		try {
+			if (workflowAction == WorkflowConstants.ACTION_SAVE_DRAFT) {
+				ObjectEntryThreadLocal.setSkipObjectValidationRules(true);
+			}
+
+			objectEntry = objectEntryPersistence.update(objectEntry);
+		}
+		finally {
+			ObjectEntryThreadLocal.setSkipObjectValidationRules(false);
+		}
+
+		_updateAsset(
+			serviceContext.getUserId(), objectEntry,
+			serviceContext.getAssetCategoryIds(),
+			serviceContext.getAssetTagNames(),
+			serviceContext.getAssetLinkEntryIds(),
+			serviceContext.getAssetPriority(), serviceContext);
+
+		_addFriendlyURLEntry(
+			objectDefinition, objectEntry, serviceContext, values);
+
+		_startWorkflowInstance(userId, objectEntry, serviceContext, true);
+
+		_updateResourcePermissions(
+			objectDefinition, objectEntry, serviceContext);
+
+		_deleteFileEntries(
+			objectEntry.getValues(), objectEntry.getObjectDefinitionId(),
+			transientValues);
+
+		_executeObjectActions(
+			objectEntry.getCompanyId(),
+			ObjectActionTriggerConstants.KEY_ON_AFTER_UPDATE, objectDefinition,
+			objectEntry, originalObjectEntry, serviceContext.getLanguageId(),
+			user);
+
+		_deleteTempFileEntries(dlFileEntriesMap);
+
+		if (objectEntry.isPending() || originalObjectEntry.isDraft()) {
+			_updateLatestObjectEntryVersion(objectDefinition, objectEntry);
+
+			return objectEntry;
+		}
+
+		return _addObjectEntryVersion(objectDefinition, objectEntry);
 	}
 
 	private void _updateResourcePermissions(
