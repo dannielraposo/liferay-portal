@@ -1836,6 +1836,10 @@ public class ObjectEntryLocalServiceImpl
 			objectDefinition.isEnableObjectEntryDraft(), objectDefinition,
 			objectEntry.getStatus(), workflowAction);
 
+		_fillDefaultValue(
+			objectEntry.getDefaultLanguageId(),
+			objectDefinition.getObjectDefinitionId(), values);
+
 		Map<String, Serializable> transientValues = objectEntry.getValues();
 
 		_deleteFromLocalizationTable(objectDefinition, objectEntryId);
