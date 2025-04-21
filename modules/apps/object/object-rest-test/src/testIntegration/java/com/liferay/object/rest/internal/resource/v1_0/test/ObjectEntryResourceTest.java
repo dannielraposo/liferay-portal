@@ -29,6 +29,7 @@ import com.liferay.headless.admin.taxonomy.client.resource.v1_0.TaxonomyCategory
 import com.liferay.headless.delivery.dto.v1_0.Creator;
 import com.liferay.list.type.entry.util.ListTypeEntryUtil;
 import com.liferay.list.type.model.ListTypeDefinition;
+import com.liferay.list.type.model.ListTypeEntry;
 import com.liferay.list.type.service.ListTypeDefinitionLocalService;
 import com.liferay.list.type.service.ListTypeEntryLocalService;
 import com.liferay.object.constants.ObjectActionExecutorConstants;
@@ -186,6 +187,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 
 import java.sql.Timestamp;
 
@@ -287,19 +289,19 @@ public class ObjectEntryResourceTest {
 					LocaleUtil.US, RandomTestUtil.randomString()),
 				false, Collections.emptyList());
 
-		_listTypeEntryLocalService.addListTypeEntry(
+		_listTypeEntry1 = _listTypeEntryLocalService.addListTypeEntry(
 			null, TestPropsValues.getUserId(),
 			_listTypeDefinition.getListTypeDefinitionId(),
 			_LIST_TYPE_ENTRY_KEY_1,
 			Collections.singletonMap(
 				LocaleUtil.US, RandomTestUtil.randomString()));
-		_listTypeEntryLocalService.addListTypeEntry(
+		_listTypeEntry2 = _listTypeEntryLocalService.addListTypeEntry(
 			null, TestPropsValues.getUserId(),
 			_listTypeDefinition.getListTypeDefinitionId(),
 			_LIST_TYPE_ENTRY_KEY_2,
 			Collections.singletonMap(
 				LocaleUtil.US, RandomTestUtil.randomString()));
-		_listTypeEntryLocalService.addListTypeEntry(
+		_listTypeEntry3 = _listTypeEntryLocalService.addListTypeEntry(
 			null, TestPropsValues.getUserId(),
 			_listTypeDefinition.getListTypeDefinitionId(),
 			_LIST_TYPE_ENTRY_KEY_3,
@@ -477,6 +479,11 @@ public class ObjectEntryResourceTest {
 					ObjectFieldConstants.DB_TYPE_BIG_DECIMAL, true, false, null,
 					RandomTestUtil.randomString(),
 					_OBJECT_FIELD_NAME_PRECISION_DECIMAL, false),
+				ObjectFieldUtil.createObjectField(
+					ObjectFieldConstants.BUSINESS_TYPE_RICH_TEXT,
+					ObjectFieldConstants.DB_TYPE_STRING, true, true, null,
+					RandomTestUtil.randomString(), _OBJECT_FIELD_NAME_RICH_TEXT,
+					false),
 				ObjectFieldUtil.createObjectField(
 					ObjectFieldConstants.BUSINESS_TYPE_TEXT,
 					ObjectFieldConstants.DB_TYPE_STRING, true, true, null,
@@ -9140,35 +9147,51 @@ public class ObjectEntryResourceTest {
 				_objectFieldLocalService.getObjectField(
 					_objectRelationship1.getObjectFieldId2()));
 
+		BigDecimal randomBigDecimal = BigDecimal.valueOf(
+			RandomTestUtil.randomDouble());
+		boolean randomBoolean = RandomTestUtil.randomBoolean();
+		Date randomDate1 = RandomTestUtil.nextDate();
+		Date randomDate2 = RandomTestUtil.nextDate();
+		Date randomDate3 = RandomTestUtil.nextDate();
+		float randomFloat = RandomTestUtil.randomFloat();
+		int randomInt = RandomTestUtil.randomInt();
+		long randomLong = RandomTestUtil.randomLong(
+			ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MIN,
+			ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MAX);
+		String randomString1 = RandomTestUtil.randomString();
+		String randomString2 = RandomTestUtil.randomString();
+		String randomString3 = RandomTestUtil.randomString();
+
 		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
 			JSONUtil.put(
-				_OBJECT_FIELD_NAME_1, RandomTestUtil.randomString()
+				_OBJECT_FIELD_NAME_BOOLEAN, randomBoolean
 			).put(
-				_OBJECT_FIELD_NAME_BOOLEAN, RandomTestUtil.randomBoolean()
+				_OBJECT_FIELD_NAME_DATE, _dateFormat.format(randomDate1)
 			).put(
-				_OBJECT_FIELD_NAME_DATE,
-				_dateTimeDateFormat.format(RandomTestUtil.nextDate())
+				_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
+				_dateTimeDateFormat.format(randomDate2)
 			).put(
-				_OBJECT_FIELD_NAME_DECIMAL, RandomTestUtil.randomFloat()
+				_OBJECT_FIELD_NAME_DATE_TIME_UTC,
+				_dateTimeDateFormat.format(randomDate3)
 			).put(
-				_OBJECT_FIELD_NAME_INTEGER, _OBJECT_FIELD_VALUE_1
+				_OBJECT_FIELD_NAME_DECIMAL, randomFloat
 			).put(
-				_OBJECT_FIELD_NAME_LONG_INTEGER,
-				RandomTestUtil.randomLong(
-					ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MIN,
-					ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MAX)
+				_OBJECT_FIELD_NAME_INTEGER, randomInt
 			).put(
-				_OBJECT_FIELD_NAME_LONG_TEXT, RandomTestUtil.randomString()
+				_OBJECT_FIELD_NAME_LONG_INTEGER, randomLong
+			).put(
+				_OBJECT_FIELD_NAME_LONG_TEXT, randomString1
 			).put(
 				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
 				JSONUtil.putAll(_LIST_TYPE_ENTRY_KEY_1, _LIST_TYPE_ENTRY_KEY_2)
 			).put(
-				_OBJECT_FIELD_NAME_PICKLIST, _LIST_TYPE_ENTRY_KEY_1
+				_OBJECT_FIELD_NAME_PICKLIST, _LIST_TYPE_ENTRY_KEY_3
 			).put(
-				_OBJECT_FIELD_NAME_PRECISION_DECIMAL,
-				BigDecimal.valueOf(RandomTestUtil.randomDouble())
+				_OBJECT_FIELD_NAME_PRECISION_DECIMAL, randomBigDecimal
 			).put(
-				_OBJECT_FIELD_NAME_TEXT, RandomTestUtil.randomString()
+				_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
+			).put(
+				_OBJECT_FIELD_NAME_TEXT, randomString3
 			).put(
 				objectRelationshipERCObjectFieldName,
 				_objectEntry2.getExternalReferenceCode()
@@ -9177,42 +9200,103 @@ public class ObjectEntryResourceTest {
 			).toString(),
 			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
 
-		jsonObject = HTTPTestUtil.invokeToJSONObject(
-			null,
-			_objectDefinition1.getRESTContextPath() + StringPool.SLASH +
-				jsonObject.getString("id"),
-			Http.Method.GET);
-
 		HTTPTestUtil.invokeToJSONObject(
-			JSONFactoryUtil.getNullJSON(),
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
-				jsonObject.getString("id")),
+			JSONUtil.put(
+				"externalReferenceCode", _ERC_VALUE_1
+			).toString(),
+			_objectDefinition1.getRESTContextPath() + "/" +
+				jsonObject.getLong("id"),
 			Http.Method.PUT);
 
 		JSONAssert.assertEquals(
 			JSONUtil.put(
-				_OBJECT_FIELD_NAME_1, GetterUtil.getString(null)
-			).put(
-				_OBJECT_FIELD_NAME_BOOLEAN, GetterUtil.getBoolean(null)
+				_OBJECT_FIELD_NAME_BOOLEAN, false
 			).put(
 				_OBJECT_FIELD_NAME_DATE, (Timestamp)null
 			).put(
-				_OBJECT_FIELD_NAME_DECIMAL, GetterUtil.getDouble(null)
+				_OBJECT_FIELD_NAME_DATE_TIME_INPUT, (Timestamp)null
 			).put(
-				_OBJECT_FIELD_NAME_INTEGER, GetterUtil.getInteger(null)
+				_OBJECT_FIELD_NAME_DATE_TIME_UTC, (Timestamp)null
 			).put(
-				_OBJECT_FIELD_NAME_LONG_INTEGER, GetterUtil.getInteger(null)
+				_OBJECT_FIELD_NAME_DECIMAL, 0
 			).put(
-				_OBJECT_FIELD_NAME_LONG_TEXT, (String)null
+				_OBJECT_FIELD_NAME_INTEGER, 0
 			).put(
-				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST, Collections.emptyList()
+				_OBJECT_FIELD_NAME_LONG_INTEGER, 0
 			).put(
-				_OBJECT_FIELD_NAME_PICKLIST, (String)null
+				_OBJECT_FIELD_NAME_LONG_TEXT, ""
 			).put(
-				_OBJECT_FIELD_NAME_PRECISION_DECIMAL, GetterUtil.getDouble(null)
+				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+				JSONFactoryUtil.createJSONArray()
 			).put(
-				_OBJECT_FIELD_NAME_TEXT, GetterUtil.getString(null)
+				_OBJECT_FIELD_NAME_PICKLIST, JSONUtil.put("key", "")
+			).put(
+				_OBJECT_FIELD_NAME_PRECISION_DECIMAL, 0
+			).put(
+				_OBJECT_FIELD_NAME_RICH_TEXT, ""
+			).put(
+				_OBJECT_FIELD_NAME_TEXT, ""
+			).put(
+				objectRelationshipERCObjectFieldName, ""
+			).put(
+				"externalReferenceCode", _ERC_VALUE_1
+			).toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				null,
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.GET
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		JSONAssert.assertEquals(
+			JSONUtil.put(
+				_OBJECT_FIELD_NAME_BOOLEAN, randomBoolean
+			).put(
+				_OBJECT_FIELD_NAME_DATE,
+				_dateFormat.format(randomDate1) + "T00:00:00.000Z"
+			).put(
+				_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
+				StringUtil.removeLast(
+					_dateTimeDateFormat.format(randomDate2), "Z")
+			).put(
+				_OBJECT_FIELD_NAME_DATE_TIME_UTC,
+				_dateTimeDateFormat.format(randomDate3)
+			).put(
+				_OBJECT_FIELD_NAME_DECIMAL, randomFloat
+			).put(
+				_OBJECT_FIELD_NAME_INTEGER, randomInt
+			).put(
+				_OBJECT_FIELD_NAME_LONG_INTEGER, (double)randomLong
+			).put(
+				_OBJECT_FIELD_NAME_LONG_TEXT, randomString1
+			).put(
+				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+				JSONUtil.putAll(
+					JSONUtil.put(
+						"key", _LIST_TYPE_ENTRY_KEY_1
+					).put(
+						"name", _listTypeEntry1.getName(LocaleUtil.getDefault())
+					),
+					JSONUtil.put(
+						"key", _LIST_TYPE_ENTRY_KEY_2
+					).put(
+						"name", _listTypeEntry2.getName(LocaleUtil.getDefault())
+					))
+			).put(
+				_OBJECT_FIELD_NAME_PICKLIST,
+				JSONUtil.put(
+					"key", _LIST_TYPE_ENTRY_KEY_3
+				).put(
+					"name", _listTypeEntry3.getName(LocaleUtil.getDefault())
+				)
+			).put(
+				_OBJECT_FIELD_NAME_PRECISION_DECIMAL,
+				randomBigDecimal.round(new MathContext(16))
+			).put(
+				_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
+			).put(
+				_OBJECT_FIELD_NAME_TEXT, randomString3
 			).put(
 				objectRelationshipERCObjectFieldName,
 				_objectEntry2.getExternalReferenceCode()
@@ -9220,30 +9304,45 @@ public class ObjectEntryResourceTest {
 				"externalReferenceCode", _ERC_VALUE_1
 			).toString(),
 			HTTPTestUtil.invokeToJSONObject(
-				null,
-				_objectDefinition1.getRESTContextPath() + StringPool.SLASH +
-					jsonObject.getString("id"),
-				Http.Method.GET
-			).toString(),
-			JSONCompareMode.LENIENT);
-
-		jsonObject.remove("actions");
-		jsonObject.remove("dateModified");
-
-		HTTPTestUtil.invokeToJSONObject(
-			jsonObject.toString(),
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
-				jsonObject.getString("id")),
-			Http.Method.PUT);
-
-		JSONAssert.assertEquals(
-			jsonObject.toString(),
-			HTTPTestUtil.invokeToJSONObject(
-				null,
-				_objectDefinition1.getRESTContextPath() + StringPool.SLASH +
-					jsonObject.getString("id"),
-				Http.Method.GET
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_BOOLEAN, randomBoolean
+				).put(
+					_OBJECT_FIELD_NAME_DATE, _dateFormat.format(randomDate1)
+				).put(
+					_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
+					_dateTimeDateFormat.format(randomDate2)
+				).put(
+					_OBJECT_FIELD_NAME_DATE_TIME_UTC,
+					_dateTimeDateFormat.format(randomDate3)
+				).put(
+					_OBJECT_FIELD_NAME_DECIMAL, randomFloat
+				).put(
+					_OBJECT_FIELD_NAME_INTEGER, randomInt
+				).put(
+					_OBJECT_FIELD_NAME_LONG_INTEGER, randomLong
+				).put(
+					_OBJECT_FIELD_NAME_LONG_TEXT, randomString1
+				).put(
+					_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+					JSONUtil.putAll(
+						_LIST_TYPE_ENTRY_KEY_1, _LIST_TYPE_ENTRY_KEY_2)
+				).put(
+					_OBJECT_FIELD_NAME_PICKLIST, _LIST_TYPE_ENTRY_KEY_3
+				).put(
+					_OBJECT_FIELD_NAME_PRECISION_DECIMAL, randomBigDecimal
+				).put(
+					_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
+				).put(
+					_OBJECT_FIELD_NAME_TEXT, randomString3
+				).put(
+					objectRelationshipERCObjectFieldName,
+					_objectEntry2.getExternalReferenceCode()
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PUT
 			).toString(),
 			JSONCompareMode.LENIENT);
 	}
@@ -17353,6 +17452,10 @@ public class ObjectEntryResourceTest {
 
 	@Inject
 	private ListTypeDefinitionLocalService _listTypeDefinitionLocalService;
+
+	private ListTypeEntry _listTypeEntry1;
+	private ListTypeEntry _listTypeEntry2;
+	private ListTypeEntry _listTypeEntry3;
 
 	@Inject
 	private ListTypeEntryLocalService _listTypeEntryLocalService;
