@@ -9131,223 +9131,6 @@ public class ObjectEntryResourceTest {
 	}
 
 	@Test
-	@TestInfo("LPD-53245")
-	public void testPostPutCustomObjectEntry() throws Exception {
-		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
-			_objectDefinition2, _OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2);
-
-		_objectRelationship1 = ObjectRelationshipTestUtil.addObjectRelationship(
-			_objectDefinition2, _objectDefinition1, TestPropsValues.getUserId(),
-			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
-
-		String objectRelationshipERCObjectFieldName =
-			ObjectFieldSettingUtil.getValue(
-				ObjectFieldSettingConstants.
-					NAME_OBJECT_RELATIONSHIP_ERC_OBJECT_FIELD_NAME,
-				_objectFieldLocalService.getObjectField(
-					_objectRelationship1.getObjectFieldId2()));
-
-		BigDecimal randomBigDecimal = BigDecimal.valueOf(
-			RandomTestUtil.randomDouble());
-		boolean randomBoolean = RandomTestUtil.randomBoolean();
-		Date randomDate1 = RandomTestUtil.nextDate();
-		Date randomDate2 = RandomTestUtil.nextDate();
-		Date randomDate3 = RandomTestUtil.nextDate();
-		float randomFloat = RandomTestUtil.randomFloat();
-		int randomInt = RandomTestUtil.randomInt();
-		long randomLong = RandomTestUtil.randomLong(
-			ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MIN,
-			ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MAX);
-		String randomString1 = RandomTestUtil.randomString();
-		String randomString2 = RandomTestUtil.randomString();
-		String randomString3 = RandomTestUtil.randomString();
-
-		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
-			JSONUtil.put(
-				_OBJECT_FIELD_NAME_BOOLEAN, randomBoolean
-			).put(
-				_OBJECT_FIELD_NAME_DATE, _dateFormat.format(randomDate1)
-			).put(
-				_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
-				_dateTimeDateFormat.format(randomDate2)
-			).put(
-				_OBJECT_FIELD_NAME_DATE_TIME_UTC,
-				_dateTimeDateFormat.format(randomDate3)
-			).put(
-				_OBJECT_FIELD_NAME_DECIMAL, randomFloat
-			).put(
-				_OBJECT_FIELD_NAME_INTEGER, randomInt
-			).put(
-				_OBJECT_FIELD_NAME_LONG_INTEGER, randomLong
-			).put(
-				_OBJECT_FIELD_NAME_LONG_TEXT, randomString1
-			).put(
-				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
-				JSONUtil.putAll(_LIST_TYPE_ENTRY_KEY_1, _LIST_TYPE_ENTRY_KEY_2)
-			).put(
-				_OBJECT_FIELD_NAME_PICKLIST, _LIST_TYPE_ENTRY_KEY_3
-			).put(
-				_OBJECT_FIELD_NAME_PRECISION_DECIMAL, randomBigDecimal
-			).put(
-				_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
-			).put(
-				_OBJECT_FIELD_NAME_TEXT, randomString3
-			).put(
-				objectRelationshipERCObjectFieldName,
-				_objectEntry2.getExternalReferenceCode()
-			).put(
-				"externalReferenceCode", _ERC_VALUE_1
-			).toString(),
-			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
-
-		HTTPTestUtil.invokeToJSONObject(
-			JSONUtil.put(
-				"externalReferenceCode", _ERC_VALUE_1
-			).toString(),
-			_objectDefinition1.getRESTContextPath() + "/" +
-				jsonObject.getLong("id"),
-			Http.Method.PUT);
-
-		JSONAssert.assertEquals(
-			JSONUtil.put(
-				_OBJECT_FIELD_NAME_BOOLEAN, false
-			).put(
-				_OBJECT_FIELD_NAME_DATE, (Timestamp)null
-			).put(
-				_OBJECT_FIELD_NAME_DATE_TIME_INPUT, (Timestamp)null
-			).put(
-				_OBJECT_FIELD_NAME_DATE_TIME_UTC, (Timestamp)null
-			).put(
-				_OBJECT_FIELD_NAME_DECIMAL, 0
-			).put(
-				_OBJECT_FIELD_NAME_INTEGER, 0
-			).put(
-				_OBJECT_FIELD_NAME_LONG_INTEGER, 0
-			).put(
-				_OBJECT_FIELD_NAME_LONG_TEXT, ""
-			).put(
-				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
-				JSONFactoryUtil.createJSONArray()
-			).put(
-				_OBJECT_FIELD_NAME_PICKLIST, JSONUtil.put("key", "")
-			).put(
-				_OBJECT_FIELD_NAME_PRECISION_DECIMAL, 0
-			).put(
-				_OBJECT_FIELD_NAME_RICH_TEXT, ""
-			).put(
-				_OBJECT_FIELD_NAME_TEXT, ""
-			).put(
-				objectRelationshipERCObjectFieldName, ""
-			).put(
-				"externalReferenceCode", _ERC_VALUE_1
-			).toString(),
-			HTTPTestUtil.invokeToJSONObject(
-				null,
-				_objectDefinition1.getRESTContextPath() + "/" +
-					jsonObject.getLong("id"),
-				Http.Method.GET
-			).toString(),
-			JSONCompareMode.LENIENT);
-
-		JSONAssert.assertEquals(
-			JSONUtil.put(
-				_OBJECT_FIELD_NAME_BOOLEAN, randomBoolean
-			).put(
-				_OBJECT_FIELD_NAME_DATE,
-				_dateFormat.format(randomDate1) + "T00:00:00.000Z"
-			).put(
-				_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
-				StringUtil.removeLast(
-					_dateTimeDateFormat.format(randomDate2), "Z")
-			).put(
-				_OBJECT_FIELD_NAME_DATE_TIME_UTC,
-				_dateTimeDateFormat.format(randomDate3)
-			).put(
-				_OBJECT_FIELD_NAME_DECIMAL, randomFloat
-			).put(
-				_OBJECT_FIELD_NAME_INTEGER, randomInt
-			).put(
-				_OBJECT_FIELD_NAME_LONG_INTEGER, (double)randomLong
-			).put(
-				_OBJECT_FIELD_NAME_LONG_TEXT, randomString1
-			).put(
-				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
-				JSONUtil.putAll(
-					JSONUtil.put(
-						"key", _LIST_TYPE_ENTRY_KEY_1
-					).put(
-						"name", _listTypeEntry1.getName(LocaleUtil.getDefault())
-					),
-					JSONUtil.put(
-						"key", _LIST_TYPE_ENTRY_KEY_2
-					).put(
-						"name", _listTypeEntry2.getName(LocaleUtil.getDefault())
-					))
-			).put(
-				_OBJECT_FIELD_NAME_PICKLIST,
-				JSONUtil.put(
-					"key", _LIST_TYPE_ENTRY_KEY_3
-				).put(
-					"name", _listTypeEntry3.getName(LocaleUtil.getDefault())
-				)
-			).put(
-				_OBJECT_FIELD_NAME_PRECISION_DECIMAL,
-				randomBigDecimal.round(new MathContext(16))
-			).put(
-				_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
-			).put(
-				_OBJECT_FIELD_NAME_TEXT, randomString3
-			).put(
-				objectRelationshipERCObjectFieldName,
-				_objectEntry2.getExternalReferenceCode()
-			).put(
-				"externalReferenceCode", _ERC_VALUE_1
-			).toString(),
-			HTTPTestUtil.invokeToJSONObject(
-				JSONUtil.put(
-					_OBJECT_FIELD_NAME_BOOLEAN, randomBoolean
-				).put(
-					_OBJECT_FIELD_NAME_DATE, _dateFormat.format(randomDate1)
-				).put(
-					_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
-					_dateTimeDateFormat.format(randomDate2)
-				).put(
-					_OBJECT_FIELD_NAME_DATE_TIME_UTC,
-					_dateTimeDateFormat.format(randomDate3)
-				).put(
-					_OBJECT_FIELD_NAME_DECIMAL, randomFloat
-				).put(
-					_OBJECT_FIELD_NAME_INTEGER, randomInt
-				).put(
-					_OBJECT_FIELD_NAME_LONG_INTEGER, randomLong
-				).put(
-					_OBJECT_FIELD_NAME_LONG_TEXT, randomString1
-				).put(
-					_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
-					JSONUtil.putAll(
-						_LIST_TYPE_ENTRY_KEY_1, _LIST_TYPE_ENTRY_KEY_2)
-				).put(
-					_OBJECT_FIELD_NAME_PICKLIST, _LIST_TYPE_ENTRY_KEY_3
-				).put(
-					_OBJECT_FIELD_NAME_PRECISION_DECIMAL, randomBigDecimal
-				).put(
-					_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
-				).put(
-					_OBJECT_FIELD_NAME_TEXT, randomString3
-				).put(
-					objectRelationshipERCObjectFieldName,
-					_objectEntry2.getExternalReferenceCode()
-				).put(
-					"externalReferenceCode", _ERC_VALUE_1
-				).toString(),
-				_objectDefinition1.getRESTContextPath() + "/" +
-					jsonObject.getLong("id"),
-				Http.Method.PUT
-			).toString(),
-			JSONCompareMode.LENIENT);
-	}
-
-	@Test
 	public void testPostRelatedObjectEntryInDifferentCompany()
 		throws Exception {
 
@@ -10019,6 +9802,223 @@ public class ObjectEntryResourceTest {
 					"/by-external-reference-code/", _ERC_VALUE_1,
 					"?nestedFields=", _objectRelationship1.getName()),
 				Http.Method.GET
+			).toString(),
+			JSONCompareMode.LENIENT);
+	}
+
+	@Test
+	@TestInfo("LPD-53245")
+	public void testPutCustomObjectEntry() throws Exception {
+		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
+			_objectDefinition2, _OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2);
+
+		_objectRelationship1 = ObjectRelationshipTestUtil.addObjectRelationship(
+			_objectDefinition2, _objectDefinition1, TestPropsValues.getUserId(),
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		String objectRelationshipERCObjectFieldName =
+			ObjectFieldSettingUtil.getValue(
+				ObjectFieldSettingConstants.
+					NAME_OBJECT_RELATIONSHIP_ERC_OBJECT_FIELD_NAME,
+				_objectFieldLocalService.getObjectField(
+					_objectRelationship1.getObjectFieldId2()));
+
+		BigDecimal randomBigDecimal = BigDecimal.valueOf(
+			RandomTestUtil.randomDouble());
+		boolean randomBoolean = RandomTestUtil.randomBoolean();
+		Date randomDate1 = RandomTestUtil.nextDate();
+		Date randomDate2 = RandomTestUtil.nextDate();
+		Date randomDate3 = RandomTestUtil.nextDate();
+		float randomFloat = RandomTestUtil.randomFloat();
+		int randomInt = RandomTestUtil.randomInt();
+		long randomLong = RandomTestUtil.randomLong(
+			ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MIN,
+			ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MAX);
+		String randomString1 = RandomTestUtil.randomString();
+		String randomString2 = RandomTestUtil.randomString();
+		String randomString3 = RandomTestUtil.randomString();
+
+		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				_OBJECT_FIELD_NAME_BOOLEAN, randomBoolean
+			).put(
+				_OBJECT_FIELD_NAME_DATE, _dateFormat.format(randomDate1)
+			).put(
+				_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
+				_dateTimeDateFormat.format(randomDate2)
+			).put(
+				_OBJECT_FIELD_NAME_DATE_TIME_UTC,
+				_dateTimeDateFormat.format(randomDate3)
+			).put(
+				_OBJECT_FIELD_NAME_DECIMAL, randomFloat
+			).put(
+				_OBJECT_FIELD_NAME_INTEGER, randomInt
+			).put(
+				_OBJECT_FIELD_NAME_LONG_INTEGER, randomLong
+			).put(
+				_OBJECT_FIELD_NAME_LONG_TEXT, randomString1
+			).put(
+				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+				JSONUtil.putAll(_LIST_TYPE_ENTRY_KEY_1, _LIST_TYPE_ENTRY_KEY_2)
+			).put(
+				_OBJECT_FIELD_NAME_PICKLIST, _LIST_TYPE_ENTRY_KEY_3
+			).put(
+				_OBJECT_FIELD_NAME_PRECISION_DECIMAL, randomBigDecimal
+			).put(
+				_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
+			).put(
+				_OBJECT_FIELD_NAME_TEXT, randomString3
+			).put(
+				objectRelationshipERCObjectFieldName,
+				_objectEntry2.getExternalReferenceCode()
+			).put(
+				"externalReferenceCode", _ERC_VALUE_1
+			).toString(),
+			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
+
+		HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				"externalReferenceCode", _ERC_VALUE_1
+			).toString(),
+			_objectDefinition1.getRESTContextPath() + "/" +
+				jsonObject.getLong("id"),
+			Http.Method.PUT);
+
+		JSONAssert.assertEquals(
+			JSONUtil.put(
+				_OBJECT_FIELD_NAME_BOOLEAN, false
+			).put(
+				_OBJECT_FIELD_NAME_DATE, (Timestamp)null
+			).put(
+				_OBJECT_FIELD_NAME_DATE_TIME_INPUT, (Timestamp)null
+			).put(
+				_OBJECT_FIELD_NAME_DATE_TIME_UTC, (Timestamp)null
+			).put(
+				_OBJECT_FIELD_NAME_DECIMAL, 0
+			).put(
+				_OBJECT_FIELD_NAME_INTEGER, 0
+			).put(
+				_OBJECT_FIELD_NAME_LONG_INTEGER, 0
+			).put(
+				_OBJECT_FIELD_NAME_LONG_TEXT, ""
+			).put(
+				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+				JSONFactoryUtil.createJSONArray()
+			).put(
+				_OBJECT_FIELD_NAME_PICKLIST, JSONUtil.put("key", "")
+			).put(
+				_OBJECT_FIELD_NAME_PRECISION_DECIMAL, 0
+			).put(
+				_OBJECT_FIELD_NAME_RICH_TEXT, ""
+			).put(
+				_OBJECT_FIELD_NAME_TEXT, ""
+			).put(
+				objectRelationshipERCObjectFieldName, ""
+			).put(
+				"externalReferenceCode", _ERC_VALUE_1
+			).toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				null,
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.GET
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		JSONAssert.assertEquals(
+			JSONUtil.put(
+				_OBJECT_FIELD_NAME_BOOLEAN, randomBoolean
+			).put(
+				_OBJECT_FIELD_NAME_DATE,
+				_dateFormat.format(randomDate1) + "T00:00:00.000Z"
+			).put(
+				_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
+				StringUtil.removeLast(
+					_dateTimeDateFormat.format(randomDate2), "Z")
+			).put(
+				_OBJECT_FIELD_NAME_DATE_TIME_UTC,
+				_dateTimeDateFormat.format(randomDate3)
+			).put(
+				_OBJECT_FIELD_NAME_DECIMAL, randomFloat
+			).put(
+				_OBJECT_FIELD_NAME_INTEGER, randomInt
+			).put(
+				_OBJECT_FIELD_NAME_LONG_INTEGER, (double)randomLong
+			).put(
+				_OBJECT_FIELD_NAME_LONG_TEXT, randomString1
+			).put(
+				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+				JSONUtil.putAll(
+					JSONUtil.put(
+						"key", _LIST_TYPE_ENTRY_KEY_1
+					).put(
+						"name", _listTypeEntry1.getName(LocaleUtil.getDefault())
+					),
+					JSONUtil.put(
+						"key", _LIST_TYPE_ENTRY_KEY_2
+					).put(
+						"name", _listTypeEntry2.getName(LocaleUtil.getDefault())
+					))
+			).put(
+				_OBJECT_FIELD_NAME_PICKLIST,
+				JSONUtil.put(
+					"key", _LIST_TYPE_ENTRY_KEY_3
+				).put(
+					"name", _listTypeEntry3.getName(LocaleUtil.getDefault())
+				)
+			).put(
+				_OBJECT_FIELD_NAME_PRECISION_DECIMAL,
+				randomBigDecimal.round(new MathContext(16))
+			).put(
+				_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
+			).put(
+				_OBJECT_FIELD_NAME_TEXT, randomString3
+			).put(
+				objectRelationshipERCObjectFieldName,
+				_objectEntry2.getExternalReferenceCode()
+			).put(
+				"externalReferenceCode", _ERC_VALUE_1
+			).toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_BOOLEAN, randomBoolean
+				).put(
+					_OBJECT_FIELD_NAME_DATE, _dateFormat.format(randomDate1)
+				).put(
+					_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
+					_dateTimeDateFormat.format(randomDate2)
+				).put(
+					_OBJECT_FIELD_NAME_DATE_TIME_UTC,
+					_dateTimeDateFormat.format(randomDate3)
+				).put(
+					_OBJECT_FIELD_NAME_DECIMAL, randomFloat
+				).put(
+					_OBJECT_FIELD_NAME_INTEGER, randomInt
+				).put(
+					_OBJECT_FIELD_NAME_LONG_INTEGER, randomLong
+				).put(
+					_OBJECT_FIELD_NAME_LONG_TEXT, randomString1
+				).put(
+					_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+					JSONUtil.putAll(
+						_LIST_TYPE_ENTRY_KEY_1, _LIST_TYPE_ENTRY_KEY_2)
+				).put(
+					_OBJECT_FIELD_NAME_PICKLIST, _LIST_TYPE_ENTRY_KEY_3
+				).put(
+					_OBJECT_FIELD_NAME_PRECISION_DECIMAL, randomBigDecimal
+				).put(
+					_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
+				).put(
+					_OBJECT_FIELD_NAME_TEXT, randomString3
+				).put(
+					objectRelationshipERCObjectFieldName,
+					_objectEntry2.getExternalReferenceCode()
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PUT
 			).toString(),
 			JSONCompareMode.LENIENT);
 	}
