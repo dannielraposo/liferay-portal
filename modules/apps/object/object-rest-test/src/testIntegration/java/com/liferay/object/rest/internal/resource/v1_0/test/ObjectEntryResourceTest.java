@@ -7554,6 +7554,438 @@ public class ObjectEntryResourceTest {
 		_assertItem(0, jsonObject, _OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1);
 	}
 
+	@Test
+	@TestInfo("LPD-53245")
+	public void testPatchCustomObjectEntry() throws Exception {
+		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
+			_objectDefinition2, _OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2);
+
+		_objectRelationship1 = ObjectRelationshipTestUtil.addObjectRelationship(
+			_objectDefinition2, _objectDefinition1, TestPropsValues.getUserId(),
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		String objectRelationshipERCObjectFieldName =
+			ObjectFieldSettingUtil.getValue(
+				ObjectFieldSettingConstants.
+					NAME_OBJECT_RELATIONSHIP_ERC_OBJECT_FIELD_NAME,
+				_objectFieldLocalService.getObjectField(
+					_objectRelationship1.getObjectFieldId2()));
+
+		BigDecimal randomBigDecimal = BigDecimal.valueOf(
+			RandomTestUtil.randomDouble());
+		boolean randomBoolean = RandomTestUtil.randomBoolean();
+		Date randomDate1 = RandomTestUtil.nextDate();
+		Date randomDate2 = RandomTestUtil.nextDate();
+		Date randomDate3 = RandomTestUtil.nextDate();
+		float randomFloat = RandomTestUtil.randomFloat();
+		int randomInt = RandomTestUtil.randomInt();
+		long randomLong = RandomTestUtil.randomLong(
+			ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MIN,
+			ObjectFieldValidationConstants.BUSINESS_TYPE_LONG_VALUE_MAX);
+		String randomString1 = RandomTestUtil.randomString();
+		String randomString2 = RandomTestUtil.randomString();
+		String randomString3 = RandomTestUtil.randomString();
+
+		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				_OBJECT_FIELD_NAME_BOOLEAN, randomBoolean
+			).put(
+				_OBJECT_FIELD_NAME_DATE, _dateFormat.format(randomDate1)
+			).put(
+				_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
+				_dateTimeDateFormat.format(randomDate2)
+			).put(
+				_OBJECT_FIELD_NAME_DATE_TIME_UTC,
+				_dateTimeDateFormat.format(randomDate3)
+			).put(
+				_OBJECT_FIELD_NAME_DECIMAL, randomFloat
+			).put(
+				_OBJECT_FIELD_NAME_INTEGER, randomInt
+			).put(
+				_OBJECT_FIELD_NAME_LONG_INTEGER, randomLong
+			).put(
+				_OBJECT_FIELD_NAME_LONG_TEXT, randomString1
+			).put(
+				_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+				JSONUtil.putAll(_LIST_TYPE_ENTRY_KEY_1, _LIST_TYPE_ENTRY_KEY_2)
+			).put(
+				_OBJECT_FIELD_NAME_PICKLIST, _LIST_TYPE_ENTRY_KEY_3
+			).put(
+				_OBJECT_FIELD_NAME_PRECISION_DECIMAL, randomBigDecimal
+			).put(
+				_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
+			).put(
+				_OBJECT_FIELD_NAME_TEXT, randomString3
+			).put(
+				objectRelationshipERCObjectFieldName,
+				_objectEntry2.getExternalReferenceCode()
+			).put(
+				"externalReferenceCode", _ERC_VALUE_1
+			).toString(),
+			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
+
+		JSONObject expectedJSONObject = JSONUtil.put(
+			_OBJECT_FIELD_NAME_BOOLEAN, randomBoolean
+		).put(
+			_OBJECT_FIELD_NAME_DATE,
+			_dateFormat.format(randomDate1) + "T00:00:00.000Z"
+		).put(
+			_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
+			StringUtil.removeLast(_dateTimeDateFormat.format(randomDate2), "Z")
+		).put(
+			_OBJECT_FIELD_NAME_DATE_TIME_UTC,
+			_dateTimeDateFormat.format(randomDate3)
+		).put(
+			_OBJECT_FIELD_NAME_DECIMAL, randomFloat
+		).put(
+			_OBJECT_FIELD_NAME_INTEGER, randomInt
+		).put(
+			_OBJECT_FIELD_NAME_LONG_INTEGER, (double)randomLong
+		).put(
+			_OBJECT_FIELD_NAME_LONG_TEXT, randomString1
+		).put(
+			_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+			JSONUtil.putAll(
+				JSONUtil.put(
+					"key", _LIST_TYPE_ENTRY_KEY_1
+				).put(
+					"name", _listTypeEntry1.getName(LocaleUtil.getDefault())
+				),
+				JSONUtil.put(
+					"key", _LIST_TYPE_ENTRY_KEY_2
+				).put(
+					"name", _listTypeEntry2.getName(LocaleUtil.getDefault())
+				))
+		).put(
+			_OBJECT_FIELD_NAME_PICKLIST,
+			JSONUtil.put(
+				"key", _LIST_TYPE_ENTRY_KEY_3
+			).put(
+				"name", _listTypeEntry3.getName(LocaleUtil.getDefault())
+			)
+		).put(
+			_OBJECT_FIELD_NAME_PRECISION_DECIMAL,
+			randomBigDecimal.round(new MathContext(16))
+		).put(
+			_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
+		).put(
+			_OBJECT_FIELD_NAME_TEXT, randomString3
+		).put(
+			objectRelationshipERCObjectFieldName,
+			_objectEntry2.getExternalReferenceCode()
+		).put(
+			"externalReferenceCode", _ERC_VALUE_1
+		);
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.GET
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		Object value = !randomBoolean;
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_BOOLEAN, value);
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_BOOLEAN, value
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		value = new Date(randomDate1.getTime() + (24 * 3600 * 1000));
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_DATE,
+			_dateFormat.format(value) + "T00:00:00.000Z");
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_DATE, _dateFormat.format(value)
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		value = new Date(randomDate2.getTime() + (24 * 3600 * 1000));
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_DATE_TIME_INPUT,
+			StringUtil.removeLast(_dateTimeDateFormat.format(value), "Z"));
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_DATE_TIME_INPUT,
+					_dateTimeDateFormat.format(value)
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		value = new Date(randomDate3.getTime() + (24 * 3600 * 1000));
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_DATE_TIME_UTC,
+			_dateTimeDateFormat.format(value));
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_DATE_TIME_UTC,
+					_dateTimeDateFormat.format(value)
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		value = randomFloat + 1;
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_DECIMAL, value);
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_DECIMAL, value
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		value = randomInt + 1;
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_INTEGER, value);
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_INTEGER, value
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		value = randomLong + 1;
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_LONG_INTEGER, value);
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_LONG_INTEGER, value
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		value = "b" + randomString1;
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_LONG_TEXT, value);
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_LONG_TEXT, value
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+			JSONUtil.putAll(
+				JSONUtil.put(
+					"key", _LIST_TYPE_ENTRY_KEY_2
+				).put(
+					"name", _listTypeEntry2.getName(LocaleUtil.getDefault())
+				),
+				JSONUtil.put(
+					"key", _LIST_TYPE_ENTRY_KEY_3
+				).put(
+					"name", _listTypeEntry3.getName(LocaleUtil.getDefault())
+				)));
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+					JSONUtil.putAll(
+						_LIST_TYPE_ENTRY_KEY_2, _LIST_TYPE_ENTRY_KEY_3)
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_PICKLIST,
+			JSONUtil.put(
+				"key", _LIST_TYPE_ENTRY_KEY_1
+			).put(
+				"name", _listTypeEntry1.getName(LocaleUtil.getDefault())
+			));
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_PICKLIST, _LIST_TYPE_ENTRY_KEY_1
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		BigDecimal bigDecimal = randomBigDecimal.add(BigDecimal.ONE);
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_PRECISION_DECIMAL,
+			bigDecimal.round(new MathContext(17)));
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_PRECISION_DECIMAL, bigDecimal
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		value = "b" + randomString2;
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_RICH_TEXT, value);
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_RICH_TEXT, value
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		value = "b" + randomString3;
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, _OBJECT_FIELD_NAME_TEXT, value);
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_TEXT, value
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		expectedJSONObject = _cloneJSONObject(
+			expectedJSONObject, objectRelationshipERCObjectFieldName, "");
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					objectRelationshipERCObjectFieldName, ""
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				_objectDefinition1.getRESTContextPath() + "/" +
+					jsonObject.getLong("id"),
+				Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
+	}
+
 	@FeatureFlags("LPD-21926")
 	@Test
 	public void testPatchObjectEntryWithFriendlyURL() throws Exception {
@@ -13973,6 +14405,17 @@ public class ObjectEntryResourceTest {
 		Assert.assertEquals(expectedSize, itemsJSONArray.length());
 
 		Assert.assertEquals(expectedSize, jsonObject.getLong("totalCount"));
+	}
+
+	private JSONObject _cloneJSONObject(
+			JSONObject jsonObject, String objectFieldName,
+			Object objectFieldValue)
+		throws Exception {
+
+		JSONObject clonedJSONObject = JSONFactoryUtil.createJSONObject(
+			jsonObject.toString());
+
+		return clonedJSONObject.put(objectFieldName, objectFieldValue);
 	}
 
 	private JSONArray _createObjectEntriesJSONArray(
