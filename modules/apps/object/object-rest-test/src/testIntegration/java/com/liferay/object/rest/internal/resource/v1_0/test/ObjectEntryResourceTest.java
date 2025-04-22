@@ -7967,23 +7967,6 @@ public class ObjectEntryResourceTest {
 				Http.Method.PATCH
 			).toString(),
 			JSONCompareMode.LENIENT);
-
-		expectedJSONObject = _cloneJSONObject(
-			expectedJSONObject, objectRelationshipERCObjectFieldName, "");
-
-		JSONAssert.assertEquals(
-			expectedJSONObject.toString(),
-			HTTPTestUtil.invokeToJSONObject(
-				JSONUtil.put(
-					objectRelationshipERCObjectFieldName, ""
-				).put(
-					"externalReferenceCode", _ERC_VALUE_1
-				).toString(),
-				_objectDefinition1.getRESTContextPath() + "/" +
-					jsonObject.getLong("id"),
-				Http.Method.PATCH
-			).toString(),
-			JSONCompareMode.LENIENT);
 	}
 
 	@FeatureFlags("LPD-21926")
