@@ -189,6 +189,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 
 import java.text.DateFormat;
@@ -7749,7 +7750,7 @@ public class ObjectEntryResourceTest {
 			)
 		).put(
 			_OBJECT_FIELD_NAME_PRECISION_DECIMAL,
-			randomBigDecimal.round(new MathContext(16))
+			randomBigDecimal.setScale(16, RoundingMode.HALF_UP)
 		).put(
 			_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
 		).put(
@@ -7903,7 +7904,7 @@ public class ObjectEntryResourceTest {
 
 		expectedJSONObject = _cloneJSONObject(
 			expectedJSONObject, _OBJECT_FIELD_NAME_PRECISION_DECIMAL,
-			bigDecimal.round(new MathContext(17)));
+			bigDecimal.setScale(16, RoundingMode.HALF_UP));
 
 		_testPatchCustomObjectEntry(
 			expectedJSONObject, _OBJECT_FIELD_NAME_PRECISION_DECIMAL,
@@ -10342,7 +10343,7 @@ public class ObjectEntryResourceTest {
 				)
 			).put(
 				_OBJECT_FIELD_NAME_PRECISION_DECIMAL,
-				randomBigDecimal.round(new MathContext(16))
+				randomBigDecimal.setScale(16, RoundingMode.HALF_UP)
 			).put(
 				_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
 			).put(
@@ -11163,7 +11164,7 @@ public class ObjectEntryResourceTest {
 				)
 			).put(
 				_OBJECT_FIELD_NAME_PRECISION_DECIMAL,
-				randomBigDecimal.round(new MathContext(16))
+				randomBigDecimal.setScale(16, RoundingMode.HALF_UP)
 			).put(
 				_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
 			).put(
