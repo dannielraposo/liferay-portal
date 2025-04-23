@@ -2609,8 +2609,14 @@ public class ObjectEntryLocalServiceImpl
 		Map<String, Serializable> values) {
 
 		for (ObjectField objectField :
-				_objectFieldPersistence.findByObjectDefinitionId(
-					objectDefinitionId)) {
+				_objectFieldPersistence.findByODI_S(
+					objectDefinitionId, false)) {
+
+			if (objectField.compareBusinessType(
+					ObjectFieldConstants.BUSINESS_TYPE_RELATIONSHIP)) {
+
+				continue;
+			}
 
 			Map<String, Object> localizedValues =
 				(Map<String, Object>)values.getOrDefault(
