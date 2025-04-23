@@ -8355,6 +8355,30 @@ public class ObjectEntryResourceTest {
 	}
 
 	@Test
+	public void testPatchByExternalReferenceCodeSiteScopedCustomObjectEntry() throws Exception {
+		String newObjectFieldValue = RandomTestUtil.randomString();
+
+		JSONObject objectEntryJSONObject = JSONUtil.put(
+			_OBJECT_FIELD_NAME_1, newObjectFieldValue);
+
+		_siteScopedObjectEntry1 = ObjectEntryTestUtil.addObjectEntry(
+			_siteScopedObjectDefinition1, _OBJECT_FIELD_NAME_1,
+			_OBJECT_FIELD_VALUE_1);
+
+		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+			objectEntryJSONObject.toString(),
+			StringBundler.concat(
+				_getEndpoint(
+					TestPropsValues.getGroupId(), _siteScopedObjectDefinition1),
+				"/by-external-reference-code/",
+				_siteScopedObjectEntry1.getExternalReferenceCode()),
+			Http.Method.PATCH);
+
+		Assert.assertEquals(
+			jsonObject.getString(_OBJECT_FIELD_NAME_1), newObjectFieldValue);
+	}
+
+	@Test
 	public void testPatchPutScopeScopeKeyByExternalReferenceCode()
 		throws Exception {
 
