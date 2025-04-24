@@ -4576,6 +4576,7 @@ public class ObjectEntryLocalServiceTest {
 
 		_testPartialUpdateObjectEntryExternalReferenceCode();
 		_testPartialUpdateObjectEntryObjectStateTransitions();
+		_testPartialUpdateObjectEntryWithObjectRelationship();
 	}
 
 	@Test
@@ -5267,6 +5268,7 @@ public class ObjectEntryLocalServiceTest {
 
 		_testUpdateObjectEntryExternalReferenceCode();
 		_testUpdateObjectEntryObjectStateTransitions();
+		_testUpdateObjectEntryWithObjectRelationship();
 	}
 
 	@Test
@@ -6495,6 +6497,120 @@ public class ObjectEntryLocalServiceTest {
 			objectEntry.getObjectEntryId());
 	}
 
+	private void _testPartialUpdateObjectEntryWithObjectRelationship()
+		throws Exception {
+
+		ObjectDefinition objectDefinition =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				"RelatedObjectDefinition",
+				Collections.singletonList(
+					new TextObjectFieldBuilder(
+					).labelMap(
+						LocalizedMapUtil.getLocalizedMap(
+							RandomTestUtil.randomString())
+					).name(
+						"name"
+					).build()),
+				ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		ObjectRelationshipTestUtil.addObjectRelationship(
+			_objectRelationshipLocalService, objectDefinition,
+			_objectDefinition,
+			ObjectRelationshipConstants.DELETION_TYPE_CASCADE,
+			"objectRelationship");
+
+		ObjectEntry objectEntry1 = _addObjectEntry(
+			HashMapBuilder.<String, Serializable>put(
+				"emailAddressRequired", "carlos@liferay.com"
+			).put(
+				"listTypeEntryKeyRequired", "listTypeEntryKey1"
+			).build());
+
+		long objectEntryId1 = objectEntry1.getObjectEntryId();
+
+		objectEntry1 = _objectEntryLocalService.partialUpdateObjectEntry(
+			TestPropsValues.getUserId(), objectEntryId1,
+			HashMapBuilder.<String, Serializable>put(
+				"firstName", "Charles"
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		Map<String, Serializable> values = objectEntry1.getValues();
+
+		Assert.assertEquals("Charles", values.get("firstName"));
+		Assert.assertEquals(
+			StringPool.BLANK,
+			values.get("r_objectRelationship_c_relatedObjectDefinitionERC"));
+		Assert.assertEquals(
+			0L, values.get("r_objectRelationship_c_relatedObjectDefinitionId"));
+
+		ObjectEntry objectEntry2 = _addObjectEntry(
+			0, objectDefinition.getObjectDefinitionId(),
+			HashMapBuilder.<String, Serializable>put(
+				"name", RandomTestUtil.randomString()
+			).build());
+
+		objectEntry1 = _objectEntryLocalService.partialUpdateObjectEntry(
+			TestPropsValues.getUserId(), objectEntryId1,
+			HashMapBuilder.<String, Serializable>put(
+				"r_objectRelationship_c_relatedObjectDefinitionId",
+				objectEntry2.getObjectEntryId()
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		values = objectEntry1.getValues();
+
+		Assert.assertEquals("Charles", values.get("firstName"));
+		Assert.assertEquals(
+			objectEntry2.getExternalReferenceCode(),
+			values.get("r_objectRelationship_c_relatedObjectDefinitionERC"));
+		Assert.assertEquals(
+			objectEntry2.getObjectEntryId(),
+			values.get("r_objectRelationship_c_relatedObjectDefinitionId"));
+
+		objectEntry1 = _objectEntryLocalService.partialUpdateObjectEntry(
+			TestPropsValues.getUserId(), objectEntryId1,
+			HashMapBuilder.<String, Serializable>put(
+				"firstName", "Julia"
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		values = objectEntry1.getValues();
+
+		Assert.assertEquals("Julia", values.get("firstName"));
+		Assert.assertEquals(
+			objectEntry2.getExternalReferenceCode(),
+			values.get("r_objectRelationship_c_relatedObjectDefinitionERC"));
+		Assert.assertEquals(
+			objectEntry2.getObjectEntryId(),
+			values.get("r_objectRelationship_c_relatedObjectDefinitionId"));
+
+		objectEntry1 = _objectEntryLocalService.partialUpdateObjectEntry(
+			TestPropsValues.getUserId(), objectEntryId1,
+			HashMapBuilder.<String, Serializable>put(
+				"firstName", "Zape"
+			).put(
+				"r_objectRelationship_c_relatedObjectDefinitionId", 0L
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		values = objectEntry1.getValues();
+
+		Assert.assertEquals("Zape", values.get("firstName"));
+		Assert.assertEquals(
+			StringPool.BLANK,
+			values.get("r_objectRelationship_c_relatedObjectDefinitionERC"));
+		Assert.assertEquals(
+			0L, values.get("r_objectRelationship_c_relatedObjectDefinitionId"));
+
+		_objectEntryLocalService.deleteObjectEntry(objectEntryId1);
+		_objectEntryLocalService.deleteObjectEntry(
+			objectEntry2.getObjectEntryId());
+
+		_objectDefinitionLocalService.deleteObjectDefinition(
+			objectDefinition.getObjectDefinitionId());
+	}
+
 	private void _testScope(long groupId, String scope, boolean expectSuccess)
 		throws Exception {
 
@@ -6757,6 +6873,120 @@ public class ObjectEntryLocalServiceTest {
 
 		_objectEntryLocalService.deleteObjectEntry(
 			objectEntry.getObjectEntryId());
+	}
+
+	private void _testUpdateObjectEntryWithObjectRelationship()
+		throws Exception {
+
+		ObjectDefinition objectDefinition =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				"RelatedObjectDefinition",
+				Collections.singletonList(
+					new TextObjectFieldBuilder(
+					).labelMap(
+						LocalizedMapUtil.getLocalizedMap(
+							RandomTestUtil.randomString())
+					).name(
+						"name"
+					).build()),
+				ObjectDefinitionConstants.SCOPE_COMPANY);
+
+		ObjectRelationshipTestUtil.addObjectRelationship(
+			_objectRelationshipLocalService, objectDefinition,
+			_objectDefinition,
+			ObjectRelationshipConstants.DELETION_TYPE_CASCADE,
+			"objectRelationship");
+
+		ObjectEntry objectEntry1 = _addObjectEntry(
+			HashMapBuilder.<String, Serializable>put(
+				"emailAddressRequired", "carlos@liferay.com"
+			).put(
+				"listTypeEntryKeyRequired", "listTypeEntryKey1"
+			).build());
+
+		long objectEntryId1 = objectEntry1.getObjectEntryId();
+
+		objectEntry1 = _objectEntryLocalService.updateObjectEntry(
+			TestPropsValues.getUserId(), objectEntryId1,
+			HashMapBuilder.<String, Serializable>put(
+				"firstName", "Charles"
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		Map<String, Serializable> values = objectEntry1.getValues();
+
+		Assert.assertEquals("Charles", values.get("firstName"));
+		Assert.assertEquals(
+			StringPool.BLANK,
+			values.get("r_objectRelationship_c_relatedObjectDefinitionERC"));
+		Assert.assertEquals(
+			0L, values.get("r_objectRelationship_c_relatedObjectDefinitionId"));
+
+		ObjectEntry objectEntry2 = _addObjectEntry(
+			0, objectDefinition.getObjectDefinitionId(),
+			HashMapBuilder.<String, Serializable>put(
+				"name", RandomTestUtil.randomString()
+			).build());
+
+		objectEntry1 = _objectEntryLocalService.updateObjectEntry(
+			TestPropsValues.getUserId(), objectEntryId1,
+			HashMapBuilder.<String, Serializable>put(
+				"r_objectRelationship_c_relatedObjectDefinitionId",
+				objectEntry2.getObjectEntryId()
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		values = objectEntry1.getValues();
+
+		Assert.assertEquals(StringPool.BLANK, values.get("firstName"));
+		Assert.assertEquals(
+			objectEntry2.getExternalReferenceCode(),
+			values.get("r_objectRelationship_c_relatedObjectDefinitionERC"));
+		Assert.assertEquals(
+			objectEntry2.getObjectEntryId(),
+			values.get("r_objectRelationship_c_relatedObjectDefinitionId"));
+
+		objectEntry1 = _objectEntryLocalService.updateObjectEntry(
+			TestPropsValues.getUserId(), objectEntryId1,
+			HashMapBuilder.<String, Serializable>put(
+				"firstName", "Julia"
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		values = objectEntry1.getValues();
+
+		Assert.assertEquals("Julia", values.get("firstName"));
+		Assert.assertEquals(
+			objectEntry2.getExternalReferenceCode(),
+			values.get("r_objectRelationship_c_relatedObjectDefinitionERC"));
+		Assert.assertEquals(
+			objectEntry2.getObjectEntryId(),
+			values.get("r_objectRelationship_c_relatedObjectDefinitionId"));
+
+		objectEntry1 = _objectEntryLocalService.updateObjectEntry(
+			TestPropsValues.getUserId(), objectEntryId1,
+			HashMapBuilder.<String, Serializable>put(
+				"firstName", "Zape"
+			).put(
+				"r_objectRelationship_c_relatedObjectDefinitionId", 0L
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		values = objectEntry1.getValues();
+
+		Assert.assertEquals("Zape", values.get("firstName"));
+		Assert.assertEquals(
+			StringPool.BLANK,
+			values.get("r_objectRelationship_c_relatedObjectDefinitionERC"));
+		Assert.assertEquals(
+			0L, values.get("r_objectRelationship_c_relatedObjectDefinitionId"));
+
+		_objectEntryLocalService.deleteObjectEntry(objectEntryId1);
+		_objectEntryLocalService.deleteObjectEntry(
+			objectEntry2.getObjectEntryId());
+
+		_objectDefinitionLocalService.deleteObjectDefinition(
+			objectDefinition.getObjectDefinitionId());
 	}
 
 	private ObjectValidationRule _updateObjectValidationRule(
