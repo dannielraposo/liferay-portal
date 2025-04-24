@@ -5033,6 +5033,8 @@ public class ObjectEntryLocalServiceTest {
 			).put(
 				"birthday", birthdayDate
 			).put(
+				"emailAddressRequired", "joao@liferay.com"
+			).put(
 				"height", 180
 			).put(
 				"listTypeEntryKey", "listTypeEntryKey1"
@@ -5068,7 +5070,7 @@ public class ObjectEntryLocalServiceTest {
 		Assert.assertTrue((boolean)values.get("authorOfGospel"));
 		Assert.assertEquals(birthdayDate, values.get("birthday"));
 		Assert.assertEquals(
-			StringPool.BLANK, values.get("emailAddressRequired"));
+			"joao@liferay.com", values.get("emailAddressRequired"));
 		Assert.assertEquals(StringPool.BLANK, values.get("firstName"));
 		Assert.assertEquals(180D, values.get("height"));
 		Assert.assertEquals(StringPool.BLANK, values.get("lastName"));
@@ -5095,6 +5097,10 @@ public class ObjectEntryLocalServiceTest {
 		_objectEntryLocalService.updateObjectEntry(
 			TestPropsValues.getUserId(), objectEntry.getObjectEntryId(),
 			HashMapBuilder.<String, Serializable>put(
+				"emailAddressRequired", "charles@liferay.com"
+			).put(
+				"listTypeEntryKeyRequired", "listTypeEntryKey2"
+			).put(
 				"state", "listTypeEntryKey3"
 			).put(
 				"upload", 0L
@@ -5112,13 +5118,13 @@ public class ObjectEntryLocalServiceTest {
 		Assert.assertFalse((boolean)values.get("authorOfGospel"));
 		Assert.assertEquals(null, values.get("birthday"));
 		Assert.assertEquals(
-			StringPool.BLANK, values.get("emailAddressRequired"));
+			"charles@liferay.com", values.get("emailAddressRequired"));
 		Assert.assertEquals(StringPool.BLANK, values.get("firstName"));
 		Assert.assertEquals(0D, values.get("height"));
 		Assert.assertEquals(StringPool.BLANK, values.get("lastName"));
 		Assert.assertEquals(StringPool.BLANK, values.get("listTypeEntryKey"));
 		Assert.assertEquals(
-			StringPool.BLANK, values.get("listTypeEntryKeyRequired"));
+			"listTypeEntryKey2", values.get("listTypeEntryKeyRequired"));
 		Assert.assertEquals(StringPool.BLANK, values.get("middleName"));
 		Assert.assertEquals(
 			StringPool.BLANK, values.get("multipleListTypeEntriesKey"));
@@ -5134,6 +5140,14 @@ public class ObjectEntryLocalServiceTest {
 			values.get(_objectDefinition.getPKObjectFieldName()));
 		Assert.assertEquals(values.toString(), 23, values.size());
 
+		Map<String, Serializable> requiredValues =
+			HashMapBuilder.<String, Serializable>put(
+				"emailAddressRequired",
+				RandomTestUtil.randomString() + "@liferay.com"
+			).put(
+				"listTypeEntryKeyRequired", "listTypeEntryKey1"
+			).build();
+
 		_objectEntryLocalService.updateObjectEntry(
 			TestPropsValues.getUserId(), objectEntry.getObjectEntryId(),
 			HashMapBuilder.<String, Serializable>put(
@@ -5146,6 +5160,8 @@ public class ObjectEntryLocalServiceTest {
 				"firstName", StringPool.BLANK
 			).put(
 				"time", StringPool.BLANK
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
@@ -5160,7 +5176,9 @@ public class ObjectEntryLocalServiceTest {
 
 		_objectEntryLocalService.updateObjectEntry(
 			TestPropsValues.getUserId(), objectEntry.getObjectEntryId(),
-			new HashMap<String, Serializable>(),
+			HashMapBuilder.<String, Serializable>putAll(
+				requiredValues
+			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
 		_objectEntryLocalService.updateObjectEntry(
@@ -5169,10 +5187,21 @@ public class ObjectEntryLocalServiceTest {
 				_objectDefinition.getPKObjectFieldName(), ""
 			).put(
 				"invalidName", ""
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
 		long objectEntryId = objectEntry.getObjectEntryId();
+
+		AssertUtils.assertFailure(
+			ObjectEntryValuesException.Required.class,
+			"No value was provided for required object field " +
+				"\"emailAddressRequired\"",
+			() -> _addObjectEntry(
+				HashMapBuilder.<String, Serializable>put(
+					"listTypeEntryKeyRequired", "listTypeEntryKey1"
+				).build()));
 
 		AssertUtils.assertFailure(
 			ObjectEntryValuesException.ExceedsIntegerSize.class,
@@ -5181,6 +5210,8 @@ public class ObjectEntryLocalServiceTest {
 				TestPropsValues.getUserId(), objectEntryId,
 				HashMapBuilder.<String, Serializable>put(
 					"numberOfBooksWritten", "2147483648"
+				).putAll(
+					requiredValues
 				).build(),
 				ServiceContextTestUtil.getServiceContext()));
 
@@ -5191,6 +5222,8 @@ public class ObjectEntryLocalServiceTest {
 				TestPropsValues.getUserId(), objectEntryId,
 				HashMapBuilder.<String, Serializable>put(
 					"numberOfBooksWritten", "-2147483649"
+				).putAll(
+					requiredValues
 				).build(),
 				ServiceContextTestUtil.getServiceContext()));
 
@@ -5201,6 +5234,8 @@ public class ObjectEntryLocalServiceTest {
 				TestPropsValues.getUserId(), objectEntryId,
 				HashMapBuilder.<String, Serializable>put(
 					"ageOfDeath", "9007199254740992"
+				).putAll(
+					requiredValues
 				).build(),
 				ServiceContextTestUtil.getServiceContext()));
 
@@ -5211,6 +5246,8 @@ public class ObjectEntryLocalServiceTest {
 				TestPropsValues.getUserId(), objectEntryId,
 				HashMapBuilder.<String, Serializable>put(
 					"ageOfDeath", "-9007199254740992"
+				).putAll(
+					requiredValues
 				).build(),
 				ServiceContextTestUtil.getServiceContext()));
 
@@ -5221,6 +5258,8 @@ public class ObjectEntryLocalServiceTest {
 				TestPropsValues.getUserId(), objectEntryId,
 				HashMapBuilder.<String, Serializable>put(
 					"ageOfDeath", "9223372036854775808"
+				).putAll(
+					requiredValues
 				).build(),
 				ServiceContextTestUtil.getServiceContext()));
 
@@ -5231,6 +5270,8 @@ public class ObjectEntryLocalServiceTest {
 				TestPropsValues.getUserId(), objectEntryId,
 				HashMapBuilder.<String, Serializable>put(
 					"ageOfDeath", "-9223372036854775809"
+				).putAll(
+					requiredValues
 				).build(),
 				ServiceContextTestUtil.getServiceContext()));
 
@@ -5242,16 +5283,16 @@ public class ObjectEntryLocalServiceTest {
 				TestPropsValues.getUserId(), objectEntryId,
 				HashMapBuilder.<String, Serializable>put(
 					"firstName", RandomTestUtil.randomString(281)
+				).putAll(
+					requiredValues
 				).build(),
 				ServiceContextTestUtil.getServiceContext()));
 
 		_addObjectEntry(
 			HashMapBuilder.<String, Serializable>put(
 				"emailAddress", "james@liferay.com"
-			).put(
-				"emailAddressRequired", "james@liferay.com"
-			).put(
-				"listTypeEntryKeyRequired", "listTypeEntryKey1"
+			).putAll(
+				requiredValues
 			).build());
 
 		AssertUtils.assertFailure(
@@ -6687,13 +6728,19 @@ public class ObjectEntryLocalServiceTest {
 	private void _testUpdateObjectEntryExternalReferenceCode()
 		throws Exception {
 
-		ObjectEntry objectEntry1 = _addObjectEntry(
+		Map<String, Serializable> requiredValues =
 			HashMapBuilder.<String, Serializable>put(
-				"emailAddressRequired", "john@liferay.com"
-			).put(
-				"firstName", "John"
+				"emailAddressRequired",
+				RandomTestUtil.randomString() + "@liferay.com"
 			).put(
 				"listTypeEntryKeyRequired", "listTypeEntryKey1"
+			).build();
+
+		ObjectEntry objectEntry1 = _addObjectEntry(
+			HashMapBuilder.<String, Serializable>put(
+				"firstName", "John"
+			).putAll(
+				requiredValues
 			).build());
 
 		Assert.assertEquals(
@@ -6705,6 +6752,8 @@ public class ObjectEntryLocalServiceTest {
 			TestPropsValues.getUserId(), objectEntryId1,
 			HashMapBuilder.<String, Serializable>put(
 				"externalReferenceCode", "newExternalReferenceCode"
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
@@ -6714,11 +6763,9 @@ public class ObjectEntryLocalServiceTest {
 
 		ObjectEntry objectEntry2 = _addObjectEntry(
 			HashMapBuilder.<String, Serializable>put(
-				"emailAddressRequired", "matthew@liferay.com"
-			).put(
 				"firstName", "Matthew"
-			).put(
-				"listTypeEntryKeyRequired", "listTypeEntryKey2"
+			).putAll(
+				requiredValues
 			).build());
 
 		long objectEntryId2 = objectEntry2.getObjectEntryId();
@@ -6732,6 +6779,8 @@ public class ObjectEntryLocalServiceTest {
 				TestPropsValues.getUserId(), objectEntryId2,
 				HashMapBuilder.<String, Serializable>put(
 					"externalReferenceCode", "newExternalReferenceCode"
+				).putAll(
+					requiredValues
 				).build(),
 				ServiceContextTestUtil.getServiceContext()));
 
@@ -6739,6 +6788,8 @@ public class ObjectEntryLocalServiceTest {
 			TestPropsValues.getUserId(), objectEntryId2,
 			HashMapBuilder.<String, Serializable>put(
 				"externalReferenceCode", ""
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
@@ -6749,6 +6800,8 @@ public class ObjectEntryLocalServiceTest {
 			TestPropsValues.getUserId(), objectEntryId2,
 			HashMapBuilder.<String, Serializable>put(
 				"externalReferenceCode", objectEntry1.getUuid()
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
@@ -6762,6 +6815,8 @@ public class ObjectEntryLocalServiceTest {
 				TestPropsValues.getUserId(), objectEntryId1,
 				HashMapBuilder.<String, Serializable>put(
 					"externalReferenceCode", ""
+				).putAll(
+					requiredValues
 				).build(),
 				ServiceContextTestUtil.getServiceContext()));
 
@@ -6771,6 +6826,8 @@ public class ObjectEntryLocalServiceTest {
 			TestPropsValues.getUserId(), objectEntryId1,
 			HashMapBuilder.<String, Serializable>put(
 				"externalReferenceCode", randomString
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
@@ -6810,15 +6867,21 @@ public class ObjectEntryLocalServiceTest {
 		_objectStateTransitionLocalService.updateObjectStateTransitions(
 			objectStateFlow);
 
-		ObjectEntry objectEntry = _addObjectEntry(
+		Map<String, Serializable> requiredValues =
 			HashMapBuilder.<String, Serializable>put(
-				"emailAddressRequired", "john@liferay.com"
-			).put(
-				"firstName", "John"
+				"emailAddressRequired",
+				RandomTestUtil.randomString() + "@liferay.com"
 			).put(
 				"listTypeEntryKeyRequired", "listTypeEntryKey1"
+			).build();
+
+		ObjectEntry objectEntry = _addObjectEntry(
+			HashMapBuilder.<String, Serializable>put(
+				"firstName", "John"
 			).put(
 				"state", "listTypeEntryKey1"
+			).putAll(
+				requiredValues
 			).build());
 
 		objectEntry = _objectEntryLocalService.updateObjectEntry(
@@ -6827,6 +6890,8 @@ public class ObjectEntryLocalServiceTest {
 				"firstName", "Peter"
 			).put(
 				"state", "listTypeEntryKey1"
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
@@ -6847,6 +6912,8 @@ public class ObjectEntryLocalServiceTest {
 				TestPropsValues.getUserId(), objectEntryId,
 				HashMapBuilder.<String, Serializable>put(
 					"state", "listTypeEntryKey3"
+				).putAll(
+					requiredValues
 				).build(),
 				ServiceContextTestUtil.getServiceContext()));
 
@@ -6854,6 +6921,8 @@ public class ObjectEntryLocalServiceTest {
 			TestPropsValues.getUserId(), objectEntry.getObjectEntryId(),
 			HashMapBuilder.<String, Serializable>put(
 				"state", "listTypeEntryKey2"
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
@@ -6868,6 +6937,8 @@ public class ObjectEntryLocalServiceTest {
 				TestPropsValues.getUserId(), objectEntryId,
 				HashMapBuilder.<String, Serializable>put(
 					"state", "listTypeEntryKey3"
+				).putAll(
+					requiredValues
 				).build(),
 				ServiceContextTestUtil.getServiceContext()));
 
@@ -6897,11 +6968,17 @@ public class ObjectEntryLocalServiceTest {
 			ObjectRelationshipConstants.DELETION_TYPE_CASCADE,
 			"objectRelationship");
 
-		ObjectEntry objectEntry1 = _addObjectEntry(
+		Map<String, Serializable> requiredValues =
 			HashMapBuilder.<String, Serializable>put(
-				"emailAddressRequired", "carlos@liferay.com"
+				"emailAddressRequired",
+				RandomTestUtil.randomString() + "@liferay.com"
 			).put(
 				"listTypeEntryKeyRequired", "listTypeEntryKey1"
+			).build();
+
+		ObjectEntry objectEntry1 = _addObjectEntry(
+			HashMapBuilder.<String, Serializable>putAll(
+				requiredValues
 			).build());
 
 		long objectEntryId1 = objectEntry1.getObjectEntryId();
@@ -6910,6 +6987,8 @@ public class ObjectEntryLocalServiceTest {
 			TestPropsValues.getUserId(), objectEntryId1,
 			HashMapBuilder.<String, Serializable>put(
 				"firstName", "Charles"
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
@@ -6933,6 +7012,8 @@ public class ObjectEntryLocalServiceTest {
 			HashMapBuilder.<String, Serializable>put(
 				"r_objectRelationship_c_relatedObjectDefinitionId",
 				objectEntry2.getObjectEntryId()
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
@@ -6950,6 +7031,8 @@ public class ObjectEntryLocalServiceTest {
 			TestPropsValues.getUserId(), objectEntryId1,
 			HashMapBuilder.<String, Serializable>put(
 				"firstName", "Julia"
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
@@ -6969,6 +7052,8 @@ public class ObjectEntryLocalServiceTest {
 				"firstName", "Zape"
 			).put(
 				"r_objectRelationship_c_relatedObjectDefinitionId", 0L
+			).putAll(
+				requiredValues
 			).build(),
 			ServiceContextTestUtil.getServiceContext());
 
