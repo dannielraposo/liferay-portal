@@ -350,10 +350,10 @@ public class ObjectEntryLocalServiceImpl
 
 		boolean dynamicObjectDefinitionStaticValues = _insertIntoTable(
 			_getDynamicObjectDefinitionTable(objectDefinitionId),
-			insertedValues, objectEntryId, values);
+			insertedValues, objectEntryId, true, values);
 		boolean extensionDynamicObjectDefinitionStaticValues = _insertIntoTable(
 			_getExtensionDynamicObjectDefinitionTable(objectDefinitionId),
-			insertedValues, objectEntryId, values);
+			insertedValues, objectEntryId, true, values);
 
 		ObjectEntry objectEntry = objectEntryPersistence.create(objectEntryId);
 
@@ -514,7 +514,8 @@ public class ObjectEntryLocalServiceImpl
 				dlFileEntriesMap, objectDefinition, primaryKey, serviceContext,
 				userId, values);
 
-			_updateTable(dynamicObjectDefinitionTable, primaryKey, values);
+			_updateTable(
+				dynamicObjectDefinitionTable, primaryKey, false, values);
 		}
 		else {
 			_validateValues(
@@ -530,7 +531,7 @@ public class ObjectEntryLocalServiceImpl
 
 			_insertIntoTable(
 				dynamicObjectDefinitionTable, new HashMap<>(), primaryKey,
-				values);
+				false, values);
 		}
 
 		_deleteTempFileEntries(dlFileEntriesMap);
@@ -1585,7 +1586,8 @@ public class ObjectEntryLocalServiceImpl
 				dynamicObjectDefinitionTable.getObjectFields(),
 				new ServiceContext(), null, userId, null, values);
 
-			_updateTable(dynamicObjectDefinitionTable, primaryKey, values);
+			_updateTable(
+				dynamicObjectDefinitionTable, primaryKey, false, values);
 		}
 		else {
 			_validateValues(
@@ -1597,7 +1599,7 @@ public class ObjectEntryLocalServiceImpl
 
 			_insertIntoTable(
 				dynamicObjectDefinitionTable, new HashMap<>(), primaryKey,
-				values);
+				false, values);
 		}
 	}
 
@@ -2609,14 +2611,8 @@ public class ObjectEntryLocalServiceImpl
 		Map<String, Serializable> values) {
 
 		for (ObjectField objectField :
-				_objectFieldPersistence.findByODI_S(
-					objectDefinitionId, false)) {
-
-			if (objectField.compareBusinessType(
-					ObjectFieldConstants.BUSINESS_TYPE_RELATIONSHIP)) {
-
-				continue;
-			}
+				_objectFieldPersistence.findByObjectDefinitionId(
+					objectDefinitionId)) {
 
 			Map<String, Object> localizedValues =
 				(Map<String, Object>)values.getOrDefault(
@@ -2638,21 +2634,23 @@ public class ObjectEntryLocalServiceImpl
 			Object value = ObjectFieldSettingUtil.getDefaultValue(
 				_ddmExpressionFactory, objectField, (Map)values);
 
-			values.put(objectField.getName(), (Serializable)value);
+			if (value != null) {
+				values.put(objectField.getName(), (Serializable)value);
 
-			if (!objectField.isLocalized()) {
-				continue;
-			}
+				if (!objectField.isLocalized()) {
+					continue;
+				}
 
-			if (localizedValues.isEmpty()) {
-				values.put(
-					objectField.getI18nObjectFieldName(),
-					HashMapBuilder.put(
-						defaultLanguageId, value
-					).build());
-			}
-			else {
-				localizedValues.putIfAbsent(defaultLanguageId, value);
+				if (localizedValues.isEmpty()) {
+					values.put(
+						objectField.getI18nObjectFieldName(),
+						HashMapBuilder.put(
+							defaultLanguageId, value
+						).build());
+				}
+				else {
+					localizedValues.putIfAbsent(defaultLanguageId, value);
+				}
 			}
 		}
 	}
@@ -4266,7 +4264,7 @@ public class ObjectEntryLocalServiceImpl
 	private boolean _insertIntoTable(
 			DynamicObjectDefinitionTable dynamicObjectDefinitionTable,
 			Map<String, Serializable> insertedValues, long objectEntryId,
-			Map<String, Serializable> values)
+			boolean processNullValues, Map<String, Serializable> values)
 		throws PortalException {
 
 		List<String> columnNames = new ArrayList<>();
@@ -4298,7 +4296,9 @@ public class ObjectEntryLocalServiceImpl
 				staticValues = false;
 			}
 
-			if (!objectField.hasInsertValues() || objectField.isLocalized()) {
+			if (!_processObjectField(
+					true, objectField, processNullValues, values)) {
+
 				continue;
 			}
 
@@ -4318,16 +4318,6 @@ public class ObjectEntryLocalServiceImpl
 				columnNames.add(objectField.getSortableDBColumnName());
 
 				count += 2;
-
-				continue;
-			}
-
-			if (!values.containsKey(objectField.getName())) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						"No value was provided for object field \"" +
-							objectField.getName() + "\"");
-				}
 
 				continue;
 			}
@@ -4377,8 +4367,8 @@ public class ObjectEntryLocalServiceImpl
 				Types.BIGINT, objectEntryId);
 
 			for (ObjectField objectField : objectFields) {
-				if (!objectField.hasInsertValues() ||
-					objectField.isLocalized()) {
+				if (!_processObjectField(
+						true, objectField, processNullValues, values)) {
 
 					continue;
 				}
@@ -4416,10 +4406,6 @@ public class ObjectEntryLocalServiceImpl
 						column.getSQLType(),
 						_getAutoIncrementSortableValue(prefix, suffix, value));
 
-					continue;
-				}
-
-				if (!values.containsKey(objectField.getName())) {
 					continue;
 				}
 
@@ -4492,6 +4478,43 @@ public class ObjectEntryLocalServiceImpl
 		actionableDynamicQuery.setPerformActionMethod(performActionMethod);
 
 		actionableDynamicQuery.performActions();
+	}
+
+	private boolean _processObjectField(
+		boolean insert, ObjectField objectField, boolean processNullValues,
+		Map<String, Serializable> values) {
+
+		Supplier<Boolean> supplier =
+			insert ? objectField::hasInsertValues :
+				objectField::hasUpdateValues;
+
+		if (!supplier.get() || objectField.isLocalized()) {
+			return false;
+		}
+
+		if (!values.containsKey(objectField.getName())) {
+			if (_log.isDebugEnabled()) {
+				String logMessage =
+					"No value was provided for object field \"" +
+						objectField.getName() + "\"";
+
+				if (processNullValues) {
+					logMessage += ". The field is set as null";
+				}
+
+				_log.debug(logMessage);
+			}
+
+			if (objectField.compareBusinessType(
+					ObjectFieldConstants.BUSINESS_TYPE_RELATIONSHIP)) {
+
+				return false;
+			}
+
+			return processNullValues;
+		}
+
+		return true;
 	}
 
 	private void _putInsertedValue(
@@ -4696,8 +4719,13 @@ public class ObjectEntryLocalServiceImpl
 			PreparedStatement preparedStatement, Object value)
 		throws Exception {
 
-		if (objectField.compareBusinessType(
-				ObjectFieldConstants.BUSINESS_TYPE_ENCRYPTED)) {
+		if (value == null) {
+			_setColumn(
+				columnNames, index, insertedValues, preparedStatement,
+				column.getSQLType(), value);
+		}
+		else if (objectField.compareBusinessType(
+					ObjectFieldConstants.BUSINESS_TYPE_ENCRYPTED)) {
 
 			_setColumn(
 				columnNames, index, insertedValues, preparedStatement,
@@ -4707,11 +4735,7 @@ public class ObjectEntryLocalServiceImpl
 		else if (objectField.compareBusinessType(
 					ObjectFieldConstants.BUSINESS_TYPE_MULTISELECT_PICKLIST)) {
 
-			String valueString = null;
-
-			if (value != null) {
-				valueString = String.valueOf(value);
-			}
+			String valueString = String.valueOf(value);
 
 			// Remove the first [ and the last ] in
 			// "[pickListEntryKey1, pickListEntryKey2, pickListEntryKey3]"
@@ -5129,11 +5153,11 @@ public class ObjectEntryLocalServiceImpl
 		_updateTable(
 			_getDynamicObjectDefinitionTable(
 				objectEntry.getObjectDefinitionId()),
-			objectEntryId, values);
+			objectEntryId, fillDefaultValue, values);
 		_updateTable(
 			_getExtensionDynamicObjectDefinitionTable(
 				objectEntry.getObjectDefinitionId()),
-			objectEntryId, values);
+			objectEntryId, fillDefaultValue, values);
 
 		objectEntryPersistence.clearCache(SetUtil.fromArray(objectEntryId));
 
@@ -5304,7 +5328,8 @@ public class ObjectEntryLocalServiceImpl
 
 	private void _updateTable(
 			DynamicObjectDefinitionTable dynamicObjectDefinitionTable,
-			long objectEntryId, Map<String, Serializable> values)
+			long objectEntryId, boolean processNullValues,
+			Map<String, Serializable> values)
 		throws PortalException {
 
 		List<String> columnNames = new ArrayList<>();
@@ -5320,16 +5345,8 @@ public class ObjectEntryLocalServiceImpl
 			dynamicObjectDefinitionTable.getObjectFields();
 
 		for (ObjectField objectField : objectFields) {
-			if (!objectField.hasUpdateValues() || objectField.isLocalized()) {
-				continue;
-			}
-
-			if (!values.containsKey(objectField.getName())) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						"No value was provided for object field \"" +
-							objectField.getName() + "\"");
-				}
+			if (!_processObjectField(
+					false, objectField, processNullValues, values)) {
 
 				continue;
 			}
@@ -5392,9 +5409,8 @@ public class ObjectEntryLocalServiceImpl
 			int index = 1;
 
 			for (ObjectField objectField : objectFields) {
-				if (!objectField.hasUpdateValues() ||
-					objectField.isLocalized() ||
-					!values.containsKey(objectField.getName())) {
+				if (!_processObjectField(
+						false, objectField, processNullValues, values)) {
 
 					continue;
 				}
