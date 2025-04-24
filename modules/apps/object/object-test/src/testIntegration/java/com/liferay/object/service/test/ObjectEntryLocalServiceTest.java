@@ -5067,10 +5067,10 @@ public class ObjectEntryLocalServiceTest {
 		Assert.assertTrue((boolean)values.get("authorOfGospel"));
 		Assert.assertEquals(birthdayDate, values.get("birthday"));
 		Assert.assertEquals(
-			"john@liferay.com", values.get("emailAddressRequired"));
-		Assert.assertEquals("João", values.get("firstName"));
+			StringPool.BLANK, values.get("emailAddressRequired"));
+		Assert.assertEquals(StringPool.BLANK, values.get("firstName"));
 		Assert.assertEquals(180D, values.get("height"));
-		Assert.assertEquals("o Discípulo Amado", values.get("lastName"));
+		Assert.assertEquals(StringPool.BLANK, values.get("lastName"));
 		Assert.assertEquals(
 			"listTypeEntryKey1", values.get("listTypeEntryKey"));
 		Assert.assertEquals(
@@ -5107,27 +5107,25 @@ public class ObjectEntryLocalServiceTest {
 		values = _objectEntryLocalService.getValues(
 			objectEntry.getObjectEntryId());
 
-		Assert.assertEquals(94L, values.get("ageOfDeath"));
-		Assert.assertTrue((boolean)values.get("authorOfGospel"));
-		Assert.assertEquals(birthdayDate, values.get("birthday"));
+		Assert.assertEquals(0L, values.get("ageOfDeath"));
+		Assert.assertFalse((boolean)values.get("authorOfGospel"));
+		Assert.assertEquals(null, values.get("birthday"));
 		Assert.assertEquals(
-			"john@liferay.com", values.get("emailAddressRequired"));
-		Assert.assertEquals("João", values.get("firstName"));
-		Assert.assertEquals(180D, values.get("height"));
-		Assert.assertEquals("o Discípulo Amado", values.get("lastName"));
+			StringPool.BLANK, values.get("emailAddressRequired"));
+		Assert.assertEquals(StringPool.BLANK, values.get("firstName"));
+		Assert.assertEquals(0D, values.get("height"));
+		Assert.assertEquals(StringPool.BLANK, values.get("lastName"));
+		Assert.assertEquals(StringPool.BLANK, values.get("listTypeEntryKey"));
 		Assert.assertEquals(
-			"listTypeEntryKey1", values.get("listTypeEntryKey"));
-		Assert.assertEquals(
-			"listTypeEntryKey3", values.get("listTypeEntryKeyRequired"));
+			StringPool.BLANK, values.get("listTypeEntryKeyRequired"));
 		Assert.assertEquals(StringPool.BLANK, values.get("middleName"));
 		Assert.assertEquals(
-			"multipleListTypeEntryKey5, multipleListTypeEntryKey6",
-			values.get("multipleListTypeEntriesKey"));
-		Assert.assertEquals(5, values.get("numberOfBooksWritten"));
-		Assert.assertEquals(script, values.get("script"));
-		Assert.assertEquals(_getBigDecimal(45L), values.get("speed"));
+			StringPool.BLANK, values.get("multipleListTypeEntriesKey"));
+		Assert.assertEquals(0, values.get("numberOfBooksWritten"));
+		Assert.assertEquals(StringPool.BLANK, values.get("script"));
+		Assert.assertEquals(_getBigDecimal(0L), values.get("speed"));
 		Assert.assertEquals("listTypeEntryKey3", values.get("state"));
-		Assert.assertEquals(timestamp, values.get("time"));
+		Assert.assertEquals(null, values.get("time"));
 		Assert.assertEquals(0L, values.get("upload"));
 		Assert.assertEquals(65D, values.get("weight"));
 		Assert.assertEquals(
