@@ -1196,7 +1196,7 @@ public class ObjectEntryLocalServiceTest {
 
 		// LPS-180587 Partial updates should not delete existing files
 
-		_objectEntryLocalService.updateObjectEntry(
+		_objectEntryLocalService.partialUpdateObjectEntry(
 			TestPropsValues.getUserId(), objectEntry.getObjectEntryId(),
 			HashMapBuilder.<String, Serializable>put(
 				"state", "listTypeEntryKey3"
@@ -1206,7 +1206,7 @@ public class ObjectEntryLocalServiceTest {
 		Assert.assertNotNull(
 			_dlAppLocalService.getFileEntry(persistedFileEntryId1));
 
-		_objectEntryLocalService.updateObjectEntry(
+		_objectEntryLocalService.partialUpdateObjectEntry(
 			TestPropsValues.getUserId(), objectEntry.getObjectEntryId(),
 			HashMapBuilder.<String, Serializable>put(
 				"upload", 0L
@@ -1222,7 +1222,7 @@ public class ObjectEntryLocalServiceTest {
 
 		// Delete object entry should delete existing files
 
-		objectEntry = _objectEntryLocalService.updateObjectEntry(
+		objectEntry = _objectEntryLocalService.partialUpdateObjectEntry(
 			TestPropsValues.getUserId(), objectEntry.getObjectEntryId(),
 			HashMapBuilder.<String, Serializable>put(
 				"upload",
