@@ -81,7 +81,7 @@ public class ObjectEntry1toMObjectRelatedModelsProviderImpl
 				objectRelationship.getObjectFieldId2());
 
 			for (ObjectEntry objectEntry : relatedModels) {
-				_objectEntryService.updateObjectEntry(
+				_objectEntryService.partialUpdateObjectEntry(
 					objectEntry.getObjectEntryId(),
 					HashMapBuilder.<String, Serializable>put(
 						objectField.getName(), 0
