@@ -7639,6 +7639,32 @@ public class ObjectEntryResourceTest {
 	}
 
 	@Test
+	public void testPatchByExternalReferenceCodeSiteScopedCustomObjectEntry()
+		throws Exception {
+
+		String newObjectFieldValue = RandomTestUtil.randomString();
+
+		JSONObject objectEntryJSONObject = JSONUtil.put(
+			_OBJECT_FIELD_NAME_1, newObjectFieldValue);
+
+		_siteScopedObjectEntry1 = ObjectEntryTestUtil.addObjectEntry(
+			_siteScopedObjectDefinition1, _OBJECT_FIELD_NAME_1,
+			_OBJECT_FIELD_VALUE_1);
+
+		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+			objectEntryJSONObject.toString(),
+			StringBundler.concat(
+				_getEndpoint(
+					TestPropsValues.getGroupId(), _siteScopedObjectDefinition1),
+				"/by-external-reference-code/",
+				_siteScopedObjectEntry1.getExternalReferenceCode()),
+			Http.Method.PATCH);
+
+		Assert.assertEquals(
+			jsonObject.getString(_OBJECT_FIELD_NAME_1), newObjectFieldValue);
+	}
+
+	@Test
 	@TestInfo("LPD-53245")
 	public void testPatchCustomObjectEntry() throws Exception {
 		_testPatchCustomObjectEntry(_objectDefinition1, _objectDefinition2);
@@ -8071,37 +8097,6 @@ public class ObjectEntryResourceTest {
 	}
 
 	@Test
-	@TestInfo("LPD-53245")
-	public void testPatchSiteScopedCustomObjectEntry() throws Exception {
-		_testPatchCustomObjectEntry(
-			_siteScopedObjectDefinition1, _siteScopedObjectDefinition2);
-	}
-
-	@Test
-	public void testPatchByExternalReferenceCodeSiteScopedCustomObjectEntry() throws Exception {
-		String newObjectFieldValue = RandomTestUtil.randomString();
-
-		JSONObject objectEntryJSONObject = JSONUtil.put(
-			_OBJECT_FIELD_NAME_1, newObjectFieldValue);
-
-		_siteScopedObjectEntry1 = ObjectEntryTestUtil.addObjectEntry(
-			_siteScopedObjectDefinition1, _OBJECT_FIELD_NAME_1,
-			_OBJECT_FIELD_VALUE_1);
-
-		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
-			objectEntryJSONObject.toString(),
-			StringBundler.concat(
-				_getEndpoint(
-					TestPropsValues.getGroupId(), _siteScopedObjectDefinition1),
-				"/by-external-reference-code/",
-				_siteScopedObjectEntry1.getExternalReferenceCode()),
-			Http.Method.PATCH);
-
-		Assert.assertEquals(
-			jsonObject.getString(_OBJECT_FIELD_NAME_1), newObjectFieldValue);
-	}
-
-	@Test
 	public void testPatchPutScopeScopeKeyByExternalReferenceCode()
 		throws Exception {
 
@@ -8109,6 +8104,13 @@ public class ObjectEntryResourceTest {
 			Http.Method.PATCH, _siteScopedObjectDefinition1);
 		_testPatchPutScopeScopeKeyByExternalReferenceCode(
 			Http.Method.PUT, _siteScopedObjectDefinition1);
+	}
+
+	@Test
+	@TestInfo("LPD-53245")
+	public void testPatchSiteScopedCustomObjectEntry() throws Exception {
+		_testPatchCustomObjectEntry(
+			_siteScopedObjectDefinition1, _siteScopedObjectDefinition2);
 	}
 
 	@FeatureFlags("LPD-39967")
