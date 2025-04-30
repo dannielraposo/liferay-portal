@@ -16904,8 +16904,7 @@ public class ObjectEntryResourceTest {
 			).put(
 				_OBJECT_FIELD_NAME_TEXT, ""
 			).put(
-				objectRelationshipERCObjectFieldName,
-				_objectEntry2.getExternalReferenceCode()
+				objectRelationshipERCObjectFieldName, ""
 			).put(
 				"externalReferenceCode", _ERC_VALUE_1
 			).toString(),
