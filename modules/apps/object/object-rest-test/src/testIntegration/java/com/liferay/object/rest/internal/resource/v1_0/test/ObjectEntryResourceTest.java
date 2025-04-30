@@ -686,9 +686,6 @@ public class ObjectEntryResourceTest {
 					null, RandomTestUtil.randomString(),
 					_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST, false, false)));
 
-		_objectEntry4 = ObjectEntryTestUtil.addObjectEntry(
-			_objectDefinition4, _OBJECT_FIELD_NAME_4, _OBJECT_FIELD_VALUE_4);
-
 		_objectDefinition5 = ObjectDefinitionTestUtil.publishObjectDefinition(
 			true, ObjectDefinitionTestUtil.getRandomName(),
 			Arrays.asList(
