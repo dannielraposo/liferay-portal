@@ -10089,6 +10089,15 @@ public class ObjectEntryResourceTest {
 			false);
 	}
 
+	@FeatureFlags("LPD-54417")
+	@Test
+	@TestInfo("LPD-53245")
+	public void testPutCustomObjectEntryWithDeprecatedFeatureFlag()
+		throws Exception {
+
+		_testPatchCustomObjectEntry(_objectDefinition1, _objectDefinition2);
+	}
+
 	@FeatureFlags("LPD-32050")
 	@Test
 	public void testPutCustomObjectEntryWithLocalizedAttachmentObjectField()
@@ -10536,6 +10545,16 @@ public class ObjectEntryResourceTest {
 	@TestInfo("LPD-53245")
 	public void testPutSiteScopedCustomObjectEntry() throws Exception {
 		_testPutCustomObjectEntry(
+			_siteScopedObjectDefinition1, _siteScopedObjectDefinition2);
+	}
+
+	@FeatureFlags("LPD-54417")
+	@Test
+	@TestInfo("LPD-53245")
+	public void testPutSiteScopedCustomObjectEntryWithDeprecatedFeatureFlag()
+		throws Exception {
+
+		_testPatchCustomObjectEntry(
 			_siteScopedObjectDefinition1, _siteScopedObjectDefinition2);
 	}
 
