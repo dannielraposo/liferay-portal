@@ -26,6 +26,7 @@ import com.liferay.object.service.ObjectRelationshipService;
 import com.liferay.object.system.SystemObjectDefinitionManager;
 import com.liferay.object.system.SystemObjectDefinitionManagerRegistry;
 import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
@@ -536,6 +537,12 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 			DefaultObjectEntryManagerProvider.provide(
 				_objectEntryManagerRegistry.getObjectEntryManager(
 					_objectDefinition.getStorageType()));
+
+		if (FeatureFlagManagerUtil.isEnabled("LPD-54417")) {
+			return defaultObjectEntryManager.partialUpdateObjectEntry(
+				_getDTOConverterContext(objectEntryId), _objectDefinition,
+				objectEntryId, objectEntry);
+		}
 
 		return defaultObjectEntryManager.updateObjectEntry(
 			_getDTOConverterContext(objectEntryId), _objectDefinition,
