@@ -14651,8 +14651,7 @@ public class ObjectEntryResourceTest {
 				_objectFieldLocalService.getObjectField(
 					_objectRelationship1.getObjectFieldId2()));
 
-		BigDecimal randomBigDecimal = BigDecimal.valueOf(
-			RandomTestUtil.randomDouble());
+		float randomBigDecimal = RandomTestUtil.randomFloat();
 		boolean randomBoolean = RandomTestUtil.randomBoolean();
 		Date randomDate1 = RandomTestUtil.nextDate();
 		Date randomDate2 = RandomTestUtil.nextDate();
@@ -14745,8 +14744,7 @@ public class ObjectEntryResourceTest {
 				"name", _listTypeEntry3.getName(LocaleUtil.getDefault())
 			)
 		).put(
-			_OBJECT_FIELD_NAME_PRECISION_DECIMAL,
-			randomBigDecimal.setScale(16, RoundingMode.HALF_UP)
+			_OBJECT_FIELD_NAME_PRECISION_DECIMAL, randomBigDecimal
 		).put(
 			_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
 		).put(
@@ -14898,11 +14896,11 @@ public class ObjectEntryResourceTest {
 
 		// Precision decimal field
 
-		BigDecimal bigDecimal = randomBigDecimal.add(BigDecimal.ONE);
+		Float bigDecimal = randomBigDecimal +1;
 
 		expectedJSONObject = _cloneJSONObject(
 			expectedJSONObject, _OBJECT_FIELD_NAME_PRECISION_DECIMAL,
-			bigDecimal.setScale(16, RoundingMode.HALF_UP));
+			bigDecimal);
 
 		_testPatchCustomObjectEntry(
 			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_PRECISION_DECIMAL,
@@ -16857,8 +16855,7 @@ public class ObjectEntryResourceTest {
 				_objectFieldLocalService.getObjectField(
 					_objectRelationship1.getObjectFieldId2()));
 
-		BigDecimal randomBigDecimal = BigDecimal.valueOf(
-			RandomTestUtil.randomDouble());
+		float randomBigDecimal = RandomTestUtil.randomFloat();
 		boolean randomBoolean = RandomTestUtil.randomBoolean();
 		Date randomDate1 = RandomTestUtil.nextDate();
 		Date randomDate2 = RandomTestUtil.nextDate();
@@ -17001,7 +16998,7 @@ public class ObjectEntryResourceTest {
 				)
 			).put(
 				_OBJECT_FIELD_NAME_PRECISION_DECIMAL,
-				randomBigDecimal.setScale(16, RoundingMode.HALF_UP)
+				randomBigDecimal
 			).put(
 				_OBJECT_FIELD_NAME_RICH_TEXT, randomString2
 			).put(
