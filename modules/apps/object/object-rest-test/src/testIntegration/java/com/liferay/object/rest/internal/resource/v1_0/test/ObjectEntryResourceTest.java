@@ -7639,26 +7639,8 @@ public class ObjectEntryResourceTest {
 	public void testPatchByExternalReferenceCodeSiteScopedCustomObjectEntry()
 		throws Exception {
 
-		String newObjectFieldValue = RandomTestUtil.randomString();
-
-		JSONObject objectEntryJSONObject = JSONUtil.put(
-			_OBJECT_FIELD_NAME_1, newObjectFieldValue);
-
-		_siteScopedObjectEntry1 = ObjectEntryTestUtil.addObjectEntry(
-			_siteScopedObjectDefinition1, _OBJECT_FIELD_NAME_1,
-			_OBJECT_FIELD_VALUE_1);
-
-		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
-			objectEntryJSONObject.toString(),
-			StringBundler.concat(
-				_getEndpoint(
-					_siteScopedObjectDefinition1, TestPropsValues.getGroupId()),
-				"/by-external-reference-code/",
-				_siteScopedObjectEntry1.getExternalReferenceCode()),
-			Http.Method.PATCH);
-
-		Assert.assertEquals(
-			jsonObject.getString(_OBJECT_FIELD_NAME_1), newObjectFieldValue);
+		_testPatchByERCCustomObjectEntry(
+			_siteScopedObjectDefinition1, _siteScopedObjectDefinition2);
 	}
 
 	@Test
@@ -14626,27 +14608,31 @@ public class ObjectEntryResourceTest {
 		unsafeTriConsumer.accept(actionJSONObject, jsonObject, objectAction);
 	}
 
-	private void _testPatchCustomObjectEntry(
-			JSONObject expectedJSONObject, String fieldName, Object fieldValue,
-			ObjectDefinition objectDefinition)
+	private void _testPatchByERCCustomObjectEntry(
+			ObjectDefinition objectDefinition1,
+			ObjectDefinition objectDefinition2)
 		throws Exception {
 
-		JSONAssert.assertEquals(
-			expectedJSONObject.toString(),
-			HTTPTestUtil.invokeToJSONObject(
-				JSONUtil.put(
-					fieldName, fieldValue
-				).put(
-					"externalReferenceCode", _ERC_VALUE_1
-				).toString(),
-				objectDefinition.getRESTContextPath() + "/" +
-					expectedJSONObject.getLong("id"),
-				Http.Method.PATCH
-			).toString(),
-			JSONCompareMode.LENIENT);
+		_testPatchCustomObjectEntry(
+			_getEndpoint(objectDefinition1, TestPropsValues.getGroupId()) +
+				"/by-external-reference-code",
+			jsonObject -> jsonObject.getString("externalReferenceCode"),
+			objectDefinition1, objectDefinition2);
 	}
 
 	private void _testPatchCustomObjectEntry(
+			ObjectDefinition objectDefinition1,
+			ObjectDefinition objectDefinition2)
+		throws Exception {
+
+		_testPatchCustomObjectEntry(
+			objectDefinition1.getRESTContextPath(),
+			jsonObject -> jsonObject.getLong("id"), objectDefinition1,
+			objectDefinition2);
+	}
+
+	private void _testPatchCustomObjectEntry(
+			String contextPath, Function<JSONObject, Object> keyExtractor,
 			ObjectDefinition objectDefinition1,
 			ObjectDefinition objectDefinition2)
 		throws Exception {
@@ -14774,15 +14760,15 @@ public class ObjectEntryResourceTest {
 			"id", (Object)jsonObject.getLong("id")
 		);
 
+		String endpoint = contextPath + "/" + keyExtractor.apply(jsonObject);
+
 		JSONAssert.assertEquals(
 			expectedJSONObject.toString(),
 			HTTPTestUtil.invokeToJSONObject(
 				JSONUtil.put(
 					"externalReferenceCode", _ERC_VALUE_1
 				).toString(),
-				objectDefinition1.getRESTContextPath() + "/" +
-					jsonObject.getLong("id"),
-				Http.Method.PATCH
+				endpoint, Http.Method.PATCH
 			).toString(),
 			JSONCompareMode.LENIENT);
 
@@ -14792,9 +14778,7 @@ public class ObjectEntryResourceTest {
 				JSONUtil.put(
 					"externalReferenceCode", _ERC_VALUE_1
 				).toString(),
-				objectDefinition1.getRESTContextPath() + "/" +
-					jsonObject.getLong("id"),
-				Http.Method.GET
+				endpoint, Http.Method.GET
 			).toString(),
 			JSONCompareMode.LENIENT);
 
@@ -14804,8 +14788,8 @@ public class ObjectEntryResourceTest {
 			expectedJSONObject, _OBJECT_FIELD_NAME_BOOLEAN, !randomBoolean);
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_BOOLEAN, !randomBoolean,
-			objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_BOOLEAN,
+			!randomBoolean);
 
 		// Date field
 
@@ -14816,8 +14800,8 @@ public class ObjectEntryResourceTest {
 			_dateFormat.format(date) + "T00:00:00.000Z");
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_DATE,
-			_dateFormat.format(date), objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_DATE,
+			_dateFormat.format(date));
 
 		// Date time field ('Input as value' type)
 
@@ -14826,8 +14810,8 @@ public class ObjectEntryResourceTest {
 			StringUtil.removeLast(_dateTimeDateFormat.format(date), "Z"));
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_DATE_TIME_INPUT,
-			_dateTimeDateFormat.format(date), objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_DATE_TIME_INPUT,
+			_dateTimeDateFormat.format(date));
 
 		// Date time field ('UTC' type)
 
@@ -14836,8 +14820,8 @@ public class ObjectEntryResourceTest {
 			_dateTimeDateFormat.format(date));
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_DATE_TIME_UTC,
-			_dateTimeDateFormat.format(date), objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_DATE_TIME_UTC,
+			_dateTimeDateFormat.format(date));
 
 		// Decimal field
 
@@ -14845,8 +14829,8 @@ public class ObjectEntryResourceTest {
 			expectedJSONObject, _OBJECT_FIELD_NAME_DECIMAL, randomFloat + 1);
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_DECIMAL, randomFloat + 1,
-			objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_DECIMAL,
+			randomFloat + 1);
 
 		// Integer field
 
@@ -14854,8 +14838,8 @@ public class ObjectEntryResourceTest {
 			expectedJSONObject, _OBJECT_FIELD_NAME_INTEGER, randomInt + 1);
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_INTEGER, randomInt + 1,
-			objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_INTEGER,
+			randomInt + 1);
 
 		// Long integer field
 
@@ -14864,8 +14848,8 @@ public class ObjectEntryResourceTest {
 			randomLong + 1);
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_LONG_INTEGER, randomLong + 1,
-			objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_LONG_INTEGER,
+			randomLong + 1);
 
 		// Long text field
 
@@ -14874,8 +14858,8 @@ public class ObjectEntryResourceTest {
 			"b" + randomString1);
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_LONG_TEXT,
-			"b" + randomString1, objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_LONG_TEXT,
+			"b" + randomString1);
 
 		// Multiselect picklist field
 
@@ -14894,9 +14878,9 @@ public class ObjectEntryResourceTest {
 				)));
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
-			JSONUtil.putAll(_LIST_TYPE_ENTRY_KEY_2, _LIST_TYPE_ENTRY_KEY_3),
-			objectDefinition1);
+			endpoint, expectedJSONObject,
+			_OBJECT_FIELD_NAME_MULTISELECT_PICKLIST,
+			JSONUtil.putAll(_LIST_TYPE_ENTRY_KEY_2, _LIST_TYPE_ENTRY_KEY_3));
 
 		// Picklist field
 
@@ -14909,8 +14893,8 @@ public class ObjectEntryResourceTest {
 			));
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_PICKLIST,
-			_LIST_TYPE_ENTRY_KEY_1, objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_PICKLIST,
+			_LIST_TYPE_ENTRY_KEY_1);
 
 		// Precision decimal field
 
@@ -14921,8 +14905,8 @@ public class ObjectEntryResourceTest {
 			bigDecimal.setScale(16, RoundingMode.HALF_UP));
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_PRECISION_DECIMAL,
-			bigDecimal, objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_PRECISION_DECIMAL,
+			bigDecimal);
 
 		// Rich text field
 
@@ -14931,8 +14915,8 @@ public class ObjectEntryResourceTest {
 			"b" + randomString2);
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_RICH_TEXT,
-			"b" + randomString2, objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_RICH_TEXT,
+			"b" + randomString2);
 
 		// Text field
 
@@ -14940,8 +14924,26 @@ public class ObjectEntryResourceTest {
 			expectedJSONObject, _OBJECT_FIELD_NAME_TEXT, "b" + randomString3);
 
 		_testPatchCustomObjectEntry(
-			expectedJSONObject, _OBJECT_FIELD_NAME_TEXT, "b" + randomString3,
-			objectDefinition1);
+			endpoint, expectedJSONObject, _OBJECT_FIELD_NAME_TEXT,
+			"b" + randomString3);
+	}
+
+	private void _testPatchCustomObjectEntry(
+			String endpoint, JSONObject expectedJSONObject, String fieldName,
+			Object fieldValue)
+		throws Exception {
+
+		JSONAssert.assertEquals(
+			expectedJSONObject.toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					fieldName, fieldValue
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				).toString(),
+				endpoint, Http.Method.PATCH
+			).toString(),
+			JSONCompareMode.LENIENT);
 	}
 
 	private void _testPatchPutCustomObjectEntryExternalReferenceCode(
@@ -16812,7 +16814,31 @@ public class ObjectEntryResourceTest {
 		}
 	}
 
+	private void _testPutByERCCustomObjectEntry(
+		ObjectDefinition objectDefinition1,
+		ObjectDefinition objectDefinition2)
+		throws Exception {
+
+		_testPutCustomObjectEntry(
+			_getEndpoint(objectDefinition1, TestPropsValues.getGroupId()) +
+			"/by-external-reference-code",
+			jsonObject -> jsonObject.getString("externalReferenceCode"),
+			objectDefinition1, objectDefinition2);
+	}
+
 	private void _testPutCustomObjectEntry(
+		ObjectDefinition objectDefinition1,
+		ObjectDefinition objectDefinition2)
+		throws Exception {
+
+		_testPutCustomObjectEntry(
+			objectDefinition1.getRESTContextPath(),
+			jsonObject -> jsonObject.getLong("id"), objectDefinition1,
+			objectDefinition2);
+	}
+
+	private void _testPutCustomObjectEntry(
+			String contextPath, Function<JSONObject, Object> keyExtractor,
 			ObjectDefinition objectDefinition1,
 			ObjectDefinition objectDefinition2)
 		throws Exception {
@@ -16885,10 +16911,11 @@ public class ObjectEntryResourceTest {
 			_getEndpoint(objectDefinition1, TestPropsValues.getGroupId()),
 			Http.Method.POST);
 
+		String endpoint = contextPath + "/" + keyExtractor.apply(jsonObject);
+
 		HTTPTestUtil.invokeToJSONObject(
 			JSONFactoryUtil.getNullJSON(),
-			objectDefinition1.getRESTContextPath() + "/" +
-				jsonObject.getLong("id"),
+			endpoint,
 			Http.Method.PUT);
 
 		JSONAssert.assertEquals(
@@ -16926,8 +16953,7 @@ public class ObjectEntryResourceTest {
 			).toString(),
 			HTTPTestUtil.invokeToJSONObject(
 				null,
-				objectDefinition1.getRESTContextPath() + "/" +
-					jsonObject.getLong("id"),
+				endpoint,
 				Http.Method.GET
 			).toString(),
 			JSONCompareMode.LENIENT);
@@ -17021,8 +17047,7 @@ public class ObjectEntryResourceTest {
 					objectRelationshipERCObjectFieldName,
 					_objectEntry2.getExternalReferenceCode()
 				).toString(),
-				objectDefinition1.getRESTContextPath() + "/" +
-					jsonObject.getLong("id"),
+				endpoint,
 				Http.Method.PUT
 			).toString(),
 			JSONCompareMode.LENIENT);
