@@ -86,10 +86,10 @@ public class DDMExpressionDSLExpressionVisitor
 	public Object visitDivisionExpression(
 		@NotNull DivisionExpressionContext divisionExpressionContext) {
 
-		Expression<Number> expression1 = (Expression<Number>)_getExpression(
-			visitChild(divisionExpressionContext, 0));
-		Expression<Number> expression2 = (Expression<Number>)_getExpression(
-			visitChild(divisionExpressionContext, 2));
+		Expression<Float> expression1 = DSLFunctionFactoryUtil.castFloat(
+			_getExpression(visitChild(divisionExpressionContext, 0)));
+		Expression<Float> expression2 = DSLFunctionFactoryUtil.castFloat(
+			_getExpression(visitChild(divisionExpressionContext, 2)));
 
 		return DSLFunctionFactoryUtil.divide(expression1, expression2);
 	}
