@@ -32,13 +32,11 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.test.rule.Inject;
-
-import java.io.InputStream;
-
-import java.util.Collections;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.InputStream;
+import java.util.Collections;
 
 /**
  * @author Javier Gamarra
@@ -121,13 +119,6 @@ public class ContentTemplateResourceTest
 		throws Exception {
 
 		return _getContentTemplate(GroupLocalServiceUtil.getGroup(siteId));
-	}
-
-	@Override
-	protected ContentTemplate testGraphQLContentTemplate_addContentTemplate()
-		throws Exception {
-
-		return testGetSiteContentTemplate_addContentTemplate();
 	}
 
 	@Override

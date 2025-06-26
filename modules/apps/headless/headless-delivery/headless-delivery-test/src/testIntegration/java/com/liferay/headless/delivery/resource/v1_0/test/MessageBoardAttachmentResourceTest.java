@@ -265,6 +265,13 @@ public class MessageBoardAttachmentResourceTest
 
 		return testDeleteMessageBoardAttachment_addMessageBoardAttachment();
 	}
+	@Override
+	protected MessageBoardAttachment
+	testGraphQLSiteMessageBoardAttachment_addMessageBoardAttachment()
+		throws Exception {
+
+		return testDeleteMessageBoardAttachment_addMessageBoardAttachment();
+	}
 
 	private MBMessage _addMBMessage() throws Exception {
 		return MBTestUtil.addMessage(

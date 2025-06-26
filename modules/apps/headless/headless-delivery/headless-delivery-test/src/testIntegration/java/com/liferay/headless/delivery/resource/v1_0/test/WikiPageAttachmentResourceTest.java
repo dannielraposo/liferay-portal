@@ -21,15 +21,13 @@ import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.service.WikiNodeLocalServiceUtil;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
-
-import java.io.File;
-
-import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.File;
+import java.util.Map;
 
 /**
  * @author Javier Gamarra
@@ -291,6 +289,13 @@ public class WikiPageAttachmentResourceTest
 	@Override
 	protected WikiPageAttachment
 			testGraphQLWikiPageAttachment_addWikiPageAttachment()
+		throws Exception {
+
+		return testDeleteWikiPageAttachment_addWikiPageAttachment();
+	}
+	@Override
+	protected WikiPageAttachment
+	testGraphQLSiteWikiPageAttachment_addWikiPageAttachment()
 		throws Exception {
 
 		return testDeleteWikiPageAttachment_addWikiPageAttachment();

@@ -19,16 +19,14 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.util.PropsValues;
-
-import java.io.File;
-
-import java.util.Collections;
-import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * @author Javier Gamarra
@@ -290,6 +288,13 @@ public class KnowledgeBaseAttachmentResourceTest
 	@Override
 	protected KnowledgeBaseAttachment
 			testGraphQLKnowledgeBaseAttachment_addKnowledgeBaseAttachment()
+		throws Exception {
+
+		return testDeleteKnowledgeBaseAttachment_addKnowledgeBaseAttachment();
+	}
+	@Override
+	protected KnowledgeBaseAttachment
+	testGraphQLSiteKnowledgeBaseAttachment_addKnowledgeBaseAttachment()
 		throws Exception {
 
 		return testDeleteKnowledgeBaseAttachment_addKnowledgeBaseAttachment();

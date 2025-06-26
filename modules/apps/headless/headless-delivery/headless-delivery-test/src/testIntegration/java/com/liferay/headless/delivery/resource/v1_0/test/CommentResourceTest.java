@@ -975,6 +975,10 @@ public class CommentResourceTest extends BaseCommentResourceTestCase {
 	protected Comment testGraphQLComment_addComment() throws Exception {
 		return testGetComment_addComment();
 	}
+	@Override
+	protected Comment testGraphQLSiteComment_addComment() throws Exception {
+		return testGetComment_addComment();
+	}
 
 	@Override
 	protected Comment

@@ -996,6 +996,13 @@ public class DataDefinitionResourceTest
 		return dataDefinitionResource.postSiteDataDefinitionByContentType(
 			testGroup.getGroupId(), _CONTENT_TYPE, randomDataDefinition());
 	}
+	@Override
+	protected DataDefinition testGraphQLSiteDataDefinition_addDataDefinition()
+		throws Exception {
+
+		return dataDefinitionResource.postSiteDataDefinitionByContentType(
+			testGroup.getGroupId(), _CONTENT_TYPE, randomDataDefinition());
+	}
 
 	@Override
 	protected DataDefinition testPatchDataDefinition_addDataDefinition()
