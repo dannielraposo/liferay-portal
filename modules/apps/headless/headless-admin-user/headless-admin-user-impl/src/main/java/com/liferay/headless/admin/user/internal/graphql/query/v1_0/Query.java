@@ -1409,12 +1409,12 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {userAccountSegments(siteKey: ___, userAccountId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteUserAccountSegments(siteKey: ___, userAccountId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField(
 		description = "Gets a user's segments. The set of available headers are: Accept-Language (string), Host (string), User-Agent (string), X-Browser (string), X-Cookies (collection string), X-Device-Brand (string), X-Device-Model (string), X-Device-Screen-Resolution-Height (double), X-Device-Screen-Resolution-Width (double), X-Last-Sign-In-Date-Time (date time) and X-Signed-In (boolean). Local date will be always present in the request."
 	)
-	public SegmentPage userAccountSegments(
+	public SegmentPage siteUserAccountSegments(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
 			@GraphQLName("userAccountId") Long userAccountId)
 		throws Exception {
@@ -1543,10 +1543,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {byFriendlyUrlPath(friendlyUrlPath: ___){availableLanguages, creator, description, description_i18n, descriptiveName, descriptiveName_i18n, friendlyUrlPath, id, key, membershipType, name, name_i18n, parentSiteId, sites}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteByFriendlyUrlPath(friendlyUrlPath: ___){availableLanguages, creator, description, description_i18n, descriptiveName, descriptiveName_i18n, friendlyUrlPath, id, key, membershipType, name, name_i18n, parentSiteId, sites}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public Site byFriendlyUrlPath(
+	public Site siteByFriendlyUrlPath(
 			@GraphQLName("friendlyUrlPath") String friendlyUrlPath)
 		throws Exception {
 
@@ -1807,12 +1807,12 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {accountUserAccountSelected(accountId: ___, siteKey: ___, userAccountId: ___){}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteAccountUserAccountSelected(accountId: ___, siteKey: ___, userAccountId: ___){}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField(
 		description = "Gets the selected property of a user assigned to an account for a specific site"
 	)
-	public Boolean accountUserAccountSelected(
+	public Boolean siteAccountUserAccountSelected(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
 			@GraphQLName("accountId") Long accountId,
 			@GraphQLName("userAccountId") Long userAccountId)
@@ -1829,13 +1829,13 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {byFriendlyUrlPathAccountByExternalReferenceCodeAccountExternalReferenceCodeUserAccountByExternalReferenceCodeUserAccountExternalReferenceCodeSelected(accountExternalReferenceCode: ___, friendlyUrlPath: ___, userAccountExternalReferenceCode: ___){}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteByFriendlyUrlPathAccountByExternalReferenceCodeAccountExternalReferenceCodeUserAccountByExternalReferenceCodeUserAccountExternalReferenceCodeSelected(accountExternalReferenceCode: ___, friendlyUrlPath: ___, userAccountExternalReferenceCode: ___){}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField(
 		description = "Gets the selected property of a user assigned to an account for a specific site"
 	)
 	public Boolean
-			byFriendlyUrlPathAccountByExternalReferenceCodeAccountExternalReferenceCodeUserAccountByExternalReferenceCodeUserAccountExternalReferenceCodeSelected(
+			siteByFriendlyUrlPathAccountByExternalReferenceCodeAccountExternalReferenceCodeUserAccountByExternalReferenceCodeUserAccountExternalReferenceCodeSelected(
 				@GraphQLName("friendlyUrlPath") String friendlyUrlPath,
 				@GraphQLName("accountExternalReferenceCode") String
 					accountExternalReferenceCode,

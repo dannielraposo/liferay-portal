@@ -1169,7 +1169,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"dataDefinitionByContentTypeByDataDefinitionKey",
+								"siteDataDefinitionByContentTypeByDataDefinitionKey",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -1191,7 +1191,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/dataDefinitionByContentTypeByDataDefinitionKey"))));
+						"Object/siteDataDefinitionByContentTypeByDataDefinitionKey"))));
 
 		// Using the namespace dataEngine_v2_0
 
@@ -1204,7 +1204,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 							new GraphQLField(
 								"dataEngine_v2_0",
 								new GraphQLField(
-									"dataDefinitionByContentTypeByDataDefinitionKey",
+									"siteDataDefinitionByContentTypeByDataDefinitionKey",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -1228,7 +1228,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/dataEngine_v2_0",
-						"Object/dataDefinitionByContentTypeByDataDefinitionKey"))));
+						"Object/siteDataDefinitionByContentTypeByDataDefinitionKey"))));
 	}
 
 	@Test
@@ -1247,7 +1247,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"dataDefinitionByContentTypeByDataDefinitionKey",
+						"siteDataDefinitionByContentTypeByDataDefinitionKey",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -1272,7 +1272,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 					new GraphQLField(
 						"dataEngine_v2_0",
 						new GraphQLField(
-							"dataDefinitionByContentTypeByDataDefinitionKey",
+							"siteDataDefinitionByContentTypeByDataDefinitionKey",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -1339,7 +1339,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"dataDefinitionByContentTypeByExternalReferenceCode",
+								"siteDataDefinitionByContentTypeByExternalReferenceCode",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -1361,7 +1361,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/dataDefinitionByContentTypeByExternalReferenceCode"))));
+						"Object/siteDataDefinitionByContentTypeByExternalReferenceCode"))));
 
 		// Using the namespace dataEngine_v2_0
 
@@ -1374,7 +1374,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 							new GraphQLField(
 								"dataEngine_v2_0",
 								new GraphQLField(
-									"dataDefinitionByContentTypeByExternalReferenceCode",
+									"siteDataDefinitionByContentTypeByExternalReferenceCode",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -1398,7 +1398,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/dataEngine_v2_0",
-						"Object/dataDefinitionByContentTypeByExternalReferenceCode"))));
+						"Object/siteDataDefinitionByContentTypeByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -1417,7 +1417,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"dataDefinitionByContentTypeByExternalReferenceCode",
+						"siteDataDefinitionByContentTypeByExternalReferenceCode",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -1442,7 +1442,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 					new GraphQLField(
 						"dataEngine_v2_0",
 						new GraphQLField(
-							"dataDefinitionByContentTypeByExternalReferenceCode",
+							"siteDataDefinitionByContentTypeByExternalReferenceCode",
 							new HashMap<String, Object>() {
 								{
 									put(

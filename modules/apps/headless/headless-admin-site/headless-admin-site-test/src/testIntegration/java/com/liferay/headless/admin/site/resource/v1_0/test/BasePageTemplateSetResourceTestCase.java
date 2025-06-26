@@ -312,7 +312,7 @@ public abstract class BasePageTemplateSetResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"siteByExternalReferenceCodePageTemplateSet",
+								"siteSiteByExternalReferenceCodePageTemplateSet",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -330,7 +330,7 @@ public abstract class BasePageTemplateSetResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/siteByExternalReferenceCodePageTemplateSet"))));
+						"Object/siteSiteByExternalReferenceCodePageTemplateSet"))));
 
 		// Using the namespace headlessAdminSite_v1_0
 
@@ -343,7 +343,7 @@ public abstract class BasePageTemplateSetResourceTestCase {
 							new GraphQLField(
 								"headlessAdminSite_v1_0",
 								new GraphQLField(
-									"siteByExternalReferenceCodePageTemplateSet",
+									"siteSiteByExternalReferenceCodePageTemplateSet",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -361,7 +361,7 @@ public abstract class BasePageTemplateSetResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
-						"Object/siteByExternalReferenceCodePageTemplateSet"))));
+						"Object/siteSiteByExternalReferenceCodePageTemplateSet"))));
 	}
 
 	protected String
@@ -386,7 +386,7 @@ public abstract class BasePageTemplateSetResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"siteByExternalReferenceCodePageTemplateSet",
+						"siteSiteByExternalReferenceCodePageTemplateSet",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -412,7 +412,7 @@ public abstract class BasePageTemplateSetResourceTestCase {
 					new GraphQLField(
 						"headlessAdminSite_v1_0",
 						new GraphQLField(
-							"siteByExternalReferenceCodePageTemplateSet",
+							"siteSiteByExternalReferenceCodePageTemplateSet",
 							new HashMap<String, Object>() {
 								{
 									put(

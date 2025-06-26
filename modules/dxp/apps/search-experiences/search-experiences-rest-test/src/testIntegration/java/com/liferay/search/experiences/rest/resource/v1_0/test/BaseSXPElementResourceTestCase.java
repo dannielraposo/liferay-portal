@@ -588,14 +588,14 @@ public abstract class BaseSXPElementResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"sXPElement",
+								"sxpElement",
 								new HashMap<String, Object>() {
 									{
 										put("sxpElementId", sxpElement.getId());
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/sXPElement"))));
+						"JSONObject/data", "Object/sxpElement"))));
 
 		// Using the namespace searchExperiences_v1_0
 
@@ -608,7 +608,7 @@ public abstract class BaseSXPElementResourceTestCase {
 							new GraphQLField(
 								"searchExperiences_v1_0",
 								new GraphQLField(
-									"sXPElement",
+									"sxpElement",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -618,7 +618,7 @@ public abstract class BaseSXPElementResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/searchExperiences_v1_0",
-						"Object/sXPElement"))));
+						"Object/sxpElement"))));
 	}
 
 	@Test
@@ -632,7 +632,7 @@ public abstract class BaseSXPElementResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"sXPElement",
+						"sxpElement",
 						new HashMap<String, Object>() {
 							{
 								put("sxpElementId", irrelevantSxpElementId);
@@ -651,7 +651,7 @@ public abstract class BaseSXPElementResourceTestCase {
 					new GraphQLField(
 						"searchExperiences_v1_0",
 						new GraphQLField(
-							"sXPElement",
+							"sxpElement",
 							new HashMap<String, Object>() {
 								{
 									put("sxpElementId", irrelevantSxpElementId);
@@ -705,7 +705,7 @@ public abstract class BaseSXPElementResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"sXPElementByExternalReferenceCode",
+								"sxpElementByExternalReferenceCode",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -718,7 +718,7 @@ public abstract class BaseSXPElementResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/sXPElementByExternalReferenceCode"))));
+						"Object/sxpElementByExternalReferenceCode"))));
 
 		// Using the namespace searchExperiences_v1_0
 
@@ -731,7 +731,7 @@ public abstract class BaseSXPElementResourceTestCase {
 							new GraphQLField(
 								"searchExperiences_v1_0",
 								new GraphQLField(
-									"sXPElementByExternalReferenceCode",
+									"sxpElementByExternalReferenceCode",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -744,7 +744,7 @@ public abstract class BaseSXPElementResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/searchExperiences_v1_0",
-						"Object/sXPElementByExternalReferenceCode"))));
+						"Object/sxpElementByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -761,7 +761,7 @@ public abstract class BaseSXPElementResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"sXPElementByExternalReferenceCode",
+						"sxpElementByExternalReferenceCode",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -782,7 +782,7 @@ public abstract class BaseSXPElementResourceTestCase {
 					new GraphQLField(
 						"searchExperiences_v1_0",
 						new GraphQLField(
-							"sXPElementByExternalReferenceCode",
+							"sxpElementByExternalReferenceCode",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -1136,6 +1136,77 @@ public abstract class BaseSXPElementResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetSXPElementsPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"sxpElements",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject sxpElementsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/sxpElements");
+
+		long totalCount = sxpElementsJSONObject.getLong("totalCount");
+
+		SXPElement sxpElement1 = testGraphQLGetSXPElementsPage_addSXPElement();
+		SXPElement sxpElement2 = testGraphQLGetSXPElementsPage_addSXPElement();
+
+		sxpElementsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/sxpElements");
+
+		Assert.assertEquals(
+			totalCount + 2, sxpElementsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			sxpElement1,
+			Arrays.asList(
+				SXPElementSerDes.toDTOs(
+					sxpElementsJSONObject.getString("items"))));
+		assertContains(
+			sxpElement2,
+			Arrays.asList(
+				SXPElementSerDes.toDTOs(
+					sxpElementsJSONObject.getString("items"))));
+
+		// Using the namespace searchExperiences_v1_0
+
+		sxpElementsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("searchExperiences_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/searchExperiences_v1_0",
+			"JSONObject/sxpElements");
+
+		Assert.assertEquals(
+			totalCount + 2, sxpElementsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			sxpElement1,
+			Arrays.asList(
+				SXPElementSerDes.toDTOs(
+					sxpElementsJSONObject.getString("items"))));
+		assertContains(
+			sxpElement2,
+			Arrays.asList(
+				SXPElementSerDes.toDTOs(
+					sxpElementsJSONObject.getString("items"))));
+	}
+
+	protected SXPElement testGraphQLGetSXPElementsPage_addSXPElement()
+		throws Exception {
+
+		return testGraphQLSXPElement_addSXPElement();
 	}
 
 	@Test

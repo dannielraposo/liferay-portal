@@ -218,10 +218,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sXPBlueprint(sxpBlueprintId: ___){actions, collectionProviderSubtypeName, collectionProviderTypeName, configuration, createDate, description, description_i18n, elementInstances, externalReferenceCode, id, modifiedDate, schemaVersion, title, title_i18n, userName, version}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sxpBlueprint(sxpBlueprintId: ___){actions, collectionProviderSubtypeName, collectionProviderTypeName, configuration, createDate, description, description_i18n, elementInstances, externalReferenceCode, id, modifiedDate, schemaVersion, title, title_i18n, userName, version}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public SXPBlueprint sXPBlueprint(
+	public SXPBlueprint sxpBlueprint(
 			@GraphQLName("sxpBlueprintId") Long sxpBlueprintId)
 		throws Exception {
 
@@ -235,10 +235,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sXPBlueprintByExternalReferenceCode(externalReferenceCode: ___){actions, collectionProviderSubtypeName, collectionProviderTypeName, configuration, createDate, description, description_i18n, elementInstances, externalReferenceCode, id, modifiedDate, schemaVersion, title, title_i18n, userName, version}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sxpBlueprintByExternalReferenceCode(externalReferenceCode: ___){actions, collectionProviderSubtypeName, collectionProviderTypeName, configuration, createDate, description, description_i18n, elementInstances, externalReferenceCode, id, modifiedDate, schemaVersion, title, title_i18n, userName, version}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public SXPBlueprint sXPBlueprintByExternalReferenceCode(
+	public SXPBlueprint sxpBlueprintByExternalReferenceCode(
 			@GraphQLName("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
@@ -253,10 +253,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sXPBlueprintExport(sxpBlueprintId: ___){}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sxpBlueprintExport(sxpBlueprintId: ___){}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public Response sXPBlueprintExport(
+	public Response sxpBlueprintExport(
 			@GraphQLName("sxpBlueprintId") Long sxpBlueprintId)
 		throws Exception {
 
@@ -270,10 +270,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sXPBlueprints(filter: ___, page: ___, pageSize: ___, search: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sxpBlueprints(filter: ___, page: ___, pageSize: ___, search: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public SXPBlueprintPage sXPBlueprints(
+	public SXPBlueprintPage sxpBlueprints(
 			@GraphQLName("search") String search,
 			@GraphQLName("filter") String filterString,
 			@GraphQLName("pageSize") int pageSize,
@@ -296,10 +296,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sXPElement(sxpElementId: ___){actions, createDate, description, description_i18n, elementDefinition, externalReferenceCode, fallbackDescription, fallbackTitle, hidden, id, modifiedDate, readOnly, schemaVersion, title, title_i18n, type, userName, version}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sxpElement(sxpElementId: ___){actions, createDate, description, description_i18n, elementDefinition, externalReferenceCode, fallbackDescription, fallbackTitle, hidden, id, modifiedDate, readOnly, schemaVersion, title, title_i18n, type, userName, version}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public SXPElement sXPElement(@GraphQLName("sxpElementId") Long sxpElementId)
+	public SXPElement sxpElement(@GraphQLName("sxpElementId") Long sxpElementId)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -312,10 +312,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sXPElementByExternalReferenceCode(externalReferenceCode: ___){actions, createDate, description, description_i18n, elementDefinition, externalReferenceCode, fallbackDescription, fallbackTitle, hidden, id, modifiedDate, readOnly, schemaVersion, title, title_i18n, type, userName, version}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sxpElementByExternalReferenceCode(externalReferenceCode: ___){actions, createDate, description, description_i18n, elementDefinition, externalReferenceCode, fallbackDescription, fallbackTitle, hidden, id, modifiedDate, readOnly, schemaVersion, title, title_i18n, type, userName, version}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public SXPElement sXPElementByExternalReferenceCode(
+	public SXPElement sxpElementByExternalReferenceCode(
 			@GraphQLName("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
@@ -330,10 +330,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sXPElementExport(sxpElementId: ___){}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sxpElementExport(sxpElementId: ___){}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public Response sXPElementExport(
+	public Response sxpElementExport(
 			@GraphQLName("sxpElementId") Long sxpElementId)
 		throws Exception {
 
@@ -347,10 +347,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sXPElements(filter: ___, page: ___, pageSize: ___, search: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sxpElements(filter: ___, page: ___, pageSize: ___, search: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public SXPElementPage sXPElements(
+	public SXPElementPage sxpElements(
 			@GraphQLName("search") String search,
 			@GraphQLName("filter") String filterString,
 			@GraphQLName("pageSize") int pageSize,
@@ -372,11 +372,11 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sXPParameterContributorDefinitions{items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sxpParameterContributorDefinitions{items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
 	public SXPParameterContributorDefinitionPage
-			sXPParameterContributorDefinitions()
+			sxpParameterContributorDefinitions()
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -445,7 +445,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		public SXPElement sXPElementByExternalReferenceCode() throws Exception {
+		public SXPElement sxpElementByExternalReferenceCode() throws Exception {
 			return _applyComponentServiceObjects(
 				_sxpElementResourceComponentServiceObjects,
 				Query.this::_populateResourceContext,
@@ -466,7 +466,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		public Response export() throws Exception {
+		public Response sxpElementExport() throws Exception {
 			return _applyComponentServiceObjects(
 				_sxpElementResourceComponentServiceObjects,
 				Query.this::_populateResourceContext,
@@ -486,7 +486,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		public SXPElement sXPElement() throws Exception {
+		public SXPElement sxpElement() throws Exception {
 			return _applyComponentServiceObjects(
 				_sxpElementResourceComponentServiceObjects,
 				Query.this::_populateResourceContext,
@@ -508,7 +508,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		public SXPBlueprint sXPBlueprintByExternalReferenceCode()
+		public SXPBlueprint sxpBlueprintByExternalReferenceCode()
 			throws Exception {
 
 			return _applyComponentServiceObjects(
@@ -531,7 +531,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		public Response export() throws Exception {
+		public Response sxpBlueprintExport() throws Exception {
 			return _applyComponentServiceObjects(
 				_sxpBlueprintResourceComponentServiceObjects,
 				Query.this::_populateResourceContext,

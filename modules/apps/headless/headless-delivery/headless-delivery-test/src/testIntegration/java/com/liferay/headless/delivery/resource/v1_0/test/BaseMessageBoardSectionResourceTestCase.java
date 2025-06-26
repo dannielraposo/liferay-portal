@@ -1258,7 +1258,7 @@ public abstract class BaseMessageBoardSectionResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"messageBoardSectionByFriendlyUrlPath",
+								"siteMessageBoardSectionByFriendlyUrlPath",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -1276,7 +1276,7 @@ public abstract class BaseMessageBoardSectionResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/messageBoardSectionByFriendlyUrlPath"))));
+						"Object/siteMessageBoardSectionByFriendlyUrlPath"))));
 
 		// Using the namespace headlessDelivery_v1_0
 
@@ -1289,7 +1289,7 @@ public abstract class BaseMessageBoardSectionResourceTestCase {
 							new GraphQLField(
 								"headlessDelivery_v1_0",
 								new GraphQLField(
-									"messageBoardSectionByFriendlyUrlPath",
+									"siteMessageBoardSectionByFriendlyUrlPath",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -1307,7 +1307,7 @@ public abstract class BaseMessageBoardSectionResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
-						"Object/messageBoardSectionByFriendlyUrlPath"))));
+						"Object/siteMessageBoardSectionByFriendlyUrlPath"))));
 	}
 
 	@Test
@@ -1324,7 +1324,7 @@ public abstract class BaseMessageBoardSectionResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"messageBoardSectionByFriendlyUrlPath",
+						"siteMessageBoardSectionByFriendlyUrlPath",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -1348,7 +1348,7 @@ public abstract class BaseMessageBoardSectionResourceTestCase {
 					new GraphQLField(
 						"headlessDelivery_v1_0",
 						new GraphQLField(
-							"messageBoardSectionByFriendlyUrlPath",
+							"siteMessageBoardSectionByFriendlyUrlPath",
 							new HashMap<String, Object>() {
 								{
 									put(

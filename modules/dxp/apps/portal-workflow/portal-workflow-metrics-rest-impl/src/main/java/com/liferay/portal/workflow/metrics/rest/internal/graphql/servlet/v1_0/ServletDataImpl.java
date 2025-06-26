@@ -411,7 +411,7 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							SLAResourceImpl.class, "getProcessSLAsPage"));
 					put(
-						"query#sLA",
+						"query#sla",
 						new ObjectValuePair<>(SLAResourceImpl.class, "getSLA"));
 					put(
 						"query#processLastSLAResult",

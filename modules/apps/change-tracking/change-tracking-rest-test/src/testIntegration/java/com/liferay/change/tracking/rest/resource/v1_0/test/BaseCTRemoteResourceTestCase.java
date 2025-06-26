@@ -575,14 +575,14 @@ public abstract class BaseCTRemoteResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"cTRemote",
+								"ctRemote",
 								new HashMap<String, Object>() {
 									{
 										put("id", ctRemote.getId());
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/cTRemote"))));
+						"JSONObject/data", "Object/ctRemote"))));
 
 		// Using the namespace changeTracking_v1_0
 
@@ -595,7 +595,7 @@ public abstract class BaseCTRemoteResourceTestCase {
 							new GraphQLField(
 								"changeTracking_v1_0",
 								new GraphQLField(
-									"cTRemote",
+									"ctRemote",
 									new HashMap<String, Object>() {
 										{
 											put("id", ctRemote.getId());
@@ -603,7 +603,7 @@ public abstract class BaseCTRemoteResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/changeTracking_v1_0",
-						"Object/cTRemote"))));
+						"Object/ctRemote"))));
 	}
 
 	@Test
@@ -617,7 +617,7 @@ public abstract class BaseCTRemoteResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"cTRemote",
+						"ctRemote",
 						new HashMap<String, Object>() {
 							{
 								put("id", irrelevantId);
@@ -636,7 +636,7 @@ public abstract class BaseCTRemoteResourceTestCase {
 					new GraphQLField(
 						"changeTracking_v1_0",
 						new GraphQLField(
-							"cTRemote",
+							"ctRemote",
 							new HashMap<String, Object>() {
 								{
 									put("id", irrelevantId);
@@ -889,6 +889,73 @@ public abstract class BaseCTRemoteResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetCTRemotesPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"ctRemotes",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject ctRemotesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/ctRemotes");
+
+		long totalCount = ctRemotesJSONObject.getLong("totalCount");
+
+		CTRemote ctRemote1 = testGraphQLGetCTRemotesPage_addCTRemote();
+		CTRemote ctRemote2 = testGraphQLGetCTRemotesPage_addCTRemote();
+
+		ctRemotesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/ctRemotes");
+
+		Assert.assertEquals(
+			totalCount + 2, ctRemotesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctRemote1,
+			Arrays.asList(
+				CTRemoteSerDes.toDTOs(ctRemotesJSONObject.getString("items"))));
+		assertContains(
+			ctRemote2,
+			Arrays.asList(
+				CTRemoteSerDes.toDTOs(ctRemotesJSONObject.getString("items"))));
+
+		// Using the namespace changeTracking_v1_0
+
+		ctRemotesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("changeTracking_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/changeTracking_v1_0",
+			"JSONObject/ctRemotes");
+
+		Assert.assertEquals(
+			totalCount + 2, ctRemotesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctRemote1,
+			Arrays.asList(
+				CTRemoteSerDes.toDTOs(ctRemotesJSONObject.getString("items"))));
+		assertContains(
+			ctRemote2,
+			Arrays.asList(
+				CTRemoteSerDes.toDTOs(ctRemotesJSONObject.getString("items"))));
+	}
+
+	protected CTRemote testGraphQLGetCTRemotesPage_addCTRemote()
+		throws Exception {
+
+		return testGraphQLCTRemote_addCTRemote();
 	}
 
 	@Test

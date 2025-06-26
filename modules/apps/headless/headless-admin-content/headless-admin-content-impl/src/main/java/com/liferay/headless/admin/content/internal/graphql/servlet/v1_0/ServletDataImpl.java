@@ -105,7 +105,7 @@ public class ServletDataImpl implements ServletData {
 							"postSiteStructuredContentDraft"));
 
 					put(
-						"query#displayPageTemplate",
+						"query#siteDisplayPageTemplate",
 						new ObjectValuePair<>(
 							DisplayPageTemplateResourceImpl.class,
 							"getSiteDisplayPageTemplate"));

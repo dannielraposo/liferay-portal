@@ -536,7 +536,7 @@ public abstract class BasePageSpecificationResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"siteByExternalReferenceCodePageSpecification",
+								"siteSiteByExternalReferenceCodePageSpecification",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -554,7 +554,7 @@ public abstract class BasePageSpecificationResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/siteByExternalReferenceCodePageSpecification"))));
+						"Object/siteSiteByExternalReferenceCodePageSpecification"))));
 
 		// Using the namespace headlessAdminSite_v1_0
 
@@ -567,7 +567,7 @@ public abstract class BasePageSpecificationResourceTestCase {
 							new GraphQLField(
 								"headlessAdminSite_v1_0",
 								new GraphQLField(
-									"siteByExternalReferenceCodePageSpecification",
+									"siteSiteByExternalReferenceCodePageSpecification",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -585,7 +585,7 @@ public abstract class BasePageSpecificationResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
-						"Object/siteByExternalReferenceCodePageSpecification"))));
+						"Object/siteSiteByExternalReferenceCodePageSpecification"))));
 	}
 
 	protected String
@@ -610,7 +610,7 @@ public abstract class BasePageSpecificationResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"siteByExternalReferenceCodePageSpecification",
+						"siteSiteByExternalReferenceCodePageSpecification",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -636,7 +636,7 @@ public abstract class BasePageSpecificationResourceTestCase {
 					new GraphQLField(
 						"headlessAdminSite_v1_0",
 						new GraphQLField(
-							"siteByExternalReferenceCodePageSpecification",
+							"siteSiteByExternalReferenceCodePageSpecification",
 							new HashMap<String, Object>() {
 								{
 									put(

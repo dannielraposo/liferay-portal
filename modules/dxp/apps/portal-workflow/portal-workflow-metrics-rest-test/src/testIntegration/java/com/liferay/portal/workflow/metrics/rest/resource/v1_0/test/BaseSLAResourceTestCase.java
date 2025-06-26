@@ -715,14 +715,14 @@ public abstract class BaseSLAResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"sLA",
+								"sla",
 								new HashMap<String, Object>() {
 									{
 										put("slaId", sla.getId());
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/sLA"))));
+						"JSONObject/data", "Object/sla"))));
 
 		// Using the namespace portalWorkflowMetrics_v1_0
 
@@ -735,7 +735,7 @@ public abstract class BaseSLAResourceTestCase {
 							new GraphQLField(
 								"portalWorkflowMetrics_v1_0",
 								new GraphQLField(
-									"sLA",
+									"sla",
 									new HashMap<String, Object>() {
 										{
 											put("slaId", sla.getId());
@@ -744,7 +744,7 @@ public abstract class BaseSLAResourceTestCase {
 									getGraphQLFields()))),
 						"JSONObject/data",
 						"JSONObject/portalWorkflowMetrics_v1_0",
-						"Object/sLA"))));
+						"Object/sla"))));
 	}
 
 	@Test
@@ -758,7 +758,7 @@ public abstract class BaseSLAResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"sLA",
+						"sla",
 						new HashMap<String, Object>() {
 							{
 								put("slaId", irrelevantSlaId);
@@ -777,7 +777,7 @@ public abstract class BaseSLAResourceTestCase {
 					new GraphQLField(
 						"portalWorkflowMetrics_v1_0",
 						new GraphQLField(
-							"sLA",
+							"sla",
 							new HashMap<String, Object>() {
 								{
 									put("slaId", irrelevantSlaId);

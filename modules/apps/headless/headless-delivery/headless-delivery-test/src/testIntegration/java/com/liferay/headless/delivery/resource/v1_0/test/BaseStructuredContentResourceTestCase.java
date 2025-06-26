@@ -1875,7 +1875,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"structuredContentByKey",
+								"siteStructuredContentByKey",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -1890,7 +1890,8 @@ public abstract class BaseStructuredContentResourceTestCase {
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/structuredContentByKey"))));
+						"JSONObject/data",
+						"Object/siteStructuredContentByKey"))));
 
 		// Using the namespace headlessDelivery_v1_0
 
@@ -1903,7 +1904,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 							new GraphQLField(
 								"headlessDelivery_v1_0",
 								new GraphQLField(
-									"structuredContentByKey",
+									"siteStructuredContentByKey",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -1920,7 +1921,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
-						"Object/structuredContentByKey"))));
+						"Object/siteStructuredContentByKey"))));
 	}
 
 	@Test
@@ -1936,7 +1937,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"structuredContentByKey",
+						"siteStructuredContentByKey",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -1958,7 +1959,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 					new GraphQLField(
 						"headlessDelivery_v1_0",
 						new GraphQLField(
-							"structuredContentByKey",
+							"siteStructuredContentByKey",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -2016,7 +2017,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"structuredContentByUuid",
+								"siteStructuredContentByUuid",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -2031,7 +2032,8 @@ public abstract class BaseStructuredContentResourceTestCase {
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/structuredContentByUuid"))));
+						"JSONObject/data",
+						"Object/siteStructuredContentByUuid"))));
 
 		// Using the namespace headlessDelivery_v1_0
 
@@ -2044,7 +2046,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 							new GraphQLField(
 								"headlessDelivery_v1_0",
 								new GraphQLField(
-									"structuredContentByUuid",
+									"siteStructuredContentByUuid",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -2061,7 +2063,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
-						"Object/structuredContentByUuid"))));
+						"Object/siteStructuredContentByUuid"))));
 	}
 
 	@Test
@@ -2077,7 +2079,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"structuredContentByUuid",
+						"siteStructuredContentByUuid",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -2099,7 +2101,7 @@ public abstract class BaseStructuredContentResourceTestCase {
 					new GraphQLField(
 						"headlessDelivery_v1_0",
 						new GraphQLField(
-							"structuredContentByUuid",
+							"siteStructuredContentByUuid",
 							new HashMap<String, Object>() {
 								{
 									put(

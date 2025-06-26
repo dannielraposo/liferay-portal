@@ -333,7 +333,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"siteByExternalReferenceCodeDisplayPageTemplateFolder",
+								"siteSiteByExternalReferenceCodeDisplayPageTemplateFolder",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -351,7 +351,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/siteByExternalReferenceCodeDisplayPageTemplateFolder"))));
+						"Object/siteSiteByExternalReferenceCodeDisplayPageTemplateFolder"))));
 
 		// Using the namespace headlessAdminSite_v1_0
 
@@ -364,7 +364,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 							new GraphQLField(
 								"headlessAdminSite_v1_0",
 								new GraphQLField(
-									"siteByExternalReferenceCodeDisplayPageTemplateFolder",
+									"siteSiteByExternalReferenceCodeDisplayPageTemplateFolder",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -382,7 +382,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
-						"Object/siteByExternalReferenceCodeDisplayPageTemplateFolder"))));
+						"Object/siteSiteByExternalReferenceCodeDisplayPageTemplateFolder"))));
 	}
 
 	protected String
@@ -407,7 +407,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"siteByExternalReferenceCodeDisplayPageTemplateFolder",
+						"siteSiteByExternalReferenceCodeDisplayPageTemplateFolder",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -433,7 +433,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 					new GraphQLField(
 						"headlessAdminSite_v1_0",
 						new GraphQLField(
-							"siteByExternalReferenceCodeDisplayPageTemplateFolder",
+							"siteSiteByExternalReferenceCodeDisplayPageTemplateFolder",
 							new HashMap<String, Object>() {
 								{
 									put(

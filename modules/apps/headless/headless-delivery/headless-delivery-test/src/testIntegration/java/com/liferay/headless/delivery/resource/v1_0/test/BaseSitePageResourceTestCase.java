@@ -218,7 +218,7 @@ public abstract class BaseSitePageResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"sitePage",
+								"siteSitePage",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -232,7 +232,7 @@ public abstract class BaseSitePageResourceTestCase {
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/sitePage"))));
+						"JSONObject/data", "Object/siteSitePage"))));
 
 		// Using the namespace headlessDelivery_v1_0
 
@@ -245,7 +245,7 @@ public abstract class BaseSitePageResourceTestCase {
 							new GraphQLField(
 								"headlessDelivery_v1_0",
 								new GraphQLField(
-									"sitePage",
+									"siteSitePage",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -262,7 +262,7 @@ public abstract class BaseSitePageResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
-						"Object/sitePage"))));
+						"Object/siteSitePage"))));
 	}
 
 	@Test
@@ -277,7 +277,7 @@ public abstract class BaseSitePageResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"sitePage",
+						"siteSitePage",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -301,7 +301,7 @@ public abstract class BaseSitePageResourceTestCase {
 					new GraphQLField(
 						"headlessDelivery_v1_0",
 						new GraphQLField(
-							"sitePage",
+							"siteSitePage",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -369,7 +369,7 @@ public abstract class BaseSitePageResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"sitePageExperienceExperienceKey",
+								"siteSitePageExperienceExperienceKey",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -390,7 +390,7 @@ public abstract class BaseSitePageResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/sitePageExperienceExperienceKey"))));
+						"Object/siteSitePageExperienceExperienceKey"))));
 
 		// Using the namespace headlessDelivery_v1_0
 
@@ -403,7 +403,7 @@ public abstract class BaseSitePageResourceTestCase {
 							new GraphQLField(
 								"headlessDelivery_v1_0",
 								new GraphQLField(
-									"sitePageExperienceExperienceKey",
+									"siteSitePageExperienceExperienceKey",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -426,7 +426,7 @@ public abstract class BaseSitePageResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
-						"Object/sitePageExperienceExperienceKey"))));
+						"Object/siteSitePageExperienceExperienceKey"))));
 	}
 
 	protected String
@@ -453,7 +453,7 @@ public abstract class BaseSitePageResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"sitePageExperienceExperienceKey",
+						"siteSitePageExperienceExperienceKey",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -478,7 +478,7 @@ public abstract class BaseSitePageResourceTestCase {
 					new GraphQLField(
 						"headlessDelivery_v1_0",
 						new GraphQLField(
-							"sitePageExperienceExperienceKey",
+							"siteSitePageExperienceExperienceKey",
 							new HashMap<String, Object>() {
 								{
 									put(

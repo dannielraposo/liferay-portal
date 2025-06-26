@@ -1149,7 +1149,7 @@ public abstract class BaseDataRecordCollectionResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"dataRecordCollectionByDataRecordCollectionKey",
+								"siteDataRecordCollectionByDataRecordCollectionKey",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -1167,7 +1167,7 @@ public abstract class BaseDataRecordCollectionResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/dataRecordCollectionByDataRecordCollectionKey"))));
+						"Object/siteDataRecordCollectionByDataRecordCollectionKey"))));
 
 		// Using the namespace dataEngine_v2_0
 
@@ -1180,7 +1180,7 @@ public abstract class BaseDataRecordCollectionResourceTestCase {
 							new GraphQLField(
 								"dataEngine_v2_0",
 								new GraphQLField(
-									"dataRecordCollectionByDataRecordCollectionKey",
+									"siteDataRecordCollectionByDataRecordCollectionKey",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -1198,7 +1198,7 @@ public abstract class BaseDataRecordCollectionResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/dataEngine_v2_0",
-						"Object/dataRecordCollectionByDataRecordCollectionKey"))));
+						"Object/siteDataRecordCollectionByDataRecordCollectionKey"))));
 	}
 
 	@Test
@@ -1215,7 +1215,7 @@ public abstract class BaseDataRecordCollectionResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"dataRecordCollectionByDataRecordCollectionKey",
+						"siteDataRecordCollectionByDataRecordCollectionKey",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -1239,7 +1239,7 @@ public abstract class BaseDataRecordCollectionResourceTestCase {
 					new GraphQLField(
 						"dataEngine_v2_0",
 						new GraphQLField(
-							"dataRecordCollectionByDataRecordCollectionKey",
+							"siteDataRecordCollectionByDataRecordCollectionKey",
 							new HashMap<String, Object>() {
 								{
 									put(

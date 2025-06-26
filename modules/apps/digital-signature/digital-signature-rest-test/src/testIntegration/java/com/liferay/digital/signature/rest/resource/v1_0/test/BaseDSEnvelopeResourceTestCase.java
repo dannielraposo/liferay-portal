@@ -221,7 +221,7 @@ public abstract class BaseDSEnvelopeResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"dSEnvelope",
+								"siteDSEnvelope",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -234,7 +234,7 @@ public abstract class BaseDSEnvelopeResourceTestCase {
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/dSEnvelope"))));
+						"JSONObject/data", "Object/siteDSEnvelope"))));
 
 		// Using the namespace digitalSignature_v1_0
 
@@ -247,7 +247,7 @@ public abstract class BaseDSEnvelopeResourceTestCase {
 							new GraphQLField(
 								"digitalSignature_v1_0",
 								new GraphQLField(
-									"dSEnvelope",
+									"siteDSEnvelope",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -262,7 +262,7 @@ public abstract class BaseDSEnvelopeResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/digitalSignature_v1_0",
-						"Object/dSEnvelope"))));
+						"Object/siteDSEnvelope"))));
 	}
 
 	@Test
@@ -277,7 +277,7 @@ public abstract class BaseDSEnvelopeResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"dSEnvelope",
+						"siteDSEnvelope",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -299,7 +299,7 @@ public abstract class BaseDSEnvelopeResourceTestCase {
 					new GraphQLField(
 						"digitalSignature_v1_0",
 						new GraphQLField(
-							"dSEnvelope",
+							"siteDSEnvelope",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -483,6 +483,83 @@ public abstract class BaseDSEnvelopeResourceTestCase {
 		throws Exception {
 
 		return irrelevantGroup.getGroupId();
+	}
+
+	@Test
+	public void testGraphQLGetSiteDSEnvelopesPage() throws Exception {
+		Long siteId = testGetSiteDSEnvelopesPage_getSiteId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"dsEnvelopes",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+
+					put("siteKey", "\"" + siteId + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject dsEnvelopesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/dsEnvelopes");
+
+		long totalCount = dsEnvelopesJSONObject.getLong("totalCount");
+
+		DSEnvelope dsEnvelope1 =
+			testGraphQLGetSiteDSEnvelopesPage_addDSEnvelope();
+		DSEnvelope dsEnvelope2 =
+			testGraphQLGetSiteDSEnvelopesPage_addDSEnvelope();
+
+		dsEnvelopesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/dsEnvelopes");
+
+		Assert.assertEquals(
+			totalCount + 2, dsEnvelopesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			dsEnvelope1,
+			Arrays.asList(
+				DSEnvelopeSerDes.toDTOs(
+					dsEnvelopesJSONObject.getString("items"))));
+		assertContains(
+			dsEnvelope2,
+			Arrays.asList(
+				DSEnvelopeSerDes.toDTOs(
+					dsEnvelopesJSONObject.getString("items"))));
+
+		// Using the namespace digitalSignature_v1_0
+
+		dsEnvelopesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("digitalSignature_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/digitalSignature_v1_0",
+			"JSONObject/dsEnvelopes");
+
+		Assert.assertEquals(
+			totalCount + 2, dsEnvelopesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			dsEnvelope1,
+			Arrays.asList(
+				DSEnvelopeSerDes.toDTOs(
+					dsEnvelopesJSONObject.getString("items"))));
+		assertContains(
+			dsEnvelope2,
+			Arrays.asList(
+				DSEnvelopeSerDes.toDTOs(
+					dsEnvelopesJSONObject.getString("items"))));
+	}
+
+	protected DSEnvelope testGraphQLGetSiteDSEnvelopesPage_addDSEnvelope()
+		throws Exception {
+
+		return testGraphQLDSEnvelope_addDSEnvelope();
 	}
 
 	@Test

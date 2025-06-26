@@ -574,14 +574,14 @@ public abstract class BaseCTProcessResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"cTProcess",
+								"ctProcess",
 								new HashMap<String, Object>() {
 									{
 										put("ctProcessId", ctProcess.getId());
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/cTProcess"))));
+						"JSONObject/data", "Object/ctProcess"))));
 
 		// Using the namespace changeTracking_v1_0
 
@@ -594,7 +594,7 @@ public abstract class BaseCTProcessResourceTestCase {
 							new GraphQLField(
 								"changeTracking_v1_0",
 								new GraphQLField(
-									"cTProcess",
+									"ctProcess",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -604,7 +604,7 @@ public abstract class BaseCTProcessResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/changeTracking_v1_0",
-						"Object/cTProcess"))));
+						"Object/ctProcess"))));
 	}
 
 	@Test
@@ -618,7 +618,7 @@ public abstract class BaseCTProcessResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"cTProcess",
+						"ctProcess",
 						new HashMap<String, Object>() {
 							{
 								put("ctProcessId", irrelevantCtProcessId);
@@ -637,7 +637,7 @@ public abstract class BaseCTProcessResourceTestCase {
 					new GraphQLField(
 						"changeTracking_v1_0",
 						new GraphQLField(
-							"cTProcess",
+							"ctProcess",
 							new HashMap<String, Object>() {
 								{
 									put("ctProcessId", irrelevantCtProcessId);
@@ -984,6 +984,77 @@ public abstract class BaseCTProcessResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetCTProcessesPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"ctProcesses",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject ctProcessesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/ctProcesses");
+
+		long totalCount = ctProcessesJSONObject.getLong("totalCount");
+
+		CTProcess ctProcess1 = testGraphQLGetCTProcessesPage_addCTProcess();
+		CTProcess ctProcess2 = testGraphQLGetCTProcessesPage_addCTProcess();
+
+		ctProcessesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/ctProcesses");
+
+		Assert.assertEquals(
+			totalCount + 2, ctProcessesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctProcess1,
+			Arrays.asList(
+				CTProcessSerDes.toDTOs(
+					ctProcessesJSONObject.getString("items"))));
+		assertContains(
+			ctProcess2,
+			Arrays.asList(
+				CTProcessSerDes.toDTOs(
+					ctProcessesJSONObject.getString("items"))));
+
+		// Using the namespace changeTracking_v1_0
+
+		ctProcessesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("changeTracking_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/changeTracking_v1_0",
+			"JSONObject/ctProcesses");
+
+		Assert.assertEquals(
+			totalCount + 2, ctProcessesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctProcess1,
+			Arrays.asList(
+				CTProcessSerDes.toDTOs(
+					ctProcessesJSONObject.getString("items"))));
+		assertContains(
+			ctProcess2,
+			Arrays.asList(
+				CTProcessSerDes.toDTOs(
+					ctProcessesJSONObject.getString("items"))));
+	}
+
+	protected CTProcess testGraphQLGetCTProcessesPage_addCTProcess()
+		throws Exception {
+
+		return testGraphQLCTProcess_addCTProcess();
 	}
 
 	@Test

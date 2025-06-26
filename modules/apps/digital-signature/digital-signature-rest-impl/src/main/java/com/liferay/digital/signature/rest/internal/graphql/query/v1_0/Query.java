@@ -49,10 +49,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dSEnvelope(dsEnvelopeId: ___, siteKey: ___){dateCreated, dateModified, dsDocument, dsRecipient, emailBlurb, emailSubject, id, name, senderEmailAddress, siteId, status}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteDSEnvelope(dsEnvelopeId: ___, siteKey: ___){dateCreated, dateModified, dsDocument, dsRecipient, emailBlurb, emailSubject, id, name, senderEmailAddress, siteId, status}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public DSEnvelope dSEnvelope(
+	public DSEnvelope siteDSEnvelope(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
 			@GraphQLName("dsEnvelopeId") String dsEnvelopeId)
 		throws Exception {
@@ -67,10 +67,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dSEnvelopes(fromDate: ___, keywords: ___, order: ___, page: ___, pageSize: ___, siteKey: ___, status: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dsEnvelopes(fromDate: ___, keywords: ___, order: ___, page: ___, pageSize: ___, siteKey: ___, status: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public DSEnvelopePage dSEnvelopes(
+	public DSEnvelopePage dsEnvelopes(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
 			@GraphQLName("fromDate") String fromDate,
 			@GraphQLName("keywords") String keywords,

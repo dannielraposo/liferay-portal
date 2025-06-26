@@ -80,10 +80,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {cTCollection(ctCollectionId: ___){actions, dateCreated, dateModified, dateScheduled, description, externalReferenceCode, id, name, ownerName, status, statusMessage}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ctCollection(ctCollectionId: ___){actions, dateCreated, dateModified, dateScheduled, description, externalReferenceCode, id, name, ownerName, status, statusMessage}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public CTCollection cTCollection(
+	public CTCollection ctCollection(
 			@GraphQLName("ctCollectionId") Long ctCollectionId)
 		throws Exception {
 
@@ -97,10 +97,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {cTCollectionByExternalReferenceCode(externalReferenceCode: ___){actions, dateCreated, dateModified, dateScheduled, description, externalReferenceCode, id, name, ownerName, status, statusMessage}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ctCollectionByExternalReferenceCode(externalReferenceCode: ___){actions, dateCreated, dateModified, dateScheduled, description, externalReferenceCode, id, name, ownerName, status, statusMessage}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public CTCollection cTCollectionByExternalReferenceCode(
+	public CTCollection ctCollectionByExternalReferenceCode(
 			@GraphQLName("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
@@ -115,10 +115,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {cTCollectionByExternalReferenceCodeShareLink(externalReferenceCode: ___){}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ctCollectionByExternalReferenceCodeShareLink(externalReferenceCode: ___){}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public String cTCollectionByExternalReferenceCodeShareLink(
+	public String ctCollectionByExternalReferenceCodeShareLink(
 			@GraphQLName("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
@@ -134,10 +134,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {cTCollectionShareLink(ctCollectionId: ___){}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ctCollectionShareLink(ctCollectionId: ___){}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public String cTCollectionShareLink(
+	public String ctCollectionShareLink(
 			@GraphQLName("ctCollectionId") Long ctCollectionId)
 		throws Exception {
 
@@ -151,10 +151,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {cTCollections(page: ___, pageSize: ___, search: ___, sorts: ___, status: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ctCollections(page: ___, pageSize: ___, search: ___, sorts: ___, status: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public CTCollectionPage cTCollections(
+	public CTCollectionPage ctCollections(
 			@GraphQLName("search") String search,
 			@GraphQLName("status") Integer[] status,
 			@GraphQLName("pageSize") int pageSize,
@@ -175,10 +175,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {cTEntriesHistory(classNameId: ___, classPK: ___, filter: ___, page: ___, pageSize: ___, search: ___, siteKey: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ctEntriesHistory(classNameId: ___, classPK: ___, filter: ___, page: ___, pageSize: ___, search: ___, siteKey: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public CTEntryPage cTEntriesHistory(
+	public CTEntryPage ctEntriesHistory(
 			@GraphQLName("classNameId") Long classNameId,
 			@GraphQLName("classPK") Long classPK,
 			@GraphQLName("search") String search,
@@ -203,10 +203,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {cTEntry(ctEntryId: ___){actions, changeType, ctCollectionId, ctCollectionName, ctCollectionStatus, ctCollectionStatusDate, ctCollectionStatusUserName, dateCreated, dateModified, hideable, id, modelClassNameId, modelClassPK, ownerId, ownerName, siteId, siteName, status, statusMessage, title, typeName}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ctEntry(ctEntryId: ___){actions, changeType, ctCollectionId, ctCollectionName, ctCollectionStatus, ctCollectionStatusDate, ctCollectionStatusUserName, dateCreated, dateModified, hideable, id, modelClassNameId, modelClassPK, ownerId, ownerName, siteId, siteName, status, statusMessage, title, typeName}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public CTEntry cTEntry(@GraphQLName("ctEntryId") Long ctEntryId)
+	public CTEntry ctEntry(@GraphQLName("ctEntryId") Long ctEntryId)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -267,10 +267,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {cTProcess(ctProcessId: ___){actions, ctCollectionId, datePublished, description, id, name, ownerName, status}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ctProcess(ctProcessId: ___){actions, ctCollectionId, datePublished, description, id, name, ownerName, status}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public CTProcess cTProcess(@GraphQLName("ctProcessId") Long ctProcessId)
+	public CTProcess ctProcess(@GraphQLName("ctProcessId") Long ctProcessId)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -282,10 +282,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {cTProcesses(filter: ___, page: ___, pageSize: ___, search: ___, sorts: ___, status: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ctProcesses(filter: ___, page: ___, pageSize: ___, search: ___, sorts: ___, status: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public CTProcessPage cTProcesses(
+	public CTProcessPage ctProcesses(
 			@GraphQLName("search") String search,
 			@GraphQLName("status") Integer[] status,
 			@GraphQLName("filter") String filterString,
@@ -308,10 +308,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {cTRemote(id: ___){actions, clientId, clientSecret, dateCreated, dateModified, description, id, name, ownerName, url}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ctRemote(id: ___){actions, clientId, clientSecret, dateCreated, dateModified, description, id, name, ownerName, url}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public CTRemote cTRemote(@GraphQLName("id") Long id) throws Exception {
+	public CTRemote ctRemote(@GraphQLName("id") Long id) throws Exception {
 		return _applyComponentServiceObjects(
 			_ctRemoteResourceComponentServiceObjects,
 			this::_populateResourceContext,
@@ -321,10 +321,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {cTRemotes(page: ___, pageSize: ___, search: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ctRemotes(page: ___, pageSize: ___, search: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public CTRemotePage cTRemotes(
+	public CTRemotePage ctRemotes(
 			@GraphQLName("search") String search,
 			@GraphQLName("pageSize") int pageSize,
 			@GraphQLName("page") int page,
@@ -350,7 +350,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		public String shareLink() throws Exception {
+		public String ctCollectionShareLink() throws Exception {
 			return _applyComponentServiceObjects(
 				_ctCollectionResourceComponentServiceObjects,
 				Query.this::_populateResourceContext,
@@ -373,7 +373,9 @@ public class Query {
 		}
 
 		@GraphQLField
-		public String byExternalReferenceCodeShareLink() throws Exception {
+		public String ctCollectionByExternalReferenceCodeShareLink()
+			throws Exception {
+
 			return _applyComponentServiceObjects(
 				_ctCollectionResourceComponentServiceObjects,
 				Query.this::_populateResourceContext,
@@ -395,7 +397,7 @@ public class Query {
 		}
 
 		@GraphQLField
-		public CTCollection cTCollection() throws Exception {
+		public CTCollection ctCollection() throws Exception {
 			return _applyComponentServiceObjects(
 				_ctCollectionResourceComponentServiceObjects,
 				Query.this::_populateResourceContext,

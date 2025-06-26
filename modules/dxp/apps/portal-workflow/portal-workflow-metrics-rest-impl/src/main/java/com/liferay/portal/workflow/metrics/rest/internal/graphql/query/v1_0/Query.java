@@ -474,10 +474,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sLA(slaId: ___){calendarKey, dateModified, description, duration, id, name, pauseNodeKeys, processId, startNodeKeys, status, stopNodeKeys}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {sla(slaId: ___){calendarKey, dateModified, description, duration, id, name, pauseNodeKeys, processId, startNodeKeys, status, stopNodeKeys}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public SLA sLA(@GraphQLName("slaId") Long slaId) throws Exception {
+	public SLA sla(@GraphQLName("slaId") Long slaId) throws Exception {
 		return _applyComponentServiceObjects(
 			_slaResourceComponentServiceObjects, this::_populateResourceContext,
 			slaResource -> slaResource.getSLA(slaId));

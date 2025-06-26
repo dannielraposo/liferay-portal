@@ -180,10 +180,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataDefinitionByContentTypeByDataDefinitionKey(contentType: ___, dataDefinitionKey: ___, siteKey: ___){availableLanguageIds, contentType, dataDefinitionFields, dataDefinitionKey, dataRules, dateCreated, dateModified, defaultDataLayout, defaultLanguageId, description, externalReferenceCode, id, name, siteId, storageType, userId}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteDataDefinitionByContentTypeByDataDefinitionKey(contentType: ___, dataDefinitionKey: ___, siteKey: ___){availableLanguageIds, contentType, dataDefinitionFields, dataDefinitionKey, dataRules, dateCreated, dateModified, defaultDataLayout, defaultLanguageId, description, externalReferenceCode, id, name, siteId, storageType, userId}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public DataDefinition dataDefinitionByContentTypeByDataDefinitionKey(
+	public DataDefinition siteDataDefinitionByContentTypeByDataDefinitionKey(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
 			@GraphQLName("contentType") String contentType,
 			@GraphQLName("dataDefinitionKey") String dataDefinitionKey)
@@ -201,13 +201,15 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataDefinitionByContentTypeByExternalReferenceCode(contentType: ___, externalReferenceCode: ___, siteKey: ___){availableLanguageIds, contentType, dataDefinitionFields, dataDefinitionKey, dataRules, dateCreated, dateModified, defaultDataLayout, defaultLanguageId, description, externalReferenceCode, id, name, siteId, storageType, userId}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteDataDefinitionByContentTypeByExternalReferenceCode(contentType: ___, externalReferenceCode: ___, siteKey: ___){availableLanguageIds, contentType, dataDefinitionFields, dataDefinitionKey, dataRules, dateCreated, dateModified, defaultDataLayout, defaultLanguageId, description, externalReferenceCode, id, name, siteId, storageType, userId}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public DataDefinition dataDefinitionByContentTypeByExternalReferenceCode(
-			@GraphQLName("siteKey") @NotEmpty String siteKey,
-			@GraphQLName("contentType") String contentType,
-			@GraphQLName("externalReferenceCode") String externalReferenceCode)
+	public DataDefinition
+			siteDataDefinitionByContentTypeByExternalReferenceCode(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("contentType") String contentType,
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -309,10 +311,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataLayoutByContentTypeByDataLayoutKey(contentType: ___, dataLayoutKey: ___, siteKey: ___){contentType, dataDefinitionId, dataLayoutFields, dataLayoutKey, dataLayoutPages, dataRules, dateCreated, dateModified, description, id, name, paginationMode, siteId, userId}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteDataLayoutByContentTypeByDataLayoutKey(contentType: ___, dataLayoutKey: ___, siteKey: ___){contentType, dataDefinitionId, dataLayoutFields, dataLayoutKey, dataLayoutPages, dataRules, dateCreated, dateModified, description, id, name, paginationMode, siteId, userId}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public DataLayout dataLayoutByContentTypeByDataLayoutKey(
+	public DataLayout siteDataLayoutByContentTypeByDataLayoutKey(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
 			@GraphQLName("contentType") String contentType,
 			@GraphQLName("dataLayoutKey") String dataLayoutKey)
@@ -555,13 +557,14 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataRecordCollectionByDataRecordCollectionKey(dataRecordCollectionKey: ___, siteKey: ___){dataDefinitionId, dataRecordCollectionKey, description, id, name, siteId}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteDataRecordCollectionByDataRecordCollectionKey(dataRecordCollectionKey: ___, siteKey: ___){dataDefinitionId, dataRecordCollectionKey, description, id, name, siteId}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public DataRecordCollection dataRecordCollectionByDataRecordCollectionKey(
-			@GraphQLName("siteKey") @NotEmpty String siteKey,
-			@GraphQLName("dataRecordCollectionKey") String
-				dataRecordCollectionKey)
+	public DataRecordCollection
+			siteDataRecordCollectionByDataRecordCollectionKey(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("dataRecordCollectionKey") String
+					dataRecordCollectionKey)
 		throws Exception {
 
 		return _applyComponentServiceObjects(

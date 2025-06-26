@@ -603,7 +603,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"sXPBlueprint",
+								"sxpBlueprint",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -612,7 +612,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/sXPBlueprint"))));
+						"JSONObject/data", "Object/sxpBlueprint"))));
 
 		// Using the namespace searchExperiences_v1_0
 
@@ -625,7 +625,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 							new GraphQLField(
 								"searchExperiences_v1_0",
 								new GraphQLField(
-									"sXPBlueprint",
+									"sxpBlueprint",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -635,7 +635,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/searchExperiences_v1_0",
-						"Object/sXPBlueprint"))));
+						"Object/sxpBlueprint"))));
 	}
 
 	@Test
@@ -649,7 +649,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"sXPBlueprint",
+						"sxpBlueprint",
 						new HashMap<String, Object>() {
 							{
 								put("sxpBlueprintId", irrelevantSxpBlueprintId);
@@ -668,7 +668,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 					new GraphQLField(
 						"searchExperiences_v1_0",
 						new GraphQLField(
-							"sXPBlueprint",
+							"sxpBlueprint",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -724,7 +724,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"sXPBlueprintByExternalReferenceCode",
+								"sxpBlueprintByExternalReferenceCode",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -737,7 +737,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/sXPBlueprintByExternalReferenceCode"))));
+						"Object/sxpBlueprintByExternalReferenceCode"))));
 
 		// Using the namespace searchExperiences_v1_0
 
@@ -750,7 +750,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 							new GraphQLField(
 								"searchExperiences_v1_0",
 								new GraphQLField(
-									"sXPBlueprintByExternalReferenceCode",
+									"sxpBlueprintByExternalReferenceCode",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -763,7 +763,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/searchExperiences_v1_0",
-						"Object/sXPBlueprintByExternalReferenceCode"))));
+						"Object/sxpBlueprintByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -780,7 +780,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"sXPBlueprintByExternalReferenceCode",
+						"sxpBlueprintByExternalReferenceCode",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -801,7 +801,7 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 					new GraphQLField(
 						"searchExperiences_v1_0",
 						new GraphQLField(
-							"sXPBlueprintByExternalReferenceCode",
+							"sxpBlueprintByExternalReferenceCode",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -1175,6 +1175,79 @@ public abstract class BaseSXPBlueprintResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetSXPBlueprintsPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"sxpBlueprints",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject sxpBlueprintsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/sxpBlueprints");
+
+		long totalCount = sxpBlueprintsJSONObject.getLong("totalCount");
+
+		SXPBlueprint sxpBlueprint1 =
+			testGraphQLGetSXPBlueprintsPage_addSXPBlueprint();
+		SXPBlueprint sxpBlueprint2 =
+			testGraphQLGetSXPBlueprintsPage_addSXPBlueprint();
+
+		sxpBlueprintsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/sxpBlueprints");
+
+		Assert.assertEquals(
+			totalCount + 2, sxpBlueprintsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			sxpBlueprint1,
+			Arrays.asList(
+				SXPBlueprintSerDes.toDTOs(
+					sxpBlueprintsJSONObject.getString("items"))));
+		assertContains(
+			sxpBlueprint2,
+			Arrays.asList(
+				SXPBlueprintSerDes.toDTOs(
+					sxpBlueprintsJSONObject.getString("items"))));
+
+		// Using the namespace searchExperiences_v1_0
+
+		sxpBlueprintsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("searchExperiences_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/searchExperiences_v1_0",
+			"JSONObject/sxpBlueprints");
+
+		Assert.assertEquals(
+			totalCount + 2, sxpBlueprintsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			sxpBlueprint1,
+			Arrays.asList(
+				SXPBlueprintSerDes.toDTOs(
+					sxpBlueprintsJSONObject.getString("items"))));
+		assertContains(
+			sxpBlueprint2,
+			Arrays.asList(
+				SXPBlueprintSerDes.toDTOs(
+					sxpBlueprintsJSONObject.getString("items"))));
+	}
+
+	protected SXPBlueprint testGraphQLGetSXPBlueprintsPage_addSXPBlueprint()
+		throws Exception {
+
+		return testGraphQLSXPBlueprint_addSXPBlueprint();
 	}
 
 	@Test

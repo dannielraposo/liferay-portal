@@ -639,7 +639,7 @@ public abstract class BaseSiteResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"byFriendlyUrlPath",
+								"siteByFriendlyUrlPath",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -649,7 +649,7 @@ public abstract class BaseSiteResourceTestCase {
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/byFriendlyUrlPath"))));
+						"JSONObject/data", "Object/siteByFriendlyUrlPath"))));
 
 		// Using the namespace headlessAdminUser_v1_0
 
@@ -662,7 +662,7 @@ public abstract class BaseSiteResourceTestCase {
 							new GraphQLField(
 								"headlessAdminUser_v1_0",
 								new GraphQLField(
-									"byFriendlyUrlPath",
+									"siteByFriendlyUrlPath",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -674,7 +674,7 @@ public abstract class BaseSiteResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
-						"Object/byFriendlyUrlPath"))));
+						"Object/siteByFriendlyUrlPath"))));
 	}
 
 	@Test
@@ -689,7 +689,7 @@ public abstract class BaseSiteResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"byFriendlyUrlPath",
+						"siteByFriendlyUrlPath",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -710,7 +710,7 @@ public abstract class BaseSiteResourceTestCase {
 					new GraphQLField(
 						"headlessAdminUser_v1_0",
 						new GraphQLField(
-							"byFriendlyUrlPath",
+							"siteByFriendlyUrlPath",
 							new HashMap<String, Object>() {
 								{
 									put(

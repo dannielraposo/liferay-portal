@@ -1063,7 +1063,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"dataLayoutByContentTypeByDataLayoutKey",
+								"siteDataLayoutByContentTypeByDataLayoutKey",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -1083,7 +1083,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/dataLayoutByContentTypeByDataLayoutKey"))));
+						"Object/siteDataLayoutByContentTypeByDataLayoutKey"))));
 
 		// Using the namespace dataEngine_v2_0
 
@@ -1096,7 +1096,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 							new GraphQLField(
 								"dataEngine_v2_0",
 								new GraphQLField(
-									"dataLayoutByContentTypeByDataLayoutKey",
+									"siteDataLayoutByContentTypeByDataLayoutKey",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -1119,7 +1119,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/dataEngine_v2_0",
-						"Object/dataLayoutByContentTypeByDataLayoutKey"))));
+						"Object/siteDataLayoutByContentTypeByDataLayoutKey"))));
 	}
 
 	@Test
@@ -1138,7 +1138,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"dataLayoutByContentTypeByDataLayoutKey",
+						"siteDataLayoutByContentTypeByDataLayoutKey",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -1161,7 +1161,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 					new GraphQLField(
 						"dataEngine_v2_0",
 						new GraphQLField(
-							"dataLayoutByContentTypeByDataLayoutKey",
+							"siteDataLayoutByContentTypeByDataLayoutKey",
 							new HashMap<String, Object>() {
 								{
 									put(

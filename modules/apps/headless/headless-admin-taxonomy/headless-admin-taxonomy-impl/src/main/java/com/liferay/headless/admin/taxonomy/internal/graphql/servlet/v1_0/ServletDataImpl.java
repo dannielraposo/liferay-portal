@@ -437,7 +437,7 @@ public class ServletDataImpl implements ServletData {
 							KeywordResourceImpl.class,
 							"getSiteKeywordByExternalReferenceCode"));
 					put(
-						"query#keywordPermissions",
+						"query#siteKeywordPermissions",
 						new ObjectValuePair<>(
 							KeywordResourceImpl.class,
 							"getSiteKeywordPermissionsPage"));

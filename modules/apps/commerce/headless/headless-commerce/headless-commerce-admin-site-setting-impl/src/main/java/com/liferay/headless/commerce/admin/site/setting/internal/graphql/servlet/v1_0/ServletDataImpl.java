@@ -226,7 +226,7 @@ public class ServletDataImpl implements ServletData {
 							AvailabilityEstimateResourceImpl.class,
 							"getAvailabilityEstimate"));
 					put(
-						"query#commerceAdminSettingGroupAvailabilityEstimate",
+						"query#commerceAdminSiteSettingGroupAvailabilityEstimate",
 						new ObjectValuePair<>(
 							AvailabilityEstimateResourceImpl.class,
 							"getCommerceAdminSiteSettingGroupAvailabilityEstimatePage"));
@@ -256,7 +256,7 @@ public class ServletDataImpl implements ServletData {
 							MeasurementUnitResourceImpl.class,
 							"getMeasurementUnitsPage"));
 					put(
-						"query#commerceAdminSettingGroupTaxCategory",
+						"query#commerceAdminSiteSettingGroupTaxCategory",
 						new ObjectValuePair<>(
 							TaxCategoryResourceImpl.class,
 							"getCommerceAdminSiteSettingGroupTaxCategoryPage"));
@@ -265,7 +265,7 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							TaxCategoryResourceImpl.class, "getTaxCategory"));
 					put(
-						"query#commerceAdminSettingGroupWarehouse",
+						"query#commerceAdminSiteSettingGroupWarehouse",
 						new ObjectValuePair<>(
 							WarehouseResourceImpl.class,
 							"getCommerceAdminSiteSettingGroupWarehousePage"));

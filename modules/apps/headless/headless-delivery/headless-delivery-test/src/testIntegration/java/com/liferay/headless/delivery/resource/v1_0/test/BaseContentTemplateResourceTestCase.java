@@ -703,7 +703,7 @@ public abstract class BaseContentTemplateResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"contentTemplate",
+								"siteContentTemplate",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -717,7 +717,7 @@ public abstract class BaseContentTemplateResourceTestCase {
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/contentTemplate"))));
+						"JSONObject/data", "Object/siteContentTemplate"))));
 
 		// Using the namespace headlessDelivery_v1_0
 
@@ -730,7 +730,7 @@ public abstract class BaseContentTemplateResourceTestCase {
 							new GraphQLField(
 								"headlessDelivery_v1_0",
 								new GraphQLField(
-									"contentTemplate",
+									"siteContentTemplate",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -746,7 +746,7 @@ public abstract class BaseContentTemplateResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
-						"Object/contentTemplate"))));
+						"Object/siteContentTemplate"))));
 	}
 
 	@Test
@@ -761,7 +761,7 @@ public abstract class BaseContentTemplateResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"contentTemplate",
+						"siteContentTemplate",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -785,7 +785,7 @@ public abstract class BaseContentTemplateResourceTestCase {
 					new GraphQLField(
 						"headlessDelivery_v1_0",
 						new GraphQLField(
-							"contentTemplate",
+							"siteContentTemplate",
 							new HashMap<String, Object>() {
 								{
 									put(

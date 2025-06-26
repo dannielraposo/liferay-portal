@@ -361,12 +361,12 @@ public class ServletDataImpl implements ServletData {
 							DataDefinitionResourceImpl.class,
 							"getDataDefinitionPermissionsPage"));
 					put(
-						"query#dataDefinitionByContentTypeByDataDefinitionKey",
+						"query#siteDataDefinitionByContentTypeByDataDefinitionKey",
 						new ObjectValuePair<>(
 							DataDefinitionResourceImpl.class,
 							"getSiteDataDefinitionByContentTypeByDataDefinitionKey"));
 					put(
-						"query#dataDefinitionByContentTypeByExternalReferenceCode",
+						"query#siteDataDefinitionByContentTypeByExternalReferenceCode",
 						new ObjectValuePair<>(
 							DataDefinitionResourceImpl.class,
 							"getSiteDataDefinitionByContentTypeByExternalReferenceCode"));
@@ -390,7 +390,7 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							DataLayoutResourceImpl.class, "getDataLayout"));
 					put(
-						"query#dataLayoutByContentTypeByDataLayoutKey",
+						"query#siteDataLayoutByContentTypeByDataLayoutKey",
 						new ObjectValuePair<>(
 							DataLayoutResourceImpl.class,
 							"getSiteDataLayoutByContentTypeByDataLayoutKey"));
@@ -448,7 +448,7 @@ public class ServletDataImpl implements ServletData {
 							DataRecordCollectionResourceImpl.class,
 							"getDataRecordCollectionPermissionsPage"));
 					put(
-						"query#dataRecordCollectionByDataRecordCollectionKey",
+						"query#siteDataRecordCollectionByDataRecordCollectionKey",
 						new ObjectValuePair<>(
 							DataRecordCollectionResourceImpl.class,
 							"getSiteDataRecordCollectionByDataRecordCollectionKey"));

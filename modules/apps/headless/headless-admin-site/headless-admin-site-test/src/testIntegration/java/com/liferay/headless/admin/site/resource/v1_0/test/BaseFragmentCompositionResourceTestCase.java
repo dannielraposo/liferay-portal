@@ -289,7 +289,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"siteByExternalReferenceCodeFragmentComposition",
+								"siteSiteByExternalReferenceCodeFragmentComposition",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -307,7 +307,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/siteByExternalReferenceCodeFragmentComposition"))));
+						"Object/siteSiteByExternalReferenceCodeFragmentComposition"))));
 
 		// Using the namespace headlessAdminSite_v1_0
 
@@ -320,7 +320,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 							new GraphQLField(
 								"headlessAdminSite_v1_0",
 								new GraphQLField(
-									"siteByExternalReferenceCodeFragmentComposition",
+									"siteSiteByExternalReferenceCodeFragmentComposition",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -338,7 +338,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
-						"Object/siteByExternalReferenceCodeFragmentComposition"))));
+						"Object/siteSiteByExternalReferenceCodeFragmentComposition"))));
 	}
 
 	protected String
@@ -363,7 +363,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"siteByExternalReferenceCodeFragmentComposition",
+						"siteSiteByExternalReferenceCodeFragmentComposition",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -389,7 +389,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 					new GraphQLField(
 						"headlessAdminSite_v1_0",
 						new GraphQLField(
-							"siteByExternalReferenceCodeFragmentComposition",
+							"siteSiteByExternalReferenceCodeFragmentComposition",
 							new HashMap<String, Object>() {
 								{
 									put(

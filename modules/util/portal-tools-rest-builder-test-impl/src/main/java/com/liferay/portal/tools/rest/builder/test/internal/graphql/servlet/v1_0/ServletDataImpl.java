@@ -536,7 +536,7 @@ public class ServletDataImpl implements ServletData {
 							"putTestEntityBatch"));
 
 					put(
-						"query#assetLibraryAssetLibraryTestEntities",
+						"query#assetLibraryTestEntities",
 						new ObjectValuePair<>(
 							AssetLibraryTestEntityResourceImpl.class,
 							"getAssetLibraryAssetLibraryTestEntitiesPage"));
@@ -576,7 +576,7 @@ public class ServletDataImpl implements ServletData {
 							CompanyTestEntityResourceImpl.class,
 							"getCompanyTestEntityPermissionsPage"));
 					put(
-						"query#assetLibraryERCAssetLibraryTestEntities",
+						"query#ercAssetLibraryTestEntities",
 						new ObjectValuePair<>(
 							ERCAssetLibraryTestEntityResourceImpl.class,
 							"getAssetLibraryERCAssetLibraryTestEntitiesPage"));
@@ -596,22 +596,22 @@ public class ServletDataImpl implements ServletData {
 							ERCScopedTestEntityResourceImpl.class,
 							"getAssetLibraryERCScopedTestEntity"));
 					put(
-						"query#eRCScopedTestEntities",
+						"query#ercScopedTestEntities",
 						new ObjectValuePair<>(
 							ERCScopedTestEntityResourceImpl.class,
 							"getSiteERCScopedTestEntitiesPage"));
 					put(
-						"query#eRCScopedTestEntity",
+						"query#siteERCScopedTestEntity",
 						new ObjectValuePair<>(
 							ERCScopedTestEntityResourceImpl.class,
 							"getSiteERCScopedTestEntity"));
 					put(
-						"query#eRCSiteTestEntities",
+						"query#ercSiteTestEntities",
 						new ObjectValuePair<>(
 							ERCSiteTestEntityResourceImpl.class,
 							"getSiteERCSiteTestEntitiesPage"));
 					put(
-						"query#eRCSiteTestEntity",
+						"query#siteERCSiteTestEntity",
 						new ObjectValuePair<>(
 							ERCSiteTestEntityResourceImpl.class,
 							"getSiteERCSiteTestEntity"));
@@ -684,7 +684,7 @@ public class ServletDataImpl implements ServletData {
 							SiteTestEntityResourceImpl.class,
 							"getSiteTestEntity"));
 					put(
-						"query#testEntityPermissions",
+						"query#siteTestEntityPermissions",
 						new ObjectValuePair<>(
 							SiteTestEntityResourceImpl.class,
 							"getSiteTestEntityPermissionsPage"));
@@ -712,11 +712,6 @@ public class ServletDataImpl implements ServletData {
 							TestEntityAddressResourceImpl.class,
 							"getTestEntityTestEntityAddress"));
 
-					put(
-						"query#SiteTestEntity.testEntityPermissions",
-						new ObjectValuePair<>(
-							SiteTestEntityResourceImpl.class,
-							"getSiteTestEntityPermissionsPage"));
 					put(
 						"query#TestEntity.testEntityAddress",
 						new ObjectValuePair<>(

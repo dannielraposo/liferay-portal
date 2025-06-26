@@ -458,7 +458,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"siteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
+								"siteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -482,7 +482,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/siteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode"))));
+						"Object/siteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode"))));
 
 		// Using the namespace headlessAdminSite_v1_0
 
@@ -495,7 +495,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 							new GraphQLField(
 								"headlessAdminSite_v1_0",
 								new GraphQLField(
-									"siteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
+									"siteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -519,7 +519,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
-						"Object/siteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode"))));
+						"Object/siteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode"))));
 	}
 
 	protected String
@@ -562,7 +562,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"siteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
+						"siteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -591,7 +591,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 					new GraphQLField(
 						"headlessAdminSite_v1_0",
 						new GraphQLField(
-							"siteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
+							"siteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
 							new HashMap<String, Object>() {
 								{
 									put(

@@ -304,45 +304,45 @@ public class ServletDataImpl implements ServletData {
 							QueryPrefilterContributorResourceImpl.class,
 							"getQueryPrefilterContributorsPage"));
 					put(
-						"query#sXPBlueprint",
+						"query#sxpBlueprint",
 						new ObjectValuePair<>(
 							SXPBlueprintResourceImpl.class, "getSXPBlueprint"));
 					put(
-						"query#sXPBlueprintByExternalReferenceCode",
+						"query#sxpBlueprintByExternalReferenceCode",
 						new ObjectValuePair<>(
 							SXPBlueprintResourceImpl.class,
 							"getSXPBlueprintByExternalReferenceCode"));
 					put(
-						"query#sXPBlueprintExport",
+						"query#sxpBlueprintExport",
 						new ObjectValuePair<>(
 							SXPBlueprintResourceImpl.class,
 							"getSXPBlueprintExport"));
 					put(
-						"query#sXPBlueprints",
+						"query#sxpBlueprints",
 						new ObjectValuePair<>(
 							SXPBlueprintResourceImpl.class,
 							"getSXPBlueprintsPage"));
 					put(
-						"query#sXPElement",
+						"query#sxpElement",
 						new ObjectValuePair<>(
 							SXPElementResourceImpl.class, "getSXPElement"));
 					put(
-						"query#sXPElementByExternalReferenceCode",
+						"query#sxpElementByExternalReferenceCode",
 						new ObjectValuePair<>(
 							SXPElementResourceImpl.class,
 							"getSXPElementByExternalReferenceCode"));
 					put(
-						"query#sXPElementExport",
+						"query#sxpElementExport",
 						new ObjectValuePair<>(
 							SXPElementResourceImpl.class,
 							"getSXPElementExport"));
 					put(
-						"query#sXPElements",
+						"query#sxpElements",
 						new ObjectValuePair<>(
 							SXPElementResourceImpl.class,
 							"getSXPElementsPage"));
 					put(
-						"query#sXPParameterContributorDefinitions",
+						"query#sxpParameterContributorDefinitions",
 						new ObjectValuePair<>(
 							SXPParameterContributorDefinitionResourceImpl.class,
 							"getSXPParameterContributorDefinitionsPage"));
@@ -363,26 +363,26 @@ public class ServletDataImpl implements ServletData {
 							"getSearchableAssetNameLanguagePage"));
 
 					put(
-						"query#SXPBlueprint.sXPElementByExternalReferenceCode",
+						"query#SXPBlueprint.sxpElementByExternalReferenceCode",
 						new ObjectValuePair<>(
 							SXPElementResourceImpl.class,
 							"getSXPElementByExternalReferenceCode"));
 					put(
-						"query#SXPElement.export",
+						"query#SXPElement.sxpElementExport",
 						new ObjectValuePair<>(
 							SXPElementResourceImpl.class,
 							"getSXPElementExport"));
 					put(
-						"query#ElementInstance.sXPElement",
+						"query#ElementInstance.sxpElement",
 						new ObjectValuePair<>(
 							SXPElementResourceImpl.class, "getSXPElement"));
 					put(
-						"query#SXPElement.sXPBlueprintByExternalReferenceCode",
+						"query#SXPElement.sxpBlueprintByExternalReferenceCode",
 						new ObjectValuePair<>(
 							SXPBlueprintResourceImpl.class,
 							"getSXPBlueprintByExternalReferenceCode"));
 					put(
-						"query#SXPBlueprint.export",
+						"query#SXPBlueprint.sxpBlueprintExport",
 						new ObjectValuePair<>(
 							SXPBlueprintResourceImpl.class,
 							"getSXPBlueprintExport"));

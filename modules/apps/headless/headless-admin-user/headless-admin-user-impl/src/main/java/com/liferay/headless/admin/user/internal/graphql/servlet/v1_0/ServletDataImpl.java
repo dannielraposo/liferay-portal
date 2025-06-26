@@ -1317,7 +1317,7 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							SegmentResourceImpl.class, "getSiteSegmentsPage"));
 					put(
-						"query#userAccountSegments",
+						"query#siteUserAccountSegments",
 						new ObjectValuePair<>(
 							SegmentResourceImpl.class,
 							"getSiteUserAccountSegmentsPage"));
@@ -1346,7 +1346,7 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							SiteResourceImpl.class, "getSite"));
 					put(
-						"query#byFriendlyUrlPath",
+						"query#siteByFriendlyUrlPath",
 						new ObjectValuePair<>(
 							SiteResourceImpl.class,
 							"getSiteByFriendlyUrlPath"));
@@ -1405,12 +1405,12 @@ public class ServletDataImpl implements ServletData {
 							UserAccountResourceImpl.class,
 							"getOrganizationUserAccountsPage"));
 					put(
-						"query#accountUserAccountSelected",
+						"query#siteAccountUserAccountSelected",
 						new ObjectValuePair<>(
 							UserAccountResourceImpl.class,
 							"getSiteAccountUserAccountSelected"));
 					put(
-						"query#byFriendlyUrlPathAccountByExternalReferenceCodeAccountExternalReferenceCodeUserAccountByExternalReferenceCodeUserAccountExternalReferenceCodeSelected",
+						"query#siteByFriendlyUrlPathAccountByExternalReferenceCodeAccountExternalReferenceCodeUserAccountByExternalReferenceCodeUserAccountExternalReferenceCodeSelected",
 						new ObjectValuePair<>(
 							UserAccountResourceImpl.class,
 							"getSiteByFriendlyUrlPathAccountByExternalReferenceCodeAccountExternalReferenceCodeUserAccountByExternalReferenceCodeUserAccountExternalReferenceCodeSelected"));

@@ -540,17 +540,17 @@ public class ServletDataImpl implements ServletData {
 							"putSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode"));
 
 					put(
-						"query#displayPageTemplatePermissions",
+						"query#siteDisplayPageTemplatePermissions",
 						new ObjectValuePair<>(
 							DisplayPageTemplateResourceImpl.class,
 							"getSiteDisplayPageTemplatePermissionsPage"));
 					put(
-						"query#siteByExternalReferenceCodeDisplayPageTemplate",
+						"query#siteSiteByExternalReferenceCodeDisplayPageTemplate",
 						new ObjectValuePair<>(
 							DisplayPageTemplateResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeDisplayPageTemplate"));
 					put(
-						"query#siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplates",
+						"query#siteSiteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplates",
 						new ObjectValuePair<>(
 							DisplayPageTemplateResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesPage"));
@@ -560,12 +560,12 @@ public class ServletDataImpl implements ServletData {
 							DisplayPageTemplateResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeDisplayPageTemplatesPage"));
 					put(
-						"query#displayPageTemplateFolderPermissions",
+						"query#siteDisplayPageTemplateFolderPermissions",
 						new ObjectValuePair<>(
 							DisplayPageTemplateFolderResourceImpl.class,
 							"getSiteDisplayPageTemplateFolderPermissionsPage"));
 					put(
-						"query#siteByExternalReferenceCodeDisplayPageTemplateFolder",
+						"query#siteSiteByExternalReferenceCodeDisplayPageTemplateFolder",
 						new ObjectValuePair<>(
 							DisplayPageTemplateFolderResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder"));
@@ -575,7 +575,7 @@ public class ServletDataImpl implements ServletData {
 							DisplayPageTemplateFolderResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeDisplayPageTemplateFoldersPage"));
 					put(
-						"query#siteByExternalReferenceCodeFragmentComposition",
+						"query#siteSiteByExternalReferenceCodeFragmentComposition",
 						new ObjectValuePair<>(
 							FragmentCompositionResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeFragmentComposition"));
@@ -585,27 +585,27 @@ public class ServletDataImpl implements ServletData {
 							FragmentCompositionResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeFragmentCompositionsPage"));
 					put(
-						"query#siteByExternalReferenceCodeDisplayPageTemplateFriendlyUrlHistory",
+						"query#siteSiteByExternalReferenceCodeDisplayPageTemplateFriendlyUrlHistory",
 						new ObjectValuePair<>(
 							FriendlyUrlHistoryResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeDisplayPageTemplateFriendlyUrlHistory"));
 					put(
-						"query#siteByExternalReferenceCodeSitePageFriendlyUrlHistory",
+						"query#siteSiteByExternalReferenceCodeSitePageFriendlyUrlHistory",
 						new ObjectValuePair<>(
 							FriendlyUrlHistoryResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeSitePageFriendlyUrlHistory"));
 					put(
-						"query#siteByExternalReferenceCodeUtilityPageFriendlyUrlHistory",
+						"query#siteSiteByExternalReferenceCodeUtilityPageFriendlyUrlHistory",
 						new ObjectValuePair<>(
 							FriendlyUrlHistoryResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeUtilityPageFriendlyUrlHistory"));
 					put(
-						"query#masterPagePermissions",
+						"query#siteMasterPagePermissions",
 						new ObjectValuePair<>(
 							MasterPageResourceImpl.class,
 							"getSiteMasterPagePermissionsPage"));
 					put(
-						"query#siteByExternalReferenceCodeMasterPage",
+						"query#siteSiteByExternalReferenceCodeMasterPage",
 						new ObjectValuePair<>(
 							MasterPageResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeMasterPage"));
@@ -615,102 +615,102 @@ public class ServletDataImpl implements ServletData {
 							MasterPageResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeMasterPagesPage"));
 					put(
-						"query#siteByExternalReferenceCodePageElement",
+						"query#siteSiteByExternalReferenceCodePageElement",
 						new ObjectValuePair<>(
 							PageElementResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageElement"));
 					put(
-						"query#siteByExternalReferenceCodePageElementPageElements",
+						"query#siteSiteByExternalReferenceCodePageElementPageElements",
 						new ObjectValuePair<>(
 							PageElementResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageElementPageElementsPage"));
 					put(
-						"query#siteByExternalReferenceCodePageExperiencePageElements",
+						"query#siteSiteByExternalReferenceCodePageExperiencePageElements",
 						new ObjectValuePair<>(
 							PageElementResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageExperiencePageElementsPage"));
 					put(
-						"query#siteByExternalReferenceCodePageExperience",
+						"query#siteSiteByExternalReferenceCodePageExperience",
 						new ObjectValuePair<>(
 							PageExperienceResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageExperience"));
 					put(
-						"query#siteByExternalReferenceCodePageSpecificationPageExperiences",
+						"query#siteSiteByExternalReferenceCodePageSpecificationPageExperiences",
 						new ObjectValuePair<>(
 							PageExperienceResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageSpecificationPageExperiencesPage"));
 					put(
-						"query#siteByExternalReferenceCodePageExperiencePageRules",
+						"query#siteSiteByExternalReferenceCodePageExperiencePageRules",
 						new ObjectValuePair<>(
 							PageRuleResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageExperiencePageRulesPage"));
 					put(
-						"query#siteByExternalReferenceCodePageRule",
+						"query#siteSiteByExternalReferenceCodePageRule",
 						new ObjectValuePair<>(
 							PageRuleResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageRule"));
 					put(
-						"query#siteByExternalReferenceCodePageRuleAction",
+						"query#siteSiteByExternalReferenceCodePageRuleAction",
 						new ObjectValuePair<>(
 							PageRuleActionResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageRuleAction"));
 					put(
-						"query#siteByExternalReferenceCodePageRulePageRuleActions",
+						"query#siteSiteByExternalReferenceCodePageRulePageRuleActions",
 						new ObjectValuePair<>(
 							PageRuleActionResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageRulePageRuleActionsPage"));
 					put(
-						"query#siteByExternalReferenceCodePageRuleCondition",
+						"query#siteSiteByExternalReferenceCodePageRuleCondition",
 						new ObjectValuePair<>(
 							PageRuleConditionResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageRuleCondition"));
 					put(
-						"query#siteByExternalReferenceCodePageRulePageRuleConditions",
+						"query#siteSiteByExternalReferenceCodePageRulePageRuleConditions",
 						new ObjectValuePair<>(
 							PageRuleConditionResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageRulePageRuleConditionsPage"));
 					put(
-						"query#siteByExternalReferenceCodeDisplayPageTemplatePageSpecifications",
+						"query#siteSiteByExternalReferenceCodeDisplayPageTemplatePageSpecifications",
 						new ObjectValuePair<>(
 							PageSpecificationResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeDisplayPageTemplatePageSpecificationsPage"));
 					put(
-						"query#siteByExternalReferenceCodeMasterPagePageSpecifications",
+						"query#siteSiteByExternalReferenceCodeMasterPagePageSpecifications",
 						new ObjectValuePair<>(
 							PageSpecificationResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeMasterPagePageSpecificationsPage"));
 					put(
-						"query#siteByExternalReferenceCodePageSpecification",
+						"query#siteSiteByExternalReferenceCodePageSpecification",
 						new ObjectValuePair<>(
 							PageSpecificationResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageSpecification"));
 					put(
-						"query#siteByExternalReferenceCodePageTemplatePageSpecifications",
+						"query#siteSiteByExternalReferenceCodePageTemplatePageSpecifications",
 						new ObjectValuePair<>(
 							PageSpecificationResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageTemplatePageSpecificationsPage"));
 					put(
-						"query#siteByExternalReferenceCodeSitePagePageSpecifications",
+						"query#siteSiteByExternalReferenceCodeSitePagePageSpecifications",
 						new ObjectValuePair<>(
 							PageSpecificationResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeSitePagePageSpecificationsPage"));
 					put(
-						"query#siteByExternalReferenceCodeUtilityPagePageSpecifications",
+						"query#siteSiteByExternalReferenceCodeUtilityPagePageSpecifications",
 						new ObjectValuePair<>(
 							PageSpecificationResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeUtilityPagePageSpecificationsPage"));
 					put(
-						"query#pageTemplatePermissions",
+						"query#sitePageTemplatePermissions",
 						new ObjectValuePair<>(
 							PageTemplateResourceImpl.class,
 							"getSitePageTemplatePermissionsPage"));
 					put(
-						"query#siteByExternalReferenceCodePageTemplate",
+						"query#siteSiteByExternalReferenceCodePageTemplate",
 						new ObjectValuePair<>(
 							PageTemplateResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageTemplate"));
 					put(
-						"query#siteByExternalReferenceCodePageTemplateSetPageTemplates",
+						"query#siteSiteByExternalReferenceCodePageTemplateSetPageTemplates",
 						new ObjectValuePair<>(
 							PageTemplateResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageTemplateSetPageTemplatesPage"));
@@ -720,12 +720,12 @@ public class ServletDataImpl implements ServletData {
 							PageTemplateResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageTemplatesPage"));
 					put(
-						"query#pageTemplateSetPermissions",
+						"query#sitePageTemplateSetPermissions",
 						new ObjectValuePair<>(
 							PageTemplateSetResourceImpl.class,
 							"getSitePageTemplateSetPermissionsPage"));
 					put(
-						"query#siteByExternalReferenceCodePageTemplateSet",
+						"query#siteSiteByExternalReferenceCodePageTemplateSet",
 						new ObjectValuePair<>(
 							PageTemplateSetResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageTemplateSet"));
@@ -735,7 +735,7 @@ public class ServletDataImpl implements ServletData {
 							PageTemplateSetResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodePageTemplateSetsPage"));
 					put(
-						"query#siteByExternalReferenceCodeSitePage",
+						"query#siteSiteByExternalReferenceCodeSitePage",
 						new ObjectValuePair<>(
 							SitePageResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeSitePage"));
@@ -745,12 +745,12 @@ public class ServletDataImpl implements ServletData {
 							SitePageResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeSitePagesPage"));
 					put(
-						"query#sitePagePermissions",
+						"query#siteSitePagePermissions",
 						new ObjectValuePair<>(
 							SitePageResourceImpl.class,
 							"getSiteSitePagePermissionsPage"));
 					put(
-						"query#siteByExternalReferenceCodeUtilityPage",
+						"query#siteSiteByExternalReferenceCodeUtilityPage",
 						new ObjectValuePair<>(
 							UtilityPageResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeUtilityPage"));
@@ -760,17 +760,17 @@ public class ServletDataImpl implements ServletData {
 							UtilityPageResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeUtilityPagesPage"));
 					put(
-						"query#utilityPagePermissions",
+						"query#siteUtilityPagePermissions",
 						new ObjectValuePair<>(
 							UtilityPageResourceImpl.class,
 							"getSiteUtilityPagePermissionsPage"));
 					put(
-						"query#siteByExternalReferenceCodeSitePageWidgetInstances",
+						"query#siteSiteByExternalReferenceCodeSitePageWidgetInstances",
 						new ObjectValuePair<>(
 							WidgetPageWidgetInstanceResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeSitePageWidgetInstancesPage"));
 					put(
-						"query#siteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
+						"query#siteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
 						new ObjectValuePair<>(
 							WidgetPageWidgetInstanceResourceImpl.class,
 							"getSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode"));

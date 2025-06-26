@@ -1934,22 +1934,22 @@ public class ServletDataImpl implements ServletData {
 							CommentResourceImpl.class,
 							"getDocumentCommentsPage"));
 					put(
-						"query#blogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode",
+						"query#siteBlogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode",
 						new ObjectValuePair<>(
 							CommentResourceImpl.class,
 							"getSiteBlogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode"));
 					put(
-						"query#commentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode",
+						"query#siteCommentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode",
 						new ObjectValuePair<>(
 							CommentResourceImpl.class,
 							"getSiteCommentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode"));
 					put(
-						"query#documentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode",
+						"query#siteDocumentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode",
 						new ObjectValuePair<>(
 							CommentResourceImpl.class,
 							"getSiteDocumentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode"));
 					put(
-						"query#structuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode",
+						"query#siteStructuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode",
 						new ObjectValuePair<>(
 							CommentResourceImpl.class,
 							"getSiteStructuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode"));
@@ -1984,17 +1984,17 @@ public class ServletDataImpl implements ServletData {
 							ContentSetElementResourceImpl.class,
 							"getContentSetContentSetElementsPage"));
 					put(
-						"query#contentSetByKeyContentSetElements",
+						"query#siteContentSetByKeyContentSetElements",
 						new ObjectValuePair<>(
 							ContentSetElementResourceImpl.class,
 							"getSiteContentSetByKeyContentSetElementsPage"));
 					put(
-						"query#contentSetByUuidContentSetElements",
+						"query#siteContentSetByUuidContentSetElements",
 						new ObjectValuePair<>(
 							ContentSetElementResourceImpl.class,
 							"getSiteContentSetByUuidContentSetElementsPage"));
 					put(
-						"query#contentSetProviderByKeyContentSetElements",
+						"query#siteContentSetProviderByKeyContentSetElements",
 						new ObjectValuePair<>(
 							ContentSetElementResourceImpl.class,
 							"getSiteContentSetProviderByKeyContentSetElementsPage"));
@@ -2034,7 +2034,7 @@ public class ServletDataImpl implements ServletData {
 							ContentTemplateResourceImpl.class,
 							"getAssetLibraryContentTemplatesPage"));
 					put(
-						"query#contentTemplate",
+						"query#siteContentTemplate",
 						new ObjectValuePair<>(
 							ContentTemplateResourceImpl.class,
 							"getSiteContentTemplate"));
@@ -2102,7 +2102,7 @@ public class ServletDataImpl implements ServletData {
 							DocumentResourceImpl.class,
 							"getSiteDocumentsPage"));
 					put(
-						"query#documentsRatedByMe",
+						"query#siteDocumentsRatedByMe",
 						new ObjectValuePair<>(
 							DocumentResourceImpl.class,
 							"getSiteDocumentsRatedByMePage"));
@@ -2167,7 +2167,7 @@ public class ServletDataImpl implements ServletData {
 							DocumentFolderResourceImpl.class,
 							"getSiteDocumentFoldersPage"));
 					put(
-						"query#documentFoldersRatedByMe",
+						"query#siteDocumentFoldersRatedByMe",
 						new ObjectValuePair<>(
 							DocumentFolderResourceImpl.class,
 							"getSiteDocumentFoldersRatedByMePage"));
@@ -2272,7 +2272,7 @@ public class ServletDataImpl implements ServletData {
 							KnowledgeBaseAttachmentResourceImpl.class,
 							"getKnowledgeBaseAttachment"));
 					put(
-						"query#knowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode",
+						"query#siteKnowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode",
 						new ObjectValuePair<>(
 							KnowledgeBaseAttachmentResourceImpl.class,
 							"getSiteKnowledgeBaseArticleByExternalReferenceCodeKnowledgeBaseArticleExternalReferenceCodeKnowledgeBaseAttachmentByExternalReferenceCode"));
@@ -2332,7 +2332,7 @@ public class ServletDataImpl implements ServletData {
 							MessageBoardAttachmentResourceImpl.class,
 							"getMessageBoardThreadMessageBoardAttachmentsPage"));
 					put(
-						"query#messageBoardMessageByExternalReferenceCodeMessageBoardMessageExternalReferenceCodeMessageBoardAttachmentByExternalReferenceCode",
+						"query#siteMessageBoardMessageByExternalReferenceCodeMessageBoardMessageExternalReferenceCodeMessageBoardAttachmentByExternalReferenceCode",
 						new ObjectValuePair<>(
 							MessageBoardAttachmentResourceImpl.class,
 							"getSiteMessageBoardMessageByExternalReferenceCodeMessageBoardMessageExternalReferenceCodeMessageBoardAttachmentByExternalReferenceCode"));
@@ -2367,7 +2367,7 @@ public class ServletDataImpl implements ServletData {
 							MessageBoardMessageResourceImpl.class,
 							"getSiteMessageBoardMessageByExternalReferenceCode"));
 					put(
-						"query#messageBoardMessageByFriendlyUrlPath",
+						"query#siteMessageBoardMessageByFriendlyUrlPath",
 						new ObjectValuePair<>(
 							MessageBoardMessageResourceImpl.class,
 							"getSiteMessageBoardMessageByFriendlyUrlPath"));
@@ -2382,7 +2382,7 @@ public class ServletDataImpl implements ServletData {
 							MessageBoardMessageResourceImpl.class,
 							"getSiteMessageBoardMessagesPage"));
 					put(
-						"query#userMessageBoardMessagesActivity",
+						"query#siteUserMessageBoardMessagesActivity",
 						new ObjectValuePair<>(
 							MessageBoardMessageResourceImpl.class,
 							"getSiteUserMessageBoardMessagesActivityPage"));
@@ -2402,7 +2402,7 @@ public class ServletDataImpl implements ServletData {
 							MessageBoardSectionResourceImpl.class,
 							"getMessageBoardSectionPermissionsPage"));
 					put(
-						"query#messageBoardSectionByFriendlyUrlPath",
+						"query#siteMessageBoardSectionByFriendlyUrlPath",
 						new ObjectValuePair<>(
 							MessageBoardSectionResourceImpl.class,
 							"getSiteMessageBoardSectionByFriendlyUrlPath"));
@@ -2442,7 +2442,7 @@ public class ServletDataImpl implements ServletData {
 							MessageBoardThreadResourceImpl.class,
 							"getMessageBoardThreadsRankedPage"));
 					put(
-						"query#messageBoardThreadByFriendlyUrlPath",
+						"query#siteMessageBoardThreadByFriendlyUrlPath",
 						new ObjectValuePair<>(
 							MessageBoardThreadResourceImpl.class,
 							"getSiteMessageBoardThreadByFriendlyUrlPath"));
@@ -2482,26 +2482,26 @@ public class ServletDataImpl implements ServletData {
 							NavigationMenuResourceImpl.class,
 							"getSiteNavigationMenusPage"));
 					put(
-						"query#sitePage",
+						"query#siteSitePage",
 						new ObjectValuePair<>(
 							SitePageResourceImpl.class, "getSiteSitePage"));
 					put(
-						"query#sitePageExperienceExperienceKey",
+						"query#siteSitePageExperienceExperienceKey",
 						new ObjectValuePair<>(
 							SitePageResourceImpl.class,
 							"getSiteSitePageExperienceExperienceKey"));
 					put(
-						"query#sitePageExperienceExperienceKeyRenderedPage",
+						"query#siteSitePageExperienceExperienceKeyRenderedPage",
 						new ObjectValuePair<>(
 							SitePageResourceImpl.class,
 							"getSiteSitePageExperienceExperienceKeyRenderedPage"));
 					put(
-						"query#sitePageRenderedPage",
+						"query#siteSitePageRenderedPage",
 						new ObjectValuePair<>(
 							SitePageResourceImpl.class,
 							"getSiteSitePageRenderedPage"));
 					put(
-						"query#sitePagesExperiences",
+						"query#siteSitePagesExperiences",
 						new ObjectValuePair<>(
 							SitePageResourceImpl.class,
 							"getSiteSitePagesExperiencesPage"));
@@ -2536,12 +2536,12 @@ public class ServletDataImpl implements ServletData {
 							StructuredContentResourceImpl.class,
 							"getSiteStructuredContentByExternalReferenceCode"));
 					put(
-						"query#structuredContentByKey",
+						"query#siteStructuredContentByKey",
 						new ObjectValuePair<>(
 							StructuredContentResourceImpl.class,
 							"getSiteStructuredContentByKey"));
 					put(
-						"query#structuredContentByUuid",
+						"query#siteStructuredContentByUuid",
 						new ObjectValuePair<>(
 							StructuredContentResourceImpl.class,
 							"getSiteStructuredContentByUuid"));
@@ -2679,7 +2679,7 @@ public class ServletDataImpl implements ServletData {
 							WikiPageResourceImpl.class,
 							"getWikiPageWikiPagesPage"));
 					put(
-						"query#wikiPageByExternalReferenceCodeWikiPageExternalReferenceCodeWikiPageAttachmentByExternalReferenceCode",
+						"query#siteWikiPageByExternalReferenceCodeWikiPageExternalReferenceCodeWikiPageAttachmentByExternalReferenceCode",
 						new ObjectValuePair<>(
 							WikiPageAttachmentResourceImpl.class,
 							"getSiteWikiPageByExternalReferenceCodeWikiPageExternalReferenceCodeWikiPageAttachmentByExternalReferenceCode"));

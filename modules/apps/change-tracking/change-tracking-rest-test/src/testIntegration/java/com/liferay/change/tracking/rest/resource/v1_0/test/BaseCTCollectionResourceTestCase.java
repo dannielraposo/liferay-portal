@@ -662,7 +662,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"cTCollection",
+								"ctCollection",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -671,7 +671,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/cTCollection"))));
+						"JSONObject/data", "Object/ctCollection"))));
 
 		// Using the namespace changeTracking_v1_0
 
@@ -684,7 +684,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 							new GraphQLField(
 								"changeTracking_v1_0",
 								new GraphQLField(
-									"cTCollection",
+									"ctCollection",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -694,7 +694,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/changeTracking_v1_0",
-						"Object/cTCollection"))));
+						"Object/ctCollection"))));
 	}
 
 	@Test
@@ -708,7 +708,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"cTCollection",
+						"ctCollection",
 						new HashMap<String, Object>() {
 							{
 								put("ctCollectionId", irrelevantCtCollectionId);
@@ -727,7 +727,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 					new GraphQLField(
 						"changeTracking_v1_0",
 						new GraphQLField(
-							"cTCollection",
+							"ctCollection",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -783,7 +783,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"cTCollectionByExternalReferenceCode",
+								"ctCollectionByExternalReferenceCode",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -796,7 +796,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/cTCollectionByExternalReferenceCode"))));
+						"Object/ctCollectionByExternalReferenceCode"))));
 
 		// Using the namespace changeTracking_v1_0
 
@@ -809,7 +809,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 							new GraphQLField(
 								"changeTracking_v1_0",
 								new GraphQLField(
-									"cTCollectionByExternalReferenceCode",
+									"ctCollectionByExternalReferenceCode",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -822,7 +822,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/changeTracking_v1_0",
-						"Object/cTCollectionByExternalReferenceCode"))));
+						"Object/ctCollectionByExternalReferenceCode"))));
 	}
 
 	@Test
@@ -839,7 +839,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"cTCollectionByExternalReferenceCode",
+						"ctCollectionByExternalReferenceCode",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -860,7 +860,7 @@ public abstract class BaseCTCollectionResourceTestCase {
 					new GraphQLField(
 						"changeTracking_v1_0",
 						new GraphQLField(
-							"cTCollectionByExternalReferenceCode",
+							"ctCollectionByExternalReferenceCode",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -1158,6 +1158,79 @@ public abstract class BaseCTCollectionResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetCTCollectionsPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"ctCollections",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject ctCollectionsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/ctCollections");
+
+		long totalCount = ctCollectionsJSONObject.getLong("totalCount");
+
+		CTCollection ctCollection1 =
+			testGraphQLGetCTCollectionsPage_addCTCollection();
+		CTCollection ctCollection2 =
+			testGraphQLGetCTCollectionsPage_addCTCollection();
+
+		ctCollectionsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/ctCollections");
+
+		Assert.assertEquals(
+			totalCount + 2, ctCollectionsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctCollection1,
+			Arrays.asList(
+				CTCollectionSerDes.toDTOs(
+					ctCollectionsJSONObject.getString("items"))));
+		assertContains(
+			ctCollection2,
+			Arrays.asList(
+				CTCollectionSerDes.toDTOs(
+					ctCollectionsJSONObject.getString("items"))));
+
+		// Using the namespace changeTracking_v1_0
+
+		ctCollectionsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("changeTracking_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/changeTracking_v1_0",
+			"JSONObject/ctCollections");
+
+		Assert.assertEquals(
+			totalCount + 2, ctCollectionsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctCollection1,
+			Arrays.asList(
+				CTCollectionSerDes.toDTOs(
+					ctCollectionsJSONObject.getString("items"))));
+		assertContains(
+			ctCollection2,
+			Arrays.asList(
+				CTCollectionSerDes.toDTOs(
+					ctCollectionsJSONObject.getString("items"))));
+	}
+
+	protected CTCollection testGraphQLGetCTCollectionsPage_addCTCollection()
+		throws Exception {
+
+		return testGraphQLCTCollection_addCTCollection();
 	}
 
 	@Test

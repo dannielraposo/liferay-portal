@@ -316,7 +316,7 @@ public abstract class BaseDisplayPageTemplateResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"siteByExternalReferenceCodeDisplayPageTemplate",
+								"siteSiteByExternalReferenceCodeDisplayPageTemplate",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -334,7 +334,7 @@ public abstract class BaseDisplayPageTemplateResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/siteByExternalReferenceCodeDisplayPageTemplate"))));
+						"Object/siteSiteByExternalReferenceCodeDisplayPageTemplate"))));
 
 		// Using the namespace headlessAdminSite_v1_0
 
@@ -347,7 +347,7 @@ public abstract class BaseDisplayPageTemplateResourceTestCase {
 							new GraphQLField(
 								"headlessAdminSite_v1_0",
 								new GraphQLField(
-									"siteByExternalReferenceCodeDisplayPageTemplate",
+									"siteSiteByExternalReferenceCodeDisplayPageTemplate",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -365,7 +365,7 @@ public abstract class BaseDisplayPageTemplateResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
-						"Object/siteByExternalReferenceCodeDisplayPageTemplate"))));
+						"Object/siteSiteByExternalReferenceCodeDisplayPageTemplate"))));
 	}
 
 	protected String
@@ -390,7 +390,7 @@ public abstract class BaseDisplayPageTemplateResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"siteByExternalReferenceCodeDisplayPageTemplate",
+						"siteSiteByExternalReferenceCodeDisplayPageTemplate",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -416,7 +416,7 @@ public abstract class BaseDisplayPageTemplateResourceTestCase {
 					new GraphQLField(
 						"headlessAdminSite_v1_0",
 						new GraphQLField(
-							"siteByExternalReferenceCodeDisplayPageTemplate",
+							"siteSiteByExternalReferenceCodeDisplayPageTemplate",
 							new HashMap<String, Object>() {
 								{
 									put(

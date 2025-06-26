@@ -766,14 +766,14 @@ public abstract class BaseCTEntryResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"cTEntry",
+								"ctEntry",
 								new HashMap<String, Object>() {
 									{
 										put("ctEntryId", ctEntry.getId());
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/cTEntry"))));
+						"JSONObject/data", "Object/ctEntry"))));
 
 		// Using the namespace changeTracking_v1_0
 
@@ -786,7 +786,7 @@ public abstract class BaseCTEntryResourceTestCase {
 							new GraphQLField(
 								"changeTracking_v1_0",
 								new GraphQLField(
-									"cTEntry",
+									"ctEntry",
 									new HashMap<String, Object>() {
 										{
 											put("ctEntryId", ctEntry.getId());
@@ -794,7 +794,7 @@ public abstract class BaseCTEntryResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/changeTracking_v1_0",
-						"Object/cTEntry"))));
+						"Object/ctEntry"))));
 	}
 
 	@Test
@@ -808,7 +808,7 @@ public abstract class BaseCTEntryResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"cTEntry",
+						"ctEntry",
 						new HashMap<String, Object>() {
 							{
 								put("ctEntryId", irrelevantCtEntryId);
@@ -827,7 +827,7 @@ public abstract class BaseCTEntryResourceTestCase {
 					new GraphQLField(
 						"changeTracking_v1_0",
 						new GraphQLField(
-							"cTEntry",
+							"ctEntry",
 							new HashMap<String, Object>() {
 								{
 									put("ctEntryId", irrelevantCtEntryId);

@@ -823,7 +823,7 @@ public abstract class BaseSiteTestEntityResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"testEntity",
+								"siteTestEntity",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -832,7 +832,7 @@ public abstract class BaseSiteTestEntityResourceTestCase {
 									}
 								},
 								getGraphQLFields())),
-						"JSONObject/data", "Object/testEntity"))));
+						"JSONObject/data", "Object/siteTestEntity"))));
 
 		// Using the namespace test_v1_0
 
@@ -845,7 +845,7 @@ public abstract class BaseSiteTestEntityResourceTestCase {
 							new GraphQLField(
 								"test_v1_0",
 								new GraphQLField(
-									"testEntity",
+									"siteTestEntity",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -855,7 +855,7 @@ public abstract class BaseSiteTestEntityResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/test_v1_0",
-						"Object/testEntity"))));
+						"Object/siteTestEntity"))));
 	}
 
 	@Test
@@ -869,7 +869,7 @@ public abstract class BaseSiteTestEntityResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"testEntity",
+						"siteTestEntity",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -890,7 +890,7 @@ public abstract class BaseSiteTestEntityResourceTestCase {
 					new GraphQLField(
 						"test_v1_0",
 						new GraphQLField(
-							"testEntity",
+							"siteTestEntity",
 							new HashMap<String, Object>() {
 								{
 									put(

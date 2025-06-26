@@ -2095,7 +2095,7 @@ public abstract class BaseCommentResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"blogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode",
+								"siteBlogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -2119,7 +2119,7 @@ public abstract class BaseCommentResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/blogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode"))));
+						"Object/siteBlogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode"))));
 
 		// Using the namespace headlessDelivery_v1_0
 
@@ -2132,7 +2132,7 @@ public abstract class BaseCommentResourceTestCase {
 							new GraphQLField(
 								"headlessDelivery_v1_0",
 								new GraphQLField(
-									"blogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode",
+									"siteBlogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -2156,7 +2156,7 @@ public abstract class BaseCommentResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
-						"Object/blogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode"))));
+						"Object/siteBlogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode"))));
 	}
 
 	protected Long
@@ -2191,7 +2191,7 @@ public abstract class BaseCommentResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"blogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode",
+						"siteBlogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -2218,7 +2218,7 @@ public abstract class BaseCommentResourceTestCase {
 					new GraphQLField(
 						"headlessDelivery_v1_0",
 						new GraphQLField(
-							"blogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode",
+							"siteBlogPostingByExternalReferenceCodeBlogPostingExternalReferenceCodeCommentByExternalReferenceCode",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -2303,7 +2303,7 @@ public abstract class BaseCommentResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"commentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode",
+								"siteCommentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -2327,7 +2327,7 @@ public abstract class BaseCommentResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/commentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode"))));
+						"Object/siteCommentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode"))));
 
 		// Using the namespace headlessDelivery_v1_0
 
@@ -2340,7 +2340,7 @@ public abstract class BaseCommentResourceTestCase {
 							new GraphQLField(
 								"headlessDelivery_v1_0",
 								new GraphQLField(
-									"commentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode",
+									"siteCommentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -2364,7 +2364,7 @@ public abstract class BaseCommentResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
-						"Object/commentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode"))));
+						"Object/siteCommentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode"))));
 	}
 
 	protected Long
@@ -2399,7 +2399,7 @@ public abstract class BaseCommentResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"commentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode",
+						"siteCommentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -2426,7 +2426,7 @@ public abstract class BaseCommentResourceTestCase {
 					new GraphQLField(
 						"headlessDelivery_v1_0",
 						new GraphQLField(
-							"commentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode",
+							"siteCommentByExternalReferenceCodeParentCommentExternalReferenceCodeCommentByExternalReferenceCode",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -2511,7 +2511,7 @@ public abstract class BaseCommentResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"documentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode",
+								"siteDocumentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -2535,7 +2535,7 @@ public abstract class BaseCommentResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/documentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode"))));
+						"Object/siteDocumentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode"))));
 
 		// Using the namespace headlessDelivery_v1_0
 
@@ -2548,7 +2548,7 @@ public abstract class BaseCommentResourceTestCase {
 							new GraphQLField(
 								"headlessDelivery_v1_0",
 								new GraphQLField(
-									"documentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode",
+									"siteDocumentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -2572,7 +2572,7 @@ public abstract class BaseCommentResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
-						"Object/documentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode"))));
+						"Object/siteDocumentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode"))));
 	}
 
 	protected Long
@@ -2607,7 +2607,7 @@ public abstract class BaseCommentResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"documentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode",
+						"siteDocumentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -2634,7 +2634,7 @@ public abstract class BaseCommentResourceTestCase {
 					new GraphQLField(
 						"headlessDelivery_v1_0",
 						new GraphQLField(
-							"documentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode",
+							"siteDocumentByExternalReferenceCodeDocumentExternalReferenceCodeCommentByExternalReferenceCode",
 							new HashMap<String, Object>() {
 								{
 									put(
@@ -2719,7 +2719,7 @@ public abstract class BaseCommentResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"structuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode",
+								"siteStructuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -2743,7 +2743,7 @@ public abstract class BaseCommentResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/structuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode"))));
+						"Object/siteStructuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode"))));
 
 		// Using the namespace headlessDelivery_v1_0
 
@@ -2756,7 +2756,7 @@ public abstract class BaseCommentResourceTestCase {
 							new GraphQLField(
 								"headlessDelivery_v1_0",
 								new GraphQLField(
-									"structuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode",
+									"siteStructuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -2780,7 +2780,7 @@ public abstract class BaseCommentResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
-						"Object/structuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode"))));
+						"Object/siteStructuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode"))));
 	}
 
 	protected Long
@@ -2815,7 +2815,7 @@ public abstract class BaseCommentResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"structuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode",
+						"siteStructuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -2842,7 +2842,7 @@ public abstract class BaseCommentResourceTestCase {
 					new GraphQLField(
 						"headlessDelivery_v1_0",
 						new GraphQLField(
-							"structuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode",
+							"siteStructuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode",
 							new HashMap<String, Object>() {
 								{
 									put(

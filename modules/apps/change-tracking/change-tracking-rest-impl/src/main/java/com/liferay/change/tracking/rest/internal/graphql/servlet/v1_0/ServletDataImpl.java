@@ -219,36 +219,36 @@ public class ServletDataImpl implements ServletData {
 							CTRemoteResourceImpl.class, "putCTRemoteBatch"));
 
 					put(
-						"query#cTCollection",
+						"query#ctCollection",
 						new ObjectValuePair<>(
 							CTCollectionResourceImpl.class, "getCTCollection"));
 					put(
-						"query#cTCollectionByExternalReferenceCode",
+						"query#ctCollectionByExternalReferenceCode",
 						new ObjectValuePair<>(
 							CTCollectionResourceImpl.class,
 							"getCTCollectionByExternalReferenceCode"));
 					put(
-						"query#cTCollectionByExternalReferenceCodeShareLink",
+						"query#ctCollectionByExternalReferenceCodeShareLink",
 						new ObjectValuePair<>(
 							CTCollectionResourceImpl.class,
 							"getCTCollectionByExternalReferenceCodeShareLink"));
 					put(
-						"query#cTCollectionShareLink",
+						"query#ctCollectionShareLink",
 						new ObjectValuePair<>(
 							CTCollectionResourceImpl.class,
 							"getCTCollectionShareLink"));
 					put(
-						"query#cTCollections",
+						"query#ctCollections",
 						new ObjectValuePair<>(
 							CTCollectionResourceImpl.class,
 							"getCTCollectionsPage"));
 					put(
-						"query#cTEntriesHistory",
+						"query#ctEntriesHistory",
 						new ObjectValuePair<>(
 							CTEntryResourceImpl.class,
 							"getCTEntriesHistoryPage"));
 					put(
-						"query#cTEntry",
+						"query#ctEntry",
 						new ObjectValuePair<>(
 							CTEntryResourceImpl.class, "getCTEntry"));
 					put(
@@ -262,34 +262,34 @@ public class ServletDataImpl implements ServletData {
 							CTEntryResourceImpl.class,
 							"getCtCollectionCTEntryByModelClassNameByModelClassPkModelClassPK"));
 					put(
-						"query#cTProcess",
+						"query#ctProcess",
 						new ObjectValuePair<>(
 							CTProcessResourceImpl.class, "getCTProcess"));
 					put(
-						"query#cTProcesses",
+						"query#ctProcesses",
 						new ObjectValuePair<>(
 							CTProcessResourceImpl.class, "getCTProcessesPage"));
 					put(
-						"query#cTRemote",
+						"query#ctRemote",
 						new ObjectValuePair<>(
 							CTRemoteResourceImpl.class, "getCTRemote"));
 					put(
-						"query#cTRemotes",
+						"query#ctRemotes",
 						new ObjectValuePair<>(
 							CTRemoteResourceImpl.class, "getCTRemotesPage"));
 
 					put(
-						"query#CTCollection.shareLink",
+						"query#CTCollection.ctCollectionShareLink",
 						new ObjectValuePair<>(
 							CTCollectionResourceImpl.class,
 							"getCTCollectionShareLink"));
 					put(
-						"query#CTCollection.byExternalReferenceCodeShareLink",
+						"query#CTCollection.ctCollectionByExternalReferenceCodeShareLink",
 						new ObjectValuePair<>(
 							CTCollectionResourceImpl.class,
 							"getCTCollectionByExternalReferenceCodeShareLink"));
 					put(
-						"query#CTProcess.cTCollection",
+						"query#CTProcess.ctCollection",
 						new ObjectValuePair<>(
 							CTCollectionResourceImpl.class, "getCTCollection"));
 					put(

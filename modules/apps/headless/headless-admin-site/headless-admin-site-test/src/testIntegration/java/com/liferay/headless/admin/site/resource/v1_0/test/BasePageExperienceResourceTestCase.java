@@ -278,7 +278,7 @@ public abstract class BasePageExperienceResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"siteByExternalReferenceCodePageExperience",
+								"siteSiteByExternalReferenceCodePageExperience",
 								new HashMap<String, Object>() {
 									{
 										put(
@@ -296,7 +296,7 @@ public abstract class BasePageExperienceResourceTestCase {
 								},
 								getGraphQLFields())),
 						"JSONObject/data",
-						"Object/siteByExternalReferenceCodePageExperience"))));
+						"Object/siteSiteByExternalReferenceCodePageExperience"))));
 
 		// Using the namespace headlessAdminSite_v1_0
 
@@ -309,7 +309,7 @@ public abstract class BasePageExperienceResourceTestCase {
 							new GraphQLField(
 								"headlessAdminSite_v1_0",
 								new GraphQLField(
-									"siteByExternalReferenceCodePageExperience",
+									"siteSiteByExternalReferenceCodePageExperience",
 									new HashMap<String, Object>() {
 										{
 											put(
@@ -327,7 +327,7 @@ public abstract class BasePageExperienceResourceTestCase {
 									},
 									getGraphQLFields()))),
 						"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
-						"Object/siteByExternalReferenceCodePageExperience"))));
+						"Object/siteSiteByExternalReferenceCodePageExperience"))));
 	}
 
 	protected String
@@ -352,7 +352,7 @@ public abstract class BasePageExperienceResourceTestCase {
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"siteByExternalReferenceCodePageExperience",
+						"siteSiteByExternalReferenceCodePageExperience",
 						new HashMap<String, Object>() {
 							{
 								put(
@@ -378,7 +378,7 @@ public abstract class BasePageExperienceResourceTestCase {
 					new GraphQLField(
 						"headlessAdminSite_v1_0",
 						new GraphQLField(
-							"siteByExternalReferenceCodePageExperience",
+							"siteSiteByExternalReferenceCodePageExperience",
 							new HashMap<String, Object>() {
 								{
 									put(

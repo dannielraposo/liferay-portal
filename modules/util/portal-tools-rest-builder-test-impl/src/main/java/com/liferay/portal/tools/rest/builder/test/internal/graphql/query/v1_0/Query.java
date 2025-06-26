@@ -202,10 +202,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {assetLibraryAssetLibraryTestEntities(assetLibraryId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {assetLibraryTestEntities(assetLibraryId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public AssetLibraryTestEntityPage assetLibraryAssetLibraryTestEntities(
+	public AssetLibraryTestEntityPage assetLibraryTestEntities(
 			@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId)
 		throws Exception {
 
@@ -341,13 +341,12 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {assetLibraryERCAssetLibraryTestEntities(assetLibraryExternalReferenceCode: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ercAssetLibraryTestEntities(assetLibraryExternalReferenceCode: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public ERCAssetLibraryTestEntityPage
-			assetLibraryERCAssetLibraryTestEntities(
-				@GraphQLName("assetLibraryExternalReferenceCode") @NotEmpty
-					String assetLibraryExternalReferenceCode)
+	public ERCAssetLibraryTestEntityPage ercAssetLibraryTestEntities(
+			@GraphQLName("assetLibraryExternalReferenceCode") @NotEmpty String
+				assetLibraryExternalReferenceCode)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -428,10 +427,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {eRCScopedTestEntities(siteExternalReferenceCode: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ercScopedTestEntities(siteExternalReferenceCode: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public ERCScopedTestEntityPage eRCScopedTestEntities(
+	public ERCScopedTestEntityPage ercScopedTestEntities(
 			@GraphQLName("siteExternalReferenceCode") @NotEmpty String
 				siteExternalReferenceCode)
 		throws Exception {
@@ -447,10 +446,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {eRCScopedTestEntity(ercScopedTestEntityExternalReferenceCode: ___, siteExternalReferenceCode: ___){assetLibraryExternalReferenceCode, dateCreated, dateModified, description, externalReferenceCode, permissions, siteExternalReferenceCode}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteERCScopedTestEntity(ercScopedTestEntityExternalReferenceCode: ___, siteExternalReferenceCode: ___){assetLibraryExternalReferenceCode, dateCreated, dateModified, description, externalReferenceCode, permissions, siteExternalReferenceCode}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public ERCScopedTestEntity eRCScopedTestEntity(
+	public ERCScopedTestEntity siteERCScopedTestEntity(
 			@GraphQLName("siteExternalReferenceCode") @NotEmpty String
 				siteExternalReferenceCode,
 			@GraphQLName("ercScopedTestEntityExternalReferenceCode") String
@@ -469,10 +468,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {eRCSiteTestEntities(siteExternalReferenceCode: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {ercSiteTestEntities(siteExternalReferenceCode: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public ERCSiteTestEntityPage eRCSiteTestEntities(
+	public ERCSiteTestEntityPage ercSiteTestEntities(
 			@GraphQLName("siteExternalReferenceCode") @NotEmpty String
 				siteExternalReferenceCode)
 		throws Exception {
@@ -488,10 +487,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {eRCSiteTestEntity(ercSiteTestEntityExternalReferenceCode: ___, siteExternalReferenceCode: ___){dateCreated, dateModified, description, externalReferenceCode, permissions, siteExternalReferenceCode}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteERCSiteTestEntity(ercSiteTestEntityExternalReferenceCode: ___, siteExternalReferenceCode: ___){dateCreated, dateModified, description, externalReferenceCode, permissions, siteExternalReferenceCode}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public ERCSiteTestEntity eRCSiteTestEntity(
+	public ERCSiteTestEntity siteERCSiteTestEntity(
 			@GraphQLName("siteExternalReferenceCode") @NotEmpty String
 				siteExternalReferenceCode,
 			@GraphQLName("ercSiteTestEntityExternalReferenceCode") String
@@ -761,10 +760,10 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {testEntityPermissions(roleNames: ___, siteTestEntityId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteTestEntityPermissions(roleNames: ___, siteTestEntityId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public SiteTestEntityPage testEntityPermissions(
+	public SiteTestEntityPage siteTestEntityPermissions(
 			@GraphQLName("siteTestEntityId") Long siteTestEntityId,
 			@GraphQLName("roleNames") String roleNames)
 		throws Exception {
@@ -854,32 +853,6 @@ public class Query {
 			testEntityAddressResource ->
 				testEntityAddressResource.getTestEntityTestEntityAddress(
 					testEntityId));
-	}
-
-	@GraphQLTypeExtension(SiteTestEntity.class)
-	public class GetSiteTestEntityPermissionsPageTypeExtension {
-
-		public GetSiteTestEntityPermissionsPageTypeExtension(
-			SiteTestEntity siteTestEntity) {
-
-			_siteTestEntity = siteTestEntity;
-		}
-
-		@GraphQLField
-		public SiteTestEntityPage testEntityPermissions(
-				@GraphQLName("roleNames") String roleNames)
-			throws Exception {
-
-			return _applyComponentServiceObjects(
-				_siteTestEntityResourceComponentServiceObjects,
-				Query.this::_populateResourceContext,
-				siteTestEntityResource -> new SiteTestEntityPage(
-					siteTestEntityResource.getSiteTestEntityPermissionsPage(
-						_siteTestEntity.getId(), roleNames)));
-		}
-
-		private SiteTestEntity _siteTestEntity;
-
 	}
 
 	@GraphQLTypeExtension(TestEntity.class)

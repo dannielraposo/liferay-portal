@@ -101,11 +101,11 @@ public class ServletDataImpl implements ServletData {
 							"postSiteDSRecipientViewDefinition"));
 
 					put(
-						"query#dSEnvelope",
+						"query#siteDSEnvelope",
 						new ObjectValuePair<>(
 							DSEnvelopeResourceImpl.class, "getSiteDSEnvelope"));
 					put(
-						"query#dSEnvelopes",
+						"query#dsEnvelopes",
 						new ObjectValuePair<>(
 							DSEnvelopeResourceImpl.class,
 							"getSiteDSEnvelopesPage"));
