@@ -536,8 +536,7 @@ public class FreeMarkerTool {
 		List<JavaMethodSignature> javaMethodSignatures) {
 
 		return GraphQLNamingUtil.getGraphQLPropertyName(
-			javaMethodSignature.getMethodName(),
-			javaMethodSignature.getReturnType(),
+			javaMethodSignature,
 			ListUtil.toList(
 				javaMethodSignatures, JavaMethodSignature::getMethodName));
 	}

@@ -6,6 +6,8 @@
 package com.liferay.portal.tools.rest.builder.internal.util;
 
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.TextFormatter;
+import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.JavaMethodSignature;
 
 import java.util.List;
 
@@ -22,13 +24,27 @@ public class GraphQLNamingUtil {
 	}
 
 	public static String getGraphQLPropertyName(
-		String methodName, String returnType, List<String> methodNames) {
+		JavaMethodSignature javaMethodSignature, List<String> methodNames) {
 
-		if (!methodName.equals("getSite") &&
+		String methodName = javaMethodSignature.getMethodName();
+		String parentSchemaName = javaMethodSignature.getParentSchemaName();
+		String returnType = javaMethodSignature.getReturnType();
+
+		if (!methodName.endsWith("SitesPage") &&
 			!methodNames.contains(methodName.replaceFirst("Site", "")) &&
-			!methodName.endsWith("SitesPage")) {
+			StringUtil.equals(parentSchemaName, "Site")) {
 
 			methodName = methodName.replaceFirst("Site", "");
+		}
+
+		if (!methodName.endsWith("AssetLibrariesPage") &&
+			!methodNames.contains(
+				methodName.replaceFirst("AssetLibrary", "")) &&
+			!methodNames.contains(
+				methodName.replaceFirst("AssetLibrary", "Site")) &&
+			StringUtil.equals(parentSchemaName, "AssetLibrary")) {
+
+			methodName = methodName.replaceFirst("AssetLibrary", "");
 		}
 
 		methodName = methodName.replaceFirst("get", "");
@@ -42,7 +58,7 @@ public class GraphQLNamingUtil {
 				0, methodName.lastIndexOf("Page"));
 		}
 
-		return StringUtil.lowerCaseFirstLetter(methodName);
+		return TextFormatter.format(methodName, TextFormatter.I);
 	}
 
 }
