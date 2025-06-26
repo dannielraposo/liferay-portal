@@ -266,6 +266,13 @@ public class ShipmentItemResourceTest extends BaseShipmentItemResourceTestCase {
 	}
 
 	@Override
+	protected ShipmentItem testGraphQLShipmentShipmentItem_addShipmentItem()
+		throws Exception {
+
+		return _addShipmentItem();
+	}
+
+	@Override
 	protected ShipmentItem testPatchShipmentItem_addShipmentItem()
 		throws Exception {
 

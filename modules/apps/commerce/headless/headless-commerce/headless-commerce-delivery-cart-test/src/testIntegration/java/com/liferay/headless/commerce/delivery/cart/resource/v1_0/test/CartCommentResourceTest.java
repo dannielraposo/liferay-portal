@@ -189,6 +189,13 @@ public class CartCommentResourceTest extends BaseCartCommentResourceTestCase {
 	}
 
 	@Override
+	protected CartComment testGraphQLCartCartComment_addCartComment()
+		throws Exception {
+
+		return _addCartComment();
+	}
+
+	@Override
 	protected CartComment testGraphQLCartComment_addCartComment()
 		throws Exception {
 

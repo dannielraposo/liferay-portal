@@ -239,7 +239,8 @@ public class ShippingAddressResourceTest
 	}
 
 	@Override
-	protected ShippingAddress testGraphQLShippingAddress_addShippingAddress()
+	protected ShippingAddress
+			testGraphQLShipmentShippingAddress_addShippingAddress()
 		throws Exception {
 
 		return _toShippingAddress(_commerceShipment.fetchCommerceAddress());

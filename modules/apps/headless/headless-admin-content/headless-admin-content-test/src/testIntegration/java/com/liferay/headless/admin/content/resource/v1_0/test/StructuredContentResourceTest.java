@@ -734,6 +734,15 @@ public class StructuredContentResourceTest
 
 	@Override
 	protected StructuredContent
+			testGraphQLSiteStructuredContent_addStructuredContent()
+		throws Exception {
+
+		return _postSiteStructuredContent(
+			testGroup.getGroupId(), randomStructuredContent());
+	}
+
+	@Override
+	protected StructuredContent
 			testGraphQLStructuredContent_addStructuredContent()
 		throws Exception {
 

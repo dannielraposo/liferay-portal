@@ -130,6 +130,14 @@ public class ContentTemplateResourceTest
 		return testGetSiteContentTemplate_addContentTemplate();
 	}
 
+	@Override
+	protected ContentTemplate
+			testGraphQLSiteContentTemplate_addContentTemplate()
+		throws Exception {
+
+		return testGetSiteContentTemplate_addContentTemplate();
+	}
+
 	private DDMForm _deserialize(String content) {
 		DDMFormDeserializerDeserializeRequest.Builder builder =
 			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(content);

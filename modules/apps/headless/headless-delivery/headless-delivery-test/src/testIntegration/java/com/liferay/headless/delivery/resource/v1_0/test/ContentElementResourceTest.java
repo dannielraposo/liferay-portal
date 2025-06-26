@@ -195,7 +195,7 @@ public class ContentElementResourceTest
 	}
 
 	@Override
-	protected ContentElement testGraphQLContentElement_addContentElement()
+	protected ContentElement testGraphQLSiteContentElement_addContentElement()
 		throws Exception {
 
 		return _addContentElement(

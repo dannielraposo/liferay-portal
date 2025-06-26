@@ -131,6 +131,14 @@ public class ContentStructureResourceTest
 
 	@Override
 	protected ContentStructure
+			testGraphQLSiteContentStructure_addContentStructure()
+		throws Exception {
+
+		return testGetContentStructure_addContentStructure();
+	}
+
+	@Override
+	protected ContentStructure
 			testPutAssetLibraryContentStructurePermissionsPage_addContentStructure()
 		throws Exception {
 

@@ -254,7 +254,7 @@ public class PlacedOrderAddressResourceTest
 
 	@Override
 	protected PlacedOrderAddress
-			testGraphQLPlacedOrderAddress_addPlacedOrderAddress()
+			testGraphQLPlacedOrderPlacedOrderAddress_addPlacedOrderAddress()
 		throws Exception {
 
 		return _updateBillingAndShippingAddresses();

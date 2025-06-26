@@ -289,6 +289,11 @@ public class CatalogResourceTest extends BaseCatalogResourceTestCase {
 	}
 
 	@Override
+	protected Catalog testGraphQLProductCatalog_addCatalog() throws Exception {
+		return catalogResource.postCatalog(randomCatalog());
+	}
+
+	@Override
 	protected Catalog testPostCatalog_addCatalog(Catalog catalog)
 		throws Exception {
 

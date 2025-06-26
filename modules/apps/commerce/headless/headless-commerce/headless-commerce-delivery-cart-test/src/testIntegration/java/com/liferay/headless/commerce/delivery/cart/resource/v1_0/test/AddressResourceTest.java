@@ -176,7 +176,7 @@ public class AddressResourceTest extends BaseAddressResourceTestCase {
 	}
 
 	@Override
-	protected Address testGraphQLAddress_addAddress() throws Exception {
+	protected Address testGraphQLCartAddress_addAddress() throws Exception {
 		return _toAddress(_getCommerceAddress());
 	}
 

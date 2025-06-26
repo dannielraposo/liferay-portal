@@ -60,6 +60,11 @@ public class FormResourceTest extends BaseFormResourceTestCase {
 		return _addForm(testGroup.getGroupId());
 	}
 
+	@Override
+	protected Form testGraphQLSiteForm_addForm() throws Exception {
+		return _addForm(testGroup.getGroupId());
+	}
+
 	private Form _addForm(Long groupId) throws Exception {
 		DDMFormInstance ddmFormInstance =
 			DDMFormInstanceTestUtil.addDDMFormInstance(

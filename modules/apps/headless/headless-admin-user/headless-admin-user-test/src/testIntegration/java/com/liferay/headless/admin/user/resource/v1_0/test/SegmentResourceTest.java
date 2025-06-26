@@ -201,7 +201,7 @@ public class SegmentResourceTest extends BaseSegmentResourceTestCase {
 	}
 
 	@Override
-	protected Segment testGraphQLSegment_addSegment() throws Exception {
+	protected Segment testGraphQLSiteSegment_addSegment() throws Exception {
 		return testGetSiteSegmentsPage_addSegment(
 			testGroup.getGroupId(), randomSegment());
 	}

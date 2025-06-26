@@ -261,6 +261,12 @@ public class CartItemResourceTest extends BaseCartItemResourceTestCase {
 	}
 
 	@Override
+	protected CartItem testGraphQLCartCartItem_addCartItem() throws Exception {
+		return cartItemResource.postCartItem(
+			_commerceOrder.getCommerceOrderId(), randomCartItem());
+	}
+
+	@Override
 	protected CartItem testGraphQLCartItem_addCartItem() throws Exception {
 		return cartItemResource.postCartItem(
 			_commerceOrder.getCommerceOrderId(), randomCartItem());

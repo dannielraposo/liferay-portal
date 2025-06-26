@@ -246,7 +246,7 @@ public class BillingAddressResourceTest
 	}
 
 	@Override
-	protected BillingAddress testGraphQLBillingAddress_addBillingAddress()
+	protected BillingAddress testGraphQLOrderBillingAddress_addBillingAddress()
 		throws Exception {
 
 		return _addAddress();

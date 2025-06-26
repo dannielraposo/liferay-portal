@@ -156,6 +156,11 @@ public class AccountResourceTest extends BaseAccountResourceTestCase {
 		return _corEntryRel.getCOREntryRelId();
 	}
 
+	@Override
+	protected Account testGraphQLOrderAccount_addAccount() throws Exception {
+		return _toAccount();
+	}
+
 	private Account _toAccount() throws Exception {
 		return new Account() {
 			{

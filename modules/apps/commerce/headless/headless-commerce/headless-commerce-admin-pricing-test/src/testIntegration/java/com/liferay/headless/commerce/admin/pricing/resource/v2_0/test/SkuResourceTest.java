@@ -141,6 +141,11 @@ public class SkuResourceTest extends BaseSkuResourceTestCase {
 	}
 
 	@Override
+	protected Sku testGraphQLPriceEntrySku_addSku() throws Exception {
+		return _addSku();
+	}
+
+	@Override
 	protected Sku testGraphQLSku_addSku() throws Exception {
 		return _addSku();
 	}

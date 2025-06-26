@@ -49,6 +49,13 @@ public class FormStructureResourceTest
 		return _addFormStructure(testGroup.getGroupId());
 	}
 
+	@Override
+	protected FormStructure testGraphQLSiteFormStructure_addFormStructure()
+		throws Exception {
+
+		return _addFormStructure(testGroup.getGroupId());
+	}
+
 	private FormStructure _addFormStructure(Long groupId) throws Exception {
 		DDMStructure ddmStructure = DDMStructureTestUtil.addStructure(
 			groupId, DDMFormInstance.class.getName());

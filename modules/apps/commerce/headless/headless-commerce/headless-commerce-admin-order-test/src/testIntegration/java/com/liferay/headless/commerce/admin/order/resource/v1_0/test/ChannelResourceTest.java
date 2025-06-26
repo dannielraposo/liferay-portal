@@ -205,6 +205,11 @@ public class ChannelResourceTest extends BaseChannelResourceTestCase {
 		return _commerceOrderTypeRel.getCommerceOrderTypeRelId();
 	}
 
+	@Override
+	protected Channel testGraphQLOrderChannel_addChannel() throws Exception {
+		return _toChannel();
+	}
+
 	private Channel _toChannel() throws Exception {
 		return new Channel() {
 			{

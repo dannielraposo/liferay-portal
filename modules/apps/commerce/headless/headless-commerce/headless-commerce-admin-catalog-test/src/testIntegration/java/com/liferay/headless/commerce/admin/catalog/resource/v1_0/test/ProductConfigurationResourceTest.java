@@ -611,6 +611,17 @@ public class ProductConfigurationResourceTest
 
 	@Override
 	protected ProductConfiguration
+			testGraphQLProductProductConfiguration_addProductConfiguration()
+		throws Exception {
+
+		return productConfigurationResource.
+			postProductConfigurationListIdProductConfiguration(
+				_cpConfigurationList.getCPConfigurationListId(),
+				randomProductConfiguration());
+	}
+
+	@Override
+	protected ProductConfiguration
 			testPatchProductConfiguration_addProductConfiguration()
 		throws Exception {
 
