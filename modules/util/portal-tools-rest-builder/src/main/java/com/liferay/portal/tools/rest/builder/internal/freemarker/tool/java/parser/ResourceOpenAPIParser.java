@@ -1262,10 +1262,22 @@ public class ResourceOpenAPIParser {
 	private static String _getParentSchema(
 		String path, Map<String, PathItem> pathItems, String schemaName) {
 
+		if (path.startsWith(
+				"/asset-libraries/{assetLibraryExternalReferenceCode}") ||
+			path.startsWith("/asset-libraries/{assetLibraryId}") && !schemaName.equals("AssetLibrary")) {
+
+			return "AssetLibrary";
+		}
+		else if (path.startsWith("/sites/{siteExternalReferenceCode}") ||
+				 path.startsWith("/sites/{siteId}") && !schemaName.equals("Site")) {
+
+			return "Site";
+		}
+
 		String basePath = path;
 
 		if (basePath.endsWith(
-				"/by-external-reference-code/{externalReferenceCode}")) {
+			"/by-external-reference-code/{externalReferenceCode}")) {
 
 			basePath = StringUtil.removeLast(
 				path, "/by-external-reference-code/{externalReferenceCode}");
@@ -1278,18 +1290,6 @@ public class ResourceOpenAPIParser {
 		}
 
 		basePath = basePath.substring(0, lastIndexOfSlash);
-
-		if (basePath.equals(
-				"/asset-libraries/{assetLibraryExternalReferenceCode}") ||
-			basePath.equals("/asset-libraries/{assetLibraryId}")) {
-
-			return "AssetLibrary";
-		}
-		else if (basePath.equals("/sites/{siteExternalReferenceCode}") ||
-				 basePath.equals("/sites/{siteId}")) {
-
-			return "Site";
-		}
 
 		for (Map.Entry<String, PathItem> entry : pathItems.entrySet()) {
 			PathItem pathItem = entry.getValue();
