@@ -6,7 +6,6 @@
 package com.liferay.portal.tools.rest.builder.internal.util;
 
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.JavaMethodSignature;
 
 import java.util.List;
@@ -58,7 +57,7 @@ public class GraphQLNamingUtil {
 				0, methodName.lastIndexOf("Page"));
 		}
 
-		return TextFormatter.format(methodName, TextFormatter.I);
+		return StringUtil.lowerCaseFirstLetter(methodName);
 	}
 
 }
