@@ -1264,12 +1264,14 @@ public class ResourceOpenAPIParser {
 
 		if (path.startsWith(
 				"/asset-libraries/{assetLibraryExternalReferenceCode}") ||
-			path.startsWith("/asset-libraries/{assetLibraryId}") && !schemaName.equals("AssetLibrary")) {
+			(path.startsWith("/asset-libraries/{assetLibraryId}") &&
+			 !schemaName.equals("AssetLibrary"))) {
 
 			return "AssetLibrary";
 		}
 		else if (path.startsWith("/sites/{siteExternalReferenceCode}") ||
-				 path.startsWith("/sites/{siteId}") && !schemaName.equals("Site")) {
+				 (path.startsWith("/sites/{siteId}") &&
+				  !schemaName.equals("Site"))) {
 
 			return "Site";
 		}
@@ -1277,7 +1279,7 @@ public class ResourceOpenAPIParser {
 		String basePath = path;
 
 		if (basePath.endsWith(
-			"/by-external-reference-code/{externalReferenceCode}")) {
+				"/by-external-reference-code/{externalReferenceCode}")) {
 
 			basePath = StringUtil.removeLast(
 				path, "/by-external-reference-code/{externalReferenceCode}");

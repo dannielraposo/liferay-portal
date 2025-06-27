@@ -611,11 +611,12 @@ public class FreeMarkerTool {
 		String methodName = getGraphQLPropertyName(
 			javaMethodSignature, javaMethodSignatures);
 
-		return StringUtil.lowerCaseFirstLetter(
+		return TextFormatter.format(
 			methodName.replaceFirst(
-				StringUtil.lowerCaseFirstLetter(
-					javaMethodSignature.getParentSchemaName()),
-				""));
+				TextFormatter.format(
+					javaMethodSignature.getParentSchemaName(), TextFormatter.I),
+				""),
+			TextFormatter.I);
 	}
 
 	public Set<String> getGraphQLSchemaNames(
@@ -712,8 +713,9 @@ public class FreeMarkerTool {
 					continue;
 				}
 
-				propertyName = StringUtil.lowerCaseFirstLetter(
-					StringUtil.removeSubstring(propertyName, "parent"));
+				propertyName = TextFormatter.format(
+					StringUtil.removeSubstring(propertyName, "parent"),
+					TextFormatter.I);
 
 				for (JavaMethodSignature javaMethodSignature :
 						javaMethodSignatures) {
