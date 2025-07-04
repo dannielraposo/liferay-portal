@@ -289,7 +289,7 @@ public class ObjectEntryEntityModel implements EntityModel {
 				objectRelationshipERCObjectFieldName,
 				new ReferenceStringEntityField(
 					objectRelationshipERCObjectFieldName,
-					_getExternalReferenceCodeFunction(),
+					locale -> objectFieldName,
 					objectFieldName.split(StringPool.UNDERLINE)[1]));
 
 			String relationshipIdName = objectFieldName.substring(

@@ -331,10 +331,30 @@ public class PredicateExpressionVisitorImpl
 	public Object visitPrimitivePropertyExpression(
 		PrimitivePropertyExpression primitivePropertyExpression) {
 
+		EntityField entityField = _getEntityField(
+			primitivePropertyExpression.getName(), _objectDefinition);
+
+		// TODO: Temporary workaround for LPD-59378.
+		// Remove when filtering is supported for System Objects
+
+		if (entityField instanceof
+				ReferenceStringEntityField referenceStringEntityField) {
+
+			ObjectRelationship objectRelationship = _fetchObjectRelationship(
+				_objectDefinition,
+				referenceStringEntityField.getReferenceName());
+
+			ObjectDefinition relatedObjectDefinition =
+				ObjectRelationshipUtil.getRelatedObjectDefinition(
+					_objectDefinition, objectRelationship);
+
+			if (relatedObjectDefinition.isUnmodifiableSystemObject()) {
+				return primitivePropertyExpression.getName();
+			}
+		}
+
 		return _visitPrimitivePropertyExpression(
-			_getEntityField(
-				primitivePropertyExpression.getName(), _objectDefinition),
-			primitivePropertyExpression);
+			entityField, primitivePropertyExpression);
 	}
 
 	@Override
