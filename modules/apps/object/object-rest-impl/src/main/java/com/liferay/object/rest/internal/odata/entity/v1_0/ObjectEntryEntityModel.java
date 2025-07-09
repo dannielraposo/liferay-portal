@@ -285,12 +285,16 @@ public class ObjectEntryEntityModel implements EntityModel {
 						NAME_OBJECT_RELATIONSHIP_ERC_OBJECT_FIELD_NAME,
 					objectField);
 
+			String relationshipName =
+				objectFieldName.split(StringPool.UNDERLINE)[1];
+
 			entityFieldsMap.put(
 				objectRelationshipERCObjectFieldName,
 				new ReferenceStringEntityField(
 					objectRelationshipERCObjectFieldName,
 					locale -> objectFieldName,
-					objectFieldName.split(StringPool.UNDERLINE)[1]));
+					relationshipName + "/externalReferenceCode",
+					relationshipName));
 
 			String relationshipIdName = objectFieldName.substring(
 				objectFieldName.lastIndexOf(StringPool.UNDERLINE) + 1);
