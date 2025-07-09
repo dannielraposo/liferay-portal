@@ -36,11 +36,9 @@ import jakarta.ws.rs.BadRequestException;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * @author Javier de Arcos
@@ -160,10 +158,6 @@ public class ObjectEntryEntityModel implements EntityModel {
 			"Unable to get entity field for object field " + objectField);
 	}
 
-	private Function<Locale, String> _getExternalReferenceCodeFunction() {
-		return locale -> "externalReferenceCode";
-	}
-
 	private Map<String, EntityField> _getObjectDefinitionEntityFieldsMap(
 		ObjectDefinition objectDefinition) {
 
@@ -218,8 +212,7 @@ public class ObjectEntryEntityModel implements EntityModel {
 			).put(
 				"externalReferenceCode",
 				() -> new StringEntityField(
-					"externalReferenceCode",
-					_getExternalReferenceCodeFunction())
+					"externalReferenceCode", locale -> "externalReferenceCode")
 			).put(
 				"id", new IdEntityField("id", locale -> "id", String::valueOf)
 			).put(
