@@ -9,6 +9,7 @@ import com.liferay.account.exception.NoSuchGroupException;
 import com.liferay.batch.engine.attachment.BatchEngineAttachmentManager;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.object.action.engine.ObjectActionEngine;
 import com.liferay.object.constants.ObjectActionTriggerConstants;
 import com.liferay.object.constants.ObjectDefinitionConstants;
@@ -1194,30 +1195,45 @@ public class DefaultObjectEntryManagerImpl
 							serviceBuilderObjectEntry.getPrimaryKey());
 					}
 
+					long groupId = 0;
+
+					if ((serviceBuilderObjectEntry.getGroupId() > 0) &&
+						Objects.equals(
+							relatedObjectDefinition.getScope(),
+							ObjectDefinitionConstants.SCOPE_SITE)) {
+
+						groupId = serviceBuilderObjectEntry.getGroupId();
+					}
+
 					try {
-						nestedObjectEntry =
-							objectEntryManager.updateObjectEntry(
-								objectDefinition.getCompanyId(),
-								dtoConverterContext,
-								nestedObjectEntry.getExternalReferenceCode(),
-								relatedObjectDefinition, nestedObjectEntry,
-								scopeKey);
+						if (ExportImportThreadLocal.isImportInProcess()) {
+							nestedObjectEntry = _toObjectEntry(
+								dtoConverterContext, relatedObjectDefinition,
+								objectEntryLocalService.
+									getOrAddIncompleteObjectEntry(
+										nestedObjectEntry.
+											getExternalReferenceCode(),
+										groupId,
+										dtoConverterContext.getUserId(),
+										relatedObjectDefinition.
+											getObjectDefinitionId()));
+						}
+						else {
+							nestedObjectEntry =
+								objectEntryManager.updateObjectEntry(
+									objectDefinition.getCompanyId(),
+									dtoConverterContext,
+									nestedObjectEntry.
+										getExternalReferenceCode(),
+									relatedObjectDefinition, nestedObjectEntry,
+									scopeKey);
+						}
 					}
 					catch (ObjectEntryValuesException.Required
 								objectEntryValuesException) {
 
 						if (!LazyReferencingThreadLocal.isEnabled()) {
 							throw objectEntryValuesException;
-						}
-
-						long groupId = 0;
-
-						if ((serviceBuilderObjectEntry.getGroupId() > 0) &&
-							Objects.equals(
-								relatedObjectDefinition.getScope(),
-								ObjectDefinitionConstants.SCOPE_SITE)) {
-
-							groupId = serviceBuilderObjectEntry.getGroupId();
 						}
 
 						nestedObjectEntry = _toObjectEntry(
