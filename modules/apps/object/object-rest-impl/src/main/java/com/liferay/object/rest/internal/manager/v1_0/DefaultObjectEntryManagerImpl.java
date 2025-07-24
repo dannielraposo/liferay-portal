@@ -1401,15 +1401,15 @@ public class DefaultObjectEntryManagerImpl
 					_objectEntryManagerRegistry.getObjectEntryManager(
 						relatedObjectDefinition.getStorageType());
 
-				boolean manyToOneObjectRelationship =
-					_isManyToOneObjectRelationship(
+				boolean oneToManyObjectRelationship =
+					_isOneToManyObjectRelationship(
 						objectDefinition, objectRelationship,
 						relatedObjectDefinition);
 
 				for (Object item : nestedObjectEntries) {
 					ObjectEntry nestedObjectEntry = (ObjectEntry)item;
 
-					if (manyToOneObjectRelationship) {
+					if (oneToManyObjectRelationship) {
 						Map<String, Object> nestedObjectEntryProperties =
 							nestedObjectEntry.getProperties();
 
@@ -1450,7 +1450,7 @@ public class DefaultObjectEntryManagerImpl
 								scopeKey);
 					}
 
-					if (!manyToOneObjectRelationship) {
+					if (!oneToManyObjectRelationship) {
 						_relateNestedObjectEntry(
 							objectDefinition, objectRelationship,
 							serviceBuilderObjectEntry.getPrimaryKey(),
@@ -1678,7 +1678,7 @@ public class DefaultObjectEntryManagerImpl
 
 		ObjectRelatedModelsProvider<?> objectRelatedModelsProvider = null;
 
-		if (_isManyToOneObjectRelationship(
+		if (_isOneToManyObjectRelationship(
 				relatedObjectDefinition, objectRelationship,
 				objectDefinition)) {
 
@@ -2086,7 +2086,7 @@ public class DefaultObjectEntryManagerImpl
 			ObjectDefinition relatedObjectDefinition)
 		throws Exception {
 
-		if (_isManyToOneObjectRelationship(
+		if (_isOneToManyObjectRelationship(
 				relatedObjectDefinition, objectRelationship,
 				objectDefinition)) {
 
@@ -2289,7 +2289,17 @@ public class DefaultObjectEntryManagerImpl
 		return (Serializable)value;
 	}
 
-	private boolean _isManyToOneObjectRelationship(
+	private boolean _isObjectEntryDraft(Status status) {
+		if ((status != null) &&
+			(status.getCode() == WorkflowConstants.STATUS_DRAFT)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _isOneToManyObjectRelationship(
 		ObjectDefinition objectDefinition,
 		ObjectRelationship objectRelationship,
 		ObjectDefinition relatedObjectDefinition) {
@@ -2301,16 +2311,6 @@ public class DefaultObjectEntryManagerImpl
 				objectDefinition.getObjectDefinitionId()) &&
 			(objectRelationship.getObjectDefinitionId2() ==
 				relatedObjectDefinition.getObjectDefinitionId())) {
-
-			return true;
-		}
-
-		return false;
-	}
-
-	private boolean _isObjectEntryDraft(Status status) {
-		if ((status != null) &&
-			(status.getCode() == WorkflowConstants.STATUS_DRAFT)) {
 
 			return true;
 		}
