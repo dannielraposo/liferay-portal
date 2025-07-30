@@ -9,7 +9,6 @@ import com.liferay.account.exception.NoSuchGroupException;
 import com.liferay.batch.engine.attachment.BatchEngineAttachmentManager;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
-import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.object.action.engine.ObjectActionEngine;
 import com.liferay.object.constants.ObjectActionTriggerConstants;
 import com.liferay.object.constants.ObjectDefinitionConstants;
@@ -1206,7 +1205,7 @@ public class DefaultObjectEntryManagerImpl
 					}
 
 					try {
-						if (ExportImportThreadLocal.isImportInProcess()) {
+						if (LazyReferencingThreadLocal.isEnabled()) {
 							nestedObjectEntry = _toObjectEntry(
 								dtoConverterContext, relatedObjectDefinition,
 								objectEntryLocalService.
