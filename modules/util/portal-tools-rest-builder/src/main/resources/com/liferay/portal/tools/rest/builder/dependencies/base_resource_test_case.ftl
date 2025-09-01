@@ -2074,7 +2074,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 											);
 										}
 									},
-									new GraphQLField("${idParameterName}"))),
+									getGraphQLFields())),
 							"JSONArray/errors");
 
 						Assert.assertTrue(errorsJSONArray1.length() > 0);
@@ -2150,7 +2150,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 													);
 												}
 											},
-											new GraphQLField("${idParameterName}")))),
+											getGraphQLFields()))),
 								"JSONArray/errors");
 
 							Assert.assertTrue(errorsJSONArray2.length() > 0);
@@ -2986,14 +2986,6 @@ public abstract class Base${schemaName}ResourceTestCase {
 				sb.append("}");
 
 				List<GraphQLField> graphQLFields = getGraphQLFields();
-
-				<#if properties?keys?seq_contains("externalReferenceCode")>
-					graphQLFields.add(new GraphQLField("externalReferenceCode"));
-				</#if>
-
-				<#if properties?keys?seq_contains("id") || properties?keys?seq_contains(schemaVarName + "Id")>
-					graphQLFields.add(new GraphQLField("${idParameterName}"));
-				</#if>
 
 				return jsonDeserializer.deserialize(
 					JSONUtil.getValueAsString(
