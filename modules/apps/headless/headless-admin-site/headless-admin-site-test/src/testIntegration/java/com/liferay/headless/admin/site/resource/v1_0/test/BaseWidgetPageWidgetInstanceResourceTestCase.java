@@ -21,6 +21,7 @@ import com.liferay.headless.admin.site.client.serdes.v1_0.WidgetPageWidgetInstan
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -245,8 +246,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 			testDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	protected String
@@ -263,6 +263,165 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode()
+		throws Exception {
+
+		// No namespace
+
+		WidgetPageWidgetInstance widgetPageWidgetInstance1 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_addWidgetPageWidgetInstance();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"deleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
+				new HashMap<String, Object>() {
+					{
+						put(
+							"siteExternalReferenceCode",
+							"\"" +
+								testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSiteExternalReferenceCode() +
+									"\"");
+
+						put(
+							"sitePageExternalReferenceCode",
+							"\"" +
+								testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSitePageExternalReferenceCode() +
+									"\"");
+
+						put(
+							"widgetInstanceExternalReferenceCode",
+							"\"" +
+								testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getWidgetInstanceExternalReferenceCode() +
+									"\"");
+					}
+				}));
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"siteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSiteExternalReferenceCode() +
+										"\"");
+
+							put(
+								"sitePageExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSitePageExternalReferenceCode() +
+										"\"");
+
+							put(
+								"widgetInstanceExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getWidgetInstanceExternalReferenceCode() +
+										"\"");
+						}
+					},
+					getGraphQLFields())),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		WidgetPageWidgetInstance widgetPageWidgetInstance2 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_addWidgetPageWidgetInstance();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"headlessAdminSite_v1_0",
+				new GraphQLField(
+					"deleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSiteExternalReferenceCode() +
+										"\"");
+
+							put(
+								"sitePageExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSitePageExternalReferenceCode() +
+										"\"");
+
+							put(
+								"widgetInstanceExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getWidgetInstanceExternalReferenceCode() +
+										"\"");
+						}
+					})));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessAdminSite_v1_0",
+					new GraphQLField(
+						"siteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"siteExternalReferenceCode",
+									"\"" +
+										testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSiteExternalReferenceCode() +
+											"\"");
+
+								put(
+									"sitePageExternalReferenceCode",
+									"\"" +
+										testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSitePageExternalReferenceCode() +
+											"\"");
+
+								put(
+									"widgetInstanceExternalReferenceCode",
+									"\"" +
+										testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getWidgetInstanceExternalReferenceCode() +
+											"\"");
+							}
+						},
+						getGraphQLFields()))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
+	}
+
+	protected String
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSiteExternalReferenceCode()
+		throws Exception {
+
+		return testGroup.getExternalReferenceCode();
+	}
+
+	protected String
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSitePageExternalReferenceCode()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getWidgetInstanceExternalReferenceCode()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected WidgetPageWidgetInstance
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_addWidgetPageWidgetInstance()
+		throws Exception {
+
+		return testGraphQLWidgetPageWidgetInstance_addWidgetPageWidgetInstance();
 	}
 
 	@Test
@@ -422,8 +581,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 			testGetSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	protected String
@@ -526,8 +684,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	protected String
@@ -732,8 +889,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 			testPutSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	protected String

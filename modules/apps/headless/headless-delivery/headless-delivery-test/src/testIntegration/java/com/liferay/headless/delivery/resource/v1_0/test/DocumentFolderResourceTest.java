@@ -96,6 +96,13 @@ public class DocumentFolderResourceTest
 	}
 
 	@Override
+	protected DocumentFolder testGraphQLDocumentFolder_addDocumentFolder(
+		Long siteId, DocumentFolder documentFolder)
+		throws Exception {
+
+	}
+
+	@Override
 	protected DocumentFolder testGetDocumentFolder_addDocumentFolder()
 		throws Exception {
 

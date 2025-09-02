@@ -24,6 +24,7 @@ import com.liferay.petra.function.UnsafeTriConsumer;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -253,8 +254,122 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 			testDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
+	}
+
+	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder()
+		throws Exception {
+
+		// No namespace
+
+		DisplayPageTemplateFolder displayPageTemplateFolder1 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_addDisplayPageTemplateFolder();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"deleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder",
+				new HashMap<String, Object>() {
+					{
+						put(
+							"siteExternalReferenceCode",
+							"\"" +
+								testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_getSiteExternalReferenceCode() +
+									"\"");
+						put(
+							"displayPageTemplateFolderExternalReferenceCode",
+							"\"" +
+								displayPageTemplateFolder1.
+									getExternalReferenceCode() + "\"");
+					}
+				}));
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"siteByExternalReferenceCodeDisplayPageTemplateFolder",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_getSiteExternalReferenceCode() +
+										"\"");
+							put(
+								"displayPageTemplateFolderExternalReferenceCode",
+								"\"" +
+									displayPageTemplateFolder1.
+										getExternalReferenceCode() + "\"");
+						}
+					},
+					getGraphQLFields())),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		DisplayPageTemplateFolder displayPageTemplateFolder2 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_addDisplayPageTemplateFolder();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"headlessAdminSite_v1_0",
+				new GraphQLField(
+					"deleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_getSiteExternalReferenceCode() +
+										"\"");
+							put(
+								"displayPageTemplateFolderExternalReferenceCode",
+								"\"" +
+									displayPageTemplateFolder2.
+										getExternalReferenceCode() + "\"");
+						}
+					})));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessAdminSite_v1_0",
+					new GraphQLField(
+						"siteByExternalReferenceCodeDisplayPageTemplateFolder",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"siteExternalReferenceCode",
+									"\"" +
+										testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_getSiteExternalReferenceCode() +
+											"\"");
+								put(
+									"displayPageTemplateFolderExternalReferenceCode",
+									"\"" +
+										displayPageTemplateFolder2.
+											getExternalReferenceCode() + "\"");
+							}
+						},
+						getGraphQLFields()))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
+	}
+
+	protected String
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_getSiteExternalReferenceCode()
+		throws Exception {
+
+		return testGroup.getExternalReferenceCode();
+	}
+
+	protected DisplayPageTemplateFolder
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_addDisplayPageTemplateFolder()
+		throws Exception {
+
+		return testGraphQLDisplayPageTemplateFolder_addDisplayPageTemplateFolder();
 	}
 
 	@Test
@@ -313,8 +428,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 			testGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test
@@ -389,8 +503,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test
@@ -1124,8 +1237,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 			testPutSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test

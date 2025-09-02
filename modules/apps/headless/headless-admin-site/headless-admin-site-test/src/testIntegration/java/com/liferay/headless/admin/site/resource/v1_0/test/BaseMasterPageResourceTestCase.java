@@ -25,6 +25,7 @@ import com.liferay.petra.function.UnsafeTriConsumer;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -235,8 +236,119 @@ public abstract class BaseMasterPageResourceTestCase {
 			testDeleteSiteSiteByExternalReferenceCodeMasterPage_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
+	}
+
+	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage()
+		throws Exception {
+
+		// No namespace
+
+		MasterPage masterPage1 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage_addMasterPage();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"deleteSiteSiteByExternalReferenceCodeMasterPage",
+				new HashMap<String, Object>() {
+					{
+						put(
+							"siteExternalReferenceCode",
+							"\"" +
+								testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage_getSiteExternalReferenceCode() +
+									"\"");
+						put(
+							"masterPageExternalReferenceCode",
+							"\"" + masterPage1.getExternalReferenceCode() +
+								"\"");
+					}
+				}));
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"siteByExternalReferenceCodeMasterPage",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage_getSiteExternalReferenceCode() +
+										"\"");
+							put(
+								"masterPageExternalReferenceCode",
+								"\"" + masterPage1.getExternalReferenceCode() +
+									"\"");
+						}
+					},
+					getGraphQLFields())),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		MasterPage masterPage2 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage_addMasterPage();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"headlessAdminSite_v1_0",
+				new GraphQLField(
+					"deleteSiteSiteByExternalReferenceCodeMasterPage",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage_getSiteExternalReferenceCode() +
+										"\"");
+							put(
+								"masterPageExternalReferenceCode",
+								"\"" + masterPage2.getExternalReferenceCode() +
+									"\"");
+						}
+					})));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessAdminSite_v1_0",
+					new GraphQLField(
+						"siteByExternalReferenceCodeMasterPage",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"siteExternalReferenceCode",
+									"\"" +
+										testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage_getSiteExternalReferenceCode() +
+											"\"");
+								put(
+									"masterPageExternalReferenceCode",
+									"\"" +
+										masterPage2.getExternalReferenceCode() +
+											"\"");
+							}
+						},
+						getGraphQLFields()))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
+	}
+
+	protected String
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage_getSiteExternalReferenceCode()
+		throws Exception {
+
+		return testGroup.getExternalReferenceCode();
+	}
+
+	protected MasterPage
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage_addMasterPage()
+		throws Exception {
+
+		return testGraphQLMasterPage_addMasterPage();
 	}
 
 	@Test
@@ -288,8 +400,7 @@ public abstract class BaseMasterPageResourceTestCase {
 			testGetSiteSiteByExternalReferenceCodeMasterPage_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test
@@ -364,8 +475,7 @@ public abstract class BaseMasterPageResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodeMasterPage_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test
@@ -1029,8 +1139,7 @@ public abstract class BaseMasterPageResourceTestCase {
 			testPutSiteSiteByExternalReferenceCodeMasterPage_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test

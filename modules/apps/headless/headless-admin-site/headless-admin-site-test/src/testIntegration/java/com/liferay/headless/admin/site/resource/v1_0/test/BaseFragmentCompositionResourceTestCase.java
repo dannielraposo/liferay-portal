@@ -23,6 +23,7 @@ import com.liferay.petra.function.UnsafeTriConsumer;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -236,8 +237,122 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 			testDeleteSiteSiteByExternalReferenceCodeFragmentComposition_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
+	}
+
+	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodeFragmentComposition()
+		throws Exception {
+
+		// No namespace
+
+		FragmentComposition fragmentComposition1 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeFragmentComposition_addFragmentComposition();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"deleteSiteSiteByExternalReferenceCodeFragmentComposition",
+				new HashMap<String, Object>() {
+					{
+						put(
+							"siteExternalReferenceCode",
+							"\"" +
+								testGraphQLDeleteSiteSiteByExternalReferenceCodeFragmentComposition_getSiteExternalReferenceCode() +
+									"\"");
+						put(
+							"fragmentCompositionExternalReferenceCode",
+							"\"" +
+								fragmentComposition1.
+									getExternalReferenceCode() + "\"");
+					}
+				}));
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"siteByExternalReferenceCodeFragmentComposition",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeFragmentComposition_getSiteExternalReferenceCode() +
+										"\"");
+							put(
+								"fragmentCompositionExternalReferenceCode",
+								"\"" +
+									fragmentComposition1.
+										getExternalReferenceCode() + "\"");
+						}
+					},
+					getGraphQLFields())),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		FragmentComposition fragmentComposition2 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeFragmentComposition_addFragmentComposition();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"headlessAdminSite_v1_0",
+				new GraphQLField(
+					"deleteSiteSiteByExternalReferenceCodeFragmentComposition",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodeFragmentComposition_getSiteExternalReferenceCode() +
+										"\"");
+							put(
+								"fragmentCompositionExternalReferenceCode",
+								"\"" +
+									fragmentComposition2.
+										getExternalReferenceCode() + "\"");
+						}
+					})));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessAdminSite_v1_0",
+					new GraphQLField(
+						"siteByExternalReferenceCodeFragmentComposition",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"siteExternalReferenceCode",
+									"\"" +
+										testGraphQLDeleteSiteSiteByExternalReferenceCodeFragmentComposition_getSiteExternalReferenceCode() +
+											"\"");
+								put(
+									"fragmentCompositionExternalReferenceCode",
+									"\"" +
+										fragmentComposition2.
+											getExternalReferenceCode() + "\"");
+							}
+						},
+						getGraphQLFields()))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
+	}
+
+	protected String
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeFragmentComposition_getSiteExternalReferenceCode()
+		throws Exception {
+
+		return testGroup.getExternalReferenceCode();
+	}
+
+	protected FragmentComposition
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeFragmentComposition_addFragmentComposition()
+		throws Exception {
+
+		return testGraphQLFragmentComposition_addFragmentComposition();
 	}
 
 	@Test
@@ -269,8 +384,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 			testGetSiteSiteByExternalReferenceCodeFragmentComposition_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test
@@ -345,8 +459,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodeFragmentComposition_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test
@@ -1009,8 +1122,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 			testPutSiteSiteByExternalReferenceCodeFragmentComposition_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test

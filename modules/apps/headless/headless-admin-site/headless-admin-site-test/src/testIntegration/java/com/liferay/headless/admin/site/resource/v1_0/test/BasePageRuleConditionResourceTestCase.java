@@ -21,6 +21,7 @@ import com.liferay.headless.admin.site.client.serdes.v1_0.PageRuleConditionSerDe
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -225,8 +226,122 @@ public abstract class BasePageRuleConditionResourceTestCase {
 			testDeleteSiteSiteByExternalReferenceCodePageRuleCondition_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
+	}
+
+	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodePageRuleCondition()
+		throws Exception {
+
+		// No namespace
+
+		PageRuleCondition pageRuleCondition1 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodePageRuleCondition_addPageRuleCondition();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"deleteSiteSiteByExternalReferenceCodePageRuleCondition",
+				new HashMap<String, Object>() {
+					{
+						put(
+							"siteExternalReferenceCode",
+							"\"" +
+								testGraphQLDeleteSiteSiteByExternalReferenceCodePageRuleCondition_getSiteExternalReferenceCode() +
+									"\"");
+						put(
+							"pageRuleConditionExternalReferenceCode",
+							"\"" +
+								pageRuleCondition1.getExternalReferenceCode() +
+									"\"");
+					}
+				}));
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"siteByExternalReferenceCodePageRuleCondition",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodePageRuleCondition_getSiteExternalReferenceCode() +
+										"\"");
+							put(
+								"pageRuleConditionExternalReferenceCode",
+								"\"" +
+									pageRuleCondition1.
+										getExternalReferenceCode() + "\"");
+						}
+					},
+					getGraphQLFields())),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		PageRuleCondition pageRuleCondition2 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodePageRuleCondition_addPageRuleCondition();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"headlessAdminSite_v1_0",
+				new GraphQLField(
+					"deleteSiteSiteByExternalReferenceCodePageRuleCondition",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodePageRuleCondition_getSiteExternalReferenceCode() +
+										"\"");
+							put(
+								"pageRuleConditionExternalReferenceCode",
+								"\"" +
+									pageRuleCondition2.
+										getExternalReferenceCode() + "\"");
+						}
+					})));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessAdminSite_v1_0",
+					new GraphQLField(
+						"siteByExternalReferenceCodePageRuleCondition",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"siteExternalReferenceCode",
+									"\"" +
+										testGraphQLDeleteSiteSiteByExternalReferenceCodePageRuleCondition_getSiteExternalReferenceCode() +
+											"\"");
+								put(
+									"pageRuleConditionExternalReferenceCode",
+									"\"" +
+										pageRuleCondition2.
+											getExternalReferenceCode() + "\"");
+							}
+						},
+						getGraphQLFields()))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
+	}
+
+	protected String
+			testGraphQLDeleteSiteSiteByExternalReferenceCodePageRuleCondition_getSiteExternalReferenceCode()
+		throws Exception {
+
+		return testGroup.getExternalReferenceCode();
+	}
+
+	protected PageRuleCondition
+			testGraphQLDeleteSiteSiteByExternalReferenceCodePageRuleCondition_addPageRuleCondition()
+		throws Exception {
+
+		return testGraphQLPageRuleCondition_addPageRuleCondition();
 	}
 
 	@Test
@@ -258,8 +373,7 @@ public abstract class BasePageRuleConditionResourceTestCase {
 			testGetSiteSiteByExternalReferenceCodePageRuleCondition_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test
@@ -334,8 +448,7 @@ public abstract class BasePageRuleConditionResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodePageRuleCondition_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test
@@ -635,8 +748,7 @@ public abstract class BasePageRuleConditionResourceTestCase {
 			testPutSiteSiteByExternalReferenceCodePageRuleCondition_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test

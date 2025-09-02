@@ -21,6 +21,7 @@ import com.liferay.headless.admin.site.client.serdes.v1_0.PageExperienceSerDes;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -225,8 +226,121 @@ public abstract class BasePageExperienceResourceTestCase {
 			testDeleteSiteSiteByExternalReferenceCodePageExperience_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
+	}
+
+	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience()
+		throws Exception {
+
+		// No namespace
+
+		PageExperience pageExperience1 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience_addPageExperience();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"deleteSiteSiteByExternalReferenceCodePageExperience",
+				new HashMap<String, Object>() {
+					{
+						put(
+							"siteExternalReferenceCode",
+							"\"" +
+								testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience_getSiteExternalReferenceCode() +
+									"\"");
+						put(
+							"pageExperienceExternalReferenceCode",
+							"\"" + pageExperience1.getExternalReferenceCode() +
+								"\"");
+					}
+				}));
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"siteByExternalReferenceCodePageExperience",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience_getSiteExternalReferenceCode() +
+										"\"");
+							put(
+								"pageExperienceExternalReferenceCode",
+								"\"" +
+									pageExperience1.getExternalReferenceCode() +
+										"\"");
+						}
+					},
+					getGraphQLFields())),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		PageExperience pageExperience2 =
+			testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience_addPageExperience();
+
+		invokeGraphQLMutation(
+			new GraphQLField(
+				"headlessAdminSite_v1_0",
+				new GraphQLField(
+					"deleteSiteSiteByExternalReferenceCodePageExperience",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"siteExternalReferenceCode",
+								"\"" +
+									testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience_getSiteExternalReferenceCode() +
+										"\"");
+							put(
+								"pageExperienceExternalReferenceCode",
+								"\"" +
+									pageExperience2.getExternalReferenceCode() +
+										"\"");
+						}
+					})));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessAdminSite_v1_0",
+					new GraphQLField(
+						"siteByExternalReferenceCodePageExperience",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"siteExternalReferenceCode",
+									"\"" +
+										testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience_getSiteExternalReferenceCode() +
+											"\"");
+								put(
+									"pageExperienceExternalReferenceCode",
+									"\"" +
+										pageExperience2.
+											getExternalReferenceCode() + "\"");
+							}
+						},
+						getGraphQLFields()))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
+	}
+
+	protected String
+			testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience_getSiteExternalReferenceCode()
+		throws Exception {
+
+		return testGroup.getExternalReferenceCode();
+	}
+
+	protected PageExperience
+			testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience_addPageExperience()
+		throws Exception {
+
+		return testGraphQLPageExperience_addPageExperience();
 	}
 
 	@Test
@@ -258,8 +372,7 @@ public abstract class BasePageExperienceResourceTestCase {
 			testGetSiteSiteByExternalReferenceCodePageExperience_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test
@@ -334,8 +447,7 @@ public abstract class BasePageExperienceResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodePageExperience_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test
@@ -632,8 +744,7 @@ public abstract class BasePageExperienceResourceTestCase {
 			testPutSiteSiteByExternalReferenceCodePageExperience_getSiteExternalReferenceCode()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return testGroup.getExternalReferenceCode();
 	}
 
 	@Test
