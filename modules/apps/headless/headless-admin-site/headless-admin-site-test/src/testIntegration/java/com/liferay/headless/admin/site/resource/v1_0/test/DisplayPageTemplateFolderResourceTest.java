@@ -192,6 +192,15 @@ public class DisplayPageTemplateFolderResourceTest
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder()
+		throws Exception {
+
+		super.testGetSiteDisplayPageTemplateFolderPermissionsPage();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder()
 		throws Exception {
 

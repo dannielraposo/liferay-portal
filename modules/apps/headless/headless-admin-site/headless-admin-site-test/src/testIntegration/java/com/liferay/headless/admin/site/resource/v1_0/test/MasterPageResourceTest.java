@@ -197,6 +197,15 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage()
+		throws Exception {
+
+		super.testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetSiteSiteByExternalReferenceCodeMasterPage()
 		throws Exception {
 

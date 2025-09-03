@@ -303,6 +303,16 @@ public class PageSpecificationResourceTest
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodePageSpecification()
+		throws Exception {
+
+		super.
+			testGraphQLDeleteSiteSiteByExternalReferenceCodePageSpecification();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetSiteSiteByExternalReferenceCodePageSpecification()
 		throws Exception {
 

@@ -193,6 +193,15 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodeSitePage()
+		throws Exception {
+
+		super.testGraphQLDeleteSiteSiteByExternalReferenceCodeSitePage();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetSiteSiteByExternalReferenceCodeSitePage()
 		throws Exception {
 

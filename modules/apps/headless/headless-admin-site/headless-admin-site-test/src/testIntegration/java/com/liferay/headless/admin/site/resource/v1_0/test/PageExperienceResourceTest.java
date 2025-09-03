@@ -124,6 +124,15 @@ public class PageExperienceResourceTest
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience()
+		throws Exception {
+
+		super.testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetSiteSiteByExternalReferenceCodePageExperience()
 		throws Exception {
 

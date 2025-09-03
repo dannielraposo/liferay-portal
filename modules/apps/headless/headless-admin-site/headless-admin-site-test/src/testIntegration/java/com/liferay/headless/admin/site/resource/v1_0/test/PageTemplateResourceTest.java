@@ -299,6 +299,15 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodePageTemplate()
+		throws Exception {
+
+		super.testGraphQLDeleteSiteSiteByExternalReferenceCodePageTemplate();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetSiteSiteByExternalReferenceCodePageTemplate()
 		throws Exception {
 

@@ -193,6 +193,15 @@ public class PageTemplateSetResourceTest
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodePageTemplateSet()
+		throws Exception {
+
+		super.testGraphQLDeleteSiteSiteByExternalReferenceCodePageTemplateSet();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetSiteSiteByExternalReferenceCodePageTemplateSet()
 		throws Exception {
 

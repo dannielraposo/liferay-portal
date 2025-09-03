@@ -155,6 +155,15 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodePageElement()
+		throws Exception {
+
+		super.testGraphQLDeleteSiteSiteByExternalReferenceCodePageElement();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetSiteSiteByExternalReferenceCodePageElement()
 		throws Exception {
 

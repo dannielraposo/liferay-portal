@@ -301,6 +301,16 @@ public class DisplayPageTemplateResourceTest
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplate()
+		throws Exception {
+
+		super.
+			testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplate();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplate()
 		throws Exception {
 

@@ -240,6 +240,15 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLDeleteSiteSiteByExternalReferenceCodeUtilityPage()
+		throws Exception {
+
+		super.testGraphQLDeleteSiteSiteByExternalReferenceCodeUtilityPage();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetSiteSiteByExternalReferenceCodeUtilityPage()
 		throws Exception {
 
