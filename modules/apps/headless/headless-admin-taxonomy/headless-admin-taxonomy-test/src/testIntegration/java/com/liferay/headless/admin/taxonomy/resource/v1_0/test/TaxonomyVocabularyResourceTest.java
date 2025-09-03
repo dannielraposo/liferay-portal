@@ -627,15 +627,6 @@ public class TaxonomyVocabularyResourceTest
 	}
 
 	@Override
-	protected TaxonomyVocabulary
-			testGraphQLGetTaxonomyVocabulariesPage_addTaxonomyVocabulary()
-		throws Exception {
-
-		return taxonomyVocabularyResource.postTaxonomyVocabulary(
-			_randomTaxonomyVocabularyWithAssetLibraries(_randomAssetLibrary()));
-	}
-
-	@Override
 	protected Long
 			testPutAssetLibraryTaxonomyVocabularyByExternalReferenceCode_getAssetLibraryId()
 		throws Exception {
