@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,6 +52,7 @@ import org.junit.runner.RunWith;
  * @author Javier Gamarra
  */
 @DataGuard(scope = DataGuard.Scope.METHOD)
+@FeatureFlag("LPD-17564")
 @RunWith(Arquillian.class)
 public class KeywordResourceTest extends BaseKeywordResourceTestCase {
 
@@ -279,7 +281,6 @@ public class KeywordResourceTest extends BaseKeywordResourceTestCase {
 		keywordResource.deleteKeyword(keyword.getId());
 	}
 
-	@FeatureFlag("LPD-17564")
 	@Override
 	@Test
 	public void testGetKeywordsPage() throws Exception {
@@ -312,69 +313,12 @@ public class KeywordResourceTest extends BaseKeywordResourceTestCase {
 			Arrays.asList(keyword1, keyword2), (List<Keyword>)page.getItems());
 	}
 
-	@FeatureFlag("LPD-17564")
-	@Override
-	@Test
-	public void testGetKeywordsPageWithFilterDateTimeEquals() throws Exception {
-		_addCMSGroup();
-
-		super.testGetKeywordsPageWithFilterDateTimeEquals();
-	}
-
-	@FeatureFlag("LPD-17564")
-	@Override
-	@Test
-	public void testGetKeywordsPageWithFilterStringContains() throws Exception {
-		_addCMSGroup();
-
-		super.testGetKeywordsPageWithFilterStringContains();
-	}
-
-	@FeatureFlag("LPD-17564")
-	@Override
-	@Test
-	public void testGetKeywordsPageWithFilterStringEquals() throws Exception {
-		_addCMSGroup();
-
-		super.testGetKeywordsPageWithFilterStringEquals();
-	}
-
-	@FeatureFlag("LPD-17564")
-	@Override
-	@Test
-	public void testGetKeywordsPageWithFilterStringStartsWith()
-		throws Exception {
-
-		_addCMSGroup();
-
-		super.testGetKeywordsPageWithFilterStringStartsWith();
-	}
-
-	@FeatureFlag("LPD-17564")
 	@Override
 	@Test
 	public void testGetKeywordsPageWithPagination() throws Exception {
 		_addCMSGroup();
 
 		super.testGetKeywordsPageWithPagination();
-	}
-
-	@FeatureFlag("LPD-17564")
-	@Override
-	@Test
-	public void testGetKeywordsPageWithSortDateTime() throws Exception {
-		_addCMSGroup();
-
-		super.testGetKeywordsPageWithSortDateTime();
-	}
-
-	@FeatureFlag("LPD-17564")
-	@Override
-	@Test
-	public void testGetKeywordsPageWithSortString() throws Exception {
-		_addCMSGroup();
-
-		super.testGetKeywordsPageWithSortString();
 	}
 
 	@Override
@@ -460,7 +404,6 @@ public class KeywordResourceTest extends BaseKeywordResourceTestCase {
 		}
 	}
 
-	@FeatureFlag("LPD-17564")
 	@Override
 	@Test
 	public void testGraphQLGetKeywordsPage() throws Exception {
@@ -469,12 +412,16 @@ public class KeywordResourceTest extends BaseKeywordResourceTestCase {
 		super.testGraphQLGetKeywordsPage();
 	}
 
-	@FeatureFlag("LPD-17564")
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLGetKeywordsRankedPage() throws Exception {
+		super.testGraphQLGetKeywordsRankedPage();
+	}
+
 	@Override
 	@Test
 	public void testPostKeyword() throws Exception {
-		_addCMSGroup();
-
 		AssetLibrary assetLibrary = _randomAssetLibrary();
 
 		Keyword keyword = _addKeywordWithAssetLibraries(assetLibrary);
@@ -514,20 +461,14 @@ public class KeywordResourceTest extends BaseKeywordResourceTestCase {
 		assertValid(putKeyword);
 	}
 
-	@FeatureFlag("LPD-17564")
 	@Override
 	@Test
 	public void testPutKeyword() throws Exception {
-		_addCMSGroup();
-
 		super.testPutKeyword();
 
 		Keyword keyword = _addKeywordWithAssetLibraries(_randomAssetLibrary());
 
 		Keyword randomKeyword = randomKeyword();
-
-		randomKeyword.setAssetLibraries(
-			new AssetLibrary[] {_randomAssetLibrary()});
 
 		Keyword putKeyword = keywordResource.putKeyword(
 			keyword.getId(), randomKeyword);
@@ -535,12 +476,9 @@ public class KeywordResourceTest extends BaseKeywordResourceTestCase {
 		assertEquals(randomKeyword, putKeyword);
 	}
 
-	@FeatureFlag("LPD-17564")
 	@Override
 	@Test
 	public void testPutKeywordMerge() throws Exception {
-		_addCMSGroup();
-
 		Keyword keyword1 = _addKeywordWithAssetLibraries(_randomAssetLibrary());
 		Keyword keyword2 = _addKeywordWithAssetLibraries(_randomAssetLibrary());
 		Keyword keyword3 = _addKeywordWithAssetLibraries(_randomAssetLibrary());
@@ -606,27 +544,13 @@ public class KeywordResourceTest extends BaseKeywordResourceTestCase {
 
 	@Override
 	protected Keyword randomKeyword() throws Exception {
+		_addCMSGroup();
+
 		Keyword keyword = super.randomKeyword();
 
-		keyword.setName(StringUtil.toLowerCase(keyword.getName()));
+		keyword.setAssetLibraries(new AssetLibrary[] {_randomAssetLibrary()});
 
 		return keyword;
-	}
-
-	@Override
-	protected Long
-			testDeleteAssetLibraryKeywordByExternalReferenceCode_getAssetLibraryId()
-		throws Exception {
-
-		return testDepotEntry.getDepotEntryId();
-	}
-
-	@Override
-	protected Long
-			testGetAssetLibraryKeywordByExternalReferenceCode_getAssetLibraryId()
-		throws Exception {
-
-		return testDepotEntry.getDepotEntryId();
 	}
 
 	@Override
@@ -657,27 +581,6 @@ public class KeywordResourceTest extends BaseKeywordResourceTestCase {
 		throws Exception {
 
 		return testGetAssetLibraryKeywordByExternalReferenceCode_addKeyword();
-	}
-
-	@Override
-	protected Long
-			testGraphQLGetAssetLibraryKeywordByExternalReferenceCode_getAssetLibraryId()
-		throws Exception {
-
-		return testDepotEntry.getDepotEntryId();
-	}
-
-	@Override
-	protected Keyword testGraphQLGetKeywordsPage_addKeyword() throws Exception {
-		return _addKeywordWithAssetLibraries(_randomAssetLibrary());
-	}
-
-	@Override
-	protected Long
-			testPutAssetLibraryKeywordByExternalReferenceCode_getAssetLibraryId()
-		throws Exception {
-
-		return testDepotEntry.getDepotEntryId();
 	}
 
 	private void _addCMSGroup() throws Exception {

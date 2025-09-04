@@ -62,6 +62,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
  * @author Javier Gamarra
  */
 @DataGuard(scope = DataGuard.Scope.METHOD)
+@FeatureFlag("LPD-17564")
 @RunWith(Arquillian.class)
 public class TaxonomyVocabularyResourceTest
 	extends BaseTaxonomyVocabularyResourceTestCase {
@@ -291,12 +292,9 @@ public class TaxonomyVocabularyResourceTest
 			).build());
 	}
 
-	@FeatureFlag("LPD-17564")
 	@Override
 	@Test
 	public void testGetTaxonomyVocabulariesPage() throws Exception {
-		_addCMSGroup();
-
 		super.testGetTaxonomyVocabulariesPage();
 
 		Page<TaxonomyVocabulary> page =
@@ -361,61 +359,6 @@ public class TaxonomyVocabularyResourceTest
 			).build());
 	}
 
-	@FeatureFlag("LPD-17564")
-	@Override
-	@Test
-	public void testGetTaxonomyVocabulariesPageWithFilterStringContains()
-		throws Exception {
-
-		_addCMSGroup();
-
-		super.testGetTaxonomyVocabulariesPageWithFilterStringContains();
-	}
-
-	@FeatureFlag("LPD-17564")
-	@Override
-	@Test
-	public void testGetTaxonomyVocabulariesPageWithFilterStringEquals()
-		throws Exception {
-
-		_addCMSGroup();
-
-		super.testGetTaxonomyVocabulariesPageWithFilterStringEquals();
-	}
-
-	@FeatureFlag("LPD-17564")
-	@Override
-	@Test
-	public void testGetTaxonomyVocabulariesPageWithFilterStringStartsWith()
-		throws Exception {
-
-		_addCMSGroup();
-
-		super.testGetTaxonomyVocabulariesPageWithFilterStringStartsWith();
-	}
-
-	@FeatureFlag("LPD-17564")
-	@Override
-	@Test
-	public void testGetTaxonomyVocabulariesPageWithPagination()
-		throws Exception {
-
-		_addCMSGroup();
-
-		super.testGetTaxonomyVocabulariesPageWithPagination();
-	}
-
-	@FeatureFlag("LPD-17564")
-	@Override
-	@Test
-	public void testGetTaxonomyVocabulariesPageWithSortString()
-		throws Exception {
-
-		_addCMSGroup();
-
-		super.testGetTaxonomyVocabulariesPageWithSortString();
-	}
-
 	@Override
 	@Test
 	public void testGetTaxonomyVocabulary() throws Exception {
@@ -425,7 +368,6 @@ public class TaxonomyVocabularyResourceTest
 		_testGetTaxonomyVocabularyWithoutPermissionsAction();
 	}
 
-	@FeatureFlag("LPD-17564")
 	@Override
 	@Test
 	public void testGraphQLGetTaxonomyVocabulariesPage() throws Exception {
@@ -434,9 +376,8 @@ public class TaxonomyVocabularyResourceTest
 		super.testGraphQLGetTaxonomyVocabulariesPage();
 
 		Page<TaxonomyVocabulary> page =
-			taxonomyVocabularyResource.getSiteTaxonomyVocabulariesPage(
-				testGroup.getGroupId(), null, null, null, Pagination.of(1, 10),
-				null);
+			taxonomyVocabularyResource.getTaxonomyVocabulariesPage(
+				null, null, null, Pagination.of(1, 10), null);
 
 		for (TaxonomyVocabulary taxonomyVocabulary : page.getItems()) {
 			taxonomyVocabularyResource.deleteTaxonomyVocabulary(
@@ -449,12 +390,9 @@ public class TaxonomyVocabularyResourceTest
 			testGraphQLTaxonomyVocabulary_addTaxonomyVocabulary();
 
 		GraphQLField graphQLField = new GraphQLField(
-			"siteTaxonomyVocabularies",
+			"taxonomyVocabularies",
 			HashMapBuilder.<String, Object>put(
 				"aggregation", "[\"id\"]"
-			).put(
-				"siteKey",
-				StringBundler.concat("\"", testGroup.getGroupId(), "\"")
 			).build(),
 			new GraphQLField(
 				"facets", new GraphQLField("facetCriteria"),
@@ -467,7 +405,7 @@ public class TaxonomyVocabularyResourceTest
 		JSONObject taxonomyVocabulariesJSONObject =
 			JSONUtil.getValueAsJSONObject(
 				invokeGraphQLQuery(graphQLField), "JSONObject/data",
-				"JSONObject/siteTaxonomyVocabularies");
+				"JSONObject/taxonomyVocabularies");
 
 		Assert.assertEquals(
 			2, taxonomyVocabulariesJSONObject.getLong("totalCount"));
@@ -507,12 +445,9 @@ public class TaxonomyVocabularyResourceTest
 					taxonomyVocabulariesJSONObject.getString("items"))));
 	}
 
-	@FeatureFlag("LPD-17564")
 	@Override
 	@Test
 	public void testPostTaxonomyVocabulary() throws Exception {
-		_addCMSGroup();
-
 		AssetLibrary[] assetLibraries = {
 			_randomAssetLibrary(), _randomAssetLibrary()
 		};
@@ -558,7 +493,9 @@ public class TaxonomyVocabularyResourceTest
 
 	@Override
 	protected TaxonomyVocabulary randomTaxonomyVocabulary() throws Exception {
-		return new TaxonomyVocabulary() {
+		_addCMSGroup();
+
+		TaxonomyVocabulary taxonomyVocabulary = new TaxonomyVocabulary() {
 			{
 				assetTypes = new AssetType[] {
 					new AssetType() {
@@ -579,22 +516,11 @@ public class TaxonomyVocabularyResourceTest
 				visibilityType = VisibilityType.PUBLIC;
 			}
 		};
-	}
 
-	@Override
-	protected Long
-			testDeleteAssetLibraryTaxonomyVocabularyByExternalReferenceCode_getAssetLibraryId()
-		throws Exception {
+		taxonomyVocabulary.setAssetLibraries(
+			new AssetLibrary[] {_randomAssetLibrary()});
 
-		return testDepotEntry.getDepotEntryId();
-	}
-
-	@Override
-	protected Long
-			testGetAssetLibraryTaxonomyVocabularyByExternalReferenceCode_getAssetLibraryId()
-		throws Exception {
-
-		return testDepotEntry.getDepotEntryId();
+		return taxonomyVocabulary;
 	}
 
 	@Override
@@ -602,9 +528,6 @@ public class TaxonomyVocabularyResourceTest
 			testGetTaxonomyVocabulariesPage_addTaxonomyVocabulary(
 				TaxonomyVocabulary taxonomyVocabulary)
 		throws Exception {
-
-		taxonomyVocabulary.setAssetLibraries(
-			new AssetLibrary[] {_randomAssetLibrary()});
 
 		return taxonomyVocabularyResource.postTaxonomyVocabulary(
 			taxonomyVocabulary);
@@ -616,22 +539,6 @@ public class TaxonomyVocabularyResourceTest
 		throws Exception {
 
 		return testGetAssetLibraryTaxonomyVocabularyByExternalReferenceCode_addTaxonomyVocabulary();
-	}
-
-	@Override
-	protected Long
-			testGraphQLGetAssetLibraryTaxonomyVocabularyByExternalReferenceCode_getAssetLibraryId()
-		throws Exception {
-
-		return testDepotEntry.getDepotEntryId();
-	}
-
-	@Override
-	protected Long
-			testPutAssetLibraryTaxonomyVocabularyByExternalReferenceCode_getAssetLibraryId()
-		throws Exception {
-
-		return testDepotEntry.getDepotEntryId();
 	}
 
 	private void _addCMSGroup() throws Exception {
