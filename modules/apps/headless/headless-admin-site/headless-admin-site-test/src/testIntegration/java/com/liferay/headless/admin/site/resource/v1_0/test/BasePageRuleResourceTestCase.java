@@ -331,7 +331,7 @@ public abstract class BasePageRuleResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodePageRule_addPageRule()
 		throws Exception {
 
-		return testGraphQLPageRule_addPageRule();
+		return testGraphQLSitePageRule_addPageRule();
 	}
 
 	@Test
@@ -626,7 +626,7 @@ public abstract class BasePageRuleResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodePageRule_addPageRule()
 		throws Exception {
 
-		return testGraphQLPageRule_addPageRule();
+		return testGraphQLSitePageRule_addPageRule();
 	}
 
 	@Test
@@ -733,7 +733,7 @@ public abstract class BasePageRuleResourceTestCase {
 		Assert.assertTrue(true);
 	}
 
-	protected PageRule testGraphQLPageRule_addPageRule() throws Exception {
+	protected PageRule testGraphQLSitePageRule_addPageRule() throws Exception {
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}

@@ -369,7 +369,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_addDisplayPageTemplateFolder()
 		throws Exception {
 
-		return testGraphQLDisplayPageTemplateFolder_addDisplayPageTemplateFolder();
+		return testGraphQLSiteDisplayPageTemplateFolder_addDisplayPageTemplateFolder();
 	}
 
 	@Test
@@ -569,7 +569,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder_addDisplayPageTemplateFolder()
 		throws Exception {
 
-		return testGraphQLDisplayPageTemplateFolder_addDisplayPageTemplateFolder();
+		return testGraphQLSiteDisplayPageTemplateFolder_addDisplayPageTemplateFolder();
 	}
 
 	@Test
@@ -1249,7 +1249,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceTestCase {
 	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected DisplayPageTemplateFolder
-			testGraphQLDisplayPageTemplateFolder_addDisplayPageTemplateFolder()
+			testGraphQLSiteDisplayPageTemplateFolder_addDisplayPageTemplateFolder()
 		throws Exception {
 
 		throw new UnsupportedOperationException(

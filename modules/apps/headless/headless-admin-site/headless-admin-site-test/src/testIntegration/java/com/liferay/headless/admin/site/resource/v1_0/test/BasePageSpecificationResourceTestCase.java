@@ -344,7 +344,7 @@ public abstract class BasePageSpecificationResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodePageSpecification_addPageSpecification()
 		throws Exception {
 
-		return testGraphQLPageSpecification_addPageSpecification();
+		return testGraphQLSitePageSpecification_addPageSpecification();
 	}
 
 	@Test
@@ -772,7 +772,7 @@ public abstract class BasePageSpecificationResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodePageSpecification_addPageSpecification()
 		throws Exception {
 
-		return testGraphQLPageSpecification_addPageSpecification();
+		return testGraphQLSitePageSpecification_addPageSpecification();
 	}
 
 	@Test
@@ -1303,7 +1303,7 @@ public abstract class BasePageSpecificationResourceTestCase {
 	}
 
 	protected PageSpecification
-			testGraphQLPageSpecification_addPageSpecification()
+			testGraphQLSitePageSpecification_addPageSpecification()
 		throws Exception {
 
 		throw new UnsupportedOperationException(

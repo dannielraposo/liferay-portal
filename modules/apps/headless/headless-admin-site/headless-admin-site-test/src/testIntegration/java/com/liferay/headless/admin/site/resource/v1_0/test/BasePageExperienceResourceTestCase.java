@@ -340,7 +340,7 @@ public abstract class BasePageExperienceResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodePageExperience_addPageExperience()
 		throws Exception {
 
-		return testGraphQLPageExperience_addPageExperience();
+		return testGraphQLSitePageExperience_addPageExperience();
 	}
 
 	@Test
@@ -513,7 +513,7 @@ public abstract class BasePageExperienceResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodePageExperience_addPageExperience()
 		throws Exception {
 
-		return testGraphQLPageExperience_addPageExperience();
+		return testGraphQLSitePageExperience_addPageExperience();
 	}
 
 	@Test
@@ -752,7 +752,7 @@ public abstract class BasePageExperienceResourceTestCase {
 		Assert.assertTrue(true);
 	}
 
-	protected PageExperience testGraphQLPageExperience_addPageExperience()
+	protected PageExperience testGraphQLSitePageExperience_addPageExperience()
 		throws Exception {
 
 		throw new UnsupportedOperationException(

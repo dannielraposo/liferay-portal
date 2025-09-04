@@ -352,7 +352,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodeFragmentComposition_addFragmentComposition()
 		throws Exception {
 
-		return testGraphQLFragmentComposition_addFragmentComposition();
+		return testGraphQLSiteFragmentComposition_addFragmentComposition();
 	}
 
 	@Test
@@ -525,7 +525,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodeFragmentComposition_addFragmentComposition()
 		throws Exception {
 
-		return testGraphQLFragmentComposition_addFragmentComposition();
+		return testGraphQLSiteFragmentComposition_addFragmentComposition();
 	}
 
 	@Test
@@ -1134,7 +1134,7 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected FragmentComposition
-			testGraphQLFragmentComposition_addFragmentComposition()
+			testGraphQLSiteFragmentComposition_addFragmentComposition()
 		throws Exception {
 
 		throw new UnsupportedOperationException(

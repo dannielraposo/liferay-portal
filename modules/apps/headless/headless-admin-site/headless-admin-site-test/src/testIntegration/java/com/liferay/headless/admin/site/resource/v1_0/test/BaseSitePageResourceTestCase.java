@@ -345,7 +345,7 @@ public abstract class BaseSitePageResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodeSitePage_addSitePage()
 		throws Exception {
 
-		return testGraphQLSitePage_addSitePage();
+		return testGraphQLSiteSitePage_addSitePage();
 	}
 
 	@Test
@@ -517,7 +517,7 @@ public abstract class BaseSitePageResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodeSitePage_addSitePage()
 		throws Exception {
 
-		return testGraphQLSitePage_addSitePage();
+		return testGraphQLSiteSitePage_addSitePage();
 	}
 
 	@Test
@@ -1136,7 +1136,7 @@ public abstract class BaseSitePageResourceTestCase {
 		Assert.assertTrue(true);
 	}
 
-	protected SitePage testGraphQLSitePage_addSitePage() throws Exception {
+	protected SitePage testGraphQLSiteSitePage_addSitePage() throws Exception {
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}

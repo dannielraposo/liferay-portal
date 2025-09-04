@@ -419,7 +419,7 @@ public abstract class BasePageElementResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodePageElement_addPageElement()
 		throws Exception {
 
-		return testGraphQLPageElement_addPageElement();
+		return testGraphQLSitePageElement_addPageElement();
 	}
 
 	@Test
@@ -665,7 +665,7 @@ public abstract class BasePageElementResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodePageElement_addPageElement()
 		throws Exception {
 
-		return testGraphQLPageElement_addPageElement();
+		return testGraphQLSitePageElement_addPageElement();
 	}
 
 	@Test
@@ -1156,7 +1156,7 @@ public abstract class BasePageElementResourceTestCase {
 		Assert.assertTrue(true);
 	}
 
-	protected PageElement testGraphQLPageElement_addPageElement()
+	protected PageElement testGraphQLSitePageElement_addPageElement()
 		throws Exception {
 
 		throw new UnsupportedOperationException(

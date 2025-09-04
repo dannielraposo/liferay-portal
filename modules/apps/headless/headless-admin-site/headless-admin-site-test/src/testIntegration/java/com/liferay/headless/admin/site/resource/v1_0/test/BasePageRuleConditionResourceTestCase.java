@@ -341,7 +341,7 @@ public abstract class BasePageRuleConditionResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodePageRuleCondition_addPageRuleCondition()
 		throws Exception {
 
-		return testGraphQLPageRuleCondition_addPageRuleCondition();
+		return testGraphQLSitePageRuleCondition_addPageRuleCondition();
 	}
 
 	@Test
@@ -514,7 +514,7 @@ public abstract class BasePageRuleConditionResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodePageRuleCondition_addPageRuleCondition()
 		throws Exception {
 
-		return testGraphQLPageRuleCondition_addPageRuleCondition();
+		return testGraphQLSitePageRuleCondition_addPageRuleCondition();
 	}
 
 	@Test
@@ -757,7 +757,7 @@ public abstract class BasePageRuleConditionResourceTestCase {
 	}
 
 	protected PageRuleCondition
-			testGraphQLPageRuleCondition_addPageRuleCondition()
+			testGraphQLSitePageRuleCondition_addPageRuleCondition()
 		throws Exception {
 
 		throw new UnsupportedOperationException(

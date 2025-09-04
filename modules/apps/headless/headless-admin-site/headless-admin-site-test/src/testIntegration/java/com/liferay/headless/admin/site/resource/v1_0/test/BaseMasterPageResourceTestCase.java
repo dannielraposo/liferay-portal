@@ -348,7 +348,7 @@ public abstract class BaseMasterPageResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodeMasterPage_addMasterPage()
 		throws Exception {
 
-		return testGraphQLMasterPage_addMasterPage();
+		return testGraphQLSiteMasterPage_addMasterPage();
 	}
 
 	@Test
@@ -541,7 +541,7 @@ public abstract class BaseMasterPageResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodeMasterPage_addMasterPage()
 		throws Exception {
 
-		return testGraphQLMasterPage_addMasterPage();
+		return testGraphQLSiteMasterPage_addMasterPage();
 	}
 
 	@Test
@@ -1157,7 +1157,7 @@ public abstract class BaseMasterPageResourceTestCase {
 		Assert.assertTrue(true);
 	}
 
-	protected MasterPage testGraphQLMasterPage_addMasterPage()
+	protected MasterPage testGraphQLSiteMasterPage_addMasterPage()
 		throws Exception {
 
 		throw new UnsupportedOperationException(

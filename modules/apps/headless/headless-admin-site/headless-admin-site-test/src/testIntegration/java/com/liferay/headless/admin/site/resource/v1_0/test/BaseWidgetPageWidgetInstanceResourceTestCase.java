@@ -421,7 +421,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_addWidgetPageWidgetInstance()
 		throws Exception {
 
-		return testGraphQLWidgetPageWidgetInstance_addWidgetPageWidgetInstance();
+		return testGraphQLSiteWidgetPageWidgetInstance_addWidgetPageWidgetInstance();
 	}
 
 	@Test
@@ -774,7 +774,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode_addWidgetPageWidgetInstance()
 		throws Exception {
 
-		return testGraphQLWidgetPageWidgetInstance_addWidgetPageWidgetInstance();
+		return testGraphQLSiteWidgetPageWidgetInstance_addWidgetPageWidgetInstance();
 	}
 
 	@Test
@@ -914,7 +914,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 	}
 
 	protected WidgetPageWidgetInstance
-			testGraphQLWidgetPageWidgetInstance_addWidgetPageWidgetInstance()
+			testGraphQLSiteWidgetPageWidgetInstance_addWidgetPageWidgetInstance()
 		throws Exception {
 
 		throw new UnsupportedOperationException(

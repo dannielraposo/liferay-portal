@@ -346,7 +346,7 @@ public abstract class BaseUtilityPageResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodeUtilityPage_addUtilityPage()
 		throws Exception {
 
-		return testGraphQLUtilityPage_addUtilityPage();
+		return testGraphQLSiteUtilityPage_addUtilityPage();
 	}
 
 	@Test
@@ -518,7 +518,7 @@ public abstract class BaseUtilityPageResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodeUtilityPage_addUtilityPage()
 		throws Exception {
 
-		return testGraphQLUtilityPage_addUtilityPage();
+		return testGraphQLSiteUtilityPage_addUtilityPage();
 	}
 
 	@Test
@@ -1163,7 +1163,7 @@ public abstract class BaseUtilityPageResourceTestCase {
 		Assert.assertTrue(true);
 	}
 
-	protected UtilityPage testGraphQLUtilityPage_addUtilityPage()
+	protected UtilityPage testGraphQLSiteUtilityPage_addUtilityPage()
 		throws Exception {
 
 		throw new UnsupportedOperationException(

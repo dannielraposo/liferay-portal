@@ -338,7 +338,7 @@ public abstract class BasePageRuleActionResourceTestCase {
 			testGraphQLDeleteSiteSiteByExternalReferenceCodePageRuleAction_addPageRuleAction()
 		throws Exception {
 
-		return testGraphQLPageRuleAction_addPageRuleAction();
+		return testGraphQLSitePageRuleAction_addPageRuleAction();
 	}
 
 	@Test
@@ -511,7 +511,7 @@ public abstract class BasePageRuleActionResourceTestCase {
 			testGraphQLGetSiteSiteByExternalReferenceCodePageRuleAction_addPageRuleAction()
 		throws Exception {
 
-		return testGraphQLPageRuleAction_addPageRuleAction();
+		return testGraphQLSitePageRuleAction_addPageRuleAction();
 	}
 
 	@Test
@@ -749,7 +749,7 @@ public abstract class BasePageRuleActionResourceTestCase {
 		Assert.assertTrue(true);
 	}
 
-	protected PageRuleAction testGraphQLPageRuleAction_addPageRuleAction()
+	protected PageRuleAction testGraphQLSitePageRuleAction_addPageRuleAction()
 		throws Exception {
 
 		throw new UnsupportedOperationException(

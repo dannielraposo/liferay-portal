@@ -884,7 +884,7 @@ public abstract class BaseKeywordResourceTestCase {
 			testGraphQLGetAssetLibraryKeywordPermissionsPage_addKeyword()
 		throws Exception {
 
-		return testGraphQLKeyword_addKeyword();
+		return testGraphQLAssetLibraryKeyword_addKeyword();
 	}
 
 	@Test
@@ -2420,7 +2420,7 @@ public abstract class BaseKeywordResourceTestCase {
 	protected Keyword testGraphQLGetSiteKeywordPermissionsPage_addKeyword()
 		throws Exception {
 
-		return testGraphQLKeyword_addKeyword();
+		return testGraphQLSiteKeyword_addKeyword();
 	}
 
 	@Test
