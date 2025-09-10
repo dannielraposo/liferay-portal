@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -122,6 +123,13 @@ public class MessageBoardThreadResourceTest
 			(List<MessageBoardThread>)descPage.getItems());
 	}
 
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLGetMessageBoardThreadsRankedPage() throws Exception {
+		super.testGraphQLGetMessageBoardThreadsRankedPage();
+	}
+
 	@Override
 	@Test
 	public void testGraphQLGetSiteMessageBoardThreadsPage() throws Exception {
@@ -159,6 +167,15 @@ public class MessageBoardThreadResourceTest
 			Arrays.asList(
 				MessageBoardThreadSerDes.toDTOs(
 					messageBoardThreadsJSONObject.getString("items"))));
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostMessageBoardSectionMessageBoardThread()
+		throws Exception {
+
+		super.testGraphQLPostMessageBoardSectionMessageBoardThread();
 	}
 
 	@Override

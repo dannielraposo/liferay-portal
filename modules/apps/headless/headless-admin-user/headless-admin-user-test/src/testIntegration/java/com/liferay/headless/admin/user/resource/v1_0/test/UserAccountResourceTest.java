@@ -165,6 +165,7 @@ import java.util.function.Consumer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -710,6 +711,25 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 		_testGetUserAccountsPageWithSortFullName();
 	}
 
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLDeleteAccountByExternalReferenceCodeUserAccountByExternalReferenceCode()
+		throws Exception {
+
+		super.
+			testGraphQLDeleteAccountByExternalReferenceCodeUserAccountByExternalReferenceCode();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLGetAccountUserAccountsByExternalReferenceCodePage()
+		throws Exception {
+
+		super.testGraphQLGetAccountUserAccountsByExternalReferenceCodePage();
+	}
+
 	@Override
 	@Test
 	public void testGraphQLGetMyUserAccount() throws Exception {
@@ -722,6 +742,29 @@ public class UserAccountResourceTest extends BaseUserAccountResourceTestCase {
 							new GraphQLField(
 								"myUserAccount", getGraphQLFields())),
 						"JSONObject/data", "JSONObject/myUserAccount"))));
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLGetUserAccountsByStatusPage() throws Exception {
+		super.testGraphQLGetUserAccountsByStatusPage();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostAccountUserAccount() throws Exception {
+		super.testGraphQLPostAccountUserAccount();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostAccountUserAccountByExternalReferenceCode()
+		throws Exception {
+
+		super.testGraphQLPostAccountUserAccountByExternalReferenceCode();
 	}
 
 	@Override

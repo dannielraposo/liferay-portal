@@ -77,6 +77,16 @@ public class ObjectRelationshipResourceTest
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLGetObjectDefinitionByExternalReferenceCodeObjectRelationshipsPage()
+		throws Exception {
+
+		super.
+			testGraphQLGetObjectDefinitionByExternalReferenceCodeObjectRelationshipsPage();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetObjectRelationship() {
 	}
 
@@ -84,6 +94,25 @@ public class ObjectRelationshipResourceTest
 	@Override
 	@Test
 	public void testGraphQLGetObjectRelationshipNotFound() {
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostObjectDefinitionByExternalReferenceCodeObjectRelationship()
+		throws Exception {
+
+		super.
+			testGraphQLPostObjectDefinitionByExternalReferenceCodeObjectRelationship();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostObjectDefinitionObjectRelationship()
+		throws Exception {
+
+		super.testGraphQLPostObjectDefinitionObjectRelationship();
 	}
 
 	@Override

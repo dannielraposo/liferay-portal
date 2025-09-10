@@ -40,7 +40,6 @@ import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -192,36 +191,6 @@ public class FriendlyUrlHistoryResourceTest
 				GetterUtil.getString(
 					friendlyUrlHistory.getFriendlyUrlPath_i18n())),
 			friendlyURLs);
-	}
-
-	@Ignore
-	@Override
-	@Test
-	public void testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFriendlyUrlHistory()
-		throws Exception {
-
-		super.
-			testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFriendlyUrlHistory();
-	}
-
-	@Ignore
-	@Override
-	@Test
-	public void testGraphQLGetSiteSiteByExternalReferenceCodeSitePageFriendlyUrlHistory()
-		throws Exception {
-
-		super.
-			testGraphQLGetSiteSiteByExternalReferenceCodeSitePageFriendlyUrlHistory();
-	}
-
-	@Ignore
-	@Override
-	@Test
-	public void testGraphQLGetSiteSiteByExternalReferenceCodeUtilityPageFriendlyUrlHistory()
-		throws Exception {
-
-		super.
-			testGraphQLGetSiteSiteByExternalReferenceCodeUtilityPageFriendlyUrlHistory();
 	}
 
 	private void _assertFriendlyUrlHistoryJSONObject(

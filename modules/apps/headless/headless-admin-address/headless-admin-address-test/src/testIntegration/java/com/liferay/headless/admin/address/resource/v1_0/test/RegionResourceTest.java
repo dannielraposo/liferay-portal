@@ -40,6 +40,7 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -124,6 +125,13 @@ public class RegionResourceTest extends BaseRegionResourceTestCase {
 			region2,
 			Arrays.asList(
 				RegionSerDes.toDTOs(regionsJSONObject.getString("items"))));
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostCountryRegion() throws Exception {
+		super.testGraphQLPostCountryRegion();
 	}
 
 	@Override

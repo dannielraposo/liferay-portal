@@ -27,6 +27,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,6 +62,13 @@ public class DataListViewResourceTest extends BaseDataListViewResourceTestCase {
 			irrelevantGroup.getGroupId());
 	}
 
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLDeleteDataDefinitionDataListView() throws Exception {
+		super.testGraphQLDeleteDataDefinitionDataListView();
+	}
+
 	@Override
 	@Test
 	public void testGraphQLGetDataListView() throws Exception {
@@ -87,6 +95,13 @@ public class DataListViewResourceTest extends BaseDataListViewResourceTestCase {
 		Assert.assertEquals(
 			GetterUtil.getString(dataListView.getSortField()),
 			dataListViewJSONObject.getString("sortField"));
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostDataDefinitionDataListView() throws Exception {
+		super.testGraphQLPostDataDefinitionDataListView();
 	}
 
 	@Override

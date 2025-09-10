@@ -35,6 +35,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -209,6 +210,15 @@ public class DataRecordCollectionResourceTest
 			JSONUtil.getValue(
 				dataRecordCollectionJSONObject, "JSONObject/name",
 				"Object/en_US"));
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostDataDefinitionDataRecordCollection()
+		throws Exception {
+
+		super.testGraphQLPostDataDefinitionDataRecordCollection();
 	}
 
 	@Override

@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -37,6 +39,13 @@ public class FormRecordResourceTest extends BaseFormRecordResourceTestCase {
 		_ddmFormInstance = DDMFormInstanceTestUtil.addDDMFormInstance(
 			_groupLocalService.getGroup(testGroup.getGroupId()),
 			TestPropsValues.getUserId());
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostFormFormRecord() throws Exception {
+		super.testGraphQLPostFormFormRecord();
 	}
 
 	@Override

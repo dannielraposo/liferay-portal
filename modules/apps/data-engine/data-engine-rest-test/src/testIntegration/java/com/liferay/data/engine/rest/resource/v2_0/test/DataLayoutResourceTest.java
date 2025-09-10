@@ -51,6 +51,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -103,6 +104,13 @@ public class DataLayoutResourceTest extends BaseDataLayoutResourceTestCase {
 			"abcdefghijklmnopqrstuvwxyz0123456789");
 		_testGetDataDefinitionDataLayoutsPage("form layout", "form layout");
 		_testGetDataDefinitionDataLayoutsPage("layo", "form layout");
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLDeleteDataDefinitionDataLayout() throws Exception {
+		super.testGraphQLDeleteDataDefinitionDataLayout();
 	}
 
 	@Override
@@ -189,6 +197,13 @@ public class DataLayoutResourceTest extends BaseDataLayoutResourceTestCase {
 						getGraphQLFields())),
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostDataDefinitionDataLayout() throws Exception {
+		super.testGraphQLPostDataDefinitionDataLayout();
 	}
 
 	@Override

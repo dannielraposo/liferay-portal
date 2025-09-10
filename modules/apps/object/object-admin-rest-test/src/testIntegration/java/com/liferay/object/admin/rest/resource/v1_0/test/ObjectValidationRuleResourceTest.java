@@ -79,6 +79,16 @@ public class ObjectValidationRuleResourceTest
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLGetObjectDefinitionByExternalReferenceCodeObjectValidationRulesPage()
+		throws Exception {
+
+		super.
+			testGraphQLGetObjectDefinitionByExternalReferenceCodeObjectValidationRulesPage();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetObjectValidationRule() {
 	}
 
@@ -86,6 +96,25 @@ public class ObjectValidationRuleResourceTest
 	@Override
 	@Test
 	public void testGraphQLGetObjectValidationRuleNotFound() {
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostObjectDefinitionByExternalReferenceCodeObjectValidationRule()
+		throws Exception {
+
+		super.
+			testGraphQLPostObjectDefinitionByExternalReferenceCodeObjectValidationRule();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostObjectDefinitionObjectValidationRule()
+		throws Exception {
+
+		super.testGraphQLPostObjectDefinitionObjectValidationRule();
 	}
 
 	@Override

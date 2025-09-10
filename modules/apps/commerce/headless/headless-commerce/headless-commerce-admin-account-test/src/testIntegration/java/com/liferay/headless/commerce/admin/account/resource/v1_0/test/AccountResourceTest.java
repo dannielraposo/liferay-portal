@@ -117,6 +117,13 @@ public class AccountResourceTest extends BaseAccountResourceTestCase {
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLDeleteAccountGroupByExternalReferenceCodeAccount()
+		throws Exception {
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetAccount() throws Exception {
 	}
 

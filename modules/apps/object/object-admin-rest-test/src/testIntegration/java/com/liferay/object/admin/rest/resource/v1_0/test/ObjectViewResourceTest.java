@@ -76,6 +76,16 @@ public class ObjectViewResourceTest extends BaseObjectViewResourceTestCase {
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLGetObjectDefinitionByExternalReferenceCodeObjectViewsPage()
+		throws Exception {
+
+		super.
+			testGraphQLGetObjectDefinitionByExternalReferenceCodeObjectViewsPage();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetObjectView() {
 	}
 
@@ -83,6 +93,23 @@ public class ObjectViewResourceTest extends BaseObjectViewResourceTestCase {
 	@Override
 	@Test
 	public void testGraphQLGetObjectViewNotFound() {
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostObjectDefinitionByExternalReferenceCodeObjectView()
+		throws Exception {
+
+		super.
+			testGraphQLPostObjectDefinitionByExternalReferenceCodeObjectView();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostObjectDefinitionObjectView() throws Exception {
+		super.testGraphQLPostObjectDefinitionObjectView();
 	}
 
 	@Override

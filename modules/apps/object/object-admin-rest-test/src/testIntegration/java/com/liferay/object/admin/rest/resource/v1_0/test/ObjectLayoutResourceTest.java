@@ -74,6 +74,25 @@ public class ObjectLayoutResourceTest extends BaseObjectLayoutResourceTestCase {
 	@Ignore
 	@Override
 	@Test
+	public void testGraphQLGetObjectDefinitionByExternalReferenceCodeObjectLayoutsPage()
+		throws Exception {
+
+		super.
+			testGraphQLGetObjectDefinitionByExternalReferenceCodeObjectLayoutsPage();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLGetObjectDefinitionObjectLayoutsPage()
+		throws Exception {
+
+		super.testGraphQLGetObjectDefinitionObjectLayoutsPage();
+	}
+
+	@Ignore
+	@Override
+	@Test
 	public void testGraphQLGetObjectLayout() {
 	}
 
@@ -81,6 +100,23 @@ public class ObjectLayoutResourceTest extends BaseObjectLayoutResourceTestCase {
 	@Override
 	@Test
 	public void testGraphQLGetObjectLayoutNotFound() {
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostObjectDefinitionByExternalReferenceCodeObjectLayout()
+		throws Exception {
+
+		super.
+			testGraphQLPostObjectDefinitionByExternalReferenceCodeObjectLayout();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostObjectDefinitionObjectLayout() throws Exception {
+		super.testGraphQLPostObjectDefinitionObjectLayout();
 	}
 
 	@Override

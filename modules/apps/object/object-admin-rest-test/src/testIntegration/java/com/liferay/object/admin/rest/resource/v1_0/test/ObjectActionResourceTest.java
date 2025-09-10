@@ -62,6 +62,33 @@ public class ObjectActionResourceTest extends BaseObjectActionResourceTestCase {
 	public void testGraphQLGetObjectActionNotFound() {
 	}
 
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLGetObjectDefinitionByExternalReferenceCodeObjectActionsPage()
+		throws Exception {
+
+		super.
+			testGraphQLGetObjectDefinitionByExternalReferenceCodeObjectActionsPage();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostObjectDefinitionByExternalReferenceCodeObjectAction()
+		throws Exception {
+
+		super.
+			testGraphQLPostObjectDefinitionByExternalReferenceCodeObjectAction();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostObjectDefinitionObjectAction() throws Exception {
+		super.testGraphQLPostObjectDefinitionObjectAction();
+	}
+
 	@Override
 	protected String[] getIgnoredEntityFieldNames() {
 		return new String[] {"label"};

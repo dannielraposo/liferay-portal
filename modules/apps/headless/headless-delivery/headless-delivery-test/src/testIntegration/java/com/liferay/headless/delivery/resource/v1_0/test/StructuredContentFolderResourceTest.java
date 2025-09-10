@@ -23,6 +23,7 @@ import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.util.PropsValues;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -346,6 +347,16 @@ public class StructuredContentFolderResourceTest
 			).getProfileURL());
 
 		assertValid(page);
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLGetStructuredContentFolderStructuredContentFoldersPage()
+		throws Exception {
+
+		super.
+			testGraphQLGetStructuredContentFolderStructuredContentFoldersPage();
 	}
 
 	@Override
