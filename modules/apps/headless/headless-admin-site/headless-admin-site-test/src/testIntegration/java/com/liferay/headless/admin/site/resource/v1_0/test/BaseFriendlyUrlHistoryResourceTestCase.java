@@ -183,7 +183,7 @@ public abstract class BaseFriendlyUrlHistoryResourceTestCase {
 	public void testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFriendlyUrlHistory()
 		throws Exception {
 
-		Assert.assertTrue(true);
+		Assert.assertTrue(false);
 	}
 
 	@Test
@@ -204,7 +204,7 @@ public abstract class BaseFriendlyUrlHistoryResourceTestCase {
 	public void testGraphQLGetSiteSiteByExternalReferenceCodeSitePageFriendlyUrlHistory()
 		throws Exception {
 
-		Assert.assertTrue(true);
+		Assert.assertTrue(false);
 	}
 
 	@Test
@@ -225,7 +225,7 @@ public abstract class BaseFriendlyUrlHistoryResourceTestCase {
 	public void testGraphQLGetSiteSiteByExternalReferenceCodeUtilityPageFriendlyUrlHistory()
 		throws Exception {
 
-		Assert.assertTrue(true);
+		Assert.assertTrue(false);
 	}
 
 	@Test
