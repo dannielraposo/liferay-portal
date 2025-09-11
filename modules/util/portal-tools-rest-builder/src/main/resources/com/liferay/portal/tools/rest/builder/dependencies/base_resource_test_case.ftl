@@ -2113,27 +2113,22 @@ public abstract class Base${schemaName}ResourceTestCase {
 			<#assign
 				generateCustomAdderMethod = false
 				getterJavaMethodParametersMap = {}
-				postJavaMethodSignature = ""
-				propertyName = freeMarkerTool.getGraphQLPropertyName(javaMethodSignature, javaMethodSignatures)
+				graphQLPropertyName = freeMarkerTool.getGraphQLPropertyName(javaMethodSignature, javaMethodSignatures)
 			/>
 
-			<#if freeMarkerTool.hasJavaMethodSignature(javaMethodSignatures, "post" + parentSchemaName + schemaName)>
-				<#assign postJavaMethodSignature = freeMarkerTool.getJavaMethodSignature(javaMethodSignatures, "post" + parentSchemaName + schemaName) />
-			<#elseif stringUtil.equals(parentSchemaName, "") && freeMarkerTool.hasJavaMethodSignature(javaMethodSignatures, "postSite" + schemaName)>
-				<#assign postJavaMethodSignature = freeMarkerTool.getJavaMethodSignature(javaMethodSignatures, "postSite" + schemaName) />
-			</#if>
-
-			<#if postJavaMethodSignature?has_content && (properties?keys?seq_contains("externalReferenceCode") || properties?keys?seq_contains("id") || properties?keys?seq_contains(schemaVarName + "Id"))>
-				<#if javaMethodSignature.methodName?contains("Permission")>
-					@Test
-					public void testGraphQL${javaMethodSignature.methodName?cap_first}() throws Exception {
+			@Test
+			public void testGraphQL${javaMethodSignature.methodName?cap_first}() throws Exception {
+				<#if !(properties?keys?seq_contains("externalReferenceCode") || properties?keys?seq_contains("id") || properties?keys?seq_contains(schemaVarName + "Id"))>
+					Assert.assertTrue(false);
+				<#else>
+					<#if javaMethodSignature.methodName?contains("Permission")>
 						<#assign generateTestGraphQLAddMethod = true />
 
 						@SuppressWarnings("PMD.UnusedLocalVariable")
 						${schemaName} post${schemaName} = testGraphQL${javaMethodSignature.methodName?cap_first}_add${schemaName}();
 
 						GraphQLField graphQLField = new GraphQLField(
-							"${propertyName}",
+							"${graphQLPropertyName}",
 							new HashMap<String, Object>() {
 								{
 									<@getGraphQLMethodParameters
@@ -2146,26 +2141,33 @@ public abstract class Base${schemaName}ResourceTestCase {
 							new GraphQLField("page"),
 							new GraphQLField("totalCount"));
 
-						JSONObject ${propertyName}JSONObject = JSONUtil.getValueAsJSONObject(
+						JSONObject ${graphQLPropertyName}JSONObject = JSONUtil.getValueAsJSONObject(
 							invokeGraphQLQuery(graphQLField),
 							"JSONObject/data",
-							"JSONObject/${propertyName}");
+							"JSONObject/${graphQLPropertyName}");
 
-						Assert.assertNotNull(${propertyName}JSONObject);
-					}
-				<#elseif !javaMethodSignature.methodName?contains("Permission")>
-					<#if !(postJavaMethodSignature.pathJavaMethodParameters?map(pathParameter -> pathParameter.parameterName)?join(",") == javaMethodSignature.pathJavaMethodParameters?map(pathParameter -> pathParameter.parameterName)?join(","))>
-						<#assign generateCustomAdderMethod = true />
-					</#if>
+						Assert.assertNotNull(${graphQLPropertyName}JSONObject);
+					<#elseif !javaMethodSignature.methodName?contains("Permission")>
+						<#assign postJavaMethodSignature = "" />
 
-					@Test
-					public void testGraphQL${javaMethodSignature.methodName?cap_first}() throws Exception {
+						<#if freeMarkerTool.hasJavaMethodSignature(javaMethodSignatures, "post" + parentSchemaName + schemaName)>
+							<#assign postJavaMethodSignature = freeMarkerTool.getJavaMethodSignature(javaMethodSignatures, "post" + parentSchemaName + schemaName) />
+						<#elseif stringUtil.equals(parentSchemaName, "") && freeMarkerTool.hasJavaMethodSignature(javaMethodSignatures, "postSite" + schemaName)>
+							<#assign postJavaMethodSignature = freeMarkerTool.getJavaMethodSignature(javaMethodSignatures, "postSite" + schemaName) />
+						</#if>
+
+						<#if postJavaMethodSignature?has_content>
+							<#if !(postJavaMethodSignature.pathJavaMethodParameters?map(pathParameter -> pathParameter.parameterName)?join(",") == javaMethodSignature.pathJavaMethodParameters?map(pathParameter -> pathParameter.parameterName)?join(","))>
+								<#assign generateCustomAdderMethod = true />
+							</#if>
+						</#if>
+
 						<#list javaMethodSignature.pathJavaMethodParameters as javaMethodParameter>
 							${javaMethodParameter.parameterType} ${javaMethodParameter.parameterName} = test${javaMethodSignature.methodName?cap_first}_get${javaMethodParameter.parameterName?cap_first}();
 						</#list>
 
 						GraphQLField graphQLField = new GraphQLField(
-							"${propertyName}",
+							"${graphQLPropertyName}",
 							new HashMap<String, Object>() {
 								{
 									<#list javaMethodSignature.javaMethodParameters as javaMethodParameter>
@@ -2208,12 +2210,12 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 						// No namespace
 
-						JSONObject ${propertyName}JSONObject = JSONUtil.getValueAsJSONObject(
+						JSONObject ${graphQLPropertyName}JSONObject = JSONUtil.getValueAsJSONObject(
 							invokeGraphQLQuery(graphQLField),
 							"JSONObject/data",
-							"JSONObject/${propertyName}");
+							"JSONObject/${graphQLPropertyName}");
 
-						long totalCount = ${propertyName}JSONObject.getLong("totalCount");
+						long totalCount = ${graphQLPropertyName}JSONObject.getLong("totalCount");
 
 						<#if !generateCustomAdderMethod>
 							<#assign generateSchemaGraphQLAddMethod = true />
@@ -2237,45 +2239,45 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 							random${schemaName}());
 
-						${propertyName}JSONObject = JSONUtil.getValueAsJSONObject(
+						${graphQLPropertyName}JSONObject = JSONUtil.getValueAsJSONObject(
 							invokeGraphQLQuery(graphQLField),
 							"JSONObject/data",
-							"JSONObject/${propertyName}");
+							"JSONObject/${graphQLPropertyName}");
 
-						Assert.assertEquals(totalCount + 2, ${propertyName}JSONObject.getLong("totalCount"));
+						Assert.assertEquals(totalCount + 2, ${graphQLPropertyName}JSONObject.getLong("totalCount"));
 
-						assertContains(${schemaVarName}1, Arrays.asList(${schemaName}SerDes.toDTOs(${propertyName}JSONObject.getString("items"))));
-						assertContains(${schemaVarName}2, Arrays.asList(${schemaName}SerDes.toDTOs(${propertyName}JSONObject.getString("items"))));
+						assertContains(${schemaVarName}1, Arrays.asList(${schemaName}SerDes.toDTOs(${graphQLPropertyName}JSONObject.getString("items"))));
+						assertContains(${schemaVarName}2, Arrays.asList(${schemaName}SerDes.toDTOs(${graphQLPropertyName}JSONObject.getString("items"))));
 
 						<#if freeMarkerTool.isVersionCompatible(configYAML, 5)>
 
 							// Using the namespace ${graphQLNamespace}
 
-							${propertyName}JSONObject = JSONUtil.getValueAsJSONObject(
+							${graphQLPropertyName}JSONObject = JSONUtil.getValueAsJSONObject(
 								invokeGraphQLQuery(new GraphQLField("${graphQLNamespace}", graphQLField)),
 								"JSONObject/data",
 								"JSONObject/${graphQLNamespace}",
-								"JSONObject/${propertyName}");
+								"JSONObject/${graphQLPropertyName}");
 
-							Assert.assertEquals(totalCount + 2, ${propertyName}JSONObject.getLong("totalCount"));
+							Assert.assertEquals(totalCount + 2, ${graphQLPropertyName}JSONObject.getLong("totalCount"));
 
-							assertContains(${schemaVarName}1, Arrays.asList(${schemaName}SerDes.toDTOs(${propertyName}JSONObject.getString("items"))));
-							assertContains(${schemaVarName}2, Arrays.asList(${schemaName}SerDes.toDTOs(${propertyName}JSONObject.getString("items"))));
+							assertContains(${schemaVarName}1, Arrays.asList(${schemaName}SerDes.toDTOs(${graphQLPropertyName}JSONObject.getString("items"))));
+							assertContains(${schemaVarName}2, Arrays.asList(${schemaName}SerDes.toDTOs(${graphQLPropertyName}JSONObject.getString("items"))));
 						</#if>
-					}
+					</#if>
 				</#if>
+			}
 
-				<#if generateCustomAdderMethod>
-					protected ${schemaName} testGraphQL${javaMethodSignature.methodName?cap_first}${parentSchemaName}${schemaName}_add${schemaName}(
-						<#list javaMethodSignature.pathJavaMethodParameters as javaMethodParameter>
-							${javaMethodParameter.parameterType} ${javaMethodParameter.parameterName},
-						</#list>
+			<#if generateCustomAdderMethod>
+				protected ${schemaName} testGraphQL${javaMethodSignature.methodName?cap_first}${parentSchemaName}${schemaName}_add${schemaName}(
+					<#list javaMethodSignature.pathJavaMethodParameters as javaMethodParameter>
+						${javaMethodParameter.parameterType} ${javaMethodParameter.parameterName},
+					</#list>
 
-						${schemaName} ${schemaVarName}
-					) throws Exception {
-						throw new UnsupportedOperationException("This method needs to be implemented");
-					}
-				</#if>
+					${schemaName} ${schemaVarName}
+				) throws Exception {
+					throw new UnsupportedOperationException("This method needs to be implemented");
+				}
 			</#if>
 
 			<@getTestGetterMethods
@@ -3012,6 +3014,16 @@ public abstract class Base${schemaName}ResourceTestCase {
 				}
 			<#else>
 				protected ${schemaName} testGraphQL${parentSchemaName}${schemaName}_add${schemaName}() throws Exception {
+					throw new UnsupportedOperationException("This method needs to be implemented");
+				}
+
+				protected ${schemaName} testGraphQL${parentSchemaName}${schemaName}_add${schemaName}(
+					<#list postJavaMethodSignature.pathJavaMethodParameters as javaMethodParameter>
+						${javaMethodParameter.parameterType} ${javaMethodParameter.parameterName},
+					</#list>
+
+					${schemaName} ${schemaVarName}
+				) throws Exception {
 					throw new UnsupportedOperationException("This method needs to be implemented");
 				}
 			</#if>
