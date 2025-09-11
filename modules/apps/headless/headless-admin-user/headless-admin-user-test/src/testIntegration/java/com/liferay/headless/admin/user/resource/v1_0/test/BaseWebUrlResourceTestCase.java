@@ -563,6 +563,104 @@ public abstract class BaseWebUrlResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAccountByExternalReferenceCodeWebUrlsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetAccountByExternalReferenceCodeWebUrlsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountByExternalReferenceCodeWebUrls",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject accountByExternalReferenceCodeWebUrlsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountByExternalReferenceCodeWebUrls");
+
+		long totalCount =
+			accountByExternalReferenceCodeWebUrlsJSONObject.getLong(
+				"totalCount");
+
+		WebUrl webUrl1 =
+			testGraphQLGetAccountByExternalReferenceCodeWebUrlsPageAccountWebUrl_addWebUrl(
+				externalReferenceCode, randomWebUrl());
+
+		WebUrl webUrl2 =
+			testGraphQLGetAccountByExternalReferenceCodeWebUrlsPageAccountWebUrl_addWebUrl(
+				externalReferenceCode, randomWebUrl());
+
+		accountByExternalReferenceCodeWebUrlsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountByExternalReferenceCodeWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeWebUrlsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					accountByExternalReferenceCodeWebUrlsJSONObject.getString(
+						"items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					accountByExternalReferenceCodeWebUrlsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		accountByExternalReferenceCodeWebUrlsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/accountByExternalReferenceCodeWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeWebUrlsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					accountByExternalReferenceCodeWebUrlsJSONObject.getString(
+						"items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					accountByExternalReferenceCodeWebUrlsJSONObject.getString(
+						"items"))));
+	}
+
+	protected WebUrl
+			testGraphQLGetAccountByExternalReferenceCodeWebUrlsPageAccountWebUrl_addWebUrl(
+				String externalReferenceCode, WebUrl webUrl)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetAccountWebUrlsPage() throws Exception {
 		Long accountId = testGetAccountWebUrlsPage_getAccountId();
 		Long irrelevantAccountId =
@@ -633,6 +731,85 @@ public abstract class BaseWebUrlResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetAccountWebUrlsPage() throws Exception {
+		Long accountId = testGetAccountWebUrlsPage_getAccountId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountWebUrls",
+			new HashMap<String, Object>() {
+				{
+					put("accountId", accountId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject accountWebUrlsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/accountWebUrls");
+
+		long totalCount = accountWebUrlsJSONObject.getLong("totalCount");
+
+		WebUrl webUrl1 =
+			testGraphQLGetAccountWebUrlsPageAccountWebUrl_addWebUrl(
+				accountId, randomWebUrl());
+
+		WebUrl webUrl2 =
+			testGraphQLGetAccountWebUrlsPageAccountWebUrl_addWebUrl(
+				accountId, randomWebUrl());
+
+		accountWebUrlsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/accountWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2, accountWebUrlsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					accountWebUrlsJSONObject.getString("items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					accountWebUrlsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		accountWebUrlsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/accountWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2, accountWebUrlsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					accountWebUrlsJSONObject.getString("items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					accountWebUrlsJSONObject.getString("items"))));
+	}
+
+	protected WebUrl testGraphQLGetAccountWebUrlsPageAccountWebUrl_addWebUrl(
+			Long accountId, WebUrl webUrl)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -729,6 +906,104 @@ public abstract class BaseWebUrlResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetOrganizationByExternalReferenceCodeWebUrlsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetOrganizationByExternalReferenceCodeWebUrlsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"organizationByExternalReferenceCodeWebUrls",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject organizationByExternalReferenceCodeWebUrlsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/organizationByExternalReferenceCodeWebUrls");
+
+		long totalCount =
+			organizationByExternalReferenceCodeWebUrlsJSONObject.getLong(
+				"totalCount");
+
+		WebUrl webUrl1 =
+			testGraphQLGetOrganizationByExternalReferenceCodeWebUrlsPageOrganizationWebUrl_addWebUrl(
+				externalReferenceCode, randomWebUrl());
+
+		WebUrl webUrl2 =
+			testGraphQLGetOrganizationByExternalReferenceCodeWebUrlsPageOrganizationWebUrl_addWebUrl(
+				externalReferenceCode, randomWebUrl());
+
+		organizationByExternalReferenceCodeWebUrlsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/organizationByExternalReferenceCodeWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationByExternalReferenceCodeWebUrlsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					organizationByExternalReferenceCodeWebUrlsJSONObject.
+						getString("items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					organizationByExternalReferenceCodeWebUrlsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		organizationByExternalReferenceCodeWebUrlsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/organizationByExternalReferenceCodeWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationByExternalReferenceCodeWebUrlsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					organizationByExternalReferenceCodeWebUrlsJSONObject.
+						getString("items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					organizationByExternalReferenceCodeWebUrlsJSONObject.
+						getString("items"))));
+	}
+
+	protected WebUrl
+			testGraphQLGetOrganizationByExternalReferenceCodeWebUrlsPageOrganizationWebUrl_addWebUrl(
+				String externalReferenceCode, WebUrl webUrl)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetOrganizationWebUrlsPage() throws Exception {
 		String organizationId =
 			testGetOrganizationWebUrlsPage_getOrganizationId();
@@ -807,6 +1082,90 @@ public abstract class BaseWebUrlResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetOrganizationWebUrlsPage() throws Exception {
+		String organizationId =
+			testGetOrganizationWebUrlsPage_getOrganizationId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"organizationWebUrls",
+			new HashMap<String, Object>() {
+				{
+					put("organizationId", "\"" + organizationId + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject organizationWebUrlsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/organizationWebUrls");
+
+		long totalCount = organizationWebUrlsJSONObject.getLong("totalCount");
+
+		WebUrl webUrl1 =
+			testGraphQLGetOrganizationWebUrlsPageOrganizationWebUrl_addWebUrl(
+				organizationId, randomWebUrl());
+
+		WebUrl webUrl2 =
+			testGraphQLGetOrganizationWebUrlsPageOrganizationWebUrl_addWebUrl(
+				organizationId, randomWebUrl());
+
+		organizationWebUrlsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/organizationWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationWebUrlsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					organizationWebUrlsJSONObject.getString("items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					organizationWebUrlsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		organizationWebUrlsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/organizationWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationWebUrlsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					organizationWebUrlsJSONObject.getString("items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					organizationWebUrlsJSONObject.getString("items"))));
+	}
+
+	protected WebUrl
+			testGraphQLGetOrganizationWebUrlsPageOrganizationWebUrl_addWebUrl(
+				String organizationId, WebUrl webUrl)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -902,6 +1261,104 @@ public abstract class BaseWebUrlResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetUserAccountByExternalReferenceCodeWebUrlsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetUserAccountByExternalReferenceCodeWebUrlsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"userAccountByExternalReferenceCodeWebUrls",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject userAccountByExternalReferenceCodeWebUrlsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/userAccountByExternalReferenceCodeWebUrls");
+
+		long totalCount =
+			userAccountByExternalReferenceCodeWebUrlsJSONObject.getLong(
+				"totalCount");
+
+		WebUrl webUrl1 =
+			testGraphQLGetUserAccountByExternalReferenceCodeWebUrlsPageUserAccountWebUrl_addWebUrl(
+				externalReferenceCode, randomWebUrl());
+
+		WebUrl webUrl2 =
+			testGraphQLGetUserAccountByExternalReferenceCodeWebUrlsPageUserAccountWebUrl_addWebUrl(
+				externalReferenceCode, randomWebUrl());
+
+		userAccountByExternalReferenceCodeWebUrlsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/userAccountByExternalReferenceCodeWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountByExternalReferenceCodeWebUrlsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					userAccountByExternalReferenceCodeWebUrlsJSONObject.
+						getString("items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					userAccountByExternalReferenceCodeWebUrlsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		userAccountByExternalReferenceCodeWebUrlsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/userAccountByExternalReferenceCodeWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountByExternalReferenceCodeWebUrlsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					userAccountByExternalReferenceCodeWebUrlsJSONObject.
+						getString("items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					userAccountByExternalReferenceCodeWebUrlsJSONObject.
+						getString("items"))));
+	}
+
+	protected WebUrl
+			testGraphQLGetUserAccountByExternalReferenceCodeWebUrlsPageUserAccountWebUrl_addWebUrl(
+				String externalReferenceCode, WebUrl webUrl)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetUserAccountWebUrlsPage() throws Exception {
 		Long userAccountId = testGetUserAccountWebUrlsPage_getUserAccountId();
 		Long irrelevantUserAccountId =
@@ -977,6 +1434,86 @@ public abstract class BaseWebUrlResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetUserAccountWebUrlsPage() throws Exception {
+		Long userAccountId = testGetUserAccountWebUrlsPage_getUserAccountId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"userAccountWebUrls",
+			new HashMap<String, Object>() {
+				{
+					put("userAccountId", userAccountId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject userAccountWebUrlsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userAccountWebUrls");
+
+		long totalCount = userAccountWebUrlsJSONObject.getLong("totalCount");
+
+		WebUrl webUrl1 =
+			testGraphQLGetUserAccountWebUrlsPageUserAccountWebUrl_addWebUrl(
+				userAccountId, randomWebUrl());
+
+		WebUrl webUrl2 =
+			testGraphQLGetUserAccountWebUrlsPageUserAccountWebUrl_addWebUrl(
+				userAccountId, randomWebUrl());
+
+		userAccountWebUrlsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userAccountWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2, userAccountWebUrlsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					userAccountWebUrlsJSONObject.getString("items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					userAccountWebUrlsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		userAccountWebUrlsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/userAccountWebUrls");
+
+		Assert.assertEquals(
+			totalCount + 2, userAccountWebUrlsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			webUrl1,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					userAccountWebUrlsJSONObject.getString("items"))));
+		assertContains(
+			webUrl2,
+			Arrays.asList(
+				WebUrlSerDes.toDTOs(
+					userAccountWebUrlsJSONObject.getString("items"))));
+	}
+
+	protected WebUrl
+			testGraphQLGetUserAccountWebUrlsPageUserAccountWebUrl_addWebUrl(
+				Long userAccountId, WebUrl webUrl)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

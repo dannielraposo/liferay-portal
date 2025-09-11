@@ -436,6 +436,118 @@ public abstract class BaseProductOptionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsPage()
+		throws Exception {
+
+		String channelExternalReferenceCode =
+			testGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsPage_getChannelExternalReferenceCode();
+		String productExternalReferenceCode =
+			testGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsPage_getProductExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"channelExternalReferenceCode",
+						"\"" + channelExternalReferenceCode + "\"");
+					put(
+						"productExternalReferenceCode",
+						"\"" + productExternalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptions");
+
+		long totalCount =
+			channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsJSONObject.
+				getLong("totalCount");
+
+		ProductOption productOption1 =
+			testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsPageProductOption_addProductOption(
+				channelExternalReferenceCode, productExternalReferenceCode,
+				randomProductOption());
+
+		ProductOption productOption2 =
+			testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsPageProductOption_addProductOption(
+				channelExternalReferenceCode, productExternalReferenceCode,
+				randomProductOption());
+
+		channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptions");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			productOption1,
+			Arrays.asList(
+				ProductOptionSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsJSONObject.
+						getString("items"))));
+		assertContains(
+			productOption2,
+			Arrays.asList(
+				ProductOptionSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+				"JSONObject/channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptions");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			productOption1,
+			Arrays.asList(
+				ProductOptionSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsJSONObject.
+						getString("items"))));
+		assertContains(
+			productOption2,
+			Arrays.asList(
+				ProductOptionSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsJSONObject.
+						getString("items"))));
+	}
+
+	protected ProductOption
+			testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeProductOptionsPageProductOption_addProductOption(
+				String channelExternalReferenceCode,
+				String productExternalReferenceCode,
+				ProductOption productOption)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetChannelProductProductOptionsPage() throws Exception {
 		Long channelId = testGetChannelProductProductOptionsPage_getChannelId();
 		Long irrelevantChannelId =
@@ -637,6 +749,102 @@ public abstract class BaseProductOptionResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetChannelProductProductOptionsPage()
+		throws Exception {
+
+		Long channelId = testGetChannelProductProductOptionsPage_getChannelId();
+		Long productId = testGetChannelProductProductOptionsPage_getProductId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelProductProductOptions",
+			new HashMap<String, Object>() {
+				{
+					put("channelId", channelId);
+					put("productId", productId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelProductProductOptionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelProductProductOptions");
+
+		long totalCount = channelProductProductOptionsJSONObject.getLong(
+			"totalCount");
+
+		ProductOption productOption1 =
+			testGraphQLGetChannelProductProductOptionsPageProductProductOption_addProductOption(
+				channelId, productId, randomProductOption());
+
+		ProductOption productOption2 =
+			testGraphQLGetChannelProductProductOptionsPageProductProductOption_addProductOption(
+				channelId, productId, randomProductOption());
+
+		channelProductProductOptionsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelProductProductOptions");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelProductProductOptionsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			productOption1,
+			Arrays.asList(
+				ProductOptionSerDes.toDTOs(
+					channelProductProductOptionsJSONObject.getString(
+						"items"))));
+		assertContains(
+			productOption2,
+			Arrays.asList(
+				ProductOptionSerDes.toDTOs(
+					channelProductProductOptionsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelProductProductOptionsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+			"JSONObject/data",
+			"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+			"JSONObject/channelProductProductOptions");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelProductProductOptionsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			productOption1,
+			Arrays.asList(
+				ProductOptionSerDes.toDTOs(
+					channelProductProductOptionsJSONObject.getString(
+						"items"))));
+		assertContains(
+			productOption2,
+			Arrays.asList(
+				ProductOptionSerDes.toDTOs(
+					channelProductProductOptionsJSONObject.getString(
+						"items"))));
+	}
+
+	protected ProductOption
+			testGraphQLGetChannelProductProductOptionsPageProductProductOption_addProductOption(
+				Long channelId, Long productId, ProductOption productOption)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

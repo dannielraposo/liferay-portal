@@ -319,6 +319,87 @@ public abstract class BaseTaxCategoryResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetTaxCategoriesPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"taxCategories",
+			new HashMap<String, Object>() {
+				{
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject taxCategoriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/taxCategories");
+
+		long totalCount = taxCategoriesJSONObject.getLong("totalCount");
+
+		TaxCategory taxCategory1 =
+			testGraphQLGetTaxCategoriesPageTaxCategory_addTaxCategory(
+				randomTaxCategory());
+
+		TaxCategory taxCategory2 =
+			testGraphQLGetTaxCategoriesPageTaxCategory_addTaxCategory(
+				randomTaxCategory());
+
+		taxCategoriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/taxCategories");
+
+		Assert.assertEquals(
+			totalCount + 2, taxCategoriesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			taxCategory1,
+			Arrays.asList(
+				TaxCategorySerDes.toDTOs(
+					taxCategoriesJSONObject.getString("items"))));
+		assertContains(
+			taxCategory2,
+			Arrays.asList(
+				TaxCategorySerDes.toDTOs(
+					taxCategoriesJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		taxCategoriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminChannel_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminChannel_v1_0",
+			"JSONObject/taxCategories");
+
+		Assert.assertEquals(
+			totalCount + 2, taxCategoriesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			taxCategory1,
+			Arrays.asList(
+				TaxCategorySerDes.toDTOs(
+					taxCategoriesJSONObject.getString("items"))));
+		assertContains(
+			taxCategory2,
+			Arrays.asList(
+				TaxCategorySerDes.toDTOs(
+					taxCategoriesJSONObject.getString("items"))));
+	}
+
+	protected TaxCategory
+			testGraphQLGetTaxCategoriesPageTaxCategory_addTaxCategory(
+				TaxCategory taxCategory)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetTaxCategory() throws Exception {
 		TaxCategory postTaxCategory = testGetTaxCategory_addTaxCategory();
 

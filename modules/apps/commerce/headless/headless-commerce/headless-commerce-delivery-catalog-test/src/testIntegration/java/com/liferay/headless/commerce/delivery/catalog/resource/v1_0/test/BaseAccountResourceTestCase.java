@@ -561,6 +561,88 @@ public abstract class BaseAccountResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelAccountsPage() throws Exception {
+		Long channelId = testGetChannelAccountsPage_getChannelId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelAccounts",
+			new HashMap<String, Object>() {
+				{
+					put("channelId", channelId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelAccounts");
+
+		long totalCount = channelAccountsJSONObject.getLong("totalCount");
+
+		Account account1 = testGraphQLGetChannelAccountsPageAccount_addAccount(
+			channelId, randomAccount());
+
+		Account account2 = testGraphQLGetChannelAccountsPageAccount_addAccount(
+			channelId, randomAccount());
+
+		channelAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2, channelAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			account1,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					channelAccountsJSONObject.getString("items"))));
+		assertContains(
+			account2,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					channelAccountsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+			"JSONObject/data",
+			"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+			"JSONObject/channelAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2, channelAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			account1,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					channelAccountsJSONObject.getString("items"))));
+		assertContains(
+			account2,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					channelAccountsJSONObject.getString("items"))));
+	}
+
+	protected Account testGraphQLGetChannelAccountsPageAccount_addAccount(
+			Long channelId, Account account)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPostChannelAccount() throws Exception {
 		Account randomAccount = randomAccount();
 

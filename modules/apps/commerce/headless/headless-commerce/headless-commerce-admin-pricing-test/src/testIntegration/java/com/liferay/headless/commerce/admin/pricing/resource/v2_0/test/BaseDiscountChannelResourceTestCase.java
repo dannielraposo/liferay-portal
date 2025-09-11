@@ -514,6 +514,108 @@ public abstract class BaseDiscountChannelResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetDiscountByExternalReferenceCodeDiscountChannelsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetDiscountByExternalReferenceCodeDiscountChannelsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"discountByExternalReferenceCodeDiscountChannels",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject discountByExternalReferenceCodeDiscountChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountByExternalReferenceCodeDiscountChannels");
+
+		long totalCount =
+			discountByExternalReferenceCodeDiscountChannelsJSONObject.getLong(
+				"totalCount");
+
+		DiscountChannel discountChannel1 =
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountChannelsPageDiscountDiscountChannel_addDiscountChannel(
+				externalReferenceCode, randomDiscountChannel());
+
+		DiscountChannel discountChannel2 =
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountChannelsPageDiscountDiscountChannel_addDiscountChannel(
+				externalReferenceCode, randomDiscountChannel());
+
+		discountByExternalReferenceCodeDiscountChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountByExternalReferenceCodeDiscountChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountByExternalReferenceCodeDiscountChannelsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			discountChannel1,
+			Arrays.asList(
+				DiscountChannelSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountChannelsJSONObject.
+						getString("items"))));
+		assertContains(
+			discountChannel2,
+			Arrays.asList(
+				DiscountChannelSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountChannelsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		discountByExternalReferenceCodeDiscountChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v2_0",
+				"JSONObject/discountByExternalReferenceCodeDiscountChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountByExternalReferenceCodeDiscountChannelsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			discountChannel1,
+			Arrays.asList(
+				DiscountChannelSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountChannelsJSONObject.
+						getString("items"))));
+		assertContains(
+			discountChannel2,
+			Arrays.asList(
+				DiscountChannelSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountChannelsJSONObject.
+						getString("items"))));
+	}
+
+	protected DiscountChannel
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountChannelsPageDiscountDiscountChannel_addDiscountChannel(
+				String externalReferenceCode, DiscountChannel discountChannel)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetDiscountIdDiscountChannelsPage() throws Exception {
 		Long id = testGetDiscountIdDiscountChannelsPage_getId();
 		Long irrelevantId =
@@ -956,6 +1058,96 @@ public abstract class BaseDiscountChannelResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetDiscountIdDiscountChannelsPage()
+		throws Exception {
+
+		Long id = testGetDiscountIdDiscountChannelsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"discountIdDiscountChannels",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject discountIdDiscountChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountIdDiscountChannels");
+
+		long totalCount = discountIdDiscountChannelsJSONObject.getLong(
+			"totalCount");
+
+		DiscountChannel discountChannel1 =
+			testGraphQLGetDiscountIdDiscountChannelsPageDiscountDiscountChannel_addDiscountChannel(
+				id, randomDiscountChannel());
+
+		DiscountChannel discountChannel2 =
+			testGraphQLGetDiscountIdDiscountChannelsPageDiscountDiscountChannel_addDiscountChannel(
+				id, randomDiscountChannel());
+
+		discountIdDiscountChannelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/discountIdDiscountChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountIdDiscountChannelsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			discountChannel1,
+			Arrays.asList(
+				DiscountChannelSerDes.toDTOs(
+					discountIdDiscountChannelsJSONObject.getString("items"))));
+		assertContains(
+			discountChannel2,
+			Arrays.asList(
+				DiscountChannelSerDes.toDTOs(
+					discountIdDiscountChannelsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		discountIdDiscountChannelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminPricing_v2_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminPricing_v2_0",
+			"JSONObject/discountIdDiscountChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountIdDiscountChannelsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			discountChannel1,
+			Arrays.asList(
+				DiscountChannelSerDes.toDTOs(
+					discountIdDiscountChannelsJSONObject.getString("items"))));
+		assertContains(
+			discountChannel2,
+			Arrays.asList(
+				DiscountChannelSerDes.toDTOs(
+					discountIdDiscountChannelsJSONObject.getString("items"))));
+	}
+
+	protected DiscountChannel
+			testGraphQLGetDiscountIdDiscountChannelsPageDiscountDiscountChannel_addDiscountChannel(
+				Long id, DiscountChannel discountChannel)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

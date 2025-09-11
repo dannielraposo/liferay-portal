@@ -909,6 +909,38 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetObjectEntryFolderPermissionsPage()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		ObjectEntryFolder postObjectEntryFolder =
+			testGraphQLGetObjectEntryFolderPermissionsPage_addObjectEntryFolder();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"objectEntryFolderPermissions",
+			new HashMap<String, Object>() {
+				{
+					put("objectEntryFolderId", postObjectEntryFolder.getId());
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject objectEntryFolderPermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/objectEntryFolderPermissions");
+
+		Assert.assertNotNull(objectEntryFolderPermissionsJSONObject);
+	}
+
+	protected ObjectEntryFolder
+			testGraphQLGetObjectEntryFolderPermissionsPage_addObjectEntryFolder()
+		throws Exception {
+
+		return testGraphQLObjectEntryFolder_addObjectEntryFolder();
+	}
+
+	@Test
 	public void testGetScopeScopeKeyObjectEntryFolderByExternalReferenceCode()
 		throws Exception {
 
@@ -1551,6 +1583,102 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetScopeScopeKeyObjectEntryFoldersPage()
+		throws Exception {
+
+		String scopeKey =
+			testGetScopeScopeKeyObjectEntryFoldersPage_getScopeKey();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"scopeScopeKeyObjectEntryFolders",
+			new HashMap<String, Object>() {
+				{
+					put("scopeKey", "\"" + scopeKey + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject scopeScopeKeyObjectEntryFoldersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/scopeScopeKeyObjectEntryFolders");
+
+		long totalCount = scopeScopeKeyObjectEntryFoldersJSONObject.getLong(
+			"totalCount");
+
+		ObjectEntryFolder objectEntryFolder1 =
+			testGraphQLGetScopeScopeKeyObjectEntryFoldersPageObjectEntryFolder_addObjectEntryFolder(
+				scopeKey, randomObjectEntryFolder());
+
+		ObjectEntryFolder objectEntryFolder2 =
+			testGraphQLGetScopeScopeKeyObjectEntryFoldersPageObjectEntryFolder_addObjectEntryFolder(
+				scopeKey, randomObjectEntryFolder());
+
+		scopeScopeKeyObjectEntryFoldersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/scopeScopeKeyObjectEntryFolders");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			scopeScopeKeyObjectEntryFoldersJSONObject.getLong("totalCount"));
+
+		assertContains(
+			objectEntryFolder1,
+			Arrays.asList(
+				ObjectEntryFolderSerDes.toDTOs(
+					scopeScopeKeyObjectEntryFoldersJSONObject.getString(
+						"items"))));
+		assertContains(
+			objectEntryFolder2,
+			Arrays.asList(
+				ObjectEntryFolderSerDes.toDTOs(
+					scopeScopeKeyObjectEntryFoldersJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessObject_v1_0
+
+		scopeScopeKeyObjectEntryFoldersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessObject_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessObject_v1_0",
+				"JSONObject/scopeScopeKeyObjectEntryFolders");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			scopeScopeKeyObjectEntryFoldersJSONObject.getLong("totalCount"));
+
+		assertContains(
+			objectEntryFolder1,
+			Arrays.asList(
+				ObjectEntryFolderSerDes.toDTOs(
+					scopeScopeKeyObjectEntryFoldersJSONObject.getString(
+						"items"))));
+		assertContains(
+			objectEntryFolder2,
+			Arrays.asList(
+				ObjectEntryFolderSerDes.toDTOs(
+					scopeScopeKeyObjectEntryFoldersJSONObject.getString(
+						"items"))));
+	}
+
+	protected ObjectEntryFolder
+			testGraphQLGetScopeScopeKeyObjectEntryFoldersPageObjectEntryFolder_addObjectEntryFolder(
+				String scopeKey, ObjectEntryFolder objectEntryFolder)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

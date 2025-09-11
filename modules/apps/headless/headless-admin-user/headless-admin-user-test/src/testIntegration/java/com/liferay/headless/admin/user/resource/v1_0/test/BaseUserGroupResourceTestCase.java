@@ -1524,6 +1524,86 @@ public abstract class BaseUserGroupResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetUserUserGroups() throws Exception {
+		Long userAccountId = testGetUserUserGroups_getUserAccountId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"userUserGroups",
+			new HashMap<String, Object>() {
+				{
+					put("userAccountId", userAccountId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject userUserGroupsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userUserGroups");
+
+		long totalCount = userUserGroupsJSONObject.getLong("totalCount");
+
+		UserGroup userGroup1 =
+			testGraphQLGetUserUserGroupsUserAccountUserGroup_addUserGroup(
+				userAccountId, randomUserGroup());
+
+		UserGroup userGroup2 =
+			testGraphQLGetUserUserGroupsUserAccountUserGroup_addUserGroup(
+				userAccountId, randomUserGroup());
+
+		userUserGroupsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userUserGroups");
+
+		Assert.assertEquals(
+			totalCount + 2, userUserGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			userGroup1,
+			Arrays.asList(
+				UserGroupSerDes.toDTOs(
+					userUserGroupsJSONObject.getString("items"))));
+		assertContains(
+			userGroup2,
+			Arrays.asList(
+				UserGroupSerDes.toDTOs(
+					userUserGroupsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		userUserGroupsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/userUserGroups");
+
+		Assert.assertEquals(
+			totalCount + 2, userUserGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			userGroup1,
+			Arrays.asList(
+				UserGroupSerDes.toDTOs(
+					userUserGroupsJSONObject.getString("items"))));
+		assertContains(
+			userGroup2,
+			Arrays.asList(
+				UserGroupSerDes.toDTOs(
+					userUserGroupsJSONObject.getString("items"))));
+	}
+
+	protected UserGroup
+			testGraphQLGetUserUserGroupsUserAccountUserGroup_addUserGroup(
+				Long userAccountId, UserGroup userGroup)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPatchUserGroup() throws Exception {
 		UserGroup postUserGroup = testPatchUserGroup_addUserGroup();
 

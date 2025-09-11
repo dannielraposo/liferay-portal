@@ -537,6 +537,110 @@ public abstract class BasePriceModifierCategoryResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPriceModifierByExternalReferenceCodePriceModifierCategoriesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPriceModifierByExternalReferenceCodePriceModifierCategoriesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"priceModifierByExternalReferenceCodePriceModifierCategories",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			priceModifierByExternalReferenceCodePriceModifierCategoriesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/priceModifierByExternalReferenceCodePriceModifierCategories");
+
+		long totalCount =
+			priceModifierByExternalReferenceCodePriceModifierCategoriesJSONObject.
+				getLong("totalCount");
+
+		PriceModifierCategory priceModifierCategory1 =
+			testGraphQLGetPriceModifierByExternalReferenceCodePriceModifierCategoriesPagePriceModifierPriceModifierCategory_addPriceModifierCategory(
+				externalReferenceCode, randomPriceModifierCategory());
+
+		PriceModifierCategory priceModifierCategory2 =
+			testGraphQLGetPriceModifierByExternalReferenceCodePriceModifierCategoriesPagePriceModifierPriceModifierCategory_addPriceModifierCategory(
+				externalReferenceCode, randomPriceModifierCategory());
+
+		priceModifierByExternalReferenceCodePriceModifierCategoriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceModifierByExternalReferenceCodePriceModifierCategories");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceModifierByExternalReferenceCodePriceModifierCategoriesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			priceModifierCategory1,
+			Arrays.asList(
+				PriceModifierCategorySerDes.toDTOs(
+					priceModifierByExternalReferenceCodePriceModifierCategoriesJSONObject.
+						getString("items"))));
+		assertContains(
+			priceModifierCategory2,
+			Arrays.asList(
+				PriceModifierCategorySerDes.toDTOs(
+					priceModifierByExternalReferenceCodePriceModifierCategoriesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		priceModifierByExternalReferenceCodePriceModifierCategoriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v2_0",
+				"JSONObject/priceModifierByExternalReferenceCodePriceModifierCategories");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceModifierByExternalReferenceCodePriceModifierCategoriesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			priceModifierCategory1,
+			Arrays.asList(
+				PriceModifierCategorySerDes.toDTOs(
+					priceModifierByExternalReferenceCodePriceModifierCategoriesJSONObject.
+						getString("items"))));
+		assertContains(
+			priceModifierCategory2,
+			Arrays.asList(
+				PriceModifierCategorySerDes.toDTOs(
+					priceModifierByExternalReferenceCodePriceModifierCategoriesJSONObject.
+						getString("items"))));
+	}
+
+	protected PriceModifierCategory
+			testGraphQLGetPriceModifierByExternalReferenceCodePriceModifierCategoriesPagePriceModifierPriceModifierCategory_addPriceModifierCategory(
+				String externalReferenceCode,
+				PriceModifierCategory priceModifierCategory)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetPriceModifierIdPriceModifierCategoriesPage()
 		throws Exception {
 
@@ -1020,6 +1124,106 @@ public abstract class BasePriceModifierCategoryResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetPriceModifierIdPriceModifierCategoriesPage()
+		throws Exception {
+
+		Long id = testGetPriceModifierIdPriceModifierCategoriesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"priceModifierIdPriceModifierCategories",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject priceModifierIdPriceModifierCategoriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceModifierIdPriceModifierCategories");
+
+		long totalCount =
+			priceModifierIdPriceModifierCategoriesJSONObject.getLong(
+				"totalCount");
+
+		PriceModifierCategory priceModifierCategory1 =
+			testGraphQLGetPriceModifierIdPriceModifierCategoriesPagePriceModifierPriceModifierCategory_addPriceModifierCategory(
+				id, randomPriceModifierCategory());
+
+		PriceModifierCategory priceModifierCategory2 =
+			testGraphQLGetPriceModifierIdPriceModifierCategoriesPagePriceModifierPriceModifierCategory_addPriceModifierCategory(
+				id, randomPriceModifierCategory());
+
+		priceModifierIdPriceModifierCategoriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceModifierIdPriceModifierCategories");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceModifierIdPriceModifierCategoriesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			priceModifierCategory1,
+			Arrays.asList(
+				PriceModifierCategorySerDes.toDTOs(
+					priceModifierIdPriceModifierCategoriesJSONObject.getString(
+						"items"))));
+		assertContains(
+			priceModifierCategory2,
+			Arrays.asList(
+				PriceModifierCategorySerDes.toDTOs(
+					priceModifierIdPriceModifierCategoriesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		priceModifierIdPriceModifierCategoriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v2_0",
+				"JSONObject/priceModifierIdPriceModifierCategories");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceModifierIdPriceModifierCategoriesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			priceModifierCategory1,
+			Arrays.asList(
+				PriceModifierCategorySerDes.toDTOs(
+					priceModifierIdPriceModifierCategoriesJSONObject.getString(
+						"items"))));
+		assertContains(
+			priceModifierCategory2,
+			Arrays.asList(
+				PriceModifierCategorySerDes.toDTOs(
+					priceModifierIdPriceModifierCategoriesJSONObject.getString(
+						"items"))));
+	}
+
+	protected PriceModifierCategory
+			testGraphQLGetPriceModifierIdPriceModifierCategoriesPagePriceModifierPriceModifierCategory_addPriceModifierCategory(
+				Long id, PriceModifierCategory priceModifierCategory)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

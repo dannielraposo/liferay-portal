@@ -880,6 +880,101 @@ public abstract class BaseCollaboratorResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetObjectEntryFolderCollaboratorsPage()
+		throws Exception {
+
+		Long objectEntryFolderId =
+			testGetObjectEntryFolderCollaboratorsPage_getObjectEntryFolderId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"objectEntryFolderCollaborators",
+			new HashMap<String, Object>() {
+				{
+					put("objectEntryFolderId", objectEntryFolderId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject objectEntryFolderCollaboratorsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/objectEntryFolderCollaborators");
+
+		long totalCount = objectEntryFolderCollaboratorsJSONObject.getLong(
+			"totalCount");
+
+		Collaborator collaborator1 =
+			testGraphQLGetObjectEntryFolderCollaboratorsPageObjectEntryFolderCollaborator_addCollaborator(
+				objectEntryFolderId, randomCollaborator());
+
+		Collaborator collaborator2 =
+			testGraphQLGetObjectEntryFolderCollaboratorsPageObjectEntryFolderCollaborator_addCollaborator(
+				objectEntryFolderId, randomCollaborator());
+
+		objectEntryFolderCollaboratorsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/objectEntryFolderCollaborators");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			objectEntryFolderCollaboratorsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			collaborator1,
+			Arrays.asList(
+				CollaboratorSerDes.toDTOs(
+					objectEntryFolderCollaboratorsJSONObject.getString(
+						"items"))));
+		assertContains(
+			collaborator2,
+			Arrays.asList(
+				CollaboratorSerDes.toDTOs(
+					objectEntryFolderCollaboratorsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessObject_v1_0
+
+		objectEntryFolderCollaboratorsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessObject_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessObject_v1_0",
+				"JSONObject/objectEntryFolderCollaborators");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			objectEntryFolderCollaboratorsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			collaborator1,
+			Arrays.asList(
+				CollaboratorSerDes.toDTOs(
+					objectEntryFolderCollaboratorsJSONObject.getString(
+						"items"))));
+		assertContains(
+			collaborator2,
+			Arrays.asList(
+				CollaboratorSerDes.toDTOs(
+					objectEntryFolderCollaboratorsJSONObject.getString(
+						"items"))));
+	}
+
+	protected Collaborator
+			testGraphQLGetObjectEntryFolderCollaboratorsPageObjectEntryFolderCollaborator_addCollaborator(
+				Long objectEntryFolderId, Collaborator collaborator)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetScopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorByTypeCollaborator()
 		throws Exception {
 
@@ -1309,6 +1404,111 @@ public abstract class BaseCollaboratorResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetScopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsPage()
+		throws Exception {
+
+		String scopeKey =
+			testGetScopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsPage_getScopeKey();
+		String externalReferenceCode =
+			testGetScopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaborators",
+			new HashMap<String, Object>() {
+				{
+					put("scopeKey", "\"" + scopeKey + "\"");
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaborators");
+
+		long totalCount =
+			scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsJSONObject.
+				getLong("totalCount");
+
+		Collaborator collaborator1 =
+			testGraphQLGetScopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsPageCollaborator_addCollaborator(
+				scopeKey, externalReferenceCode, randomCollaborator());
+
+		Collaborator collaborator2 =
+			testGraphQLGetScopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsPageCollaborator_addCollaborator(
+				scopeKey, externalReferenceCode, randomCollaborator());
+
+		scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaborators");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			collaborator1,
+			Arrays.asList(
+				CollaboratorSerDes.toDTOs(
+					scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsJSONObject.
+						getString("items"))));
+		assertContains(
+			collaborator2,
+			Arrays.asList(
+				CollaboratorSerDes.toDTOs(
+					scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessObject_v1_0
+
+		scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessObject_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessObject_v1_0",
+				"JSONObject/scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaborators");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			collaborator1,
+			Arrays.asList(
+				CollaboratorSerDes.toDTOs(
+					scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsJSONObject.
+						getString("items"))));
+		assertContains(
+			collaborator2,
+			Arrays.asList(
+				CollaboratorSerDes.toDTOs(
+					scopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsJSONObject.
+						getString("items"))));
+	}
+
+	protected Collaborator
+			testGraphQLGetScopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsPageCollaborator_addCollaborator(
+				String scopeKey, String externalReferenceCode,
+				Collaborator collaborator)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

@@ -867,6 +867,109 @@ public abstract class BaseOptionValueResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetOptionByExternalReferenceCodeOptionValuesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetOptionByExternalReferenceCodeOptionValuesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"optionByExternalReferenceCodeOptionValues",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject optionByExternalReferenceCodeOptionValuesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/optionByExternalReferenceCodeOptionValues");
+
+		long totalCount =
+			optionByExternalReferenceCodeOptionValuesJSONObject.getLong(
+				"totalCount");
+
+		OptionValue optionValue1 =
+			testGraphQLGetOptionByExternalReferenceCodeOptionValuesPageOptionOptionValue_addOptionValue(
+				externalReferenceCode, randomOptionValue());
+
+		OptionValue optionValue2 =
+			testGraphQLGetOptionByExternalReferenceCodeOptionValuesPageOptionOptionValue_addOptionValue(
+				externalReferenceCode, randomOptionValue());
+
+		optionByExternalReferenceCodeOptionValuesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/optionByExternalReferenceCodeOptionValues");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			optionByExternalReferenceCodeOptionValuesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			optionValue1,
+			Arrays.asList(
+				OptionValueSerDes.toDTOs(
+					optionByExternalReferenceCodeOptionValuesJSONObject.
+						getString("items"))));
+		assertContains(
+			optionValue2,
+			Arrays.asList(
+				OptionValueSerDes.toDTOs(
+					optionByExternalReferenceCodeOptionValuesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		optionByExternalReferenceCodeOptionValuesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/optionByExternalReferenceCodeOptionValues");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			optionByExternalReferenceCodeOptionValuesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			optionValue1,
+			Arrays.asList(
+				OptionValueSerDes.toDTOs(
+					optionByExternalReferenceCodeOptionValuesJSONObject.
+						getString("items"))));
+		assertContains(
+			optionValue2,
+			Arrays.asList(
+				OptionValueSerDes.toDTOs(
+					optionByExternalReferenceCodeOptionValuesJSONObject.
+						getString("items"))));
+	}
+
+	protected OptionValue
+			testGraphQLGetOptionByExternalReferenceCodeOptionValuesPageOptionOptionValue_addOptionValue(
+				String externalReferenceCode, OptionValue optionValue)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetOptionIdOptionValuesPage() throws Exception {
 		Long id = testGetOptionIdOptionValuesPage_getId();
 		Long irrelevantId = testGetOptionIdOptionValuesPage_getIrrelevantId();
@@ -1186,6 +1289,93 @@ public abstract class BaseOptionValueResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetOptionIdOptionValuesPage() throws Exception {
+		Long id = testGetOptionIdOptionValuesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"optionIdOptionValues",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject optionIdOptionValuesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/optionIdOptionValues");
+
+		long totalCount = optionIdOptionValuesJSONObject.getLong("totalCount");
+
+		OptionValue optionValue1 =
+			testGraphQLGetOptionIdOptionValuesPageOptionOptionValue_addOptionValue(
+				id, randomOptionValue());
+
+		OptionValue optionValue2 =
+			testGraphQLGetOptionIdOptionValuesPageOptionOptionValue_addOptionValue(
+				id, randomOptionValue());
+
+		optionIdOptionValuesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/optionIdOptionValues");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			optionIdOptionValuesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			optionValue1,
+			Arrays.asList(
+				OptionValueSerDes.toDTOs(
+					optionIdOptionValuesJSONObject.getString("items"))));
+		assertContains(
+			optionValue2,
+			Arrays.asList(
+				OptionValueSerDes.toDTOs(
+					optionIdOptionValuesJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		optionIdOptionValuesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminCatalog_v1_0",
+			"JSONObject/optionIdOptionValues");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			optionIdOptionValuesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			optionValue1,
+			Arrays.asList(
+				OptionValueSerDes.toDTOs(
+					optionIdOptionValuesJSONObject.getString("items"))));
+		assertContains(
+			optionValue2,
+			Arrays.asList(
+				OptionValueSerDes.toDTOs(
+					optionIdOptionValuesJSONObject.getString("items"))));
+	}
+
+	protected OptionValue
+			testGraphQLGetOptionIdOptionValuesPageOptionOptionValue_addOptionValue(
+				Long id, OptionValue optionValue)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

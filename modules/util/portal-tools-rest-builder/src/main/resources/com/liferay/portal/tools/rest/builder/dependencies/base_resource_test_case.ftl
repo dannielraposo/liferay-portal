@@ -2160,6 +2160,8 @@ public abstract class Base${schemaName}ResourceTestCase {
 							<#if !(postJavaMethodSignature.pathJavaMethodParameters?map(pathParameter -> pathParameter.parameterName)?join(",") == javaMethodSignature.pathJavaMethodParameters?map(pathParameter -> pathParameter.parameterName)?join(","))>
 								<#assign generateCustomAdderMethod = true />
 							</#if>
+						<#else>
+							<#assign generateCustomAdderMethod = true />
 						</#if>
 
 						<#list javaMethodSignature.pathJavaMethodParameters as javaMethodParameter>
@@ -3014,16 +3016,6 @@ public abstract class Base${schemaName}ResourceTestCase {
 				}
 			<#else>
 				protected ${schemaName} testGraphQL${parentSchemaName}${schemaName}_add${schemaName}() throws Exception {
-					throw new UnsupportedOperationException("This method needs to be implemented");
-				}
-
-				protected ${schemaName} testGraphQL${parentSchemaName}${schemaName}_add${schemaName}(
-					<#list postJavaMethodSignature.pathJavaMethodParameters as javaMethodParameter>
-						${javaMethodParameter.parameterType} ${javaMethodParameter.parameterName},
-					</#list>
-
-					${schemaName} ${schemaVarName}
-				) throws Exception {
 					throw new UnsupportedOperationException("This method needs to be implemented");
 				}
 			</#if>

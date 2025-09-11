@@ -366,6 +366,96 @@ public abstract class BaseCategoryResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelProductCategoriesPage() throws Exception {
+		Long channelId = testGetChannelProductCategoriesPage_getChannelId();
+		Long productId = testGetChannelProductCategoriesPage_getProductId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelProductCategories",
+			new HashMap<String, Object>() {
+				{
+					put("channelId", channelId);
+					put("productId", productId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelProductCategoriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelProductCategories");
+
+		long totalCount = channelProductCategoriesJSONObject.getLong(
+			"totalCount");
+
+		Category category1 =
+			testGraphQLGetChannelProductCategoriesPageProductCategory_addCategory(
+				channelId, productId, randomCategory());
+
+		Category category2 =
+			testGraphQLGetChannelProductCategoriesPageProductCategory_addCategory(
+				channelId, productId, randomCategory());
+
+		channelProductCategoriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelProductCategories");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelProductCategoriesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			category1,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					channelProductCategoriesJSONObject.getString("items"))));
+		assertContains(
+			category2,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					channelProductCategoriesJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelProductCategoriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+			"JSONObject/data",
+			"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+			"JSONObject/channelProductCategories");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelProductCategoriesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			category1,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					channelProductCategoriesJSONObject.getString("items"))));
+		assertContains(
+			category2,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					channelProductCategoriesJSONObject.getString("items"))));
+	}
+
+	protected Category
+			testGraphQLGetChannelProductCategoriesPageProductCategory_addCategory(
+				Long channelId, Long productId, Category category)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

@@ -889,6 +889,106 @@ public abstract class BaseAvailabilityEstimateResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCommerceAdminSiteSettingGroupAvailabilityEstimatePage()
+		throws Exception {
+
+		Long groupId =
+			testGetCommerceAdminSiteSettingGroupAvailabilityEstimatePage_getGroupId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"commerceAdminSettingGroupAvailabilityEstimate",
+			new HashMap<String, Object>() {
+				{
+					put("groupId", groupId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject commerceAdminSettingGroupAvailabilityEstimateJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/commerceAdminSettingGroupAvailabilityEstimate");
+
+		long totalCount =
+			commerceAdminSettingGroupAvailabilityEstimateJSONObject.getLong(
+				"totalCount");
+
+		AvailabilityEstimate availabilityEstimate1 =
+			testGraphQLGetCommerceAdminSiteSettingGroupAvailabilityEstimatePageAvailabilityEstimate_addAvailabilityEstimate(
+				groupId, randomAvailabilityEstimate());
+
+		AvailabilityEstimate availabilityEstimate2 =
+			testGraphQLGetCommerceAdminSiteSettingGroupAvailabilityEstimatePageAvailabilityEstimate_addAvailabilityEstimate(
+				groupId, randomAvailabilityEstimate());
+
+		commerceAdminSettingGroupAvailabilityEstimateJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/commerceAdminSettingGroupAvailabilityEstimate");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			commerceAdminSettingGroupAvailabilityEstimateJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			availabilityEstimate1,
+			Arrays.asList(
+				AvailabilityEstimateSerDes.toDTOs(
+					commerceAdminSettingGroupAvailabilityEstimateJSONObject.
+						getString("items"))));
+		assertContains(
+			availabilityEstimate2,
+			Arrays.asList(
+				AvailabilityEstimateSerDes.toDTOs(
+					commerceAdminSettingGroupAvailabilityEstimateJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminSiteSetting_v1_0
+
+		commerceAdminSettingGroupAvailabilityEstimateJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminSiteSetting_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminSiteSetting_v1_0",
+				"JSONObject/commerceAdminSettingGroupAvailabilityEstimate");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			commerceAdminSettingGroupAvailabilityEstimateJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			availabilityEstimate1,
+			Arrays.asList(
+				AvailabilityEstimateSerDes.toDTOs(
+					commerceAdminSettingGroupAvailabilityEstimateJSONObject.
+						getString("items"))));
+		assertContains(
+			availabilityEstimate2,
+			Arrays.asList(
+				AvailabilityEstimateSerDes.toDTOs(
+					commerceAdminSettingGroupAvailabilityEstimateJSONObject.
+						getString("items"))));
+	}
+
+	protected AvailabilityEstimate
+			testGraphQLGetCommerceAdminSiteSettingGroupAvailabilityEstimatePageAvailabilityEstimate_addAvailabilityEstimate(
+				Long groupId, AvailabilityEstimate availabilityEstimate)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPostCommerceAdminSiteSettingGroupAvailabilityEstimate()
 		throws Exception {
 

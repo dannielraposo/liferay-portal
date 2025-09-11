@@ -514,6 +514,107 @@ public abstract class BaseOrderRuleAccountResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetOrderRuleByExternalReferenceCodeOrderRuleAccountsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetOrderRuleByExternalReferenceCodeOrderRuleAccountsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"orderRuleByExternalReferenceCodeOrderRuleAccounts",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject orderRuleByExternalReferenceCodeOrderRuleAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/orderRuleByExternalReferenceCodeOrderRuleAccounts");
+
+		long totalCount =
+			orderRuleByExternalReferenceCodeOrderRuleAccountsJSONObject.getLong(
+				"totalCount");
+
+		OrderRuleAccount orderRuleAccount1 =
+			testGraphQLGetOrderRuleByExternalReferenceCodeOrderRuleAccountsPageOrderRuleOrderRuleAccount_addOrderRuleAccount(
+				externalReferenceCode, randomOrderRuleAccount());
+
+		OrderRuleAccount orderRuleAccount2 =
+			testGraphQLGetOrderRuleByExternalReferenceCodeOrderRuleAccountsPageOrderRuleOrderRuleAccount_addOrderRuleAccount(
+				externalReferenceCode, randomOrderRuleAccount());
+
+		orderRuleByExternalReferenceCodeOrderRuleAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/orderRuleByExternalReferenceCodeOrderRuleAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderRuleByExternalReferenceCodeOrderRuleAccountsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			orderRuleAccount1,
+			Arrays.asList(
+				OrderRuleAccountSerDes.toDTOs(
+					orderRuleByExternalReferenceCodeOrderRuleAccountsJSONObject.
+						getString("items"))));
+		assertContains(
+			orderRuleAccount2,
+			Arrays.asList(
+				OrderRuleAccountSerDes.toDTOs(
+					orderRuleByExternalReferenceCodeOrderRuleAccountsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		orderRuleByExternalReferenceCodeOrderRuleAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminOrder_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessCommerceAdminOrder_v1_0",
+				"JSONObject/orderRuleByExternalReferenceCodeOrderRuleAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderRuleByExternalReferenceCodeOrderRuleAccountsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			orderRuleAccount1,
+			Arrays.asList(
+				OrderRuleAccountSerDes.toDTOs(
+					orderRuleByExternalReferenceCodeOrderRuleAccountsJSONObject.
+						getString("items"))));
+		assertContains(
+			orderRuleAccount2,
+			Arrays.asList(
+				OrderRuleAccountSerDes.toDTOs(
+					orderRuleByExternalReferenceCodeOrderRuleAccountsJSONObject.
+						getString("items"))));
+	}
+
+	protected OrderRuleAccount
+			testGraphQLGetOrderRuleByExternalReferenceCodeOrderRuleAccountsPageOrderRuleOrderRuleAccount_addOrderRuleAccount(
+				String externalReferenceCode, OrderRuleAccount orderRuleAccount)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetOrderRuleIdOrderRuleAccountsPage() throws Exception {
 		Long id = testGetOrderRuleIdOrderRuleAccountsPage_getId();
 		Long irrelevantId =
@@ -957,6 +1058,100 @@ public abstract class BaseOrderRuleAccountResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetOrderRuleIdOrderRuleAccountsPage()
+		throws Exception {
+
+		Long id = testGetOrderRuleIdOrderRuleAccountsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"orderRuleIdOrderRuleAccounts",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject orderRuleIdOrderRuleAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/orderRuleIdOrderRuleAccounts");
+
+		long totalCount = orderRuleIdOrderRuleAccountsJSONObject.getLong(
+			"totalCount");
+
+		OrderRuleAccount orderRuleAccount1 =
+			testGraphQLGetOrderRuleIdOrderRuleAccountsPageOrderRuleOrderRuleAccount_addOrderRuleAccount(
+				id, randomOrderRuleAccount());
+
+		OrderRuleAccount orderRuleAccount2 =
+			testGraphQLGetOrderRuleIdOrderRuleAccountsPageOrderRuleOrderRuleAccount_addOrderRuleAccount(
+				id, randomOrderRuleAccount());
+
+		orderRuleIdOrderRuleAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/orderRuleIdOrderRuleAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderRuleIdOrderRuleAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			orderRuleAccount1,
+			Arrays.asList(
+				OrderRuleAccountSerDes.toDTOs(
+					orderRuleIdOrderRuleAccountsJSONObject.getString(
+						"items"))));
+		assertContains(
+			orderRuleAccount2,
+			Arrays.asList(
+				OrderRuleAccountSerDes.toDTOs(
+					orderRuleIdOrderRuleAccountsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		orderRuleIdOrderRuleAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminOrder_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminOrder_v1_0",
+			"JSONObject/orderRuleIdOrderRuleAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderRuleIdOrderRuleAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			orderRuleAccount1,
+			Arrays.asList(
+				OrderRuleAccountSerDes.toDTOs(
+					orderRuleIdOrderRuleAccountsJSONObject.getString(
+						"items"))));
+		assertContains(
+			orderRuleAccount2,
+			Arrays.asList(
+				OrderRuleAccountSerDes.toDTOs(
+					orderRuleIdOrderRuleAccountsJSONObject.getString(
+						"items"))));
+	}
+
+	protected OrderRuleAccount
+			testGraphQLGetOrderRuleIdOrderRuleAccountsPageOrderRuleOrderRuleAccount_addOrderRuleAccount(
+				Long id, OrderRuleAccount orderRuleAccount)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

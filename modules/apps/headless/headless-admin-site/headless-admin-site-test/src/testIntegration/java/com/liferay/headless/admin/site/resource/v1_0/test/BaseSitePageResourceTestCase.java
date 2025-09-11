@@ -964,6 +964,107 @@ public abstract class BaseSitePageResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodeSitePagesPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodeSitePagesPage_getSiteExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodeSitePages",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject siteByExternalReferenceCodeSitePagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodeSitePages");
+
+		long totalCount =
+			siteByExternalReferenceCodeSitePagesJSONObject.getLong(
+				"totalCount");
+
+		SitePage sitePage1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeSitePagesPageSiteSitePage_addSitePage(
+				siteExternalReferenceCode, randomSitePage());
+
+		SitePage sitePage2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeSitePagesPageSiteSitePage_addSitePage(
+				siteExternalReferenceCode, randomSitePage());
+
+		siteByExternalReferenceCodeSitePagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodeSitePages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeSitePagesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			sitePage1,
+			Arrays.asList(
+				SitePageSerDes.toDTOs(
+					siteByExternalReferenceCodeSitePagesJSONObject.getString(
+						"items"))));
+		assertContains(
+			sitePage2,
+			Arrays.asList(
+				SitePageSerDes.toDTOs(
+					siteByExternalReferenceCodeSitePagesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodeSitePagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodeSitePages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeSitePagesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			sitePage1,
+			Arrays.asList(
+				SitePageSerDes.toDTOs(
+					siteByExternalReferenceCodeSitePagesJSONObject.getString(
+						"items"))));
+		assertContains(
+			sitePage2,
+			Arrays.asList(
+				SitePageSerDes.toDTOs(
+					siteByExternalReferenceCodeSitePagesJSONObject.getString(
+						"items"))));
+	}
+
+	protected SitePage
+			testGraphQLGetSiteSiteByExternalReferenceCodeSitePagesPageSiteSitePage_addSitePage(
+				String siteExternalReferenceCode, SitePage sitePage)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSiteSitePagePermissionsPage() throws Exception {
 		@SuppressWarnings("PMD.UnusedLocalVariable")
 		SitePage postSitePage =
@@ -981,6 +1082,49 @@ public abstract class BaseSitePageResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetSiteSitePagePermissionsPage() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		SitePage postSitePage =
+			testGraphQLGetSiteSitePagePermissionsPage_addSitePage();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"sitePagePermissions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" +
+							testGraphQLGetSiteSitePagePermissionsPage_getSiteExternalReferenceCode() +
+								"\"");
+					put(
+						"sitePageExternalReferenceCode",
+						"\"" + postSitePage.getExternalReferenceCode() + "\"");
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject sitePagePermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/sitePagePermissions");
+
+		Assert.assertNotNull(sitePagePermissionsJSONObject);
+	}
+
+	protected String
+			testGraphQLGetSiteSitePagePermissionsPage_getSiteExternalReferenceCode()
+		throws Exception {
+
+		return testGroup.getExternalReferenceCode();
+	}
+
+	protected SitePage testGraphQLGetSiteSitePagePermissionsPage_addSitePage()
+		throws Exception {
+
+		return testGraphQLSiteSitePage_addSitePage();
 	}
 
 	@Test

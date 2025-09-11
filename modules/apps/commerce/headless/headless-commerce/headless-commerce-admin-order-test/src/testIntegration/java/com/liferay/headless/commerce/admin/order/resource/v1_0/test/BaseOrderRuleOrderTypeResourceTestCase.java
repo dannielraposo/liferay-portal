@@ -522,6 +522,109 @@ public abstract class BaseOrderRuleOrderTypeResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetOrderRuleByExternalReferenceCodeOrderRuleOrderTypesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetOrderRuleByExternalReferenceCodeOrderRuleOrderTypesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"orderRuleByExternalReferenceCodeOrderRuleOrderTypes",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			orderRuleByExternalReferenceCodeOrderRuleOrderTypesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/orderRuleByExternalReferenceCodeOrderRuleOrderTypes");
+
+		long totalCount =
+			orderRuleByExternalReferenceCodeOrderRuleOrderTypesJSONObject.
+				getLong("totalCount");
+
+		OrderRuleOrderType orderRuleOrderType1 =
+			testGraphQLGetOrderRuleByExternalReferenceCodeOrderRuleOrderTypesPageOrderRuleOrderRuleOrderType_addOrderRuleOrderType(
+				externalReferenceCode, randomOrderRuleOrderType());
+
+		OrderRuleOrderType orderRuleOrderType2 =
+			testGraphQLGetOrderRuleByExternalReferenceCodeOrderRuleOrderTypesPageOrderRuleOrderRuleOrderType_addOrderRuleOrderType(
+				externalReferenceCode, randomOrderRuleOrderType());
+
+		orderRuleByExternalReferenceCodeOrderRuleOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/orderRuleByExternalReferenceCodeOrderRuleOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderRuleByExternalReferenceCodeOrderRuleOrderTypesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			orderRuleOrderType1,
+			Arrays.asList(
+				OrderRuleOrderTypeSerDes.toDTOs(
+					orderRuleByExternalReferenceCodeOrderRuleOrderTypesJSONObject.
+						getString("items"))));
+		assertContains(
+			orderRuleOrderType2,
+			Arrays.asList(
+				OrderRuleOrderTypeSerDes.toDTOs(
+					orderRuleByExternalReferenceCodeOrderRuleOrderTypesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		orderRuleByExternalReferenceCodeOrderRuleOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminOrder_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessCommerceAdminOrder_v1_0",
+				"JSONObject/orderRuleByExternalReferenceCodeOrderRuleOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderRuleByExternalReferenceCodeOrderRuleOrderTypesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			orderRuleOrderType1,
+			Arrays.asList(
+				OrderRuleOrderTypeSerDes.toDTOs(
+					orderRuleByExternalReferenceCodeOrderRuleOrderTypesJSONObject.
+						getString("items"))));
+		assertContains(
+			orderRuleOrderType2,
+			Arrays.asList(
+				OrderRuleOrderTypeSerDes.toDTOs(
+					orderRuleByExternalReferenceCodeOrderRuleOrderTypesJSONObject.
+						getString("items"))));
+	}
+
+	protected OrderRuleOrderType
+			testGraphQLGetOrderRuleByExternalReferenceCodeOrderRuleOrderTypesPageOrderRuleOrderRuleOrderType_addOrderRuleOrderType(
+				String externalReferenceCode,
+				OrderRuleOrderType orderRuleOrderType)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetOrderRuleIdOrderRuleOrderTypesPage() throws Exception {
 		Long id = testGetOrderRuleIdOrderRuleOrderTypesPage_getId();
 		Long irrelevantId =
@@ -725,6 +828,102 @@ public abstract class BaseOrderRuleOrderTypeResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetOrderRuleIdOrderRuleOrderTypesPage()
+		throws Exception {
+
+		Long id = testGetOrderRuleIdOrderRuleOrderTypesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"orderRuleIdOrderRuleOrderTypes",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject orderRuleIdOrderRuleOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/orderRuleIdOrderRuleOrderTypes");
+
+		long totalCount = orderRuleIdOrderRuleOrderTypesJSONObject.getLong(
+			"totalCount");
+
+		OrderRuleOrderType orderRuleOrderType1 =
+			testGraphQLGetOrderRuleIdOrderRuleOrderTypesPageOrderRuleOrderRuleOrderType_addOrderRuleOrderType(
+				id, randomOrderRuleOrderType());
+
+		OrderRuleOrderType orderRuleOrderType2 =
+			testGraphQLGetOrderRuleIdOrderRuleOrderTypesPageOrderRuleOrderRuleOrderType_addOrderRuleOrderType(
+				id, randomOrderRuleOrderType());
+
+		orderRuleIdOrderRuleOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/orderRuleIdOrderRuleOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderRuleIdOrderRuleOrderTypesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			orderRuleOrderType1,
+			Arrays.asList(
+				OrderRuleOrderTypeSerDes.toDTOs(
+					orderRuleIdOrderRuleOrderTypesJSONObject.getString(
+						"items"))));
+		assertContains(
+			orderRuleOrderType2,
+			Arrays.asList(
+				OrderRuleOrderTypeSerDes.toDTOs(
+					orderRuleIdOrderRuleOrderTypesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		orderRuleIdOrderRuleOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminOrder_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessCommerceAdminOrder_v1_0",
+				"JSONObject/orderRuleIdOrderRuleOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderRuleIdOrderRuleOrderTypesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			orderRuleOrderType1,
+			Arrays.asList(
+				OrderRuleOrderTypeSerDes.toDTOs(
+					orderRuleIdOrderRuleOrderTypesJSONObject.getString(
+						"items"))));
+		assertContains(
+			orderRuleOrderType2,
+			Arrays.asList(
+				OrderRuleOrderTypeSerDes.toDTOs(
+					orderRuleIdOrderRuleOrderTypesJSONObject.getString(
+						"items"))));
+	}
+
+	protected OrderRuleOrderType
+			testGraphQLGetOrderRuleIdOrderRuleOrderTypesPageOrderRuleOrderRuleOrderType_addOrderRuleOrderType(
+				Long id, OrderRuleOrderType orderRuleOrderType)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

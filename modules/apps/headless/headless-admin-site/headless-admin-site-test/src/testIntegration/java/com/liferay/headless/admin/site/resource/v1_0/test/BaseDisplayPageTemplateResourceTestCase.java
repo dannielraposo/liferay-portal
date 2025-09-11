@@ -383,6 +383,54 @@ public abstract class BaseDisplayPageTemplateResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteDisplayPageTemplatePermissionsPage()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		DisplayPageTemplate postDisplayPageTemplate =
+			testGraphQLGetSiteDisplayPageTemplatePermissionsPage_addDisplayPageTemplate();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"displayPageTemplatePermissions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" +
+							testGraphQLGetSiteDisplayPageTemplatePermissionsPage_getSiteExternalReferenceCode() +
+								"\"");
+					put(
+						"displayPageTemplateExternalReferenceCode",
+						"\"" +
+							postDisplayPageTemplate.getExternalReferenceCode() +
+								"\"");
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject displayPageTemplatePermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/displayPageTemplatePermissions");
+
+		Assert.assertNotNull(displayPageTemplatePermissionsJSONObject);
+	}
+
+	protected String
+			testGraphQLGetSiteDisplayPageTemplatePermissionsPage_getSiteExternalReferenceCode()
+		throws Exception {
+
+		return testGroup.getExternalReferenceCode();
+	}
+
+	protected DisplayPageTemplate
+			testGraphQLGetSiteDisplayPageTemplatePermissionsPage_addDisplayPageTemplate()
+		throws Exception {
+
+		return testGraphQLSiteDisplayPageTemplate_addDisplayPageTemplate();
+	}
+
+	@Test
 	public void testGetSiteSiteByExternalReferenceCodeDisplayPageTemplate()
 		throws Exception {
 
@@ -685,6 +733,117 @@ public abstract class BaseDisplayPageTemplateResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesPage_getSiteExternalReferenceCode();
+		String displayPageTemplateFolderExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesPage_getDisplayPageTemplateFolderExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplates",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put(
+						"displayPageTemplateFolderExternalReferenceCode",
+						"\"" + displayPageTemplateFolderExternalReferenceCode +
+							"\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplates");
+
+		long totalCount =
+			siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesJSONObject.
+				getLong("totalCount");
+
+		DisplayPageTemplate displayPageTemplate1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesPageSiteDisplayPageTemplate_addDisplayPageTemplate(
+				siteExternalReferenceCode,
+				displayPageTemplateFolderExternalReferenceCode,
+				randomDisplayPageTemplate());
+
+		DisplayPageTemplate displayPageTemplate2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesPageSiteDisplayPageTemplate_addDisplayPageTemplate(
+				siteExternalReferenceCode,
+				displayPageTemplateFolderExternalReferenceCode,
+				randomDisplayPageTemplate());
+
+		siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplates");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			displayPageTemplate1,
+			Arrays.asList(
+				DisplayPageTemplateSerDes.toDTOs(
+					siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesJSONObject.
+						getString("items"))));
+		assertContains(
+			displayPageTemplate2,
+			Arrays.asList(
+				DisplayPageTemplateSerDes.toDTOs(
+					siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplates");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			displayPageTemplate1,
+			Arrays.asList(
+				DisplayPageTemplateSerDes.toDTOs(
+					siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesJSONObject.
+						getString("items"))));
+		assertContains(
+			displayPageTemplate2,
+			Arrays.asList(
+				DisplayPageTemplateSerDes.toDTOs(
+					siteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesJSONObject.
+						getString("items"))));
+	}
+
+	protected DisplayPageTemplate
+			testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplateFolderDisplayPageTemplatesPageSiteDisplayPageTemplate_addDisplayPageTemplate(
+				String siteExternalReferenceCode,
+				String displayPageTemplateFolderExternalReferenceCode,
+				DisplayPageTemplate displayPageTemplate)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -1173,6 +1332,108 @@ public abstract class BaseDisplayPageTemplateResourceTestCase {
 		throws Exception {
 
 		return irrelevantGroup.getExternalReferenceCode();
+	}
+
+	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplatesPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodeDisplayPageTemplatesPage_getSiteExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodeDisplayPageTemplates",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject siteByExternalReferenceCodeDisplayPageTemplatesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodeDisplayPageTemplates");
+
+		long totalCount =
+			siteByExternalReferenceCodeDisplayPageTemplatesJSONObject.getLong(
+				"totalCount");
+
+		DisplayPageTemplate displayPageTemplate1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplatesPageSiteDisplayPageTemplate_addDisplayPageTemplate(
+				siteExternalReferenceCode, randomDisplayPageTemplate());
+
+		DisplayPageTemplate displayPageTemplate2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplatesPageSiteDisplayPageTemplate_addDisplayPageTemplate(
+				siteExternalReferenceCode, randomDisplayPageTemplate());
+
+		siteByExternalReferenceCodeDisplayPageTemplatesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodeDisplayPageTemplates");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeDisplayPageTemplatesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			displayPageTemplate1,
+			Arrays.asList(
+				DisplayPageTemplateSerDes.toDTOs(
+					siteByExternalReferenceCodeDisplayPageTemplatesJSONObject.
+						getString("items"))));
+		assertContains(
+			displayPageTemplate2,
+			Arrays.asList(
+				DisplayPageTemplateSerDes.toDTOs(
+					siteByExternalReferenceCodeDisplayPageTemplatesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodeDisplayPageTemplatesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodeDisplayPageTemplates");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeDisplayPageTemplatesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			displayPageTemplate1,
+			Arrays.asList(
+				DisplayPageTemplateSerDes.toDTOs(
+					siteByExternalReferenceCodeDisplayPageTemplatesJSONObject.
+						getString("items"))));
+		assertContains(
+			displayPageTemplate2,
+			Arrays.asList(
+				DisplayPageTemplateSerDes.toDTOs(
+					siteByExternalReferenceCodeDisplayPageTemplatesJSONObject.
+						getString("items"))));
+	}
+
+	protected DisplayPageTemplate
+			testGraphQLGetSiteSiteByExternalReferenceCodeDisplayPageTemplatesPageSiteDisplayPageTemplate_addDisplayPageTemplate(
+				String siteExternalReferenceCode,
+				DisplayPageTemplate displayPageTemplate)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

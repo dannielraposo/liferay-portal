@@ -42,6 +42,7 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -85,6 +86,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -728,6 +730,108 @@ public abstract class BaseWarehouseItemResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWarehouseByExternalReferenceCodeWarehouseItemsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetWarehouseByExternalReferenceCodeWarehouseItemsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"warehouseByExternalReferenceCodeWarehouseItems",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject warehouseByExternalReferenceCodeWarehouseItemsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseByExternalReferenceCodeWarehouseItems");
+
+		long totalCount =
+			warehouseByExternalReferenceCodeWarehouseItemsJSONObject.getLong(
+				"totalCount");
+
+		WarehouseItem warehouseItem1 =
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseItemsPageWarehouseWarehouseItem_addWarehouseItem(
+				externalReferenceCode, randomWarehouseItem());
+
+		WarehouseItem warehouseItem2 =
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseItemsPageWarehouseWarehouseItem_addWarehouseItem(
+				externalReferenceCode, randomWarehouseItem());
+
+		warehouseByExternalReferenceCodeWarehouseItemsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseByExternalReferenceCodeWarehouseItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseByExternalReferenceCodeWarehouseItemsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			warehouseItem1,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseItemsJSONObject.
+						getString("items"))));
+		assertContains(
+			warehouseItem2,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseItemsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminInventory_v1_0
+
+		warehouseByExternalReferenceCodeWarehouseItemsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminInventory_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminInventory_v1_0",
+				"JSONObject/warehouseByExternalReferenceCodeWarehouseItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseByExternalReferenceCodeWarehouseItemsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			warehouseItem1,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseItemsJSONObject.
+						getString("items"))));
+		assertContains(
+			warehouseItem2,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseItemsJSONObject.
+						getString("items"))));
+	}
+
+	protected WarehouseItem
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseItemsPageWarehouseWarehouseItem_addWarehouseItem(
+				String externalReferenceCode, WarehouseItem warehouseItem)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetWarehouseIdWarehouseItemsPage() throws Exception {
 		Long id = testGetWarehouseIdWarehouseItemsPage_getId();
 		Long irrelevantId =
@@ -907,6 +1011,93 @@ public abstract class BaseWarehouseItemResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetWarehouseIdWarehouseItemsPage() throws Exception {
+		Long id = testGetWarehouseIdWarehouseItemsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"warehouseIdWarehouseItems",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject warehouseIdWarehouseItemsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseIdWarehouseItems");
+
+		long totalCount = warehouseIdWarehouseItemsJSONObject.getLong(
+			"totalCount");
+
+		WarehouseItem warehouseItem1 =
+			testGraphQLGetWarehouseIdWarehouseItemsPageWarehouseWarehouseItem_addWarehouseItem(
+				id, randomWarehouseItem());
+
+		WarehouseItem warehouseItem2 =
+			testGraphQLGetWarehouseIdWarehouseItemsPageWarehouseWarehouseItem_addWarehouseItem(
+				id, randomWarehouseItem());
+
+		warehouseIdWarehouseItemsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/warehouseIdWarehouseItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseIdWarehouseItemsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouseItem1,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseIdWarehouseItemsJSONObject.getString("items"))));
+		assertContains(
+			warehouseItem2,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseIdWarehouseItemsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminInventory_v1_0
+
+		warehouseIdWarehouseItemsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminInventory_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminInventory_v1_0",
+			"JSONObject/warehouseIdWarehouseItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseIdWarehouseItemsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouseItem1,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseIdWarehouseItemsJSONObject.getString("items"))));
+		assertContains(
+			warehouseItem2,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseIdWarehouseItemsJSONObject.getString("items"))));
+	}
+
+	protected WarehouseItem
+			testGraphQLGetWarehouseIdWarehouseItemsPageWarehouseWarehouseItem_addWarehouseItem(
+				Long id, WarehouseItem warehouseItem)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -1486,6 +1677,105 @@ public abstract class BaseWarehouseItemResourceTestCase {
 
 	protected WarehouseItem testGetWarehouseItemsUpdatedPage_addWarehouseItem(
 			WarehouseItem warehouseItem)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetWarehouseItemsUpdatedPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"warehouseItemsUpdated",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"end",
+						"\"" +
+							DateUtil.getDate(
+								RandomTestUtil.nextDate(),
+								"yyyy-MM-dd'T'HH:mm:ss'Z'",
+								LocaleUtil.getDefault(),
+								TimeZone.getTimeZone("UTC")) + "\"");
+					put(
+						"start",
+						"\"" +
+							DateUtil.getDate(
+								RandomTestUtil.nextDate(),
+								"yyyy-MM-dd'T'HH:mm:ss'Z'",
+								LocaleUtil.getDefault(),
+								TimeZone.getTimeZone("UTC")) + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject warehouseItemsUpdatedJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseItemsUpdated");
+
+		long totalCount = warehouseItemsUpdatedJSONObject.getLong("totalCount");
+
+		WarehouseItem warehouseItem1 =
+			testGraphQLGetWarehouseItemsUpdatedPageWarehouseItem_addWarehouseItem(
+				randomWarehouseItem());
+
+		WarehouseItem warehouseItem2 =
+			testGraphQLGetWarehouseItemsUpdatedPageWarehouseItem_addWarehouseItem(
+				randomWarehouseItem());
+
+		warehouseItemsUpdatedJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/warehouseItemsUpdated");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseItemsUpdatedJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouseItem1,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseItemsUpdatedJSONObject.getString("items"))));
+		assertContains(
+			warehouseItem2,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseItemsUpdatedJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminInventory_v1_0
+
+		warehouseItemsUpdatedJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminInventory_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminInventory_v1_0",
+			"JSONObject/warehouseItemsUpdated");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseItemsUpdatedJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouseItem1,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseItemsUpdatedJSONObject.getString("items"))));
+		assertContains(
+			warehouseItem2,
+			Arrays.asList(
+				WarehouseItemSerDes.toDTOs(
+					warehouseItemsUpdatedJSONObject.getString("items"))));
+	}
+
+	protected WarehouseItem
+			testGraphQLGetWarehouseItemsUpdatedPageWarehouseItem_addWarehouseItem(
+				WarehouseItem warehouseItem)
 		throws Exception {
 
 		throw new UnsupportedOperationException(

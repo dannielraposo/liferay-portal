@@ -1129,6 +1129,108 @@ public abstract class BasePriceEntryResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPriceListByExternalReferenceCodePriceEntriesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPriceListByExternalReferenceCodePriceEntriesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"priceListByExternalReferenceCodePriceEntries",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject priceListByExternalReferenceCodePriceEntriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceListByExternalReferenceCodePriceEntries");
+
+		long totalCount =
+			priceListByExternalReferenceCodePriceEntriesJSONObject.getLong(
+				"totalCount");
+
+		PriceEntry priceEntry1 =
+			testGraphQLGetPriceListByExternalReferenceCodePriceEntriesPagePriceListPriceEntry_addPriceEntry(
+				externalReferenceCode, randomPriceEntry());
+
+		PriceEntry priceEntry2 =
+			testGraphQLGetPriceListByExternalReferenceCodePriceEntriesPagePriceListPriceEntry_addPriceEntry(
+				externalReferenceCode, randomPriceEntry());
+
+		priceListByExternalReferenceCodePriceEntriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceListByExternalReferenceCodePriceEntries");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListByExternalReferenceCodePriceEntriesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			priceEntry1,
+			Arrays.asList(
+				PriceEntrySerDes.toDTOs(
+					priceListByExternalReferenceCodePriceEntriesJSONObject.
+						getString("items"))));
+		assertContains(
+			priceEntry2,
+			Arrays.asList(
+				PriceEntrySerDes.toDTOs(
+					priceListByExternalReferenceCodePriceEntriesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v1_0
+
+		priceListByExternalReferenceCodePriceEntriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v1_0",
+				"JSONObject/priceListByExternalReferenceCodePriceEntries");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListByExternalReferenceCodePriceEntriesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			priceEntry1,
+			Arrays.asList(
+				PriceEntrySerDes.toDTOs(
+					priceListByExternalReferenceCodePriceEntriesJSONObject.
+						getString("items"))));
+		assertContains(
+			priceEntry2,
+			Arrays.asList(
+				PriceEntrySerDes.toDTOs(
+					priceListByExternalReferenceCodePriceEntriesJSONObject.
+						getString("items"))));
+	}
+
+	protected PriceEntry
+			testGraphQLGetPriceListByExternalReferenceCodePriceEntriesPagePriceListPriceEntry_addPriceEntry(
+				String externalReferenceCode, PriceEntry priceEntry)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetPriceListIdPriceEntriesPage() throws Exception {
 		Long id = testGetPriceListIdPriceEntriesPage_getId();
 		Long irrelevantId =
@@ -1296,6 +1398,93 @@ public abstract class BasePriceEntryResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetPriceListIdPriceEntriesPage() throws Exception {
+		Long id = testGetPriceListIdPriceEntriesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"priceListIdPriceEntries",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject priceListIdPriceEntriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceListIdPriceEntries");
+
+		long totalCount = priceListIdPriceEntriesJSONObject.getLong(
+			"totalCount");
+
+		PriceEntry priceEntry1 =
+			testGraphQLGetPriceListIdPriceEntriesPagePriceListPriceEntry_addPriceEntry(
+				id, randomPriceEntry());
+
+		PriceEntry priceEntry2 =
+			testGraphQLGetPriceListIdPriceEntriesPagePriceListPriceEntry_addPriceEntry(
+				id, randomPriceEntry());
+
+		priceListIdPriceEntriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/priceListIdPriceEntries");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListIdPriceEntriesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			priceEntry1,
+			Arrays.asList(
+				PriceEntrySerDes.toDTOs(
+					priceListIdPriceEntriesJSONObject.getString("items"))));
+		assertContains(
+			priceEntry2,
+			Arrays.asList(
+				PriceEntrySerDes.toDTOs(
+					priceListIdPriceEntriesJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v1_0
+
+		priceListIdPriceEntriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminPricing_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminPricing_v1_0",
+			"JSONObject/priceListIdPriceEntries");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListIdPriceEntriesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			priceEntry1,
+			Arrays.asList(
+				PriceEntrySerDes.toDTOs(
+					priceListIdPriceEntriesJSONObject.getString("items"))));
+		assertContains(
+			priceEntry2,
+			Arrays.asList(
+				PriceEntrySerDes.toDTOs(
+					priceListIdPriceEntriesJSONObject.getString("items"))));
+	}
+
+	protected PriceEntry
+			testGraphQLGetPriceListIdPriceEntriesPagePriceListPriceEntry_addPriceEntry(
+				Long id, PriceEntry priceEntry)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

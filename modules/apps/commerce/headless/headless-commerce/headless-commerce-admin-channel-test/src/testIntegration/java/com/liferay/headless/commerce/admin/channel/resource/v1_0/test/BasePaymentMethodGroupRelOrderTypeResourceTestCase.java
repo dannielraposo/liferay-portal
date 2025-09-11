@@ -841,6 +841,109 @@ public abstract class BasePaymentMethodGroupRelOrderTypeResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPaymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesPage()
+		throws Exception {
+
+		Long id =
+			testGetPaymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypes",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypes");
+
+		long totalCount =
+			paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesJSONObject.
+				getLong("totalCount");
+
+		PaymentMethodGroupRelOrderType paymentMethodGroupRelOrderType1 =
+			testGraphQLGetPaymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesPagePaymentMethodGroupRelOrderType_addPaymentMethodGroupRelOrderType(
+				id, randomPaymentMethodGroupRelOrderType());
+
+		PaymentMethodGroupRelOrderType paymentMethodGroupRelOrderType2 =
+			testGraphQLGetPaymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesPagePaymentMethodGroupRelOrderType_addPaymentMethodGroupRelOrderType(
+				id, randomPaymentMethodGroupRelOrderType());
+
+		paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			paymentMethodGroupRelOrderType1,
+			Arrays.asList(
+				PaymentMethodGroupRelOrderTypeSerDes.toDTOs(
+					paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesJSONObject.
+						getString("items"))));
+		assertContains(
+			paymentMethodGroupRelOrderType2,
+			Arrays.asList(
+				PaymentMethodGroupRelOrderTypeSerDes.toDTOs(
+					paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminChannel_v1_0",
+				"JSONObject/paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			paymentMethodGroupRelOrderType1,
+			Arrays.asList(
+				PaymentMethodGroupRelOrderTypeSerDes.toDTOs(
+					paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesJSONObject.
+						getString("items"))));
+		assertContains(
+			paymentMethodGroupRelOrderType2,
+			Arrays.asList(
+				PaymentMethodGroupRelOrderTypeSerDes.toDTOs(
+					paymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesJSONObject.
+						getString("items"))));
+	}
+
+	protected PaymentMethodGroupRelOrderType
+			testGraphQLGetPaymentMethodGroupRelIdPaymentMethodGroupRelOrderTypesPagePaymentMethodGroupRelOrderType_addPaymentMethodGroupRelOrderType(
+				Long id,
+				PaymentMethodGroupRelOrderType paymentMethodGroupRelOrderType)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPostPaymentMethodGroupRelIdPaymentMethodGroupRelOrderType()
 		throws Exception {
 

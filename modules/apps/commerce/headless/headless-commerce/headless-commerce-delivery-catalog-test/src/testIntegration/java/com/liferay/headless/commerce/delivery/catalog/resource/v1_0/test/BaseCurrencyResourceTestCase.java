@@ -628,6 +628,109 @@ public abstract class BaseCurrencyResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelByExternalReferenceCodeCurrenciesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetChannelByExternalReferenceCodeCurrenciesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelByExternalReferenceCodeCurrencies",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelByExternalReferenceCodeCurrenciesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeCurrencies");
+
+		long totalCount =
+			channelByExternalReferenceCodeCurrenciesJSONObject.getLong(
+				"totalCount");
+
+		Currency currency1 =
+			testGraphQLGetChannelByExternalReferenceCodeCurrenciesPageCurrency_addCurrency(
+				externalReferenceCode, randomCurrency());
+
+		Currency currency2 =
+			testGraphQLGetChannelByExternalReferenceCodeCurrenciesPageCurrency_addCurrency(
+				externalReferenceCode, randomCurrency());
+
+		channelByExternalReferenceCodeCurrenciesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeCurrencies");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeCurrenciesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			currency1,
+			Arrays.asList(
+				CurrencySerDes.toDTOs(
+					channelByExternalReferenceCodeCurrenciesJSONObject.
+						getString("items"))));
+		assertContains(
+			currency2,
+			Arrays.asList(
+				CurrencySerDes.toDTOs(
+					channelByExternalReferenceCodeCurrenciesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelByExternalReferenceCodeCurrenciesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+				"JSONObject/channelByExternalReferenceCodeCurrencies");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeCurrenciesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			currency1,
+			Arrays.asList(
+				CurrencySerDes.toDTOs(
+					channelByExternalReferenceCodeCurrenciesJSONObject.
+						getString("items"))));
+		assertContains(
+			currency2,
+			Arrays.asList(
+				CurrencySerDes.toDTOs(
+					channelByExternalReferenceCodeCurrenciesJSONObject.
+						getString("items"))));
+	}
+
+	protected Currency
+			testGraphQLGetChannelByExternalReferenceCodeCurrenciesPageCurrency_addCurrency(
+				String externalReferenceCode, Currency currency)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetChannelCurrenciesPage() throws Exception {
 		Long channelId = testGetChannelCurrenciesPage_getChannelId();
 		Long irrelevantChannelId =
@@ -1006,6 +1109,90 @@ public abstract class BaseCurrencyResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetChannelCurrenciesPage() throws Exception {
+		Long channelId = testGetChannelCurrenciesPage_getChannelId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelCurrencies",
+			new HashMap<String, Object>() {
+				{
+					put("channelId", channelId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelCurrenciesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelCurrencies");
+
+		long totalCount = channelCurrenciesJSONObject.getLong("totalCount");
+
+		Currency currency1 =
+			testGraphQLGetChannelCurrenciesPageCurrency_addCurrency(
+				channelId, randomCurrency());
+
+		Currency currency2 =
+			testGraphQLGetChannelCurrenciesPageCurrency_addCurrency(
+				channelId, randomCurrency());
+
+		channelCurrenciesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelCurrencies");
+
+		Assert.assertEquals(
+			totalCount + 2, channelCurrenciesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			currency1,
+			Arrays.asList(
+				CurrencySerDes.toDTOs(
+					channelCurrenciesJSONObject.getString("items"))));
+		assertContains(
+			currency2,
+			Arrays.asList(
+				CurrencySerDes.toDTOs(
+					channelCurrenciesJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelCurrenciesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+			"JSONObject/data",
+			"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+			"JSONObject/channelCurrencies");
+
+		Assert.assertEquals(
+			totalCount + 2, channelCurrenciesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			currency1,
+			Arrays.asList(
+				CurrencySerDes.toDTOs(
+					channelCurrenciesJSONObject.getString("items"))));
+		assertContains(
+			currency2,
+			Arrays.asList(
+				CurrencySerDes.toDTOs(
+					channelCurrenciesJSONObject.getString("items"))));
+	}
+
+	protected Currency testGraphQLGetChannelCurrenciesPageCurrency_addCurrency(
+			Long channelId, Currency currency)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

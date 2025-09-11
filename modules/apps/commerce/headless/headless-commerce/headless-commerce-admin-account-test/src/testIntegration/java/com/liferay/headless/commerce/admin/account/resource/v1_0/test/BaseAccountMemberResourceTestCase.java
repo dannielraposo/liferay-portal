@@ -834,6 +834,108 @@ public abstract class BaseAccountMemberResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAccountByExternalReferenceCodeAccountMembersPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetAccountByExternalReferenceCodeAccountMembersPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountByExternalReferenceCodeAccountMembers",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject accountByExternalReferenceCodeAccountMembersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountByExternalReferenceCodeAccountMembers");
+
+		long totalCount =
+			accountByExternalReferenceCodeAccountMembersJSONObject.getLong(
+				"totalCount");
+
+		AccountMember accountMember1 =
+			testGraphQLGetAccountByExternalReferenceCodeAccountMembersPageAccountAccountMember_addAccountMember(
+				externalReferenceCode, randomAccountMember());
+
+		AccountMember accountMember2 =
+			testGraphQLGetAccountByExternalReferenceCodeAccountMembersPageAccountAccountMember_addAccountMember(
+				externalReferenceCode, randomAccountMember());
+
+		accountByExternalReferenceCodeAccountMembersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountByExternalReferenceCodeAccountMembers");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeAccountMembersJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			accountMember1,
+			Arrays.asList(
+				AccountMemberSerDes.toDTOs(
+					accountByExternalReferenceCodeAccountMembersJSONObject.
+						getString("items"))));
+		assertContains(
+			accountMember2,
+			Arrays.asList(
+				AccountMemberSerDes.toDTOs(
+					accountByExternalReferenceCodeAccountMembersJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminAccount_v1_0
+
+		accountByExternalReferenceCodeAccountMembersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminAccount_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminAccount_v1_0",
+				"JSONObject/accountByExternalReferenceCodeAccountMembers");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeAccountMembersJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			accountMember1,
+			Arrays.asList(
+				AccountMemberSerDes.toDTOs(
+					accountByExternalReferenceCodeAccountMembersJSONObject.
+						getString("items"))));
+		assertContains(
+			accountMember2,
+			Arrays.asList(
+				AccountMemberSerDes.toDTOs(
+					accountByExternalReferenceCodeAccountMembersJSONObject.
+						getString("items"))));
+	}
+
+	protected AccountMember
+			testGraphQLGetAccountByExternalReferenceCodeAccountMembersPageAccountAccountMember_addAccountMember(
+				String externalReferenceCode, AccountMember accountMember)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetAccountIdAccountMember() throws Exception {
 		AccountMember postAccountMember =
 			testGetAccountIdAccountMember_addAccountMember();
@@ -1148,6 +1250,93 @@ public abstract class BaseAccountMemberResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetAccountIdAccountMembersPage() throws Exception {
+		Long id = testGetAccountIdAccountMembersPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountIdAccountMembers",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject accountIdAccountMembersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountIdAccountMembers");
+
+		long totalCount = accountIdAccountMembersJSONObject.getLong(
+			"totalCount");
+
+		AccountMember accountMember1 =
+			testGraphQLGetAccountIdAccountMembersPageAccountAccountMember_addAccountMember(
+				id, randomAccountMember());
+
+		AccountMember accountMember2 =
+			testGraphQLGetAccountIdAccountMembersPageAccountAccountMember_addAccountMember(
+				id, randomAccountMember());
+
+		accountIdAccountMembersJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/accountIdAccountMembers");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountIdAccountMembersJSONObject.getLong("totalCount"));
+
+		assertContains(
+			accountMember1,
+			Arrays.asList(
+				AccountMemberSerDes.toDTOs(
+					accountIdAccountMembersJSONObject.getString("items"))));
+		assertContains(
+			accountMember2,
+			Arrays.asList(
+				AccountMemberSerDes.toDTOs(
+					accountIdAccountMembersJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminAccount_v1_0
+
+		accountIdAccountMembersJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminAccount_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminAccount_v1_0",
+			"JSONObject/accountIdAccountMembers");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountIdAccountMembersJSONObject.getLong("totalCount"));
+
+		assertContains(
+			accountMember1,
+			Arrays.asList(
+				AccountMemberSerDes.toDTOs(
+					accountIdAccountMembersJSONObject.getString("items"))));
+		assertContains(
+			accountMember2,
+			Arrays.asList(
+				AccountMemberSerDes.toDTOs(
+					accountIdAccountMembersJSONObject.getString("items"))));
+	}
+
+	protected AccountMember
+			testGraphQLGetAccountIdAccountMembersPageAccountAccountMember_addAccountMember(
+				Long id, AccountMember accountMember)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

@@ -527,6 +527,111 @@ public abstract class BaseWishListResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelByExternalReferenceCodeWishListsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetChannelByExternalReferenceCodeWishListsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelByExternalReferenceCodeWishLists",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put(
+						"currencyCode",
+						"\"" + RandomTestUtil.randomString() + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelByExternalReferenceCodeWishListsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeWishLists");
+
+		long totalCount =
+			channelByExternalReferenceCodeWishListsJSONObject.getLong(
+				"totalCount");
+
+		WishList wishList1 =
+			testGraphQLGetChannelByExternalReferenceCodeWishListsPageWishList_addWishList(
+				externalReferenceCode, randomWishList());
+
+		WishList wishList2 =
+			testGraphQLGetChannelByExternalReferenceCodeWishListsPageWishList_addWishList(
+				externalReferenceCode, randomWishList());
+
+		channelByExternalReferenceCodeWishListsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeWishLists");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeWishListsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			wishList1,
+			Arrays.asList(
+				WishListSerDes.toDTOs(
+					channelByExternalReferenceCodeWishListsJSONObject.getString(
+						"items"))));
+		assertContains(
+			wishList2,
+			Arrays.asList(
+				WishListSerDes.toDTOs(
+					channelByExternalReferenceCodeWishListsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelByExternalReferenceCodeWishListsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+				"JSONObject/channelByExternalReferenceCodeWishLists");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeWishListsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			wishList1,
+			Arrays.asList(
+				WishListSerDes.toDTOs(
+					channelByExternalReferenceCodeWishListsJSONObject.getString(
+						"items"))));
+		assertContains(
+			wishList2,
+			Arrays.asList(
+				WishListSerDes.toDTOs(
+					channelByExternalReferenceCodeWishListsJSONObject.getString(
+						"items"))));
+	}
+
+	protected WishList
+			testGraphQLGetChannelByExternalReferenceCodeWishListsPageWishList_addWishList(
+				String externalReferenceCode, WishList wishList)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetChannelWishListsPage() throws Exception {
 		Long channelId = testGetChannelWishListsPage_getChannelId();
 		Long irrelevantChannelId =
@@ -679,6 +784,92 @@ public abstract class BaseWishListResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetChannelWishListsPage() throws Exception {
+		Long channelId = testGetChannelWishListsPage_getChannelId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelWishLists",
+			new HashMap<String, Object>() {
+				{
+					put("channelId", channelId);
+					put(
+						"currencyCode",
+						"\"" + RandomTestUtil.randomString() + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelWishListsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelWishLists");
+
+		long totalCount = channelWishListsJSONObject.getLong("totalCount");
+
+		WishList wishList1 =
+			testGraphQLGetChannelWishListsPageWishList_addWishList(
+				channelId, randomWishList());
+
+		WishList wishList2 =
+			testGraphQLGetChannelWishListsPageWishList_addWishList(
+				channelId, randomWishList());
+
+		channelWishListsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelWishLists");
+
+		Assert.assertEquals(
+			totalCount + 2, channelWishListsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			wishList1,
+			Arrays.asList(
+				WishListSerDes.toDTOs(
+					channelWishListsJSONObject.getString("items"))));
+		assertContains(
+			wishList2,
+			Arrays.asList(
+				WishListSerDes.toDTOs(
+					channelWishListsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelWishListsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+			"JSONObject/data",
+			"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+			"JSONObject/channelWishLists");
+
+		Assert.assertEquals(
+			totalCount + 2, channelWishListsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			wishList1,
+			Arrays.asList(
+				WishListSerDes.toDTOs(
+					channelWishListsJSONObject.getString("items"))));
+		assertContains(
+			wishList2,
+			Arrays.asList(
+				WishListSerDes.toDTOs(
+					channelWishListsJSONObject.getString("items"))));
+	}
+
+	protected WishList testGraphQLGetChannelWishListsPageWishList_addWishList(
+			Long channelId, WishList wishList)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

@@ -597,6 +597,106 @@ public abstract class BasePinResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProductByExternalReferenceCodePinsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetProductByExternalReferenceCodePinsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productByExternalReferenceCodePins",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject productByExternalReferenceCodePinsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productByExternalReferenceCodePins");
+
+		long totalCount = productByExternalReferenceCodePinsJSONObject.getLong(
+			"totalCount");
+
+		Pin pin1 =
+			testGraphQLGetProductByExternalReferenceCodePinsPageProductPin_addPin(
+				externalReferenceCode, randomPin());
+
+		Pin pin2 =
+			testGraphQLGetProductByExternalReferenceCodePinsPageProductPin_addPin(
+				externalReferenceCode, randomPin());
+
+		productByExternalReferenceCodePinsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productByExternalReferenceCodePins");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productByExternalReferenceCodePinsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			pin1,
+			Arrays.asList(
+				PinSerDes.toDTOs(
+					productByExternalReferenceCodePinsJSONObject.getString(
+						"items"))));
+		assertContains(
+			pin2,
+			Arrays.asList(
+				PinSerDes.toDTOs(
+					productByExternalReferenceCodePinsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productByExternalReferenceCodePinsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/productByExternalReferenceCodePins");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productByExternalReferenceCodePinsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			pin1,
+			Arrays.asList(
+				PinSerDes.toDTOs(
+					productByExternalReferenceCodePinsJSONObject.getString(
+						"items"))));
+		assertContains(
+			pin2,
+			Arrays.asList(
+				PinSerDes.toDTOs(
+					productByExternalReferenceCodePinsJSONObject.getString(
+						"items"))));
+	}
+
+	protected Pin
+			testGraphQLGetProductByExternalReferenceCodePinsPageProductPin_addPin(
+				String externalReferenceCode, Pin pin)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetProductIdPinsPage() throws Exception {
 		Long id = testGetProductIdPinsPage_getId();
 		Long irrelevantId = testGetProductIdPinsPage_getIrrelevantId();
@@ -864,6 +964,83 @@ public abstract class BasePinResourceTestCase {
 
 	protected Long testGetProductIdPinsPage_getIrrelevantId() throws Exception {
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetProductIdPinsPage() throws Exception {
+		Long id = testGetProductIdPinsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productIdPins",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject productIdPinsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/productIdPins");
+
+		long totalCount = productIdPinsJSONObject.getLong("totalCount");
+
+		Pin pin1 = testGraphQLGetProductIdPinsPageProductPin_addPin(
+			id, randomPin());
+
+		Pin pin2 = testGraphQLGetProductIdPinsPageProductPin_addPin(
+			id, randomPin());
+
+		productIdPinsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/productIdPins");
+
+		Assert.assertEquals(
+			totalCount + 2, productIdPinsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			pin1,
+			Arrays.asList(
+				PinSerDes.toDTOs(productIdPinsJSONObject.getString("items"))));
+		assertContains(
+			pin2,
+			Arrays.asList(
+				PinSerDes.toDTOs(productIdPinsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productIdPinsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminCatalog_v1_0",
+			"JSONObject/productIdPins");
+
+		Assert.assertEquals(
+			totalCount + 2, productIdPinsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			pin1,
+			Arrays.asList(
+				PinSerDes.toDTOs(productIdPinsJSONObject.getString("items"))));
+		assertContains(
+			pin2,
+			Arrays.asList(
+				PinSerDes.toDTOs(productIdPinsJSONObject.getString("items"))));
+	}
+
+	protected Pin testGraphQLGetProductIdPinsPageProductPin_addPin(
+			Long id, Pin pin)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

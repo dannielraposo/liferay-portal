@@ -635,6 +635,81 @@ public abstract class BaseFormResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteFormsPage() throws Exception {
+		Long siteId = testGetSiteFormsPage_getSiteId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"forms",
+			new HashMap<String, Object>() {
+				{
+					put("siteKey", "\"" + siteId + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject formsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/forms");
+
+		long totalCount = formsJSONObject.getLong("totalCount");
+
+		Form form1 = testGraphQLGetSiteFormsPageSiteForm_addForm(
+			siteId, randomForm());
+
+		Form form2 = testGraphQLGetSiteFormsPageSiteForm_addForm(
+			siteId, randomForm());
+
+		formsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/forms");
+
+		Assert.assertEquals(
+			totalCount + 2, formsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			form1,
+			Arrays.asList(
+				FormSerDes.toDTOs(formsJSONObject.getString("items"))));
+		assertContains(
+			form2,
+			Arrays.asList(
+				FormSerDes.toDTOs(formsJSONObject.getString("items"))));
+
+		// Using the namespace headlessForm_v1_0
+
+		formsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessForm_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessForm_v1_0",
+			"JSONObject/forms");
+
+		Assert.assertEquals(
+			totalCount + 2, formsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			form1,
+			Arrays.asList(
+				FormSerDes.toDTOs(formsJSONObject.getString("items"))));
+		assertContains(
+			form2,
+			Arrays.asList(
+				FormSerDes.toDTOs(formsJSONObject.getString("items"))));
+	}
+
+	protected Form testGraphQLGetSiteFormsPageSiteForm_addForm(
+			Long siteId, Form form)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

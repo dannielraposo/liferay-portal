@@ -561,6 +561,104 @@ public abstract class BasePhoneResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAccountByExternalReferenceCodePhonesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetAccountByExternalReferenceCodePhonesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountByExternalReferenceCodePhones",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject accountByExternalReferenceCodePhonesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountByExternalReferenceCodePhones");
+
+		long totalCount =
+			accountByExternalReferenceCodePhonesJSONObject.getLong(
+				"totalCount");
+
+		Phone phone1 =
+			testGraphQLGetAccountByExternalReferenceCodePhonesPageAccountPhone_addPhone(
+				externalReferenceCode, randomPhone());
+
+		Phone phone2 =
+			testGraphQLGetAccountByExternalReferenceCodePhonesPageAccountPhone_addPhone(
+				externalReferenceCode, randomPhone());
+
+		accountByExternalReferenceCodePhonesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountByExternalReferenceCodePhones");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodePhonesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					accountByExternalReferenceCodePhonesJSONObject.getString(
+						"items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					accountByExternalReferenceCodePhonesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		accountByExternalReferenceCodePhonesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/accountByExternalReferenceCodePhones");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodePhonesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					accountByExternalReferenceCodePhonesJSONObject.getString(
+						"items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					accountByExternalReferenceCodePhonesJSONObject.getString(
+						"items"))));
+	}
+
+	protected Phone
+			testGraphQLGetAccountByExternalReferenceCodePhonesPageAccountPhone_addPhone(
+				String externalReferenceCode, Phone phone)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetAccountPhonesPage() throws Exception {
 		Long accountId = testGetAccountPhonesPage_getAccountId();
 		Long irrelevantAccountId =
@@ -631,6 +729,83 @@ public abstract class BasePhoneResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetAccountPhonesPage() throws Exception {
+		Long accountId = testGetAccountPhonesPage_getAccountId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountPhones",
+			new HashMap<String, Object>() {
+				{
+					put("accountId", accountId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject accountPhonesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/accountPhones");
+
+		long totalCount = accountPhonesJSONObject.getLong("totalCount");
+
+		Phone phone1 = testGraphQLGetAccountPhonesPageAccountPhone_addPhone(
+			accountId, randomPhone());
+
+		Phone phone2 = testGraphQLGetAccountPhonesPageAccountPhone_addPhone(
+			accountId, randomPhone());
+
+		accountPhonesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/accountPhones");
+
+		Assert.assertEquals(
+			totalCount + 2, accountPhonesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					accountPhonesJSONObject.getString("items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					accountPhonesJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		accountPhonesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/accountPhones");
+
+		Assert.assertEquals(
+			totalCount + 2, accountPhonesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					accountPhonesJSONObject.getString("items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					accountPhonesJSONObject.getString("items"))));
+	}
+
+	protected Phone testGraphQLGetAccountPhonesPageAccountPhone_addPhone(
+			Long accountId, Phone phone)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -726,6 +901,104 @@ public abstract class BasePhoneResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetOrganizationByExternalReferenceCodePhonesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetOrganizationByExternalReferenceCodePhonesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"organizationByExternalReferenceCodePhones",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject organizationByExternalReferenceCodePhonesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/organizationByExternalReferenceCodePhones");
+
+		long totalCount =
+			organizationByExternalReferenceCodePhonesJSONObject.getLong(
+				"totalCount");
+
+		Phone phone1 =
+			testGraphQLGetOrganizationByExternalReferenceCodePhonesPageOrganizationPhone_addPhone(
+				externalReferenceCode, randomPhone());
+
+		Phone phone2 =
+			testGraphQLGetOrganizationByExternalReferenceCodePhonesPageOrganizationPhone_addPhone(
+				externalReferenceCode, randomPhone());
+
+		organizationByExternalReferenceCodePhonesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/organizationByExternalReferenceCodePhones");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationByExternalReferenceCodePhonesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					organizationByExternalReferenceCodePhonesJSONObject.
+						getString("items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					organizationByExternalReferenceCodePhonesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		organizationByExternalReferenceCodePhonesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/organizationByExternalReferenceCodePhones");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationByExternalReferenceCodePhonesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					organizationByExternalReferenceCodePhonesJSONObject.
+						getString("items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					organizationByExternalReferenceCodePhonesJSONObject.
+						getString("items"))));
+	}
+
+	protected Phone
+			testGraphQLGetOrganizationByExternalReferenceCodePhonesPageOrganizationPhone_addPhone(
+				String externalReferenceCode, Phone phone)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetOrganizationPhonesPage() throws Exception {
 		String organizationId =
 			testGetOrganizationPhonesPage_getOrganizationId();
@@ -803,6 +1076,87 @@ public abstract class BasePhoneResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetOrganizationPhonesPage() throws Exception {
+		String organizationId =
+			testGetOrganizationPhonesPage_getOrganizationId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"organizationPhones",
+			new HashMap<String, Object>() {
+				{
+					put("organizationId", "\"" + organizationId + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject organizationPhonesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/organizationPhones");
+
+		long totalCount = organizationPhonesJSONObject.getLong("totalCount");
+
+		Phone phone1 =
+			testGraphQLGetOrganizationPhonesPageOrganizationPhone_addPhone(
+				organizationId, randomPhone());
+
+		Phone phone2 =
+			testGraphQLGetOrganizationPhonesPageOrganizationPhone_addPhone(
+				organizationId, randomPhone());
+
+		organizationPhonesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/organizationPhones");
+
+		Assert.assertEquals(
+			totalCount + 2, organizationPhonesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					organizationPhonesJSONObject.getString("items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					organizationPhonesJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		organizationPhonesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/organizationPhones");
+
+		Assert.assertEquals(
+			totalCount + 2, organizationPhonesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					organizationPhonesJSONObject.getString("items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					organizationPhonesJSONObject.getString("items"))));
+	}
+
+	protected Phone
+			testGraphQLGetOrganizationPhonesPageOrganizationPhone_addPhone(
+				String organizationId, Phone phone)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -1315,6 +1669,104 @@ public abstract class BasePhoneResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetUserAccountByExternalReferenceCodePhonesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetUserAccountByExternalReferenceCodePhonesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"userAccountByExternalReferenceCodePhones",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject userAccountByExternalReferenceCodePhonesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/userAccountByExternalReferenceCodePhones");
+
+		long totalCount =
+			userAccountByExternalReferenceCodePhonesJSONObject.getLong(
+				"totalCount");
+
+		Phone phone1 =
+			testGraphQLGetUserAccountByExternalReferenceCodePhonesPageUserAccountPhone_addPhone(
+				externalReferenceCode, randomPhone());
+
+		Phone phone2 =
+			testGraphQLGetUserAccountByExternalReferenceCodePhonesPageUserAccountPhone_addPhone(
+				externalReferenceCode, randomPhone());
+
+		userAccountByExternalReferenceCodePhonesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/userAccountByExternalReferenceCodePhones");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountByExternalReferenceCodePhonesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					userAccountByExternalReferenceCodePhonesJSONObject.
+						getString("items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					userAccountByExternalReferenceCodePhonesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		userAccountByExternalReferenceCodePhonesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/userAccountByExternalReferenceCodePhones");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountByExternalReferenceCodePhonesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					userAccountByExternalReferenceCodePhonesJSONObject.
+						getString("items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					userAccountByExternalReferenceCodePhonesJSONObject.
+						getString("items"))));
+	}
+
+	protected Phone
+			testGraphQLGetUserAccountByExternalReferenceCodePhonesPageUserAccountPhone_addPhone(
+				String externalReferenceCode, Phone phone)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetUserAccountPhonesPage() throws Exception {
 		Long userAccountId = testGetUserAccountPhonesPage_getUserAccountId();
 		Long irrelevantUserAccountId =
@@ -1390,6 +1842,86 @@ public abstract class BasePhoneResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetUserAccountPhonesPage() throws Exception {
+		Long userAccountId = testGetUserAccountPhonesPage_getUserAccountId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"userAccountPhones",
+			new HashMap<String, Object>() {
+				{
+					put("userAccountId", userAccountId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject userAccountPhonesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userAccountPhones");
+
+		long totalCount = userAccountPhonesJSONObject.getLong("totalCount");
+
+		Phone phone1 =
+			testGraphQLGetUserAccountPhonesPageUserAccountPhone_addPhone(
+				userAccountId, randomPhone());
+
+		Phone phone2 =
+			testGraphQLGetUserAccountPhonesPageUserAccountPhone_addPhone(
+				userAccountId, randomPhone());
+
+		userAccountPhonesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userAccountPhones");
+
+		Assert.assertEquals(
+			totalCount + 2, userAccountPhonesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					userAccountPhonesJSONObject.getString("items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					userAccountPhonesJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		userAccountPhonesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/userAccountPhones");
+
+		Assert.assertEquals(
+			totalCount + 2, userAccountPhonesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			phone1,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					userAccountPhonesJSONObject.getString("items"))));
+		assertContains(
+			phone2,
+			Arrays.asList(
+				PhoneSerDes.toDTOs(
+					userAccountPhonesJSONObject.getString("items"))));
+	}
+
+	protected Phone
+			testGraphQLGetUserAccountPhonesPageUserAccountPhone_addPhone(
+				Long userAccountId, Phone phone)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

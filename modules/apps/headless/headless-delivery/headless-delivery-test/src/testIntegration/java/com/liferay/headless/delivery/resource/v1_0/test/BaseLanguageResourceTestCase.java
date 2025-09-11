@@ -288,6 +288,90 @@ public abstract class BaseLanguageResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAssetLibraryLanguagesPage() throws Exception {
+		Long assetLibraryId =
+			testGetAssetLibraryLanguagesPage_getAssetLibraryId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"assetLibraryLanguages",
+			new HashMap<String, Object>() {
+				{
+					put("assetLibraryId", "\"" + assetLibraryId + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject assetLibraryLanguagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/assetLibraryLanguages");
+
+		long totalCount = assetLibraryLanguagesJSONObject.getLong("totalCount");
+
+		Language language1 =
+			testGraphQLGetAssetLibraryLanguagesPageAssetLibraryLanguage_addLanguage(
+				assetLibraryId, randomLanguage());
+
+		Language language2 =
+			testGraphQLGetAssetLibraryLanguagesPageAssetLibraryLanguage_addLanguage(
+				assetLibraryId, randomLanguage());
+
+		assetLibraryLanguagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/assetLibraryLanguages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			assetLibraryLanguagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			language1,
+			Arrays.asList(
+				LanguageSerDes.toDTOs(
+					assetLibraryLanguagesJSONObject.getString("items"))));
+		assertContains(
+			language2,
+			Arrays.asList(
+				LanguageSerDes.toDTOs(
+					assetLibraryLanguagesJSONObject.getString("items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		assetLibraryLanguagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+			"JSONObject/assetLibraryLanguages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			assetLibraryLanguagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			language1,
+			Arrays.asList(
+				LanguageSerDes.toDTOs(
+					assetLibraryLanguagesJSONObject.getString("items"))));
+		assertContains(
+			language2,
+			Arrays.asList(
+				LanguageSerDes.toDTOs(
+					assetLibraryLanguagesJSONObject.getString("items"))));
+	}
+
+	protected Language
+			testGraphQLGetAssetLibraryLanguagesPageAssetLibraryLanguage_addLanguage(
+				Long assetLibraryId, Language language)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSiteLanguagesPage() throws Exception {
 		Long siteId = testGetSiteLanguagesPage_getSiteId();
 		Long irrelevantSiteId = testGetSiteLanguagesPage_getIrrelevantSiteId();
@@ -350,6 +434,81 @@ public abstract class BaseLanguageResourceTestCase {
 		throws Exception {
 
 		return irrelevantGroup.getGroupId();
+	}
+
+	@Test
+	public void testGraphQLGetSiteLanguagesPage() throws Exception {
+		Long siteId = testGetSiteLanguagesPage_getSiteId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"languages",
+			new HashMap<String, Object>() {
+				{
+					put("siteKey", "\"" + siteId + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject languagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/languages");
+
+		long totalCount = languagesJSONObject.getLong("totalCount");
+
+		Language language1 =
+			testGraphQLGetSiteLanguagesPageSiteLanguage_addLanguage(
+				siteId, randomLanguage());
+
+		Language language2 =
+			testGraphQLGetSiteLanguagesPageSiteLanguage_addLanguage(
+				siteId, randomLanguage());
+
+		languagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/languages");
+
+		Assert.assertEquals(
+			totalCount + 2, languagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			language1,
+			Arrays.asList(
+				LanguageSerDes.toDTOs(languagesJSONObject.getString("items"))));
+		assertContains(
+			language2,
+			Arrays.asList(
+				LanguageSerDes.toDTOs(languagesJSONObject.getString("items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		languagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+			"JSONObject/languages");
+
+		Assert.assertEquals(
+			totalCount + 2, languagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			language1,
+			Arrays.asList(
+				LanguageSerDes.toDTOs(languagesJSONObject.getString("items"))));
+		assertContains(
+			language2,
+			Arrays.asList(
+				LanguageSerDes.toDTOs(languagesJSONObject.getString("items"))));
+	}
+
+	protected Language testGraphQLGetSiteLanguagesPageSiteLanguage_addLanguage(
+			Long siteId, Language language)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

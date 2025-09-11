@@ -510,6 +510,108 @@ public abstract class BaseChannelAccountResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelByExternalReferenceCodeChannelAccountsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetChannelByExternalReferenceCodeChannelAccountsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelByExternalReferenceCodeChannelAccounts",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelByExternalReferenceCodeChannelAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeChannelAccounts");
+
+		long totalCount =
+			channelByExternalReferenceCodeChannelAccountsJSONObject.getLong(
+				"totalCount");
+
+		ChannelAccount channelAccount1 =
+			testGraphQLGetChannelByExternalReferenceCodeChannelAccountsPageChannelChannelAccount_addChannelAccount(
+				externalReferenceCode, randomChannelAccount());
+
+		ChannelAccount channelAccount2 =
+			testGraphQLGetChannelByExternalReferenceCodeChannelAccountsPageChannelChannelAccount_addChannelAccount(
+				externalReferenceCode, randomChannelAccount());
+
+		channelByExternalReferenceCodeChannelAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeChannelAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeChannelAccountsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			channelAccount1,
+			Arrays.asList(
+				ChannelAccountSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelAccountsJSONObject.
+						getString("items"))));
+		assertContains(
+			channelAccount2,
+			Arrays.asList(
+				ChannelAccountSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelAccountsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		channelByExternalReferenceCodeChannelAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminChannel_v1_0",
+				"JSONObject/channelByExternalReferenceCodeChannelAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeChannelAccountsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			channelAccount1,
+			Arrays.asList(
+				ChannelAccountSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelAccountsJSONObject.
+						getString("items"))));
+		assertContains(
+			channelAccount2,
+			Arrays.asList(
+				ChannelAccountSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelAccountsJSONObject.
+						getString("items"))));
+	}
+
+	protected ChannelAccount
+			testGraphQLGetChannelByExternalReferenceCodeChannelAccountsPageChannelChannelAccount_addChannelAccount(
+				String externalReferenceCode, ChannelAccount channelAccount)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetChannelIdChannelAccountsPage() throws Exception {
 		Long id = testGetChannelIdChannelAccountsPage_getId();
 		Long irrelevantId =
@@ -947,6 +1049,94 @@ public abstract class BaseChannelAccountResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetChannelIdChannelAccountsPage() throws Exception {
+		Long id = testGetChannelIdChannelAccountsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelIdChannelAccounts",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelIdChannelAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelIdChannelAccounts");
+
+		long totalCount = channelIdChannelAccountsJSONObject.getLong(
+			"totalCount");
+
+		ChannelAccount channelAccount1 =
+			testGraphQLGetChannelIdChannelAccountsPageChannelAccount_addChannelAccount(
+				id, randomChannelAccount());
+
+		ChannelAccount channelAccount2 =
+			testGraphQLGetChannelIdChannelAccountsPageChannelAccount_addChannelAccount(
+				id, randomChannelAccount());
+
+		channelIdChannelAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelIdChannelAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelIdChannelAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			channelAccount1,
+			Arrays.asList(
+				ChannelAccountSerDes.toDTOs(
+					channelIdChannelAccountsJSONObject.getString("items"))));
+		assertContains(
+			channelAccount2,
+			Arrays.asList(
+				ChannelAccountSerDes.toDTOs(
+					channelIdChannelAccountsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		channelIdChannelAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminChannel_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminChannel_v1_0",
+			"JSONObject/channelIdChannelAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelIdChannelAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			channelAccount1,
+			Arrays.asList(
+				ChannelAccountSerDes.toDTOs(
+					channelIdChannelAccountsJSONObject.getString("items"))));
+		assertContains(
+			channelAccount2,
+			Arrays.asList(
+				ChannelAccountSerDes.toDTOs(
+					channelIdChannelAccountsJSONObject.getString("items"))));
+	}
+
+	protected ChannelAccount
+			testGraphQLGetChannelIdChannelAccountsPageChannelAccount_addChannelAccount(
+				Long id, ChannelAccount channelAccount)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

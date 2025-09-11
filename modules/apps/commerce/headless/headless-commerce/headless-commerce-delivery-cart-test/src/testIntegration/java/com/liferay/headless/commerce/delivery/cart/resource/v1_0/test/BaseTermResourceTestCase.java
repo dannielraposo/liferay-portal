@@ -269,6 +269,106 @@ public abstract class BaseTermResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCartByExternalReferenceCodeDeliveryTermsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetCartByExternalReferenceCodeDeliveryTermsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"cartByExternalReferenceCodeDeliveryTerms",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cartByExternalReferenceCodeDeliveryTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/cartByExternalReferenceCodeDeliveryTerms");
+
+		long totalCount =
+			cartByExternalReferenceCodeDeliveryTermsJSONObject.getLong(
+				"totalCount");
+
+		Term term1 =
+			testGraphQLGetCartByExternalReferenceCodeDeliveryTermsPageCartTerm_addTerm(
+				externalReferenceCode, randomTerm());
+
+		Term term2 =
+			testGraphQLGetCartByExternalReferenceCodeDeliveryTermsPageCartTerm_addTerm(
+				externalReferenceCode, randomTerm());
+
+		cartByExternalReferenceCodeDeliveryTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/cartByExternalReferenceCodeDeliveryTerms");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartByExternalReferenceCodeDeliveryTermsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			term1,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartByExternalReferenceCodeDeliveryTermsJSONObject.
+						getString("items"))));
+		assertContains(
+			term2,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartByExternalReferenceCodeDeliveryTermsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCart_v1_0
+
+		cartByExternalReferenceCodeDeliveryTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryCart_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryCart_v1_0",
+				"JSONObject/cartByExternalReferenceCodeDeliveryTerms");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartByExternalReferenceCodeDeliveryTermsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			term1,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartByExternalReferenceCodeDeliveryTermsJSONObject.
+						getString("items"))));
+		assertContains(
+			term2,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartByExternalReferenceCodeDeliveryTermsJSONObject.
+						getString("items"))));
+	}
+
+	protected Term
+			testGraphQLGetCartByExternalReferenceCodeDeliveryTermsPageCartTerm_addTerm(
+				String externalReferenceCode, Term term)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetCartByExternalReferenceCodePaymentTermsPage()
 		throws Exception {
 
@@ -353,6 +453,106 @@ public abstract class BaseTermResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCartByExternalReferenceCodePaymentTermsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetCartByExternalReferenceCodePaymentTermsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"cartByExternalReferenceCodePaymentTerms",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cartByExternalReferenceCodePaymentTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/cartByExternalReferenceCodePaymentTerms");
+
+		long totalCount =
+			cartByExternalReferenceCodePaymentTermsJSONObject.getLong(
+				"totalCount");
+
+		Term term1 =
+			testGraphQLGetCartByExternalReferenceCodePaymentTermsPageCartTerm_addTerm(
+				externalReferenceCode, randomTerm());
+
+		Term term2 =
+			testGraphQLGetCartByExternalReferenceCodePaymentTermsPageCartTerm_addTerm(
+				externalReferenceCode, randomTerm());
+
+		cartByExternalReferenceCodePaymentTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/cartByExternalReferenceCodePaymentTerms");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartByExternalReferenceCodePaymentTermsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			term1,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartByExternalReferenceCodePaymentTermsJSONObject.getString(
+						"items"))));
+		assertContains(
+			term2,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartByExternalReferenceCodePaymentTermsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceDeliveryCart_v1_0
+
+		cartByExternalReferenceCodePaymentTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryCart_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryCart_v1_0",
+				"JSONObject/cartByExternalReferenceCodePaymentTerms");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartByExternalReferenceCodePaymentTermsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			term1,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartByExternalReferenceCodePaymentTermsJSONObject.getString(
+						"items"))));
+		assertContains(
+			term2,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartByExternalReferenceCodePaymentTermsJSONObject.getString(
+						"items"))));
+	}
+
+	protected Term
+			testGraphQLGetCartByExternalReferenceCodePaymentTermsPageCartTerm_addTerm(
+				String externalReferenceCode, Term term)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetCartDeliveryTermsPage() throws Exception {
 		Long cartId = testGetCartDeliveryTermsPage_getCartId();
 		Long irrelevantCartId =
@@ -419,6 +619,84 @@ public abstract class BaseTermResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCartDeliveryTermsPage() throws Exception {
+		Long cartId = testGetCartDeliveryTermsPage_getCartId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"cartDeliveryTerms",
+			new HashMap<String, Object>() {
+				{
+					put("cartId", cartId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cartDeliveryTermsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cartDeliveryTerms");
+
+		long totalCount = cartDeliveryTermsJSONObject.getLong("totalCount");
+
+		Term term1 = testGraphQLGetCartDeliveryTermsPageCartTerm_addTerm(
+			cartId, randomTerm());
+
+		Term term2 = testGraphQLGetCartDeliveryTermsPageCartTerm_addTerm(
+			cartId, randomTerm());
+
+		cartDeliveryTermsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cartDeliveryTerms");
+
+		Assert.assertEquals(
+			totalCount + 2, cartDeliveryTermsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			term1,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartDeliveryTermsJSONObject.getString("items"))));
+		assertContains(
+			term2,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartDeliveryTermsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCart_v1_0
+
+		cartDeliveryTermsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCart_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceDeliveryCart_v1_0",
+			"JSONObject/cartDeliveryTerms");
+
+		Assert.assertEquals(
+			totalCount + 2, cartDeliveryTermsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			term1,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartDeliveryTermsJSONObject.getString("items"))));
+		assertContains(
+			term2,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartDeliveryTermsJSONObject.getString("items"))));
+	}
+
+	protected Term testGraphQLGetCartDeliveryTermsPageCartTerm_addTerm(
+			Long cartId, Term term)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetCartPaymentTermsPage() throws Exception {
 		Long cartId = testGetCartPaymentTermsPage_getCartId();
 		Long irrelevantCartId =
@@ -482,6 +760,84 @@ public abstract class BaseTermResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetCartPaymentTermsPage() throws Exception {
+		Long cartId = testGetCartPaymentTermsPage_getCartId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"cartPaymentTerms",
+			new HashMap<String, Object>() {
+				{
+					put("cartId", cartId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cartPaymentTermsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cartPaymentTerms");
+
+		long totalCount = cartPaymentTermsJSONObject.getLong("totalCount");
+
+		Term term1 = testGraphQLGetCartPaymentTermsPageCartTerm_addTerm(
+			cartId, randomTerm());
+
+		Term term2 = testGraphQLGetCartPaymentTermsPageCartTerm_addTerm(
+			cartId, randomTerm());
+
+		cartPaymentTermsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cartPaymentTerms");
+
+		Assert.assertEquals(
+			totalCount + 2, cartPaymentTermsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			term1,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartPaymentTermsJSONObject.getString("items"))));
+		assertContains(
+			term2,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartPaymentTermsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCart_v1_0
+
+		cartPaymentTermsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCart_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceDeliveryCart_v1_0",
+			"JSONObject/cartPaymentTerms");
+
+		Assert.assertEquals(
+			totalCount + 2, cartPaymentTermsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			term1,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartPaymentTermsJSONObject.getString("items"))));
+		assertContains(
+			term2,
+			Arrays.asList(
+				TermSerDes.toDTOs(
+					cartPaymentTermsJSONObject.getString("items"))));
+	}
+
+	protected Term testGraphQLGetCartPaymentTermsPageCartTerm_addTerm(
+			Long cartId, Term term)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

@@ -328,6 +328,81 @@ public abstract class BaseSegmentResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteSegmentsPage() throws Exception {
+		Long siteId = testGetSiteSegmentsPage_getSiteId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"segments",
+			new HashMap<String, Object>() {
+				{
+					put("siteKey", "\"" + siteId + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject segmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/segments");
+
+		long totalCount = segmentsJSONObject.getLong("totalCount");
+
+		Segment segment1 = testGraphQLGetSiteSegmentsPageSiteSegment_addSegment(
+			siteId, randomSegment());
+
+		Segment segment2 = testGraphQLGetSiteSegmentsPageSiteSegment_addSegment(
+			siteId, randomSegment());
+
+		segmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/segments");
+
+		Assert.assertEquals(
+			totalCount + 2, segmentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			segment1,
+			Arrays.asList(
+				SegmentSerDes.toDTOs(segmentsJSONObject.getString("items"))));
+		assertContains(
+			segment2,
+			Arrays.asList(
+				SegmentSerDes.toDTOs(segmentsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		segmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/segments");
+
+		Assert.assertEquals(
+			totalCount + 2, segmentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			segment1,
+			Arrays.asList(
+				SegmentSerDes.toDTOs(segmentsJSONObject.getString("items"))));
+		assertContains(
+			segment2,
+			Arrays.asList(
+				SegmentSerDes.toDTOs(segmentsJSONObject.getString("items"))));
+	}
+
+	protected Segment testGraphQLGetSiteSegmentsPageSiteSegment_addSegment(
+			Long siteId, Segment segment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSiteUserAccountSegmentsPage() throws Exception {
 		Long siteId = testGetSiteUserAccountSegmentsPage_getSiteId();
 		Long irrelevantSiteId =
@@ -421,6 +496,92 @@ public abstract class BaseSegmentResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetSiteUserAccountSegmentsPage() throws Exception {
+		Long siteId = testGetSiteUserAccountSegmentsPage_getSiteId();
+		Long userAccountId =
+			testGetSiteUserAccountSegmentsPage_getUserAccountId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"userAccountSegments",
+			new HashMap<String, Object>() {
+				{
+					put("siteKey", "\"" + siteId + "\"");
+					put("userAccountId", userAccountId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject userAccountSegmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/userAccountSegments");
+
+		long totalCount = userAccountSegmentsJSONObject.getLong("totalCount");
+
+		Segment segment1 =
+			testGraphQLGetSiteUserAccountSegmentsPageSiteSegment_addSegment(
+				siteId, userAccountId, randomSegment());
+
+		Segment segment2 =
+			testGraphQLGetSiteUserAccountSegmentsPageSiteSegment_addSegment(
+				siteId, userAccountId, randomSegment());
+
+		userAccountSegmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userAccountSegments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountSegmentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			segment1,
+			Arrays.asList(
+				SegmentSerDes.toDTOs(
+					userAccountSegmentsJSONObject.getString("items"))));
+		assertContains(
+			segment2,
+			Arrays.asList(
+				SegmentSerDes.toDTOs(
+					userAccountSegmentsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		userAccountSegmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/userAccountSegments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountSegmentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			segment1,
+			Arrays.asList(
+				SegmentSerDes.toDTOs(
+					userAccountSegmentsJSONObject.getString("items"))));
+		assertContains(
+			segment2,
+			Arrays.asList(
+				SegmentSerDes.toDTOs(
+					userAccountSegmentsJSONObject.getString("items"))));
+	}
+
+	protected Segment
+			testGraphQLGetSiteUserAccountSegmentsPageSiteSegment_addSegment(
+				Long siteId, Long userAccountId, Segment segment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

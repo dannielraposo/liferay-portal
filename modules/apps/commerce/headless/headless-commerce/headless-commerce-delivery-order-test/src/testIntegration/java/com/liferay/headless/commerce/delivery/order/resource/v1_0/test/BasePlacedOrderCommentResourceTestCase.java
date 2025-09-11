@@ -426,6 +426,110 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"placedOrderByExternalReferenceCodePlacedOrderComments",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			placedOrderByExternalReferenceCodePlacedOrderCommentsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/placedOrderByExternalReferenceCodePlacedOrderComments");
+
+		long totalCount =
+			placedOrderByExternalReferenceCodePlacedOrderCommentsJSONObject.
+				getLong("totalCount");
+
+		PlacedOrderComment placedOrderComment1 =
+			testGraphQLGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPagePlacedOrderPlacedOrderComment_addPlacedOrderComment(
+				externalReferenceCode, randomPlacedOrderComment());
+
+		PlacedOrderComment placedOrderComment2 =
+			testGraphQLGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPagePlacedOrderPlacedOrderComment_addPlacedOrderComment(
+				externalReferenceCode, randomPlacedOrderComment());
+
+		placedOrderByExternalReferenceCodePlacedOrderCommentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/placedOrderByExternalReferenceCodePlacedOrderComments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderByExternalReferenceCodePlacedOrderCommentsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			placedOrderComment1,
+			Arrays.asList(
+				PlacedOrderCommentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodePlacedOrderCommentsJSONObject.
+						getString("items"))));
+		assertContains(
+			placedOrderComment2,
+			Arrays.asList(
+				PlacedOrderCommentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodePlacedOrderCommentsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		placedOrderByExternalReferenceCodePlacedOrderCommentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryOrder_v1_0",
+				"JSONObject/placedOrderByExternalReferenceCodePlacedOrderComments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderByExternalReferenceCodePlacedOrderCommentsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			placedOrderComment1,
+			Arrays.asList(
+				PlacedOrderCommentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodePlacedOrderCommentsJSONObject.
+						getString("items"))));
+		assertContains(
+			placedOrderComment2,
+			Arrays.asList(
+				PlacedOrderCommentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodePlacedOrderCommentsJSONObject.
+						getString("items"))));
+	}
+
+	protected PlacedOrderComment
+			testGraphQLGetPlacedOrderByExternalReferenceCodePlacedOrderCommentsPagePlacedOrderPlacedOrderComment_addPlacedOrderComment(
+				String externalReferenceCode,
+				PlacedOrderComment placedOrderComment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetPlacedOrderComment() throws Exception {
 		PlacedOrderComment postPlacedOrderComment =
 			testGetPlacedOrderComment_addPlacedOrderComment();
@@ -1082,6 +1186,103 @@ public abstract class BasePlacedOrderCommentResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetPlacedOrderPlacedOrderCommentsPage()
+		throws Exception {
+
+		Long placedOrderId =
+			testGetPlacedOrderPlacedOrderCommentsPage_getPlacedOrderId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"placedOrderPlacedOrderComments",
+			new HashMap<String, Object>() {
+				{
+					put("placedOrderId", placedOrderId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject placedOrderPlacedOrderCommentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/placedOrderPlacedOrderComments");
+
+		long totalCount = placedOrderPlacedOrderCommentsJSONObject.getLong(
+			"totalCount");
+
+		PlacedOrderComment placedOrderComment1 =
+			testGraphQLGetPlacedOrderPlacedOrderCommentsPagePlacedOrderPlacedOrderComment_addPlacedOrderComment(
+				placedOrderId, randomPlacedOrderComment());
+
+		PlacedOrderComment placedOrderComment2 =
+			testGraphQLGetPlacedOrderPlacedOrderCommentsPagePlacedOrderPlacedOrderComment_addPlacedOrderComment(
+				placedOrderId, randomPlacedOrderComment());
+
+		placedOrderPlacedOrderCommentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/placedOrderPlacedOrderComments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderPlacedOrderCommentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			placedOrderComment1,
+			Arrays.asList(
+				PlacedOrderCommentSerDes.toDTOs(
+					placedOrderPlacedOrderCommentsJSONObject.getString(
+						"items"))));
+		assertContains(
+			placedOrderComment2,
+			Arrays.asList(
+				PlacedOrderCommentSerDes.toDTOs(
+					placedOrderPlacedOrderCommentsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		placedOrderPlacedOrderCommentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryOrder_v1_0",
+				"JSONObject/placedOrderPlacedOrderComments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderPlacedOrderCommentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			placedOrderComment1,
+			Arrays.asList(
+				PlacedOrderCommentSerDes.toDTOs(
+					placedOrderPlacedOrderCommentsJSONObject.getString(
+						"items"))));
+		assertContains(
+			placedOrderComment2,
+			Arrays.asList(
+				PlacedOrderCommentSerDes.toDTOs(
+					placedOrderPlacedOrderCommentsJSONObject.getString(
+						"items"))));
+	}
+
+	protected PlacedOrderComment
+			testGraphQLGetPlacedOrderPlacedOrderCommentsPagePlacedOrderPlacedOrderComment_addPlacedOrderComment(
+				Long placedOrderId, PlacedOrderComment placedOrderComment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

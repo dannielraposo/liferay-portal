@@ -416,6 +416,109 @@ public abstract class BaseWorkflowDefinitionLinkResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWorkflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetWorkflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinks",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinks");
+
+		long totalCount =
+			workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksJSONObject.
+				getLong("totalCount");
+
+		WorkflowDefinitionLink workflowDefinitionLink1 =
+			testGraphQLGetWorkflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksPageWorkflowDefinitionLink_addWorkflowDefinitionLink(
+				externalReferenceCode, randomWorkflowDefinitionLink());
+
+		WorkflowDefinitionLink workflowDefinitionLink2 =
+			testGraphQLGetWorkflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksPageWorkflowDefinitionLink_addWorkflowDefinitionLink(
+				externalReferenceCode, randomWorkflowDefinitionLink());
+
+		workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinks");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			workflowDefinitionLink1,
+			Arrays.asList(
+				WorkflowDefinitionLinkSerDes.toDTOs(
+					workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksJSONObject.
+						getString("items"))));
+		assertContains(
+			workflowDefinitionLink2,
+			Arrays.asList(
+				WorkflowDefinitionLinkSerDes.toDTOs(
+					workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminWorkflow_v1_0
+
+		workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminWorkflow_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminWorkflow_v1_0",
+				"JSONObject/workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinks");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			workflowDefinitionLink1,
+			Arrays.asList(
+				WorkflowDefinitionLinkSerDes.toDTOs(
+					workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksJSONObject.
+						getString("items"))));
+		assertContains(
+			workflowDefinitionLink2,
+			Arrays.asList(
+				WorkflowDefinitionLinkSerDes.toDTOs(
+					workflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksJSONObject.
+						getString("items"))));
+	}
+
+	protected WorkflowDefinitionLink
+			testGraphQLGetWorkflowDefinitionByExternalReferenceCodeWorkflowDefinitionLinksPageWorkflowDefinitionLink_addWorkflowDefinitionLink(
+				String externalReferenceCode,
+				WorkflowDefinitionLink workflowDefinitionLink)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetWorkflowDefinitionWorkflowDefinitionLinksPage()
 		throws Exception {
 

@@ -1402,6 +1402,35 @@ public abstract class BaseWikiPageResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWikiPagePermissionsPage() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		WikiPage postWikiPage =
+			testGraphQLGetWikiPagePermissionsPage_addWikiPage();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"wikiPagePermissions",
+			new HashMap<String, Object>() {
+				{
+					put("wikiPageId", postWikiPage.getId());
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject wikiPagePermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/wikiPagePermissions");
+
+		Assert.assertNotNull(wikiPagePermissionsJSONObject);
+	}
+
+	protected WikiPage testGraphQLGetWikiPagePermissionsPage_addWikiPage()
+		throws Exception {
+
+		return testGraphQLWikiPage_addWikiPage();
+	}
+
+	@Test
 	public void testGetWikiPageWikiPagesPage() throws Exception {
 		Long parentWikiPageId =
 			testGetWikiPageWikiPagesPage_getParentWikiPageId();
@@ -1480,6 +1509,86 @@ public abstract class BaseWikiPageResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetWikiPageWikiPagesPage() throws Exception {
+		Long parentWikiPageId =
+			testGetWikiPageWikiPagesPage_getParentWikiPageId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"wikiPageWikiPages",
+			new HashMap<String, Object>() {
+				{
+					put("parentWikiPageId", parentWikiPageId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject wikiPageWikiPagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/wikiPageWikiPages");
+
+		long totalCount = wikiPageWikiPagesJSONObject.getLong("totalCount");
+
+		WikiPage wikiPage1 =
+			testGraphQLGetWikiPageWikiPagesPageWikiPage_addWikiPage(
+				parentWikiPageId, randomWikiPage());
+
+		WikiPage wikiPage2 =
+			testGraphQLGetWikiPageWikiPagesPageWikiPage_addWikiPage(
+				parentWikiPageId, randomWikiPage());
+
+		wikiPageWikiPagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/wikiPageWikiPages");
+
+		Assert.assertEquals(
+			totalCount + 2, wikiPageWikiPagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			wikiPage1,
+			Arrays.asList(
+				WikiPageSerDes.toDTOs(
+					wikiPageWikiPagesJSONObject.getString("items"))));
+		assertContains(
+			wikiPage2,
+			Arrays.asList(
+				WikiPageSerDes.toDTOs(
+					wikiPageWikiPagesJSONObject.getString("items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		wikiPageWikiPagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+			"JSONObject/wikiPageWikiPages");
+
+		Assert.assertEquals(
+			totalCount + 2, wikiPageWikiPagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			wikiPage1,
+			Arrays.asList(
+				WikiPageSerDes.toDTOs(
+					wikiPageWikiPagesJSONObject.getString("items"))));
+		assertContains(
+			wikiPage2,
+			Arrays.asList(
+				WikiPageSerDes.toDTOs(
+					wikiPageWikiPagesJSONObject.getString("items"))));
+	}
+
+	protected WikiPage testGraphQLGetWikiPageWikiPagesPageWikiPage_addWikiPage(
+			Long parentWikiPageId, WikiPage wikiPage)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

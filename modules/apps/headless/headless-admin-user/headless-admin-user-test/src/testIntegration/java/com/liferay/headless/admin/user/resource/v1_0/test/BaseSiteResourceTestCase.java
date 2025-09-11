@@ -317,6 +317,84 @@ public abstract class BaseSiteResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetMyUserAccountSitesPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"myUserAccountSites",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject myUserAccountSitesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/myUserAccountSites");
+
+		long totalCount = myUserAccountSitesJSONObject.getLong("totalCount");
+
+		Site site1 =
+			testGraphQLGetMyUserAccountSitesPageUserAccountSite_addSite(
+				randomSite());
+
+		Site site2 =
+			testGraphQLGetMyUserAccountSitesPageUserAccountSite_addSite(
+				randomSite());
+
+		myUserAccountSitesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/myUserAccountSites");
+
+		Assert.assertEquals(
+			totalCount + 2, myUserAccountSitesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			site1,
+			Arrays.asList(
+				SiteSerDes.toDTOs(
+					myUserAccountSitesJSONObject.getString("items"))));
+		assertContains(
+			site2,
+			Arrays.asList(
+				SiteSerDes.toDTOs(
+					myUserAccountSitesJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		myUserAccountSitesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/myUserAccountSites");
+
+		Assert.assertEquals(
+			totalCount + 2, myUserAccountSitesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			site1,
+			Arrays.asList(
+				SiteSerDes.toDTOs(
+					myUserAccountSitesJSONObject.getString("items"))));
+		assertContains(
+			site2,
+			Arrays.asList(
+				SiteSerDes.toDTOs(
+					myUserAccountSitesJSONObject.getString("items"))));
+	}
+
+	protected Site testGraphQLGetMyUserAccountSitesPageUserAccountSite_addSite(
+			Site site)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSite() throws Exception {
 		Site postSite = testGetSite_addSite();
 

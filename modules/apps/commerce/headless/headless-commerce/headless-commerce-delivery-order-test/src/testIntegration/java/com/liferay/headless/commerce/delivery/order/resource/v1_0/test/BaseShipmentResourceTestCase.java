@@ -640,6 +640,109 @@ public abstract class BaseShipmentResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPlacedOrderByExternalReferenceCodeShipmentsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPlacedOrderByExternalReferenceCodeShipmentsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"placedOrderByExternalReferenceCodeShipments",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject placedOrderByExternalReferenceCodeShipmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/placedOrderByExternalReferenceCodeShipments");
+
+		long totalCount =
+			placedOrderByExternalReferenceCodeShipmentsJSONObject.getLong(
+				"totalCount");
+
+		Shipment shipment1 =
+			testGraphQLGetPlacedOrderByExternalReferenceCodeShipmentsPagePlacedOrderShipment_addShipment(
+				externalReferenceCode, randomShipment());
+
+		Shipment shipment2 =
+			testGraphQLGetPlacedOrderByExternalReferenceCodeShipmentsPagePlacedOrderShipment_addShipment(
+				externalReferenceCode, randomShipment());
+
+		placedOrderByExternalReferenceCodeShipmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/placedOrderByExternalReferenceCodeShipments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderByExternalReferenceCodeShipmentsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			shipment1,
+			Arrays.asList(
+				ShipmentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodeShipmentsJSONObject.
+						getString("items"))));
+		assertContains(
+			shipment2,
+			Arrays.asList(
+				ShipmentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodeShipmentsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		placedOrderByExternalReferenceCodeShipmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryOrder_v1_0",
+				"JSONObject/placedOrderByExternalReferenceCodeShipments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderByExternalReferenceCodeShipmentsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			shipment1,
+			Arrays.asList(
+				ShipmentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodeShipmentsJSONObject.
+						getString("items"))));
+		assertContains(
+			shipment2,
+			Arrays.asList(
+				ShipmentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodeShipmentsJSONObject.
+						getString("items"))));
+	}
+
+	protected Shipment
+			testGraphQLGetPlacedOrderByExternalReferenceCodeShipmentsPagePlacedOrderShipment_addShipment(
+				String externalReferenceCode, Shipment shipment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetPlacedOrderShipmentsPage() throws Exception {
 		Long placedOrderId = testGetPlacedOrderShipmentsPage_getPlacedOrderId();
 		Long irrelevantPlacedOrderId =
@@ -1034,6 +1137,93 @@ public abstract class BaseShipmentResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetPlacedOrderShipmentsPage() throws Exception {
+		Long placedOrderId = testGetPlacedOrderShipmentsPage_getPlacedOrderId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"placedOrderShipments",
+			new HashMap<String, Object>() {
+				{
+					put("placedOrderId", placedOrderId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject placedOrderShipmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/placedOrderShipments");
+
+		long totalCount = placedOrderShipmentsJSONObject.getLong("totalCount");
+
+		Shipment shipment1 =
+			testGraphQLGetPlacedOrderShipmentsPagePlacedOrderShipment_addShipment(
+				placedOrderId, randomShipment());
+
+		Shipment shipment2 =
+			testGraphQLGetPlacedOrderShipmentsPagePlacedOrderShipment_addShipment(
+				placedOrderId, randomShipment());
+
+		placedOrderShipmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/placedOrderShipments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderShipmentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			shipment1,
+			Arrays.asList(
+				ShipmentSerDes.toDTOs(
+					placedOrderShipmentsJSONObject.getString("items"))));
+		assertContains(
+			shipment2,
+			Arrays.asList(
+				ShipmentSerDes.toDTOs(
+					placedOrderShipmentsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		placedOrderShipmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceDeliveryOrder_v1_0",
+			"JSONObject/placedOrderShipments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderShipmentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			shipment1,
+			Arrays.asList(
+				ShipmentSerDes.toDTOs(
+					placedOrderShipmentsJSONObject.getString("items"))));
+		assertContains(
+			shipment2,
+			Arrays.asList(
+				ShipmentSerDes.toDTOs(
+					placedOrderShipmentsJSONObject.getString("items"))));
+	}
+
+	protected Shipment
+			testGraphQLGetPlacedOrderShipmentsPagePlacedOrderShipment_addShipment(
+				Long placedOrderId, Shipment shipment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

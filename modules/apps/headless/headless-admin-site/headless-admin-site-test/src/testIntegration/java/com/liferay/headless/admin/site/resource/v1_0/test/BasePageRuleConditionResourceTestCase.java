@@ -645,6 +645,114 @@ public abstract class BasePageRuleConditionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodePageRulePageRuleConditionsPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageRulePageRuleConditionsPage_getSiteExternalReferenceCode();
+		String pageRuleExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageRulePageRuleConditionsPage_getPageRuleExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodePageRulePageRuleConditions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put(
+						"pageRuleExternalReferenceCode",
+						"\"" + pageRuleExternalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			siteByExternalReferenceCodePageRulePageRuleConditionsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/siteByExternalReferenceCodePageRulePageRuleConditions");
+
+		long totalCount =
+			siteByExternalReferenceCodePageRulePageRuleConditionsJSONObject.
+				getLong("totalCount");
+
+		PageRuleCondition pageRuleCondition1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageRulePageRuleConditionsPageSitePageRuleCondition_addPageRuleCondition(
+				siteExternalReferenceCode, pageRuleExternalReferenceCode,
+				randomPageRuleCondition());
+
+		PageRuleCondition pageRuleCondition2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageRulePageRuleConditionsPageSitePageRuleCondition_addPageRuleCondition(
+				siteExternalReferenceCode, pageRuleExternalReferenceCode,
+				randomPageRuleCondition());
+
+		siteByExternalReferenceCodePageRulePageRuleConditionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodePageRulePageRuleConditions");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageRulePageRuleConditionsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			pageRuleCondition1,
+			Arrays.asList(
+				PageRuleConditionSerDes.toDTOs(
+					siteByExternalReferenceCodePageRulePageRuleConditionsJSONObject.
+						getString("items"))));
+		assertContains(
+			pageRuleCondition2,
+			Arrays.asList(
+				PageRuleConditionSerDes.toDTOs(
+					siteByExternalReferenceCodePageRulePageRuleConditionsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodePageRulePageRuleConditionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodePageRulePageRuleConditions");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageRulePageRuleConditionsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			pageRuleCondition1,
+			Arrays.asList(
+				PageRuleConditionSerDes.toDTOs(
+					siteByExternalReferenceCodePageRulePageRuleConditionsJSONObject.
+						getString("items"))));
+		assertContains(
+			pageRuleCondition2,
+			Arrays.asList(
+				PageRuleConditionSerDes.toDTOs(
+					siteByExternalReferenceCodePageRulePageRuleConditionsJSONObject.
+						getString("items"))));
+	}
+
+	protected PageRuleCondition
+			testGraphQLGetSiteSiteByExternalReferenceCodePageRulePageRuleConditionsPageSitePageRuleCondition_addPageRuleCondition(
+				String siteExternalReferenceCode,
+				String pageRuleExternalReferenceCode,
+				PageRuleCondition pageRuleCondition)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPatchSiteSiteByExternalReferenceCodePageRuleCondition()
 		throws Exception {
 

@@ -610,6 +610,104 @@ public abstract class BaseEmailAddressResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAccountByExternalReferenceCodeEmailAddressesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetAccountByExternalReferenceCodeEmailAddressesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountByExternalReferenceCodeEmailAddresses",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject accountByExternalReferenceCodeEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountByExternalReferenceCodeEmailAddresses");
+
+		long totalCount =
+			accountByExternalReferenceCodeEmailAddressesJSONObject.getLong(
+				"totalCount");
+
+		EmailAddress emailAddress1 =
+			testGraphQLGetAccountByExternalReferenceCodeEmailAddressesPageAccountEmailAddress_addEmailAddress(
+				externalReferenceCode, randomEmailAddress());
+
+		EmailAddress emailAddress2 =
+			testGraphQLGetAccountByExternalReferenceCodeEmailAddressesPageAccountEmailAddress_addEmailAddress(
+				externalReferenceCode, randomEmailAddress());
+
+		accountByExternalReferenceCodeEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountByExternalReferenceCodeEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeEmailAddressesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					accountByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					accountByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		accountByExternalReferenceCodeEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/accountByExternalReferenceCodeEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeEmailAddressesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					accountByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					accountByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+	}
+
+	protected EmailAddress
+			testGraphQLGetAccountByExternalReferenceCodeEmailAddressesPageAccountEmailAddress_addEmailAddress(
+				String externalReferenceCode, EmailAddress emailAddress)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetAccountEmailAddressesPage() throws Exception {
 		Long accountId = testGetAccountEmailAddressesPage_getAccountId();
 		Long irrelevantAccountId =
@@ -689,6 +787,89 @@ public abstract class BaseEmailAddressResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetAccountEmailAddressesPage() throws Exception {
+		Long accountId = testGetAccountEmailAddressesPage_getAccountId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountEmailAddresses",
+			new HashMap<String, Object>() {
+				{
+					put("accountId", accountId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject accountEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountEmailAddresses");
+
+		long totalCount = accountEmailAddressesJSONObject.getLong("totalCount");
+
+		EmailAddress emailAddress1 =
+			testGraphQLGetAccountEmailAddressesPageAccountEmailAddress_addEmailAddress(
+				accountId, randomEmailAddress());
+
+		EmailAddress emailAddress2 =
+			testGraphQLGetAccountEmailAddressesPageAccountEmailAddress_addEmailAddress(
+				accountId, randomEmailAddress());
+
+		accountEmailAddressesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/accountEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountEmailAddressesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					accountEmailAddressesJSONObject.getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					accountEmailAddressesJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		accountEmailAddressesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/accountEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountEmailAddressesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					accountEmailAddressesJSONObject.getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					accountEmailAddressesJSONObject.getString("items"))));
+	}
+
+	protected EmailAddress
+			testGraphQLGetAccountEmailAddressesPageAccountEmailAddress_addEmailAddress(
+				Long accountId, EmailAddress emailAddress)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -1229,6 +1410,104 @@ public abstract class BaseEmailAddressResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetOrganizationByExternalReferenceCodeEmailAddressesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetOrganizationByExternalReferenceCodeEmailAddressesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"organizationByExternalReferenceCodeEmailAddresses",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject organizationByExternalReferenceCodeEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/organizationByExternalReferenceCodeEmailAddresses");
+
+		long totalCount =
+			organizationByExternalReferenceCodeEmailAddressesJSONObject.getLong(
+				"totalCount");
+
+		EmailAddress emailAddress1 =
+			testGraphQLGetOrganizationByExternalReferenceCodeEmailAddressesPageOrganizationEmailAddress_addEmailAddress(
+				externalReferenceCode, randomEmailAddress());
+
+		EmailAddress emailAddress2 =
+			testGraphQLGetOrganizationByExternalReferenceCodeEmailAddressesPageOrganizationEmailAddress_addEmailAddress(
+				externalReferenceCode, randomEmailAddress());
+
+		organizationByExternalReferenceCodeEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/organizationByExternalReferenceCodeEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationByExternalReferenceCodeEmailAddressesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					organizationByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					organizationByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		organizationByExternalReferenceCodeEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/organizationByExternalReferenceCodeEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationByExternalReferenceCodeEmailAddressesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					organizationByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					organizationByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+	}
+
+	protected EmailAddress
+			testGraphQLGetOrganizationByExternalReferenceCodeEmailAddressesPageOrganizationEmailAddress_addEmailAddress(
+				String externalReferenceCode, EmailAddress emailAddress)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetOrganizationEmailAddressesPage() throws Exception {
 		String organizationId =
 			testGetOrganizationEmailAddressesPage_getOrganizationId();
@@ -1315,6 +1594,93 @@ public abstract class BaseEmailAddressResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetOrganizationEmailAddressesPage()
+		throws Exception {
+
+		String organizationId =
+			testGetOrganizationEmailAddressesPage_getOrganizationId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"organizationEmailAddresses",
+			new HashMap<String, Object>() {
+				{
+					put("organizationId", "\"" + organizationId + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject organizationEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/organizationEmailAddresses");
+
+		long totalCount = organizationEmailAddressesJSONObject.getLong(
+			"totalCount");
+
+		EmailAddress emailAddress1 =
+			testGraphQLGetOrganizationEmailAddressesPageOrganizationEmailAddress_addEmailAddress(
+				organizationId, randomEmailAddress());
+
+		EmailAddress emailAddress2 =
+			testGraphQLGetOrganizationEmailAddressesPageOrganizationEmailAddress_addEmailAddress(
+				organizationId, randomEmailAddress());
+
+		organizationEmailAddressesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/organizationEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationEmailAddressesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					organizationEmailAddressesJSONObject.getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					organizationEmailAddressesJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		organizationEmailAddressesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/organizationEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationEmailAddressesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					organizationEmailAddressesJSONObject.getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					organizationEmailAddressesJSONObject.getString("items"))));
+	}
+
+	protected EmailAddress
+			testGraphQLGetOrganizationEmailAddressesPageOrganizationEmailAddress_addEmailAddress(
+				String organizationId, EmailAddress emailAddress)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -1416,6 +1782,104 @@ public abstract class BaseEmailAddressResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetUserAccountByExternalReferenceCodeEmailAddressesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetUserAccountByExternalReferenceCodeEmailAddressesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"userAccountByExternalReferenceCodeEmailAddresses",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject userAccountByExternalReferenceCodeEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/userAccountByExternalReferenceCodeEmailAddresses");
+
+		long totalCount =
+			userAccountByExternalReferenceCodeEmailAddressesJSONObject.getLong(
+				"totalCount");
+
+		EmailAddress emailAddress1 =
+			testGraphQLGetUserAccountByExternalReferenceCodeEmailAddressesPageUserAccountEmailAddress_addEmailAddress(
+				externalReferenceCode, randomEmailAddress());
+
+		EmailAddress emailAddress2 =
+			testGraphQLGetUserAccountByExternalReferenceCodeEmailAddressesPageUserAccountEmailAddress_addEmailAddress(
+				externalReferenceCode, randomEmailAddress());
+
+		userAccountByExternalReferenceCodeEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/userAccountByExternalReferenceCodeEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountByExternalReferenceCodeEmailAddressesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					userAccountByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					userAccountByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		userAccountByExternalReferenceCodeEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/userAccountByExternalReferenceCodeEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountByExternalReferenceCodeEmailAddressesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					userAccountByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					userAccountByExternalReferenceCodeEmailAddressesJSONObject.
+						getString("items"))));
+	}
+
+	protected EmailAddress
+			testGraphQLGetUserAccountByExternalReferenceCodeEmailAddressesPageUserAccountEmailAddress_addEmailAddress(
+				String externalReferenceCode, EmailAddress emailAddress)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetUserAccountEmailAddressesPage() throws Exception {
 		Long userAccountId =
 			testGetUserAccountEmailAddressesPage_getUserAccountId();
@@ -1501,6 +1965,91 @@ public abstract class BaseEmailAddressResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetUserAccountEmailAddressesPage() throws Exception {
+		Long userAccountId =
+			testGetUserAccountEmailAddressesPage_getUserAccountId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"userAccountEmailAddresses",
+			new HashMap<String, Object>() {
+				{
+					put("userAccountId", userAccountId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject userAccountEmailAddressesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/userAccountEmailAddresses");
+
+		long totalCount = userAccountEmailAddressesJSONObject.getLong(
+			"totalCount");
+
+		EmailAddress emailAddress1 =
+			testGraphQLGetUserAccountEmailAddressesPageUserAccountEmailAddress_addEmailAddress(
+				userAccountId, randomEmailAddress());
+
+		EmailAddress emailAddress2 =
+			testGraphQLGetUserAccountEmailAddressesPageUserAccountEmailAddress_addEmailAddress(
+				userAccountId, randomEmailAddress());
+
+		userAccountEmailAddressesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userAccountEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountEmailAddressesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					userAccountEmailAddressesJSONObject.getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					userAccountEmailAddressesJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		userAccountEmailAddressesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/userAccountEmailAddresses");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountEmailAddressesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			emailAddress1,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					userAccountEmailAddressesJSONObject.getString("items"))));
+		assertContains(
+			emailAddress2,
+			Arrays.asList(
+				EmailAddressSerDes.toDTOs(
+					userAccountEmailAddressesJSONObject.getString("items"))));
+	}
+
+	protected EmailAddress
+			testGraphQLGetUserAccountEmailAddressesPageUserAccountEmailAddress_addEmailAddress(
+				Long userAccountId, EmailAddress emailAddress)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

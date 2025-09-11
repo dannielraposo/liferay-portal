@@ -691,6 +691,98 @@ public abstract class BasePlacedOrderResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelAccountPlacedOrdersPage()
+		throws Exception {
+
+		Long accountId = testGetChannelAccountPlacedOrdersPage_getAccountId();
+		Long channelId = testGetChannelAccountPlacedOrdersPage_getChannelId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelAccountPlacedOrders",
+			new HashMap<String, Object>() {
+				{
+					put("accountId", accountId);
+					put("channelId", channelId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelAccountPlacedOrdersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelAccountPlacedOrders");
+
+		long totalCount = channelAccountPlacedOrdersJSONObject.getLong(
+			"totalCount");
+
+		PlacedOrder placedOrder1 =
+			testGraphQLGetChannelAccountPlacedOrdersPagePlacedOrder_addPlacedOrder(
+				accountId, channelId, randomPlacedOrder());
+
+		PlacedOrder placedOrder2 =
+			testGraphQLGetChannelAccountPlacedOrdersPagePlacedOrder_addPlacedOrder(
+				accountId, channelId, randomPlacedOrder());
+
+		channelAccountPlacedOrdersJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelAccountPlacedOrders");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelAccountPlacedOrdersJSONObject.getLong("totalCount"));
+
+		assertContains(
+			placedOrder1,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelAccountPlacedOrdersJSONObject.getString("items"))));
+		assertContains(
+			placedOrder2,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelAccountPlacedOrdersJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		channelAccountPlacedOrdersJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceDeliveryOrder_v1_0",
+			"JSONObject/channelAccountPlacedOrders");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelAccountPlacedOrdersJSONObject.getLong("totalCount"));
+
+		assertContains(
+			placedOrder1,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelAccountPlacedOrdersJSONObject.getString("items"))));
+		assertContains(
+			placedOrder2,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelAccountPlacedOrdersJSONObject.getString("items"))));
+	}
+
+	protected PlacedOrder
+			testGraphQLGetChannelAccountPlacedOrdersPagePlacedOrder_addPlacedOrder(
+				Long accountId, Long channelId, PlacedOrder placedOrder)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetChannelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersPage()
 		throws Exception {
 
@@ -1209,6 +1301,118 @@ public abstract class BasePlacedOrderResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersPage()
+		throws Exception {
+
+		String accountExternalReferenceCode =
+			testGetChannelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersPage_getAccountExternalReferenceCode();
+		String channelExternalReferenceCode =
+			testGetChannelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersPage_getChannelExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrders",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"accountExternalReferenceCode",
+						"\"" + accountExternalReferenceCode + "\"");
+					put(
+						"channelExternalReferenceCode",
+						"\"" + channelExternalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrders");
+
+		long totalCount =
+			channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersJSONObject.
+				getLong("totalCount");
+
+		PlacedOrder placedOrder1 =
+			testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersPagePlacedOrder_addPlacedOrder(
+				accountExternalReferenceCode, channelExternalReferenceCode,
+				randomPlacedOrder());
+
+		PlacedOrder placedOrder2 =
+			testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersPagePlacedOrder_addPlacedOrder(
+				accountExternalReferenceCode, channelExternalReferenceCode,
+				randomPlacedOrder());
+
+		channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrders");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			placedOrder1,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersJSONObject.
+						getString("items"))));
+		assertContains(
+			placedOrder2,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryOrder_v1_0",
+				"JSONObject/channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrders");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			placedOrder1,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersJSONObject.
+						getString("items"))));
+		assertContains(
+			placedOrder2,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersJSONObject.
+						getString("items"))));
+	}
+
+	protected PlacedOrder
+			testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeAccountByExternalReferenceCodeAccountExternalReferenceCodePlacedOrdersPagePlacedOrder_addPlacedOrder(
+				String accountExternalReferenceCode,
+				String channelExternalReferenceCode, PlacedOrder placedOrder)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetChannelByExternalReferenceCodePlacedOrdersPage()
 		throws Exception {
 
@@ -1671,6 +1875,109 @@ public abstract class BasePlacedOrderResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelByExternalReferenceCodePlacedOrdersPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetChannelByExternalReferenceCodePlacedOrdersPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelByExternalReferenceCodePlacedOrders",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelByExternalReferenceCodePlacedOrdersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodePlacedOrders");
+
+		long totalCount =
+			channelByExternalReferenceCodePlacedOrdersJSONObject.getLong(
+				"totalCount");
+
+		PlacedOrder placedOrder1 =
+			testGraphQLGetChannelByExternalReferenceCodePlacedOrdersPagePlacedOrder_addPlacedOrder(
+				externalReferenceCode, randomPlacedOrder());
+
+		PlacedOrder placedOrder2 =
+			testGraphQLGetChannelByExternalReferenceCodePlacedOrdersPagePlacedOrder_addPlacedOrder(
+				externalReferenceCode, randomPlacedOrder());
+
+		channelByExternalReferenceCodePlacedOrdersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodePlacedOrders");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodePlacedOrdersJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			placedOrder1,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelByExternalReferenceCodePlacedOrdersJSONObject.
+						getString("items"))));
+		assertContains(
+			placedOrder2,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelByExternalReferenceCodePlacedOrdersJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		channelByExternalReferenceCodePlacedOrdersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryOrder_v1_0",
+				"JSONObject/channelByExternalReferenceCodePlacedOrders");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodePlacedOrdersJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			placedOrder1,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelByExternalReferenceCodePlacedOrdersJSONObject.
+						getString("items"))));
+		assertContains(
+			placedOrder2,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelByExternalReferenceCodePlacedOrdersJSONObject.
+						getString("items"))));
+	}
+
+	protected PlacedOrder
+			testGraphQLGetChannelByExternalReferenceCodePlacedOrdersPagePlacedOrder_addPlacedOrder(
+				String externalReferenceCode, PlacedOrder placedOrder)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetChannelPlacedOrdersPage() throws Exception {
 		Long channelId = testGetChannelPlacedOrdersPage_getChannelId();
 		Long irrelevantChannelId =
@@ -2087,6 +2394,93 @@ public abstract class BasePlacedOrderResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetChannelPlacedOrdersPage() throws Exception {
+		Long channelId = testGetChannelPlacedOrdersPage_getChannelId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelPlacedOrders",
+			new HashMap<String, Object>() {
+				{
+					put("channelId", channelId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelPlacedOrdersJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelPlacedOrders");
+
+		long totalCount = channelPlacedOrdersJSONObject.getLong("totalCount");
+
+		PlacedOrder placedOrder1 =
+			testGraphQLGetChannelPlacedOrdersPagePlacedOrder_addPlacedOrder(
+				channelId, randomPlacedOrder());
+
+		PlacedOrder placedOrder2 =
+			testGraphQLGetChannelPlacedOrdersPagePlacedOrder_addPlacedOrder(
+				channelId, randomPlacedOrder());
+
+		channelPlacedOrdersJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelPlacedOrders");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelPlacedOrdersJSONObject.getLong("totalCount"));
+
+		assertContains(
+			placedOrder1,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelPlacedOrdersJSONObject.getString("items"))));
+		assertContains(
+			placedOrder2,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelPlacedOrdersJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		channelPlacedOrdersJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceDeliveryOrder_v1_0",
+			"JSONObject/channelPlacedOrders");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelPlacedOrdersJSONObject.getLong("totalCount"));
+
+		assertContains(
+			placedOrder1,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelPlacedOrdersJSONObject.getString("items"))));
+		assertContains(
+			placedOrder2,
+			Arrays.asList(
+				PlacedOrderSerDes.toDTOs(
+					channelPlacedOrdersJSONObject.getString("items"))));
+	}
+
+	protected PlacedOrder
+			testGraphQLGetChannelPlacedOrdersPagePlacedOrder_addPlacedOrder(
+				Long channelId, PlacedOrder placedOrder)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

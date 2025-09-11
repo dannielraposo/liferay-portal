@@ -373,6 +373,51 @@ public abstract class BaseMasterPageResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteMasterPagePermissionsPage() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		MasterPage postMasterPage =
+			testGraphQLGetSiteMasterPagePermissionsPage_addMasterPage();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"masterPagePermissions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" +
+							testGraphQLGetSiteMasterPagePermissionsPage_getSiteExternalReferenceCode() +
+								"\"");
+					put(
+						"masterPageExternalReferenceCode",
+						"\"" + postMasterPage.getExternalReferenceCode() +
+							"\"");
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject masterPagePermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/masterPagePermissions");
+
+		Assert.assertNotNull(masterPagePermissionsJSONObject);
+	}
+
+	protected String
+			testGraphQLGetSiteMasterPagePermissionsPage_getSiteExternalReferenceCode()
+		throws Exception {
+
+		return testGroup.getExternalReferenceCode();
+	}
+
+	protected MasterPage
+			testGraphQLGetSiteMasterPagePermissionsPage_addMasterPage()
+		throws Exception {
+
+		return testGraphQLSiteMasterPage_addMasterPage();
+	}
+
+	@Test
 	public void testGetSiteSiteByExternalReferenceCodeMasterPage()
 		throws Exception {
 
@@ -996,6 +1041,107 @@ public abstract class BaseMasterPageResourceTestCase {
 		throws Exception {
 
 		return irrelevantGroup.getExternalReferenceCode();
+	}
+
+	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodeMasterPagesPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodeMasterPagesPage_getSiteExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodeMasterPages",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject siteByExternalReferenceCodeMasterPagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodeMasterPages");
+
+		long totalCount =
+			siteByExternalReferenceCodeMasterPagesJSONObject.getLong(
+				"totalCount");
+
+		MasterPage masterPage1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeMasterPagesPageSiteMasterPage_addMasterPage(
+				siteExternalReferenceCode, randomMasterPage());
+
+		MasterPage masterPage2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeMasterPagesPageSiteMasterPage_addMasterPage(
+				siteExternalReferenceCode, randomMasterPage());
+
+		siteByExternalReferenceCodeMasterPagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodeMasterPages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeMasterPagesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			masterPage1,
+			Arrays.asList(
+				MasterPageSerDes.toDTOs(
+					siteByExternalReferenceCodeMasterPagesJSONObject.getString(
+						"items"))));
+		assertContains(
+			masterPage2,
+			Arrays.asList(
+				MasterPageSerDes.toDTOs(
+					siteByExternalReferenceCodeMasterPagesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodeMasterPagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodeMasterPages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeMasterPagesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			masterPage1,
+			Arrays.asList(
+				MasterPageSerDes.toDTOs(
+					siteByExternalReferenceCodeMasterPagesJSONObject.getString(
+						"items"))));
+		assertContains(
+			masterPage2,
+			Arrays.asList(
+				MasterPageSerDes.toDTOs(
+					siteByExternalReferenceCodeMasterPagesJSONObject.getString(
+						"items"))));
+	}
+
+	protected MasterPage
+			testGraphQLGetSiteSiteByExternalReferenceCodeMasterPagesPageSiteMasterPage_addMasterPage(
+				String siteExternalReferenceCode, MasterPage masterPage)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

@@ -703,6 +703,107 @@ public abstract class BaseCartCommentResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCartByExternalReferenceCodeCommentsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetCartByExternalReferenceCodeCommentsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"cartByExternalReferenceCodeComments",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cartByExternalReferenceCodeCommentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/cartByExternalReferenceCodeComments");
+
+		long totalCount = cartByExternalReferenceCodeCommentsJSONObject.getLong(
+			"totalCount");
+
+		CartComment cartComment1 =
+			testGraphQLGetCartByExternalReferenceCodeCommentsPageCartCartComment_addCartComment(
+				externalReferenceCode, randomCartComment());
+
+		CartComment cartComment2 =
+			testGraphQLGetCartByExternalReferenceCodeCommentsPageCartCartComment_addCartComment(
+				externalReferenceCode, randomCartComment());
+
+		cartByExternalReferenceCodeCommentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/cartByExternalReferenceCodeComments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartByExternalReferenceCodeCommentsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			cartComment1,
+			Arrays.asList(
+				CartCommentSerDes.toDTOs(
+					cartByExternalReferenceCodeCommentsJSONObject.getString(
+						"items"))));
+		assertContains(
+			cartComment2,
+			Arrays.asList(
+				CartCommentSerDes.toDTOs(
+					cartByExternalReferenceCodeCommentsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceDeliveryCart_v1_0
+
+		cartByExternalReferenceCodeCommentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryCart_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryCart_v1_0",
+				"JSONObject/cartByExternalReferenceCodeComments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartByExternalReferenceCodeCommentsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			cartComment1,
+			Arrays.asList(
+				CartCommentSerDes.toDTOs(
+					cartByExternalReferenceCodeCommentsJSONObject.getString(
+						"items"))));
+		assertContains(
+			cartComment2,
+			Arrays.asList(
+				CartCommentSerDes.toDTOs(
+					cartByExternalReferenceCodeCommentsJSONObject.getString(
+						"items"))));
+	}
+
+	protected CartComment
+			testGraphQLGetCartByExternalReferenceCodeCommentsPageCartCartComment_addCartComment(
+				String externalReferenceCode, CartComment cartComment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetCartComment() throws Exception {
 		CartComment postCartComment = testGetCartComment_addCartComment();
 
@@ -1292,6 +1393,89 @@ public abstract class BaseCartCommentResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetCartCommentsPage() throws Exception {
+		Long cartId = testGetCartCommentsPage_getCartId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"cartComments",
+			new HashMap<String, Object>() {
+				{
+					put("cartId", cartId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cartCommentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cartComments");
+
+		long totalCount = cartCommentsJSONObject.getLong("totalCount");
+
+		CartComment cartComment1 =
+			testGraphQLGetCartCommentsPageCartCartComment_addCartComment(
+				cartId, randomCartComment());
+
+		CartComment cartComment2 =
+			testGraphQLGetCartCommentsPageCartCartComment_addCartComment(
+				cartId, randomCartComment());
+
+		cartCommentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cartComments");
+
+		Assert.assertEquals(
+			totalCount + 2, cartCommentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			cartComment1,
+			Arrays.asList(
+				CartCommentSerDes.toDTOs(
+					cartCommentsJSONObject.getString("items"))));
+		assertContains(
+			cartComment2,
+			Arrays.asList(
+				CartCommentSerDes.toDTOs(
+					cartCommentsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCart_v1_0
+
+		cartCommentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCart_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceDeliveryCart_v1_0",
+			"JSONObject/cartComments");
+
+		Assert.assertEquals(
+			totalCount + 2, cartCommentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			cartComment1,
+			Arrays.asList(
+				CartCommentSerDes.toDTOs(
+					cartCommentsJSONObject.getString("items"))));
+		assertContains(
+			cartComment2,
+			Arrays.asList(
+				CartCommentSerDes.toDTOs(
+					cartCommentsJSONObject.getString("items"))));
+	}
+
+	protected CartComment
+			testGraphQLGetCartCommentsPageCartCartComment_addCartComment(
+				Long cartId, CartComment cartComment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

@@ -350,6 +350,91 @@ public abstract class BaseSegmentUserResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSegmentUserAccountsPage() throws Exception {
+		Long segmentId = testGetSegmentUserAccountsPage_getSegmentId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"segmentUserAccounts",
+			new HashMap<String, Object>() {
+				{
+					put("segmentId", segmentId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject segmentUserAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/segmentUserAccounts");
+
+		long totalCount = segmentUserAccountsJSONObject.getLong("totalCount");
+
+		SegmentUser segmentUser1 =
+			testGraphQLGetSegmentUserAccountsPageSegmentUser_addSegmentUser(
+				segmentId, randomSegmentUser());
+
+		SegmentUser segmentUser2 =
+			testGraphQLGetSegmentUserAccountsPageSegmentUser_addSegmentUser(
+				segmentId, randomSegmentUser());
+
+		segmentUserAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/segmentUserAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			segmentUserAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			segmentUser1,
+			Arrays.asList(
+				SegmentUserSerDes.toDTOs(
+					segmentUserAccountsJSONObject.getString("items"))));
+		assertContains(
+			segmentUser2,
+			Arrays.asList(
+				SegmentUserSerDes.toDTOs(
+					segmentUserAccountsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		segmentUserAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/segmentUserAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			segmentUserAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			segmentUser1,
+			Arrays.asList(
+				SegmentUserSerDes.toDTOs(
+					segmentUserAccountsJSONObject.getString("items"))));
+		assertContains(
+			segmentUser2,
+			Arrays.asList(
+				SegmentUserSerDes.toDTOs(
+					segmentUserAccountsJSONObject.getString("items"))));
+	}
+
+	protected SegmentUser
+			testGraphQLGetSegmentUserAccountsPageSegmentUser_addSegmentUser(
+				Long segmentId, SegmentUser segmentUser)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

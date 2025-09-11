@@ -466,6 +466,86 @@ public abstract class BaseCommerceChannelResourceTestCase {
 			"This method needs to be implemented");
 	}
 
+	@Test
+	public void testGraphQLGetCommerceChannelsPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"commerceChannels",
+			new HashMap<String, Object>() {
+				{
+					put("keywords", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject commerceChannelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/commerceChannels");
+
+		long totalCount = commerceChannelsJSONObject.getLong("totalCount");
+
+		CommerceChannel commerceChannel1 =
+			testGraphQLGetCommerceChannelsPageCommerceChannel_addCommerceChannel(
+				randomCommerceChannel());
+
+		CommerceChannel commerceChannel2 =
+			testGraphQLGetCommerceChannelsPageCommerceChannel_addCommerceChannel(
+				randomCommerceChannel());
+
+		commerceChannelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/commerceChannels");
+
+		Assert.assertEquals(
+			totalCount + 2, commerceChannelsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			commerceChannel1,
+			Arrays.asList(
+				CommerceChannelSerDes.toDTOs(
+					commerceChannelsJSONObject.getString("items"))));
+		assertContains(
+			commerceChannel2,
+			Arrays.asList(
+				CommerceChannelSerDes.toDTOs(
+					commerceChannelsJSONObject.getString("items"))));
+
+		// Using the namespace analyticsSettings_v1_0
+
+		commerceChannelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("analyticsSettings_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/analyticsSettings_v1_0",
+			"JSONObject/commerceChannels");
+
+		Assert.assertEquals(
+			totalCount + 2, commerceChannelsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			commerceChannel1,
+			Arrays.asList(
+				CommerceChannelSerDes.toDTOs(
+					commerceChannelsJSONObject.getString("items"))));
+		assertContains(
+			commerceChannel2,
+			Arrays.asList(
+				CommerceChannelSerDes.toDTOs(
+					commerceChannelsJSONObject.getString("items"))));
+	}
+
+	protected CommerceChannel
+			testGraphQLGetCommerceChannelsPageCommerceChannel_addCommerceChannel(
+				CommerceChannel commerceChannel)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
 	protected void assertContains(
 		CommerceChannel commerceChannel,
 		List<CommerceChannel> commerceChannels) {

@@ -1017,6 +1017,108 @@ public abstract class BaseFragmentCompositionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodeFragmentCompositionsPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodeFragmentCompositionsPage_getSiteExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodeFragmentCompositions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject siteByExternalReferenceCodeFragmentCompositionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodeFragmentCompositions");
+
+		long totalCount =
+			siteByExternalReferenceCodeFragmentCompositionsJSONObject.getLong(
+				"totalCount");
+
+		FragmentComposition fragmentComposition1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeFragmentCompositionsPageSiteFragmentComposition_addFragmentComposition(
+				siteExternalReferenceCode, randomFragmentComposition());
+
+		FragmentComposition fragmentComposition2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeFragmentCompositionsPageSiteFragmentComposition_addFragmentComposition(
+				siteExternalReferenceCode, randomFragmentComposition());
+
+		siteByExternalReferenceCodeFragmentCompositionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodeFragmentCompositions");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeFragmentCompositionsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			fragmentComposition1,
+			Arrays.asList(
+				FragmentCompositionSerDes.toDTOs(
+					siteByExternalReferenceCodeFragmentCompositionsJSONObject.
+						getString("items"))));
+		assertContains(
+			fragmentComposition2,
+			Arrays.asList(
+				FragmentCompositionSerDes.toDTOs(
+					siteByExternalReferenceCodeFragmentCompositionsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodeFragmentCompositionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodeFragmentCompositions");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeFragmentCompositionsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			fragmentComposition1,
+			Arrays.asList(
+				FragmentCompositionSerDes.toDTOs(
+					siteByExternalReferenceCodeFragmentCompositionsJSONObject.
+						getString("items"))));
+		assertContains(
+			fragmentComposition2,
+			Arrays.asList(
+				FragmentCompositionSerDes.toDTOs(
+					siteByExternalReferenceCodeFragmentCompositionsJSONObject.
+						getString("items"))));
+	}
+
+	protected FragmentComposition
+			testGraphQLGetSiteSiteByExternalReferenceCodeFragmentCompositionsPageSiteFragmentComposition_addFragmentComposition(
+				String siteExternalReferenceCode,
+				FragmentComposition fragmentComposition)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPatchSiteSiteByExternalReferenceCodeFragmentComposition()
 		throws Exception {
 

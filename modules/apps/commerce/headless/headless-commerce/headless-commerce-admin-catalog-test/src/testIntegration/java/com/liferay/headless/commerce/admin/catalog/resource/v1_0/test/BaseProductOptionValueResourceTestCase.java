@@ -744,6 +744,103 @@ public abstract class BaseProductOptionValueResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProductOptionIdProductOptionValuesPage()
+		throws Exception {
+
+		Long id = testGetProductOptionIdProductOptionValuesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productOptionIdProductOptionValues",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject productOptionIdProductOptionValuesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productOptionIdProductOptionValues");
+
+		long totalCount = productOptionIdProductOptionValuesJSONObject.getLong(
+			"totalCount");
+
+		ProductOptionValue productOptionValue1 =
+			testGraphQLGetProductOptionIdProductOptionValuesPageProductOptionProductOptionValue_addProductOptionValue(
+				id, randomProductOptionValue());
+
+		ProductOptionValue productOptionValue2 =
+			testGraphQLGetProductOptionIdProductOptionValuesPageProductOptionProductOptionValue_addProductOptionValue(
+				id, randomProductOptionValue());
+
+		productOptionIdProductOptionValuesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productOptionIdProductOptionValues");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productOptionIdProductOptionValuesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			productOptionValue1,
+			Arrays.asList(
+				ProductOptionValueSerDes.toDTOs(
+					productOptionIdProductOptionValuesJSONObject.getString(
+						"items"))));
+		assertContains(
+			productOptionValue2,
+			Arrays.asList(
+				ProductOptionValueSerDes.toDTOs(
+					productOptionIdProductOptionValuesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productOptionIdProductOptionValuesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/productOptionIdProductOptionValues");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productOptionIdProductOptionValuesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			productOptionValue1,
+			Arrays.asList(
+				ProductOptionValueSerDes.toDTOs(
+					productOptionIdProductOptionValuesJSONObject.getString(
+						"items"))));
+		assertContains(
+			productOptionValue2,
+			Arrays.asList(
+				ProductOptionValueSerDes.toDTOs(
+					productOptionIdProductOptionValuesJSONObject.getString(
+						"items"))));
+	}
+
+	protected ProductOptionValue
+			testGraphQLGetProductOptionIdProductOptionValuesPageProductOptionProductOptionValue_addProductOptionValue(
+				Long id, ProductOptionValue productOptionValue)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetProductOptionValue() throws Exception {
 		ProductOptionValue postProductOptionValue =
 			testGetProductOptionValue_addProductOptionValue();

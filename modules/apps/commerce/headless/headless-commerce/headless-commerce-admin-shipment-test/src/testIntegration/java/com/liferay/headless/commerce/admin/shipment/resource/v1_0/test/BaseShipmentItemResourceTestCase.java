@@ -813,6 +813,108 @@ public abstract class BaseShipmentItemResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetShipmentByExternalReferenceCodeItemsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetShipmentByExternalReferenceCodeItemsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"shipmentByExternalReferenceCodeItems",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject shipmentByExternalReferenceCodeItemsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/shipmentByExternalReferenceCodeItems");
+
+		long totalCount =
+			shipmentByExternalReferenceCodeItemsJSONObject.getLong(
+				"totalCount");
+
+		ShipmentItem shipmentItem1 =
+			testGraphQLGetShipmentByExternalReferenceCodeItemsPageShipmentShipmentItem_addShipmentItem(
+				externalReferenceCode, randomShipmentItem());
+
+		ShipmentItem shipmentItem2 =
+			testGraphQLGetShipmentByExternalReferenceCodeItemsPageShipmentShipmentItem_addShipmentItem(
+				externalReferenceCode, randomShipmentItem());
+
+		shipmentByExternalReferenceCodeItemsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/shipmentByExternalReferenceCodeItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			shipmentByExternalReferenceCodeItemsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			shipmentItem1,
+			Arrays.asList(
+				ShipmentItemSerDes.toDTOs(
+					shipmentByExternalReferenceCodeItemsJSONObject.getString(
+						"items"))));
+		assertContains(
+			shipmentItem2,
+			Arrays.asList(
+				ShipmentItemSerDes.toDTOs(
+					shipmentByExternalReferenceCodeItemsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminShipment_v1_0
+
+		shipmentByExternalReferenceCodeItemsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminShipment_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminShipment_v1_0",
+				"JSONObject/shipmentByExternalReferenceCodeItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			shipmentByExternalReferenceCodeItemsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			shipmentItem1,
+			Arrays.asList(
+				ShipmentItemSerDes.toDTOs(
+					shipmentByExternalReferenceCodeItemsJSONObject.getString(
+						"items"))));
+		assertContains(
+			shipmentItem2,
+			Arrays.asList(
+				ShipmentItemSerDes.toDTOs(
+					shipmentByExternalReferenceCodeItemsJSONObject.getString(
+						"items"))));
+	}
+
+	protected ShipmentItem
+			testGraphQLGetShipmentByExternalReferenceCodeItemsPageShipmentShipmentItem_addShipmentItem(
+				String externalReferenceCode, ShipmentItem shipmentItem)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetShipmentItem() throws Exception {
 		ShipmentItem postShipmentItem = testGetShipmentItem_addShipmentItem();
 
@@ -1281,6 +1383,89 @@ public abstract class BaseShipmentItemResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetShipmentItemsPage() throws Exception {
+		Long shipmentId = testGetShipmentItemsPage_getShipmentId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"shipmentItems",
+			new HashMap<String, Object>() {
+				{
+					put("shipmentId", shipmentId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject shipmentItemsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/shipmentItems");
+
+		long totalCount = shipmentItemsJSONObject.getLong("totalCount");
+
+		ShipmentItem shipmentItem1 =
+			testGraphQLGetShipmentItemsPageShipmentShipmentItem_addShipmentItem(
+				shipmentId, randomShipmentItem());
+
+		ShipmentItem shipmentItem2 =
+			testGraphQLGetShipmentItemsPageShipmentShipmentItem_addShipmentItem(
+				shipmentId, randomShipmentItem());
+
+		shipmentItemsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/shipmentItems");
+
+		Assert.assertEquals(
+			totalCount + 2, shipmentItemsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			shipmentItem1,
+			Arrays.asList(
+				ShipmentItemSerDes.toDTOs(
+					shipmentItemsJSONObject.getString("items"))));
+		assertContains(
+			shipmentItem2,
+			Arrays.asList(
+				ShipmentItemSerDes.toDTOs(
+					shipmentItemsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminShipment_v1_0
+
+		shipmentItemsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminShipment_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminShipment_v1_0",
+			"JSONObject/shipmentItems");
+
+		Assert.assertEquals(
+			totalCount + 2, shipmentItemsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			shipmentItem1,
+			Arrays.asList(
+				ShipmentItemSerDes.toDTOs(
+					shipmentItemsJSONObject.getString("items"))));
+		assertContains(
+			shipmentItem2,
+			Arrays.asList(
+				ShipmentItemSerDes.toDTOs(
+					shipmentItemsJSONObject.getString("items"))));
+	}
+
+	protected ShipmentItem
+			testGraphQLGetShipmentItemsPageShipmentShipmentItem_addShipmentItem(
+				Long shipmentId, ShipmentItem shipmentItem)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

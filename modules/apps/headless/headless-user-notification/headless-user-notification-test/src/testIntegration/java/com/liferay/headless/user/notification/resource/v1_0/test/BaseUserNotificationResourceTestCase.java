@@ -592,6 +592,90 @@ public abstract class BaseUserNotificationResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetMyUserNotificationsPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"myUserNotifications",
+			new HashMap<String, Object>() {
+				{
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject myUserNotificationsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/myUserNotifications");
+
+		long totalCount = myUserNotificationsJSONObject.getLong("totalCount");
+
+		UserNotification userNotification1 =
+			testGraphQLGetMyUserNotificationsPageUserNotification_addUserNotification(
+				randomUserNotification());
+
+		UserNotification userNotification2 =
+			testGraphQLGetMyUserNotificationsPageUserNotification_addUserNotification(
+				randomUserNotification());
+
+		myUserNotificationsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/myUserNotifications");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			myUserNotificationsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			userNotification1,
+			Arrays.asList(
+				UserNotificationSerDes.toDTOs(
+					myUserNotificationsJSONObject.getString("items"))));
+		assertContains(
+			userNotification2,
+			Arrays.asList(
+				UserNotificationSerDes.toDTOs(
+					myUserNotificationsJSONObject.getString("items"))));
+
+		// Using the namespace headlessUserNotification_v1_0
+
+		myUserNotificationsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessUserNotification_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessUserNotification_v1_0",
+			"JSONObject/myUserNotifications");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			myUserNotificationsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			userNotification1,
+			Arrays.asList(
+				UserNotificationSerDes.toDTOs(
+					myUserNotificationsJSONObject.getString("items"))));
+		assertContains(
+			userNotification2,
+			Arrays.asList(
+				UserNotificationSerDes.toDTOs(
+					myUserNotificationsJSONObject.getString("items"))));
+	}
+
+	protected UserNotification
+			testGraphQLGetMyUserNotificationsPageUserNotification_addUserNotification(
+				UserNotification userNotification)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetUserAccountUserNotificationsPage() throws Exception {
 		Long userAccountId =
 			testGetUserAccountUserNotificationsPage_getUserAccountId();
@@ -1040,6 +1124,101 @@ public abstract class BaseUserNotificationResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetUserAccountUserNotificationsPage()
+		throws Exception {
+
+		Long userAccountId =
+			testGetUserAccountUserNotificationsPage_getUserAccountId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"userAccountUserNotifications",
+			new HashMap<String, Object>() {
+				{
+					put("userAccountId", userAccountId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject userAccountUserNotificationsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/userAccountUserNotifications");
+
+		long totalCount = userAccountUserNotificationsJSONObject.getLong(
+			"totalCount");
+
+		UserNotification userNotification1 =
+			testGraphQLGetUserAccountUserNotificationsPageUserNotification_addUserNotification(
+				userAccountId, randomUserNotification());
+
+		UserNotification userNotification2 =
+			testGraphQLGetUserAccountUserNotificationsPageUserNotification_addUserNotification(
+				userAccountId, randomUserNotification());
+
+		userAccountUserNotificationsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userAccountUserNotifications");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountUserNotificationsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			userNotification1,
+			Arrays.asList(
+				UserNotificationSerDes.toDTOs(
+					userAccountUserNotificationsJSONObject.getString(
+						"items"))));
+		assertContains(
+			userNotification2,
+			Arrays.asList(
+				UserNotificationSerDes.toDTOs(
+					userAccountUserNotificationsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessUserNotification_v1_0
+
+		userAccountUserNotificationsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessUserNotification_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessUserNotification_v1_0",
+			"JSONObject/userAccountUserNotifications");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userAccountUserNotificationsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			userNotification1,
+			Arrays.asList(
+				UserNotificationSerDes.toDTOs(
+					userAccountUserNotificationsJSONObject.getString(
+						"items"))));
+		assertContains(
+			userNotification2,
+			Arrays.asList(
+				UserNotificationSerDes.toDTOs(
+					userAccountUserNotificationsJSONObject.getString(
+						"items"))));
+	}
+
+	protected UserNotification
+			testGraphQLGetUserAccountUserNotificationsPageUserNotification_addUserNotification(
+				Long userAccountId, UserNotification userNotification)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

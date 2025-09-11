@@ -806,6 +806,107 @@ public abstract class BaseShippingFixedOptionTermResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetShippingFixedOptionIdShippingFixedOptionTermsPage()
+		throws Exception {
+
+		Long id =
+			testGetShippingFixedOptionIdShippingFixedOptionTermsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"shippingFixedOptionIdShippingFixedOptionTerms",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject shippingFixedOptionIdShippingFixedOptionTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/shippingFixedOptionIdShippingFixedOptionTerms");
+
+		long totalCount =
+			shippingFixedOptionIdShippingFixedOptionTermsJSONObject.getLong(
+				"totalCount");
+
+		ShippingFixedOptionTerm shippingFixedOptionTerm1 =
+			testGraphQLGetShippingFixedOptionIdShippingFixedOptionTermsPageShippingFixedOptionTerm_addShippingFixedOptionTerm(
+				id, randomShippingFixedOptionTerm());
+
+		ShippingFixedOptionTerm shippingFixedOptionTerm2 =
+			testGraphQLGetShippingFixedOptionIdShippingFixedOptionTermsPageShippingFixedOptionTerm_addShippingFixedOptionTerm(
+				id, randomShippingFixedOptionTerm());
+
+		shippingFixedOptionIdShippingFixedOptionTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/shippingFixedOptionIdShippingFixedOptionTerms");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			shippingFixedOptionIdShippingFixedOptionTermsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			shippingFixedOptionTerm1,
+			Arrays.asList(
+				ShippingFixedOptionTermSerDes.toDTOs(
+					shippingFixedOptionIdShippingFixedOptionTermsJSONObject.
+						getString("items"))));
+		assertContains(
+			shippingFixedOptionTerm2,
+			Arrays.asList(
+				ShippingFixedOptionTermSerDes.toDTOs(
+					shippingFixedOptionIdShippingFixedOptionTermsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		shippingFixedOptionIdShippingFixedOptionTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminChannel_v1_0",
+				"JSONObject/shippingFixedOptionIdShippingFixedOptionTerms");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			shippingFixedOptionIdShippingFixedOptionTermsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			shippingFixedOptionTerm1,
+			Arrays.asList(
+				ShippingFixedOptionTermSerDes.toDTOs(
+					shippingFixedOptionIdShippingFixedOptionTermsJSONObject.
+						getString("items"))));
+		assertContains(
+			shippingFixedOptionTerm2,
+			Arrays.asList(
+				ShippingFixedOptionTermSerDes.toDTOs(
+					shippingFixedOptionIdShippingFixedOptionTermsJSONObject.
+						getString("items"))));
+	}
+
+	protected ShippingFixedOptionTerm
+			testGraphQLGetShippingFixedOptionIdShippingFixedOptionTermsPageShippingFixedOptionTerm_addShippingFixedOptionTerm(
+				Long id, ShippingFixedOptionTerm shippingFixedOptionTerm)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPostShippingFixedOptionIdShippingFixedOptionTerm()
 		throws Exception {
 

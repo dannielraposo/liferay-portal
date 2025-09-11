@@ -216,6 +216,11 @@ public abstract class BaseSearchIndexResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSearchIndexesPage() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

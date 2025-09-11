@@ -980,6 +980,85 @@ public abstract class BaseCTProcessResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCTProcessesPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"cTProcesses",
+			new HashMap<String, Object>() {
+				{
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cTProcessesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cTProcesses");
+
+		long totalCount = cTProcessesJSONObject.getLong("totalCount");
+
+		CTProcess ctProcess1 =
+			testGraphQLGetCTProcessesPageCTProcess_addCTProcess(
+				randomCTProcess());
+
+		CTProcess ctProcess2 =
+			testGraphQLGetCTProcessesPageCTProcess_addCTProcess(
+				randomCTProcess());
+
+		cTProcessesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cTProcesses");
+
+		Assert.assertEquals(
+			totalCount + 2, cTProcessesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctProcess1,
+			Arrays.asList(
+				CTProcessSerDes.toDTOs(
+					cTProcessesJSONObject.getString("items"))));
+		assertContains(
+			ctProcess2,
+			Arrays.asList(
+				CTProcessSerDes.toDTOs(
+					cTProcessesJSONObject.getString("items"))));
+
+		// Using the namespace changeTracking_v1_0
+
+		cTProcessesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("changeTracking_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/changeTracking_v1_0",
+			"JSONObject/cTProcesses");
+
+		Assert.assertEquals(
+			totalCount + 2, cTProcessesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctProcess1,
+			Arrays.asList(
+				CTProcessSerDes.toDTOs(
+					cTProcessesJSONObject.getString("items"))));
+		assertContains(
+			ctProcess2,
+			Arrays.asList(
+				CTProcessSerDes.toDTOs(
+					cTProcessesJSONObject.getString("items"))));
+	}
+
+	protected CTProcess testGraphQLGetCTProcessesPageCTProcess_addCTProcess(
+			CTProcess ctProcess)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPostCTProcessRevert() throws Exception {
 		@SuppressWarnings("PMD.UnusedLocalVariable")
 		CTProcess ctProcess = testPostCTProcessRevert_addCTProcess();

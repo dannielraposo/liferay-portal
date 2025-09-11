@@ -372,6 +372,108 @@ public abstract class BaseCategoryResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProductByExternalReferenceCodeCategoriesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetProductByExternalReferenceCodeCategoriesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productByExternalReferenceCodeCategories",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject productByExternalReferenceCodeCategoriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productByExternalReferenceCodeCategories");
+
+		long totalCount =
+			productByExternalReferenceCodeCategoriesJSONObject.getLong(
+				"totalCount");
+
+		Category category1 =
+			testGraphQLGetProductByExternalReferenceCodeCategoriesPageProductCategory_addCategory(
+				externalReferenceCode, randomCategory());
+
+		Category category2 =
+			testGraphQLGetProductByExternalReferenceCodeCategoriesPageProductCategory_addCategory(
+				externalReferenceCode, randomCategory());
+
+		productByExternalReferenceCodeCategoriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productByExternalReferenceCodeCategories");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productByExternalReferenceCodeCategoriesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			category1,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					productByExternalReferenceCodeCategoriesJSONObject.
+						getString("items"))));
+		assertContains(
+			category2,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					productByExternalReferenceCodeCategoriesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productByExternalReferenceCodeCategoriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/productByExternalReferenceCodeCategories");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productByExternalReferenceCodeCategoriesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			category1,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					productByExternalReferenceCodeCategoriesJSONObject.
+						getString("items"))));
+		assertContains(
+			category2,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					productByExternalReferenceCodeCategoriesJSONObject.
+						getString("items"))));
+	}
+
+	protected Category
+			testGraphQLGetProductByExternalReferenceCodeCategoriesPageProductCategory_addCategory(
+				String externalReferenceCode, Category category)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetProductIdCategoriesPage() throws Exception {
 		Long id = testGetProductIdCategoriesPage_getId();
 		Long irrelevantId = testGetProductIdCategoriesPage_getIrrelevantId();
@@ -519,6 +621,92 @@ public abstract class BaseCategoryResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetProductIdCategoriesPage() throws Exception {
+		Long id = testGetProductIdCategoriesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productIdCategories",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject productIdCategoriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productIdCategories");
+
+		long totalCount = productIdCategoriesJSONObject.getLong("totalCount");
+
+		Category category1 =
+			testGraphQLGetProductIdCategoriesPageProductCategory_addCategory(
+				id, randomCategory());
+
+		Category category2 =
+			testGraphQLGetProductIdCategoriesPageProductCategory_addCategory(
+				id, randomCategory());
+
+		productIdCategoriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/productIdCategories");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productIdCategoriesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			category1,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					productIdCategoriesJSONObject.getString("items"))));
+		assertContains(
+			category2,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					productIdCategoriesJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productIdCategoriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminCatalog_v1_0",
+			"JSONObject/productIdCategories");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productIdCategoriesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			category1,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					productIdCategoriesJSONObject.getString("items"))));
+		assertContains(
+			category2,
+			Arrays.asList(
+				CategorySerDes.toDTOs(
+					productIdCategoriesJSONObject.getString("items"))));
+	}
+
+	protected Category
+			testGraphQLGetProductIdCategoriesPageProductCategory_addCategory(
+				Long id, Category category)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

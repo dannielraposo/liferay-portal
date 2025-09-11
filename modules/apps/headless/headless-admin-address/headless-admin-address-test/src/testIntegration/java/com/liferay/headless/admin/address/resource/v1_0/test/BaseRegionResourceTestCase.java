@@ -1389,6 +1389,78 @@ public abstract class BaseRegionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetRegionsPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"regions",
+			new HashMap<String, Object>() {
+				{
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject regionsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/regions");
+
+		long totalCount = regionsJSONObject.getLong("totalCount");
+
+		Region region1 = testGraphQLGetRegionsPageRegion_addRegion(
+			randomRegion());
+
+		Region region2 = testGraphQLGetRegionsPageRegion_addRegion(
+			randomRegion());
+
+		regionsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/regions");
+
+		Assert.assertEquals(
+			totalCount + 2, regionsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			region1,
+			Arrays.asList(
+				RegionSerDes.toDTOs(regionsJSONObject.getString("items"))));
+		assertContains(
+			region2,
+			Arrays.asList(
+				RegionSerDes.toDTOs(regionsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminAddress_v1_0
+
+		regionsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminAddress_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminAddress_v1_0",
+			"JSONObject/regions");
+
+		Assert.assertEquals(
+			totalCount + 2, regionsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			region1,
+			Arrays.asList(
+				RegionSerDes.toDTOs(regionsJSONObject.getString("items"))));
+		assertContains(
+			region2,
+			Arrays.asList(
+				RegionSerDes.toDTOs(regionsJSONObject.getString("items"))));
+	}
+
+	protected Region testGraphQLGetRegionsPageRegion_addRegion(Region region)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPatchRegion() throws Exception {
 		Region postRegion = testPatchRegion_addRegion();
 

@@ -423,6 +423,11 @@ public abstract class BaseFieldResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetFieldsAccountsPage() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testGetFieldsOrdersPage() throws Exception {
 		Page<Field> page = fieldResource.getFieldsOrdersPage(
 			RandomTestUtil.randomString(), Pagination.of(1, 10), null);
@@ -655,6 +660,11 @@ public abstract class BaseFieldResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetFieldsOrdersPage() throws Exception {
+		Assert.assertTrue(false);
 	}
 
 	@Test
@@ -893,6 +903,11 @@ public abstract class BaseFieldResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetFieldsPeoplePage() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testGetFieldsProductsPage() throws Exception {
 		Page<Field> page = fieldResource.getFieldsProductsPage(
 			RandomTestUtil.randomString(), Pagination.of(1, 10), null);
@@ -1126,6 +1141,11 @@ public abstract class BaseFieldResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetFieldsProductsPage() throws Exception {
+		Assert.assertTrue(false);
 	}
 
 	@Test

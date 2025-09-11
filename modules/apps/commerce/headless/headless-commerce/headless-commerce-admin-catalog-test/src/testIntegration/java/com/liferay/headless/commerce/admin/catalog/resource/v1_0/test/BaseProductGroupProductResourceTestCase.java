@@ -522,6 +522,110 @@ public abstract class BaseProductGroupProductResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProductGroupByExternalReferenceCodeProductGroupProductsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetProductGroupByExternalReferenceCodeProductGroupProductsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productGroupByExternalReferenceCodeProductGroupProducts",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			productGroupByExternalReferenceCodeProductGroupProductsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/productGroupByExternalReferenceCodeProductGroupProducts");
+
+		long totalCount =
+			productGroupByExternalReferenceCodeProductGroupProductsJSONObject.
+				getLong("totalCount");
+
+		ProductGroupProduct productGroupProduct1 =
+			testGraphQLGetProductGroupByExternalReferenceCodeProductGroupProductsPageProductGroupProductGroupProduct_addProductGroupProduct(
+				externalReferenceCode, randomProductGroupProduct());
+
+		ProductGroupProduct productGroupProduct2 =
+			testGraphQLGetProductGroupByExternalReferenceCodeProductGroupProductsPageProductGroupProductGroupProduct_addProductGroupProduct(
+				externalReferenceCode, randomProductGroupProduct());
+
+		productGroupByExternalReferenceCodeProductGroupProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productGroupByExternalReferenceCodeProductGroupProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productGroupByExternalReferenceCodeProductGroupProductsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			productGroupProduct1,
+			Arrays.asList(
+				ProductGroupProductSerDes.toDTOs(
+					productGroupByExternalReferenceCodeProductGroupProductsJSONObject.
+						getString("items"))));
+		assertContains(
+			productGroupProduct2,
+			Arrays.asList(
+				ProductGroupProductSerDes.toDTOs(
+					productGroupByExternalReferenceCodeProductGroupProductsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productGroupByExternalReferenceCodeProductGroupProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/productGroupByExternalReferenceCodeProductGroupProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productGroupByExternalReferenceCodeProductGroupProductsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			productGroupProduct1,
+			Arrays.asList(
+				ProductGroupProductSerDes.toDTOs(
+					productGroupByExternalReferenceCodeProductGroupProductsJSONObject.
+						getString("items"))));
+		assertContains(
+			productGroupProduct2,
+			Arrays.asList(
+				ProductGroupProductSerDes.toDTOs(
+					productGroupByExternalReferenceCodeProductGroupProductsJSONObject.
+						getString("items"))));
+	}
+
+	protected ProductGroupProduct
+			testGraphQLGetProductGroupByExternalReferenceCodeProductGroupProductsPageProductGroupProductGroupProduct_addProductGroupProduct(
+				String externalReferenceCode,
+				ProductGroupProduct productGroupProduct)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetProductGroupIdProductGroupProductsPage()
 		throws Exception {
 
@@ -731,6 +835,102 @@ public abstract class BaseProductGroupProductResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetProductGroupIdProductGroupProductsPage()
+		throws Exception {
+
+		Long id = testGetProductGroupIdProductGroupProductsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productGroupIdProductGroupProducts",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject productGroupIdProductGroupProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productGroupIdProductGroupProducts");
+
+		long totalCount = productGroupIdProductGroupProductsJSONObject.getLong(
+			"totalCount");
+
+		ProductGroupProduct productGroupProduct1 =
+			testGraphQLGetProductGroupIdProductGroupProductsPageProductGroupProductGroupProduct_addProductGroupProduct(
+				id, randomProductGroupProduct());
+
+		ProductGroupProduct productGroupProduct2 =
+			testGraphQLGetProductGroupIdProductGroupProductsPageProductGroupProductGroupProduct_addProductGroupProduct(
+				id, randomProductGroupProduct());
+
+		productGroupIdProductGroupProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productGroupIdProductGroupProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productGroupIdProductGroupProductsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			productGroupProduct1,
+			Arrays.asList(
+				ProductGroupProductSerDes.toDTOs(
+					productGroupIdProductGroupProductsJSONObject.getString(
+						"items"))));
+		assertContains(
+			productGroupProduct2,
+			Arrays.asList(
+				ProductGroupProductSerDes.toDTOs(
+					productGroupIdProductGroupProductsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productGroupIdProductGroupProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/productGroupIdProductGroupProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productGroupIdProductGroupProductsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			productGroupProduct1,
+			Arrays.asList(
+				ProductGroupProductSerDes.toDTOs(
+					productGroupIdProductGroupProductsJSONObject.getString(
+						"items"))));
+		assertContains(
+			productGroupProduct2,
+			Arrays.asList(
+				ProductGroupProductSerDes.toDTOs(
+					productGroupIdProductGroupProductsJSONObject.getString(
+						"items"))));
+	}
+
+	protected ProductGroupProduct
+			testGraphQLGetProductGroupIdProductGroupProductsPageProductGroupProductGroupProduct_addProductGroupProduct(
+				Long id, ProductGroupProduct productGroupProduct)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

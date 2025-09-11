@@ -559,6 +559,108 @@ public abstract class BaseDiscountRuleResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetDiscountByExternalReferenceCodeDiscountRulesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetDiscountByExternalReferenceCodeDiscountRulesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"discountByExternalReferenceCodeDiscountRules",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject discountByExternalReferenceCodeDiscountRulesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountByExternalReferenceCodeDiscountRules");
+
+		long totalCount =
+			discountByExternalReferenceCodeDiscountRulesJSONObject.getLong(
+				"totalCount");
+
+		DiscountRule discountRule1 =
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountRulesPageDiscountRule_addDiscountRule(
+				externalReferenceCode, randomDiscountRule());
+
+		DiscountRule discountRule2 =
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountRulesPageDiscountRule_addDiscountRule(
+				externalReferenceCode, randomDiscountRule());
+
+		discountByExternalReferenceCodeDiscountRulesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountByExternalReferenceCodeDiscountRules");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountByExternalReferenceCodeDiscountRulesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			discountRule1,
+			Arrays.asList(
+				DiscountRuleSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountRulesJSONObject.
+						getString("items"))));
+		assertContains(
+			discountRule2,
+			Arrays.asList(
+				DiscountRuleSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountRulesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v1_0
+
+		discountByExternalReferenceCodeDiscountRulesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v1_0",
+				"JSONObject/discountByExternalReferenceCodeDiscountRules");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountByExternalReferenceCodeDiscountRulesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			discountRule1,
+			Arrays.asList(
+				DiscountRuleSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountRulesJSONObject.
+						getString("items"))));
+		assertContains(
+			discountRule2,
+			Arrays.asList(
+				DiscountRuleSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountRulesJSONObject.
+						getString("items"))));
+	}
+
+	protected DiscountRule
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountRulesPageDiscountRule_addDiscountRule(
+				String externalReferenceCode, DiscountRule discountRule)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetDiscountIdDiscountRulesPage() throws Exception {
 		Long id = testGetDiscountIdDiscountRulesPage_getId();
 		Long irrelevantId =
@@ -729,6 +831,93 @@ public abstract class BaseDiscountRuleResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetDiscountIdDiscountRulesPage() throws Exception {
+		Long id = testGetDiscountIdDiscountRulesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"discountIdDiscountRules",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject discountIdDiscountRulesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountIdDiscountRules");
+
+		long totalCount = discountIdDiscountRulesJSONObject.getLong(
+			"totalCount");
+
+		DiscountRule discountRule1 =
+			testGraphQLGetDiscountIdDiscountRulesPageDiscountDiscountRule_addDiscountRule(
+				id, randomDiscountRule());
+
+		DiscountRule discountRule2 =
+			testGraphQLGetDiscountIdDiscountRulesPageDiscountDiscountRule_addDiscountRule(
+				id, randomDiscountRule());
+
+		discountIdDiscountRulesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/discountIdDiscountRules");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountIdDiscountRulesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			discountRule1,
+			Arrays.asList(
+				DiscountRuleSerDes.toDTOs(
+					discountIdDiscountRulesJSONObject.getString("items"))));
+		assertContains(
+			discountRule2,
+			Arrays.asList(
+				DiscountRuleSerDes.toDTOs(
+					discountIdDiscountRulesJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v1_0
+
+		discountIdDiscountRulesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminPricing_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminPricing_v1_0",
+			"JSONObject/discountIdDiscountRules");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountIdDiscountRulesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			discountRule1,
+			Arrays.asList(
+				DiscountRuleSerDes.toDTOs(
+					discountIdDiscountRulesJSONObject.getString("items"))));
+		assertContains(
+			discountRule2,
+			Arrays.asList(
+				DiscountRuleSerDes.toDTOs(
+					discountIdDiscountRulesJSONObject.getString("items"))));
+	}
+
+	protected DiscountRule
+			testGraphQLGetDiscountIdDiscountRulesPageDiscountDiscountRule_addDiscountRule(
+				Long id, DiscountRule discountRule)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

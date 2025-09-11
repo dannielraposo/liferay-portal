@@ -1175,6 +1175,111 @@ public abstract class BaseCategoryDisplayPageResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelByExternalReferenceCodeCategoryDisplayPagesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetChannelByExternalReferenceCodeCategoryDisplayPagesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelByExternalReferenceCodeCategoryDisplayPages",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			channelByExternalReferenceCodeCategoryDisplayPagesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/channelByExternalReferenceCodeCategoryDisplayPages");
+
+		long totalCount =
+			channelByExternalReferenceCodeCategoryDisplayPagesJSONObject.
+				getLong("totalCount");
+
+		CategoryDisplayPage categoryDisplayPage1 =
+			testGraphQLGetChannelByExternalReferenceCodeCategoryDisplayPagesPageChannelCategoryDisplayPage_addCategoryDisplayPage(
+				externalReferenceCode, randomCategoryDisplayPage());
+
+		CategoryDisplayPage categoryDisplayPage2 =
+			testGraphQLGetChannelByExternalReferenceCodeCategoryDisplayPagesPageChannelCategoryDisplayPage_addCategoryDisplayPage(
+				externalReferenceCode, randomCategoryDisplayPage());
+
+		channelByExternalReferenceCodeCategoryDisplayPagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeCategoryDisplayPages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeCategoryDisplayPagesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			categoryDisplayPage1,
+			Arrays.asList(
+				CategoryDisplayPageSerDes.toDTOs(
+					channelByExternalReferenceCodeCategoryDisplayPagesJSONObject.
+						getString("items"))));
+		assertContains(
+			categoryDisplayPage2,
+			Arrays.asList(
+				CategoryDisplayPageSerDes.toDTOs(
+					channelByExternalReferenceCodeCategoryDisplayPagesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		channelByExternalReferenceCodeCategoryDisplayPagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminChannel_v1_0",
+				"JSONObject/channelByExternalReferenceCodeCategoryDisplayPages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeCategoryDisplayPagesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			categoryDisplayPage1,
+			Arrays.asList(
+				CategoryDisplayPageSerDes.toDTOs(
+					channelByExternalReferenceCodeCategoryDisplayPagesJSONObject.
+						getString("items"))));
+		assertContains(
+			categoryDisplayPage2,
+			Arrays.asList(
+				CategoryDisplayPageSerDes.toDTOs(
+					channelByExternalReferenceCodeCategoryDisplayPagesJSONObject.
+						getString("items"))));
+	}
+
+	protected CategoryDisplayPage
+			testGraphQLGetChannelByExternalReferenceCodeCategoryDisplayPagesPageChannelCategoryDisplayPage_addCategoryDisplayPage(
+				String externalReferenceCode,
+				CategoryDisplayPage categoryDisplayPage)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetChannelIdCategoryDisplayPagesPage() throws Exception {
 		Long id = testGetChannelIdCategoryDisplayPagesPage_getId();
 		Long irrelevantId =
@@ -1643,6 +1748,100 @@ public abstract class BaseCategoryDisplayPageResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetChannelIdCategoryDisplayPagesPage()
+		throws Exception {
+
+		Long id = testGetChannelIdCategoryDisplayPagesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelIdCategoryDisplayPages",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelIdCategoryDisplayPagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelIdCategoryDisplayPages");
+
+		long totalCount = channelIdCategoryDisplayPagesJSONObject.getLong(
+			"totalCount");
+
+		CategoryDisplayPage categoryDisplayPage1 =
+			testGraphQLGetChannelIdCategoryDisplayPagesPageCategoryDisplayPage_addCategoryDisplayPage(
+				id, randomCategoryDisplayPage());
+
+		CategoryDisplayPage categoryDisplayPage2 =
+			testGraphQLGetChannelIdCategoryDisplayPagesPageCategoryDisplayPage_addCategoryDisplayPage(
+				id, randomCategoryDisplayPage());
+
+		channelIdCategoryDisplayPagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelIdCategoryDisplayPages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelIdCategoryDisplayPagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			categoryDisplayPage1,
+			Arrays.asList(
+				CategoryDisplayPageSerDes.toDTOs(
+					channelIdCategoryDisplayPagesJSONObject.getString(
+						"items"))));
+		assertContains(
+			categoryDisplayPage2,
+			Arrays.asList(
+				CategoryDisplayPageSerDes.toDTOs(
+					channelIdCategoryDisplayPagesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		channelIdCategoryDisplayPagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminChannel_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminChannel_v1_0",
+			"JSONObject/channelIdCategoryDisplayPages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelIdCategoryDisplayPagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			categoryDisplayPage1,
+			Arrays.asList(
+				CategoryDisplayPageSerDes.toDTOs(
+					channelIdCategoryDisplayPagesJSONObject.getString(
+						"items"))));
+		assertContains(
+			categoryDisplayPage2,
+			Arrays.asList(
+				CategoryDisplayPageSerDes.toDTOs(
+					channelIdCategoryDisplayPagesJSONObject.getString(
+						"items"))));
+	}
+
+	protected CategoryDisplayPage
+			testGraphQLGetChannelIdCategoryDisplayPagesPageCategoryDisplayPage_addCategoryDisplayPage(
+				Long id, CategoryDisplayPage categoryDisplayPage)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

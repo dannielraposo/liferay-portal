@@ -515,6 +515,89 @@ public abstract class BaseAttachmentResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCartAttachmentsPage() throws Exception {
+		Long cartId = testGetCartAttachmentsPage_getCartId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"cartAttachments",
+			new HashMap<String, Object>() {
+				{
+					put("cartId", cartId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cartAttachmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cartAttachments");
+
+		long totalCount = cartAttachmentsJSONObject.getLong("totalCount");
+
+		Attachment attachment1 =
+			testGraphQLGetCartAttachmentsPageCartAttachment_addAttachment(
+				cartId, randomAttachment());
+
+		Attachment attachment2 =
+			testGraphQLGetCartAttachmentsPageCartAttachment_addAttachment(
+				cartId, randomAttachment());
+
+		cartAttachmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cartAttachments");
+
+		Assert.assertEquals(
+			totalCount + 2, cartAttachmentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			attachment1,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					cartAttachmentsJSONObject.getString("items"))));
+		assertContains(
+			attachment2,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					cartAttachmentsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCart_v1_0
+
+		cartAttachmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCart_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceDeliveryCart_v1_0",
+			"JSONObject/cartAttachments");
+
+		Assert.assertEquals(
+			totalCount + 2, cartAttachmentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			attachment1,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					cartAttachmentsJSONObject.getString("items"))));
+		assertContains(
+			attachment2,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					cartAttachmentsJSONObject.getString("items"))));
+	}
+
+	protected Attachment
+			testGraphQLGetCartAttachmentsPageCartAttachment_addAttachment(
+				Long cartId, Attachment attachment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetCartByExternalReferenceCodeAttachmentsPage()
 		throws Exception {
 
@@ -703,6 +786,108 @@ public abstract class BaseAttachmentResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetCartByExternalReferenceCodeAttachmentsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetCartByExternalReferenceCodeAttachmentsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"cartByExternalReferenceCodeAttachments",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cartByExternalReferenceCodeAttachmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/cartByExternalReferenceCodeAttachments");
+
+		long totalCount =
+			cartByExternalReferenceCodeAttachmentsJSONObject.getLong(
+				"totalCount");
+
+		Attachment attachment1 =
+			testGraphQLGetCartByExternalReferenceCodeAttachmentsPageCartAttachment_addAttachment(
+				externalReferenceCode, randomAttachment());
+
+		Attachment attachment2 =
+			testGraphQLGetCartByExternalReferenceCodeAttachmentsPageCartAttachment_addAttachment(
+				externalReferenceCode, randomAttachment());
+
+		cartByExternalReferenceCodeAttachmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/cartByExternalReferenceCodeAttachments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartByExternalReferenceCodeAttachmentsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			attachment1,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					cartByExternalReferenceCodeAttachmentsJSONObject.getString(
+						"items"))));
+		assertContains(
+			attachment2,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					cartByExternalReferenceCodeAttachmentsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceDeliveryCart_v1_0
+
+		cartByExternalReferenceCodeAttachmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryCart_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryCart_v1_0",
+				"JSONObject/cartByExternalReferenceCodeAttachments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartByExternalReferenceCodeAttachmentsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			attachment1,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					cartByExternalReferenceCodeAttachmentsJSONObject.getString(
+						"items"))));
+		assertContains(
+			attachment2,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					cartByExternalReferenceCodeAttachmentsJSONObject.getString(
+						"items"))));
+	}
+
+	protected Attachment
+			testGraphQLGetCartByExternalReferenceCodeAttachmentsPageCartAttachment_addAttachment(
+				String externalReferenceCode, Attachment attachment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

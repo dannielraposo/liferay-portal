@@ -553,6 +553,83 @@ public abstract class BaseCTEntryResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCTEntriesHistoryPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"cTEntriesHistory",
+			new HashMap<String, Object>() {
+				{
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cTEntriesHistoryJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cTEntriesHistory");
+
+		long totalCount = cTEntriesHistoryJSONObject.getLong("totalCount");
+
+		CTEntry ctEntry1 = testGraphQLGetCTEntriesHistoryPageCTEntry_addCTEntry(
+			randomCTEntry());
+
+		CTEntry ctEntry2 = testGraphQLGetCTEntriesHistoryPageCTEntry_addCTEntry(
+			randomCTEntry());
+
+		cTEntriesHistoryJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cTEntriesHistory");
+
+		Assert.assertEquals(
+			totalCount + 2, cTEntriesHistoryJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctEntry1,
+			Arrays.asList(
+				CTEntrySerDes.toDTOs(
+					cTEntriesHistoryJSONObject.getString("items"))));
+		assertContains(
+			ctEntry2,
+			Arrays.asList(
+				CTEntrySerDes.toDTOs(
+					cTEntriesHistoryJSONObject.getString("items"))));
+
+		// Using the namespace changeTracking_v1_0
+
+		cTEntriesHistoryJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("changeTracking_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/changeTracking_v1_0",
+			"JSONObject/cTEntriesHistory");
+
+		Assert.assertEquals(
+			totalCount + 2, cTEntriesHistoryJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctEntry1,
+			Arrays.asList(
+				CTEntrySerDes.toDTOs(
+					cTEntriesHistoryJSONObject.getString("items"))));
+		assertContains(
+			ctEntry2,
+			Arrays.asList(
+				CTEntrySerDes.toDTOs(
+					cTEntriesHistoryJSONObject.getString("items"))));
+	}
+
+	protected CTEntry testGraphQLGetCTEntriesHistoryPageCTEntry_addCTEntry(
+			CTEntry ctEntry)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetCTEntry() throws Exception {
 		CTEntry postCTEntry = testGetCTEntry_addCTEntry();
 
@@ -1244,6 +1321,93 @@ public abstract class BaseCTEntryResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetCtCollectionCTEntriesPage() throws Exception {
+		Long ctCollectionId =
+			testGetCtCollectionCTEntriesPage_getCtCollectionId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"ctCollectionCTEntries",
+			new HashMap<String, Object>() {
+				{
+					put("ctCollectionId", ctCollectionId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject ctCollectionCTEntriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/ctCollectionCTEntries");
+
+		long totalCount = ctCollectionCTEntriesJSONObject.getLong("totalCount");
+
+		CTEntry ctEntry1 =
+			testGraphQLGetCtCollectionCTEntriesPageCTCollectionCTEntry_addCTEntry(
+				ctCollectionId, randomCTEntry());
+
+		CTEntry ctEntry2 =
+			testGraphQLGetCtCollectionCTEntriesPageCTCollectionCTEntry_addCTEntry(
+				ctCollectionId, randomCTEntry());
+
+		ctCollectionCTEntriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/ctCollectionCTEntries");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			ctCollectionCTEntriesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctEntry1,
+			Arrays.asList(
+				CTEntrySerDes.toDTOs(
+					ctCollectionCTEntriesJSONObject.getString("items"))));
+		assertContains(
+			ctEntry2,
+			Arrays.asList(
+				CTEntrySerDes.toDTOs(
+					ctCollectionCTEntriesJSONObject.getString("items"))));
+
+		// Using the namespace changeTracking_v1_0
+
+		ctCollectionCTEntriesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("changeTracking_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/changeTracking_v1_0",
+			"JSONObject/ctCollectionCTEntries");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			ctCollectionCTEntriesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			ctEntry1,
+			Arrays.asList(
+				CTEntrySerDes.toDTOs(
+					ctCollectionCTEntriesJSONObject.getString("items"))));
+		assertContains(
+			ctEntry2,
+			Arrays.asList(
+				CTEntrySerDes.toDTOs(
+					ctCollectionCTEntriesJSONObject.getString("items"))));
+	}
+
+	protected CTEntry
+			testGraphQLGetCtCollectionCTEntriesPageCTCollectionCTEntry_addCTEntry(
+				Long ctCollectionId, CTEntry ctEntry)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

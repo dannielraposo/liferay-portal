@@ -1642,6 +1642,111 @@ public abstract class BaseProductConfigurationResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProductConfigurationListByExternalReferenceCodeProductConfigurationsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetProductConfigurationListByExternalReferenceCodeProductConfigurationsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productConfigurationListByExternalReferenceCodeProductConfigurations",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			productConfigurationListByExternalReferenceCodeProductConfigurationsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/productConfigurationListByExternalReferenceCodeProductConfigurations");
+
+		long totalCount =
+			productConfigurationListByExternalReferenceCodeProductConfigurationsJSONObject.
+				getLong("totalCount");
+
+		ProductConfiguration productConfiguration1 =
+			testGraphQLGetProductConfigurationListByExternalReferenceCodeProductConfigurationsPageProductConfigurationListProductConfiguration_addProductConfiguration(
+				externalReferenceCode, randomProductConfiguration());
+
+		ProductConfiguration productConfiguration2 =
+			testGraphQLGetProductConfigurationListByExternalReferenceCodeProductConfigurationsPageProductConfigurationListProductConfiguration_addProductConfiguration(
+				externalReferenceCode, randomProductConfiguration());
+
+		productConfigurationListByExternalReferenceCodeProductConfigurationsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productConfigurationListByExternalReferenceCodeProductConfigurations");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productConfigurationListByExternalReferenceCodeProductConfigurationsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			productConfiguration1,
+			Arrays.asList(
+				ProductConfigurationSerDes.toDTOs(
+					productConfigurationListByExternalReferenceCodeProductConfigurationsJSONObject.
+						getString("items"))));
+		assertContains(
+			productConfiguration2,
+			Arrays.asList(
+				ProductConfigurationSerDes.toDTOs(
+					productConfigurationListByExternalReferenceCodeProductConfigurationsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productConfigurationListByExternalReferenceCodeProductConfigurationsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/productConfigurationListByExternalReferenceCodeProductConfigurations");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productConfigurationListByExternalReferenceCodeProductConfigurationsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			productConfiguration1,
+			Arrays.asList(
+				ProductConfigurationSerDes.toDTOs(
+					productConfigurationListByExternalReferenceCodeProductConfigurationsJSONObject.
+						getString("items"))));
+		assertContains(
+			productConfiguration2,
+			Arrays.asList(
+				ProductConfigurationSerDes.toDTOs(
+					productConfigurationListByExternalReferenceCodeProductConfigurationsJSONObject.
+						getString("items"))));
+	}
+
+	protected ProductConfiguration
+			testGraphQLGetProductConfigurationListByExternalReferenceCodeProductConfigurationsPageProductConfigurationListProductConfiguration_addProductConfiguration(
+				String externalReferenceCode,
+				ProductConfiguration productConfiguration)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetProductConfigurationListIdProductConfigurationsPage()
 		throws Exception {
 
@@ -2133,6 +2238,107 @@ public abstract class BaseProductConfigurationResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetProductConfigurationListIdProductConfigurationsPage()
+		throws Exception {
+
+		Long id =
+			testGetProductConfigurationListIdProductConfigurationsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productConfigurationListIdProductConfigurations",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject productConfigurationListIdProductConfigurationsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productConfigurationListIdProductConfigurations");
+
+		long totalCount =
+			productConfigurationListIdProductConfigurationsJSONObject.getLong(
+				"totalCount");
+
+		ProductConfiguration productConfiguration1 =
+			testGraphQLGetProductConfigurationListIdProductConfigurationsPageProductConfigurationListProductConfiguration_addProductConfiguration(
+				id, randomProductConfiguration());
+
+		ProductConfiguration productConfiguration2 =
+			testGraphQLGetProductConfigurationListIdProductConfigurationsPageProductConfigurationListProductConfiguration_addProductConfiguration(
+				id, randomProductConfiguration());
+
+		productConfigurationListIdProductConfigurationsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productConfigurationListIdProductConfigurations");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productConfigurationListIdProductConfigurationsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			productConfiguration1,
+			Arrays.asList(
+				ProductConfigurationSerDes.toDTOs(
+					productConfigurationListIdProductConfigurationsJSONObject.
+						getString("items"))));
+		assertContains(
+			productConfiguration2,
+			Arrays.asList(
+				ProductConfigurationSerDes.toDTOs(
+					productConfigurationListIdProductConfigurationsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productConfigurationListIdProductConfigurationsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/productConfigurationListIdProductConfigurations");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productConfigurationListIdProductConfigurationsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			productConfiguration1,
+			Arrays.asList(
+				ProductConfigurationSerDes.toDTOs(
+					productConfigurationListIdProductConfigurationsJSONObject.
+						getString("items"))));
+		assertContains(
+			productConfiguration2,
+			Arrays.asList(
+				ProductConfigurationSerDes.toDTOs(
+					productConfigurationListIdProductConfigurationsJSONObject.
+						getString("items"))));
+	}
+
+	protected ProductConfiguration
+			testGraphQLGetProductConfigurationListIdProductConfigurationsPageProductConfigurationListProductConfiguration_addProductConfiguration(
+				Long id, ProductConfiguration productConfiguration)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

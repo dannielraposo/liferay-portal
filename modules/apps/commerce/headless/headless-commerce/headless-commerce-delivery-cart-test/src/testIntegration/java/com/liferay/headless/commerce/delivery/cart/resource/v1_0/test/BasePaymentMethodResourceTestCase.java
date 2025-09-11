@@ -275,6 +275,13 @@ public abstract class BasePaymentMethodResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCartByExternalReferenceCodePaymentMethodsPage()
+		throws Exception {
+
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testGetCartPaymentMethodsPage() throws Exception {
 		Long cartId = testGetCartPaymentMethodsPage_getCartId();
 		Long irrelevantCartId =
@@ -347,6 +354,11 @@ public abstract class BasePaymentMethodResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetCartPaymentMethodsPage() throws Exception {
+		Assert.assertTrue(false);
 	}
 
 	@Test

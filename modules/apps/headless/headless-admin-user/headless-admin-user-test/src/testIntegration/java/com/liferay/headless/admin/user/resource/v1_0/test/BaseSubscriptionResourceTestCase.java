@@ -538,6 +538,94 @@ public abstract class BaseSubscriptionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetMyUserAccountSubscriptionsPage()
+		throws Exception {
+
+		GraphQLField graphQLField = new GraphQLField(
+			"myUserAccountSubscriptions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"contentType",
+						"\"" + RandomTestUtil.randomString() + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject myUserAccountSubscriptionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/myUserAccountSubscriptions");
+
+		long totalCount = myUserAccountSubscriptionsJSONObject.getLong(
+			"totalCount");
+
+		Subscription subscription1 =
+			testGraphQLGetMyUserAccountSubscriptionsPageUserAccountSubscription_addSubscription(
+				randomSubscription());
+
+		Subscription subscription2 =
+			testGraphQLGetMyUserAccountSubscriptionsPageUserAccountSubscription_addSubscription(
+				randomSubscription());
+
+		myUserAccountSubscriptionsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/myUserAccountSubscriptions");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			myUserAccountSubscriptionsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			subscription1,
+			Arrays.asList(
+				SubscriptionSerDes.toDTOs(
+					myUserAccountSubscriptionsJSONObject.getString("items"))));
+		assertContains(
+			subscription2,
+			Arrays.asList(
+				SubscriptionSerDes.toDTOs(
+					myUserAccountSubscriptionsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		myUserAccountSubscriptionsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/myUserAccountSubscriptions");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			myUserAccountSubscriptionsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			subscription1,
+			Arrays.asList(
+				SubscriptionSerDes.toDTOs(
+					myUserAccountSubscriptionsJSONObject.getString("items"))));
+		assertContains(
+			subscription2,
+			Arrays.asList(
+				SubscriptionSerDes.toDTOs(
+					myUserAccountSubscriptionsJSONObject.getString("items"))));
+	}
+
+	protected Subscription
+			testGraphQLGetMyUserAccountSubscriptionsPageUserAccountSubscription_addSubscription(
+				Subscription subscription)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

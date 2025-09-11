@@ -552,6 +552,114 @@ public abstract class BaseWidgetPageWidgetInstanceResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodeSitePageWidgetInstancesPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodeSitePageWidgetInstancesPage_getSiteExternalReferenceCode();
+		String sitePageExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodeSitePageWidgetInstancesPage_getSitePageExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodeSitePageWidgetInstances",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put(
+						"sitePageExternalReferenceCode",
+						"\"" + sitePageExternalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			siteByExternalReferenceCodeSitePageWidgetInstancesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/siteByExternalReferenceCodeSitePageWidgetInstances");
+
+		long totalCount =
+			siteByExternalReferenceCodeSitePageWidgetInstancesJSONObject.
+				getLong("totalCount");
+
+		WidgetPageWidgetInstance widgetPageWidgetInstance1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeSitePageWidgetInstancesPageSiteWidgetPageWidgetInstance_addWidgetPageWidgetInstance(
+				siteExternalReferenceCode, sitePageExternalReferenceCode,
+				randomWidgetPageWidgetInstance());
+
+		WidgetPageWidgetInstance widgetPageWidgetInstance2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodeSitePageWidgetInstancesPageSiteWidgetPageWidgetInstance_addWidgetPageWidgetInstance(
+				siteExternalReferenceCode, sitePageExternalReferenceCode,
+				randomWidgetPageWidgetInstance());
+
+		siteByExternalReferenceCodeSitePageWidgetInstancesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodeSitePageWidgetInstances");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeSitePageWidgetInstancesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			widgetPageWidgetInstance1,
+			Arrays.asList(
+				WidgetPageWidgetInstanceSerDes.toDTOs(
+					siteByExternalReferenceCodeSitePageWidgetInstancesJSONObject.
+						getString("items"))));
+		assertContains(
+			widgetPageWidgetInstance2,
+			Arrays.asList(
+				WidgetPageWidgetInstanceSerDes.toDTOs(
+					siteByExternalReferenceCodeSitePageWidgetInstancesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodeSitePageWidgetInstancesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodeSitePageWidgetInstances");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodeSitePageWidgetInstancesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			widgetPageWidgetInstance1,
+			Arrays.asList(
+				WidgetPageWidgetInstanceSerDes.toDTOs(
+					siteByExternalReferenceCodeSitePageWidgetInstancesJSONObject.
+						getString("items"))));
+		assertContains(
+			widgetPageWidgetInstance2,
+			Arrays.asList(
+				WidgetPageWidgetInstanceSerDes.toDTOs(
+					siteByExternalReferenceCodeSitePageWidgetInstancesJSONObject.
+						getString("items"))));
+	}
+
+	protected WidgetPageWidgetInstance
+			testGraphQLGetSiteSiteByExternalReferenceCodeSitePageWidgetInstancesPageSiteWidgetPageWidgetInstance_addWidgetPageWidgetInstance(
+				String siteExternalReferenceCode,
+				String sitePageExternalReferenceCode,
+				WidgetPageWidgetInstance widgetPageWidgetInstance)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSiteSiteByExternalReferenceCodeWidgetInstanceWidgetInstanceExternalReferenceCode()
 		throws Exception {
 

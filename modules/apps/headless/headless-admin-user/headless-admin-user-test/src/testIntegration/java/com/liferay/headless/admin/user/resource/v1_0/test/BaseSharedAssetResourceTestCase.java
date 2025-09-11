@@ -578,6 +578,100 @@ public abstract class BaseSharedAssetResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetMyUserAccountSharedAssetsSharedByMePage()
+		throws Exception {
+
+		GraphQLField graphQLField = new GraphQLField(
+			"myUserAccountSharedAssetsSharedByMe",
+			new HashMap<String, Object>() {
+				{
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject myUserAccountSharedAssetsSharedByMeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/myUserAccountSharedAssetsSharedByMe");
+
+		long totalCount = myUserAccountSharedAssetsSharedByMeJSONObject.getLong(
+			"totalCount");
+
+		SharedAsset sharedAsset1 =
+			testGraphQLGetMyUserAccountSharedAssetsSharedByMePageSharedAsset_addSharedAsset(
+				randomSharedAsset());
+
+		SharedAsset sharedAsset2 =
+			testGraphQLGetMyUserAccountSharedAssetsSharedByMePageSharedAsset_addSharedAsset(
+				randomSharedAsset());
+
+		myUserAccountSharedAssetsSharedByMeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/myUserAccountSharedAssetsSharedByMe");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			myUserAccountSharedAssetsSharedByMeJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			sharedAsset1,
+			Arrays.asList(
+				SharedAssetSerDes.toDTOs(
+					myUserAccountSharedAssetsSharedByMeJSONObject.getString(
+						"items"))));
+		assertContains(
+			sharedAsset2,
+			Arrays.asList(
+				SharedAssetSerDes.toDTOs(
+					myUserAccountSharedAssetsSharedByMeJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		myUserAccountSharedAssetsSharedByMeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/myUserAccountSharedAssetsSharedByMe");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			myUserAccountSharedAssetsSharedByMeJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			sharedAsset1,
+			Arrays.asList(
+				SharedAssetSerDes.toDTOs(
+					myUserAccountSharedAssetsSharedByMeJSONObject.getString(
+						"items"))));
+		assertContains(
+			sharedAsset2,
+			Arrays.asList(
+				SharedAssetSerDes.toDTOs(
+					myUserAccountSharedAssetsSharedByMeJSONObject.getString(
+						"items"))));
+	}
+
+	protected SharedAsset
+			testGraphQLGetMyUserAccountSharedAssetsSharedByMePageSharedAsset_addSharedAsset(
+				SharedAsset sharedAsset)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetMyUserAccountSharedAssetsSharedWithMePage()
 		throws Exception {
 
@@ -966,6 +1060,101 @@ public abstract class BaseSharedAssetResourceTestCase {
 
 	protected SharedAsset
 			testGetMyUserAccountSharedAssetsSharedWithMePage_addSharedAsset(
+				SharedAsset sharedAsset)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetMyUserAccountSharedAssetsSharedWithMePage()
+		throws Exception {
+
+		GraphQLField graphQLField = new GraphQLField(
+			"myUserAccountSharedAssetsSharedWithMe",
+			new HashMap<String, Object>() {
+				{
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject myUserAccountSharedAssetsSharedWithMeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/myUserAccountSharedAssetsSharedWithMe");
+
+		long totalCount =
+			myUserAccountSharedAssetsSharedWithMeJSONObject.getLong(
+				"totalCount");
+
+		SharedAsset sharedAsset1 =
+			testGraphQLGetMyUserAccountSharedAssetsSharedWithMePageSharedAsset_addSharedAsset(
+				randomSharedAsset());
+
+		SharedAsset sharedAsset2 =
+			testGraphQLGetMyUserAccountSharedAssetsSharedWithMePageSharedAsset_addSharedAsset(
+				randomSharedAsset());
+
+		myUserAccountSharedAssetsSharedWithMeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/myUserAccountSharedAssetsSharedWithMe");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			myUserAccountSharedAssetsSharedWithMeJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			sharedAsset1,
+			Arrays.asList(
+				SharedAssetSerDes.toDTOs(
+					myUserAccountSharedAssetsSharedWithMeJSONObject.getString(
+						"items"))));
+		assertContains(
+			sharedAsset2,
+			Arrays.asList(
+				SharedAssetSerDes.toDTOs(
+					myUserAccountSharedAssetsSharedWithMeJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		myUserAccountSharedAssetsSharedWithMeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/myUserAccountSharedAssetsSharedWithMe");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			myUserAccountSharedAssetsSharedWithMeJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			sharedAsset1,
+			Arrays.asList(
+				SharedAssetSerDes.toDTOs(
+					myUserAccountSharedAssetsSharedWithMeJSONObject.getString(
+						"items"))));
+		assertContains(
+			sharedAsset2,
+			Arrays.asList(
+				SharedAssetSerDes.toDTOs(
+					myUserAccountSharedAssetsSharedWithMeJSONObject.getString(
+						"items"))));
+	}
+
+	protected SharedAsset
+			testGraphQLGetMyUserAccountSharedAssetsSharedWithMePageSharedAsset_addSharedAsset(
 				SharedAsset sharedAsset)
 		throws Exception {
 

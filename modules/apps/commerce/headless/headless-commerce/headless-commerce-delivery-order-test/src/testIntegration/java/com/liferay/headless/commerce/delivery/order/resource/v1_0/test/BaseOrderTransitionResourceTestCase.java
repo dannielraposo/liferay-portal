@@ -278,6 +278,13 @@ public abstract class BaseOrderTransitionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPlacedOrderOrderTransitionsPage()
+		throws Exception {
+
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testPostPlacedOrderOrderTransition() throws Exception {
 		OrderTransition randomOrderTransition = randomOrderTransition();
 

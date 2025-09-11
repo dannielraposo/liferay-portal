@@ -557,6 +557,106 @@ public abstract class BaseMappedProductResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelProductMappedProductsPage()
+		throws Exception {
+
+		Long channelId = testGetChannelProductMappedProductsPage_getChannelId();
+		Long productId = testGetChannelProductMappedProductsPage_getProductId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelProductMappedProducts",
+			new HashMap<String, Object>() {
+				{
+					put("channelId", channelId);
+					put("productId", productId);
+					put(
+						"currencyCode",
+						"\"" + RandomTestUtil.randomString() + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelProductMappedProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelProductMappedProducts");
+
+		long totalCount = channelProductMappedProductsJSONObject.getLong(
+			"totalCount");
+
+		MappedProduct mappedProduct1 =
+			testGraphQLGetChannelProductMappedProductsPageProductMappedProduct_addMappedProduct(
+				channelId, productId, randomMappedProduct());
+
+		MappedProduct mappedProduct2 =
+			testGraphQLGetChannelProductMappedProductsPageProductMappedProduct_addMappedProduct(
+				channelId, productId, randomMappedProduct());
+
+		channelProductMappedProductsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelProductMappedProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelProductMappedProductsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			mappedProduct1,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					channelProductMappedProductsJSONObject.getString(
+						"items"))));
+		assertContains(
+			mappedProduct2,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					channelProductMappedProductsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelProductMappedProductsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+			"JSONObject/data",
+			"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+			"JSONObject/channelProductMappedProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelProductMappedProductsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			mappedProduct1,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					channelProductMappedProductsJSONObject.getString(
+						"items"))));
+		assertContains(
+			mappedProduct2,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					channelProductMappedProductsJSONObject.getString(
+						"items"))));
+	}
+
+	protected MappedProduct
+			testGraphQLGetChannelProductMappedProductsPageProductMappedProduct_addMappedProduct(
+				Long channelId, Long productId, MappedProduct mappedProduct)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

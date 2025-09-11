@@ -513,6 +513,107 @@ public abstract class BaseOrderTypeChannelResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetOrderTypeByExternalReferenceCodeOrderTypeChannelsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetOrderTypeByExternalReferenceCodeOrderTypeChannelsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"orderTypeByExternalReferenceCodeOrderTypeChannels",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject orderTypeByExternalReferenceCodeOrderTypeChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/orderTypeByExternalReferenceCodeOrderTypeChannels");
+
+		long totalCount =
+			orderTypeByExternalReferenceCodeOrderTypeChannelsJSONObject.getLong(
+				"totalCount");
+
+		OrderTypeChannel orderTypeChannel1 =
+			testGraphQLGetOrderTypeByExternalReferenceCodeOrderTypeChannelsPageOrderTypeOrderTypeChannel_addOrderTypeChannel(
+				externalReferenceCode, randomOrderTypeChannel());
+
+		OrderTypeChannel orderTypeChannel2 =
+			testGraphQLGetOrderTypeByExternalReferenceCodeOrderTypeChannelsPageOrderTypeOrderTypeChannel_addOrderTypeChannel(
+				externalReferenceCode, randomOrderTypeChannel());
+
+		orderTypeByExternalReferenceCodeOrderTypeChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/orderTypeByExternalReferenceCodeOrderTypeChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderTypeByExternalReferenceCodeOrderTypeChannelsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			orderTypeChannel1,
+			Arrays.asList(
+				OrderTypeChannelSerDes.toDTOs(
+					orderTypeByExternalReferenceCodeOrderTypeChannelsJSONObject.
+						getString("items"))));
+		assertContains(
+			orderTypeChannel2,
+			Arrays.asList(
+				OrderTypeChannelSerDes.toDTOs(
+					orderTypeByExternalReferenceCodeOrderTypeChannelsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		orderTypeByExternalReferenceCodeOrderTypeChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminOrder_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessCommerceAdminOrder_v1_0",
+				"JSONObject/orderTypeByExternalReferenceCodeOrderTypeChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderTypeByExternalReferenceCodeOrderTypeChannelsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			orderTypeChannel1,
+			Arrays.asList(
+				OrderTypeChannelSerDes.toDTOs(
+					orderTypeByExternalReferenceCodeOrderTypeChannelsJSONObject.
+						getString("items"))));
+		assertContains(
+			orderTypeChannel2,
+			Arrays.asList(
+				OrderTypeChannelSerDes.toDTOs(
+					orderTypeByExternalReferenceCodeOrderTypeChannelsJSONObject.
+						getString("items"))));
+	}
+
+	protected OrderTypeChannel
+			testGraphQLGetOrderTypeByExternalReferenceCodeOrderTypeChannelsPageOrderTypeOrderTypeChannel_addOrderTypeChannel(
+				String externalReferenceCode, OrderTypeChannel orderTypeChannel)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetOrderTypeIdOrderTypeChannelsPage() throws Exception {
 		Long id = testGetOrderTypeIdOrderTypeChannelsPage_getId();
 		Long irrelevantId =
@@ -855,6 +956,100 @@ public abstract class BaseOrderTypeChannelResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetOrderTypeIdOrderTypeChannelsPage()
+		throws Exception {
+
+		Long id = testGetOrderTypeIdOrderTypeChannelsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"orderTypeIdOrderTypeChannels",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject orderTypeIdOrderTypeChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/orderTypeIdOrderTypeChannels");
+
+		long totalCount = orderTypeIdOrderTypeChannelsJSONObject.getLong(
+			"totalCount");
+
+		OrderTypeChannel orderTypeChannel1 =
+			testGraphQLGetOrderTypeIdOrderTypeChannelsPageOrderTypeOrderTypeChannel_addOrderTypeChannel(
+				id, randomOrderTypeChannel());
+
+		OrderTypeChannel orderTypeChannel2 =
+			testGraphQLGetOrderTypeIdOrderTypeChannelsPageOrderTypeOrderTypeChannel_addOrderTypeChannel(
+				id, randomOrderTypeChannel());
+
+		orderTypeIdOrderTypeChannelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/orderTypeIdOrderTypeChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderTypeIdOrderTypeChannelsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			orderTypeChannel1,
+			Arrays.asList(
+				OrderTypeChannelSerDes.toDTOs(
+					orderTypeIdOrderTypeChannelsJSONObject.getString(
+						"items"))));
+		assertContains(
+			orderTypeChannel2,
+			Arrays.asList(
+				OrderTypeChannelSerDes.toDTOs(
+					orderTypeIdOrderTypeChannelsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		orderTypeIdOrderTypeChannelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminOrder_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminOrder_v1_0",
+			"JSONObject/orderTypeIdOrderTypeChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderTypeIdOrderTypeChannelsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			orderTypeChannel1,
+			Arrays.asList(
+				OrderTypeChannelSerDes.toDTOs(
+					orderTypeIdOrderTypeChannelsJSONObject.getString(
+						"items"))));
+		assertContains(
+			orderTypeChannel2,
+			Arrays.asList(
+				OrderTypeChannelSerDes.toDTOs(
+					orderTypeIdOrderTypeChannelsJSONObject.getString(
+						"items"))));
+	}
+
+	protected OrderTypeChannel
+			testGraphQLGetOrderTypeIdOrderTypeChannelsPageOrderTypeOrderTypeChannel_addOrderTypeChannel(
+				Long id, OrderTypeChannel orderTypeChannel)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

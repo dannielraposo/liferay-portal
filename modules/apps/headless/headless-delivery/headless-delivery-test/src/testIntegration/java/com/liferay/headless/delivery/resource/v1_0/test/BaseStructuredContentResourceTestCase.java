@@ -2100,6 +2100,102 @@ public abstract class BaseStructuredContentResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetContentStructureStructuredContentsPage()
+		throws Exception {
+
+		Long contentStructureId =
+			testGetContentStructureStructuredContentsPage_getContentStructureId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"contentStructureStructuredContents",
+			new HashMap<String, Object>() {
+				{
+					put("contentStructureId", contentStructureId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject contentStructureStructuredContentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/contentStructureStructuredContents");
+
+		long totalCount = contentStructureStructuredContentsJSONObject.getLong(
+			"totalCount");
+
+		StructuredContent structuredContent1 =
+			testGraphQLGetContentStructureStructuredContentsPageContentStructureStructuredContent_addStructuredContent(
+				contentStructureId, randomStructuredContent());
+
+		StructuredContent structuredContent2 =
+			testGraphQLGetContentStructureStructuredContentsPageContentStructureStructuredContent_addStructuredContent(
+				contentStructureId, randomStructuredContent());
+
+		contentStructureStructuredContentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/contentStructureStructuredContents");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			contentStructureStructuredContentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			structuredContent1,
+			Arrays.asList(
+				StructuredContentSerDes.toDTOs(
+					contentStructureStructuredContentsJSONObject.getString(
+						"items"))));
+		assertContains(
+			structuredContent2,
+			Arrays.asList(
+				StructuredContentSerDes.toDTOs(
+					contentStructureStructuredContentsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		contentStructureStructuredContentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+				"JSONObject/contentStructureStructuredContents");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			contentStructureStructuredContentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			structuredContent1,
+			Arrays.asList(
+				StructuredContentSerDes.toDTOs(
+					contentStructureStructuredContentsJSONObject.getString(
+						"items"))));
+		assertContains(
+			structuredContent2,
+			Arrays.asList(
+				StructuredContentSerDes.toDTOs(
+					contentStructureStructuredContentsJSONObject.getString(
+						"items"))));
+	}
+
+	protected StructuredContent
+			testGraphQLGetContentStructureStructuredContentsPageContentStructureStructuredContent_addStructuredContent(
+				Long contentStructureId, StructuredContent structuredContent)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSiteStructuredContentByExternalReferenceCode()
 		throws Exception {
 

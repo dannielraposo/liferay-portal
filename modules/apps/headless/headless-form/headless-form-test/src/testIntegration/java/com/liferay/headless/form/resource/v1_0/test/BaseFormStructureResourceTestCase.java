@@ -687,6 +687,88 @@ public abstract class BaseFormStructureResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteFormStructuresPage() throws Exception {
+		Long siteId = testGetSiteFormStructuresPage_getSiteId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"formStructures",
+			new HashMap<String, Object>() {
+				{
+					put("siteKey", "\"" + siteId + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject formStructuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/formStructures");
+
+		long totalCount = formStructuresJSONObject.getLong("totalCount");
+
+		FormStructure formStructure1 =
+			testGraphQLGetSiteFormStructuresPageSiteFormStructure_addFormStructure(
+				siteId, randomFormStructure());
+
+		FormStructure formStructure2 =
+			testGraphQLGetSiteFormStructuresPageSiteFormStructure_addFormStructure(
+				siteId, randomFormStructure());
+
+		formStructuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/formStructures");
+
+		Assert.assertEquals(
+			totalCount + 2, formStructuresJSONObject.getLong("totalCount"));
+
+		assertContains(
+			formStructure1,
+			Arrays.asList(
+				FormStructureSerDes.toDTOs(
+					formStructuresJSONObject.getString("items"))));
+		assertContains(
+			formStructure2,
+			Arrays.asList(
+				FormStructureSerDes.toDTOs(
+					formStructuresJSONObject.getString("items"))));
+
+		// Using the namespace headlessForm_v1_0
+
+		formStructuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessForm_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessForm_v1_0",
+			"JSONObject/formStructures");
+
+		Assert.assertEquals(
+			totalCount + 2, formStructuresJSONObject.getLong("totalCount"));
+
+		assertContains(
+			formStructure1,
+			Arrays.asList(
+				FormStructureSerDes.toDTOs(
+					formStructuresJSONObject.getString("items"))));
+		assertContains(
+			formStructure2,
+			Arrays.asList(
+				FormStructureSerDes.toDTOs(
+					formStructuresJSONObject.getString("items"))));
+	}
+
+	protected FormStructure
+			testGraphQLGetSiteFormStructuresPageSiteFormStructure_addFormStructure(
+				Long siteId, FormStructure formStructure)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

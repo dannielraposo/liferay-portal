@@ -827,6 +827,109 @@ public abstract class BaseShippingFixedOptionOrderTypeResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetShippingFixedOptionIdShippingFixedOptionOrderTypesPage()
+		throws Exception {
+
+		Long id =
+			testGetShippingFixedOptionIdShippingFixedOptionOrderTypesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"shippingFixedOptionIdShippingFixedOptionOrderTypes",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			shippingFixedOptionIdShippingFixedOptionOrderTypesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/shippingFixedOptionIdShippingFixedOptionOrderTypes");
+
+		long totalCount =
+			shippingFixedOptionIdShippingFixedOptionOrderTypesJSONObject.
+				getLong("totalCount");
+
+		ShippingFixedOptionOrderType shippingFixedOptionOrderType1 =
+			testGraphQLGetShippingFixedOptionIdShippingFixedOptionOrderTypesPageShippingFixedOptionOrderType_addShippingFixedOptionOrderType(
+				id, randomShippingFixedOptionOrderType());
+
+		ShippingFixedOptionOrderType shippingFixedOptionOrderType2 =
+			testGraphQLGetShippingFixedOptionIdShippingFixedOptionOrderTypesPageShippingFixedOptionOrderType_addShippingFixedOptionOrderType(
+				id, randomShippingFixedOptionOrderType());
+
+		shippingFixedOptionIdShippingFixedOptionOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/shippingFixedOptionIdShippingFixedOptionOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			shippingFixedOptionIdShippingFixedOptionOrderTypesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			shippingFixedOptionOrderType1,
+			Arrays.asList(
+				ShippingFixedOptionOrderTypeSerDes.toDTOs(
+					shippingFixedOptionIdShippingFixedOptionOrderTypesJSONObject.
+						getString("items"))));
+		assertContains(
+			shippingFixedOptionOrderType2,
+			Arrays.asList(
+				ShippingFixedOptionOrderTypeSerDes.toDTOs(
+					shippingFixedOptionIdShippingFixedOptionOrderTypesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		shippingFixedOptionIdShippingFixedOptionOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminChannel_v1_0",
+				"JSONObject/shippingFixedOptionIdShippingFixedOptionOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			shippingFixedOptionIdShippingFixedOptionOrderTypesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			shippingFixedOptionOrderType1,
+			Arrays.asList(
+				ShippingFixedOptionOrderTypeSerDes.toDTOs(
+					shippingFixedOptionIdShippingFixedOptionOrderTypesJSONObject.
+						getString("items"))));
+		assertContains(
+			shippingFixedOptionOrderType2,
+			Arrays.asList(
+				ShippingFixedOptionOrderTypeSerDes.toDTOs(
+					shippingFixedOptionIdShippingFixedOptionOrderTypesJSONObject.
+						getString("items"))));
+	}
+
+	protected ShippingFixedOptionOrderType
+			testGraphQLGetShippingFixedOptionIdShippingFixedOptionOrderTypesPageShippingFixedOptionOrderType_addShippingFixedOptionOrderType(
+				Long id,
+				ShippingFixedOptionOrderType shippingFixedOptionOrderType)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPostShippingFixedOptionIdShippingFixedOptionOrderType()
 		throws Exception {
 

@@ -378,6 +378,53 @@ public abstract class BasePageTemplateSetResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSitePageTemplateSetPermissionsPage()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		PageTemplateSet postPageTemplateSet =
+			testGraphQLGetSitePageTemplateSetPermissionsPage_addPageTemplateSet();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"pageTemplateSetPermissions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" +
+							testGraphQLGetSitePageTemplateSetPermissionsPage_getSiteExternalReferenceCode() +
+								"\"");
+					put(
+						"pageTemplateSetExternalReferenceCode",
+						"\"" + postPageTemplateSet.getExternalReferenceCode() +
+							"\"");
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject pageTemplateSetPermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/pageTemplateSetPermissions");
+
+		Assert.assertNotNull(pageTemplateSetPermissionsJSONObject);
+	}
+
+	protected String
+			testGraphQLGetSitePageTemplateSetPermissionsPage_getSiteExternalReferenceCode()
+		throws Exception {
+
+		return testGroup.getExternalReferenceCode();
+	}
+
+	protected PageTemplateSet
+			testGraphQLGetSitePageTemplateSetPermissionsPage_addPageTemplateSet()
+		throws Exception {
+
+		return testGraphQLSitePageTemplateSet_addPageTemplateSet();
+	}
+
+	@Test
 	public void testGetSiteSiteByExternalReferenceCodePageTemplateSet()
 		throws Exception {
 
@@ -1025,6 +1072,108 @@ public abstract class BasePageTemplateSetResourceTestCase {
 		throws Exception {
 
 		return irrelevantGroup.getExternalReferenceCode();
+	}
+
+	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodePageTemplateSetsPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageTemplateSetsPage_getSiteExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodePageTemplateSets",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject siteByExternalReferenceCodePageTemplateSetsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodePageTemplateSets");
+
+		long totalCount =
+			siteByExternalReferenceCodePageTemplateSetsJSONObject.getLong(
+				"totalCount");
+
+		PageTemplateSet pageTemplateSet1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageTemplateSetsPageSitePageTemplateSet_addPageTemplateSet(
+				siteExternalReferenceCode, randomPageTemplateSet());
+
+		PageTemplateSet pageTemplateSet2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageTemplateSetsPageSitePageTemplateSet_addPageTemplateSet(
+				siteExternalReferenceCode, randomPageTemplateSet());
+
+		siteByExternalReferenceCodePageTemplateSetsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodePageTemplateSets");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageTemplateSetsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			pageTemplateSet1,
+			Arrays.asList(
+				PageTemplateSetSerDes.toDTOs(
+					siteByExternalReferenceCodePageTemplateSetsJSONObject.
+						getString("items"))));
+		assertContains(
+			pageTemplateSet2,
+			Arrays.asList(
+				PageTemplateSetSerDes.toDTOs(
+					siteByExternalReferenceCodePageTemplateSetsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodePageTemplateSetsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodePageTemplateSets");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageTemplateSetsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			pageTemplateSet1,
+			Arrays.asList(
+				PageTemplateSetSerDes.toDTOs(
+					siteByExternalReferenceCodePageTemplateSetsJSONObject.
+						getString("items"))));
+		assertContains(
+			pageTemplateSet2,
+			Arrays.asList(
+				PageTemplateSetSerDes.toDTOs(
+					siteByExternalReferenceCodePageTemplateSetsJSONObject.
+						getString("items"))));
+	}
+
+	protected PageTemplateSet
+			testGraphQLGetSiteSiteByExternalReferenceCodePageTemplateSetsPageSitePageTemplateSet_addPageTemplateSet(
+				String siteExternalReferenceCode,
+				PageTemplateSet pageTemplateSet)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

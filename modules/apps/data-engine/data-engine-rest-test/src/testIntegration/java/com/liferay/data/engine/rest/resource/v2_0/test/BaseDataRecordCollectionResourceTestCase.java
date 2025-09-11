@@ -1194,6 +1194,40 @@ public abstract class BaseDataRecordCollectionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetDataRecordCollectionPermissionsPage()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		DataRecordCollection postDataRecordCollection =
+			testGraphQLGetDataRecordCollectionPermissionsPage_addDataRecordCollection();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"dataRecordCollectionPermissions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"dataRecordCollectionId",
+						postDataRecordCollection.getId());
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject dataRecordCollectionPermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/dataRecordCollectionPermissions");
+
+		Assert.assertNotNull(dataRecordCollectionPermissionsJSONObject);
+	}
+
+	protected DataRecordCollection
+			testGraphQLGetDataRecordCollectionPermissionsPage_addDataRecordCollection()
+		throws Exception {
+
+		return testGraphQLDataRecordCollection_addDataRecordCollection();
+	}
+
+	@Test
 	public void testGetSiteDataRecordCollectionByDataRecordCollectionKey()
 		throws Exception {
 

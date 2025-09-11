@@ -413,6 +413,102 @@ public abstract class BaseAssetLibraryTestEntityResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAssetLibraryAssetLibraryTestEntitiesPage()
+		throws Exception {
+
+		Long assetLibraryId =
+			testGetAssetLibraryAssetLibraryTestEntitiesPage_getAssetLibraryId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"assetLibraryAssetLibraryTestEntities",
+			new HashMap<String, Object>() {
+				{
+					put("assetLibraryId", "\"" + assetLibraryId + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject assetLibraryAssetLibraryTestEntitiesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/assetLibraryAssetLibraryTestEntities");
+
+		long totalCount =
+			assetLibraryAssetLibraryTestEntitiesJSONObject.getLong(
+				"totalCount");
+
+		AssetLibraryTestEntity assetLibraryTestEntity1 =
+			testGraphQLGetAssetLibraryAssetLibraryTestEntitiesPageAssetLibraryAssetLibraryTestEntity_addAssetLibraryTestEntity(
+				assetLibraryId, randomAssetLibraryTestEntity());
+
+		AssetLibraryTestEntity assetLibraryTestEntity2 =
+			testGraphQLGetAssetLibraryAssetLibraryTestEntitiesPageAssetLibraryAssetLibraryTestEntity_addAssetLibraryTestEntity(
+				assetLibraryId, randomAssetLibraryTestEntity());
+
+		assetLibraryAssetLibraryTestEntitiesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/assetLibraryAssetLibraryTestEntities");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			assetLibraryAssetLibraryTestEntitiesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			assetLibraryTestEntity1,
+			Arrays.asList(
+				AssetLibraryTestEntitySerDes.toDTOs(
+					assetLibraryAssetLibraryTestEntitiesJSONObject.getString(
+						"items"))));
+		assertContains(
+			assetLibraryTestEntity2,
+			Arrays.asList(
+				AssetLibraryTestEntitySerDes.toDTOs(
+					assetLibraryAssetLibraryTestEntitiesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace test_v1_0
+
+		assetLibraryAssetLibraryTestEntitiesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(new GraphQLField("test_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/test_v1_0",
+				"JSONObject/assetLibraryAssetLibraryTestEntities");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			assetLibraryAssetLibraryTestEntitiesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			assetLibraryTestEntity1,
+			Arrays.asList(
+				AssetLibraryTestEntitySerDes.toDTOs(
+					assetLibraryAssetLibraryTestEntitiesJSONObject.getString(
+						"items"))));
+		assertContains(
+			assetLibraryTestEntity2,
+			Arrays.asList(
+				AssetLibraryTestEntitySerDes.toDTOs(
+					assetLibraryAssetLibraryTestEntitiesJSONObject.getString(
+						"items"))));
+	}
+
+	protected AssetLibraryTestEntity
+			testGraphQLGetAssetLibraryAssetLibraryTestEntitiesPageAssetLibraryAssetLibraryTestEntity_addAssetLibraryTestEntity(
+				Long assetLibraryId,
+				AssetLibraryTestEntity assetLibraryTestEntity)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

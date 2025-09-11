@@ -1668,6 +1668,93 @@ public abstract class BaseAccountResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAccountGroupAccountsPage() throws Exception {
+		Long accountGroupId =
+			testGetAccountGroupAccountsPage_getAccountGroupId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountGroupAccounts",
+			new HashMap<String, Object>() {
+				{
+					put("accountGroupId", accountGroupId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject accountGroupAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountGroupAccounts");
+
+		long totalCount = accountGroupAccountsJSONObject.getLong("totalCount");
+
+		Account account1 =
+			testGraphQLGetAccountGroupAccountsPageAccountGroupAccount_addAccount(
+				accountGroupId, randomAccount());
+
+		Account account2 =
+			testGraphQLGetAccountGroupAccountsPageAccountGroupAccount_addAccount(
+				accountGroupId, randomAccount());
+
+		accountGroupAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/accountGroupAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountGroupAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			account1,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					accountGroupAccountsJSONObject.getString("items"))));
+		assertContains(
+			account2,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					accountGroupAccountsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		accountGroupAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/accountGroupAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountGroupAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			account1,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					accountGroupAccountsJSONObject.getString("items"))));
+		assertContains(
+			account2,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					accountGroupAccountsJSONObject.getString("items"))));
+	}
+
+	protected Account
+			testGraphQLGetAccountGroupAccountsPageAccountGroupAccount_addAccount(
+				Long accountGroupId, Account account)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetAccountGroupByExternalReferenceCodeAccountsPage()
 		throws Exception {
 
@@ -2115,6 +2202,107 @@ public abstract class BaseAccountResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetAccountGroupByExternalReferenceCodeAccountsPage()
+		throws Exception {
+
+		String accountGroupExternalReferenceCode =
+			testGetAccountGroupByExternalReferenceCodeAccountsPage_getAccountGroupExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountGroupByExternalReferenceCodeAccounts",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"accountGroupExternalReferenceCode",
+						"\"" + accountGroupExternalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject accountGroupByExternalReferenceCodeAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountGroupByExternalReferenceCodeAccounts");
+
+		long totalCount =
+			accountGroupByExternalReferenceCodeAccountsJSONObject.getLong(
+				"totalCount");
+
+		Account account1 =
+			testGraphQLGetAccountGroupByExternalReferenceCodeAccountsPageAccountGroupAccount_addAccount(
+				accountGroupExternalReferenceCode, randomAccount());
+
+		Account account2 =
+			testGraphQLGetAccountGroupByExternalReferenceCodeAccountsPageAccountGroupAccount_addAccount(
+				accountGroupExternalReferenceCode, randomAccount());
+
+		accountGroupByExternalReferenceCodeAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountGroupByExternalReferenceCodeAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountGroupByExternalReferenceCodeAccountsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			account1,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					accountGroupByExternalReferenceCodeAccountsJSONObject.
+						getString("items"))));
+		assertContains(
+			account2,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					accountGroupByExternalReferenceCodeAccountsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		accountGroupByExternalReferenceCodeAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/accountGroupByExternalReferenceCodeAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountGroupByExternalReferenceCodeAccountsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			account1,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					accountGroupByExternalReferenceCodeAccountsJSONObject.
+						getString("items"))));
+		assertContains(
+			account2,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					accountGroupByExternalReferenceCodeAccountsJSONObject.
+						getString("items"))));
+	}
+
+	protected Account
+			testGraphQLGetAccountGroupByExternalReferenceCodeAccountsPageAccountGroupAccount_addAccount(
+				String accountGroupExternalReferenceCode, Account account)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -2899,6 +3087,93 @@ public abstract class BaseAccountResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetOrganizationAccountsPage() throws Exception {
+		String organizationId =
+			testGetOrganizationAccountsPage_getOrganizationId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"organizationAccounts",
+			new HashMap<String, Object>() {
+				{
+					put("organizationId", "\"" + organizationId + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject organizationAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/organizationAccounts");
+
+		long totalCount = organizationAccountsJSONObject.getLong("totalCount");
+
+		Account account1 =
+			testGraphQLGetOrganizationAccountsPageOrganizationAccount_addAccount(
+				organizationId, randomAccount());
+
+		Account account2 =
+			testGraphQLGetOrganizationAccountsPageOrganizationAccount_addAccount(
+				organizationId, randomAccount());
+
+		organizationAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/organizationAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			account1,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					organizationAccountsJSONObject.getString("items"))));
+		assertContains(
+			account2,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					organizationAccountsJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		organizationAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+			"JSONObject/organizationAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationAccountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			account1,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					organizationAccountsJSONObject.getString("items"))));
+		assertContains(
+			account2,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					organizationAccountsJSONObject.getString("items"))));
+	}
+
+	protected Account
+			testGraphQLGetOrganizationAccountsPageOrganizationAccount_addAccount(
+				String organizationId, Account account)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetOrganizationByExternalReferenceCodeAccountsPage()
 		throws Exception {
 
@@ -3343,6 +3618,107 @@ public abstract class BaseAccountResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetOrganizationByExternalReferenceCodeAccountsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetOrganizationByExternalReferenceCodeAccountsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"organizationByExternalReferenceCodeAccounts",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject organizationByExternalReferenceCodeAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/organizationByExternalReferenceCodeAccounts");
+
+		long totalCount =
+			organizationByExternalReferenceCodeAccountsJSONObject.getLong(
+				"totalCount");
+
+		Account account1 =
+			testGraphQLGetOrganizationByExternalReferenceCodeAccountsPageOrganizationAccount_addAccount(
+				externalReferenceCode, randomAccount());
+
+		Account account2 =
+			testGraphQLGetOrganizationByExternalReferenceCodeAccountsPageOrganizationAccount_addAccount(
+				externalReferenceCode, randomAccount());
+
+		organizationByExternalReferenceCodeAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/organizationByExternalReferenceCodeAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationByExternalReferenceCodeAccountsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			account1,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					organizationByExternalReferenceCodeAccountsJSONObject.
+						getString("items"))));
+		assertContains(
+			account2,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					organizationByExternalReferenceCodeAccountsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		organizationByExternalReferenceCodeAccountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/organizationByExternalReferenceCodeAccounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			organizationByExternalReferenceCodeAccountsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			account1,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					organizationByExternalReferenceCodeAccountsJSONObject.
+						getString("items"))));
+		assertContains(
+			account2,
+			Arrays.asList(
+				AccountSerDes.toDTOs(
+					organizationByExternalReferenceCodeAccountsJSONObject.
+						getString("items"))));
+	}
+
+	protected Account
+			testGraphQLGetOrganizationByExternalReferenceCodeAccountsPageOrganizationAccount_addAccount(
+				String externalReferenceCode, Account account)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

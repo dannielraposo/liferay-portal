@@ -605,6 +605,107 @@ public abstract class BaseSkuVirtualSettingsFileEntryResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSkuVirtualSettingIdSkuVirtualSettingsFileEntriesPage()
+		throws Exception {
+
+		Long id =
+			testGetSkuVirtualSettingIdSkuVirtualSettingsFileEntriesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"skuVirtualSettingIdSkuVirtualSettingsFileEntries",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject skuVirtualSettingIdSkuVirtualSettingsFileEntriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/skuVirtualSettingIdSkuVirtualSettingsFileEntries");
+
+		long totalCount =
+			skuVirtualSettingIdSkuVirtualSettingsFileEntriesJSONObject.getLong(
+				"totalCount");
+
+		SkuVirtualSettingsFileEntry skuVirtualSettingsFileEntry1 =
+			testGraphQLGetSkuVirtualSettingIdSkuVirtualSettingsFileEntriesPageSkuVirtualSettingsFileEntry_addSkuVirtualSettingsFileEntry(
+				id, randomSkuVirtualSettingsFileEntry());
+
+		SkuVirtualSettingsFileEntry skuVirtualSettingsFileEntry2 =
+			testGraphQLGetSkuVirtualSettingIdSkuVirtualSettingsFileEntriesPageSkuVirtualSettingsFileEntry_addSkuVirtualSettingsFileEntry(
+				id, randomSkuVirtualSettingsFileEntry());
+
+		skuVirtualSettingIdSkuVirtualSettingsFileEntriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/skuVirtualSettingIdSkuVirtualSettingsFileEntries");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			skuVirtualSettingIdSkuVirtualSettingsFileEntriesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			skuVirtualSettingsFileEntry1,
+			Arrays.asList(
+				SkuVirtualSettingsFileEntrySerDes.toDTOs(
+					skuVirtualSettingIdSkuVirtualSettingsFileEntriesJSONObject.
+						getString("items"))));
+		assertContains(
+			skuVirtualSettingsFileEntry2,
+			Arrays.asList(
+				SkuVirtualSettingsFileEntrySerDes.toDTOs(
+					skuVirtualSettingIdSkuVirtualSettingsFileEntriesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		skuVirtualSettingIdSkuVirtualSettingsFileEntriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/skuVirtualSettingIdSkuVirtualSettingsFileEntries");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			skuVirtualSettingIdSkuVirtualSettingsFileEntriesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			skuVirtualSettingsFileEntry1,
+			Arrays.asList(
+				SkuVirtualSettingsFileEntrySerDes.toDTOs(
+					skuVirtualSettingIdSkuVirtualSettingsFileEntriesJSONObject.
+						getString("items"))));
+		assertContains(
+			skuVirtualSettingsFileEntry2,
+			Arrays.asList(
+				SkuVirtualSettingsFileEntrySerDes.toDTOs(
+					skuVirtualSettingIdSkuVirtualSettingsFileEntriesJSONObject.
+						getString("items"))));
+	}
+
+	protected SkuVirtualSettingsFileEntry
+			testGraphQLGetSkuVirtualSettingIdSkuVirtualSettingsFileEntriesPageSkuVirtualSettingsFileEntry_addSkuVirtualSettingsFileEntry(
+				Long id,
+				SkuVirtualSettingsFileEntry skuVirtualSettingsFileEntry)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSkuVirtualSettingsFileEntry() throws Exception {
 		SkuVirtualSettingsFileEntry postSkuVirtualSettingsFileEntry =
 			testGetSkuVirtualSettingsFileEntry_addSkuVirtualSettingsFileEntry();

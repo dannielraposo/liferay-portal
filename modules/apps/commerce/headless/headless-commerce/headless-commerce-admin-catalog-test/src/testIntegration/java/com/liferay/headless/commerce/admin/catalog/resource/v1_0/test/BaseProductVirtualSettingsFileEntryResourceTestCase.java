@@ -619,6 +619,108 @@ public abstract class BaseProductVirtualSettingsFileEntryResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProductVirtualSettingIdProductVirtualSettingsFileEntriesPage()
+		throws Exception {
+
+		Long id =
+			testGetProductVirtualSettingIdProductVirtualSettingsFileEntriesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productVirtualSettingIdProductVirtualSettingsFileEntries",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			productVirtualSettingIdProductVirtualSettingsFileEntriesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/productVirtualSettingIdProductVirtualSettingsFileEntries");
+
+		long totalCount =
+			productVirtualSettingIdProductVirtualSettingsFileEntriesJSONObject.
+				getLong("totalCount");
+
+		ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry1 =
+			testGraphQLGetProductVirtualSettingIdProductVirtualSettingsFileEntriesPageProductVirtualSettingsFileEntry_addProductVirtualSettingsFileEntry(
+				id, randomProductVirtualSettingsFileEntry());
+
+		ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry2 =
+			testGraphQLGetProductVirtualSettingIdProductVirtualSettingsFileEntriesPageProductVirtualSettingsFileEntry_addProductVirtualSettingsFileEntry(
+				id, randomProductVirtualSettingsFileEntry());
+
+		productVirtualSettingIdProductVirtualSettingsFileEntriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productVirtualSettingIdProductVirtualSettingsFileEntries");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productVirtualSettingIdProductVirtualSettingsFileEntriesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			productVirtualSettingsFileEntry1,
+			Arrays.asList(
+				ProductVirtualSettingsFileEntrySerDes.toDTOs(
+					productVirtualSettingIdProductVirtualSettingsFileEntriesJSONObject.
+						getString("items"))));
+		assertContains(
+			productVirtualSettingsFileEntry2,
+			Arrays.asList(
+				ProductVirtualSettingsFileEntrySerDes.toDTOs(
+					productVirtualSettingIdProductVirtualSettingsFileEntriesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productVirtualSettingIdProductVirtualSettingsFileEntriesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/productVirtualSettingIdProductVirtualSettingsFileEntries");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productVirtualSettingIdProductVirtualSettingsFileEntriesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			productVirtualSettingsFileEntry1,
+			Arrays.asList(
+				ProductVirtualSettingsFileEntrySerDes.toDTOs(
+					productVirtualSettingIdProductVirtualSettingsFileEntriesJSONObject.
+						getString("items"))));
+		assertContains(
+			productVirtualSettingsFileEntry2,
+			Arrays.asList(
+				ProductVirtualSettingsFileEntrySerDes.toDTOs(
+					productVirtualSettingIdProductVirtualSettingsFileEntriesJSONObject.
+						getString("items"))));
+	}
+
+	protected ProductVirtualSettingsFileEntry
+			testGraphQLGetProductVirtualSettingIdProductVirtualSettingsFileEntriesPageProductVirtualSettingsFileEntry_addProductVirtualSettingsFileEntry(
+				Long id,
+				ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetProductVirtualSettingsFileEntry() throws Exception {
 		ProductVirtualSettingsFileEntry postProductVirtualSettingsFileEntry =
 			testGetProductVirtualSettingsFileEntry_addProductVirtualSettingsFileEntry();

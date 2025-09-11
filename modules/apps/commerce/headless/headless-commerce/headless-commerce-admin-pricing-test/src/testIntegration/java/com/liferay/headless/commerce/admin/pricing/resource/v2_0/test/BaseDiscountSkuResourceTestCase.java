@@ -497,6 +497,108 @@ public abstract class BaseDiscountSkuResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetDiscountByExternalReferenceCodeDiscountSkusPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetDiscountByExternalReferenceCodeDiscountSkusPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"discountByExternalReferenceCodeDiscountSkus",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject discountByExternalReferenceCodeDiscountSkusJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountByExternalReferenceCodeDiscountSkus");
+
+		long totalCount =
+			discountByExternalReferenceCodeDiscountSkusJSONObject.getLong(
+				"totalCount");
+
+		DiscountSku discountSku1 =
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountSkusPageDiscountDiscountSku_addDiscountSku(
+				externalReferenceCode, randomDiscountSku());
+
+		DiscountSku discountSku2 =
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountSkusPageDiscountDiscountSku_addDiscountSku(
+				externalReferenceCode, randomDiscountSku());
+
+		discountByExternalReferenceCodeDiscountSkusJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountByExternalReferenceCodeDiscountSkus");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountByExternalReferenceCodeDiscountSkusJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			discountSku1,
+			Arrays.asList(
+				DiscountSkuSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountSkusJSONObject.
+						getString("items"))));
+		assertContains(
+			discountSku2,
+			Arrays.asList(
+				DiscountSkuSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountSkusJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		discountByExternalReferenceCodeDiscountSkusJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v2_0",
+				"JSONObject/discountByExternalReferenceCodeDiscountSkus");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountByExternalReferenceCodeDiscountSkusJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			discountSku1,
+			Arrays.asList(
+				DiscountSkuSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountSkusJSONObject.
+						getString("items"))));
+		assertContains(
+			discountSku2,
+			Arrays.asList(
+				DiscountSkuSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountSkusJSONObject.
+						getString("items"))));
+	}
+
+	protected DiscountSku
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountSkusPageDiscountDiscountSku_addDiscountSku(
+				String externalReferenceCode, DiscountSku discountSku)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetDiscountIdDiscountSkusPage() throws Exception {
 		Long id = testGetDiscountIdDiscountSkusPage_getId();
 		Long irrelevantId = testGetDiscountIdDiscountSkusPage_getIrrelevantId();
@@ -916,6 +1018,94 @@ public abstract class BaseDiscountSkuResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetDiscountIdDiscountSkusPage() throws Exception {
+		Long id = testGetDiscountIdDiscountSkusPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"discountIdDiscountSkus",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject discountIdDiscountSkusJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountIdDiscountSkus");
+
+		long totalCount = discountIdDiscountSkusJSONObject.getLong(
+			"totalCount");
+
+		DiscountSku discountSku1 =
+			testGraphQLGetDiscountIdDiscountSkusPageDiscountDiscountSku_addDiscountSku(
+				id, randomDiscountSku());
+
+		DiscountSku discountSku2 =
+			testGraphQLGetDiscountIdDiscountSkusPageDiscountDiscountSku_addDiscountSku(
+				id, randomDiscountSku());
+
+		discountIdDiscountSkusJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/discountIdDiscountSkus");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountIdDiscountSkusJSONObject.getLong("totalCount"));
+
+		assertContains(
+			discountSku1,
+			Arrays.asList(
+				DiscountSkuSerDes.toDTOs(
+					discountIdDiscountSkusJSONObject.getString("items"))));
+		assertContains(
+			discountSku2,
+			Arrays.asList(
+				DiscountSkuSerDes.toDTOs(
+					discountIdDiscountSkusJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		discountIdDiscountSkusJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminPricing_v2_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminPricing_v2_0",
+			"JSONObject/discountIdDiscountSkus");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountIdDiscountSkusJSONObject.getLong("totalCount"));
+
+		assertContains(
+			discountSku1,
+			Arrays.asList(
+				DiscountSkuSerDes.toDTOs(
+					discountIdDiscountSkusJSONObject.getString("items"))));
+		assertContains(
+			discountSku2,
+			Arrays.asList(
+				DiscountSkuSerDes.toDTOs(
+					discountIdDiscountSkusJSONObject.getString("items"))));
+	}
+
+	protected DiscountSku
+			testGraphQLGetDiscountIdDiscountSkusPageDiscountDiscountSku_addDiscountSku(
+				Long id, DiscountSku discountSku)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

@@ -412,6 +412,105 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWorkflowInstanceWorkflowTasksAssignedToMePage()
+		throws Exception {
+
+		Long workflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_getWorkflowInstanceId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"workflowInstanceWorkflowTasksAssignedToMe",
+			new HashMap<String, Object>() {
+				{
+					put("workflowInstanceId", workflowInstanceId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject workflowInstanceWorkflowTasksAssignedToMeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowInstanceWorkflowTasksAssignedToMe");
+
+		long totalCount =
+			workflowInstanceWorkflowTasksAssignedToMeJSONObject.getLong(
+				"totalCount");
+
+		WorkflowTask workflowTask1 =
+			testGraphQLGetWorkflowInstanceWorkflowTasksAssignedToMePageWorkflowTask_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGraphQLGetWorkflowInstanceWorkflowTasksAssignedToMePageWorkflowTask_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
+
+		workflowInstanceWorkflowTasksAssignedToMeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowInstanceWorkflowTasksAssignedToMe");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowInstanceWorkflowTasksAssignedToMeJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksAssignedToMeJSONObject.
+						getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksAssignedToMeJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminWorkflow_v1_0
+
+		workflowInstanceWorkflowTasksAssignedToMeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminWorkflow_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminWorkflow_v1_0",
+				"JSONObject/workflowInstanceWorkflowTasksAssignedToMe");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowInstanceWorkflowTasksAssignedToMeJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksAssignedToMeJSONObject.
+						getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksAssignedToMeJSONObject.
+						getString("items"))));
+	}
+
+	protected WorkflowTask
+			testGraphQLGetWorkflowInstanceWorkflowTasksAssignedToMePageWorkflowTask_addWorkflowTask(
+				Long workflowInstanceId, WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetWorkflowInstanceWorkflowTasksAssignedToUserPage()
 		throws Exception {
 
@@ -611,6 +710,105 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWorkflowInstanceWorkflowTasksAssignedToUserPage()
+		throws Exception {
+
+		Long workflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_getWorkflowInstanceId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"workflowInstanceWorkflowTasksAssignedToUser",
+			new HashMap<String, Object>() {
+				{
+					put("workflowInstanceId", workflowInstanceId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject workflowInstanceWorkflowTasksAssignedToUserJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowInstanceWorkflowTasksAssignedToUser");
+
+		long totalCount =
+			workflowInstanceWorkflowTasksAssignedToUserJSONObject.getLong(
+				"totalCount");
+
+		WorkflowTask workflowTask1 =
+			testGraphQLGetWorkflowInstanceWorkflowTasksAssignedToUserPageWorkflowTask_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGraphQLGetWorkflowInstanceWorkflowTasksAssignedToUserPageWorkflowTask_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
+
+		workflowInstanceWorkflowTasksAssignedToUserJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowInstanceWorkflowTasksAssignedToUser");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowInstanceWorkflowTasksAssignedToUserJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksAssignedToUserJSONObject.
+						getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksAssignedToUserJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminWorkflow_v1_0
+
+		workflowInstanceWorkflowTasksAssignedToUserJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminWorkflow_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminWorkflow_v1_0",
+				"JSONObject/workflowInstanceWorkflowTasksAssignedToUser");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowInstanceWorkflowTasksAssignedToUserJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksAssignedToUserJSONObject.
+						getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksAssignedToUserJSONObject.
+						getString("items"))));
+	}
+
+	protected WorkflowTask
+			testGraphQLGetWorkflowInstanceWorkflowTasksAssignedToUserPageWorkflowTask_addWorkflowTask(
+				Long workflowInstanceId, WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetWorkflowInstanceWorkflowTasksPage() throws Exception {
 		Long workflowInstanceId =
 			testGetWorkflowInstanceWorkflowTasksPage_getWorkflowInstanceId();
@@ -791,6 +989,99 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetWorkflowInstanceWorkflowTasksPage()
+		throws Exception {
+
+		Long workflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksPage_getWorkflowInstanceId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"workflowInstanceWorkflowTasks",
+			new HashMap<String, Object>() {
+				{
+					put("workflowInstanceId", workflowInstanceId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject workflowInstanceWorkflowTasksJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowInstanceWorkflowTasks");
+
+		long totalCount = workflowInstanceWorkflowTasksJSONObject.getLong(
+			"totalCount");
+
+		WorkflowTask workflowTask1 =
+			testGraphQLGetWorkflowInstanceWorkflowTasksPageWorkflowInstanceWorkflowTask_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGraphQLGetWorkflowInstanceWorkflowTasksPageWorkflowInstanceWorkflowTask_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
+
+		workflowInstanceWorkflowTasksJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/workflowInstanceWorkflowTasks");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowInstanceWorkflowTasksJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksJSONObject.getString(
+						"items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessAdminWorkflow_v1_0
+
+		workflowInstanceWorkflowTasksJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminWorkflow_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminWorkflow_v1_0",
+			"JSONObject/workflowInstanceWorkflowTasks");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowInstanceWorkflowTasksJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksJSONObject.getString(
+						"items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowInstanceWorkflowTasksJSONObject.getString(
+						"items"))));
+	}
+
+	protected WorkflowTask
+			testGraphQLGetWorkflowInstanceWorkflowTasksPageWorkflowInstanceWorkflowTask_addWorkflowTask(
+				Long workflowInstanceId, WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -1236,6 +1527,89 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWorkflowTasksAssignedToMePage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"workflowTasksAssignedToMe",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject workflowTasksAssignedToMeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowTasksAssignedToMe");
+
+		long totalCount = workflowTasksAssignedToMeJSONObject.getLong(
+			"totalCount");
+
+		WorkflowTask workflowTask1 =
+			testGraphQLGetWorkflowTasksAssignedToMePageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGraphQLGetWorkflowTasksAssignedToMePageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		workflowTasksAssignedToMeJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/workflowTasksAssignedToMe");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksAssignedToMeJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToMeJSONObject.getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToMeJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminWorkflow_v1_0
+
+		workflowTasksAssignedToMeJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminWorkflow_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminWorkflow_v1_0",
+			"JSONObject/workflowTasksAssignedToMe");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksAssignedToMeJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToMeJSONObject.getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToMeJSONObject.getString("items"))));
+	}
+
+	protected WorkflowTask
+			testGraphQLGetWorkflowTasksAssignedToMePageWorkflowTask_addWorkflowTask(
+				WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetWorkflowTasksAssignedToMyRolesPage() throws Exception {
 		Page<WorkflowTask> page =
 			workflowTaskResource.getWorkflowTasksAssignedToMyRolesPage(
@@ -1361,6 +1735,98 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 
 	protected WorkflowTask
 			testGetWorkflowTasksAssignedToMyRolesPage_addWorkflowTask(
+				WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetWorkflowTasksAssignedToMyRolesPage()
+		throws Exception {
+
+		GraphQLField graphQLField = new GraphQLField(
+			"workflowTasksAssignedToMyRoles",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject workflowTasksAssignedToMyRolesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowTasksAssignedToMyRoles");
+
+		long totalCount = workflowTasksAssignedToMyRolesJSONObject.getLong(
+			"totalCount");
+
+		WorkflowTask workflowTask1 =
+			testGraphQLGetWorkflowTasksAssignedToMyRolesPageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGraphQLGetWorkflowTasksAssignedToMyRolesPageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		workflowTasksAssignedToMyRolesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowTasksAssignedToMyRoles");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksAssignedToMyRolesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToMyRolesJSONObject.getString(
+						"items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToMyRolesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessAdminWorkflow_v1_0
+
+		workflowTasksAssignedToMyRolesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminWorkflow_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminWorkflow_v1_0",
+				"JSONObject/workflowTasksAssignedToMyRoles");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksAssignedToMyRolesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToMyRolesJSONObject.getString(
+						"items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToMyRolesJSONObject.getString(
+						"items"))));
+	}
+
+	protected WorkflowTask
+			testGraphQLGetWorkflowTasksAssignedToMyRolesPageWorkflowTask_addWorkflowTask(
 				WorkflowTask workflowTask)
 		throws Exception {
 
@@ -1504,6 +1970,91 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWorkflowTasksAssignedToRolePage()
+		throws Exception {
+
+		GraphQLField graphQLField = new GraphQLField(
+			"workflowTasksAssignedToRole",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject workflowTasksAssignedToRoleJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowTasksAssignedToRole");
+
+		long totalCount = workflowTasksAssignedToRoleJSONObject.getLong(
+			"totalCount");
+
+		WorkflowTask workflowTask1 =
+			testGraphQLGetWorkflowTasksAssignedToRolePageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGraphQLGetWorkflowTasksAssignedToRolePageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		workflowTasksAssignedToRoleJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/workflowTasksAssignedToRole");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksAssignedToRoleJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToRoleJSONObject.getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToRoleJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminWorkflow_v1_0
+
+		workflowTasksAssignedToRoleJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminWorkflow_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminWorkflow_v1_0",
+			"JSONObject/workflowTasksAssignedToRole");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksAssignedToRoleJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToRoleJSONObject.getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToRoleJSONObject.getString("items"))));
+	}
+
+	protected WorkflowTask
+			testGraphQLGetWorkflowTasksAssignedToRolePageWorkflowTask_addWorkflowTask(
+				WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetWorkflowTasksAssignedToUserPage() throws Exception {
 		Page<WorkflowTask> page =
 			workflowTaskResource.getWorkflowTasksAssignedToUserPage(
@@ -1631,6 +2182,91 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 
 	protected WorkflowTask
 			testGetWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetWorkflowTasksAssignedToUserPage()
+		throws Exception {
+
+		GraphQLField graphQLField = new GraphQLField(
+			"workflowTasksAssignedToUser",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject workflowTasksAssignedToUserJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowTasksAssignedToUser");
+
+		long totalCount = workflowTasksAssignedToUserJSONObject.getLong(
+			"totalCount");
+
+		WorkflowTask workflowTask1 =
+			testGraphQLGetWorkflowTasksAssignedToUserPageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGraphQLGetWorkflowTasksAssignedToUserPageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		workflowTasksAssignedToUserJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/workflowTasksAssignedToUser");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksAssignedToUserJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToUserJSONObject.getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToUserJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminWorkflow_v1_0
+
+		workflowTasksAssignedToUserJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminWorkflow_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminWorkflow_v1_0",
+			"JSONObject/workflowTasksAssignedToUser");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksAssignedToUserJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToUserJSONObject.getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToUserJSONObject.getString("items"))));
+	}
+
+	protected WorkflowTask
+			testGraphQLGetWorkflowTasksAssignedToUserPageWorkflowTask_addWorkflowTask(
 				WorkflowTask workflowTask)
 		throws Exception {
 
@@ -1776,6 +2412,98 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWorkflowTasksAssignedToUserRolesPage()
+		throws Exception {
+
+		GraphQLField graphQLField = new GraphQLField(
+			"workflowTasksAssignedToUserRoles",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject workflowTasksAssignedToUserRolesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowTasksAssignedToUserRoles");
+
+		long totalCount = workflowTasksAssignedToUserRolesJSONObject.getLong(
+			"totalCount");
+
+		WorkflowTask workflowTask1 =
+			testGraphQLGetWorkflowTasksAssignedToUserRolesPageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGraphQLGetWorkflowTasksAssignedToUserRolesPageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		workflowTasksAssignedToUserRolesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowTasksAssignedToUserRoles");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksAssignedToUserRolesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToUserRolesJSONObject.getString(
+						"items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToUserRolesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessAdminWorkflow_v1_0
+
+		workflowTasksAssignedToUserRolesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminWorkflow_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminWorkflow_v1_0",
+				"JSONObject/workflowTasksAssignedToUserRoles");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksAssignedToUserRolesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToUserRolesJSONObject.getString(
+						"items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksAssignedToUserRolesJSONObject.getString(
+						"items"))));
+	}
+
+	protected WorkflowTask
+			testGraphQLGetWorkflowTasksAssignedToUserRolesPageWorkflowTask_addWorkflowTask(
+				WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetWorkflowTasksSubmittingUserPage() throws Exception {
 		Page<WorkflowTask> page =
 			workflowTaskResource.getWorkflowTasksSubmittingUserPage(
@@ -1903,6 +2631,91 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 
 	protected WorkflowTask
 			testGetWorkflowTasksSubmittingUserPage_addWorkflowTask(
+				WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetWorkflowTasksSubmittingUserPage()
+		throws Exception {
+
+		GraphQLField graphQLField = new GraphQLField(
+			"workflowTasksSubmittingUser",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject workflowTasksSubmittingUserJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/workflowTasksSubmittingUser");
+
+		long totalCount = workflowTasksSubmittingUserJSONObject.getLong(
+			"totalCount");
+
+		WorkflowTask workflowTask1 =
+			testGraphQLGetWorkflowTasksSubmittingUserPageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGraphQLGetWorkflowTasksSubmittingUserPageWorkflowTask_addWorkflowTask(
+				randomWorkflowTask());
+
+		workflowTasksSubmittingUserJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/workflowTasksSubmittingUser");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksSubmittingUserJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksSubmittingUserJSONObject.getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksSubmittingUserJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminWorkflow_v1_0
+
+		workflowTasksSubmittingUserJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminWorkflow_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminWorkflow_v1_0",
+			"JSONObject/workflowTasksSubmittingUser");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			workflowTasksSubmittingUserJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowTask1,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksSubmittingUserJSONObject.getString("items"))));
+		assertContains(
+			workflowTask2,
+			Arrays.asList(
+				WorkflowTaskSerDes.toDTOs(
+					workflowTasksSubmittingUserJSONObject.getString("items"))));
+	}
+
+	protected WorkflowTask
+			testGraphQLGetWorkflowTasksSubmittingUserPageWorkflowTask_addWorkflowTask(
 				WorkflowTask workflowTask)
 		throws Exception {
 

@@ -506,6 +506,107 @@ public abstract class BaseTermOrderTypeResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetTermByExternalReferenceCodeTermOrderTypesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetTermByExternalReferenceCodeTermOrderTypesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"termByExternalReferenceCodeTermOrderTypes",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject termByExternalReferenceCodeTermOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/termByExternalReferenceCodeTermOrderTypes");
+
+		long totalCount =
+			termByExternalReferenceCodeTermOrderTypesJSONObject.getLong(
+				"totalCount");
+
+		TermOrderType termOrderType1 =
+			testGraphQLGetTermByExternalReferenceCodeTermOrderTypesPageTermTermOrderType_addTermOrderType(
+				externalReferenceCode, randomTermOrderType());
+
+		TermOrderType termOrderType2 =
+			testGraphQLGetTermByExternalReferenceCodeTermOrderTypesPageTermTermOrderType_addTermOrderType(
+				externalReferenceCode, randomTermOrderType());
+
+		termByExternalReferenceCodeTermOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/termByExternalReferenceCodeTermOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			termByExternalReferenceCodeTermOrderTypesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			termOrderType1,
+			Arrays.asList(
+				TermOrderTypeSerDes.toDTOs(
+					termByExternalReferenceCodeTermOrderTypesJSONObject.
+						getString("items"))));
+		assertContains(
+			termOrderType2,
+			Arrays.asList(
+				TermOrderTypeSerDes.toDTOs(
+					termByExternalReferenceCodeTermOrderTypesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		termByExternalReferenceCodeTermOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminOrder_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessCommerceAdminOrder_v1_0",
+				"JSONObject/termByExternalReferenceCodeTermOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			termByExternalReferenceCodeTermOrderTypesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			termOrderType1,
+			Arrays.asList(
+				TermOrderTypeSerDes.toDTOs(
+					termByExternalReferenceCodeTermOrderTypesJSONObject.
+						getString("items"))));
+		assertContains(
+			termOrderType2,
+			Arrays.asList(
+				TermOrderTypeSerDes.toDTOs(
+					termByExternalReferenceCodeTermOrderTypesJSONObject.
+						getString("items"))));
+	}
+
+	protected TermOrderType
+			testGraphQLGetTermByExternalReferenceCodeTermOrderTypesPageTermTermOrderType_addTermOrderType(
+				String externalReferenceCode, TermOrderType termOrderType)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetTermIdTermOrderTypesPage() throws Exception {
 		Long id = testGetTermIdTermOrderTypesPage_getId();
 		Long irrelevantId = testGetTermIdTermOrderTypesPage_getIrrelevantId();
@@ -683,6 +784,93 @@ public abstract class BaseTermOrderTypeResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetTermIdTermOrderTypesPage() throws Exception {
+		Long id = testGetTermIdTermOrderTypesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"termIdTermOrderTypes",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject termIdTermOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/termIdTermOrderTypes");
+
+		long totalCount = termIdTermOrderTypesJSONObject.getLong("totalCount");
+
+		TermOrderType termOrderType1 =
+			testGraphQLGetTermIdTermOrderTypesPageTermTermOrderType_addTermOrderType(
+				id, randomTermOrderType());
+
+		TermOrderType termOrderType2 =
+			testGraphQLGetTermIdTermOrderTypesPageTermTermOrderType_addTermOrderType(
+				id, randomTermOrderType());
+
+		termIdTermOrderTypesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/termIdTermOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			termIdTermOrderTypesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			termOrderType1,
+			Arrays.asList(
+				TermOrderTypeSerDes.toDTOs(
+					termIdTermOrderTypesJSONObject.getString("items"))));
+		assertContains(
+			termOrderType2,
+			Arrays.asList(
+				TermOrderTypeSerDes.toDTOs(
+					termIdTermOrderTypesJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		termIdTermOrderTypesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminOrder_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminOrder_v1_0",
+			"JSONObject/termIdTermOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			termIdTermOrderTypesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			termOrderType1,
+			Arrays.asList(
+				TermOrderTypeSerDes.toDTOs(
+					termIdTermOrderTypesJSONObject.getString("items"))));
+		assertContains(
+			termOrderType2,
+			Arrays.asList(
+				TermOrderTypeSerDes.toDTOs(
+					termIdTermOrderTypesJSONObject.getString("items"))));
+	}
+
+	protected TermOrderType
+			testGraphQLGetTermIdTermOrderTypesPageTermTermOrderType_addTermOrderType(
+				Long id, TermOrderType termOrderType)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

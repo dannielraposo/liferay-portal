@@ -416,6 +416,76 @@ public abstract class BaseSiteResourceTestCase {
 			"This method needs to be implemented");
 	}
 
+	@Test
+	public void testGraphQLGetSitesPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"sites",
+			new HashMap<String, Object>() {
+				{
+					put("keywords", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject sitesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/sites");
+
+		long totalCount = sitesJSONObject.getLong("totalCount");
+
+		Site site1 = testGraphQLGetSitesPageSite_addSite(randomSite());
+
+		Site site2 = testGraphQLGetSitesPageSite_addSite(randomSite());
+
+		sitesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/sites");
+
+		Assert.assertEquals(
+			totalCount + 2, sitesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			site1,
+			Arrays.asList(
+				SiteSerDes.toDTOs(sitesJSONObject.getString("items"))));
+		assertContains(
+			site2,
+			Arrays.asList(
+				SiteSerDes.toDTOs(sitesJSONObject.getString("items"))));
+
+		// Using the namespace analyticsSettings_v1_0
+
+		sitesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("analyticsSettings_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/analyticsSettings_v1_0",
+			"JSONObject/sites");
+
+		Assert.assertEquals(
+			totalCount + 2, sitesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			site1,
+			Arrays.asList(
+				SiteSerDes.toDTOs(sitesJSONObject.getString("items"))));
+		assertContains(
+			site2,
+			Arrays.asList(
+				SiteSerDes.toDTOs(sitesJSONObject.getString("items"))));
+	}
+
+	protected Site testGraphQLGetSitesPageSite_addSite(Site site)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
 	protected void assertContains(Site site, List<Site> sites) {
 		boolean contains = false;
 

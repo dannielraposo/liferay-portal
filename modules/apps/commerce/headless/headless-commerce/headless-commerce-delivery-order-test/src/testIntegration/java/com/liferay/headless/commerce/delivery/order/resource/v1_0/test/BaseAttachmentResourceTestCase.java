@@ -541,6 +541,94 @@ public abstract class BaseAttachmentResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPlacedOrderAttachmentsPage() throws Exception {
+		Long placedOrderId =
+			testGetPlacedOrderAttachmentsPage_getPlacedOrderId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"placedOrderAttachments",
+			new HashMap<String, Object>() {
+				{
+					put("placedOrderId", placedOrderId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject placedOrderAttachmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/placedOrderAttachments");
+
+		long totalCount = placedOrderAttachmentsJSONObject.getLong(
+			"totalCount");
+
+		Attachment attachment1 =
+			testGraphQLGetPlacedOrderAttachmentsPagePlacedOrderAttachment_addAttachment(
+				placedOrderId, randomAttachment());
+
+		Attachment attachment2 =
+			testGraphQLGetPlacedOrderAttachmentsPagePlacedOrderAttachment_addAttachment(
+				placedOrderId, randomAttachment());
+
+		placedOrderAttachmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/placedOrderAttachments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderAttachmentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			attachment1,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					placedOrderAttachmentsJSONObject.getString("items"))));
+		assertContains(
+			attachment2,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					placedOrderAttachmentsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		placedOrderAttachmentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceDeliveryOrder_v1_0",
+			"JSONObject/placedOrderAttachments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderAttachmentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			attachment1,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					placedOrderAttachmentsJSONObject.getString("items"))));
+		assertContains(
+			attachment2,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					placedOrderAttachmentsJSONObject.getString("items"))));
+	}
+
+	protected Attachment
+			testGraphQLGetPlacedOrderAttachmentsPagePlacedOrderAttachment_addAttachment(
+				Long placedOrderId, Attachment attachment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetPlacedOrderByExternalReferenceCodeAttachmentsPage()
 		throws Exception {
 
@@ -733,6 +821,108 @@ public abstract class BaseAttachmentResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetPlacedOrderByExternalReferenceCodeAttachmentsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPlacedOrderByExternalReferenceCodeAttachmentsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"placedOrderByExternalReferenceCodeAttachments",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject placedOrderByExternalReferenceCodeAttachmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/placedOrderByExternalReferenceCodeAttachments");
+
+		long totalCount =
+			placedOrderByExternalReferenceCodeAttachmentsJSONObject.getLong(
+				"totalCount");
+
+		Attachment attachment1 =
+			testGraphQLGetPlacedOrderByExternalReferenceCodeAttachmentsPagePlacedOrderAttachment_addAttachment(
+				externalReferenceCode, randomAttachment());
+
+		Attachment attachment2 =
+			testGraphQLGetPlacedOrderByExternalReferenceCodeAttachmentsPagePlacedOrderAttachment_addAttachment(
+				externalReferenceCode, randomAttachment());
+
+		placedOrderByExternalReferenceCodeAttachmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/placedOrderByExternalReferenceCodeAttachments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderByExternalReferenceCodeAttachmentsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			attachment1,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodeAttachmentsJSONObject.
+						getString("items"))));
+		assertContains(
+			attachment2,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodeAttachmentsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		placedOrderByExternalReferenceCodeAttachmentsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryOrder_v1_0",
+				"JSONObject/placedOrderByExternalReferenceCodeAttachments");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderByExternalReferenceCodeAttachmentsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			attachment1,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodeAttachmentsJSONObject.
+						getString("items"))));
+		assertContains(
+			attachment2,
+			Arrays.asList(
+				AttachmentSerDes.toDTOs(
+					placedOrderByExternalReferenceCodeAttachmentsJSONObject.
+						getString("items"))));
+	}
+
+	protected Attachment
+			testGraphQLGetPlacedOrderByExternalReferenceCodeAttachmentsPagePlacedOrderAttachment_addAttachment(
+				String externalReferenceCode, Attachment attachment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

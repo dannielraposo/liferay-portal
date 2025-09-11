@@ -514,6 +514,108 @@ public abstract class BasePriceListChannelResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPriceListByExternalReferenceCodePriceListChannelsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPriceListByExternalReferenceCodePriceListChannelsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"priceListByExternalReferenceCodePriceListChannels",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject priceListByExternalReferenceCodePriceListChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceListByExternalReferenceCodePriceListChannels");
+
+		long totalCount =
+			priceListByExternalReferenceCodePriceListChannelsJSONObject.getLong(
+				"totalCount");
+
+		PriceListChannel priceListChannel1 =
+			testGraphQLGetPriceListByExternalReferenceCodePriceListChannelsPagePriceListPriceListChannel_addPriceListChannel(
+				externalReferenceCode, randomPriceListChannel());
+
+		PriceListChannel priceListChannel2 =
+			testGraphQLGetPriceListByExternalReferenceCodePriceListChannelsPagePriceListPriceListChannel_addPriceListChannel(
+				externalReferenceCode, randomPriceListChannel());
+
+		priceListByExternalReferenceCodePriceListChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceListByExternalReferenceCodePriceListChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListByExternalReferenceCodePriceListChannelsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			priceListChannel1,
+			Arrays.asList(
+				PriceListChannelSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListChannelsJSONObject.
+						getString("items"))));
+		assertContains(
+			priceListChannel2,
+			Arrays.asList(
+				PriceListChannelSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListChannelsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		priceListByExternalReferenceCodePriceListChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v2_0",
+				"JSONObject/priceListByExternalReferenceCodePriceListChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListByExternalReferenceCodePriceListChannelsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			priceListChannel1,
+			Arrays.asList(
+				PriceListChannelSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListChannelsJSONObject.
+						getString("items"))));
+		assertContains(
+			priceListChannel2,
+			Arrays.asList(
+				PriceListChannelSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListChannelsJSONObject.
+						getString("items"))));
+	}
+
+	protected PriceListChannel
+			testGraphQLGetPriceListByExternalReferenceCodePriceListChannelsPagePriceListPriceListChannel_addPriceListChannel(
+				String externalReferenceCode, PriceListChannel priceListChannel)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetPriceListIdPriceListChannelsPage() throws Exception {
 		Long id = testGetPriceListIdPriceListChannelsPage_getId();
 		Long irrelevantId =
@@ -957,6 +1059,100 @@ public abstract class BasePriceListChannelResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetPriceListIdPriceListChannelsPage()
+		throws Exception {
+
+		Long id = testGetPriceListIdPriceListChannelsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"priceListIdPriceListChannels",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject priceListIdPriceListChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceListIdPriceListChannels");
+
+		long totalCount = priceListIdPriceListChannelsJSONObject.getLong(
+			"totalCount");
+
+		PriceListChannel priceListChannel1 =
+			testGraphQLGetPriceListIdPriceListChannelsPagePriceListPriceListChannel_addPriceListChannel(
+				id, randomPriceListChannel());
+
+		PriceListChannel priceListChannel2 =
+			testGraphQLGetPriceListIdPriceListChannelsPagePriceListPriceListChannel_addPriceListChannel(
+				id, randomPriceListChannel());
+
+		priceListIdPriceListChannelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/priceListIdPriceListChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListIdPriceListChannelsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			priceListChannel1,
+			Arrays.asList(
+				PriceListChannelSerDes.toDTOs(
+					priceListIdPriceListChannelsJSONObject.getString(
+						"items"))));
+		assertContains(
+			priceListChannel2,
+			Arrays.asList(
+				PriceListChannelSerDes.toDTOs(
+					priceListIdPriceListChannelsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		priceListIdPriceListChannelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminPricing_v2_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminPricing_v2_0",
+			"JSONObject/priceListIdPriceListChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListIdPriceListChannelsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			priceListChannel1,
+			Arrays.asList(
+				PriceListChannelSerDes.toDTOs(
+					priceListIdPriceListChannelsJSONObject.getString(
+						"items"))));
+		assertContains(
+			priceListChannel2,
+			Arrays.asList(
+				PriceListChannelSerDes.toDTOs(
+					priceListIdPriceListChannelsJSONObject.getString(
+						"items"))));
+	}
+
+	protected PriceListChannel
+			testGraphQLGetPriceListIdPriceListChannelsPagePriceListPriceListChannel_addPriceListChannel(
+				Long id, PriceListChannel priceListChannel)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

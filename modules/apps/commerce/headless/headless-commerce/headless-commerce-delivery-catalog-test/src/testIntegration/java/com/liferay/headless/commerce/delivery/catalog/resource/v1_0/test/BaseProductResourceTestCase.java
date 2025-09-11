@@ -876,6 +876,88 @@ public abstract class BaseProductResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelProductsPage() throws Exception {
+		Long channelId = testGetChannelProductsPage_getChannelId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelProducts",
+			new HashMap<String, Object>() {
+				{
+					put("channelId", channelId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelProductsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelProducts");
+
+		long totalCount = channelProductsJSONObject.getLong("totalCount");
+
+		Product product1 = testGraphQLGetChannelProductsPageProduct_addProduct(
+			channelId, randomProduct());
+
+		Product product2 = testGraphQLGetChannelProductsPageProduct_addProduct(
+			channelId, randomProduct());
+
+		channelProductsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelProducts");
+
+		Assert.assertEquals(
+			totalCount + 2, channelProductsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			product1,
+			Arrays.asList(
+				ProductSerDes.toDTOs(
+					channelProductsJSONObject.getString("items"))));
+		assertContains(
+			product2,
+			Arrays.asList(
+				ProductSerDes.toDTOs(
+					channelProductsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelProductsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+			"JSONObject/data",
+			"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+			"JSONObject/channelProducts");
+
+		Assert.assertEquals(
+			totalCount + 2, channelProductsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			product1,
+			Arrays.asList(
+				ProductSerDes.toDTOs(
+					channelProductsJSONObject.getString("items"))));
+		assertContains(
+			product2,
+			Arrays.asList(
+				ProductSerDes.toDTOs(
+					channelProductsJSONObject.getString("items"))));
+	}
+
+	protected Product testGraphQLGetChannelProductsPageProduct_addProduct(
+			Long channelId, Product product)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

@@ -1953,6 +1953,109 @@ public abstract class BaseAccountRoleResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAccountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetAccountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesPage_getExternalReferenceCode();
+		String emailAddress =
+			testGetAccountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesPage_getEmailAddress();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountByExternalReferenceCodeUserAccountByEmailAddressAccountRoles",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("emailAddress", "\"" + emailAddress + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			accountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/accountByExternalReferenceCodeUserAccountByEmailAddressAccountRoles");
+
+		long totalCount =
+			accountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesJSONObject.
+				getLong("totalCount");
+
+		AccountRole accountRole1 =
+			testGraphQLGetAccountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesPageAccountRole_addAccountRole(
+				externalReferenceCode, emailAddress, randomAccountRole());
+
+		AccountRole accountRole2 =
+			testGraphQLGetAccountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesPageAccountRole_addAccountRole(
+				externalReferenceCode, emailAddress, randomAccountRole());
+
+		accountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountByExternalReferenceCodeUserAccountByEmailAddressAccountRoles");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			accountRole1,
+			Arrays.asList(
+				AccountRoleSerDes.toDTOs(
+					accountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesJSONObject.
+						getString("items"))));
+		assertContains(
+			accountRole2,
+			Arrays.asList(
+				AccountRoleSerDes.toDTOs(
+					accountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		accountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/accountByExternalReferenceCodeUserAccountByEmailAddressAccountRoles");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			accountRole1,
+			Arrays.asList(
+				AccountRoleSerDes.toDTOs(
+					accountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesJSONObject.
+						getString("items"))));
+		assertContains(
+			accountRole2,
+			Arrays.asList(
+				AccountRoleSerDes.toDTOs(
+					accountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesJSONObject.
+						getString("items"))));
+	}
+
+	protected AccountRole
+			testGraphQLGetAccountByExternalReferenceCodeUserAccountByEmailAddressAccountRolesPageAccountRole_addAccountRole(
+				String externalReferenceCode, String emailAddress,
+				AccountRole accountRole)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetAccountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesPage()
 		throws Exception {
 
@@ -2072,6 +2175,113 @@ public abstract class BaseAccountRoleResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetAccountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesPage()
+		throws Exception {
+
+		String accountExternalReferenceCode =
+			testGetAccountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesPage_getAccountExternalReferenceCode();
+		String externalReferenceCode =
+			testGetAccountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRoles",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"accountExternalReferenceCode",
+						"\"" + accountExternalReferenceCode + "\"");
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRoles");
+
+		long totalCount =
+			accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesJSONObject.
+				getLong("totalCount");
+
+		AccountRole accountRole1 =
+			testGraphQLGetAccountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesPageAccountRole_addAccountRole(
+				accountExternalReferenceCode, externalReferenceCode,
+				randomAccountRole());
+
+		AccountRole accountRole2 =
+			testGraphQLGetAccountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesPageAccountRole_addAccountRole(
+				accountExternalReferenceCode, externalReferenceCode,
+				randomAccountRole());
+
+		accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRoles");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			accountRole1,
+			Arrays.asList(
+				AccountRoleSerDes.toDTOs(
+					accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesJSONObject.
+						getString("items"))));
+		assertContains(
+			accountRole2,
+			Arrays.asList(
+				AccountRoleSerDes.toDTOs(
+					accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminUser_v1_0
+
+		accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminUser_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminUser_v1_0",
+				"JSONObject/accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRoles");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			accountRole1,
+			Arrays.asList(
+				AccountRoleSerDes.toDTOs(
+					accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesJSONObject.
+						getString("items"))));
+		assertContains(
+			accountRole2,
+			Arrays.asList(
+				AccountRoleSerDes.toDTOs(
+					accountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesJSONObject.
+						getString("items"))));
+	}
+
+	protected AccountRole
+			testGraphQLGetAccountByExternalReferenceCodeUserAccountByExternalReferenceCodeAccountRolesPageAccountRole_addAccountRole(
+				String accountExternalReferenceCode,
+				String externalReferenceCode, AccountRole accountRole)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

@@ -276,6 +276,106 @@ public abstract class BaseShippingMethodResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCartByExternalReferenceCodeShippingMethodsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetCartByExternalReferenceCodeShippingMethodsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"cartByExternalReferenceCodeShippingMethods",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cartByExternalReferenceCodeShippingMethodsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/cartByExternalReferenceCodeShippingMethods");
+
+		long totalCount =
+			cartByExternalReferenceCodeShippingMethodsJSONObject.getLong(
+				"totalCount");
+
+		ShippingMethod shippingMethod1 =
+			testGraphQLGetCartByExternalReferenceCodeShippingMethodsPageCartShippingMethod_addShippingMethod(
+				externalReferenceCode, randomShippingMethod());
+
+		ShippingMethod shippingMethod2 =
+			testGraphQLGetCartByExternalReferenceCodeShippingMethodsPageCartShippingMethod_addShippingMethod(
+				externalReferenceCode, randomShippingMethod());
+
+		cartByExternalReferenceCodeShippingMethodsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/cartByExternalReferenceCodeShippingMethods");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartByExternalReferenceCodeShippingMethodsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			shippingMethod1,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					cartByExternalReferenceCodeShippingMethodsJSONObject.
+						getString("items"))));
+		assertContains(
+			shippingMethod2,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					cartByExternalReferenceCodeShippingMethodsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCart_v1_0
+
+		cartByExternalReferenceCodeShippingMethodsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryCart_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryCart_v1_0",
+				"JSONObject/cartByExternalReferenceCodeShippingMethods");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartByExternalReferenceCodeShippingMethodsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			shippingMethod1,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					cartByExternalReferenceCodeShippingMethodsJSONObject.
+						getString("items"))));
+		assertContains(
+			shippingMethod2,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					cartByExternalReferenceCodeShippingMethodsJSONObject.
+						getString("items"))));
+	}
+
+	protected ShippingMethod
+			testGraphQLGetCartByExternalReferenceCodeShippingMethodsPageCartShippingMethod_addShippingMethod(
+				String externalReferenceCode, ShippingMethod shippingMethod)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetCartShippingMethodsPage() throws Exception {
 		Long cartId = testGetCartShippingMethodsPage_getCartId();
 		Long irrelevantCartId =
@@ -349,6 +449,90 @@ public abstract class BaseShippingMethodResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetCartShippingMethodsPage() throws Exception {
+		Long cartId = testGetCartShippingMethodsPage_getCartId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"cartShippingMethods",
+			new HashMap<String, Object>() {
+				{
+					put("cartId", cartId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject cartShippingMethodsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/cartShippingMethods");
+
+		long totalCount = cartShippingMethodsJSONObject.getLong("totalCount");
+
+		ShippingMethod shippingMethod1 =
+			testGraphQLGetCartShippingMethodsPageCartShippingMethod_addShippingMethod(
+				cartId, randomShippingMethod());
+
+		ShippingMethod shippingMethod2 =
+			testGraphQLGetCartShippingMethodsPageCartShippingMethod_addShippingMethod(
+				cartId, randomShippingMethod());
+
+		cartShippingMethodsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/cartShippingMethods");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartShippingMethodsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			shippingMethod1,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					cartShippingMethodsJSONObject.getString("items"))));
+		assertContains(
+			shippingMethod2,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					cartShippingMethodsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCart_v1_0
+
+		cartShippingMethodsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCart_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceDeliveryCart_v1_0",
+			"JSONObject/cartShippingMethods");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			cartShippingMethodsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			shippingMethod1,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					cartShippingMethodsJSONObject.getString("items"))));
+		assertContains(
+			shippingMethod2,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					cartShippingMethodsJSONObject.getString("items"))));
+	}
+
+	protected ShippingMethod
+			testGraphQLGetCartShippingMethodsPageCartShippingMethod_addShippingMethod(
+				Long cartId, ShippingMethod shippingMethod)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

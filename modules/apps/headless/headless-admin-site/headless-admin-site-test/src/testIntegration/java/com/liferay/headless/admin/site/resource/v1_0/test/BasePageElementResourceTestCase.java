@@ -854,6 +854,130 @@ public abstract class BasePageElementResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodePageElementPageElementsPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageElementPageElementsPage_getSiteExternalReferenceCode();
+		String pageSpecificationExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageElementPageElementsPage_getPageSpecificationExternalReferenceCode();
+		String pageExperienceExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageElementPageElementsPage_getPageExperienceExternalReferenceCode();
+		String pageElementExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageElementPageElementsPage_getPageElementExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodePageElementPageElements",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put(
+						"pageSpecificationExternalReferenceCode",
+						"\"" + pageSpecificationExternalReferenceCode + "\"");
+					put(
+						"pageExperienceExternalReferenceCode",
+						"\"" + pageExperienceExternalReferenceCode + "\"");
+					put(
+						"pageElementExternalReferenceCode",
+						"\"" + pageElementExternalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			siteByExternalReferenceCodePageElementPageElementsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/siteByExternalReferenceCodePageElementPageElements");
+
+		long totalCount =
+			siteByExternalReferenceCodePageElementPageElementsJSONObject.
+				getLong("totalCount");
+
+		PageElement pageElement1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageElementPageElementsPageSitePageElement_addPageElement(
+				siteExternalReferenceCode,
+				pageSpecificationExternalReferenceCode,
+				pageExperienceExternalReferenceCode,
+				pageElementExternalReferenceCode, randomPageElement());
+
+		PageElement pageElement2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageElementPageElementsPageSitePageElement_addPageElement(
+				siteExternalReferenceCode,
+				pageSpecificationExternalReferenceCode,
+				pageExperienceExternalReferenceCode,
+				pageElementExternalReferenceCode, randomPageElement());
+
+		siteByExternalReferenceCodePageElementPageElementsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodePageElementPageElements");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageElementPageElementsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			pageElement1,
+			Arrays.asList(
+				PageElementSerDes.toDTOs(
+					siteByExternalReferenceCodePageElementPageElementsJSONObject.
+						getString("items"))));
+		assertContains(
+			pageElement2,
+			Arrays.asList(
+				PageElementSerDes.toDTOs(
+					siteByExternalReferenceCodePageElementPageElementsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodePageElementPageElementsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodePageElementPageElements");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageElementPageElementsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			pageElement1,
+			Arrays.asList(
+				PageElementSerDes.toDTOs(
+					siteByExternalReferenceCodePageElementPageElementsJSONObject.
+						getString("items"))));
+		assertContains(
+			pageElement2,
+			Arrays.asList(
+				PageElementSerDes.toDTOs(
+					siteByExternalReferenceCodePageElementPageElementsJSONObject.
+						getString("items"))));
+	}
+
+	protected PageElement
+			testGraphQLGetSiteSiteByExternalReferenceCodePageElementPageElementsPageSitePageElement_addPageElement(
+				String siteExternalReferenceCode,
+				String pageSpecificationExternalReferenceCode,
+				String pageExperienceExternalReferenceCode,
+				String pageElementExternalReferenceCode,
+				PageElement pageElement)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSiteSiteByExternalReferenceCodePageExperiencePageElementsPage()
 		throws Exception {
 
@@ -1006,6 +1130,122 @@ public abstract class BasePageElementResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodePageExperiencePageElementsPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageExperiencePageElementsPage_getSiteExternalReferenceCode();
+		String pageSpecificationExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageExperiencePageElementsPage_getPageSpecificationExternalReferenceCode();
+		String pageExperienceExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageExperiencePageElementsPage_getPageExperienceExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodePageExperiencePageElements",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put(
+						"pageSpecificationExternalReferenceCode",
+						"\"" + pageSpecificationExternalReferenceCode + "\"");
+					put(
+						"pageExperienceExternalReferenceCode",
+						"\"" + pageExperienceExternalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			siteByExternalReferenceCodePageExperiencePageElementsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/siteByExternalReferenceCodePageExperiencePageElements");
+
+		long totalCount =
+			siteByExternalReferenceCodePageExperiencePageElementsJSONObject.
+				getLong("totalCount");
+
+		PageElement pageElement1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageExperiencePageElementsPageSitePageElement_addPageElement(
+				siteExternalReferenceCode,
+				pageSpecificationExternalReferenceCode,
+				pageExperienceExternalReferenceCode, randomPageElement());
+
+		PageElement pageElement2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageExperiencePageElementsPageSitePageElement_addPageElement(
+				siteExternalReferenceCode,
+				pageSpecificationExternalReferenceCode,
+				pageExperienceExternalReferenceCode, randomPageElement());
+
+		siteByExternalReferenceCodePageExperiencePageElementsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodePageExperiencePageElements");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageExperiencePageElementsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			pageElement1,
+			Arrays.asList(
+				PageElementSerDes.toDTOs(
+					siteByExternalReferenceCodePageExperiencePageElementsJSONObject.
+						getString("items"))));
+		assertContains(
+			pageElement2,
+			Arrays.asList(
+				PageElementSerDes.toDTOs(
+					siteByExternalReferenceCodePageExperiencePageElementsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodePageExperiencePageElementsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodePageExperiencePageElements");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageExperiencePageElementsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			pageElement1,
+			Arrays.asList(
+				PageElementSerDes.toDTOs(
+					siteByExternalReferenceCodePageExperiencePageElementsJSONObject.
+						getString("items"))));
+		assertContains(
+			pageElement2,
+			Arrays.asList(
+				PageElementSerDes.toDTOs(
+					siteByExternalReferenceCodePageExperiencePageElementsJSONObject.
+						getString("items"))));
+	}
+
+	protected PageElement
+			testGraphQLGetSiteSiteByExternalReferenceCodePageExperiencePageElementsPageSitePageElement_addPageElement(
+				String siteExternalReferenceCode,
+				String pageSpecificationExternalReferenceCode,
+				String pageExperienceExternalReferenceCode,
+				PageElement pageElement)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

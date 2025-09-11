@@ -864,6 +864,110 @@ public abstract class BaseProductDisplayPageResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelByExternalReferenceCodeProductDisplayPagesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetChannelByExternalReferenceCodeProductDisplayPagesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelByExternalReferenceCodeProductDisplayPages",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelByExternalReferenceCodeProductDisplayPagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeProductDisplayPages");
+
+		long totalCount =
+			channelByExternalReferenceCodeProductDisplayPagesJSONObject.getLong(
+				"totalCount");
+
+		ProductDisplayPage productDisplayPage1 =
+			testGraphQLGetChannelByExternalReferenceCodeProductDisplayPagesPageChannelProductDisplayPage_addProductDisplayPage(
+				externalReferenceCode, randomProductDisplayPage());
+
+		ProductDisplayPage productDisplayPage2 =
+			testGraphQLGetChannelByExternalReferenceCodeProductDisplayPagesPageChannelProductDisplayPage_addProductDisplayPage(
+				externalReferenceCode, randomProductDisplayPage());
+
+		channelByExternalReferenceCodeProductDisplayPagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeProductDisplayPages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeProductDisplayPagesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			productDisplayPage1,
+			Arrays.asList(
+				ProductDisplayPageSerDes.toDTOs(
+					channelByExternalReferenceCodeProductDisplayPagesJSONObject.
+						getString("items"))));
+		assertContains(
+			productDisplayPage2,
+			Arrays.asList(
+				ProductDisplayPageSerDes.toDTOs(
+					channelByExternalReferenceCodeProductDisplayPagesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		channelByExternalReferenceCodeProductDisplayPagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminChannel_v1_0",
+				"JSONObject/channelByExternalReferenceCodeProductDisplayPages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeProductDisplayPagesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			productDisplayPage1,
+			Arrays.asList(
+				ProductDisplayPageSerDes.toDTOs(
+					channelByExternalReferenceCodeProductDisplayPagesJSONObject.
+						getString("items"))));
+		assertContains(
+			productDisplayPage2,
+			Arrays.asList(
+				ProductDisplayPageSerDes.toDTOs(
+					channelByExternalReferenceCodeProductDisplayPagesJSONObject.
+						getString("items"))));
+	}
+
+	protected ProductDisplayPage
+			testGraphQLGetChannelByExternalReferenceCodeProductDisplayPagesPageChannelProductDisplayPage_addProductDisplayPage(
+				String externalReferenceCode,
+				ProductDisplayPage productDisplayPage)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetChannelIdProductDisplayPagesPage() throws Exception {
 		Long id = testGetChannelIdProductDisplayPagesPage_getId();
 		Long irrelevantId =
@@ -1320,6 +1424,100 @@ public abstract class BaseProductDisplayPageResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetChannelIdProductDisplayPagesPage()
+		throws Exception {
+
+		Long id = testGetChannelIdProductDisplayPagesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelIdProductDisplayPages",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelIdProductDisplayPagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelIdProductDisplayPages");
+
+		long totalCount = channelIdProductDisplayPagesJSONObject.getLong(
+			"totalCount");
+
+		ProductDisplayPage productDisplayPage1 =
+			testGraphQLGetChannelIdProductDisplayPagesPageProductDisplayPage_addProductDisplayPage(
+				id, randomProductDisplayPage());
+
+		ProductDisplayPage productDisplayPage2 =
+			testGraphQLGetChannelIdProductDisplayPagesPageProductDisplayPage_addProductDisplayPage(
+				id, randomProductDisplayPage());
+
+		channelIdProductDisplayPagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelIdProductDisplayPages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelIdProductDisplayPagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			productDisplayPage1,
+			Arrays.asList(
+				ProductDisplayPageSerDes.toDTOs(
+					channelIdProductDisplayPagesJSONObject.getString(
+						"items"))));
+		assertContains(
+			productDisplayPage2,
+			Arrays.asList(
+				ProductDisplayPageSerDes.toDTOs(
+					channelIdProductDisplayPagesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		channelIdProductDisplayPagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminChannel_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminChannel_v1_0",
+			"JSONObject/channelIdProductDisplayPages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelIdProductDisplayPagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			productDisplayPage1,
+			Arrays.asList(
+				ProductDisplayPageSerDes.toDTOs(
+					channelIdProductDisplayPagesJSONObject.getString(
+						"items"))));
+		assertContains(
+			productDisplayPage2,
+			Arrays.asList(
+				ProductDisplayPageSerDes.toDTOs(
+					channelIdProductDisplayPagesJSONObject.getString(
+						"items"))));
+	}
+
+	protected ProductDisplayPage
+			testGraphQLGetChannelIdProductDisplayPagesPageProductDisplayPage_addProductDisplayPage(
+				Long id, ProductDisplayPage productDisplayPage)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

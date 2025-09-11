@@ -266,6 +266,11 @@ public abstract class BaseCartTransitionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCartCartTransitionsPage() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testPostCartCartTransition() throws Exception {
 		CartTransition randomCartTransition = randomCartTransition();
 

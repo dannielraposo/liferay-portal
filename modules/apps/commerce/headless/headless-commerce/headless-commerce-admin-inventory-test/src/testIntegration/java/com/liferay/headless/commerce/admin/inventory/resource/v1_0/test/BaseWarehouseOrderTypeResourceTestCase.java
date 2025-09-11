@@ -525,6 +525,110 @@ public abstract class BaseWarehouseOrderTypeResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWarehouseByExternalReferenceCodeWarehouseOrderTypesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetWarehouseByExternalReferenceCodeWarehouseOrderTypesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"warehouseByExternalReferenceCodeWarehouseOrderTypes",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			warehouseByExternalReferenceCodeWarehouseOrderTypesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/warehouseByExternalReferenceCodeWarehouseOrderTypes");
+
+		long totalCount =
+			warehouseByExternalReferenceCodeWarehouseOrderTypesJSONObject.
+				getLong("totalCount");
+
+		WarehouseOrderType warehouseOrderType1 =
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseOrderTypesPageWarehouseWarehouseOrderType_addWarehouseOrderType(
+				externalReferenceCode, randomWarehouseOrderType());
+
+		WarehouseOrderType warehouseOrderType2 =
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseOrderTypesPageWarehouseWarehouseOrderType_addWarehouseOrderType(
+				externalReferenceCode, randomWarehouseOrderType());
+
+		warehouseByExternalReferenceCodeWarehouseOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseByExternalReferenceCodeWarehouseOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseByExternalReferenceCodeWarehouseOrderTypesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			warehouseOrderType1,
+			Arrays.asList(
+				WarehouseOrderTypeSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseOrderTypesJSONObject.
+						getString("items"))));
+		assertContains(
+			warehouseOrderType2,
+			Arrays.asList(
+				WarehouseOrderTypeSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseOrderTypesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminInventory_v1_0
+
+		warehouseByExternalReferenceCodeWarehouseOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminInventory_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminInventory_v1_0",
+				"JSONObject/warehouseByExternalReferenceCodeWarehouseOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseByExternalReferenceCodeWarehouseOrderTypesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			warehouseOrderType1,
+			Arrays.asList(
+				WarehouseOrderTypeSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseOrderTypesJSONObject.
+						getString("items"))));
+		assertContains(
+			warehouseOrderType2,
+			Arrays.asList(
+				WarehouseOrderTypeSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseOrderTypesJSONObject.
+						getString("items"))));
+	}
+
+	protected WarehouseOrderType
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseOrderTypesPageWarehouseWarehouseOrderType_addWarehouseOrderType(
+				String externalReferenceCode,
+				WarehouseOrderType warehouseOrderType)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetWarehouseIdWarehouseOrderTypesPage() throws Exception {
 		Long id = testGetWarehouseIdWarehouseOrderTypesPage_getId();
 		Long irrelevantId =
@@ -994,6 +1098,103 @@ public abstract class BaseWarehouseOrderTypeResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetWarehouseIdWarehouseOrderTypesPage()
+		throws Exception {
+
+		Long id = testGetWarehouseIdWarehouseOrderTypesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"warehouseIdWarehouseOrderTypes",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject warehouseIdWarehouseOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseIdWarehouseOrderTypes");
+
+		long totalCount = warehouseIdWarehouseOrderTypesJSONObject.getLong(
+			"totalCount");
+
+		WarehouseOrderType warehouseOrderType1 =
+			testGraphQLGetWarehouseIdWarehouseOrderTypesPageWarehouseWarehouseOrderType_addWarehouseOrderType(
+				id, randomWarehouseOrderType());
+
+		WarehouseOrderType warehouseOrderType2 =
+			testGraphQLGetWarehouseIdWarehouseOrderTypesPageWarehouseWarehouseOrderType_addWarehouseOrderType(
+				id, randomWarehouseOrderType());
+
+		warehouseIdWarehouseOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseIdWarehouseOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseIdWarehouseOrderTypesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouseOrderType1,
+			Arrays.asList(
+				WarehouseOrderTypeSerDes.toDTOs(
+					warehouseIdWarehouseOrderTypesJSONObject.getString(
+						"items"))));
+		assertContains(
+			warehouseOrderType2,
+			Arrays.asList(
+				WarehouseOrderTypeSerDes.toDTOs(
+					warehouseIdWarehouseOrderTypesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminInventory_v1_0
+
+		warehouseIdWarehouseOrderTypesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminInventory_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminInventory_v1_0",
+				"JSONObject/warehouseIdWarehouseOrderTypes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseIdWarehouseOrderTypesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouseOrderType1,
+			Arrays.asList(
+				WarehouseOrderTypeSerDes.toDTOs(
+					warehouseIdWarehouseOrderTypesJSONObject.getString(
+						"items"))));
+		assertContains(
+			warehouseOrderType2,
+			Arrays.asList(
+				WarehouseOrderTypeSerDes.toDTOs(
+					warehouseIdWarehouseOrderTypesJSONObject.getString(
+						"items"))));
+	}
+
+	protected WarehouseOrderType
+			testGraphQLGetWarehouseIdWarehouseOrderTypesPageWarehouseWarehouseOrderType_addWarehouseOrderType(
+				Long id, WarehouseOrderType warehouseOrderType)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

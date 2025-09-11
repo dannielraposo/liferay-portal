@@ -832,6 +832,109 @@ public abstract class BaseMappedProductResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProductByExternalReferenceCodeMappedProductsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetProductByExternalReferenceCodeMappedProductsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productByExternalReferenceCodeMappedProducts",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject productByExternalReferenceCodeMappedProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productByExternalReferenceCodeMappedProducts");
+
+		long totalCount =
+			productByExternalReferenceCodeMappedProductsJSONObject.getLong(
+				"totalCount");
+
+		MappedProduct mappedProduct1 =
+			testGraphQLGetProductByExternalReferenceCodeMappedProductsPageProductMappedProduct_addMappedProduct(
+				externalReferenceCode, randomMappedProduct());
+
+		MappedProduct mappedProduct2 =
+			testGraphQLGetProductByExternalReferenceCodeMappedProductsPageProductMappedProduct_addMappedProduct(
+				externalReferenceCode, randomMappedProduct());
+
+		productByExternalReferenceCodeMappedProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productByExternalReferenceCodeMappedProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productByExternalReferenceCodeMappedProductsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			mappedProduct1,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					productByExternalReferenceCodeMappedProductsJSONObject.
+						getString("items"))));
+		assertContains(
+			mappedProduct2,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					productByExternalReferenceCodeMappedProductsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productByExternalReferenceCodeMappedProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/productByExternalReferenceCodeMappedProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productByExternalReferenceCodeMappedProductsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			mappedProduct1,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					productByExternalReferenceCodeMappedProductsJSONObject.
+						getString("items"))));
+		assertContains(
+			mappedProduct2,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					productByExternalReferenceCodeMappedProductsJSONObject.
+						getString("items"))));
+	}
+
+	protected MappedProduct
+			testGraphQLGetProductByExternalReferenceCodeMappedProductsPageProductMappedProduct_addMappedProduct(
+				String externalReferenceCode, MappedProduct mappedProduct)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetProductIdMappedProductBySequence() throws Exception {
 		MappedProduct postMappedProduct =
 			testGetProductIdMappedProductBySequence_addMappedProduct();
@@ -1319,6 +1422,94 @@ public abstract class BaseMappedProductResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetProductIdMappedProductsPage() throws Exception {
+		Long id = testGetProductIdMappedProductsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productIdMappedProducts",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject productIdMappedProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productIdMappedProducts");
+
+		long totalCount = productIdMappedProductsJSONObject.getLong(
+			"totalCount");
+
+		MappedProduct mappedProduct1 =
+			testGraphQLGetProductIdMappedProductsPageProductMappedProduct_addMappedProduct(
+				id, randomMappedProduct());
+
+		MappedProduct mappedProduct2 =
+			testGraphQLGetProductIdMappedProductsPageProductMappedProduct_addMappedProduct(
+				id, randomMappedProduct());
+
+		productIdMappedProductsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/productIdMappedProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productIdMappedProductsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			mappedProduct1,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					productIdMappedProductsJSONObject.getString("items"))));
+		assertContains(
+			mappedProduct2,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					productIdMappedProductsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productIdMappedProductsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminCatalog_v1_0",
+			"JSONObject/productIdMappedProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productIdMappedProductsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			mappedProduct1,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					productIdMappedProductsJSONObject.getString("items"))));
+		assertContains(
+			mappedProduct2,
+			Arrays.asList(
+				MappedProductSerDes.toDTOs(
+					productIdMappedProductsJSONObject.getString("items"))));
+	}
+
+	protected MappedProduct
+			testGraphQLGetProductIdMappedProductsPageProductMappedProduct_addMappedProduct(
+				Long id, MappedProduct mappedProduct)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

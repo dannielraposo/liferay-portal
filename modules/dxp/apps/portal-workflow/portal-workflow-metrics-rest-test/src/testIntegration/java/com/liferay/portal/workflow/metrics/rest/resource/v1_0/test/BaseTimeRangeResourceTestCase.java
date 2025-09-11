@@ -215,6 +215,82 @@ public abstract class BaseTimeRangeResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetTimeRangesPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"timeRanges",
+			new HashMap<String, Object>() {
+				{
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject timeRangesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/timeRanges");
+
+		long totalCount = timeRangesJSONObject.getLong("totalCount");
+
+		TimeRange timeRange1 =
+			testGraphQLGetTimeRangesPageTimeRange_addTimeRange(
+				randomTimeRange());
+
+		TimeRange timeRange2 =
+			testGraphQLGetTimeRangesPageTimeRange_addTimeRange(
+				randomTimeRange());
+
+		timeRangesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/timeRanges");
+
+		Assert.assertEquals(
+			totalCount + 2, timeRangesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			timeRange1,
+			Arrays.asList(
+				TimeRangeSerDes.toDTOs(
+					timeRangesJSONObject.getString("items"))));
+		assertContains(
+			timeRange2,
+			Arrays.asList(
+				TimeRangeSerDes.toDTOs(
+					timeRangesJSONObject.getString("items"))));
+
+		// Using the namespace portalWorkflowMetrics_v1_0
+
+		timeRangesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("portalWorkflowMetrics_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/portalWorkflowMetrics_v1_0",
+			"JSONObject/timeRanges");
+
+		Assert.assertEquals(
+			totalCount + 2, timeRangesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			timeRange1,
+			Arrays.asList(
+				TimeRangeSerDes.toDTOs(
+					timeRangesJSONObject.getString("items"))));
+		assertContains(
+			timeRange2,
+			Arrays.asList(
+				TimeRangeSerDes.toDTOs(
+					timeRangesJSONObject.getString("items"))));
+	}
+
+	protected TimeRange testGraphQLGetTimeRangesPageTimeRange_addTimeRange(
+			TimeRange timeRange)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

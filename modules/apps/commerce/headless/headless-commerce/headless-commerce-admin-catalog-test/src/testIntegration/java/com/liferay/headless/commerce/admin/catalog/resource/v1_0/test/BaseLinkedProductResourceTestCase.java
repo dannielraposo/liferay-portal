@@ -357,6 +357,11 @@ public abstract class BaseLinkedProductResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProductIdLinkedProductsPage() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

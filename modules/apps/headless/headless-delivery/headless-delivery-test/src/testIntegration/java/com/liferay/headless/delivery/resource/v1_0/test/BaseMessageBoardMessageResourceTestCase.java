@@ -1450,6 +1450,108 @@ public abstract class BaseMessageBoardMessageResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetMessageBoardMessageMessageBoardMessagesPage()
+		throws Exception {
+
+		Long parentMessageBoardMessageId =
+			testGetMessageBoardMessageMessageBoardMessagesPage_getParentMessageBoardMessageId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"messageBoardMessageMessageBoardMessages",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"parentMessageBoardMessageId",
+						parentMessageBoardMessageId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject messageBoardMessageMessageBoardMessagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/messageBoardMessageMessageBoardMessages");
+
+		long totalCount =
+			messageBoardMessageMessageBoardMessagesJSONObject.getLong(
+				"totalCount");
+
+		MessageBoardMessage messageBoardMessage1 =
+			testGraphQLGetMessageBoardMessageMessageBoardMessagesPageMessageBoardMessage_addMessageBoardMessage(
+				parentMessageBoardMessageId, randomMessageBoardMessage());
+
+		MessageBoardMessage messageBoardMessage2 =
+			testGraphQLGetMessageBoardMessageMessageBoardMessagesPageMessageBoardMessage_addMessageBoardMessage(
+				parentMessageBoardMessageId, randomMessageBoardMessage());
+
+		messageBoardMessageMessageBoardMessagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/messageBoardMessageMessageBoardMessages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			messageBoardMessageMessageBoardMessagesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			messageBoardMessage1,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					messageBoardMessageMessageBoardMessagesJSONObject.getString(
+						"items"))));
+		assertContains(
+			messageBoardMessage2,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					messageBoardMessageMessageBoardMessagesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		messageBoardMessageMessageBoardMessagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+				"JSONObject/messageBoardMessageMessageBoardMessages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			messageBoardMessageMessageBoardMessagesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			messageBoardMessage1,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					messageBoardMessageMessageBoardMessagesJSONObject.getString(
+						"items"))));
+		assertContains(
+			messageBoardMessage2,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					messageBoardMessageMessageBoardMessagesJSONObject.getString(
+						"items"))));
+	}
+
+	protected MessageBoardMessage
+			testGraphQLGetMessageBoardMessageMessageBoardMessagesPageMessageBoardMessage_addMessageBoardMessage(
+				Long parentMessageBoardMessageId,
+				MessageBoardMessage messageBoardMessage)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetMessageBoardMessagePermissionsPage() throws Exception {
 		@SuppressWarnings("PMD.UnusedLocalVariable")
 		MessageBoardMessage postMessageBoardMessage =
@@ -1468,6 +1570,40 @@ public abstract class BaseMessageBoardMessageResourceTestCase {
 
 		return testPostMessageBoardMessageMessageBoardMessage_addMessageBoardMessage(
 			randomMessageBoardMessage());
+	}
+
+	@Test
+	public void testGraphQLGetMessageBoardMessagePermissionsPage()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		MessageBoardMessage postMessageBoardMessage =
+			testGraphQLGetMessageBoardMessagePermissionsPage_addMessageBoardMessage();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"messageBoardMessagePermissions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"messageBoardMessageId",
+						postMessageBoardMessage.getId());
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject messageBoardMessagePermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/messageBoardMessagePermissions");
+
+		Assert.assertNotNull(messageBoardMessagePermissionsJSONObject);
+	}
+
+	protected MessageBoardMessage
+			testGraphQLGetMessageBoardMessagePermissionsPage_addMessageBoardMessage()
+		throws Exception {
+
+		return testGraphQLMessageBoardMessage_addMessageBoardMessage();
 	}
 
 	@Test
@@ -2400,6 +2536,40 @@ public abstract class BaseMessageBoardMessageResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteMessageBoardMessagePermissionsPage()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		MessageBoardMessage postMessageBoardMessage =
+			testGraphQLGetSiteMessageBoardMessagePermissionsPage_addMessageBoardMessage();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteMessageBoardMessagePermissions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteKey",
+						"\"" + postMessageBoardMessage.getSiteId() + "\"");
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject siteMessageBoardMessagePermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteMessageBoardMessagePermissions");
+
+		Assert.assertNotNull(siteMessageBoardMessagePermissionsJSONObject);
+	}
+
+	protected MessageBoardMessage
+			testGraphQLGetSiteMessageBoardMessagePermissionsPage_addMessageBoardMessage()
+		throws Exception {
+
+		return testGraphQLSiteMessageBoardMessage_addMessageBoardMessage();
+	}
+
+	@Test
 	public void testGetSiteMessageBoardMessagesPage() throws Exception {
 		Long siteId = testGetSiteMessageBoardMessagesPage_getSiteId();
 		Long irrelevantSiteId =
@@ -2860,6 +3030,92 @@ public abstract class BaseMessageBoardMessageResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteMessageBoardMessagesPage() throws Exception {
+		Long siteId = testGetSiteMessageBoardMessagesPage_getSiteId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"messageBoardMessages",
+			new HashMap<String, Object>() {
+				{
+					put("siteKey", "\"" + siteId + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject messageBoardMessagesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/messageBoardMessages");
+
+		long totalCount = messageBoardMessagesJSONObject.getLong("totalCount");
+
+		MessageBoardMessage messageBoardMessage1 =
+			testGraphQLGetSiteMessageBoardMessagesPageSiteMessageBoardMessage_addMessageBoardMessage(
+				siteId, randomMessageBoardMessage());
+
+		MessageBoardMessage messageBoardMessage2 =
+			testGraphQLGetSiteMessageBoardMessagesPageSiteMessageBoardMessage_addMessageBoardMessage(
+				siteId, randomMessageBoardMessage());
+
+		messageBoardMessagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/messageBoardMessages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			messageBoardMessagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			messageBoardMessage1,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					messageBoardMessagesJSONObject.getString("items"))));
+		assertContains(
+			messageBoardMessage2,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					messageBoardMessagesJSONObject.getString("items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		messageBoardMessagesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+			"JSONObject/messageBoardMessages");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			messageBoardMessagesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			messageBoardMessage1,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					messageBoardMessagesJSONObject.getString("items"))));
+		assertContains(
+			messageBoardMessage2,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					messageBoardMessagesJSONObject.getString("items"))));
+	}
+
+	protected MessageBoardMessage
+			testGraphQLGetSiteMessageBoardMessagesPageSiteMessageBoardMessage_addMessageBoardMessage(
+				Long siteId, MessageBoardMessage messageBoardMessage)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSiteUserMessageBoardMessagesActivityPage()
 		throws Exception {
 
@@ -3094,6 +3350,105 @@ public abstract class BaseMessageBoardMessageResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetSiteUserMessageBoardMessagesActivityPage()
+		throws Exception {
+
+		Long siteId =
+			testGetSiteUserMessageBoardMessagesActivityPage_getSiteId();
+		Long userId =
+			testGetSiteUserMessageBoardMessagesActivityPage_getUserId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"userMessageBoardMessagesActivity",
+			new HashMap<String, Object>() {
+				{
+					put("siteKey", "\"" + siteId + "\"");
+					put("userId", userId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject userMessageBoardMessagesActivityJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/userMessageBoardMessagesActivity");
+
+		long totalCount = userMessageBoardMessagesActivityJSONObject.getLong(
+			"totalCount");
+
+		MessageBoardMessage messageBoardMessage1 =
+			testGraphQLGetSiteUserMessageBoardMessagesActivityPageSiteMessageBoardMessage_addMessageBoardMessage(
+				siteId, userId, randomMessageBoardMessage());
+
+		MessageBoardMessage messageBoardMessage2 =
+			testGraphQLGetSiteUserMessageBoardMessagesActivityPageSiteMessageBoardMessage_addMessageBoardMessage(
+				siteId, userId, randomMessageBoardMessage());
+
+		userMessageBoardMessagesActivityJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/userMessageBoardMessagesActivity");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userMessageBoardMessagesActivityJSONObject.getLong("totalCount"));
+
+		assertContains(
+			messageBoardMessage1,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					userMessageBoardMessagesActivityJSONObject.getString(
+						"items"))));
+		assertContains(
+			messageBoardMessage2,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					userMessageBoardMessagesActivityJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		userMessageBoardMessagesActivityJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+				"JSONObject/userMessageBoardMessagesActivity");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			userMessageBoardMessagesActivityJSONObject.getLong("totalCount"));
+
+		assertContains(
+			messageBoardMessage1,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					userMessageBoardMessagesActivityJSONObject.getString(
+						"items"))));
+		assertContains(
+			messageBoardMessage2,
+			Arrays.asList(
+				MessageBoardMessageSerDes.toDTOs(
+					userMessageBoardMessagesActivityJSONObject.getString(
+						"items"))));
+	}
+
+	protected MessageBoardMessage
+			testGraphQLGetSiteUserMessageBoardMessagesActivityPageSiteMessageBoardMessage_addMessageBoardMessage(
+				Long siteId, Long userId,
+				MessageBoardMessage messageBoardMessage)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

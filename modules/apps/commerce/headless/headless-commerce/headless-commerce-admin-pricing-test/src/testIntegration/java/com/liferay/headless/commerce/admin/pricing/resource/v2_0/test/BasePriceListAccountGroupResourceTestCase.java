@@ -537,6 +537,110 @@ public abstract class BasePriceListAccountGroupResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPriceListByExternalReferenceCodePriceListAccountGroupsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPriceListByExternalReferenceCodePriceListAccountGroupsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"priceListByExternalReferenceCodePriceListAccountGroups",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			priceListByExternalReferenceCodePriceListAccountGroupsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/priceListByExternalReferenceCodePriceListAccountGroups");
+
+		long totalCount =
+			priceListByExternalReferenceCodePriceListAccountGroupsJSONObject.
+				getLong("totalCount");
+
+		PriceListAccountGroup priceListAccountGroup1 =
+			testGraphQLGetPriceListByExternalReferenceCodePriceListAccountGroupsPagePriceListPriceListAccountGroup_addPriceListAccountGroup(
+				externalReferenceCode, randomPriceListAccountGroup());
+
+		PriceListAccountGroup priceListAccountGroup2 =
+			testGraphQLGetPriceListByExternalReferenceCodePriceListAccountGroupsPagePriceListPriceListAccountGroup_addPriceListAccountGroup(
+				externalReferenceCode, randomPriceListAccountGroup());
+
+		priceListByExternalReferenceCodePriceListAccountGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceListByExternalReferenceCodePriceListAccountGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListByExternalReferenceCodePriceListAccountGroupsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			priceListAccountGroup1,
+			Arrays.asList(
+				PriceListAccountGroupSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListAccountGroupsJSONObject.
+						getString("items"))));
+		assertContains(
+			priceListAccountGroup2,
+			Arrays.asList(
+				PriceListAccountGroupSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListAccountGroupsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		priceListByExternalReferenceCodePriceListAccountGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v2_0",
+				"JSONObject/priceListByExternalReferenceCodePriceListAccountGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListByExternalReferenceCodePriceListAccountGroupsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			priceListAccountGroup1,
+			Arrays.asList(
+				PriceListAccountGroupSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListAccountGroupsJSONObject.
+						getString("items"))));
+		assertContains(
+			priceListAccountGroup2,
+			Arrays.asList(
+				PriceListAccountGroupSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListAccountGroupsJSONObject.
+						getString("items"))));
+	}
+
+	protected PriceListAccountGroup
+			testGraphQLGetPriceListByExternalReferenceCodePriceListAccountGroupsPagePriceListPriceListAccountGroup_addPriceListAccountGroup(
+				String externalReferenceCode,
+				PriceListAccountGroup priceListAccountGroup)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetPriceListIdPriceListAccountGroupsPage()
 		throws Exception {
 
@@ -1020,6 +1124,103 @@ public abstract class BasePriceListAccountGroupResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetPriceListIdPriceListAccountGroupsPage()
+		throws Exception {
+
+		Long id = testGetPriceListIdPriceListAccountGroupsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"priceListIdPriceListAccountGroups",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject priceListIdPriceListAccountGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceListIdPriceListAccountGroups");
+
+		long totalCount = priceListIdPriceListAccountGroupsJSONObject.getLong(
+			"totalCount");
+
+		PriceListAccountGroup priceListAccountGroup1 =
+			testGraphQLGetPriceListIdPriceListAccountGroupsPagePriceListPriceListAccountGroup_addPriceListAccountGroup(
+				id, randomPriceListAccountGroup());
+
+		PriceListAccountGroup priceListAccountGroup2 =
+			testGraphQLGetPriceListIdPriceListAccountGroupsPagePriceListPriceListAccountGroup_addPriceListAccountGroup(
+				id, randomPriceListAccountGroup());
+
+		priceListIdPriceListAccountGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceListIdPriceListAccountGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListIdPriceListAccountGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			priceListAccountGroup1,
+			Arrays.asList(
+				PriceListAccountGroupSerDes.toDTOs(
+					priceListIdPriceListAccountGroupsJSONObject.getString(
+						"items"))));
+		assertContains(
+			priceListAccountGroup2,
+			Arrays.asList(
+				PriceListAccountGroupSerDes.toDTOs(
+					priceListIdPriceListAccountGroupsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		priceListIdPriceListAccountGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v2_0",
+				"JSONObject/priceListIdPriceListAccountGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListIdPriceListAccountGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			priceListAccountGroup1,
+			Arrays.asList(
+				PriceListAccountGroupSerDes.toDTOs(
+					priceListIdPriceListAccountGroupsJSONObject.getString(
+						"items"))));
+		assertContains(
+			priceListAccountGroup2,
+			Arrays.asList(
+				PriceListAccountGroupSerDes.toDTOs(
+					priceListIdPriceListAccountGroupsJSONObject.getString(
+						"items"))));
+	}
+
+	protected PriceListAccountGroup
+			testGraphQLGetPriceListIdPriceListAccountGroupsPagePriceListPriceListAccountGroup_addPriceListAccountGroup(
+				Long id, PriceListAccountGroup priceListAccountGroup)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

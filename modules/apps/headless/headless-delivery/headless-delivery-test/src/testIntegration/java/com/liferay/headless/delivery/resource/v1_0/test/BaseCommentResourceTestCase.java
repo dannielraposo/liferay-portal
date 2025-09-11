@@ -2285,6 +2285,86 @@ public abstract class BaseCommentResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCommentCommentsPage() throws Exception {
+		Long parentCommentId = testGetCommentCommentsPage_getParentCommentId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"commentComments",
+			new HashMap<String, Object>() {
+				{
+					put("parentCommentId", parentCommentId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject commentCommentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/commentComments");
+
+		long totalCount = commentCommentsJSONObject.getLong("totalCount");
+
+		Comment comment1 = testGraphQLGetCommentCommentsPageComment_addComment(
+			parentCommentId, randomComment());
+
+		Comment comment2 = testGraphQLGetCommentCommentsPageComment_addComment(
+			parentCommentId, randomComment());
+
+		commentCommentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/commentComments");
+
+		Assert.assertEquals(
+			totalCount + 2, commentCommentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			comment1,
+			Arrays.asList(
+				CommentSerDes.toDTOs(
+					commentCommentsJSONObject.getString("items"))));
+		assertContains(
+			comment2,
+			Arrays.asList(
+				CommentSerDes.toDTOs(
+					commentCommentsJSONObject.getString("items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		commentCommentsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+			"JSONObject/commentComments");
+
+		Assert.assertEquals(
+			totalCount + 2, commentCommentsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			comment1,
+			Arrays.asList(
+				CommentSerDes.toDTOs(
+					commentCommentsJSONObject.getString("items"))));
+		assertContains(
+			comment2,
+			Arrays.asList(
+				CommentSerDes.toDTOs(
+					commentCommentsJSONObject.getString("items"))));
+	}
+
+	protected Comment testGraphQLGetCommentCommentsPageComment_addComment(
+			Long parentCommentId, Comment comment)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetDocumentCommentsPage() throws Exception {
 		Long documentId = testGetDocumentCommentsPage_getDocumentId();
 		Long irrelevantDocumentId =

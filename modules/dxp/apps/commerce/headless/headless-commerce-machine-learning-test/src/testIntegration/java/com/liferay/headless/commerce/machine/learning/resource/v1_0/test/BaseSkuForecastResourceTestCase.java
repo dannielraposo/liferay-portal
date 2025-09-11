@@ -319,6 +319,13 @@ public abstract class BaseSkuForecastResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSkuForecastsByMonthlyRevenuePage()
+		throws Exception {
+
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

@@ -1201,6 +1201,105 @@ public abstract class BaseDataDefinitionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetDataDefinitionByContentTypeContentTypePage()
+		throws Exception {
+
+		String contentType =
+			testGetDataDefinitionByContentTypeContentTypePage_getContentType();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"dataDefinitionByContentTypeContentType",
+			new HashMap<String, Object>() {
+				{
+					put("contentType", "\"" + contentType + "\"");
+					put("keywords", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject dataDefinitionByContentTypeContentTypeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/dataDefinitionByContentTypeContentType");
+
+		long totalCount =
+			dataDefinitionByContentTypeContentTypeJSONObject.getLong(
+				"totalCount");
+
+		DataDefinition dataDefinition1 =
+			testGraphQLGetDataDefinitionByContentTypeContentTypePageDataDefinition_addDataDefinition(
+				contentType, randomDataDefinition());
+
+		DataDefinition dataDefinition2 =
+			testGraphQLGetDataDefinitionByContentTypeContentTypePageDataDefinition_addDataDefinition(
+				contentType, randomDataDefinition());
+
+		dataDefinitionByContentTypeContentTypeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/dataDefinitionByContentTypeContentType");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			dataDefinitionByContentTypeContentTypeJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			dataDefinition1,
+			Arrays.asList(
+				DataDefinitionSerDes.toDTOs(
+					dataDefinitionByContentTypeContentTypeJSONObject.getString(
+						"items"))));
+		assertContains(
+			dataDefinition2,
+			Arrays.asList(
+				DataDefinitionSerDes.toDTOs(
+					dataDefinitionByContentTypeContentTypeJSONObject.getString(
+						"items"))));
+
+		// Using the namespace dataEngine_v2_0
+
+		dataDefinitionByContentTypeContentTypeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("dataEngine_v2_0", graphQLField)),
+				"JSONObject/data", "JSONObject/dataEngine_v2_0",
+				"JSONObject/dataDefinitionByContentTypeContentType");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			dataDefinitionByContentTypeContentTypeJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			dataDefinition1,
+			Arrays.asList(
+				DataDefinitionSerDes.toDTOs(
+					dataDefinitionByContentTypeContentTypeJSONObject.getString(
+						"items"))));
+		assertContains(
+			dataDefinition2,
+			Arrays.asList(
+				DataDefinitionSerDes.toDTOs(
+					dataDefinitionByContentTypeContentTypeJSONObject.getString(
+						"items"))));
+	}
+
+	protected DataDefinition
+			testGraphQLGetDataDefinitionByContentTypeContentTypePageDataDefinition_addDataDefinition(
+				String contentType, DataDefinition dataDefinition)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetDataDefinitionDataDefinitionFieldFieldTypes()
 		throws Exception {
 
@@ -1226,6 +1325,36 @@ public abstract class BaseDataDefinitionResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetDataDefinitionPermissionsPage() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		DataDefinition postDataDefinition =
+			testGraphQLGetDataDefinitionPermissionsPage_addDataDefinition();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"dataDefinitionPermissions",
+			new HashMap<String, Object>() {
+				{
+					put("dataDefinitionId", postDataDefinition.getId());
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject dataDefinitionPermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/dataDefinitionPermissions");
+
+		Assert.assertNotNull(dataDefinitionPermissionsJSONObject);
+	}
+
+	protected DataDefinition
+			testGraphQLGetDataDefinitionPermissionsPage_addDataDefinition()
+		throws Exception {
+
+		return testGraphQLDataDefinition_addDataDefinition();
 	}
 
 	@Test
@@ -1960,6 +2089,108 @@ public abstract class BaseDataDefinitionResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetSiteDataDefinitionByContentTypeContentTypePage()
+		throws Exception {
+
+		Long siteId =
+			testGetSiteDataDefinitionByContentTypeContentTypePage_getSiteId();
+		String contentType =
+			testGetSiteDataDefinitionByContentTypeContentTypePage_getContentType();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteDataDefinitionByContentTypeContentType",
+			new HashMap<String, Object>() {
+				{
+					put("siteKey", "\"" + siteId + "\"");
+					put("contentType", "\"" + contentType + "\"");
+					put("keywords", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject siteDataDefinitionByContentTypeContentTypeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteDataDefinitionByContentTypeContentType");
+
+		long totalCount =
+			siteDataDefinitionByContentTypeContentTypeJSONObject.getLong(
+				"totalCount");
+
+		DataDefinition dataDefinition1 =
+			testGraphQLGetSiteDataDefinitionByContentTypeContentTypePageSiteDataDefinition_addDataDefinition(
+				siteId, contentType, randomDataDefinition());
+
+		DataDefinition dataDefinition2 =
+			testGraphQLGetSiteDataDefinitionByContentTypeContentTypePageSiteDataDefinition_addDataDefinition(
+				siteId, contentType, randomDataDefinition());
+
+		siteDataDefinitionByContentTypeContentTypeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteDataDefinitionByContentTypeContentType");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteDataDefinitionByContentTypeContentTypeJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			dataDefinition1,
+			Arrays.asList(
+				DataDefinitionSerDes.toDTOs(
+					siteDataDefinitionByContentTypeContentTypeJSONObject.
+						getString("items"))));
+		assertContains(
+			dataDefinition2,
+			Arrays.asList(
+				DataDefinitionSerDes.toDTOs(
+					siteDataDefinitionByContentTypeContentTypeJSONObject.
+						getString("items"))));
+
+		// Using the namespace dataEngine_v2_0
+
+		siteDataDefinitionByContentTypeContentTypeJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("dataEngine_v2_0", graphQLField)),
+				"JSONObject/data", "JSONObject/dataEngine_v2_0",
+				"JSONObject/siteDataDefinitionByContentTypeContentType");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteDataDefinitionByContentTypeContentTypeJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			dataDefinition1,
+			Arrays.asList(
+				DataDefinitionSerDes.toDTOs(
+					siteDataDefinitionByContentTypeContentTypeJSONObject.
+						getString("items"))));
+		assertContains(
+			dataDefinition2,
+			Arrays.asList(
+				DataDefinitionSerDes.toDTOs(
+					siteDataDefinitionByContentTypeContentTypeJSONObject.
+						getString("items"))));
+	}
+
+	protected DataDefinition
+			testGraphQLGetSiteDataDefinitionByContentTypeContentTypePageSiteDataDefinition_addDataDefinition(
+				Long siteId, String contentType, DataDefinition dataDefinition)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

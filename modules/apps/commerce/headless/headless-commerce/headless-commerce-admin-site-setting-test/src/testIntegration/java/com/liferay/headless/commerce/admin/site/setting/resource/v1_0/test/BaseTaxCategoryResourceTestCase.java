@@ -545,6 +545,106 @@ public abstract class BaseTaxCategoryResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCommerceAdminSiteSettingGroupTaxCategoryPage()
+		throws Exception {
+
+		Long groupId =
+			testGetCommerceAdminSiteSettingGroupTaxCategoryPage_getGroupId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"commerceAdminSettingGroupTaxCategory",
+			new HashMap<String, Object>() {
+				{
+					put("groupId", groupId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject commerceAdminSettingGroupTaxCategoryJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/commerceAdminSettingGroupTaxCategory");
+
+		long totalCount =
+			commerceAdminSettingGroupTaxCategoryJSONObject.getLong(
+				"totalCount");
+
+		TaxCategory taxCategory1 =
+			testGraphQLGetCommerceAdminSiteSettingGroupTaxCategoryPageTaxCategory_addTaxCategory(
+				groupId, randomTaxCategory());
+
+		TaxCategory taxCategory2 =
+			testGraphQLGetCommerceAdminSiteSettingGroupTaxCategoryPageTaxCategory_addTaxCategory(
+				groupId, randomTaxCategory());
+
+		commerceAdminSettingGroupTaxCategoryJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/commerceAdminSettingGroupTaxCategory");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			commerceAdminSettingGroupTaxCategoryJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			taxCategory1,
+			Arrays.asList(
+				TaxCategorySerDes.toDTOs(
+					commerceAdminSettingGroupTaxCategoryJSONObject.getString(
+						"items"))));
+		assertContains(
+			taxCategory2,
+			Arrays.asList(
+				TaxCategorySerDes.toDTOs(
+					commerceAdminSettingGroupTaxCategoryJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminSiteSetting_v1_0
+
+		commerceAdminSettingGroupTaxCategoryJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminSiteSetting_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminSiteSetting_v1_0",
+				"JSONObject/commerceAdminSettingGroupTaxCategory");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			commerceAdminSettingGroupTaxCategoryJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			taxCategory1,
+			Arrays.asList(
+				TaxCategorySerDes.toDTOs(
+					commerceAdminSettingGroupTaxCategoryJSONObject.getString(
+						"items"))));
+		assertContains(
+			taxCategory2,
+			Arrays.asList(
+				TaxCategorySerDes.toDTOs(
+					commerceAdminSettingGroupTaxCategoryJSONObject.getString(
+						"items"))));
+	}
+
+	protected TaxCategory
+			testGraphQLGetCommerceAdminSiteSettingGroupTaxCategoryPageTaxCategory_addTaxCategory(
+				Long groupId, TaxCategory taxCategory)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetTaxCategory() throws Exception {
 		TaxCategory postTaxCategory = testGetTaxCategory_addTaxCategory();
 

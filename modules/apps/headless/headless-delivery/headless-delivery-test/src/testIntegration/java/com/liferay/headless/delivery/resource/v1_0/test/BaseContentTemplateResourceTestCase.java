@@ -671,6 +671,100 @@ public abstract class BaseContentTemplateResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAssetLibraryContentTemplatesPage()
+		throws Exception {
+
+		Long assetLibraryId =
+			testGetAssetLibraryContentTemplatesPage_getAssetLibraryId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"assetLibraryContentTemplates",
+			new HashMap<String, Object>() {
+				{
+					put("assetLibraryId", "\"" + assetLibraryId + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject assetLibraryContentTemplatesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/assetLibraryContentTemplates");
+
+		long totalCount = assetLibraryContentTemplatesJSONObject.getLong(
+			"totalCount");
+
+		ContentTemplate contentTemplate1 =
+			testGraphQLGetAssetLibraryContentTemplatesPageAssetLibraryContentTemplate_addContentTemplate(
+				assetLibraryId, randomContentTemplate());
+
+		ContentTemplate contentTemplate2 =
+			testGraphQLGetAssetLibraryContentTemplatesPageAssetLibraryContentTemplate_addContentTemplate(
+				assetLibraryId, randomContentTemplate());
+
+		assetLibraryContentTemplatesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/assetLibraryContentTemplates");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			assetLibraryContentTemplatesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			contentTemplate1,
+			Arrays.asList(
+				ContentTemplateSerDes.toDTOs(
+					assetLibraryContentTemplatesJSONObject.getString(
+						"items"))));
+		assertContains(
+			contentTemplate2,
+			Arrays.asList(
+				ContentTemplateSerDes.toDTOs(
+					assetLibraryContentTemplatesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		assetLibraryContentTemplatesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+			"JSONObject/assetLibraryContentTemplates");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			assetLibraryContentTemplatesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			contentTemplate1,
+			Arrays.asList(
+				ContentTemplateSerDes.toDTOs(
+					assetLibraryContentTemplatesJSONObject.getString(
+						"items"))));
+		assertContains(
+			contentTemplate2,
+			Arrays.asList(
+				ContentTemplateSerDes.toDTOs(
+					assetLibraryContentTemplatesJSONObject.getString(
+						"items"))));
+	}
+
+	protected ContentTemplate
+			testGraphQLGetAssetLibraryContentTemplatesPageAssetLibraryContentTemplate_addContentTemplate(
+				Long assetLibraryId, ContentTemplate contentTemplate)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSiteContentTemplate() throws Exception {
 		ContentTemplate postContentTemplate =
 			testGetSiteContentTemplate_addContentTemplate();
@@ -1245,6 +1339,89 @@ public abstract class BaseContentTemplateResourceTestCase {
 		throws Exception {
 
 		return irrelevantGroup.getGroupId();
+	}
+
+	@Test
+	public void testGraphQLGetSiteContentTemplatesPage() throws Exception {
+		Long siteId = testGetSiteContentTemplatesPage_getSiteId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"contentTemplates",
+			new HashMap<String, Object>() {
+				{
+					put("siteKey", "\"" + siteId + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject contentTemplatesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/contentTemplates");
+
+		long totalCount = contentTemplatesJSONObject.getLong("totalCount");
+
+		ContentTemplate contentTemplate1 =
+			testGraphQLGetSiteContentTemplatesPageSiteContentTemplate_addContentTemplate(
+				siteId, randomContentTemplate());
+
+		ContentTemplate contentTemplate2 =
+			testGraphQLGetSiteContentTemplatesPageSiteContentTemplate_addContentTemplate(
+				siteId, randomContentTemplate());
+
+		contentTemplatesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/contentTemplates");
+
+		Assert.assertEquals(
+			totalCount + 2, contentTemplatesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			contentTemplate1,
+			Arrays.asList(
+				ContentTemplateSerDes.toDTOs(
+					contentTemplatesJSONObject.getString("items"))));
+		assertContains(
+			contentTemplate2,
+			Arrays.asList(
+				ContentTemplateSerDes.toDTOs(
+					contentTemplatesJSONObject.getString("items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		contentTemplatesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+			"JSONObject/contentTemplates");
+
+		Assert.assertEquals(
+			totalCount + 2, contentTemplatesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			contentTemplate1,
+			Arrays.asList(
+				ContentTemplateSerDes.toDTOs(
+					contentTemplatesJSONObject.getString("items"))));
+		assertContains(
+			contentTemplate2,
+			Arrays.asList(
+				ContentTemplateSerDes.toDTOs(
+					contentTemplatesJSONObject.getString("items"))));
+	}
+
+	protected ContentTemplate
+			testGraphQLGetSiteContentTemplatesPageSiteContentTemplate_addContentTemplate(
+				Long siteId, ContentTemplate contentTemplate)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

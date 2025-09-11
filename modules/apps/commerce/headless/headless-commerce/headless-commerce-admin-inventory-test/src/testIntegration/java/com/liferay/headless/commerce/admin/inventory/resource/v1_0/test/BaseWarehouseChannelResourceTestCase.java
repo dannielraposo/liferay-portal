@@ -514,6 +514,108 @@ public abstract class BaseWarehouseChannelResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWarehouseByExternalReferenceCodeWarehouseChannelsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetWarehouseByExternalReferenceCodeWarehouseChannelsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"warehouseByExternalReferenceCodeWarehouseChannels",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject warehouseByExternalReferenceCodeWarehouseChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseByExternalReferenceCodeWarehouseChannels");
+
+		long totalCount =
+			warehouseByExternalReferenceCodeWarehouseChannelsJSONObject.getLong(
+				"totalCount");
+
+		WarehouseChannel warehouseChannel1 =
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseChannelsPageWarehouseWarehouseChannel_addWarehouseChannel(
+				externalReferenceCode, randomWarehouseChannel());
+
+		WarehouseChannel warehouseChannel2 =
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseChannelsPageWarehouseWarehouseChannel_addWarehouseChannel(
+				externalReferenceCode, randomWarehouseChannel());
+
+		warehouseByExternalReferenceCodeWarehouseChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseByExternalReferenceCodeWarehouseChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseByExternalReferenceCodeWarehouseChannelsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			warehouseChannel1,
+			Arrays.asList(
+				WarehouseChannelSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseChannelsJSONObject.
+						getString("items"))));
+		assertContains(
+			warehouseChannel2,
+			Arrays.asList(
+				WarehouseChannelSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseChannelsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminInventory_v1_0
+
+		warehouseByExternalReferenceCodeWarehouseChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminInventory_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminInventory_v1_0",
+				"JSONObject/warehouseByExternalReferenceCodeWarehouseChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseByExternalReferenceCodeWarehouseChannelsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			warehouseChannel1,
+			Arrays.asList(
+				WarehouseChannelSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseChannelsJSONObject.
+						getString("items"))));
+		assertContains(
+			warehouseChannel2,
+			Arrays.asList(
+				WarehouseChannelSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseChannelsJSONObject.
+						getString("items"))));
+	}
+
+	protected WarehouseChannel
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseChannelsPageWarehouseWarehouseChannel_addWarehouseChannel(
+				String externalReferenceCode, WarehouseChannel warehouseChannel)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetWarehouseIdWarehouseChannelsPage() throws Exception {
 		Long id = testGetWarehouseIdWarehouseChannelsPage_getId();
 		Long irrelevantId =
@@ -957,6 +1059,100 @@ public abstract class BaseWarehouseChannelResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetWarehouseIdWarehouseChannelsPage()
+		throws Exception {
+
+		Long id = testGetWarehouseIdWarehouseChannelsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"warehouseIdWarehouseChannels",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject warehouseIdWarehouseChannelsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseIdWarehouseChannels");
+
+		long totalCount = warehouseIdWarehouseChannelsJSONObject.getLong(
+			"totalCount");
+
+		WarehouseChannel warehouseChannel1 =
+			testGraphQLGetWarehouseIdWarehouseChannelsPageWarehouseWarehouseChannel_addWarehouseChannel(
+				id, randomWarehouseChannel());
+
+		WarehouseChannel warehouseChannel2 =
+			testGraphQLGetWarehouseIdWarehouseChannelsPageWarehouseWarehouseChannel_addWarehouseChannel(
+				id, randomWarehouseChannel());
+
+		warehouseIdWarehouseChannelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/warehouseIdWarehouseChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseIdWarehouseChannelsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouseChannel1,
+			Arrays.asList(
+				WarehouseChannelSerDes.toDTOs(
+					warehouseIdWarehouseChannelsJSONObject.getString(
+						"items"))));
+		assertContains(
+			warehouseChannel2,
+			Arrays.asList(
+				WarehouseChannelSerDes.toDTOs(
+					warehouseIdWarehouseChannelsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminInventory_v1_0
+
+		warehouseIdWarehouseChannelsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminInventory_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminInventory_v1_0",
+			"JSONObject/warehouseIdWarehouseChannels");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseIdWarehouseChannelsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouseChannel1,
+			Arrays.asList(
+				WarehouseChannelSerDes.toDTOs(
+					warehouseIdWarehouseChannelsJSONObject.getString(
+						"items"))));
+		assertContains(
+			warehouseChannel2,
+			Arrays.asList(
+				WarehouseChannelSerDes.toDTOs(
+					warehouseIdWarehouseChannelsJSONObject.getString(
+						"items"))));
+	}
+
+	protected WarehouseChannel
+			testGraphQLGetWarehouseIdWarehouseChannelsPageWarehouseWarehouseChannel_addWarehouseChannel(
+				Long id, WarehouseChannel warehouseChannel)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

@@ -360,6 +360,93 @@ public abstract class BaseShippingMethodResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelShippingMethodsPage() throws Exception {
+		Long channelId = testGetChannelShippingMethodsPage_getChannelId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelShippingMethods",
+			new HashMap<String, Object>() {
+				{
+					put("channelId", channelId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelShippingMethodsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelShippingMethods");
+
+		long totalCount = channelShippingMethodsJSONObject.getLong(
+			"totalCount");
+
+		ShippingMethod shippingMethod1 =
+			testGraphQLGetChannelShippingMethodsPageChannelShippingMethod_addShippingMethod(
+				channelId, randomShippingMethod());
+
+		ShippingMethod shippingMethod2 =
+			testGraphQLGetChannelShippingMethodsPageChannelShippingMethod_addShippingMethod(
+				channelId, randomShippingMethod());
+
+		channelShippingMethodsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelShippingMethods");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelShippingMethodsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			shippingMethod1,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					channelShippingMethodsJSONObject.getString("items"))));
+		assertContains(
+			shippingMethod2,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					channelShippingMethodsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		channelShippingMethodsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminChannel_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminChannel_v1_0",
+			"JSONObject/channelShippingMethods");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelShippingMethodsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			shippingMethod1,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					channelShippingMethodsJSONObject.getString("items"))));
+		assertContains(
+			shippingMethod2,
+			Arrays.asList(
+				ShippingMethodSerDes.toDTOs(
+					channelShippingMethodsJSONObject.getString("items"))));
+	}
+
+	protected ShippingMethod
+			testGraphQLGetChannelShippingMethodsPageChannelShippingMethod_addShippingMethod(
+				Long channelId, ShippingMethod shippingMethod)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

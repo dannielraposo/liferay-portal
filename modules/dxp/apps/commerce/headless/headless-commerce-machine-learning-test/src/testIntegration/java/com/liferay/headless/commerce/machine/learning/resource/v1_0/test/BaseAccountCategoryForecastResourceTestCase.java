@@ -360,6 +360,13 @@ public abstract class BaseAccountCategoryForecastResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAccountCategoryForecastsByMonthlyRevenuePage()
+		throws Exception {
+
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

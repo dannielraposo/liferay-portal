@@ -526,6 +526,11 @@ public abstract class BaseSearchResultResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSearchPage() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testPostSearchPage() throws Exception {
 		Assert.assertTrue(false);
 	}

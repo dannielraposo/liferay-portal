@@ -257,6 +257,11 @@ public abstract class BaseProcessVersionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProcessProcessVersionsPage() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

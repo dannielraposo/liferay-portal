@@ -465,6 +465,11 @@ public abstract class BaseProcessMetricResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProcessMetricsPage() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

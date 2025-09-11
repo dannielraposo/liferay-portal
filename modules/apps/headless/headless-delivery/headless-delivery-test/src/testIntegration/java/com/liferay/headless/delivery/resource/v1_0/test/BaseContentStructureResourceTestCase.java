@@ -267,6 +267,49 @@ public abstract class BaseContentStructureResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAssetLibraryContentStructurePermissionsPage()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		ContentStructure postContentStructure =
+			testGraphQLGetAssetLibraryContentStructurePermissionsPage_addContentStructure();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"assetLibraryContentStructurePermissions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"assetLibraryId",
+						"\"" +
+							testGraphQLGetAssetLibraryContentStructurePermissionsPage_getAssetLibraryId() +
+								"\"");
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject assetLibraryContentStructurePermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/assetLibraryContentStructurePermissions");
+
+		Assert.assertNotNull(assetLibraryContentStructurePermissionsJSONObject);
+	}
+
+	protected Long
+			testGraphQLGetAssetLibraryContentStructurePermissionsPage_getAssetLibraryId()
+		throws Exception {
+
+		return testDepotEntry.getDepotEntryId();
+	}
+
+	protected ContentStructure
+			testGraphQLGetAssetLibraryContentStructurePermissionsPage_addContentStructure()
+		throws Exception {
+
+		return testGraphQLAssetLibraryContentStructure_addContentStructure();
+	}
+
+	@Test
 	public void testGetAssetLibraryContentStructuresPage() throws Exception {
 		Long assetLibraryId =
 			testGetAssetLibraryContentStructuresPage_getAssetLibraryId();
@@ -718,6 +761,100 @@ public abstract class BaseContentStructureResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAssetLibraryContentStructuresPage()
+		throws Exception {
+
+		Long assetLibraryId =
+			testGetAssetLibraryContentStructuresPage_getAssetLibraryId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"assetLibraryContentStructures",
+			new HashMap<String, Object>() {
+				{
+					put("assetLibraryId", "\"" + assetLibraryId + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject assetLibraryContentStructuresJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/assetLibraryContentStructures");
+
+		long totalCount = assetLibraryContentStructuresJSONObject.getLong(
+			"totalCount");
+
+		ContentStructure contentStructure1 =
+			testGraphQLGetAssetLibraryContentStructuresPageAssetLibraryContentStructure_addContentStructure(
+				assetLibraryId, randomContentStructure());
+
+		ContentStructure contentStructure2 =
+			testGraphQLGetAssetLibraryContentStructuresPageAssetLibraryContentStructure_addContentStructure(
+				assetLibraryId, randomContentStructure());
+
+		assetLibraryContentStructuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/assetLibraryContentStructures");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			assetLibraryContentStructuresJSONObject.getLong("totalCount"));
+
+		assertContains(
+			contentStructure1,
+			Arrays.asList(
+				ContentStructureSerDes.toDTOs(
+					assetLibraryContentStructuresJSONObject.getString(
+						"items"))));
+		assertContains(
+			contentStructure2,
+			Arrays.asList(
+				ContentStructureSerDes.toDTOs(
+					assetLibraryContentStructuresJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		assetLibraryContentStructuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+			"JSONObject/assetLibraryContentStructures");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			assetLibraryContentStructuresJSONObject.getLong("totalCount"));
+
+		assertContains(
+			contentStructure1,
+			Arrays.asList(
+				ContentStructureSerDes.toDTOs(
+					assetLibraryContentStructuresJSONObject.getString(
+						"items"))));
+		assertContains(
+			contentStructure2,
+			Arrays.asList(
+				ContentStructureSerDes.toDTOs(
+					assetLibraryContentStructuresJSONObject.getString(
+						"items"))));
+	}
+
+	protected ContentStructure
+			testGraphQLGetAssetLibraryContentStructuresPageAssetLibraryContentStructure_addContentStructure(
+				Long assetLibraryId, ContentStructure contentStructure)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetContentStructure() throws Exception {
 		ContentStructure postContentStructure =
 			testGetContentStructure_addContentStructure();
@@ -1052,6 +1189,38 @@ public abstract class BaseContentStructureResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetContentStructurePermissionsPage()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		ContentStructure postContentStructure =
+			testGraphQLGetContentStructurePermissionsPage_addContentStructure();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"contentStructurePermissions",
+			new HashMap<String, Object>() {
+				{
+					put("contentStructureId", postContentStructure.getId());
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject contentStructurePermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/contentStructurePermissions");
+
+		Assert.assertNotNull(contentStructurePermissionsJSONObject);
+	}
+
+	protected ContentStructure
+			testGraphQLGetContentStructurePermissionsPage_addContentStructure()
+		throws Exception {
+
+		return testGraphQLContentStructure_addContentStructure();
+	}
+
+	@Test
 	public void testGetSiteContentStructurePermissionsPage() throws Exception {
 		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ContentStructure postContentStructure =
@@ -1070,6 +1239,40 @@ public abstract class BaseContentStructureResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetSiteContentStructurePermissionsPage()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		ContentStructure postContentStructure =
+			testGraphQLGetSiteContentStructurePermissionsPage_addContentStructure();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteContentStructurePermissions",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteKey",
+						"\"" + postContentStructure.getSiteId() + "\"");
+				}
+			},
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		JSONObject siteContentStructurePermissionsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteContentStructurePermissions");
+
+		Assert.assertNotNull(siteContentStructurePermissionsJSONObject);
+	}
+
+	protected ContentStructure
+			testGraphQLGetSiteContentStructurePermissionsPage_addContentStructure()
+		throws Exception {
+
+		return testGraphQLSiteContentStructure_addContentStructure();
 	}
 
 	@Test
@@ -1513,6 +1716,89 @@ public abstract class BaseContentStructureResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteContentStructuresPage() throws Exception {
+		Long siteId = testGetSiteContentStructuresPage_getSiteId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"contentStructures",
+			new HashMap<String, Object>() {
+				{
+					put("siteKey", "\"" + siteId + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject contentStructuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/contentStructures");
+
+		long totalCount = contentStructuresJSONObject.getLong("totalCount");
+
+		ContentStructure contentStructure1 =
+			testGraphQLGetSiteContentStructuresPageSiteContentStructure_addContentStructure(
+				siteId, randomContentStructure());
+
+		ContentStructure contentStructure2 =
+			testGraphQLGetSiteContentStructuresPageSiteContentStructure_addContentStructure(
+				siteId, randomContentStructure());
+
+		contentStructuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/contentStructures");
+
+		Assert.assertEquals(
+			totalCount + 2, contentStructuresJSONObject.getLong("totalCount"));
+
+		assertContains(
+			contentStructure1,
+			Arrays.asList(
+				ContentStructureSerDes.toDTOs(
+					contentStructuresJSONObject.getString("items"))));
+		assertContains(
+			contentStructure2,
+			Arrays.asList(
+				ContentStructureSerDes.toDTOs(
+					contentStructuresJSONObject.getString("items"))));
+
+		// Using the namespace headlessDelivery_v1_0
+
+		contentStructuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessDelivery_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessDelivery_v1_0",
+			"JSONObject/contentStructures");
+
+		Assert.assertEquals(
+			totalCount + 2, contentStructuresJSONObject.getLong("totalCount"));
+
+		assertContains(
+			contentStructure1,
+			Arrays.asList(
+				ContentStructureSerDes.toDTOs(
+					contentStructuresJSONObject.getString("items"))));
+		assertContains(
+			contentStructure2,
+			Arrays.asList(
+				ContentStructureSerDes.toDTOs(
+					contentStructuresJSONObject.getString("items"))));
+	}
+
+	protected ContentStructure
+			testGraphQLGetSiteContentStructuresPageSiteContentStructure_addContentStructure(
+				Long siteId, ContentStructure contentStructure)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPutAssetLibraryContentStructurePermissionsPage()
 		throws Exception {
 
@@ -1663,7 +1949,23 @@ public abstract class BaseContentStructureResourceTestCase {
 	@Rule
 	public SearchTestRule searchTestRule = new SearchTestRule();
 
+	protected ContentStructure
+			testGraphQLAssetLibraryContentStructure_addContentStructure()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
 	protected ContentStructure testGraphQLContentStructure_addContentStructure()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected ContentStructure
+			testGraphQLSiteContentStructure_addContentStructure()
 		throws Exception {
 
 		throw new UnsupportedOperationException(

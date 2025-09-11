@@ -486,6 +486,11 @@ public abstract class BaseNodeMetricResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProcessNodeMetricsPage() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

@@ -285,6 +285,13 @@ public abstract class BaseSearchableAssetNameDisplayResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSearchableAssetNameLanguagePage()
+		throws Exception {
+
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

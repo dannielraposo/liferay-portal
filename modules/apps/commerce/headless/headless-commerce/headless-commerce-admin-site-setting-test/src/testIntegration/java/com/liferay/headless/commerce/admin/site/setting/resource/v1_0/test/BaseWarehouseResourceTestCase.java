@@ -535,6 +535,103 @@ public abstract class BaseWarehouseResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetCommerceAdminSiteSettingGroupWarehousePage()
+		throws Exception {
+
+		Long groupId =
+			testGetCommerceAdminSiteSettingGroupWarehousePage_getGroupId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"commerceAdminSettingGroupWarehouse",
+			new HashMap<String, Object>() {
+				{
+					put("groupId", groupId);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject commerceAdminSettingGroupWarehouseJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/commerceAdminSettingGroupWarehouse");
+
+		long totalCount = commerceAdminSettingGroupWarehouseJSONObject.getLong(
+			"totalCount");
+
+		Warehouse warehouse1 =
+			testGraphQLGetCommerceAdminSiteSettingGroupWarehousePageWarehouse_addWarehouse(
+				groupId, randomWarehouse());
+
+		Warehouse warehouse2 =
+			testGraphQLGetCommerceAdminSiteSettingGroupWarehousePageWarehouse_addWarehouse(
+				groupId, randomWarehouse());
+
+		commerceAdminSettingGroupWarehouseJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/commerceAdminSettingGroupWarehouse");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			commerceAdminSettingGroupWarehouseJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouse1,
+			Arrays.asList(
+				WarehouseSerDes.toDTOs(
+					commerceAdminSettingGroupWarehouseJSONObject.getString(
+						"items"))));
+		assertContains(
+			warehouse2,
+			Arrays.asList(
+				WarehouseSerDes.toDTOs(
+					commerceAdminSettingGroupWarehouseJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminSiteSetting_v1_0
+
+		commerceAdminSettingGroupWarehouseJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminSiteSetting_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminSiteSetting_v1_0",
+				"JSONObject/commerceAdminSettingGroupWarehouse");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			commerceAdminSettingGroupWarehouseJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouse1,
+			Arrays.asList(
+				WarehouseSerDes.toDTOs(
+					commerceAdminSettingGroupWarehouseJSONObject.getString(
+						"items"))));
+		assertContains(
+			warehouse2,
+			Arrays.asList(
+				WarehouseSerDes.toDTOs(
+					commerceAdminSettingGroupWarehouseJSONObject.getString(
+						"items"))));
+	}
+
+	protected Warehouse
+			testGraphQLGetCommerceAdminSiteSettingGroupWarehousePageWarehouse_addWarehouse(
+				Long groupId, Warehouse warehouse)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetWarehouse() throws Exception {
 		Warehouse postWarehouse = testGetWarehouse_addWarehouse();
 

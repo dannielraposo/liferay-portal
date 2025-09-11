@@ -602,6 +602,110 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"placedOrderByExternalReferenceCodePlacedOrderItems",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			placedOrderByExternalReferenceCodePlacedOrderItemsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/placedOrderByExternalReferenceCodePlacedOrderItems");
+
+		long totalCount =
+			placedOrderByExternalReferenceCodePlacedOrderItemsJSONObject.
+				getLong("totalCount");
+
+		PlacedOrderItem placedOrderItem1 =
+			testGraphQLGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPagePlacedOrderPlacedOrderItem_addPlacedOrderItem(
+				externalReferenceCode, randomPlacedOrderItem());
+
+		PlacedOrderItem placedOrderItem2 =
+			testGraphQLGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPagePlacedOrderPlacedOrderItem_addPlacedOrderItem(
+				externalReferenceCode, randomPlacedOrderItem());
+
+		placedOrderByExternalReferenceCodePlacedOrderItemsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/placedOrderByExternalReferenceCodePlacedOrderItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderByExternalReferenceCodePlacedOrderItemsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			placedOrderItem1,
+			Arrays.asList(
+				PlacedOrderItemSerDes.toDTOs(
+					placedOrderByExternalReferenceCodePlacedOrderItemsJSONObject.
+						getString("items"))));
+		assertContains(
+			placedOrderItem2,
+			Arrays.asList(
+				PlacedOrderItemSerDes.toDTOs(
+					placedOrderByExternalReferenceCodePlacedOrderItemsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		placedOrderByExternalReferenceCodePlacedOrderItemsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryOrder_v1_0",
+				"JSONObject/placedOrderByExternalReferenceCodePlacedOrderItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderByExternalReferenceCodePlacedOrderItemsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			placedOrderItem1,
+			Arrays.asList(
+				PlacedOrderItemSerDes.toDTOs(
+					placedOrderByExternalReferenceCodePlacedOrderItemsJSONObject.
+						getString("items"))));
+		assertContains(
+			placedOrderItem2,
+			Arrays.asList(
+				PlacedOrderItemSerDes.toDTOs(
+					placedOrderByExternalReferenceCodePlacedOrderItemsJSONObject.
+						getString("items"))));
+	}
+
+	protected PlacedOrderItem
+			testGraphQLGetPlacedOrderByExternalReferenceCodePlacedOrderItemsPagePlacedOrderPlacedOrderItem_addPlacedOrderItem(
+				String externalReferenceCode, PlacedOrderItem placedOrderItem)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetPlacedOrderItem() throws Exception {
 		PlacedOrderItem postPlacedOrderItem =
 			testGetPlacedOrderItem_addPlacedOrderItem();
@@ -1399,6 +1503,97 @@ public abstract class BasePlacedOrderItemResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetPlacedOrderPlacedOrderItemsPage()
+		throws Exception {
+
+		Long placedOrderId =
+			testGetPlacedOrderPlacedOrderItemsPage_getPlacedOrderId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"placedOrderPlacedOrderItems",
+			new HashMap<String, Object>() {
+				{
+					put("placedOrderId", placedOrderId);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject placedOrderPlacedOrderItemsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/placedOrderPlacedOrderItems");
+
+		long totalCount = placedOrderPlacedOrderItemsJSONObject.getLong(
+			"totalCount");
+
+		PlacedOrderItem placedOrderItem1 =
+			testGraphQLGetPlacedOrderPlacedOrderItemsPagePlacedOrderPlacedOrderItem_addPlacedOrderItem(
+				placedOrderId, randomPlacedOrderItem());
+
+		PlacedOrderItem placedOrderItem2 =
+			testGraphQLGetPlacedOrderPlacedOrderItemsPagePlacedOrderPlacedOrderItem_addPlacedOrderItem(
+				placedOrderId, randomPlacedOrderItem());
+
+		placedOrderPlacedOrderItemsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/placedOrderPlacedOrderItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderPlacedOrderItemsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			placedOrderItem1,
+			Arrays.asList(
+				PlacedOrderItemSerDes.toDTOs(
+					placedOrderPlacedOrderItemsJSONObject.getString("items"))));
+		assertContains(
+			placedOrderItem2,
+			Arrays.asList(
+				PlacedOrderItemSerDes.toDTOs(
+					placedOrderPlacedOrderItemsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryOrder_v1_0
+
+		placedOrderPlacedOrderItemsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryOrder_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceDeliveryOrder_v1_0",
+			"JSONObject/placedOrderPlacedOrderItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			placedOrderPlacedOrderItemsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			placedOrderItem1,
+			Arrays.asList(
+				PlacedOrderItemSerDes.toDTOs(
+					placedOrderPlacedOrderItemsJSONObject.getString("items"))));
+		assertContains(
+			placedOrderItem2,
+			Arrays.asList(
+				PlacedOrderItemSerDes.toDTOs(
+					placedOrderPlacedOrderItemsJSONObject.getString("items"))));
+	}
+
+	protected PlacedOrderItem
+			testGraphQLGetPlacedOrderPlacedOrderItemsPagePlacedOrderPlacedOrderItem_addPlacedOrderItem(
+				Long placedOrderId, PlacedOrderItem placedOrderItem)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

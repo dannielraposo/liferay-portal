@@ -569,6 +569,109 @@ public abstract class BaseRelatedProductResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProductByExternalReferenceCodeRelatedProductsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetProductByExternalReferenceCodeRelatedProductsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productByExternalReferenceCodeRelatedProducts",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("type", "\"" + RandomTestUtil.randomString() + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject productByExternalReferenceCodeRelatedProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productByExternalReferenceCodeRelatedProducts");
+
+		long totalCount =
+			productByExternalReferenceCodeRelatedProductsJSONObject.getLong(
+				"totalCount");
+
+		RelatedProduct relatedProduct1 =
+			testGraphQLGetProductByExternalReferenceCodeRelatedProductsPageProductRelatedProduct_addRelatedProduct(
+				externalReferenceCode, randomRelatedProduct());
+
+		RelatedProduct relatedProduct2 =
+			testGraphQLGetProductByExternalReferenceCodeRelatedProductsPageProductRelatedProduct_addRelatedProduct(
+				externalReferenceCode, randomRelatedProduct());
+
+		productByExternalReferenceCodeRelatedProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productByExternalReferenceCodeRelatedProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productByExternalReferenceCodeRelatedProductsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			relatedProduct1,
+			Arrays.asList(
+				RelatedProductSerDes.toDTOs(
+					productByExternalReferenceCodeRelatedProductsJSONObject.
+						getString("items"))));
+		assertContains(
+			relatedProduct2,
+			Arrays.asList(
+				RelatedProductSerDes.toDTOs(
+					productByExternalReferenceCodeRelatedProductsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productByExternalReferenceCodeRelatedProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/productByExternalReferenceCodeRelatedProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productByExternalReferenceCodeRelatedProductsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			relatedProduct1,
+			Arrays.asList(
+				RelatedProductSerDes.toDTOs(
+					productByExternalReferenceCodeRelatedProductsJSONObject.
+						getString("items"))));
+		assertContains(
+			relatedProduct2,
+			Arrays.asList(
+				RelatedProductSerDes.toDTOs(
+					productByExternalReferenceCodeRelatedProductsJSONObject.
+						getString("items"))));
+	}
+
+	protected RelatedProduct
+			testGraphQLGetProductByExternalReferenceCodeRelatedProductsPageProductRelatedProduct_addRelatedProduct(
+				String externalReferenceCode, RelatedProduct relatedProduct)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetProductIdRelatedProductsPage() throws Exception {
 		Long id = testGetProductIdRelatedProductsPage_getId();
 		Long irrelevantId =
@@ -750,6 +853,94 @@ public abstract class BaseRelatedProductResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetProductIdRelatedProductsPage() throws Exception {
+		Long id = testGetProductIdRelatedProductsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"productIdRelatedProducts",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("type", "\"" + RandomTestUtil.randomString() + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject productIdRelatedProductsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/productIdRelatedProducts");
+
+		long totalCount = productIdRelatedProductsJSONObject.getLong(
+			"totalCount");
+
+		RelatedProduct relatedProduct1 =
+			testGraphQLGetProductIdRelatedProductsPageProductRelatedProduct_addRelatedProduct(
+				id, randomRelatedProduct());
+
+		RelatedProduct relatedProduct2 =
+			testGraphQLGetProductIdRelatedProductsPageProductRelatedProduct_addRelatedProduct(
+				id, randomRelatedProduct());
+
+		productIdRelatedProductsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/productIdRelatedProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productIdRelatedProductsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			relatedProduct1,
+			Arrays.asList(
+				RelatedProductSerDes.toDTOs(
+					productIdRelatedProductsJSONObject.getString("items"))));
+		assertContains(
+			relatedProduct2,
+			Arrays.asList(
+				RelatedProductSerDes.toDTOs(
+					productIdRelatedProductsJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		productIdRelatedProductsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminCatalog_v1_0",
+			"JSONObject/productIdRelatedProducts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			productIdRelatedProductsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			relatedProduct1,
+			Arrays.asList(
+				RelatedProductSerDes.toDTOs(
+					productIdRelatedProductsJSONObject.getString("items"))));
+		assertContains(
+			relatedProduct2,
+			Arrays.asList(
+				RelatedProductSerDes.toDTOs(
+					productIdRelatedProductsJSONObject.getString("items"))));
+	}
+
+	protected RelatedProduct
+			testGraphQLGetProductIdRelatedProductsPageProductRelatedProduct_addRelatedProduct(
+				Long id, RelatedProduct relatedProduct)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

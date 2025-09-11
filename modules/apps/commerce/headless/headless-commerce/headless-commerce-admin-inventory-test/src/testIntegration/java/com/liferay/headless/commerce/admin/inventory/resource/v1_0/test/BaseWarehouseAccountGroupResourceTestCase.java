@@ -537,6 +537,110 @@ public abstract class BaseWarehouseAccountGroupResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWarehouseByExternalReferenceCodeWarehouseAccountGroupsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetWarehouseByExternalReferenceCodeWarehouseAccountGroupsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"warehouseByExternalReferenceCodeWarehouseAccountGroups",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			warehouseByExternalReferenceCodeWarehouseAccountGroupsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/warehouseByExternalReferenceCodeWarehouseAccountGroups");
+
+		long totalCount =
+			warehouseByExternalReferenceCodeWarehouseAccountGroupsJSONObject.
+				getLong("totalCount");
+
+		WarehouseAccountGroup warehouseAccountGroup1 =
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseAccountGroupsPageWarehouseWarehouseAccountGroup_addWarehouseAccountGroup(
+				externalReferenceCode, randomWarehouseAccountGroup());
+
+		WarehouseAccountGroup warehouseAccountGroup2 =
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseAccountGroupsPageWarehouseWarehouseAccountGroup_addWarehouseAccountGroup(
+				externalReferenceCode, randomWarehouseAccountGroup());
+
+		warehouseByExternalReferenceCodeWarehouseAccountGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseByExternalReferenceCodeWarehouseAccountGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseByExternalReferenceCodeWarehouseAccountGroupsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			warehouseAccountGroup1,
+			Arrays.asList(
+				WarehouseAccountGroupSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseAccountGroupsJSONObject.
+						getString("items"))));
+		assertContains(
+			warehouseAccountGroup2,
+			Arrays.asList(
+				WarehouseAccountGroupSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseAccountGroupsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminInventory_v1_0
+
+		warehouseByExternalReferenceCodeWarehouseAccountGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminInventory_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminInventory_v1_0",
+				"JSONObject/warehouseByExternalReferenceCodeWarehouseAccountGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseByExternalReferenceCodeWarehouseAccountGroupsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			warehouseAccountGroup1,
+			Arrays.asList(
+				WarehouseAccountGroupSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseAccountGroupsJSONObject.
+						getString("items"))));
+		assertContains(
+			warehouseAccountGroup2,
+			Arrays.asList(
+				WarehouseAccountGroupSerDes.toDTOs(
+					warehouseByExternalReferenceCodeWarehouseAccountGroupsJSONObject.
+						getString("items"))));
+	}
+
+	protected WarehouseAccountGroup
+			testGraphQLGetWarehouseByExternalReferenceCodeWarehouseAccountGroupsPageWarehouseWarehouseAccountGroup_addWarehouseAccountGroup(
+				String externalReferenceCode,
+				WarehouseAccountGroup warehouseAccountGroup)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetWarehouseIdWarehouseAccountGroupsPage()
 		throws Exception {
 
@@ -1020,6 +1124,103 @@ public abstract class BaseWarehouseAccountGroupResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetWarehouseIdWarehouseAccountGroupsPage()
+		throws Exception {
+
+		Long id = testGetWarehouseIdWarehouseAccountGroupsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"warehouseIdWarehouseAccountGroups",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject warehouseIdWarehouseAccountGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseIdWarehouseAccountGroups");
+
+		long totalCount = warehouseIdWarehouseAccountGroupsJSONObject.getLong(
+			"totalCount");
+
+		WarehouseAccountGroup warehouseAccountGroup1 =
+			testGraphQLGetWarehouseIdWarehouseAccountGroupsPageWarehouseWarehouseAccountGroup_addWarehouseAccountGroup(
+				id, randomWarehouseAccountGroup());
+
+		WarehouseAccountGroup warehouseAccountGroup2 =
+			testGraphQLGetWarehouseIdWarehouseAccountGroupsPageWarehouseWarehouseAccountGroup_addWarehouseAccountGroup(
+				id, randomWarehouseAccountGroup());
+
+		warehouseIdWarehouseAccountGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/warehouseIdWarehouseAccountGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseIdWarehouseAccountGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouseAccountGroup1,
+			Arrays.asList(
+				WarehouseAccountGroupSerDes.toDTOs(
+					warehouseIdWarehouseAccountGroupsJSONObject.getString(
+						"items"))));
+		assertContains(
+			warehouseAccountGroup2,
+			Arrays.asList(
+				WarehouseAccountGroupSerDes.toDTOs(
+					warehouseIdWarehouseAccountGroupsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminInventory_v1_0
+
+		warehouseIdWarehouseAccountGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminInventory_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminInventory_v1_0",
+				"JSONObject/warehouseIdWarehouseAccountGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			warehouseIdWarehouseAccountGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			warehouseAccountGroup1,
+			Arrays.asList(
+				WarehouseAccountGroupSerDes.toDTOs(
+					warehouseIdWarehouseAccountGroupsJSONObject.getString(
+						"items"))));
+		assertContains(
+			warehouseAccountGroup2,
+			Arrays.asList(
+				WarehouseAccountGroupSerDes.toDTOs(
+					warehouseIdWarehouseAccountGroupsJSONObject.getString(
+						"items"))));
+	}
+
+	protected WarehouseAccountGroup
+			testGraphQLGetWarehouseIdWarehouseAccountGroupsPageWarehouseWarehouseAccountGroup_addWarehouseAccountGroup(
+				Long id, WarehouseAccountGroup warehouseAccountGroup)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

@@ -880,6 +880,104 @@ public abstract class BaseWishListItemResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWishlistWishListWishListItemsPage()
+		throws Exception {
+
+		Long wishListId =
+			testGetWishlistWishListWishListItemsPage_getWishListId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"wishlistWishListWishListItems",
+			new HashMap<String, Object>() {
+				{
+					put("wishListId", wishListId);
+					put(
+						"currencyCode",
+						"\"" + RandomTestUtil.randomString() + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject wishlistWishListWishListItemsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/wishlistWishListWishListItems");
+
+		long totalCount = wishlistWishListWishListItemsJSONObject.getLong(
+			"totalCount");
+
+		WishListItem wishListItem1 =
+			testGraphQLGetWishlistWishListWishListItemsPageWishListWishListItem_addWishListItem(
+				wishListId, randomWishListItem());
+
+		WishListItem wishListItem2 =
+			testGraphQLGetWishlistWishListWishListItemsPageWishListWishListItem_addWishListItem(
+				wishListId, randomWishListItem());
+
+		wishlistWishListWishListItemsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/wishlistWishListWishListItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			wishlistWishListWishListItemsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			wishListItem1,
+			Arrays.asList(
+				WishListItemSerDes.toDTOs(
+					wishlistWishListWishListItemsJSONObject.getString(
+						"items"))));
+		assertContains(
+			wishListItem2,
+			Arrays.asList(
+				WishListItemSerDes.toDTOs(
+					wishlistWishListWishListItemsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		wishlistWishListWishListItemsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+			"JSONObject/data",
+			"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+			"JSONObject/wishlistWishListWishListItems");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			wishlistWishListWishListItemsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			wishListItem1,
+			Arrays.asList(
+				WishListItemSerDes.toDTOs(
+					wishlistWishListWishListItemsJSONObject.getString(
+						"items"))));
+		assertContains(
+			wishListItem2,
+			Arrays.asList(
+				WishListItemSerDes.toDTOs(
+					wishlistWishListWishListItemsJSONObject.getString(
+						"items"))));
+	}
+
+	protected WishListItem
+			testGraphQLGetWishlistWishListWishListItemsPageWishListWishListItem_addWishListItem(
+				Long wishListId, WishListItem wishListItem)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPostWishlistWishListWishListItem() throws Exception {
 		WishListItem randomWishListItem = randomWishListItem();
 

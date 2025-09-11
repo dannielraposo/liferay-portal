@@ -530,6 +530,110 @@ public abstract class BaseDiscountProductGroupResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetDiscountByExternalReferenceCodeDiscountProductGroupsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetDiscountByExternalReferenceCodeDiscountProductGroupsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"discountByExternalReferenceCodeDiscountProductGroups",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			discountByExternalReferenceCodeDiscountProductGroupsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/discountByExternalReferenceCodeDiscountProductGroups");
+
+		long totalCount =
+			discountByExternalReferenceCodeDiscountProductGroupsJSONObject.
+				getLong("totalCount");
+
+		DiscountProductGroup discountProductGroup1 =
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountProductGroupsPageDiscountDiscountProductGroup_addDiscountProductGroup(
+				externalReferenceCode, randomDiscountProductGroup());
+
+		DiscountProductGroup discountProductGroup2 =
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountProductGroupsPageDiscountDiscountProductGroup_addDiscountProductGroup(
+				externalReferenceCode, randomDiscountProductGroup());
+
+		discountByExternalReferenceCodeDiscountProductGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountByExternalReferenceCodeDiscountProductGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountByExternalReferenceCodeDiscountProductGroupsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			discountProductGroup1,
+			Arrays.asList(
+				DiscountProductGroupSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountProductGroupsJSONObject.
+						getString("items"))));
+		assertContains(
+			discountProductGroup2,
+			Arrays.asList(
+				DiscountProductGroupSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountProductGroupsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		discountByExternalReferenceCodeDiscountProductGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v2_0",
+				"JSONObject/discountByExternalReferenceCodeDiscountProductGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountByExternalReferenceCodeDiscountProductGroupsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			discountProductGroup1,
+			Arrays.asList(
+				DiscountProductGroupSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountProductGroupsJSONObject.
+						getString("items"))));
+		assertContains(
+			discountProductGroup2,
+			Arrays.asList(
+				DiscountProductGroupSerDes.toDTOs(
+					discountByExternalReferenceCodeDiscountProductGroupsJSONObject.
+						getString("items"))));
+	}
+
+	protected DiscountProductGroup
+			testGraphQLGetDiscountByExternalReferenceCodeDiscountProductGroupsPageDiscountDiscountProductGroup_addDiscountProductGroup(
+				String externalReferenceCode,
+				DiscountProductGroup discountProductGroup)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetDiscountIdDiscountProductGroupsPage() throws Exception {
 		Long id = testGetDiscountIdDiscountProductGroupsPage_getId();
 		Long irrelevantId =
@@ -1003,6 +1107,103 @@ public abstract class BaseDiscountProductGroupResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetDiscountIdDiscountProductGroupsPage()
+		throws Exception {
+
+		Long id = testGetDiscountIdDiscountProductGroupsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"discountIdDiscountProductGroups",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject discountIdDiscountProductGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountIdDiscountProductGroups");
+
+		long totalCount = discountIdDiscountProductGroupsJSONObject.getLong(
+			"totalCount");
+
+		DiscountProductGroup discountProductGroup1 =
+			testGraphQLGetDiscountIdDiscountProductGroupsPageDiscountDiscountProductGroup_addDiscountProductGroup(
+				id, randomDiscountProductGroup());
+
+		DiscountProductGroup discountProductGroup2 =
+			testGraphQLGetDiscountIdDiscountProductGroupsPageDiscountDiscountProductGroup_addDiscountProductGroup(
+				id, randomDiscountProductGroup());
+
+		discountIdDiscountProductGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/discountIdDiscountProductGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountIdDiscountProductGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			discountProductGroup1,
+			Arrays.asList(
+				DiscountProductGroupSerDes.toDTOs(
+					discountIdDiscountProductGroupsJSONObject.getString(
+						"items"))));
+		assertContains(
+			discountProductGroup2,
+			Arrays.asList(
+				DiscountProductGroupSerDes.toDTOs(
+					discountIdDiscountProductGroupsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		discountIdDiscountProductGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v2_0",
+				"JSONObject/discountIdDiscountProductGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			discountIdDiscountProductGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			discountProductGroup1,
+			Arrays.asList(
+				DiscountProductGroupSerDes.toDTOs(
+					discountIdDiscountProductGroupsJSONObject.getString(
+						"items"))));
+		assertContains(
+			discountProductGroup2,
+			Arrays.asList(
+				DiscountProductGroupSerDes.toDTOs(
+					discountIdDiscountProductGroupsJSONObject.getString(
+						"items"))));
+	}
+
+	protected DiscountProductGroup
+			testGraphQLGetDiscountIdDiscountProductGroupsPageDiscountDiscountProductGroup_addDiscountProductGroup(
+				Long id, DiscountProductGroup discountProductGroup)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

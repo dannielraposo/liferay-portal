@@ -327,6 +327,13 @@ public abstract class BaseAccountForecastResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAccountForecastsByMonthlyRevenuePage()
+		throws Exception {
+
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

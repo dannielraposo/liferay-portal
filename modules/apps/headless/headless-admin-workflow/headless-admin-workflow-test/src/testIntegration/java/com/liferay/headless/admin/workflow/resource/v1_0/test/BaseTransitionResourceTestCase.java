@@ -362,6 +362,13 @@ public abstract class BaseTransitionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWorkflowInstanceNextTransitionsPage()
+		throws Exception {
+
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testGetWorkflowTaskNextTransitionsPage() throws Exception {
 		Long workflowTaskId =
 			testGetWorkflowTaskNextTransitionsPage_getWorkflowTaskId();
@@ -534,6 +541,13 @@ public abstract class BaseTransitionResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetWorkflowTaskNextTransitionsPage()
+		throws Exception {
+
+		Assert.assertTrue(false);
 	}
 
 	@Test

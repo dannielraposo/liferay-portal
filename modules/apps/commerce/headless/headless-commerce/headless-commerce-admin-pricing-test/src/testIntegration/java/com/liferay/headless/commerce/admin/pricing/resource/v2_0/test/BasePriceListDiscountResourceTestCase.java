@@ -516,6 +516,110 @@ public abstract class BasePriceListDiscountResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPriceListByExternalReferenceCodePriceListDiscountsPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetPriceListByExternalReferenceCodePriceListDiscountsPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"priceListByExternalReferenceCodePriceListDiscounts",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			priceListByExternalReferenceCodePriceListDiscountsJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/priceListByExternalReferenceCodePriceListDiscounts");
+
+		long totalCount =
+			priceListByExternalReferenceCodePriceListDiscountsJSONObject.
+				getLong("totalCount");
+
+		PriceListDiscount priceListDiscount1 =
+			testGraphQLGetPriceListByExternalReferenceCodePriceListDiscountsPagePriceListPriceListDiscount_addPriceListDiscount(
+				externalReferenceCode, randomPriceListDiscount());
+
+		PriceListDiscount priceListDiscount2 =
+			testGraphQLGetPriceListByExternalReferenceCodePriceListDiscountsPagePriceListPriceListDiscount_addPriceListDiscount(
+				externalReferenceCode, randomPriceListDiscount());
+
+		priceListByExternalReferenceCodePriceListDiscountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceListByExternalReferenceCodePriceListDiscounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListByExternalReferenceCodePriceListDiscountsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			priceListDiscount1,
+			Arrays.asList(
+				PriceListDiscountSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListDiscountsJSONObject.
+						getString("items"))));
+		assertContains(
+			priceListDiscount2,
+			Arrays.asList(
+				PriceListDiscountSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListDiscountsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		priceListByExternalReferenceCodePriceListDiscountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminPricing_v2_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminPricing_v2_0",
+				"JSONObject/priceListByExternalReferenceCodePriceListDiscounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListByExternalReferenceCodePriceListDiscountsJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			priceListDiscount1,
+			Arrays.asList(
+				PriceListDiscountSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListDiscountsJSONObject.
+						getString("items"))));
+		assertContains(
+			priceListDiscount2,
+			Arrays.asList(
+				PriceListDiscountSerDes.toDTOs(
+					priceListByExternalReferenceCodePriceListDiscountsJSONObject.
+						getString("items"))));
+	}
+
+	protected PriceListDiscount
+			testGraphQLGetPriceListByExternalReferenceCodePriceListDiscountsPagePriceListPriceListDiscount_addPriceListDiscount(
+				String externalReferenceCode,
+				PriceListDiscount priceListDiscount)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetPriceListIdPriceListDiscountsPage() throws Exception {
 		Long id = testGetPriceListIdPriceListDiscountsPage_getId();
 		Long irrelevantId =
@@ -703,6 +807,99 @@ public abstract class BasePriceListDiscountResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetPriceListIdPriceListDiscountsPage()
+		throws Exception {
+
+		Long id = testGetPriceListIdPriceListDiscountsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"priceListIdPriceListDiscounts",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject priceListIdPriceListDiscountsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/priceListIdPriceListDiscounts");
+
+		long totalCount = priceListIdPriceListDiscountsJSONObject.getLong(
+			"totalCount");
+
+		PriceListDiscount priceListDiscount1 =
+			testGraphQLGetPriceListIdPriceListDiscountsPagePriceListPriceListDiscount_addPriceListDiscount(
+				id, randomPriceListDiscount());
+
+		PriceListDiscount priceListDiscount2 =
+			testGraphQLGetPriceListIdPriceListDiscountsPagePriceListPriceListDiscount_addPriceListDiscount(
+				id, randomPriceListDiscount());
+
+		priceListIdPriceListDiscountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/priceListIdPriceListDiscounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListIdPriceListDiscountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			priceListDiscount1,
+			Arrays.asList(
+				PriceListDiscountSerDes.toDTOs(
+					priceListIdPriceListDiscountsJSONObject.getString(
+						"items"))));
+		assertContains(
+			priceListDiscount2,
+			Arrays.asList(
+				PriceListDiscountSerDes.toDTOs(
+					priceListIdPriceListDiscountsJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminPricing_v2_0
+
+		priceListIdPriceListDiscountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminPricing_v2_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminPricing_v2_0",
+			"JSONObject/priceListIdPriceListDiscounts");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			priceListIdPriceListDiscountsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			priceListDiscount1,
+			Arrays.asList(
+				PriceListDiscountSerDes.toDTOs(
+					priceListIdPriceListDiscountsJSONObject.getString(
+						"items"))));
+		assertContains(
+			priceListDiscount2,
+			Arrays.asList(
+				PriceListDiscountSerDes.toDTOs(
+					priceListIdPriceListDiscountsJSONObject.getString(
+						"items"))));
+	}
+
+	protected PriceListDiscount
+			testGraphQLGetPriceListIdPriceListDiscountsPagePriceListPriceListDiscount_addPriceListDiscount(
+				Long id, PriceListDiscount priceListDiscount)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

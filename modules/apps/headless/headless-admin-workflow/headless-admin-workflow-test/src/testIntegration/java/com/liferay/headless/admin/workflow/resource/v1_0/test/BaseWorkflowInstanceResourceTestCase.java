@@ -829,6 +829,88 @@ public abstract class BaseWorkflowInstanceResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetWorkflowInstancesPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"workflowInstances",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"assetClassName",
+						"\"" + RandomTestUtil.randomString() + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject workflowInstancesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/workflowInstances");
+
+		long totalCount = workflowInstancesJSONObject.getLong("totalCount");
+
+		WorkflowInstance workflowInstance1 =
+			testGraphQLGetWorkflowInstancesPageWorkflowInstance_addWorkflowInstance(
+				randomWorkflowInstance());
+
+		WorkflowInstance workflowInstance2 =
+			testGraphQLGetWorkflowInstancesPageWorkflowInstance_addWorkflowInstance(
+				randomWorkflowInstance());
+
+		workflowInstancesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/workflowInstances");
+
+		Assert.assertEquals(
+			totalCount + 2, workflowInstancesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowInstance1,
+			Arrays.asList(
+				WorkflowInstanceSerDes.toDTOs(
+					workflowInstancesJSONObject.getString("items"))));
+		assertContains(
+			workflowInstance2,
+			Arrays.asList(
+				WorkflowInstanceSerDes.toDTOs(
+					workflowInstancesJSONObject.getString("items"))));
+
+		// Using the namespace headlessAdminWorkflow_v1_0
+
+		workflowInstancesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("headlessAdminWorkflow_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessAdminWorkflow_v1_0",
+			"JSONObject/workflowInstances");
+
+		Assert.assertEquals(
+			totalCount + 2, workflowInstancesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			workflowInstance1,
+			Arrays.asList(
+				WorkflowInstanceSerDes.toDTOs(
+					workflowInstancesJSONObject.getString("items"))));
+		assertContains(
+			workflowInstance2,
+			Arrays.asList(
+				WorkflowInstanceSerDes.toDTOs(
+					workflowInstancesJSONObject.getString("items"))));
+	}
+
+	protected WorkflowInstance
+			testGraphQLGetWorkflowInstancesPageWorkflowInstance_addWorkflowInstance(
+				WorkflowInstance workflowInstance)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPostWorkflowInstanceChangeTransition() throws Exception {
 		WorkflowInstance randomWorkflowInstance = randomWorkflowInstance();
 

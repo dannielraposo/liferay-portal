@@ -643,6 +643,114 @@ public abstract class BasePageExperienceResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodePageSpecificationPageExperiencesPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageSpecificationPageExperiencesPage_getSiteExternalReferenceCode();
+		String pageSpecificationExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageSpecificationPageExperiencesPage_getPageSpecificationExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodePageSpecificationPageExperiences",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put(
+						"pageSpecificationExternalReferenceCode",
+						"\"" + pageSpecificationExternalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			siteByExternalReferenceCodePageSpecificationPageExperiencesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/siteByExternalReferenceCodePageSpecificationPageExperiences");
+
+		long totalCount =
+			siteByExternalReferenceCodePageSpecificationPageExperiencesJSONObject.
+				getLong("totalCount");
+
+		PageExperience pageExperience1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageSpecificationPageExperiencesPageSitePageExperience_addPageExperience(
+				siteExternalReferenceCode,
+				pageSpecificationExternalReferenceCode, randomPageExperience());
+
+		PageExperience pageExperience2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageSpecificationPageExperiencesPageSitePageExperience_addPageExperience(
+				siteExternalReferenceCode,
+				pageSpecificationExternalReferenceCode, randomPageExperience());
+
+		siteByExternalReferenceCodePageSpecificationPageExperiencesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodePageSpecificationPageExperiences");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageSpecificationPageExperiencesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			pageExperience1,
+			Arrays.asList(
+				PageExperienceSerDes.toDTOs(
+					siteByExternalReferenceCodePageSpecificationPageExperiencesJSONObject.
+						getString("items"))));
+		assertContains(
+			pageExperience2,
+			Arrays.asList(
+				PageExperienceSerDes.toDTOs(
+					siteByExternalReferenceCodePageSpecificationPageExperiencesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodePageSpecificationPageExperiencesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodePageSpecificationPageExperiences");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageSpecificationPageExperiencesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			pageExperience1,
+			Arrays.asList(
+				PageExperienceSerDes.toDTOs(
+					siteByExternalReferenceCodePageSpecificationPageExperiencesJSONObject.
+						getString("items"))));
+		assertContains(
+			pageExperience2,
+			Arrays.asList(
+				PageExperienceSerDes.toDTOs(
+					siteByExternalReferenceCodePageSpecificationPageExperiencesJSONObject.
+						getString("items"))));
+	}
+
+	protected PageExperience
+			testGraphQLGetSiteSiteByExternalReferenceCodePageSpecificationPageExperiencesPageSitePageExperience_addPageExperience(
+				String siteExternalReferenceCode,
+				String pageSpecificationExternalReferenceCode,
+				PageExperience pageExperience)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPatchSiteSiteByExternalReferenceCodePageExperience()
 		throws Exception {
 

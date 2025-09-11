@@ -818,6 +818,107 @@ public abstract class BasePaymentMethodGroupRelTermResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetPaymentMethodGroupRelIdPaymentMethodGroupRelTermsPage()
+		throws Exception {
+
+		Long id =
+			testGetPaymentMethodGroupRelIdPaymentMethodGroupRelTermsPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"paymentMethodGroupRelIdPaymentMethodGroupRelTerms",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("search", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject paymentMethodGroupRelIdPaymentMethodGroupRelTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/paymentMethodGroupRelIdPaymentMethodGroupRelTerms");
+
+		long totalCount =
+			paymentMethodGroupRelIdPaymentMethodGroupRelTermsJSONObject.getLong(
+				"totalCount");
+
+		PaymentMethodGroupRelTerm paymentMethodGroupRelTerm1 =
+			testGraphQLGetPaymentMethodGroupRelIdPaymentMethodGroupRelTermsPagePaymentMethodGroupRelTerm_addPaymentMethodGroupRelTerm(
+				id, randomPaymentMethodGroupRelTerm());
+
+		PaymentMethodGroupRelTerm paymentMethodGroupRelTerm2 =
+			testGraphQLGetPaymentMethodGroupRelIdPaymentMethodGroupRelTermsPagePaymentMethodGroupRelTerm_addPaymentMethodGroupRelTerm(
+				id, randomPaymentMethodGroupRelTerm());
+
+		paymentMethodGroupRelIdPaymentMethodGroupRelTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/paymentMethodGroupRelIdPaymentMethodGroupRelTerms");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			paymentMethodGroupRelIdPaymentMethodGroupRelTermsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			paymentMethodGroupRelTerm1,
+			Arrays.asList(
+				PaymentMethodGroupRelTermSerDes.toDTOs(
+					paymentMethodGroupRelIdPaymentMethodGroupRelTermsJSONObject.
+						getString("items"))));
+		assertContains(
+			paymentMethodGroupRelTerm2,
+			Arrays.asList(
+				PaymentMethodGroupRelTermSerDes.toDTOs(
+					paymentMethodGroupRelIdPaymentMethodGroupRelTermsJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminChannel_v1_0
+
+		paymentMethodGroupRelIdPaymentMethodGroupRelTermsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminChannel_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminChannel_v1_0",
+				"JSONObject/paymentMethodGroupRelIdPaymentMethodGroupRelTerms");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			paymentMethodGroupRelIdPaymentMethodGroupRelTermsJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			paymentMethodGroupRelTerm1,
+			Arrays.asList(
+				PaymentMethodGroupRelTermSerDes.toDTOs(
+					paymentMethodGroupRelIdPaymentMethodGroupRelTermsJSONObject.
+						getString("items"))));
+		assertContains(
+			paymentMethodGroupRelTerm2,
+			Arrays.asList(
+				PaymentMethodGroupRelTermSerDes.toDTOs(
+					paymentMethodGroupRelIdPaymentMethodGroupRelTermsJSONObject.
+						getString("items"))));
+	}
+
+	protected PaymentMethodGroupRelTerm
+			testGraphQLGetPaymentMethodGroupRelIdPaymentMethodGroupRelTermsPagePaymentMethodGroupRelTerm_addPaymentMethodGroupRelTerm(
+				Long id, PaymentMethodGroupRelTerm paymentMethodGroupRelTerm)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPostPaymentMethodGroupRelIdPaymentMethodGroupRelTerm()
 		throws Exception {
 

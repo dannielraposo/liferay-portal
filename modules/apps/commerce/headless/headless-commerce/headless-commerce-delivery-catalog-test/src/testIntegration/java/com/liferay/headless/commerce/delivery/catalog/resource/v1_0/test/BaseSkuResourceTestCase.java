@@ -634,6 +634,120 @@ public abstract class BaseSkuResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusPage()
+		throws Exception {
+
+		String channelExternalReferenceCode =
+			testGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusPage_getChannelExternalReferenceCode();
+		String productExternalReferenceCode =
+			testGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusPage_getProductExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkus",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"channelExternalReferenceCode",
+						"\"" + channelExternalReferenceCode + "\"");
+					put(
+						"productExternalReferenceCode",
+						"\"" + productExternalReferenceCode + "\"");
+					put(
+						"currencyCode",
+						"\"" + RandomTestUtil.randomString() + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkus");
+
+		long totalCount =
+			channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusJSONObject.
+				getLong("totalCount");
+
+		Sku sku1 =
+			testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusPageSku_addSku(
+				channelExternalReferenceCode, productExternalReferenceCode,
+				randomSku());
+
+		Sku sku2 =
+			testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusPageSku_addSku(
+				channelExternalReferenceCode, productExternalReferenceCode,
+				randomSku());
+
+		channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkus");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			sku1,
+			Arrays.asList(
+				SkuSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusJSONObject.
+						getString("items"))));
+		assertContains(
+			sku2,
+			Arrays.asList(
+				SkuSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+				"JSONObject/channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkus");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			sku1,
+			Arrays.asList(
+				SkuSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusJSONObject.
+						getString("items"))));
+		assertContains(
+			sku2,
+			Arrays.asList(
+				SkuSerDes.toDTOs(
+					channelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusJSONObject.
+						getString("items"))));
+	}
+
+	protected Sku
+			testGraphQLGetChannelByExternalReferenceCodeChannelExternalReferenceCodeProductByExternalReferenceCodeProductExternalReferenceCodeSkusPageSku_addSku(
+				String channelExternalReferenceCode,
+				String productExternalReferenceCode, Sku sku)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetChannelProductSku() throws Exception {
 		Sku postSku = testGetChannelProductSku_addSku();
 
@@ -962,6 +1076,92 @@ public abstract class BaseSkuResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetChannelProductSkusPage() throws Exception {
+		Long channelId = testGetChannelProductSkusPage_getChannelId();
+		Long productId = testGetChannelProductSkusPage_getProductId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"channelProductSkus",
+			new HashMap<String, Object>() {
+				{
+					put("channelId", channelId);
+					put("productId", productId);
+					put(
+						"currencyCode",
+						"\"" + RandomTestUtil.randomString() + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject channelProductSkusJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelProductSkus");
+
+		long totalCount = channelProductSkusJSONObject.getLong("totalCount");
+
+		Sku sku1 = testGraphQLGetChannelProductSkusPageProductSku_addSku(
+			channelId, productId, randomSku());
+
+		Sku sku2 = testGraphQLGetChannelProductSkusPageProductSku_addSku(
+			channelId, productId, randomSku());
+
+		channelProductSkusJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/channelProductSkus");
+
+		Assert.assertEquals(
+			totalCount + 2, channelProductSkusJSONObject.getLong("totalCount"));
+
+		assertContains(
+			sku1,
+			Arrays.asList(
+				SkuSerDes.toDTOs(
+					channelProductSkusJSONObject.getString("items"))));
+		assertContains(
+			sku2,
+			Arrays.asList(
+				SkuSerDes.toDTOs(
+					channelProductSkusJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceDeliveryCatalog_v1_0
+
+		channelProductSkusJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceDeliveryCatalog_v1_0", graphQLField)),
+			"JSONObject/data",
+			"JSONObject/headlessCommerceDeliveryCatalog_v1_0",
+			"JSONObject/channelProductSkus");
+
+		Assert.assertEquals(
+			totalCount + 2, channelProductSkusJSONObject.getLong("totalCount"));
+
+		assertContains(
+			sku1,
+			Arrays.asList(
+				SkuSerDes.toDTOs(
+					channelProductSkusJSONObject.getString("items"))));
+		assertContains(
+			sku2,
+			Arrays.asList(
+				SkuSerDes.toDTOs(
+					channelProductSkusJSONObject.getString("items"))));
+	}
+
+	protected Sku testGraphQLGetChannelProductSkusPageProductSku_addSku(
+			Long channelId, Long productId, Sku sku)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

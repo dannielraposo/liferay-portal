@@ -489,6 +489,89 @@ public abstract class BaseContactAccountGroupResourceTestCase {
 			"This method needs to be implemented");
 	}
 
+	@Test
+	public void testGraphQLGetContactAccountGroupsPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"contactAccountGroups",
+			new HashMap<String, Object>() {
+				{
+					put("keywords", null);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject contactAccountGroupsJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/contactAccountGroups");
+
+		long totalCount = contactAccountGroupsJSONObject.getLong("totalCount");
+
+		ContactAccountGroup contactAccountGroup1 =
+			testGraphQLGetContactAccountGroupsPageContactAccountGroup_addContactAccountGroup(
+				randomContactAccountGroup());
+
+		ContactAccountGroup contactAccountGroup2 =
+			testGraphQLGetContactAccountGroupsPageContactAccountGroup_addContactAccountGroup(
+				randomContactAccountGroup());
+
+		contactAccountGroupsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/contactAccountGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			contactAccountGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			contactAccountGroup1,
+			Arrays.asList(
+				ContactAccountGroupSerDes.toDTOs(
+					contactAccountGroupsJSONObject.getString("items"))));
+		assertContains(
+			contactAccountGroup2,
+			Arrays.asList(
+				ContactAccountGroupSerDes.toDTOs(
+					contactAccountGroupsJSONObject.getString("items"))));
+
+		// Using the namespace analyticsSettings_v1_0
+
+		contactAccountGroupsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("analyticsSettings_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/analyticsSettings_v1_0",
+			"JSONObject/contactAccountGroups");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			contactAccountGroupsJSONObject.getLong("totalCount"));
+
+		assertContains(
+			contactAccountGroup1,
+			Arrays.asList(
+				ContactAccountGroupSerDes.toDTOs(
+					contactAccountGroupsJSONObject.getString("items"))));
+		assertContains(
+			contactAccountGroup2,
+			Arrays.asList(
+				ContactAccountGroupSerDes.toDTOs(
+					contactAccountGroupsJSONObject.getString("items"))));
+	}
+
+	protected ContactAccountGroup
+			testGraphQLGetContactAccountGroupsPageContactAccountGroup_addContactAccountGroup(
+				ContactAccountGroup contactAccountGroup)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
 	protected void assertContains(
 		ContactAccountGroup contactAccountGroup,
 		List<ContactAccountGroup> contactAccountGroups) {

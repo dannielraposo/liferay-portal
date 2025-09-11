@@ -573,6 +573,108 @@ public abstract class BaseSkuUnitOfMeasureResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSkuByExternalReferenceCodeSkuUnitOfMeasuresPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetSkuByExternalReferenceCodeSkuUnitOfMeasuresPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"skuByExternalReferenceCodeSkuUnitOfMeasures",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject skuByExternalReferenceCodeSkuUnitOfMeasuresJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/skuByExternalReferenceCodeSkuUnitOfMeasures");
+
+		long totalCount =
+			skuByExternalReferenceCodeSkuUnitOfMeasuresJSONObject.getLong(
+				"totalCount");
+
+		SkuUnitOfMeasure skuUnitOfMeasure1 =
+			testGraphQLGetSkuByExternalReferenceCodeSkuUnitOfMeasuresPageSkuSkuUnitOfMeasure_addSkuUnitOfMeasure(
+				externalReferenceCode, randomSkuUnitOfMeasure());
+
+		SkuUnitOfMeasure skuUnitOfMeasure2 =
+			testGraphQLGetSkuByExternalReferenceCodeSkuUnitOfMeasuresPageSkuSkuUnitOfMeasure_addSkuUnitOfMeasure(
+				externalReferenceCode, randomSkuUnitOfMeasure());
+
+		skuByExternalReferenceCodeSkuUnitOfMeasuresJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/skuByExternalReferenceCodeSkuUnitOfMeasures");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			skuByExternalReferenceCodeSkuUnitOfMeasuresJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			skuUnitOfMeasure1,
+			Arrays.asList(
+				SkuUnitOfMeasureSerDes.toDTOs(
+					skuByExternalReferenceCodeSkuUnitOfMeasuresJSONObject.
+						getString("items"))));
+		assertContains(
+			skuUnitOfMeasure2,
+			Arrays.asList(
+				SkuUnitOfMeasureSerDes.toDTOs(
+					skuByExternalReferenceCodeSkuUnitOfMeasuresJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		skuByExternalReferenceCodeSkuUnitOfMeasuresJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminCatalog_v1_0",
+				"JSONObject/skuByExternalReferenceCodeSkuUnitOfMeasures");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			skuByExternalReferenceCodeSkuUnitOfMeasuresJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			skuUnitOfMeasure1,
+			Arrays.asList(
+				SkuUnitOfMeasureSerDes.toDTOs(
+					skuByExternalReferenceCodeSkuUnitOfMeasuresJSONObject.
+						getString("items"))));
+		assertContains(
+			skuUnitOfMeasure2,
+			Arrays.asList(
+				SkuUnitOfMeasureSerDes.toDTOs(
+					skuByExternalReferenceCodeSkuUnitOfMeasuresJSONObject.
+						getString("items"))));
+	}
+
+	protected SkuUnitOfMeasure
+			testGraphQLGetSkuByExternalReferenceCodeSkuUnitOfMeasuresPageSkuSkuUnitOfMeasure_addSkuUnitOfMeasure(
+				String externalReferenceCode, SkuUnitOfMeasure skuUnitOfMeasure)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSkuIdSkuUnitOfMeasuresPage() throws Exception {
 		Long id = testGetSkuIdSkuUnitOfMeasuresPage_getId();
 		Long irrelevantId = testGetSkuIdSkuUnitOfMeasuresPage_getIrrelevantId();
@@ -754,6 +856,93 @@ public abstract class BaseSkuUnitOfMeasureResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetSkuIdSkuUnitOfMeasuresPage() throws Exception {
+		Long id = testGetSkuIdSkuUnitOfMeasuresPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"skuIdSkuUnitOfMeasures",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject skuIdSkuUnitOfMeasuresJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/skuIdSkuUnitOfMeasures");
+
+		long totalCount = skuIdSkuUnitOfMeasuresJSONObject.getLong(
+			"totalCount");
+
+		SkuUnitOfMeasure skuUnitOfMeasure1 =
+			testGraphQLGetSkuIdSkuUnitOfMeasuresPageSkuSkuUnitOfMeasure_addSkuUnitOfMeasure(
+				id, randomSkuUnitOfMeasure());
+
+		SkuUnitOfMeasure skuUnitOfMeasure2 =
+			testGraphQLGetSkuIdSkuUnitOfMeasuresPageSkuSkuUnitOfMeasure_addSkuUnitOfMeasure(
+				id, randomSkuUnitOfMeasure());
+
+		skuIdSkuUnitOfMeasuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/skuIdSkuUnitOfMeasures");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			skuIdSkuUnitOfMeasuresJSONObject.getLong("totalCount"));
+
+		assertContains(
+			skuUnitOfMeasure1,
+			Arrays.asList(
+				SkuUnitOfMeasureSerDes.toDTOs(
+					skuIdSkuUnitOfMeasuresJSONObject.getString("items"))));
+		assertContains(
+			skuUnitOfMeasure2,
+			Arrays.asList(
+				SkuUnitOfMeasureSerDes.toDTOs(
+					skuIdSkuUnitOfMeasuresJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminCatalog_v1_0
+
+		skuIdSkuUnitOfMeasuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminCatalog_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminCatalog_v1_0",
+			"JSONObject/skuIdSkuUnitOfMeasures");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			skuIdSkuUnitOfMeasuresJSONObject.getLong("totalCount"));
+
+		assertContains(
+			skuUnitOfMeasure1,
+			Arrays.asList(
+				SkuUnitOfMeasureSerDes.toDTOs(
+					skuIdSkuUnitOfMeasuresJSONObject.getString("items"))));
+		assertContains(
+			skuUnitOfMeasure2,
+			Arrays.asList(
+				SkuUnitOfMeasureSerDes.toDTOs(
+					skuIdSkuUnitOfMeasuresJSONObject.getString("items"))));
+	}
+
+	protected SkuUnitOfMeasure
+			testGraphQLGetSkuIdSkuUnitOfMeasuresPageSkuSkuUnitOfMeasure_addSkuUnitOfMeasure(
+				Long id, SkuUnitOfMeasure skuUnitOfMeasure)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

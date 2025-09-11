@@ -243,6 +243,79 @@ public abstract class BaseRoleResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetProcessRolesPage() throws Exception {
+		Long processId = testGetProcessRolesPage_getProcessId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"processRoles",
+			new HashMap<String, Object>() {
+				{
+					put("processId", processId);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject processRolesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/processRoles");
+
+		long totalCount = processRolesJSONObject.getLong("totalCount");
+
+		Role role1 = testGraphQLGetProcessRolesPageProcessRole_addRole(
+			processId, randomRole());
+
+		Role role2 = testGraphQLGetProcessRolesPageProcessRole_addRole(
+			processId, randomRole());
+
+		processRolesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/processRoles");
+
+		Assert.assertEquals(
+			totalCount + 2, processRolesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			role1,
+			Arrays.asList(
+				RoleSerDes.toDTOs(processRolesJSONObject.getString("items"))));
+		assertContains(
+			role2,
+			Arrays.asList(
+				RoleSerDes.toDTOs(processRolesJSONObject.getString("items"))));
+
+		// Using the namespace portalWorkflowMetrics_v1_0
+
+		processRolesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField("portalWorkflowMetrics_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/portalWorkflowMetrics_v1_0",
+			"JSONObject/processRoles");
+
+		Assert.assertEquals(
+			totalCount + 2, processRolesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			role1,
+			Arrays.asList(
+				RoleSerDes.toDTOs(processRolesJSONObject.getString("items"))));
+		assertContains(
+			role2,
+			Arrays.asList(
+				RoleSerDes.toDTOs(processRolesJSONObject.getString("items"))));
+	}
+
+	protected Role testGraphQLGetProcessRolesPageProcessRole_addRole(
+			Long processId, Role role)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Assert.assertTrue(true);
 	}

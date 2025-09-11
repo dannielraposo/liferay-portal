@@ -618,6 +618,110 @@ public abstract class BaseAccountChannelShippingOptionResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetAccountByExternalReferenceCodeAccountChannelShippingOptionPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetAccountByExternalReferenceCodeAccountChannelShippingOptionPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountByExternalReferenceCodeAccountChannelShippingOption",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			accountByExternalReferenceCodeAccountChannelShippingOptionJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/accountByExternalReferenceCodeAccountChannelShippingOption");
+
+		long totalCount =
+			accountByExternalReferenceCodeAccountChannelShippingOptionJSONObject.
+				getLong("totalCount");
+
+		AccountChannelShippingOption accountChannelShippingOption1 =
+			testGraphQLGetAccountByExternalReferenceCodeAccountChannelShippingOptionPageAccountAccountChannelShippingOption_addAccountChannelShippingOption(
+				externalReferenceCode, randomAccountChannelShippingOption());
+
+		AccountChannelShippingOption accountChannelShippingOption2 =
+			testGraphQLGetAccountByExternalReferenceCodeAccountChannelShippingOptionPageAccountAccountChannelShippingOption_addAccountChannelShippingOption(
+				externalReferenceCode, randomAccountChannelShippingOption());
+
+		accountByExternalReferenceCodeAccountChannelShippingOptionJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountByExternalReferenceCodeAccountChannelShippingOption");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeAccountChannelShippingOptionJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			accountChannelShippingOption1,
+			Arrays.asList(
+				AccountChannelShippingOptionSerDes.toDTOs(
+					accountByExternalReferenceCodeAccountChannelShippingOptionJSONObject.
+						getString("items"))));
+		assertContains(
+			accountChannelShippingOption2,
+			Arrays.asList(
+				AccountChannelShippingOptionSerDes.toDTOs(
+					accountByExternalReferenceCodeAccountChannelShippingOptionJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessCommerceAdminAccount_v1_0
+
+		accountByExternalReferenceCodeAccountChannelShippingOptionJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminAccount_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminAccount_v1_0",
+				"JSONObject/accountByExternalReferenceCodeAccountChannelShippingOption");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountByExternalReferenceCodeAccountChannelShippingOptionJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			accountChannelShippingOption1,
+			Arrays.asList(
+				AccountChannelShippingOptionSerDes.toDTOs(
+					accountByExternalReferenceCodeAccountChannelShippingOptionJSONObject.
+						getString("items"))));
+		assertContains(
+			accountChannelShippingOption2,
+			Arrays.asList(
+				AccountChannelShippingOptionSerDes.toDTOs(
+					accountByExternalReferenceCodeAccountChannelShippingOptionJSONObject.
+						getString("items"))));
+	}
+
+	protected AccountChannelShippingOption
+			testGraphQLGetAccountByExternalReferenceCodeAccountChannelShippingOptionPageAccountAccountChannelShippingOption_addAccountChannelShippingOption(
+				String externalReferenceCode,
+				AccountChannelShippingOption accountChannelShippingOption)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetAccountChannelShippingOption() throws Exception {
 		AccountChannelShippingOption postAccountChannelShippingOption =
 			testGetAccountChannelShippingOption_addAccountChannelShippingOption();
@@ -1152,6 +1256,106 @@ public abstract class BaseAccountChannelShippingOptionResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetAccountIdAccountChannelShippingOptionPage()
+		throws Exception {
+
+		Long id = testGetAccountIdAccountChannelShippingOptionPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"accountIdAccountChannelShippingOption",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject accountIdAccountChannelShippingOptionJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountIdAccountChannelShippingOption");
+
+		long totalCount =
+			accountIdAccountChannelShippingOptionJSONObject.getLong(
+				"totalCount");
+
+		AccountChannelShippingOption accountChannelShippingOption1 =
+			testGraphQLGetAccountIdAccountChannelShippingOptionPageAccountAccountChannelShippingOption_addAccountChannelShippingOption(
+				id, randomAccountChannelShippingOption());
+
+		AccountChannelShippingOption accountChannelShippingOption2 =
+			testGraphQLGetAccountIdAccountChannelShippingOptionPageAccountAccountChannelShippingOption_addAccountChannelShippingOption(
+				id, randomAccountChannelShippingOption());
+
+		accountIdAccountChannelShippingOptionJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/accountIdAccountChannelShippingOption");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountIdAccountChannelShippingOptionJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			accountChannelShippingOption1,
+			Arrays.asList(
+				AccountChannelShippingOptionSerDes.toDTOs(
+					accountIdAccountChannelShippingOptionJSONObject.getString(
+						"items"))));
+		assertContains(
+			accountChannelShippingOption2,
+			Arrays.asList(
+				AccountChannelShippingOptionSerDes.toDTOs(
+					accountIdAccountChannelShippingOptionJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminAccount_v1_0
+
+		accountIdAccountChannelShippingOptionJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminAccount_v1_0", graphQLField)),
+				"JSONObject/data",
+				"JSONObject/headlessCommerceAdminAccount_v1_0",
+				"JSONObject/accountIdAccountChannelShippingOption");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			accountIdAccountChannelShippingOptionJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			accountChannelShippingOption1,
+			Arrays.asList(
+				AccountChannelShippingOptionSerDes.toDTOs(
+					accountIdAccountChannelShippingOptionJSONObject.getString(
+						"items"))));
+		assertContains(
+			accountChannelShippingOption2,
+			Arrays.asList(
+				AccountChannelShippingOptionSerDes.toDTOs(
+					accountIdAccountChannelShippingOptionJSONObject.getString(
+						"items"))));
+	}
+
+	protected AccountChannelShippingOption
+			testGraphQLGetAccountIdAccountChannelShippingOptionPageAccountAccountChannelShippingOption_addAccountChannelShippingOption(
+				Long id,
+				AccountChannelShippingOption accountChannelShippingOption)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test

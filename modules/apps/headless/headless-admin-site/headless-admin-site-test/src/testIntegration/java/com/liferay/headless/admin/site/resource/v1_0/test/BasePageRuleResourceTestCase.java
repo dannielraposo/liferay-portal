@@ -458,6 +458,113 @@ public abstract class BasePageRuleResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetSiteSiteByExternalReferenceCodePageExperiencePageRulesPage()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageExperiencePageRulesPage_getSiteExternalReferenceCode();
+		String pageExperienceExternalReferenceCode =
+			testGetSiteSiteByExternalReferenceCodePageExperiencePageRulesPage_getPageExperienceExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"siteByExternalReferenceCodePageExperiencePageRules",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"siteExternalReferenceCode",
+						"\"" + siteExternalReferenceCode + "\"");
+					put(
+						"pageExperienceExternalReferenceCode",
+						"\"" + pageExperienceExternalReferenceCode + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject
+			siteByExternalReferenceCodePageExperiencePageRulesJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					invokeGraphQLQuery(graphQLField), "JSONObject/data",
+					"JSONObject/siteByExternalReferenceCodePageExperiencePageRules");
+
+		long totalCount =
+			siteByExternalReferenceCodePageExperiencePageRulesJSONObject.
+				getLong("totalCount");
+
+		PageRule pageRule1 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageExperiencePageRulesPageSitePageRule_addPageRule(
+				siteExternalReferenceCode, pageExperienceExternalReferenceCode,
+				randomPageRule());
+
+		PageRule pageRule2 =
+			testGraphQLGetSiteSiteByExternalReferenceCodePageExperiencePageRulesPageSitePageRule_addPageRule(
+				siteExternalReferenceCode, pageExperienceExternalReferenceCode,
+				randomPageRule());
+
+		siteByExternalReferenceCodePageExperiencePageRulesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteByExternalReferenceCodePageExperiencePageRules");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageExperiencePageRulesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			pageRule1,
+			Arrays.asList(
+				PageRuleSerDes.toDTOs(
+					siteByExternalReferenceCodePageExperiencePageRulesJSONObject.
+						getString("items"))));
+		assertContains(
+			pageRule2,
+			Arrays.asList(
+				PageRuleSerDes.toDTOs(
+					siteByExternalReferenceCodePageExperiencePageRulesJSONObject.
+						getString("items"))));
+
+		// Using the namespace headlessAdminSite_v1_0
+
+		siteByExternalReferenceCodePageExperiencePageRulesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("headlessAdminSite_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessAdminSite_v1_0",
+				"JSONObject/siteByExternalReferenceCodePageExperiencePageRules");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteByExternalReferenceCodePageExperiencePageRulesJSONObject.
+				getLong("totalCount"));
+
+		assertContains(
+			pageRule1,
+			Arrays.asList(
+				PageRuleSerDes.toDTOs(
+					siteByExternalReferenceCodePageExperiencePageRulesJSONObject.
+						getString("items"))));
+		assertContains(
+			pageRule2,
+			Arrays.asList(
+				PageRuleSerDes.toDTOs(
+					siteByExternalReferenceCodePageExperiencePageRulesJSONObject.
+						getString("items"))));
+	}
+
+	protected PageRule
+			testGraphQLGetSiteSiteByExternalReferenceCodePageExperiencePageRulesPageSitePageRule_addPageRule(
+				String siteExternalReferenceCode,
+				String pageExperienceExternalReferenceCode, PageRule pageRule)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetSiteSiteByExternalReferenceCodePageRule()
 		throws Exception {
 

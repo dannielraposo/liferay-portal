@@ -679,6 +679,107 @@ public abstract class BaseOrderNoteResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetOrderByExternalReferenceCodeOrderNotesPage()
+		throws Exception {
+
+		String externalReferenceCode =
+			testGetOrderByExternalReferenceCodeOrderNotesPage_getExternalReferenceCode();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"orderByExternalReferenceCodeOrderNotes",
+			new HashMap<String, Object>() {
+				{
+					put(
+						"externalReferenceCode",
+						"\"" + externalReferenceCode + "\"");
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject orderByExternalReferenceCodeOrderNotesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/orderByExternalReferenceCodeOrderNotes");
+
+		long totalCount =
+			orderByExternalReferenceCodeOrderNotesJSONObject.getLong(
+				"totalCount");
+
+		OrderNote orderNote1 =
+			testGraphQLGetOrderByExternalReferenceCodeOrderNotesPageOrderOrderNote_addOrderNote(
+				externalReferenceCode, randomOrderNote());
+
+		OrderNote orderNote2 =
+			testGraphQLGetOrderByExternalReferenceCodeOrderNotesPageOrderOrderNote_addOrderNote(
+				externalReferenceCode, randomOrderNote());
+
+		orderByExternalReferenceCodeOrderNotesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/orderByExternalReferenceCodeOrderNotes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderByExternalReferenceCodeOrderNotesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			orderNote1,
+			Arrays.asList(
+				OrderNoteSerDes.toDTOs(
+					orderByExternalReferenceCodeOrderNotesJSONObject.getString(
+						"items"))));
+		assertContains(
+			orderNote2,
+			Arrays.asList(
+				OrderNoteSerDes.toDTOs(
+					orderByExternalReferenceCodeOrderNotesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		orderByExternalReferenceCodeOrderNotesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessCommerceAdminOrder_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/headlessCommerceAdminOrder_v1_0",
+				"JSONObject/orderByExternalReferenceCodeOrderNotes");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			orderByExternalReferenceCodeOrderNotesJSONObject.getLong(
+				"totalCount"));
+
+		assertContains(
+			orderNote1,
+			Arrays.asList(
+				OrderNoteSerDes.toDTOs(
+					orderByExternalReferenceCodeOrderNotesJSONObject.getString(
+						"items"))));
+		assertContains(
+			orderNote2,
+			Arrays.asList(
+				OrderNoteSerDes.toDTOs(
+					orderByExternalReferenceCodeOrderNotesJSONObject.getString(
+						"items"))));
+	}
+
+	protected OrderNote
+			testGraphQLGetOrderByExternalReferenceCodeOrderNotesPageOrderOrderNote_addOrderNote(
+				String externalReferenceCode, OrderNote orderNote)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetOrderIdOrderNotesPage() throws Exception {
 		Long id = testGetOrderIdOrderNotesPage_getId();
 		Long irrelevantId = testGetOrderIdOrderNotesPage_getIrrelevantId();
@@ -827,6 +928,89 @@ public abstract class BaseOrderNoteResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	@Test
+	public void testGraphQLGetOrderIdOrderNotesPage() throws Exception {
+		Long id = testGetOrderIdOrderNotesPage_getId();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"orderIdOrderNotes",
+			new HashMap<String, Object>() {
+				{
+					put("id", id);
+					put("page", 1);
+					put("pageSize", 10);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+
+		// No namespace
+
+		JSONObject orderIdOrderNotesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/orderIdOrderNotes");
+
+		long totalCount = orderIdOrderNotesJSONObject.getLong("totalCount");
+
+		OrderNote orderNote1 =
+			testGraphQLGetOrderIdOrderNotesPageOrderOrderNote_addOrderNote(
+				id, randomOrderNote());
+
+		OrderNote orderNote2 =
+			testGraphQLGetOrderIdOrderNotesPageOrderOrderNote_addOrderNote(
+				id, randomOrderNote());
+
+		orderIdOrderNotesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/orderIdOrderNotes");
+
+		Assert.assertEquals(
+			totalCount + 2, orderIdOrderNotesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			orderNote1,
+			Arrays.asList(
+				OrderNoteSerDes.toDTOs(
+					orderIdOrderNotesJSONObject.getString("items"))));
+		assertContains(
+			orderNote2,
+			Arrays.asList(
+				OrderNoteSerDes.toDTOs(
+					orderIdOrderNotesJSONObject.getString("items"))));
+
+		// Using the namespace headlessCommerceAdminOrder_v1_0
+
+		orderIdOrderNotesJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessCommerceAdminOrder_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/headlessCommerceAdminOrder_v1_0",
+			"JSONObject/orderIdOrderNotes");
+
+		Assert.assertEquals(
+			totalCount + 2, orderIdOrderNotesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			orderNote1,
+			Arrays.asList(
+				OrderNoteSerDes.toDTOs(
+					orderIdOrderNotesJSONObject.getString("items"))));
+		assertContains(
+			orderNote2,
+			Arrays.asList(
+				OrderNoteSerDes.toDTOs(
+					orderIdOrderNotesJSONObject.getString("items"))));
+	}
+
+	protected OrderNote
+			testGraphQLGetOrderIdOrderNotesPageOrderOrderNote_addOrderNote(
+				Long id, OrderNote orderNote)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
