@@ -26,7 +26,7 @@ import com.liferay.batch.engine.internal.reader.BatchEngineImportTaskItemReaderB
 import com.liferay.batch.engine.internal.reader.BatchEngineImportTaskItemReaderUtil;
 import com.liferay.batch.engine.internal.strategy.OnErrorContinueBatchEngineImportStrategy;
 import com.liferay.batch.engine.internal.strategy.OnErrorFailBatchEngineImportStrategy;
-import com.liferay.batch.engine.internal.strategy.TransactionalOnErrorContinueBatchEngineImportStrategy;
+import com.liferay.batch.engine.internal.strategy.TransactionalBatchEngineImportStrategyWrapper;
 import com.liferay.batch.engine.internal.task.progress.BatchEngineTaskProgress;
 import com.liferay.batch.engine.internal.task.progress.BatchEngineTaskProgressFactory;
 import com.liferay.batch.engine.internal.util.ErrorMessageUtil;
@@ -251,11 +251,12 @@ public class BatchEngineImportTaskExecutorImpl
 					BatchEngineImportTaskConstants.
 						IMPORT_STRATEGY_TRANSACTIONAL_ON_ERROR_CONTINUE) {
 
-			return new TransactionalOnErrorContinueBatchEngineImportStrategy(
-				batchEngineImportTask,
-				_batchEngineImportTaskExceptionHandlers.toList(),
-				_importTaskPostActions.toList(),
-				_importTaskPreActions.toList());
+			return new TransactionalBatchEngineImportStrategyWrapper(
+				new OnErrorContinueBatchEngineImportStrategy(
+					batchEngineImportTask,
+					_batchEngineImportTaskExceptionHandlers.toList(),
+					_importTaskPostActions.toList(),
+					_importTaskPreActions.toList()));
 		}
 
 		return new OnErrorFailBatchEngineImportStrategy(

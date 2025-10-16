@@ -11,10 +11,13 @@ import com.liferay.batch.engine.action.ImportTaskPreAction;
 import com.liferay.batch.engine.context.ImportTaskContext;
 import com.liferay.batch.engine.exception.handler.BatchEngineImportTaskExceptionHandler;
 import com.liferay.batch.engine.internal.util.ErrorMessageUtil;
+import com.liferay.batch.engine.internal.util.ItemIndexThreadLocal;
 import com.liferay.batch.engine.model.BatchEngineImportTask;
 import com.liferay.batch.engine.service.BatchEngineImportTaskErrorLocalServiceUtil;
 import com.liferay.batch.engine.strategy.BatchEngineImportStrategy;
 import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
@@ -51,36 +54,43 @@ public abstract class BaseBatchEngineImportStrategy
 		throws Exception {
 
 		for (T item : collection) {
-			importItem(
-				batchEngineTaskItemDelegate, item,
-				element -> {
-					ImportTaskContext importTaskContext =
-						new ImportTaskContext();
+			try {
+				ImportTaskContext importTaskContext = new ImportTaskContext();
 
-					for (ImportTaskPreAction importTaskPreAction :
-							importTaskPreActions) {
+				for (ImportTaskPreAction importTaskPreAction :
+						importTaskPreActions) {
 
-						importTaskPreAction.run(
-							batchEngineImportTask, batchEngineTaskItemDelegate,
-							importTaskContext, element);
-					}
+					importTaskPreAction.run(
+						batchEngineImportTask, batchEngineTaskItemDelegate,
+						importTaskContext, item);
+				}
 
-					T persistedItem = unsafeFunction.apply(element);
+				T persistedItem = unsafeFunction.apply(item);
 
-					if (persistedItem == null) {
-						return null;
-					}
+				if (persistedItem == null) {
+					continue;
+				}
 
-					for (ImportTaskPostAction importTaskPostAction :
-							importTaskPostActions) {
+				for (ImportTaskPostAction importTaskPostAction :
+						importTaskPostActions) {
 
-						importTaskPostAction.run(
-							batchEngineImportTask, batchEngineTaskItemDelegate,
-							importTaskContext, element, persistedItem);
-					}
+					importTaskPostAction.run(
+						batchEngineImportTask, batchEngineTaskItemDelegate,
+						importTaskContext, item, persistedItem);
+				}
+			}
+			catch (Exception exception) {
+				_log.error(exception);
 
-					return persistedItem;
-				});
+				addBatchEngineImportTaskError(
+					batchEngineImportTask, batchEngineTaskItemDelegate, item,
+					ItemIndexThreadLocal.get(), exception);
+
+				handleException(exception);
+			}
+			finally {
+				ItemIndexThreadLocal.remove();
+			}
 		}
 	}
 
@@ -116,9 +126,7 @@ public abstract class BaseBatchEngineImportStrategy
 		}
 	}
 
-	protected abstract <T> T importItem(
-			BatchEngineTaskItemDelegate<T> batchEngineTaskItemDelegate, T item,
-			UnsafeFunction<T, T, Exception> unsafeFunction)
+	protected abstract void handleException(Exception exception)
 		throws Exception;
 
 	protected final BatchEngineImportTask batchEngineImportTask;
@@ -126,6 +134,9 @@ public abstract class BaseBatchEngineImportStrategy
 		batchEngineImportTaskExceptionHandlers;
 	protected final List<ImportTaskPostAction> importTaskPostActions;
 	protected final List<ImportTaskPreAction> importTaskPreActions;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BaseBatchEngineImportStrategy.class);
 
 	private static final TransactionConfig _transactionConfig =
 		TransactionConfig.Factory.create(
