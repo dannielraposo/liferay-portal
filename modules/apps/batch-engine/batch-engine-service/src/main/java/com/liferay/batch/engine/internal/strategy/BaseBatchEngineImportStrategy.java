@@ -55,29 +55,7 @@ public abstract class BaseBatchEngineImportStrategy
 
 		for (T item : collection) {
 			try {
-				ImportTaskContext importTaskContext = new ImportTaskContext();
-
-				for (ImportTaskPreAction importTaskPreAction :
-						importTaskPreActions) {
-
-					importTaskPreAction.run(
-						batchEngineImportTask, batchEngineTaskItemDelegate,
-						importTaskContext, item);
-				}
-
-				T persistedItem = unsafeFunction.apply(item);
-
-				if (persistedItem == null) {
-					continue;
-				}
-
-				for (ImportTaskPostAction importTaskPostAction :
-						importTaskPostActions) {
-
-					importTaskPostAction.run(
-						batchEngineImportTask, batchEngineTaskItemDelegate,
-						importTaskContext, item, persistedItem);
-				}
+				importItem(batchEngineTaskItemDelegate, item, unsafeFunction);
 			}
 			catch (Exception exception) {
 				_log.error(exception);
@@ -92,6 +70,36 @@ public abstract class BaseBatchEngineImportStrategy
 				ItemIndexThreadLocal.remove();
 			}
 		}
+	}
+
+	public <T> T importItem(
+			BatchEngineTaskItemDelegate<T> batchEngineTaskItemDelegate, T item,
+			UnsafeFunction<T, T, Exception> unsafeFunction)
+		throws Exception {
+
+		ImportTaskContext importTaskContext = new ImportTaskContext();
+
+		for (ImportTaskPreAction importTaskPreAction : importTaskPreActions) {
+			importTaskPreAction.run(
+				batchEngineImportTask, batchEngineTaskItemDelegate,
+				importTaskContext, item);
+		}
+
+		T persistedItem = unsafeFunction.apply(item);
+
+		if (persistedItem == null) {
+			return null;
+		}
+
+		for (ImportTaskPostAction importTaskPostAction :
+				importTaskPostActions) {
+
+			importTaskPostAction.run(
+				batchEngineImportTask, batchEngineTaskItemDelegate,
+				importTaskContext, item, persistedItem);
+		}
+
+		return persistedItem;
 	}
 
 	protected <T> void addBatchEngineImportTaskError(

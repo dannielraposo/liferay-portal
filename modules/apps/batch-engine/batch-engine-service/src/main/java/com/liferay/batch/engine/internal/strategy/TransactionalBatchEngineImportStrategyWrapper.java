@@ -13,7 +13,6 @@ import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * @author Daniel Raposo
@@ -39,15 +38,15 @@ public class TransactionalBatchEngineImportStrategyWrapper
 				TransactionInvokerUtil.invoke(
 					_transactionConfig,
 					() -> {
-						_batchEngineImportStrategy.apply(
-							batchEngineTaskItemDelegate,
-							Collections.singletonList(item), unsafeFunction);
+						_batchEngineImportStrategy.importItem(
+							batchEngineTaskItemDelegate, item, unsafeFunction);
 
 						return null;
 					});
 			}
 			catch (Throwable throwable) {
-				throw new Exception(throwable.getMessage(), throwable);
+				_batchEngineImportStrategy.handleException(
+					new Exception(throwable.getMessage(), throwable));
 			}
 		}
 	}
