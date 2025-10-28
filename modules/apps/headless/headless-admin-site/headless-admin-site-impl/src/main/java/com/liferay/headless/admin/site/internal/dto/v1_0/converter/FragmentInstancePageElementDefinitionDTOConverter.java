@@ -14,15 +14,13 @@ import com.liferay.headless.admin.site.dto.v1_0.DefaultFragmentReference;
 import com.liferay.headless.admin.site.dto.v1_0.FragmentInstancePageElementDefinition;
 import com.liferay.headless.admin.site.dto.v1_0.FragmentItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.PageElementDefinition;
-import com.liferay.headless.admin.site.dto.v1_0.Scope;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
-import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
+import com.liferay.portal.vulcan.scope.ScopeUtil;
 
 import java.util.Map;
 
@@ -111,18 +109,10 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 												return null;
 											}
 
-											Group group =
-												_groupLocalService.getGroup(
-													fragmentEntry.getGroupId());
-
-											return new Scope() {
-												{
-													setExternalReferenceCode(
-														group::
-															getExternalReferenceCode);
-													setType(() -> Type.SITE);
-												}
-											};
+											return ScopeUtil.toScope(
+												fragmentEntry.getGroupId(),
+												dtoConverterContext.
+													getLocale());
 										});
 								}
 							};
@@ -200,8 +190,5 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 
 	@Reference
 	private FragmentEntryLocalService _fragmentEntryLocalService;
-
-	@Reference
-	private GroupLocalService _groupLocalService;
 
 }
