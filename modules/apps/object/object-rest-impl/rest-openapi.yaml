@@ -84,6 +84,7 @@ components:
                     readOnly: true
                     type: string
                 scope:
+                    readOnly: true
                     type: scope
                 thumbnailURL:
                     # @review
@@ -260,6 +261,7 @@ components:
                 objectDefinitionBrief:
                     $ref: "#/components/schemas/ObjectDefinitionBrief"
                 scope:
+                    readOnly: true
                     type: scope
                 version:
                     $ref: "#/components/schemas/Version"
@@ -295,6 +297,7 @@ components:
                     type: object
                     writeOnly: true
                 scope:
+                    readOnly: true
                     type: scope
                 taxonomyCategoryExternalReferenceCode:
                     # @review

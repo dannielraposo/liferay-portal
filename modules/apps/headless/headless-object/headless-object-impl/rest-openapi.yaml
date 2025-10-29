@@ -157,6 +157,7 @@ components:
                     readOnly: true
                     type: string
                 scope:
+                    readOnly: true
                     type: scope
                 scopeId:
                     # @review

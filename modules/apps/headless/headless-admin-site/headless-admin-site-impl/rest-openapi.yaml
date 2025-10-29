@@ -2066,6 +2066,7 @@ components:
                 externalReferenceCode:
                     type: string
                 scope:
+                    readOnly: true
                     type: scope
             required:
                 -   externalReferenceCode
