@@ -20,7 +20,7 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
-import com.liferay.portal.vulcan.scope.ScopeUtil;
+import com.liferay.portal.vulcan.scope.Scope;
 
 import java.util.Map;
 
@@ -109,7 +109,7 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 												return null;
 											}
 
-											return ScopeUtil.toScope(
+											return Scope.of(
 												fragmentEntry.getGroupId(),
 												dtoConverterContext.
 													getLocale());
