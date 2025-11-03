@@ -229,7 +229,7 @@ public class TaxonomyCategoryBrief implements Serializable {
 	}
 
 	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected com.liferay.portal.vulcan.scope.Scope scope;
 
 	@JsonIgnore
