@@ -49,7 +49,7 @@ public class ModelPermissionsUtil {
 				continue;
 			}
 
-			Role role = null;
+			Role role;
 
 			if (permission.getRoleExternalReferenceCode() != null) {
 				role = roleLocalService.getOrAddEmptyRole(
