@@ -12,6 +12,7 @@
 		"@liferay/layout-js-components-web": "../../apps/layout/layout-js-components-web/",
 		"@liferay/object-admin-rest-client-js": "../../apps/object/object-admin-rest-client-js",
 		"@liferay/portal-tools-rest-builder-test-client-js": "../../util/portal-tools-rest-builder-test-client-js",
+		"@liferay/headless-admin-taxonomy-client-js": "../../apps/headless/headless-admin-taxonomy/headless-admin-taxonomy-client-js",
 		"@playwright/test": "1.45.2",
 		"@types/node": "^20.9.0",
 		"@types/yauzl": "^2.10.3",
