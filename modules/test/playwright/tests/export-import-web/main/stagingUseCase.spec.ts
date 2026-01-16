@@ -129,7 +129,7 @@ testWithBatchStagingFF(
 		});
 
 		const taxonomyVocabularyAPIClient = 
-			apiHelpers.buildRestClient(TaxonomyVocabularyAPI);
+			await apiHelpers.buildRestClient(TaxonomyVocabularyAPI);
 
 		console.log("Keys available:", Object.keys(taxonomyVocabularyAPIClient));
 		console.log("Prototype keys:", Object.keys(Object.getPrototypeOf(taxonomyVocabularyAPIClient)));
@@ -146,7 +146,7 @@ testWithBatchStagingFF(
 		});
 
 		const taxonomyCategoryAPIClient = 
-			apiHelpers.buildRestClient(TaxonomyCategoryAPI);
+			await apiHelpers.buildRestClient(TaxonomyCategoryAPI);
 		
 		const { body: taxonomyCategory1 } = 
 			await taxonomyCategoryAPIClient.postSiteTaxonomyCategory(site.id, {
