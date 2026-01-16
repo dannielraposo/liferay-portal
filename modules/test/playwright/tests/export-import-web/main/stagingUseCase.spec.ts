@@ -3,6 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {
+	TaxonomyCategory,
+	TaxonomyVocabulary,
+	TaxonomyCategoryAPI,
+	TaxonomyVocabularyAPI
+} from '@liferay/headless-admin-taxonomy-client-js';
 import {expect, mergeTests} from '@playwright/test';
 import {createReadStream, readdirSync} from 'fs';
 import path from 'path';
@@ -31,6 +37,7 @@ import {exportPageTest} from './fixtures/exportPageTest';
 import {stagingConfigurationPageTest} from './fixtures/stagingConfigurationPageTest';
 import {stagingPageTest} from './fixtures/stagingPageTest';
 import {unzipAndCheckFolder} from './utils/stagingUtil';
+import { StageableEntities } from './utils/exportImportStagingConstants';
 
 const test = mergeTests(
 	dataApiHelpersTest,
@@ -104,6 +111,85 @@ testWithBatchStagingFF(
 				objectDefinition.pluralLabel.en_US
 			)
 		).toHaveCount(0);
+	}
+);
+
+testWithBatchStagingFF(
+	'Taxonomy Categories can be staged through batch',
+	{tag: ['@LPD-72343']},
+	async ({apiHelpers, stagingPage}) => {
+
+		const site = await apiHelpers.headlessSite.createSite({
+			name: getRandomString(),
+		});
+
+		apiHelpers.data.push({
+			id: site.id,
+			type: 'site',
+		});
+
+		const taxonomyVocabularyAPIClient = 
+			apiHelpers.buildRestClient(TaxonomyVocabularyAPI);
+
+		console.log("Keys available:", Object.keys(taxonomyVocabularyAPIClient));
+		console.log("Prototype keys:", Object.keys(Object.getPrototypeOf(taxonomyVocabularyAPIClient)));
+		
+		const {body: taxonomyVocabulary} = 
+			await taxonomyVocabularyAPIClient.postSiteTaxonomyVocabulary(site.id, {
+					externalReferenceCode: getRandomString(),
+					name: getRandomString()
+				} as TaxonomyVocabulary);
+		
+		apiHelpers.data.push({
+			id: taxonomyVocabulary.id,
+			type: 'taxonomyVocabulary',
+		});
+
+		const taxonomyCategoryAPIClient = 
+			apiHelpers.buildRestClient(TaxonomyCategoryAPI);
+		
+		const { body: taxonomyCategory1 } = 
+			await taxonomyCategoryAPIClient.postSiteTaxonomyCategory(site.id, {
+					externalReferenceCode: getRandomString(),
+					taxonomyVocabularyId: taxonomyVocabulary.id,
+					name: getRandomString()
+				});
+
+		apiHelpers.data.push({
+			id: taxonomyCategory1.id,
+			type: 'taxonomyCategory',
+		});
+		
+		const {body: taxonomyCategory2} = 
+			await taxonomyCategoryAPIClient.postSiteTaxonomyCategory(site.id, {
+					externalReferenceCode: getRandomString(),
+					taxonomyVocabularyId: taxonomyVocabulary.id,
+					name: getRandomString()
+				});
+		
+		apiHelpers.data.push({
+			id: taxonomyCategory2.id,
+			type: 'taxonomyCategory',
+		});
+
+		await stagingPage.goto(site.name);
+		await stagingPage.enableLocalStaging([
+			StageableEntities.CATEGORIES
+		]);
+
+		const stagingSite = await apiHelpers.headlessSite.getSiteByFriendlyUrlPath(`${site.friendlyUrlPath}-staging`)
+
+		expect(
+			await taxonomyCategoryAPIClient.getSiteTaxonomyCategoryByExternalReferenceCode(stagingSite.id, taxonomyCategory1.externalRefenceCode)
+		).toMatchObject({
+			externalReferenceCode: taxonomyCategory1.externalReferenceCode,
+			name: taxonomyCategory1.name,
+			parentTaxonomyCategory:
+				{
+					externalReferenceCode: taxonomyVocabulary.externalRefenceCode
+				}
+		});
+
 	}
 );
 
