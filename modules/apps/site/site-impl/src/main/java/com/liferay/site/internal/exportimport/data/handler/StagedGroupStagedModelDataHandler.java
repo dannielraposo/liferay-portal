@@ -24,6 +24,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManager;
 import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycleConstants;
 import com.liferay.exportimport.lar.PermissionImporter;
+import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandlerProvider;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.layout.set.model.adapter.StagedLayoutSet;
 import com.liferay.petra.string.StringPool;
@@ -518,9 +519,9 @@ public class StagedGroupStagedModelDataHandler
 			}
 
 			PortletDataHandler portletDataHandler =
-				portlet.getPortletDataHandlerInstance();
+				_portletDataHandlerProvider.provide(portlet);
 
-			if (portletDataHandler.isBatch() &&
+			if ((portletDataHandler != null) && portletDataHandler.isBatch() &&
 				(portletDataHandlerKey == null)) {
 
 				rankedBatchPortletElements.computeIfAbsent(
@@ -734,6 +735,9 @@ public class StagedGroupStagedModelDataHandler
 
 	@Reference
 	private PortletDataContextFactory _portletDataContextFactory;
+
+	@Reference
+	private PortletDataHandlerProvider _portletDataHandlerProvider;
 
 	@Reference
 	private PortletDataHandlerStatusMessageSender
