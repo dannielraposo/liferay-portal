@@ -8,6 +8,7 @@ package com.liferay.site.internal.exportimport.data.handler;
 import com.liferay.exportimport.controller.PortletExportController;
 import com.liferay.exportimport.controller.PortletImportController;
 import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
+import com.liferay.exportimport.internal.data.handler.BatchEnginePortletDataHandlerRegistryUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
@@ -234,12 +235,17 @@ public class StagedGroupStagedModelDataHandler
 			List<String> portletIds = new ArrayList<>();
 
 			for (Element portletElement : sitePortletElements) {
+				String portletDataHandlerKey = portletElement.attributeValue(
+					"portlet-data-handler-key");
+
 				String portletId = portletElement.attributeValue("portlet-id");
 
 				Portlet portlet = _portletLocalService.getPortletById(
 					portletDataContext.getCompanyId(), portletId);
 
-				if (!portlet.isActive() || portlet.isUndeployedPortlet()) {
+				if ((portletDataHandlerKey == null) &&
+					(!portlet.isActive() || portlet.isUndeployedPortlet())) {
+
 					continue;
 				}
 
@@ -497,19 +503,26 @@ public class StagedGroupStagedModelDataHandler
 			new TreeMap<>();
 
 		for (Element portletElement : sitePortletElements) {
+			String portletDataHandlerKey = portletElement.attributeValue(
+				"portlet-data-handler-key");
+
 			String portletId = portletElement.attributeValue("portlet-id");
 
 			Portlet portlet = _portletLocalService.getPortletById(
 				portletDataContext.getCompanyId(), portletId);
 
-			if (!portlet.isActive() || portlet.isUndeployedPortlet()) {
+			if ((portletDataHandlerKey == null) &&
+				(!portlet.isActive() || portlet.isUndeployedPortlet())) {
+
 				continue;
 			}
 
 			PortletDataHandler portletDataHandler =
 				portlet.getPortletDataHandlerInstance();
 
-			if (portletDataHandler.isBatch()) {
+			if (portletDataHandler.isBatch() &&
+				(portletDataHandlerKey == null)) {
+
 				rankedBatchPortletElements.computeIfAbsent(
 					portletDataHandler.getRank(), __ -> new ArrayList<>()
 				).add(
@@ -547,7 +560,18 @@ public class StagedGroupStagedModelDataHandler
 
 			portletDataContext.setPlid(plid);
 
+			String portletDataHandlerKey = portletElement.attributeValue(
+				"portlet-data-handler-key");
 			String portletId = portletElement.attributeValue("portlet-id");
+
+			if (portletDataHandlerKey != null) {
+				PortletDataHandler portletDataHandler =
+					BatchEnginePortletDataHandlerRegistryUtil.getByKey(
+						portletDataContext.getCompanyId(),
+						portletDataHandlerKey);
+
+				portletId = portletDataHandler.getPortletId();
+			}
 
 			portletDataContext.setPortletId(portletId);
 
