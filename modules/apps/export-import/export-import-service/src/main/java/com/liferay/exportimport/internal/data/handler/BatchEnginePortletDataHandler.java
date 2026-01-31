@@ -46,6 +46,7 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.staging.StagingGroupHelper;
@@ -142,8 +143,18 @@ public class BatchEnginePortletDataHandler extends BasePortletDataHandler {
 	}
 
 	@Override
-	public String getName() {
-		return getPortletId();
+	public String getNameLanguageKey() {
+		String labelLanguageKey = _getSoleProperty(
+			ExportImportVulcanBatchEngineTaskItemDelegate.
+				ExportImportDescriptor::getLabelLanguageKey);
+
+		if (labelLanguageKey == null) {
+			labelLanguageKey =
+				JavaConstants.JAKARTA_PORTLET_TITLE + StringPool.PERIOD +
+					getPortletId();
+		}
+
+		return labelLanguageKey;
 	}
 
 	@Override

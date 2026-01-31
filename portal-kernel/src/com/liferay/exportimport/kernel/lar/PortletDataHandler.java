@@ -165,10 +165,9 @@ public interface PortletDataHandler {
 	public PortletDataHandlerControl[] getImportPortletDataHandlerControls()
 		throws PortletDataException;
 
-	public default String getName() {
-		Class<? extends PortletDataHandler> clazz = getClass();
 
-		return clazz.getName();
+	public default String getNameLanguageKey() {
+		return getPortletId();
 	}
 
 	public default String getNamespace() {

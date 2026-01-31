@@ -111,7 +111,7 @@
 					continue;
 				}
 
-				String portletDataHandlerName = portletDataHandler.getName();
+				String portletDataHandlerName = LanguageUtil.get(request, portletDataHandler.getNameLanguageKey());
 
 				if (!portletDataHandlerNames.contains(portletDataHandlerName)) {
 					portletDataHandlerNames.add(portletDataHandlerName);
