@@ -548,6 +548,11 @@ public class ObjectEntryResourceImpl
 			}
 
 			@Override
+			public String getPortletDataHandlerKey() {
+				return _objectDefinition.getExternalReferenceCode();
+			}
+
+			@Override
 			public String getPortletId() {
 				return _objectDefinition.getPortletId();
 			}
