@@ -43,7 +43,7 @@ public interface ExportImportVulcanBatchEngineTaskItemDelegate<T>
 		}
 
 		public default String getPortletDataHandlerKey() {
-			return getPortletId();
+			return null;
 		}
 
 		public String getPortletId();
