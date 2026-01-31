@@ -165,6 +165,9 @@ public interface PortletDataHandler {
 	public PortletDataHandlerControl[] getImportPortletDataHandlerControls()
 		throws PortletDataException;
 
+	public default String getKey() {
+		return null;
+	}
 
 	public default String getNameLanguageKey() {
 		return getPortletId();
