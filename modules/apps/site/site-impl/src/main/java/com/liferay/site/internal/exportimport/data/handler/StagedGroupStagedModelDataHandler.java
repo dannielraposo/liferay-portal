@@ -29,6 +29,7 @@ import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.layout.set.model.adapter.StagedLayoutSet;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -43,6 +44,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
@@ -575,6 +577,15 @@ public class StagedGroupStagedModelDataHandler
 						portletDataContext.getCompanyId(),
 						portletDataHandlerKey);
 
+				if (portletDataHandler == null) {
+					throw new PortletDataException(
+						_language.format(
+							LocaleUtil.US,
+							"the-data-handler-for-the-x-portlet-is-missing-" +
+								"from-the-system",
+							portletElement.attributeValue("display-name")));
+				}
+
 				targetPortletId = portletDataHandler.getPortletId();
 			}
 
@@ -726,6 +737,9 @@ public class StagedGroupStagedModelDataHandler
 
 	@Reference
 	private ExportImportLifecycleManager _exportImportLifecycleManager;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
