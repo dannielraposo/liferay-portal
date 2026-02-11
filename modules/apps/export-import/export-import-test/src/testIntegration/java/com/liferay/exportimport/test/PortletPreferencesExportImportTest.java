@@ -7,12 +7,11 @@ package com.liferay.exportimport.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.exportimport.test.util.lar.BaseExportImportTestCase;
-import com.liferay.journal.constants.JournalContentPortletKeys;
+import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletConstants;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
@@ -55,14 +54,12 @@ public class PortletPreferencesExportImportTest
 	public void testExportImportGroupEmbeddedPortletPreferences()
 		throws Exception {
 
-		String portletInstanceId = PortletIdCodec.encode(
-			JournalContentPortletKeys.JOURNAL_CONTENT, "1234");
+		String portletId = LayoutAdminPortletKeys.GROUP_PAGES;
 
-		Portlet portlet = PortletLocalServiceUtil.getPortletById(
-			JournalContentPortletKeys.JOURNAL_CONTENT);
+		Portlet portlet = PortletLocalServiceUtil.getPortletById(portletId);
 
 		_addGroupEmbeddedPortlet(
-			portletInstanceId, portlet,
+			portletId, portlet,
 			_getPortletPreferencesXML("name", new String[] {"value"}));
 
 		exportImportLayouts(
@@ -72,7 +69,7 @@ public class PortletPreferencesExportImportTest
 			PortletPreferencesFactoryUtil.getLayoutPortletSetup(
 				importedGroup.getCompanyId(), importedGroup.getGroupId(),
 				PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
-				PortletKeys.PREFS_PLID_SHARED, portletInstanceId,
+				PortletKeys.PREFS_PLID_SHARED, portletId,
 				PortletConstants.DEFAULT_PREFERENCES);
 
 		Assert.assertEquals(
