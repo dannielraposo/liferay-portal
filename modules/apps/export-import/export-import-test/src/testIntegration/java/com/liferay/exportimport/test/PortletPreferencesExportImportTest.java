@@ -58,7 +58,7 @@ public class PortletPreferencesExportImportTest
 
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(portletId);
 
-		_addGroupEmbeddedPortlet(
+		_addGroupEmbeddedPortletPreferences(
 			portletId, portlet,
 			_getPortletPreferencesXML("name", new String[] {"value"}));
 
@@ -76,18 +76,18 @@ public class PortletPreferencesExportImportTest
 			"value", portletPreferences.getValue("name", StringPool.BLANK));
 	}
 
-	private void _addGroupEmbeddedPortlet(
-		String portletInstanceId, Portlet portlet, String portletPreferences) {
+	private void _addGroupEmbeddedPortletPreferences(
+		String portletId, Portlet portlet, String portletPreferences) {
 
 		PortletPreferencesLocalServiceUtil.addPortletPreferences(
 			group.getCompanyId(), group.getGroupId(),
 			PortletKeys.PREFS_OWNER_TYPE_LAYOUT, PortletKeys.PREFS_PLID_SHARED,
-			portletInstanceId, portlet, portletPreferences);
+			portletId, portlet, portletPreferences);
 
 		PortletPreferencesLocalServiceUtil.addPortletPreferences(
 			group.getCompanyId(), PortletKeys.PREFS_OWNER_ID_DEFAULT,
-			PortletKeys.PREFS_OWNER_TYPE_LAYOUT, layout.getPlid(),
-			portletInstanceId, portlet, PortletConstants.DEFAULT_PREFERENCES);
+			PortletKeys.PREFS_OWNER_TYPE_LAYOUT, layout.getPlid(), portletId,
+			portlet, PortletConstants.DEFAULT_PREFERENCES);
 	}
 
 	private String _getPortletPreferencesXML(String name, String[] values) {
