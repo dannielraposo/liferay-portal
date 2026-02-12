@@ -1441,24 +1441,4 @@ public class BatchEngineImportTaskExecutorTest
 	@Inject
 	private ObjectFieldLocalService _objectFieldLocalService;
 
-	private static class TestBatchEngineImportTaskExceptionHandler
-		implements BatchEngineImportTaskExceptionHandler {
-
-		@Override
-		public void handle(
-			BatchEngineImportTask batchEngineImportTask,
-			BatchEngineTaskItemDelegate<?> batchEngineTaskItemDelegate,
-			Exception exception, Object item) {
-
-			_batchEngineImportTask = batchEngineImportTask;
-			_exception = exception;
-			_item = item;
-		}
-
-		private BatchEngineImportTask _batchEngineImportTask;
-		private Exception _exception;
-		private Object _item;
-
-	}
-
 }
