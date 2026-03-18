@@ -26,6 +26,7 @@ import {getTempDir} from '../../../utils/temp';
 import {companyExportImportPageTest} from './fixtures/companyExportImportPagesTest';
 import {exportImportPagesTest} from './fixtures/exportImportPagesTest';
 import {stagingPageTest} from './fixtures/stagingPageTest';
+import {pagesPagesTest} from '../../layout-admin-web/main/fixtures/pagesPagesTest';
 
 const test = mergeTests(
 	applicationsMenuPageTest,
@@ -37,6 +38,7 @@ const test = mergeTests(
 		'LPD-45276': {enabled: true},
 	}),
 	loginTest(),
+	pagesPagesTest,
 	stagingPageTest,
 	styleBookPageTest,
 	uiElementsPageTest
@@ -109,6 +111,7 @@ const testWithClaritySiteInitializerFF = mergeTests(
 		apiHelpers,
 		exportImportPage,
 		page,
+		utilityPagesPage
 	}) => {
 		let exportFilePath: string;
 		let exportableItems1: Map<string, number>;
@@ -140,6 +143,10 @@ const testWithClaritySiteInitializerFF = mergeTests(
 			});
 
 			apiHelpers.data.push({id: site2.id, type: 'site'});
+
+			await utilityPagesPage.goto(site2.friendlyUrlPath);
+			await utilityPagesPage.deletePage("404 Error");
+			await utilityPagesPage.deletePage("500 Error");
 		});
 
 		await test.step('Import the site 1 into site 2', async () => {
