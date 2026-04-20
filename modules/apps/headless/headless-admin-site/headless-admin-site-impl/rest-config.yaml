@@ -9,6 +9,7 @@ clientDir: ../headless-admin-site-client/src/main/java
 compatibilityVersion: 15
 forcePredictableOperationId: true
 generateBatch: true
+generateClientJS: true
 generateGraphQL: false
 generatePermissions: true
 javaEEPackage: jakarta
