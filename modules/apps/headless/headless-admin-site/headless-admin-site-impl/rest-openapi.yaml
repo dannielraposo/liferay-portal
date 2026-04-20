@@ -1643,6 +1643,8 @@ components:
                         The fragment mapped item reference. Can be a context reference value or external reference to an
                         external value.
                     enum: [ContextReference, ItemExternalReference]
+                    type: string
+            type: object
         FragmentReference:
             # @review
             description:
