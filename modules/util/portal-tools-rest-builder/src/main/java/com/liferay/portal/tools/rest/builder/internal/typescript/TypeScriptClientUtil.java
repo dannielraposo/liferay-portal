@@ -758,7 +758,27 @@ public class TypeScriptClientUtil {
 			return dataType;
 		}
 
+		List<Schema> oneOfSchemas = schema.getOneOfSchemas();
+
+		if (ListUtil.isNotNull(oneOfSchemas)) {
+			StringBuilder sb = new StringBuilder();
+
+			for (Schema oneOfSchema : oneOfSchemas) {
+				if (sb.length() > 0) {
+					sb.append(" | ");
+				}
+
+				sb.append(_getDataType(dataTypes, oneOfSchema));
+			}
+
+			return sb.toString();
+		}
+
 		String type = schema.getType();
+
+		if (type == null) {
+			return "any";
+		}
 
 		if (type.equals("array")) {
 			Items items = schema.getItems();
