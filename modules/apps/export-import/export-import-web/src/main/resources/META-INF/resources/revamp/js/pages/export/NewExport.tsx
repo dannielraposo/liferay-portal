@@ -21,8 +21,8 @@ import {
 	ExportPreviewQuery,
 	getExportPreview,
 } from '../../services/getExportPreview';
+import {postExportProcess} from '../../services/postExportProcess';
 import {ExportPreview} from '../../types/exportImportPreview';
-import {flattenContentSelection} from '../../utils/flattenContentSelection';
 import DataSelection from './components/DataSelection';
 import Setup from './components/Setup';
 
@@ -49,10 +49,12 @@ export function NewExport({
 	backURL,
 	exportPreview,
 	exportPreviewAPIURL,
+	exportProcessAPIURL,
 }: {
 	backURL: string;
 	exportPreview?: ExportPreview;
 	exportPreviewAPIURL: string;
+	exportProcessAPIURL: string;
 }) {
 	const [preview, setPreview] = useState<ExportPreview | undefined>(
 		exportPreview
@@ -121,17 +123,25 @@ export function NewExport({
 				filename: '',
 			}}
 			onSubmit={async (values) => {
-				const flatValues = flattenContentSelection({
-					contentSelection: values.contentSelection,
-					sections,
+				const result = await postExportProcess({
+					exportRequest: {
+						contentSelection: values.contentSelection,
+						fileName: values.filename,
+						range: 'all',
+					},
+					url: exportProcessAPIURL,
 				});
 
-				// eslint-disable-next-line no-console
-				console.log({
-					contentSelection: values.contentSelection,
-					filename: values.filename,
-					flatValues,
-				});
+				if (result.error) {
+					Liferay.Util.openToast({
+						message: result.error,
+						type: 'danger',
+					});
+
+					return;
+				}
+
+				window.location.href = backURL;
 			}}
 			validate={(values: FormikValues) => {
 				const errors: {[key: string]: string} = {};
