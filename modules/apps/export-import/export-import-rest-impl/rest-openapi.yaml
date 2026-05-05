@@ -16,6 +16,55 @@ components:
                     readOnly: true
                     type: array
             type: object
+        ExportProcess:
+            properties:
+                creator:
+                    $ref: ../../headless/headless-delivery/headless-delivery-impl/rest-openapi.yaml#Creator
+                    readOnly: true
+                dateCreated:
+                    format: date-time
+                    readOnly: true
+                    type: string
+                dateModified:
+                    format: date-time
+                    readOnly: true
+                    type: string
+                id:
+                    format: int64
+                    readOnly: true
+                    type: integer
+                status:
+                    $ref: "#/components/schemas/Status"
+                    readOnly: true
+                title:
+                    readOnly: true
+                    type: string
+            type: object
+        ExportRequest:
+            properties:
+                contentSelection:
+                    additionalProperties:
+                        additionalProperties: true
+                        type: object
+                    type: object
+                endDate:
+                    format: date-time
+                    type: string
+                fileName:
+                    type: string
+                last:
+                    format: int32
+                    type: integer
+                range:
+                    default: all
+                    enum: [all, dateRange, last]
+                    type: string
+                startDate:
+                    format: date-time
+                    type: string
+            required:
+                -   fileName
+            type: object
         ImportPreview:
             properties:
                 additionCount:
@@ -366,6 +415,33 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ExportPreview"
             tags: ["ExportPreview"]
+    "/asset-libraries/{assetLibraryExternalReferenceCode}/export-processes":
+        post:
+            operationId: postAssetLibraryExportProcess
+            parameters:
+                -   in: path
+                    name: assetLibraryExternalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ExportRequest"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/ExportRequest"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ExportProcess"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ExportProcess"
+            tags: ["ExportProcess"]
     "/asset-libraries/{assetLibraryExternalReferenceCode}/import-preview":
         post:
             operationId: postAssetLibraryImportPreview
@@ -492,6 +568,27 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ExportPreview"
             tags: ["ExportPreview"]
+    "/export-processes":
+        post:
+            operationId: postExportProcess
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ExportRequest"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/ExportRequest"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ExportProcess"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ExportProcess"
+            tags: ["ExportProcess"]
     "/import-preview":
         post:
             operationId: postImportPreview
@@ -737,6 +834,33 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ExportPreview"
             tags: ["ExportPreview"]
+    "/sites/{siteExternalReferenceCode}/export-processes":
+        post:
+            operationId: postSiteExportProcess
+            parameters:
+                -   in: path
+                    name: siteExternalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ExportRequest"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/ExportRequest"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ExportProcess"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ExportProcess"
+            tags: ["ExportProcess"]
     "/sites/{siteExternalReferenceCode}/import-preview":
         post:
             operationId: postSiteImportPreview
