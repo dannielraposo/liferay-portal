@@ -171,7 +171,7 @@ public class PortletDataHandlerSectionUtil {
 
 						return portletTitle;
 					});
-				setName(portlet::getPortletId);
+				setName(() -> "PORTLET_DATA_" + portlet.getPortletId());
 				setPortletDataHandlerControls(
 					() -> {
 						if ((sourcePortletDataHandlerControls == null) ||
@@ -210,7 +210,11 @@ public class PortletDataHandlerSectionUtil {
 						setLabel(
 							() -> LanguageUtil.get(
 								locale, portletDataHandlerControl.getLabel()));
-						setName(portletDataHandlerControl::getName);
+						setName(
+							com.liferay.exportimport.kernel.lar.
+								PortletDataHandlerControl.getNamespacedName(
+									portletDataHandlerControl.getNamespace(),
+									portletDataHandlerControl.getName()));
 						setPortletDataHandlerControls(
 							() -> {
 								com.liferay.exportimport.kernel.lar.
@@ -268,7 +272,11 @@ public class PortletDataHandlerSectionUtil {
 					setLabel(
 						() -> LanguageUtil.get(
 							locale, portletDataHandlerControl.getLabel()));
-					setName(portletDataHandlerControl::getName);
+					setName(
+						com.liferay.exportimport.kernel.lar.
+							PortletDataHandlerControl.getNamespacedName(
+								portletDataHandlerControl.getNamespace(),
+								portletDataHandlerControl.getName()));
 					setPortletDataHandlerControls(
 						() -> {
 							com.liferay.exportimport.kernel.lar.
@@ -321,7 +329,11 @@ public class PortletDataHandlerSectionUtil {
 					setLabel(
 						() -> LanguageUtil.get(
 							locale, portletDataHandlerControl.getLabel()));
-					setName(portletDataHandlerControl::getName);
+					setName(
+						com.liferay.exportimport.kernel.lar.
+							PortletDataHandlerControl.getNamespacedName(
+								portletDataHandlerControl.getNamespace(),
+								portletDataHandlerControl.getName()));
 					setType(() -> Type.CHOICE);
 				}
 			};
