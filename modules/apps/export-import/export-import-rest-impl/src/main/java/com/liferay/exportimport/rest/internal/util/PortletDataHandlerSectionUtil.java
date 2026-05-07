@@ -45,7 +45,7 @@ public class PortletDataHandlerSectionUtil {
 			Map<String, List<PortletDataHandler>> portletDataHandlersMap)
 		throws Exception {
 
-		if ((portletDataHandler == null) || portletDataHandler.isHidden() ||
+		if ((portletDataHandler == null) ||
 			!portletDataHandler.isEnabled(companyId)) {
 
 			return;
