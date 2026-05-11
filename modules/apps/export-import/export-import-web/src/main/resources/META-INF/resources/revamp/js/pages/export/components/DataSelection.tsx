@@ -10,6 +10,7 @@ import React from 'react';
 import DateFilter, {DateFilterValues} from '../../../components/date_filter';
 import {FormikFieldContentSelector} from '../../../components/forms/formik';
 import {PortletDataHandlerSection} from '../../../types/portletDataHandler';
+import {PageTreeModalConfiguration} from './PageTreeModal';
 
 const LABEL_ID = 'dataSelection-label';
 
@@ -17,11 +18,13 @@ export default function DataSelection({
 	itemsCount,
 	loading = false,
 	onApplyFilter,
+	pageTreeModalConfiguration,
 	sections,
 }: {
 	itemsCount?: number;
 	loading?: boolean;
 	onApplyFilter: (filterValues: DateFilterValues) => void;
+	pageTreeModalConfiguration: PageTreeModalConfiguration;
 	sections: PortletDataHandlerSection[];
 }) {
 	return (
@@ -58,6 +61,7 @@ export default function DataSelection({
 					<FormikFieldContentSelector
 						aria-labelledby={LABEL_ID}
 						name="contentSelection"
+						pageTreeModalConfiguration={pageTreeModalConfiguration}
 						sections={sections}
 					/>
 				)}

@@ -4,6 +4,7 @@
 		"@clayui/button": "^3.161.0",
 		"@clayui/core": "^3.161.0",
 		"@clayui/date-picker": "^3.161.0",
+		"@clayui/drop-down": "^3.161.0",
 		"@clayui/form": "^3.161.0",
 		"@clayui/icon": "^3.161.0",
 		"@clayui/layout": "^3.161.0",
@@ -20,7 +21,8 @@
 		"frontend-js-web": "*",
 		"jest-fetch-mock": "3.0.3",
 		"react": "18.2.0",
-		"react-dropzone": "11.4.2"
+		"react-dropzone": "11.4.2",
+		"staging-taglib": "*"
 	},
 	"jest": {
 		"modulePathIgnorePatterns": [

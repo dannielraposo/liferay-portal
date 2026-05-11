@@ -6,6 +6,7 @@
 import ClayAlert from '@clayui/alert';
 import React from 'react';
 
+import {PageTreeModalConfiguration} from '../../../pages/export/components/PageTreeModal';
 import {PortletDataHandlerSection} from '../../../types/portletDataHandler';
 import {updateSelection} from '../../../utils/contentSelection';
 import ContentSection, {SectionSelection} from './ContentSection';
@@ -17,6 +18,7 @@ interface ContentSelectorProps {
 	'errorMessage'?: string;
 	'name': string;
 	'onChange': (value: ContentSelection | undefined) => void;
+	'pageTreeModalConfiguration'?: PageTreeModalConfiguration;
 	'sections': PortletDataHandlerSection[];
 	'value': ContentSelection | undefined;
 }
@@ -26,6 +28,7 @@ export default function ContentSelector({
 	errorMessage,
 	name,
 	onChange,
+	pageTreeModalConfiguration,
 	sections,
 	value,
 }: ContentSelectorProps) {
@@ -52,6 +55,7 @@ export default function ContentSelector({
 							)
 						)
 					}
+					pageTreeModalConfiguration={pageTreeModalConfiguration}
 					section={section}
 					value={currentValue[section.name]}
 				/>

@@ -24,6 +24,7 @@ import {
 import {postExportProcess} from '../../services/postExportProcess';
 import {ExportPreview} from '../../types/exportImportPreview';
 import DataSelection from './components/DataSelection';
+import {PageTreeModalConfiguration} from './components/PageTreeModal';
 import Setup from './components/Setup';
 
 function dateFilterToQuery(values: DateFilterValues): ExportPreviewQuery {
@@ -50,11 +51,13 @@ export function NewExport({
 	exportPreview,
 	exportPreviewAPIURL,
 	exportProcessAPIURL,
+	pageTreeModalConfiguration,
 }: {
 	backURL: string;
 	exportPreview?: ExportPreview;
 	exportPreviewAPIURL: string;
 	exportProcessAPIURL: string;
+	pageTreeModalConfiguration: PageTreeModalConfiguration;
 }) {
 	const [preview, setPreview] = useState<ExportPreview | undefined>(
 		exportPreview
@@ -170,6 +173,7 @@ export function NewExport({
 						itemsCount={preview?.additionCount}
 						loading={loading}
 						onApplyFilter={handleApplyFilter}
+						pageTreeModalConfiguration={pageTreeModalConfiguration}
 						sections={sections}
 					/>
 
