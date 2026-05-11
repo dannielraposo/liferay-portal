@@ -8,7 +8,9 @@ package com.liferay.exportimport.rest.internal.util;
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.rest.dto.v1_0.ExportRequest;
+import com.liferay.petra.function.transform.TransformUtil;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +29,8 @@ public class ExportRequestParameterMapUtil {
 		if (contentSelection != null) {
 			for (Object sectionValue : contentSelection.values()) {
 				if (sectionValue instanceof Map) {
-					_walk((Map<String, ?>)sectionValue, parameterMap);
+					_addToParameterMap(
+						(Map<String, ?>)sectionValue, parameterMap);
 				}
 			}
 		}
@@ -41,30 +44,34 @@ public class ExportRequestParameterMapUtil {
 		parameterMap.put("range", new String[] {range});
 
 		parameterMap.putIfAbsent(
-			PortletDataHandlerKeys.DELETIONS, new String[] {"false"});
+			PortletDataHandlerKeys.DELETIONS,
+			new String[] {Boolean.FALSE.toString()});
 		parameterMap.putIfAbsent(
-			PortletDataHandlerKeys.PERMISSIONS, new String[] {"false"});
+			PortletDataHandlerKeys.PERMISSIONS,
+			new String[] {Boolean.FALSE.toString()});
 		parameterMap.putIfAbsent(
 			PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS_ALL,
-			new String[] {"true"});
+			new String[] {Boolean.TRUE.toString()});
 		parameterMap.putIfAbsent(
 			PortletDataHandlerKeys.PORTLET_CONFIGURATION_ALL,
-			new String[] {"true"});
+			new String[] {Boolean.TRUE.toString()});
 		parameterMap.putIfAbsent(
-			PortletDataHandlerKeys.PORTLET_DATA, new String[] {"true"});
+			PortletDataHandlerKeys.PORTLET_DATA,
+			new String[] {Boolean.TRUE.toString()});
 		parameterMap.putIfAbsent(
 			PortletDataHandlerKeys.PORTLET_DATA_CONTROL_DEFAULT,
-			new String[] {"false"});
+			new String[] {Boolean.FALSE.toString()});
 		parameterMap.putIfAbsent(
-			PortletDataHandlerKeys.PORTLET_SETUP_ALL, new String[] {"true"});
+			PortletDataHandlerKeys.PORTLET_SETUP_ALL,
+			new String[] {Boolean.TRUE.toString()});
 		parameterMap.putIfAbsent(
 			PortletDataHandlerKeys.PORTLET_USER_PREFERENCES_ALL,
-			new String[] {"true"});
+			new String[] {Boolean.TRUE.toString()});
 
 		return parameterMap;
 	}
 
-	private static void _walk(
+	private static void _addToParameterMap(
 		Map<String, ?> selection, Map<String, String[]> parameterMap) {
 
 		for (Map.Entry<String, ?> entry : selection.entrySet()) {
@@ -76,16 +83,25 @@ public class ExportRequestParameterMapUtil {
 
 			String name = entry.getKey();
 
-			if (value instanceof String) {
-				parameterMap.put(name, new String[] {(String)value});
+			if (value instanceof String string) {
+				parameterMap.put(name, new String[] {string});
 
 				continue;
 			}
 
-			parameterMap.put(name, new String[] {"true"});
+			if (value instanceof Collection<?> collection) {
+				parameterMap.put(
+					name,
+					TransformUtil.transformToArray(
+						collection, String::valueOf, String.class));
 
-			if (value instanceof Map) {
-				_walk((Map<String, ?>)value, parameterMap);
+				continue;
+			}
+
+			parameterMap.put(name, new String[] {Boolean.TRUE.toString()});
+
+			if (value instanceof Map<?, ?> map) {
+				_addToParameterMap((Map<String, ?>)map, parameterMap);
 			}
 		}
 	}
