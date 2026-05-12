@@ -8,7 +8,7 @@ import ClayLayout from '@clayui/layout';
 import React from 'react';
 
 import {PageTreeModalConfiguration} from '../../../pages/export/components/PageTreeModal';
-import {PortletDataHandlerControl} from '../../../types/portletDataHandler';
+import {PreviewPortletDataHandlerControl} from '../../../types/portletDataHandler';
 import {
 	HandlerSelection,
 	LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
@@ -21,7 +21,7 @@ import PortletDataControlChoice from './PortletDataControlChoice';
 
 interface PortletDataControlProps {
 	className?: string;
-	control: PortletDataHandlerControl;
+	control: PreviewPortletDataHandlerControl;
 	level?: number;
 	onChange: (value: HandlerSelection | undefined) => void;
 	pageTreeModalConfiguration?: PageTreeModalConfiguration;
@@ -88,32 +88,33 @@ export default function PortletDataControl({
 					</span>
 				</div>
 
-				{control.portletDataHandlerControls?.map((nestedControl) =>
-					nestedControl.type === 'Choice' && !selected ? null : (
-						<PortletDataControl
-							className="mt-2"
-							control={nestedControl}
-							key={nestedControl.name}
-							level={level + 1}
-							onChange={(controlValue) =>
-								onChange(
-									updateSelection(
-										currentSelection,
-										nestedControl.name,
-										controlValue
+				{control.previewPortletDataHandlerControls?.map(
+					(nestedControl) =>
+						nestedControl.type === 'Choice' && !selected ? null : (
+							<PortletDataControl
+								className="mt-2"
+								control={nestedControl}
+								key={nestedControl.name}
+								level={level + 1}
+								onChange={(controlValue) =>
+									onChange(
+										updateSelection(
+											currentSelection,
+											nestedControl.name,
+											controlValue
+										)
 									)
-								)
-							}
-							pageTreeModalConfiguration={
-								pageTreeModalConfiguration
-							}
-							value={
-								currentSelection[nestedControl.name] as
-									| HandlerSelection
-									| undefined
-							}
-						/>
-					)
+								}
+								pageTreeModalConfiguration={
+									pageTreeModalConfiguration
+								}
+								value={
+									currentSelection[nestedControl.name] as
+										| HandlerSelection
+										| undefined
+								}
+							/>
+						)
 				)}
 			</ClayLayout.ContentCol>
 		</ClayLayout.ContentRow>

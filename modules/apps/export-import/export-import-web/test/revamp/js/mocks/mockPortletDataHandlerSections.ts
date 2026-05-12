@@ -9,7 +9,7 @@ export const mockPortletDataHandlerSections: PortletDataHandlerSection[] = [
 	{
 		label: 'Design',
 		name: 'category.site_administration.design',
-		portletDataHandlers: [
+		previewPortletDataHandlers: [
 			{
 				label: 'Theme Settings',
 				name: 'THEME_REFERENCE',
@@ -27,7 +27,7 @@ export const mockPortletDataHandlerSections: PortletDataHandlerSection[] = [
 	{
 		label: 'Site Builder',
 		name: 'category.site_administration.build',
-		portletDataHandlers: [
+		previewPortletDataHandlers: [
 			{
 				label: 'Pages',
 				name: 'PORTLET_DATA_com_liferay_layout_admin_web_portlet_GroupPagesPortlet',
@@ -37,11 +37,11 @@ export const mockPortletDataHandlerSections: PortletDataHandlerSection[] = [
 	{
 		label: 'Content & Data',
 		name: 'category.site_administration.content',
-		portletDataHandlers: [
+		previewPortletDataHandlers: [
 			{
 				label: 'Web Content',
 				name: 'PORTLET_DATA_com_liferay_journal_web_portlet_JournalPortlet',
-				portletDataHandlerControls: [
+				previewPortletDataHandlerControls: [
 					{
 						label: 'Web Content',
 						name: '_journal_web-content',
@@ -50,7 +50,7 @@ export const mockPortletDataHandlerSections: PortletDataHandlerSection[] = [
 					{
 						label: 'Referenced Content',
 						name: '_journal_referenced-content',
-						portletDataHandlerControls: [
+						previewPortletDataHandlerControls: [
 							{
 								choices: [
 									{
@@ -79,7 +79,7 @@ export const mockPortletDataHandlerSections: PortletDataHandlerSection[] = [
 			{
 				label: 'Documents and Media',
 				name: 'PORTLET_DATA_com_liferay_document_library_web_portlet_DLAdminPortlet',
-				portletDataHandlerControls: [
+				previewPortletDataHandlerControls: [
 					{
 						label: 'Repositories',
 						name: '_document_library_repositories',
@@ -93,7 +93,7 @@ export const mockPortletDataHandlerSections: PortletDataHandlerSection[] = [
 					{
 						label: 'Documents',
 						name: '_document_library_documents',
-						portletDataHandlerControls: [
+						previewPortletDataHandlerControls: [
 							{
 								label: 'Previews and Thumbnails',
 								name: '_document_library_previews-and-thumbnails',
@@ -102,7 +102,7 @@ export const mockPortletDataHandlerSections: PortletDataHandlerSection[] = [
 							{
 								label: 'Referenced Content',
 								name: '_document_library_referenced-content',
-								portletDataHandlerControls: [
+								previewPortletDataHandlerControls: [
 									{
 										choices: [
 											{

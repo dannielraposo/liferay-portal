@@ -23,6 +23,7 @@ import {
 } from '../../services/getExportPreview';
 import {postExportProcess} from '../../services/postExportProcess';
 import {ExportPreview} from '../../types/exportImportPreview';
+import {toRequestPortletDataHandlers} from '../../utils/toRequestPortletDataHandlers';
 import DataSelection from './components/DataSelection';
 import {PageTreeModalConfiguration} from './components/PageTreeModal';
 import Setup from './components/Setup';
@@ -128,9 +129,13 @@ export function NewExport({
 			onSubmit={async (values) => {
 				const result = await postExportProcess({
 					exportRequest: {
-						contentSelection: values.contentSelection,
 						fileName: values.filename,
 						range: 'all',
+						requestPortletDataHandlers:
+							toRequestPortletDataHandlers(
+								sections,
+								values.contentSelection
+							),
 					},
 					url: exportProcessAPIURL,
 				});
