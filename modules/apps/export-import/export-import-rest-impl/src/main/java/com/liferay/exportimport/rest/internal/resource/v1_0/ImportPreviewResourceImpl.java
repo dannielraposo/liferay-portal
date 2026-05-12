@@ -14,7 +14,7 @@ import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalSer
 import com.liferay.exportimport.kernel.service.ExportImportLocalService;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.rest.dto.v1_0.ImportPreview;
-import com.liferay.exportimport.rest.dto.v1_0.PortletDataHandler;
+import com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandler;
 import com.liferay.exportimport.rest.internal.util.PermissionUtil;
 import com.liferay.exportimport.rest.internal.util.PortletDataHandlerSectionUtil;
 import com.liferay.exportimport.rest.resource.v1_0.ImportPreviewResource;
@@ -132,8 +132,8 @@ public class ImportPreviewResourceImpl extends BaseImportPreviewResourceImpl {
 
 		Locale locale = contextAcceptLanguage.getPreferredLocale();
 
-		Map<String, List<PortletDataHandler>> portletDataHandlersMap =
-			new LinkedHashMap<>();
+		Map<String, List<PreviewPortletDataHandler>>
+			previewPortletDataHandlersMap = new LinkedHashMap<>();
 
 		for (Portlet portlet : manifestSummary.getDataPortlets()) {
 			PortletDataHandlerSectionUtil.addPortletDataHandlerSection(
@@ -141,18 +141,18 @@ public class ImportPreviewResourceImpl extends BaseImportPreviewResourceImpl {
 				portlet.getPortletDataHandlerInstance(),
 				com.liferay.exportimport.kernel.lar.PortletDataHandler::
 					getImportPortletDataHandlerControls,
-				portletDataHandlersMap);
+				previewPortletDataHandlersMap);
 		}
 
 		return new ImportPreview() {
 			{
 				setAdditionCount(
 					() -> PortletDataHandlerSectionUtil.getAdditionCount(
-						portletDataHandlersMap));
+						previewPortletDataHandlersMap));
 				setAuthor(fileEntry::getUserName);
 				setDeletionCount(
 					() -> PortletDataHandlerSectionUtil.getDeletionCount(
-						portletDataHandlersMap));
+						previewPortletDataHandlersMap));
 				setExportDate(manifestSummary::getExportDate);
 				setFileEntryId(fileEntry::getFileEntryId);
 				setFileName(fileEntry::getFileName);
@@ -161,7 +161,7 @@ public class ImportPreviewResourceImpl extends BaseImportPreviewResourceImpl {
 					() ->
 						PortletDataHandlerSectionUtil.
 							toPortletDataHandlerSections(
-								locale, portletDataHandlersMap));
+								locale, previewPortletDataHandlersMap));
 			}
 		};
 	}

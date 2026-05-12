@@ -11,10 +11,9 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerBoolean;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerChoice;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.rest.dto.v1_0.Choice;
-import com.liferay.exportimport.rest.dto.v1_0.PortletDataHandler;
-import com.liferay.exportimport.rest.dto.v1_0.PortletDataHandlerControl;
 import com.liferay.exportimport.rest.dto.v1_0.PortletDataHandlerSection;
-import com.liferay.exportimport.rest.dto.v1_0.PortletDataHandlerSetting;
+import com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandler;
+import com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerControl;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -42,7 +41,7 @@ public class PortletDataHandlerSectionUtil {
 				 com.liferay.exportimport.kernel.lar.
 					 PortletDataHandlerControl[],
 				 Exception> portletDataHandlerControlsUnsafeFunction,
-			Map<String, List<PortletDataHandler>> portletDataHandlersMap)
+			Map<String, List<PreviewPortletDataHandler>> previewPortletDataHandlersMap)
 		throws Exception {
 
 		if ((portletDataHandler == null) ||
@@ -68,12 +67,12 @@ public class PortletDataHandlerSectionUtil {
 			sectionKey = ExportImportConstants.SECTION_KEY_OTHER;
 		}
 
-		List<PortletDataHandler> portletDataHandlers =
-			portletDataHandlersMap.computeIfAbsent(
+		List<PreviewPortletDataHandler> previewPortletDataHandlers =
+			previewPortletDataHandlersMap.computeIfAbsent(
 				sectionKey, key -> new ArrayList<>());
 
-		portletDataHandlers.add(
-			_toPortletDataHandler(
+		previewPortletDataHandlers.add(
+			_toPreviewPortletDataHandler(
 				modelAdditionCount, locale, manifestSummary, modelDeletionCount,
 				portlet, portletDataHandler,
 				portletDataHandlerControlsUnsafeFunction.apply(
@@ -81,15 +80,19 @@ public class PortletDataHandlerSectionUtil {
 	}
 
 	public static long getAdditionCount(
-		Map<String, List<PortletDataHandler>> portletDataHandlersMap) {
+		Map<String, List<PreviewPortletDataHandler>>
+			previewPortletDataHandlersMap) {
 
 		long additionCount = 0;
 
-		for (List<PortletDataHandler> portletDataHandlers :
-				portletDataHandlersMap.values()) {
+		for (List<PreviewPortletDataHandler> previewPortletDataHandlers :
+				previewPortletDataHandlersMap.values()) {
 
-			for (PortletDataHandler portletDataHandler : portletDataHandlers) {
-				additionCount += portletDataHandler.getAdditionCount();
+			for (PreviewPortletDataHandler previewPortletDataHandler :
+					previewPortletDataHandlers) {
+
+				additionCount +=
+					previewPortletDataHandler.getAdditionCount();
 			}
 		}
 
@@ -97,15 +100,19 @@ public class PortletDataHandlerSectionUtil {
 	}
 
 	public static long getDeletionCount(
-		Map<String, List<PortletDataHandler>> portletDataHandlersMap) {
+		Map<String, List<PreviewPortletDataHandler>>
+			previewPortletDataHandlersMap) {
 
 		long deletionCount = 0;
 
-		for (List<PortletDataHandler> portletDataHandlers :
-				portletDataHandlersMap.values()) {
+		for (List<PreviewPortletDataHandler> previewPortletDataHandlers :
+				previewPortletDataHandlersMap.values()) {
 
-			for (PortletDataHandler portletDataHandler : portletDataHandlers) {
-				deletionCount += portletDataHandler.getDeletionCount();
+			for (PreviewPortletDataHandler previewPortletDataHandler :
+					previewPortletDataHandlers) {
+
+				deletionCount +=
+					previewPortletDataHandler.getDeletionCount();
 			}
 		}
 
@@ -114,20 +121,23 @@ public class PortletDataHandlerSectionUtil {
 
 	public static PortletDataHandlerSection[] toPortletDataHandlerSections(
 		Locale locale,
-		Map<String, List<PortletDataHandler>> portletDataHandlersMap) {
+		Map<String, List<PreviewPortletDataHandler>>
+			previewPortletDataHandlersMap) {
 
 		return TransformUtil.transformToArray(
-			portletDataHandlersMap.entrySet(),
+			previewPortletDataHandlersMap.entrySet(),
 			entry -> new PortletDataHandlerSection() {
 				{
 					long additionCount = 0;
 					long deletionCount = 0;
 
-					for (PortletDataHandler portletDataHandler :
+					for (PreviewPortletDataHandler previewPortletDataHandler :
 							entry.getValue()) {
 
-						additionCount += portletDataHandler.getAdditionCount();
-						deletionCount += portletDataHandler.getDeletionCount();
+						additionCount +=
+							previewPortletDataHandler.getAdditionCount();
+						deletionCount +=
+							previewPortletDataHandler.getDeletionCount();
 					}
 
 					long finalAdditionCount = additionCount;
@@ -137,17 +147,33 @@ public class PortletDataHandlerSectionUtil {
 					setDeletionCount(() -> finalDeletionCount);
 					setLabel(() -> LanguageUtil.get(locale, entry.getKey()));
 					setName(entry::getKey);
-					setPortletDataHandlers(
+					setPreviewPortletDataHandlers(
 						() -> entry.getValue(
 						).toArray(
-							new PortletDataHandler[0]
+							new PreviewPortletDataHandler[0]
 						));
 				}
 			},
 			PortletDataHandlerSection.class);
 	}
 
-	private static PortletDataHandler _toPortletDataHandler(
+	private static PreviewPortletDataHandlerControl[] _toNestedControls(
+		Locale locale, ManifestSummary manifestSummary,
+		com.liferay.exportimport.kernel.lar.PortletDataHandlerControl[]
+			portletDataHandlerControls) {
+
+		if (ArrayUtil.isEmpty(portletDataHandlerControls)) {
+			return null;
+		}
+
+		return TransformUtil.transform(
+			portletDataHandlerControls,
+			portletDataHandlerControl -> _toPreviewPortletDataHandlerControl(
+				locale, manifestSummary, portletDataHandlerControl),
+			PreviewPortletDataHandlerControl.class);
+	}
+
+	private static PreviewPortletDataHandler _toPreviewPortletDataHandler(
 		long modelAdditionCount, Locale locale, ManifestSummary manifestSummary,
 		long modelDeletionCount, Portlet portlet,
 		com.liferay.exportimport.kernel.lar.PortletDataHandler
@@ -155,7 +181,7 @@ public class PortletDataHandlerSectionUtil {
 		com.liferay.exportimport.kernel.lar.PortletDataHandlerControl[]
 			sourcePortletDataHandlerControls) {
 
-		return new PortletDataHandler() {
+		return new PreviewPortletDataHandler() {
 			{
 				setAdditionCount(() -> modelAdditionCount);
 				setDeletionCount(() -> modelDeletionCount);
@@ -172,74 +198,44 @@ public class PortletDataHandlerSectionUtil {
 						return portletTitle;
 					});
 				setName(() -> "PORTLET_DATA_" + portlet.getPortletId());
-				setPortletDataHandlerControls(
-					() -> {
-						if ((sourcePortletDataHandlerControls == null) ||
-							ArrayUtil.isEmpty(
-								sourcePortletDataHandlerControls)) {
-
-							return null;
-						}
-
-						return TransformUtil.transform(
-							sourcePortletDataHandlerControls,
-							sourcePortletDataHandlerControl ->
-								_toPortletDataHandlerControl(
-									locale, manifestSummary,
-									sourcePortletDataHandlerControl),
-							PortletDataHandlerControl.class);
-					});
+				setPreviewPortletDataHandlerControls(
+					() -> _toNestedControls(
+						locale, manifestSummary,
+						sourcePortletDataHandlerControls));
 			}
 		};
 	}
 
-	private static PortletDataHandlerControl _toPortletDataHandlerControl(
-		Locale locale, ManifestSummary manifestSummary,
-		com.liferay.exportimport.kernel.lar.PortletDataHandlerControl
-			portletDataHandlerControl) {
+	private static PreviewPortletDataHandlerControl
+		_toPreviewPortletDataHandlerControl(
+			Locale locale, ManifestSummary manifestSummary,
+			com.liferay.exportimport.kernel.lar.PortletDataHandlerControl
+				portletDataHandlerControl) {
 
 		if (portletDataHandlerControl instanceof
 				PortletDataHandlerBoolean portletDataHandlerBoolean) {
 
 			if (portletDataHandlerBoolean.getClassName() == null) {
-				return new PortletDataHandlerSetting() {
+				return new com.liferay.exportimport.rest.dto.v1_0.
+					PreviewPortletDataHandlerSetting() {
+
 					{
 						setDefaultState(
 							portletDataHandlerBoolean::getDefaultState);
-						setDisabled(portletDataHandlerControl::isDisabled);
+						setDisabled(portletDataHandlerBoolean::isDisabled);
 						setLabel(
 							() -> LanguageUtil.get(
-								locale, portletDataHandlerControl.getLabel()));
+								locale, portletDataHandlerBoolean.getLabel()));
 						setName(
 							com.liferay.exportimport.kernel.lar.
 								PortletDataHandlerControl.getNamespacedName(
-									portletDataHandlerControl.getNamespace(),
-									portletDataHandlerControl.getName()));
-						setPortletDataHandlerControls(
-							() -> {
-								com.liferay.exportimport.kernel.lar.
-									PortletDataHandlerControl[]
-										childrenPortletDataHandlerControls =
-											portletDataHandlerBoolean.
-												getChildrenPortletDataHandlerControls();
-
-								if ((childrenPortletDataHandlerControls ==
-										null) ||
-									ArrayUtil.isEmpty(
-										childrenPortletDataHandlerControls)) {
-
-									return null;
-								}
-
-								return TransformUtil.transform(
-									childrenPortletDataHandlerControls,
-									childPortletDataHandlerControl ->
-										_toPortletDataHandlerControl(
-											locale, manifestSummary,
-											childPortletDataHandlerControl),
-									PortletDataHandlerControl.class);
-							});
-						setType(() -> Type.SETTING);
+									portletDataHandlerBoolean.getNamespace(),
+									portletDataHandlerBoolean.getName()));
+						setPreviewPortletDataHandlerControls(
+							() -> _toNestedControls(
+								locale, manifestSummary,
+								portletDataHandlerBoolean.
+									getChildrenPortletDataHandlerControls()));
 					}
 				};
 			}
@@ -262,45 +258,26 @@ public class PortletDataHandlerSectionUtil {
 			}
 
 			return new com.liferay.exportimport.rest.dto.v1_0.
-				PortletDataHandlerBoolean() {
+				PreviewPortletDataHandlerBoolean() {
 
 				{
 					setAdditionCount(() -> modelAdditionCount);
 					setDefaultState(portletDataHandlerBoolean::getDefaultState);
 					setDeletionCount(() -> modelDeletionCount);
-					setDisabled(portletDataHandlerControl::isDisabled);
+					setDisabled(portletDataHandlerBoolean::isDisabled);
 					setLabel(
 						() -> LanguageUtil.get(
-							locale, portletDataHandlerControl.getLabel()));
+							locale, portletDataHandlerBoolean.getLabel()));
 					setName(
 						com.liferay.exportimport.kernel.lar.
 							PortletDataHandlerControl.getNamespacedName(
-								portletDataHandlerControl.getNamespace(),
-								portletDataHandlerControl.getName()));
-					setPortletDataHandlerControls(
-						() -> {
-							com.liferay.exportimport.kernel.lar.
-								PortletDataHandlerControl[]
-									childrenPortletDataHandlerControls =
-										portletDataHandlerBoolean.
-											getChildrenPortletDataHandlerControls();
-
-							if ((childrenPortletDataHandlerControls == null) ||
-								ArrayUtil.isEmpty(
-									childrenPortletDataHandlerControls)) {
-
-								return null;
-							}
-
-							return TransformUtil.transform(
-								childrenPortletDataHandlerControls,
-								childPortletDataHandlerControl ->
-									_toPortletDataHandlerControl(
-										locale, manifestSummary,
-										childPortletDataHandlerControl),
-								PortletDataHandlerControl.class);
-						});
-					setType(() -> Type.BOOLEAN);
+								portletDataHandlerBoolean.getNamespace(),
+								portletDataHandlerBoolean.getName()));
+					setPreviewPortletDataHandlerControls(
+						() -> _toNestedControls(
+							locale, manifestSummary,
+							portletDataHandlerBoolean.
+								getChildrenPortletDataHandlerControls()));
 				}
 			};
 		}
@@ -309,7 +286,7 @@ public class PortletDataHandlerSectionUtil {
 				PortletDataHandlerChoice portletDataHandlerChoice) {
 
 			return new com.liferay.exportimport.rest.dto.v1_0.
-				PortletDataHandlerChoice() {
+				PreviewPortletDataHandlerChoice() {
 
 				{
 					setChoices(
@@ -325,16 +302,15 @@ public class PortletDataHandlerSectionUtil {
 							Choice.class));
 					setDefaultChoice(
 						portletDataHandlerChoice::getDefaultChoice);
-					setDisabled(portletDataHandlerControl::isDisabled);
+					setDisabled(portletDataHandlerChoice::isDisabled);
 					setLabel(
 						() -> LanguageUtil.get(
-							locale, portletDataHandlerControl.getLabel()));
+							locale, portletDataHandlerChoice.getLabel()));
 					setName(
 						com.liferay.exportimport.kernel.lar.
 							PortletDataHandlerControl.getNamespacedName(
-								portletDataHandlerControl.getNamespace(),
-								portletDataHandlerControl.getName()));
-					setType(() -> Type.CHOICE);
+								portletDataHandlerChoice.getNamespace(),
+								portletDataHandlerChoice.getName()));
 				}
 			};
 		}

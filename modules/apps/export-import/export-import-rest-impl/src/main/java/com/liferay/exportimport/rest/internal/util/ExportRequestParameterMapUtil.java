@@ -8,9 +8,10 @@ package com.liferay.exportimport.rest.internal.util;
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.rest.dto.v1_0.ExportRequest;
+import com.liferay.exportimport.rest.dto.v1_0.RequestPortletDataHandler;
+import com.liferay.exportimport.rest.dto.v1_0.RequestPortletDataHandlerControl;
 import com.liferay.petra.function.transform.TransformUtil;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,14 +25,14 @@ public class ExportRequestParameterMapUtil {
 
 		Map<String, String[]> parameterMap = new HashMap<>();
 
-		Map<String, ?> contentSelection = exportRequest.getContentSelection();
+		RequestPortletDataHandler[] requestPortletDataHandlers =
+			exportRequest.getRequestPortletDataHandlers();
 
-		if (contentSelection != null) {
-			for (Object sectionValue : contentSelection.values()) {
-				if (sectionValue instanceof Map) {
-					_addToParameterMap(
-						(Map<String, ?>)sectionValue, parameterMap);
-				}
+		if (requestPortletDataHandlers != null) {
+			for (RequestPortletDataHandler requestPortletDataHandler :
+					requestPortletDataHandlers) {
+
+				_addToParameterMap(requestPortletDataHandler, parameterMap);
 			}
 		}
 
@@ -72,36 +73,67 @@ public class ExportRequestParameterMapUtil {
 	}
 
 	private static void _addToParameterMap(
-		Map<String, ?> selection, Map<String, String[]> parameterMap) {
+		RequestPortletDataHandler requestPortletDataHandler,
+		Map<String, String[]> parameterMap) {
 
-		for (Map.Entry<String, ?> entry : selection.entrySet()) {
-			Object value = entry.getValue();
+		parameterMap.put(
+			requestPortletDataHandler.getName(),
+			new String[] {Boolean.TRUE.toString()});
 
-			if ((value instanceof Boolean) && !(Boolean)value) {
-				continue;
+		Boolean privateLayout = requestPortletDataHandler.getPrivateLayout();
+
+		if (privateLayout != null) {
+			parameterMap.put(
+				"privateLayout", new String[] {privateLayout.toString()});
+		}
+
+		Long[] layoutIds = requestPortletDataHandler.getLayoutIds();
+
+		if ((layoutIds != null) && (layoutIds.length > 0)) {
+			parameterMap.put(
+				"layoutIds",
+				TransformUtil.transform(
+					layoutIds, String::valueOf, String.class));
+		}
+
+		RequestPortletDataHandlerControl[] requestPortletDataHandlerControls =
+			requestPortletDataHandler.getRequestPortletDataHandlerControls();
+
+		if (requestPortletDataHandlerControls != null) {
+			for (RequestPortletDataHandlerControl
+					requestPortletDataHandlerControl :
+						requestPortletDataHandlerControls) {
+
+				_addToParameterMap(
+					requestPortletDataHandlerControl, parameterMap);
 			}
+		}
+	}
 
-			String name = entry.getKey();
+	private static void _addToParameterMap(
+		RequestPortletDataHandlerControl requestPortletDataHandlerControl,
+		Map<String, String[]> parameterMap) {
 
-			if (value instanceof String string) {
-				parameterMap.put(name, new String[] {string});
+		String value = requestPortletDataHandlerControl.getValue();
 
-				continue;
-			}
+		if (value == null) {
+			value = Boolean.TRUE.toString();
+		}
 
-			if (value instanceof Collection<?> collection) {
-				parameterMap.put(
-					name,
-					TransformUtil.transformToArray(
-						collection, String::valueOf, String.class));
+		parameterMap.put(
+			requestPortletDataHandlerControl.getName(), new String[] {value});
 
-				continue;
-			}
+		RequestPortletDataHandlerControl[] requestPortletDataHandlerControls =
+			requestPortletDataHandlerControl.
+				getRequestPortletDataHandlerControls();
 
-			parameterMap.put(name, new String[] {Boolean.TRUE.toString()});
+		if (requestPortletDataHandlerControls != null) {
+			for (RequestPortletDataHandlerControl
+					nestedRequestPortletDataHandlerControl :
+						requestPortletDataHandlerControls) {
 
-			if (value instanceof Map<?, ?> map) {
-				_addToParameterMap((Map<String, ?>)map, parameterMap);
+				_addToParameterMap(
+					nestedRequestPortletDataHandlerControl, parameterMap);
 			}
 		}
 	}

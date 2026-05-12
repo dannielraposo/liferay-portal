@@ -11,7 +11,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataContextFactory;
 import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandlerProvider;
 import com.liferay.exportimport.rest.dto.v1_0.ExportPreview;
-import com.liferay.exportimport.rest.dto.v1_0.PortletDataHandler;
+import com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandler;
 import com.liferay.exportimport.rest.internal.util.PermissionUtil;
 import com.liferay.exportimport.rest.internal.util.PortletDataHandlerSectionUtil;
 import com.liferay.exportimport.rest.resource.v1_0.ExportPreviewResource;
@@ -122,8 +122,8 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 
 		Locale locale = contextAcceptLanguage.getPreferredLocale();
 
-		Map<String, List<PortletDataHandler>> portletDataHandlersMap =
-			new LinkedHashMap<>();
+		Map<String, List<PreviewPortletDataHandler>>
+			previewPortletDataHandlersMap = new LinkedHashMap<>();
 
 		for (Portlet portlet :
 				_exportImportHelper.getExportablePortlets(
@@ -150,22 +150,22 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 				portletDataHandler,
 				com.liferay.exportimport.kernel.lar.PortletDataHandler::
 					getExportPortletDataHandlerControls,
-				portletDataHandlersMap);
+				previewPortletDataHandlersMap);
 		}
 
 		return new ExportPreview() {
 			{
 				setAdditionCount(
 					() -> PortletDataHandlerSectionUtil.getAdditionCount(
-						portletDataHandlersMap));
+						previewPortletDataHandlersMap));
 				setDeletionCount(
 					() -> PortletDataHandlerSectionUtil.getDeletionCount(
-						portletDataHandlersMap));
+						previewPortletDataHandlersMap));
 				setPortletDataHandlerSections(
 					() ->
 						PortletDataHandlerSectionUtil.
 							toPortletDataHandlerSections(
-								locale, portletDataHandlersMap));
+								locale, previewPortletDataHandlersMap));
 			}
 		};
 	}
