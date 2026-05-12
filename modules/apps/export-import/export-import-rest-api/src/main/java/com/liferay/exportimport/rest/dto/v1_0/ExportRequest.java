@@ -58,49 +58,6 @@ public class ExportRequest implements Serializable {
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema
-	@Valid
-	public Map<String, ?> getContentSelection() {
-		if (_contentSelectionSupplier != null) {
-			contentSelection = _contentSelectionSupplier.get();
-
-			_contentSelectionSupplier = null;
-		}
-
-		return contentSelection;
-	}
-
-	public void setContentSelection(Map<String, ?> contentSelection) {
-		this.contentSelection = contentSelection;
-
-		_contentSelectionSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setContentSelection(
-		UnsafeSupplier<Map<String, ?>, Exception>
-			contentSelectionUnsafeSupplier) {
-
-		_contentSelectionSupplier = () -> {
-			try {
-				return contentSelectionUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected Map<String, ?> contentSelection;
-
-	@JsonIgnore
-	private Supplier<Map<String, ?>> _contentSelectionSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema
 	public Date getEndDate() {
 		if (_endDateSupplier != null) {
 			endDate = _endDateSupplier.get();
@@ -275,6 +232,53 @@ public class ExportRequest implements Serializable {
 	private Supplier<Range> _rangeSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
+	@Valid
+	public RequestPortletDataHandler[] getRequestPortletDataHandlers() {
+		if (_requestPortletDataHandlersSupplier != null) {
+			requestPortletDataHandlers =
+				_requestPortletDataHandlersSupplier.get();
+
+			_requestPortletDataHandlersSupplier = null;
+		}
+
+		return requestPortletDataHandlers;
+	}
+
+	public void setRequestPortletDataHandlers(
+		RequestPortletDataHandler[] requestPortletDataHandlers) {
+
+		this.requestPortletDataHandlers = requestPortletDataHandlers;
+
+		_requestPortletDataHandlersSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setRequestPortletDataHandlers(
+		UnsafeSupplier<RequestPortletDataHandler[], Exception>
+			requestPortletDataHandlersUnsafeSupplier) {
+
+		_requestPortletDataHandlersSupplier = () -> {
+			try {
+				return requestPortletDataHandlersUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected RequestPortletDataHandler[] requestPortletDataHandlers;
+
+	@JsonIgnore
+	private Supplier<RequestPortletDataHandler[]>
+		_requestPortletDataHandlersSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
 	public Date getStartDate() {
 		if (_startDateSupplier != null) {
 			startDate = _startDateSupplier.get();
@@ -345,18 +349,6 @@ public class ExportRequest implements Serializable {
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
 
-		Map<String, ?> contentSelection = getContentSelection();
-
-		if (contentSelection != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"contentSelection\": ");
-
-			sb.append(_toJSON(contentSelection));
-		}
-
 		Date endDate = getEndDate();
 
 		if (endDate != null) {
@@ -413,6 +405,29 @@ public class ExportRequest implements Serializable {
 			sb.append("\"");
 			sb.append(range);
 			sb.append("\"");
+		}
+
+		RequestPortletDataHandler[] requestPortletDataHandlers =
+			getRequestPortletDataHandlers();
+
+		if (requestPortletDataHandlers != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"requestPortletDataHandlers\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < requestPortletDataHandlers.length; i++) {
+				sb.append(String.valueOf(requestPortletDataHandlers[i]));
+
+				if ((i + 1) < requestPortletDataHandlers.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		Date startDate = getStartDate();
@@ -570,4 +585,4 @@ public class ExportRequest implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1641935438
+// LIFERAY-REST-BUILDER-HASH:-639160641

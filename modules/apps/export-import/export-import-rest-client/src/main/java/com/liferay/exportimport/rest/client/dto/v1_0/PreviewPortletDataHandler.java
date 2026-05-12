@@ -6,7 +6,7 @@
 package com.liferay.exportimport.rest.client.dto.v1_0;
 
 import com.liferay.exportimport.rest.client.function.UnsafeSupplier;
-import com.liferay.exportimport.rest.client.serdes.v1_0.PortletDataHandlerSectionSerDes;
+import com.liferay.exportimport.rest.client.serdes.v1_0.PreviewPortletDataHandlerSerDes;
 
 import jakarta.annotation.Generated;
 
@@ -19,10 +19,10 @@ import java.util.Objects;
  * @generated
  */
 @Generated("")
-public class PortletDataHandlerSection implements Cloneable, Serializable {
+public class PreviewPortletDataHandler implements Cloneable, Serializable {
 
-	public static PortletDataHandlerSection toDTO(String json) {
-		return PortletDataHandlerSectionSerDes.toDTO(json);
+	public static PreviewPortletDataHandler toDTO(String json) {
+		return PreviewPortletDataHandlerSerDes.toDTO(json);
 	}
 
 	public Long getAdditionCount() {
@@ -107,34 +107,38 @@ public class PortletDataHandlerSection implements Cloneable, Serializable {
 
 	protected String name;
 
-	public PreviewPortletDataHandler[] getPreviewPortletDataHandlers() {
-		return previewPortletDataHandlers;
+	public PreviewPortletDataHandlerControl[]
+		getPreviewPortletDataHandlerControls() {
+
+		return previewPortletDataHandlerControls;
 	}
 
-	public void setPreviewPortletDataHandlers(
-		PreviewPortletDataHandler[] previewPortletDataHandlers) {
+	public void setPreviewPortletDataHandlerControls(
+		PreviewPortletDataHandlerControl[] previewPortletDataHandlerControls) {
 
-		this.previewPortletDataHandlers = previewPortletDataHandlers;
+		this.previewPortletDataHandlerControls =
+			previewPortletDataHandlerControls;
 	}
 
-	public void setPreviewPortletDataHandlers(
-		UnsafeSupplier<PreviewPortletDataHandler[], Exception>
-			previewPortletDataHandlersUnsafeSupplier) {
+	public void setPreviewPortletDataHandlerControls(
+		UnsafeSupplier<PreviewPortletDataHandlerControl[], Exception>
+			previewPortletDataHandlerControlsUnsafeSupplier) {
 
 		try {
-			previewPortletDataHandlers =
-				previewPortletDataHandlersUnsafeSupplier.get();
+			previewPortletDataHandlerControls =
+				previewPortletDataHandlerControlsUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected PreviewPortletDataHandler[] previewPortletDataHandlers;
+	protected PreviewPortletDataHandlerControl[]
+		previewPortletDataHandlerControls;
 
 	@Override
-	public PortletDataHandlerSection clone() throws CloneNotSupportedException {
-		return (PortletDataHandlerSection)super.clone();
+	public PreviewPortletDataHandler clone() throws CloneNotSupportedException {
+		return (PreviewPortletDataHandler)super.clone();
 	}
 
 	@Override
@@ -143,14 +147,14 @@ public class PortletDataHandlerSection implements Cloneable, Serializable {
 			return true;
 		}
 
-		if (!(object instanceof PortletDataHandlerSection)) {
+		if (!(object instanceof PreviewPortletDataHandler)) {
 			return false;
 		}
 
-		PortletDataHandlerSection portletDataHandlerSection =
-			(PortletDataHandlerSection)object;
+		PreviewPortletDataHandler previewPortletDataHandler =
+			(PreviewPortletDataHandler)object;
 
-		return Objects.equals(toString(), portletDataHandlerSection.toString());
+		return Objects.equals(toString(), previewPortletDataHandler.toString());
 	}
 
 	@Override
@@ -161,8 +165,8 @@ public class PortletDataHandlerSection implements Cloneable, Serializable {
 	}
 
 	public String toString() {
-		return PortletDataHandlerSectionSerDes.toJSON(this);
+		return PreviewPortletDataHandlerSerDes.toJSON(this);
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:454418409
+// LIFERAY-REST-BUILDER-HASH:-1385570060

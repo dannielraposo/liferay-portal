@@ -35,19 +35,19 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName("PortletDataHandlerSection")
+@GraphQLName("PreviewPortletDataHandler")
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "PortletDataHandlerSection")
-public class PortletDataHandlerSection implements Serializable {
+@XmlRootElement(name = "PreviewPortletDataHandler")
+public class PreviewPortletDataHandler implements Serializable {
 
-	public static PortletDataHandlerSection toDTO(String json) {
+	public static PreviewPortletDataHandler toDTO(String json) {
 		return ObjectMapperUtil.readValue(
-			PortletDataHandlerSection.class, json);
+			PreviewPortletDataHandler.class, json);
 	}
 
-	public static PortletDataHandlerSection unsafeToDTO(String json) {
+	public static PreviewPortletDataHandler unsafeToDTO(String json) {
 		return ObjectMapperUtil.unsafeReadValue(
-			PortletDataHandlerSection.class, json);
+			PreviewPortletDataHandler.class, json);
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema
@@ -173,7 +173,9 @@ public class PortletDataHandlerSection implements Serializable {
 	@JsonIgnore
 	private Supplier<String> _labelSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The handler's portlet ID."
+	)
 	public String getName() {
 		if (_nameSupplier != null) {
 			name = _nameSupplier.get();
@@ -205,8 +207,8 @@ public class PortletDataHandlerSection implements Serializable {
 		};
 	}
 
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	@GraphQLField(description = "The handler's portlet ID.")
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String name;
 
 	@JsonIgnore
@@ -214,33 +216,36 @@ public class PortletDataHandlerSection implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
-	public PreviewPortletDataHandler[] getPreviewPortletDataHandlers() {
-		if (_previewPortletDataHandlersSupplier != null) {
-			previewPortletDataHandlers =
-				_previewPortletDataHandlersSupplier.get();
+	public PreviewPortletDataHandlerControl[]
+		getPreviewPortletDataHandlerControls() {
 
-			_previewPortletDataHandlersSupplier = null;
+		if (_previewPortletDataHandlerControlsSupplier != null) {
+			previewPortletDataHandlerControls =
+				_previewPortletDataHandlerControlsSupplier.get();
+
+			_previewPortletDataHandlerControlsSupplier = null;
 		}
 
-		return previewPortletDataHandlers;
+		return previewPortletDataHandlerControls;
 	}
 
-	public void setPreviewPortletDataHandlers(
-		PreviewPortletDataHandler[] previewPortletDataHandlers) {
+	public void setPreviewPortletDataHandlerControls(
+		PreviewPortletDataHandlerControl[] previewPortletDataHandlerControls) {
 
-		this.previewPortletDataHandlers = previewPortletDataHandlers;
+		this.previewPortletDataHandlerControls =
+			previewPortletDataHandlerControls;
 
-		_previewPortletDataHandlersSupplier = null;
+		_previewPortletDataHandlerControlsSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setPreviewPortletDataHandlers(
-		UnsafeSupplier<PreviewPortletDataHandler[], Exception>
-			previewPortletDataHandlersUnsafeSupplier) {
+	public void setPreviewPortletDataHandlerControls(
+		UnsafeSupplier<PreviewPortletDataHandlerControl[], Exception>
+			previewPortletDataHandlerControlsUnsafeSupplier) {
 
-		_previewPortletDataHandlersSupplier = () -> {
+		_previewPortletDataHandlerControlsSupplier = () -> {
 			try {
-				return previewPortletDataHandlersUnsafeSupplier.get();
+				return previewPortletDataHandlerControlsUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -253,11 +258,12 @@ public class PortletDataHandlerSection implements Serializable {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected PreviewPortletDataHandler[] previewPortletDataHandlers;
+	protected PreviewPortletDataHandlerControl[]
+		previewPortletDataHandlerControls;
 
 	@JsonIgnore
-	private Supplier<PreviewPortletDataHandler[]>
-		_previewPortletDataHandlersSupplier;
+	private Supplier<PreviewPortletDataHandlerControl[]>
+		_previewPortletDataHandlerControlsSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -265,14 +271,14 @@ public class PortletDataHandlerSection implements Serializable {
 			return true;
 		}
 
-		if (!(object instanceof PortletDataHandlerSection)) {
+		if (!(object instanceof PreviewPortletDataHandler)) {
 			return false;
 		}
 
-		PortletDataHandlerSection portletDataHandlerSection =
-			(PortletDataHandlerSection)object;
+		PreviewPortletDataHandler previewPortletDataHandler =
+			(PreviewPortletDataHandler)object;
 
-		return Objects.equals(toString(), portletDataHandlerSection.toString());
+		return Objects.equals(toString(), previewPortletDataHandler.toString());
 	}
 
 	@Override
@@ -343,22 +349,22 @@ public class PortletDataHandlerSection implements Serializable {
 			sb.append("\"");
 		}
 
-		PreviewPortletDataHandler[] previewPortletDataHandlers =
-			getPreviewPortletDataHandlers();
+		PreviewPortletDataHandlerControl[] previewPortletDataHandlerControls =
+			getPreviewPortletDataHandlerControls();
 
-		if (previewPortletDataHandlers != null) {
+		if (previewPortletDataHandlerControls != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"previewPortletDataHandlers\": ");
+			sb.append("\"previewPortletDataHandlerControls\": ");
 
 			sb.append("[");
 
-			for (int i = 0; i < previewPortletDataHandlers.length; i++) {
-				sb.append(String.valueOf(previewPortletDataHandlers[i]));
+			for (int i = 0; i < previewPortletDataHandlerControls.length; i++) {
+				sb.append(String.valueOf(previewPortletDataHandlerControls[i]));
 
-				if ((i + 1) < previewPortletDataHandlers.length) {
+				if ((i + 1) < previewPortletDataHandlerControls.length) {
 					sb.append(", ");
 				}
 			}
@@ -373,7 +379,7 @@ public class PortletDataHandlerSection implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.PortletDataHandlerSection",
+		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandler",
 		name = "x-class-name"
 	)
 	public String xClassName;
@@ -467,4 +473,4 @@ public class PortletDataHandlerSection implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-2047377979
+// LIFERAY-REST-BUILDER-HASH:-235738329

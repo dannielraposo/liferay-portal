@@ -5,9 +5,14 @@
 
 package com.liferay.exportimport.rest.dto.v1_0;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
@@ -19,6 +24,7 @@ import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 import jakarta.annotation.Generated;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import jakarta.xml.bind.annotation.XmlRootElement;
 
@@ -35,45 +41,63 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName("PortletDataHandlerSection")
+@GraphQLName("PreviewPortletDataHandlerControl")
+@io.swagger.v3.oas.annotations.media.Schema(requiredProperties = {"type"})
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "PortletDataHandlerSection")
-public class PortletDataHandlerSection implements Serializable {
+@JsonSubTypes(
+	{
+		@JsonSubTypes.Type(
+			name = "Boolean", value = PreviewPortletDataHandlerBoolean.class
+		),
+		@JsonSubTypes.Type(
+			name = "Choice", value = PreviewPortletDataHandlerChoice.class
+		),
+		@JsonSubTypes.Type(
+			name = "Setting", value = PreviewPortletDataHandlerSetting.class
+		)
+	}
+)
+@JsonTypeInfo(
+	include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type",
+	use = JsonTypeInfo.Id.NAME, visible = true
+)
+@XmlRootElement(name = "PreviewPortletDataHandlerControl")
+public abstract class PreviewPortletDataHandlerControl implements Serializable {
 
-	public static PortletDataHandlerSection toDTO(String json) {
+	public static PreviewPortletDataHandlerControl toDTO(String json) {
 		return ObjectMapperUtil.readValue(
-			PortletDataHandlerSection.class, json);
+			PreviewPortletDataHandlerControl.class, json);
 	}
 
-	public static PortletDataHandlerSection unsafeToDTO(String json) {
+	public static PreviewPortletDataHandlerControl unsafeToDTO(String json) {
 		return ObjectMapperUtil.unsafeReadValue(
-			PortletDataHandlerSection.class, json);
+			PreviewPortletDataHandlerControl.class, json);
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema
-	public Long getAdditionCount() {
-		if (_additionCountSupplier != null) {
-			additionCount = _additionCountSupplier.get();
+	public Boolean getDisabled() {
+		if (_disabledSupplier != null) {
+			disabled = _disabledSupplier.get();
 
-			_additionCountSupplier = null;
+			_disabledSupplier = null;
 		}
 
-		return additionCount;
+		return disabled;
 	}
 
-	public void setAdditionCount(Long additionCount) {
-		this.additionCount = additionCount;
+	public void setDisabled(Boolean disabled) {
+		this.disabled = disabled;
 
-		_additionCountSupplier = null;
+		_disabledSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setAdditionCount(
-		UnsafeSupplier<Long, Exception> additionCountUnsafeSupplier) {
+	public void setDisabled(
+		UnsafeSupplier<Boolean, Exception> disabledUnsafeSupplier) {
 
-		_additionCountSupplier = () -> {
+		_disabledSupplier = () -> {
 			try {
-				return additionCountUnsafeSupplier.get();
+				return disabledUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -86,51 +110,10 @@ public class PortletDataHandlerSection implements Serializable {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected Long additionCount;
+	protected Boolean disabled;
 
 	@JsonIgnore
-	private Supplier<Long> _additionCountSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema
-	public Long getDeletionCount() {
-		if (_deletionCountSupplier != null) {
-			deletionCount = _deletionCountSupplier.get();
-
-			_deletionCountSupplier = null;
-		}
-
-		return deletionCount;
-	}
-
-	public void setDeletionCount(Long deletionCount) {
-		this.deletionCount = deletionCount;
-
-		_deletionCountSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setDeletionCount(
-		UnsafeSupplier<Long, Exception> deletionCountUnsafeSupplier) {
-
-		_deletionCountSupplier = () -> {
-			try {
-				return deletionCountUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected Long deletionCount;
-
-	@JsonIgnore
-	private Supplier<Long> _deletionCountSupplier;
+	private Supplier<Boolean> _disabledSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	public String getLabel() {
@@ -206,41 +189,47 @@ public class PortletDataHandlerSection implements Serializable {
 	}
 
 	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String name;
 
 	@JsonIgnore
 	private Supplier<String> _nameSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
+	@JsonGetter("type")
 	@Valid
-	public PreviewPortletDataHandler[] getPreviewPortletDataHandlers() {
-		if (_previewPortletDataHandlersSupplier != null) {
-			previewPortletDataHandlers =
-				_previewPortletDataHandlersSupplier.get();
+	public Type getType() {
+		if (_typeSupplier != null) {
+			type = _typeSupplier.get();
 
-			_previewPortletDataHandlersSupplier = null;
+			_typeSupplier = null;
 		}
 
-		return previewPortletDataHandlers;
-	}
-
-	public void setPreviewPortletDataHandlers(
-		PreviewPortletDataHandler[] previewPortletDataHandlers) {
-
-		this.previewPortletDataHandlers = previewPortletDataHandlers;
-
-		_previewPortletDataHandlersSupplier = null;
+		return type;
 	}
 
 	@JsonIgnore
-	public void setPreviewPortletDataHandlers(
-		UnsafeSupplier<PreviewPortletDataHandler[], Exception>
-			previewPortletDataHandlersUnsafeSupplier) {
+	public String getTypeAsString() {
+		Type type = getType();
 
-		_previewPortletDataHandlersSupplier = () -> {
+		if (type == null) {
+			return null;
+		}
+
+		return type.toString();
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+
+		_typeSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
+		_typeSupplier = () -> {
 			try {
-				return previewPortletDataHandlersUnsafeSupplier.get();
+				return typeUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -253,11 +242,11 @@ public class PortletDataHandlerSection implements Serializable {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected PreviewPortletDataHandler[] previewPortletDataHandlers;
+	@NotNull
+	protected Type type;
 
 	@JsonIgnore
-	private Supplier<PreviewPortletDataHandler[]>
-		_previewPortletDataHandlersSupplier;
+	private Supplier<Type> _typeSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -265,14 +254,15 @@ public class PortletDataHandlerSection implements Serializable {
 			return true;
 		}
 
-		if (!(object instanceof PortletDataHandlerSection)) {
+		if (!(object instanceof PreviewPortletDataHandlerControl)) {
 			return false;
 		}
 
-		PortletDataHandlerSection portletDataHandlerSection =
-			(PortletDataHandlerSection)object;
+		PreviewPortletDataHandlerControl previewPortletDataHandlerControl =
+			(PreviewPortletDataHandlerControl)object;
 
-		return Objects.equals(toString(), portletDataHandlerSection.toString());
+		return Objects.equals(
+			toString(), previewPortletDataHandlerControl.toString());
 	}
 
 	@Override
@@ -287,28 +277,16 @@ public class PortletDataHandlerSection implements Serializable {
 
 		sb.append("{");
 
-		Long additionCount = getAdditionCount();
+		Boolean disabled = getDisabled();
 
-		if (additionCount != null) {
+		if (disabled != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"additionCount\": ");
+			sb.append("\"disabled\": ");
 
-			sb.append(additionCount);
-		}
-
-		Long deletionCount = getDeletionCount();
-
-		if (deletionCount != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"deletionCount\": ");
-
-			sb.append(deletionCount);
+			sb.append(disabled);
 		}
 
 		String label = getLabel();
@@ -343,27 +321,18 @@ public class PortletDataHandlerSection implements Serializable {
 			sb.append("\"");
 		}
 
-		PreviewPortletDataHandler[] previewPortletDataHandlers =
-			getPreviewPortletDataHandlers();
+		Type type = getType();
 
-		if (previewPortletDataHandlers != null) {
+		if (type != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"previewPortletDataHandlers\": ");
+			sb.append("\"type\": ");
 
-			sb.append("[");
-
-			for (int i = 0; i < previewPortletDataHandlers.length; i++) {
-				sb.append(String.valueOf(previewPortletDataHandlers[i]));
-
-				if ((i + 1) < previewPortletDataHandlers.length) {
-					sb.append(", ");
-				}
-			}
-
-			sb.append("]");
+			sb.append("\"");
+			sb.append(type);
+			sb.append("\"");
 		}
 
 		sb.append("}");
@@ -373,10 +342,48 @@ public class PortletDataHandlerSection implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.PortletDataHandlerSection",
+		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerControl",
 		name = "x-class-name"
 	)
 	public String xClassName;
+
+	@GraphQLName("Type")
+	public static enum Type {
+
+		BOOLEAN("Boolean"), CHOICE("Choice"), SETTING("Setting");
+
+		@JsonCreator
+		public static Type create(String value) {
+			if ((value == null) || value.equals("")) {
+				return null;
+			}
+
+			for (Type type : values()) {
+				if (Objects.equals(type.getValue(), value)) {
+					return type;
+				}
+			}
+
+			throw new IllegalArgumentException("Invalid enum value: " + value);
+		}
+
+		@JsonValue
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private Type(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
 
 	private static String _escape(Object object) {
 		return StringUtil.replace(
@@ -467,4 +474,4 @@ public class PortletDataHandlerSection implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-2047377979
+// LIFERAY-REST-BUILDER-HASH:413099995

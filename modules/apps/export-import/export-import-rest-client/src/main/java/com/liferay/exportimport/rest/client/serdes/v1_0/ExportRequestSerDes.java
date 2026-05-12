@@ -6,6 +6,7 @@
 package com.liferay.exportimport.rest.client.serdes.v1_0;
 
 import com.liferay.exportimport.rest.client.dto.v1_0.ExportRequest;
+import com.liferay.exportimport.rest.client.dto.v1_0.RequestPortletDataHandler;
 import com.liferay.exportimport.rest.client.json.BaseJSONParser;
 
 import jakarta.annotation.Generated;
@@ -51,16 +52,6 @@ public class ExportRequestSerDes {
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ssXX");
-
-		if (exportRequest.getContentSelection() != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"contentSelection\": ");
-
-			sb.append(_toJSON(exportRequest.getContentSelection()));
-		}
 
 		if (exportRequest.getEndDate() != null) {
 			if (sb.length() > 1) {
@@ -113,6 +104,33 @@ public class ExportRequestSerDes {
 			sb.append("\"");
 		}
 
+		if (exportRequest.getRequestPortletDataHandlers() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"requestPortletDataHandlers\": ");
+
+			sb.append("[");
+
+			for (int i = 0;
+				 i < exportRequest.getRequestPortletDataHandlers().length;
+				 i++) {
+
+				sb.append(
+					String.valueOf(
+						exportRequest.getRequestPortletDataHandlers()[i]));
+
+				if ((i + 1) <
+						exportRequest.getRequestPortletDataHandlers().length) {
+
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
 		if (exportRequest.getStartDate() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -150,15 +168,6 @@ public class ExportRequestSerDes {
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ssXX");
 
-		if (exportRequest.getContentSelection() == null) {
-			map.put("contentSelection", null);
-		}
-		else {
-			map.put(
-				"contentSelection",
-				String.valueOf(exportRequest.getContentSelection()));
-		}
-
 		if (exportRequest.getEndDate() == null) {
 			map.put("endDate", null);
 		}
@@ -189,6 +198,15 @@ public class ExportRequestSerDes {
 			map.put("range", String.valueOf(exportRequest.getRange()));
 		}
 
+		if (exportRequest.getRequestPortletDataHandlers() == null) {
+			map.put("requestPortletDataHandlers", null);
+		}
+		else {
+			map.put(
+				"requestPortletDataHandlers",
+				String.valueOf(exportRequest.getRequestPortletDataHandlers()));
+		}
+
 		if (exportRequest.getStartDate() == null) {
 			map.put("startDate", null);
 		}
@@ -216,10 +234,7 @@ public class ExportRequestSerDes {
 
 		@Override
 		protected boolean parseMaps(String jsonParserFieldName) {
-			if (Objects.equals(jsonParserFieldName, "contentSelection")) {
-				return true;
-			}
-			else if (Objects.equals(jsonParserFieldName, "endDate")) {
+			if (Objects.equals(jsonParserFieldName, "endDate")) {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "fileName")) {
@@ -229,6 +244,11 @@ public class ExportRequestSerDes {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "range")) {
+				return false;
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "requestPortletDataHandlers")) {
+
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "startDate")) {
@@ -243,13 +263,7 @@ public class ExportRequestSerDes {
 			ExportRequest exportRequest, String jsonParserFieldName,
 			Object jsonParserFieldValue) {
 
-			if (Objects.equals(jsonParserFieldName, "contentSelection")) {
-				if (jsonParserFieldValue != null) {
-					exportRequest.setContentSelection(
-						(Map<String, ?>)jsonParserFieldValue);
-				}
-			}
-			else if (Objects.equals(jsonParserFieldName, "endDate")) {
+			if (Objects.equals(jsonParserFieldName, "endDate")) {
 				if (jsonParserFieldValue != null) {
 					exportRequest.setEndDate(
 						toDate((String)jsonParserFieldValue));
@@ -271,6 +285,30 @@ public class ExportRequestSerDes {
 					exportRequest.setRange(
 						ExportRequest.Range.create(
 							(String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "requestPortletDataHandlers")) {
+
+				if (jsonParserFieldValue != null) {
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					RequestPortletDataHandler[]
+						requestPortletDataHandlersArray =
+							new RequestPortletDataHandler
+								[jsonParserFieldValues.length];
+
+					for (int i = 0; i < requestPortletDataHandlersArray.length;
+						 i++) {
+
+						requestPortletDataHandlersArray[i] =
+							RequestPortletDataHandlerSerDes.toDTO(
+								(String)jsonParserFieldValues[i]);
+					}
+
+					exportRequest.setRequestPortletDataHandlers(
+						requestPortletDataHandlersArray);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "startDate")) {
@@ -360,4 +398,4 @@ public class ExportRequestSerDes {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-541717201
+// LIFERAY-REST-BUILDER-HASH:826140568

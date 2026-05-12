@@ -42,11 +42,6 @@ components:
             type: object
         ExportRequest:
             properties:
-                contentSelection:
-                    additionalProperties:
-                        additionalProperties: true
-                        type: object
-                    type: object
                 endDate:
                     format: date-time
                     type: string
@@ -59,6 +54,10 @@ components:
                     default: all
                     enum: [all, dateRange, last]
                     type: string
+                requestPortletDataHandlers:
+                    items:
+                        $ref: "#/components/schemas/RequestPortletDataHandler"
+                    type: array
                 startDate:
                     format: date-time
                     type: string
@@ -143,92 +142,15 @@ components:
             type: object
         PortletDataHandler:
             properties:
-                additionCount:
-                    format: int64
-                    readOnly: true
-                    type: integer
-                deletionCount:
-                    format: int64
-                    readOnly: true
-                    type: integer
-                label:
-                    readOnly: true
-                    type: string
                 name:
                     description:
                         The handler's portlet ID.
-                    readOnly: true
                     type: string
-                portletDataHandlerControls:
-                    items:
-                        $ref: "#/components/schemas/PortletDataHandlerControl"
-                    readOnly: true
-                    type: array
-            type: object
-        PortletDataHandlerBoolean:
-            allOf:
-                -   $ref: "#/components/schemas/PortletDataHandlerControl"
-                -   properties:
-                        additionCount:
-                            format: int64
-                            readOnly: true
-                            type: integer
-                        defaultState:
-                            readOnly: true
-                            type: boolean
-                        deletionCount:
-                            format: int64
-                            readOnly: true
-                            type: integer
-                        portletDataHandlerControls:
-                            items:
-                                $ref: "#/components/schemas/PortletDataHandlerControl"
-                            readOnly: true
-                            type: array
-            type: object
-        PortletDataHandlerChoice:
-            allOf:
-                -   $ref: "#/components/schemas/PortletDataHandlerControl"
-                -   properties:
-                        choices:
-                            items:
-                                properties:
-                                    label:
-                                        readOnly: true
-                                        type: string
-                                    name:
-                                        readOnly: true
-                                        type: string
-                                type: object
-                            readOnly: true
-                            type: array
-                        defaultChoice:
-                            readOnly: true
-                            type: string
             type: object
         PortletDataHandlerControl:
-            discriminator:
-                mapping:
-                    Boolean: "#/components/schemas/PortletDataHandlerBoolean"
-                    Choice: "#/components/schemas/PortletDataHandlerChoice"
-                    Setting: "#/components/schemas/PortletDataHandlerSetting"
-                propertyName: type
             properties:
-                disabled:
-                    readOnly: true
-                    type: boolean
-                label:
-                    readOnly: true
-                    type: string
                 name:
-                    readOnly: true
                     type: string
-                type:
-                    enum: [Boolean, Choice, Setting]
-                    readOnly: true
-                    type: string
-            required:
-                -   type
             type: object
         PortletDataHandlerSection:
             properties:
@@ -246,24 +168,136 @@ components:
                 name:
                     readOnly: true
                     type: string
-                portletDataHandlers:
+                previewPortletDataHandlers:
                     items:
-                        $ref: "#/components/schemas/PortletDataHandler"
+                        $ref: "#/components/schemas/PreviewPortletDataHandler"
                     readOnly: true
                     type: array
             type: object
-        PortletDataHandlerSetting:
+        PreviewPortletDataHandler:
+            allOf:
+                -   $ref: "#/components/schemas/PortletDataHandler"
+                -   properties:
+                        additionCount:
+                            format: int64
+                            readOnly: true
+                            type: integer
+                        deletionCount:
+                            format: int64
+                            readOnly: true
+                            type: integer
+                        label:
+                            readOnly: true
+                            type: string
+                        previewPortletDataHandlerControls:
+                            items:
+                                $ref: "#/components/schemas/PreviewPortletDataHandlerControl"
+                            readOnly: true
+                            type: array
+            type: object
+        PreviewPortletDataHandlerBoolean:
+            allOf:
+                -   $ref: "#/components/schemas/PreviewPortletDataHandlerControl"
+                -   properties:
+                        additionCount:
+                            format: int64
+                            readOnly: true
+                            type: integer
+                        defaultState:
+                            readOnly: true
+                            type: boolean
+                        deletionCount:
+                            format: int64
+                            readOnly: true
+                            type: integer
+                        previewPortletDataHandlerControls:
+                            items:
+                                $ref: "#/components/schemas/PreviewPortletDataHandlerControl"
+                            readOnly: true
+                            type: array
+            type: object
+        PreviewPortletDataHandlerChoice:
+            allOf:
+                -   $ref: "#/components/schemas/PreviewPortletDataHandlerControl"
+                -   properties:
+                        choices:
+                            items:
+                                properties:
+                                    label:
+                                        readOnly: true
+                                        type: string
+                                    name:
+                                        readOnly: true
+                                        type: string
+                                type: object
+                            readOnly: true
+                            type: array
+                        defaultChoice:
+                            readOnly: true
+                            type: string
+            type: object
+        PreviewPortletDataHandlerControl:
             allOf:
                 -   $ref: "#/components/schemas/PortletDataHandlerControl"
+                -   properties:
+                        disabled:
+                            readOnly: true
+                            type: boolean
+                        label:
+                            readOnly: true
+                            type: string
+                        type:
+                            enum: [Boolean, Choice, Setting]
+                            readOnly: true
+                            type: string
+            discriminator:
+                mapping:
+                    Boolean: "#/components/schemas/PreviewPortletDataHandlerBoolean"
+                    Choice: "#/components/schemas/PreviewPortletDataHandlerChoice"
+                    Setting: "#/components/schemas/PreviewPortletDataHandlerSetting"
+                propertyName: type
+            required:
+                -   type
+            type: object
+        PreviewPortletDataHandlerSetting:
+            allOf:
+                -   $ref: "#/components/schemas/PreviewPortletDataHandlerControl"
                 -   properties:
                         defaultState:
                             readOnly: true
                             type: boolean
-                        portletDataHandlerControls:
+                        previewPortletDataHandlerControls:
                             items:
-                                $ref: "#/components/schemas/PortletDataHandlerControl"
+                                $ref: "#/components/schemas/PreviewPortletDataHandlerControl"
                             readOnly: true
                             type: array
+            type: object
+        RequestPortletDataHandler:
+            allOf:
+                -   $ref: "#/components/schemas/PortletDataHandler"
+                -   properties:
+                        layoutIds:
+                            items:
+                                format: int64
+                                type: integer
+                            type: array
+                        privateLayout:
+                            type: boolean
+                        requestPortletDataHandlerControls:
+                            items:
+                                $ref: "#/components/schemas/RequestPortletDataHandlerControl"
+                            type: array
+            type: object
+        RequestPortletDataHandlerControl:
+            allOf:
+                -   $ref: "#/components/schemas/PortletDataHandlerControl"
+                -   properties:
+                        requestPortletDataHandlerControls:
+                            items:
+                                $ref: "#/components/schemas/RequestPortletDataHandlerControl"
+                            type: array
+                        value:
+                            type: string
             type: object
         ReportEntry:
             properties:

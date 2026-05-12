@@ -35,20 +35,20 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName("PortletDataHandlerBoolean")
+@GraphQLName("PreviewPortletDataHandlerBoolean")
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "PortletDataHandlerBoolean")
-public class PortletDataHandlerBoolean
-	extends PortletDataHandlerControl implements Serializable {
+@XmlRootElement(name = "PreviewPortletDataHandlerBoolean")
+public class PreviewPortletDataHandlerBoolean
+	extends PreviewPortletDataHandlerControl implements Serializable {
 
-	public static PortletDataHandlerBoolean toDTO(String json) {
+	public static PreviewPortletDataHandlerBoolean toDTO(String json) {
 		return ObjectMapperUtil.readValue(
-			PortletDataHandlerBoolean.class, json);
+			PreviewPortletDataHandlerBoolean.class, json);
 	}
 
-	public static PortletDataHandlerBoolean unsafeToDTO(String json) {
+	public static PreviewPortletDataHandlerBoolean unsafeToDTO(String json) {
 		return ObjectMapperUtil.unsafeReadValue(
-			PortletDataHandlerBoolean.class, json);
+			PreviewPortletDataHandlerBoolean.class, json);
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema
@@ -176,33 +176,36 @@ public class PortletDataHandlerBoolean
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
-	public PortletDataHandlerControl[] getPortletDataHandlerControls() {
-		if (_portletDataHandlerControlsSupplier != null) {
-			portletDataHandlerControls =
-				_portletDataHandlerControlsSupplier.get();
+	public PreviewPortletDataHandlerControl[]
+		getPreviewPortletDataHandlerControls() {
 
-			_portletDataHandlerControlsSupplier = null;
+		if (_previewPortletDataHandlerControlsSupplier != null) {
+			previewPortletDataHandlerControls =
+				_previewPortletDataHandlerControlsSupplier.get();
+
+			_previewPortletDataHandlerControlsSupplier = null;
 		}
 
-		return portletDataHandlerControls;
+		return previewPortletDataHandlerControls;
 	}
 
-	public void setPortletDataHandlerControls(
-		PortletDataHandlerControl[] portletDataHandlerControls) {
+	public void setPreviewPortletDataHandlerControls(
+		PreviewPortletDataHandlerControl[] previewPortletDataHandlerControls) {
 
-		this.portletDataHandlerControls = portletDataHandlerControls;
+		this.previewPortletDataHandlerControls =
+			previewPortletDataHandlerControls;
 
-		_portletDataHandlerControlsSupplier = null;
+		_previewPortletDataHandlerControlsSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setPortletDataHandlerControls(
-		UnsafeSupplier<PortletDataHandlerControl[], Exception>
-			portletDataHandlerControlsUnsafeSupplier) {
+	public void setPreviewPortletDataHandlerControls(
+		UnsafeSupplier<PreviewPortletDataHandlerControl[], Exception>
+			previewPortletDataHandlerControlsUnsafeSupplier) {
 
-		_portletDataHandlerControlsSupplier = () -> {
+		_previewPortletDataHandlerControlsSupplier = () -> {
 			try {
-				return portletDataHandlerControlsUnsafeSupplier.get();
+				return previewPortletDataHandlerControlsUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -215,11 +218,12 @@ public class PortletDataHandlerBoolean
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected PortletDataHandlerControl[] portletDataHandlerControls;
+	protected PreviewPortletDataHandlerControl[]
+		previewPortletDataHandlerControls;
 
 	@JsonIgnore
-	private Supplier<PortletDataHandlerControl[]>
-		_portletDataHandlerControlsSupplier;
+	private Supplier<PreviewPortletDataHandlerControl[]>
+		_previewPortletDataHandlerControlsSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -227,14 +231,15 @@ public class PortletDataHandlerBoolean
 			return true;
 		}
 
-		if (!(object instanceof PortletDataHandlerBoolean)) {
+		if (!(object instanceof PreviewPortletDataHandlerBoolean)) {
 			return false;
 		}
 
-		PortletDataHandlerBoolean portletDataHandlerBoolean =
-			(PortletDataHandlerBoolean)object;
+		PreviewPortletDataHandlerBoolean previewPortletDataHandlerBoolean =
+			(PreviewPortletDataHandlerBoolean)object;
 
-		return Objects.equals(toString(), portletDataHandlerBoolean.toString());
+		return Objects.equals(
+			toString(), previewPortletDataHandlerBoolean.toString());
 	}
 
 	@Override
@@ -285,22 +290,22 @@ public class PortletDataHandlerBoolean
 			sb.append(deletionCount);
 		}
 
-		PortletDataHandlerControl[] portletDataHandlerControls =
-			getPortletDataHandlerControls();
+		PreviewPortletDataHandlerControl[] previewPortletDataHandlerControls =
+			getPreviewPortletDataHandlerControls();
 
-		if (portletDataHandlerControls != null) {
+		if (previewPortletDataHandlerControls != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"portletDataHandlerControls\": ");
+			sb.append("\"previewPortletDataHandlerControls\": ");
 
 			sb.append("[");
 
-			for (int i = 0; i < portletDataHandlerControls.length; i++) {
-				sb.append(String.valueOf(portletDataHandlerControls[i]));
+			for (int i = 0; i < previewPortletDataHandlerControls.length; i++) {
+				sb.append(String.valueOf(previewPortletDataHandlerControls[i]));
 
-				if ((i + 1) < portletDataHandlerControls.length) {
+				if ((i + 1) < previewPortletDataHandlerControls.length) {
 					sb.append(", ");
 				}
 			}
@@ -373,7 +378,7 @@ public class PortletDataHandlerBoolean
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.PortletDataHandlerBoolean",
+		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerBoolean",
 		name = "x-class-name"
 	)
 	public String xClassName;
@@ -467,4 +472,4 @@ public class PortletDataHandlerBoolean
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1067258362
+// LIFERAY-REST-BUILDER-HASH:1690049922

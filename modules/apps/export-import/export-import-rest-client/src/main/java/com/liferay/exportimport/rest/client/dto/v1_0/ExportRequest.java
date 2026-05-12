@@ -13,7 +13,6 @@ import jakarta.annotation.Generated;
 import java.io.Serializable;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -26,28 +25,6 @@ public class ExportRequest implements Cloneable, Serializable {
 	public static ExportRequest toDTO(String json) {
 		return ExportRequestSerDes.toDTO(json);
 	}
-
-	public Map<String, ?> getContentSelection() {
-		return contentSelection;
-	}
-
-	public void setContentSelection(Map<String, ?> contentSelection) {
-		this.contentSelection = contentSelection;
-	}
-
-	public void setContentSelection(
-		UnsafeSupplier<Map<String, ?>, Exception>
-			contentSelectionUnsafeSupplier) {
-
-		try {
-			contentSelection = contentSelectionUnsafeSupplier.get();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected Map<String, ?> contentSelection;
 
 	public Date getEndDate() {
 		return endDate;
@@ -137,6 +114,31 @@ public class ExportRequest implements Cloneable, Serializable {
 
 	protected Range range;
 
+	public RequestPortletDataHandler[] getRequestPortletDataHandlers() {
+		return requestPortletDataHandlers;
+	}
+
+	public void setRequestPortletDataHandlers(
+		RequestPortletDataHandler[] requestPortletDataHandlers) {
+
+		this.requestPortletDataHandlers = requestPortletDataHandlers;
+	}
+
+	public void setRequestPortletDataHandlers(
+		UnsafeSupplier<RequestPortletDataHandler[], Exception>
+			requestPortletDataHandlersUnsafeSupplier) {
+
+		try {
+			requestPortletDataHandlers =
+				requestPortletDataHandlersUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected RequestPortletDataHandler[] requestPortletDataHandlers;
+
 	public Date getStartDate() {
 		return startDate;
 	}
@@ -223,4 +225,4 @@ public class ExportRequest implements Cloneable, Serializable {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-798211302
+// LIFERAY-REST-BUILDER-HASH:-1154537979
