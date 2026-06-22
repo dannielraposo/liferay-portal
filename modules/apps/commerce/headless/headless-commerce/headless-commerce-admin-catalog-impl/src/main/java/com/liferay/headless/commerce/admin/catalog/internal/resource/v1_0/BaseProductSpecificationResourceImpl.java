@@ -76,9 +76,13 @@ public abstract class BaseProductSpecificationResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/productSpecifications/{id}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Removes the product specification value identified by id from its product. Calls CPDefinitionSpecificationOptionValueService.getCPDefinitionSpecificationOptionValue + deleteCPDefinitionSpecificationOptionValue. Validation -- NoSuchCPDefinitionSpecificationOptionValueException -> 404 when id not found. Side effects -- Reindexes the parent product."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -156,9 +160,13 @@ public abstract class BaseProductSpecificationResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/productSpecifications/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Removes the product specification value identified by external reference code from its product. Calls CPDefinitionSpecificationOptionValueService.getCPDefinitionSpecificationOptionValueByExternalReferenceCode + deleteProductSpecification. Validation -- NoSuchCPDefinitionSpecificationOptionValueException -> 404 when ERC not found. Side effects -- Reindexes the parent product."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -190,17 +198,23 @@ public abstract class BaseProductSpecificationResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/product-specifications'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists the specification values of the product identified by external reference code. Calls CPDefinitionService.fetchCPDefinitionByCProductExternalReferenceCode -> getProductIdProductSpecificationsPage. Validation -- NoSuchCPDefinitionException -> 404 when product ERC not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			)
@@ -236,17 +250,23 @@ public abstract class BaseProductSpecificationResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/productSpecifications'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists the specification values of the product identified by product id. Calls CPDefinitionService.fetchCPDefinitionByCProductId + CPDefinitionSpecificationOptionValueService.getCPDefinitionSpecificationOptionValues. Validation -- NoSuchCPDefinitionException -> 404 when product id not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			)
@@ -279,9 +299,13 @@ public abstract class BaseProductSpecificationResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/productSpecifications/{id}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Fetches the product specification value identified by id. Calls CPDefinitionSpecificationOptionValueService.getCPDefinitionSpecificationOptionValue. Validation -- NoSuchCPDefinitionSpecificationOptionValueException -> 404 when id not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -313,9 +337,13 @@ public abstract class BaseProductSpecificationResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/productSpecifications/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Fetches the product specification value identified by external reference code. Calls CPDefinitionSpecificationOptionValueService.getCPDefinitionSpecificationOptionValueByExternalReferenceCode. Validation -- NoSuchCPDefinitionSpecificationOptionValueException -> 404 when ERC not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -349,9 +377,13 @@ public abstract class BaseProductSpecificationResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/productSpecifications/{id}' -d $'{"externalReferenceCode": ___, "id": ___, "key": ___, "label": ___, "optionCategoryExternalReferenceCode": ___, "optionCategoryId": ___, "priority": ___, "productId": ___, "specificationExternalReferenceCode": ___, "specificationId": ___, "specificationKey": ___, "specificationPriority": ___, "value": ___, "visible": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates the product specification value identified by id. Calls CPDefinitionSpecificationOptionValueService.getCPDefinitionSpecificationOptionValue + ProductSpecificationUtil.updateCPDefinitionSpecificationOptionValue. Validation -- NoSuchCPDefinitionSpecificationOptionValueException -> 404 when id not found; NoSuchCPSpecificationOptionException -> 404 when nested specification cannot be resolved. Side effects -- Reindexes the parent product."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -385,9 +417,13 @@ public abstract class BaseProductSpecificationResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/productSpecifications/by-externalReferenceCode/{externalReferenceCode}' -d $'{"externalReferenceCode": ___, "id": ___, "key": ___, "label": ___, "optionCategoryExternalReferenceCode": ___, "optionCategoryId": ___, "priority": ___, "productId": ___, "specificationExternalReferenceCode": ___, "specificationId": ___, "specificationKey": ___, "specificationPriority": ___, "value": ___, "visible": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates the product specification value identified by external reference code. Calls CPDefinitionSpecificationOptionValueService.getCPDefinitionSpecificationOptionValueByExternalReferenceCode + patchProductSpecification. Validation -- NoSuchCPDefinitionSpecificationOptionValueException -> 404 when ERC not found. Side effects -- Reindexes the parent product."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -424,9 +460,13 @@ public abstract class BaseProductSpecificationResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/product-specifications' -d $'{"externalReferenceCode": ___, "id": ___, "key": ___, "label": ___, "optionCategoryExternalReferenceCode": ___, "optionCategoryId": ___, "priority": ___, "productId": ___, "specificationExternalReferenceCode": ___, "specificationId": ___, "specificationKey": ___, "specificationPriority": ___, "value": ___, "visible": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates or updates a specification value on the product identified by external reference code. Calls CPDefinitionService.fetchCPDefinitionByCProductExternalReferenceCode -> postProductIdProductSpecification. POST is upsert by external reference code -- creates a new entity when the ERC is unknown, otherwise updates the existing one. Validation -- NoSuchCPDefinitionException -> 404 when product ERC not found; NoSuchCPSpecificationOptionException -> 404 when specification cannot be resolved. Side effects -- Adds or updates the specification value; reindexes the parent product."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -463,9 +503,13 @@ public abstract class BaseProductSpecificationResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/productSpecifications' -d $'{"externalReferenceCode": ___, "id": ___, "key": ___, "label": ___, "optionCategoryExternalReferenceCode": ___, "optionCategoryId": ___, "priority": ___, "productId": ___, "specificationExternalReferenceCode": ___, "specificationId": ___, "specificationKey": ___, "specificationPriority": ___, "value": ___, "visible": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates or updates a specification value on the product identified by product id. Calls CPDefinitionService.fetchCPDefinitionByCProductId + ProductSpecificationUtil.addCPDefinitionSpecificationOptionValue (or update path when id/ERC matches). POST is upsert by external reference code -- creates a new entity when the ERC is unknown, otherwise updates the existing one. Validation -- NoSuchCPDefinitionException -> 404 when product id not found; NoSuchCPSpecificationOptionException -> 404 when specification cannot be resolved. Side effects -- Adds or updates the specification value; reindexes the parent product."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -1328,4 +1372,4 @@ public abstract class BaseProductSpecificationResourceImpl
 		LogFactoryUtil.getLog(BaseProductSpecificationResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1257206498
+// LIFERAY-REST-BUILDER-HASH:392285234

@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -82,66 +81,15 @@ public class ObjectFolderItemPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<ObjectFolderItem>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the object folder items where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object folder items where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object folder items
-	 * @param end the upper bound of the range of object folder items (not inclusive)
-	 * @return the range of matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectFolderItem, NoSuchObjectFolderItemException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the object folder items where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object folder items
-	 * @param end the upper bound of the range of object folder items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<ObjectFolderItem> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object folder items where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -175,16 +123,8 @@ public class ObjectFolderItemPersistenceImpl
 			String uuid, OrderByComparator<ObjectFolderItem> orderByComparator)
 		throws NoSuchObjectFolderItemException {
 
-		ObjectFolderItem objectFolderItem = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (objectFolderItem != null) {
-			return objectFolderItem;
-		}
-
-		throw new NoSuchObjectFolderItemException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -225,73 +165,15 @@ public class ObjectFolderItemPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<ObjectFolderItem>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the object folder items where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object folder items where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object folder items
-	 * @param end the upper bound of the range of object folder items (not inclusive)
-	 * @return the range of matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectFolderItem, NoSuchObjectFolderItemException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the object folder items where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object folder items
-	 * @param end the upper bound of the range of object folder items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<ObjectFolderItem> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object folder items where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -328,16 +210,8 @@ public class ObjectFolderItemPersistenceImpl
 			OrderByComparator<ObjectFolderItem> orderByComparator)
 		throws NoSuchObjectFolderItemException {
 
-		ObjectFolderItem objectFolderItem = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (objectFolderItem != null) {
-			return objectFolderItem;
-		}
-
-		throw new NoSuchObjectFolderItemException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -382,72 +256,15 @@ public class ObjectFolderItemPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByObjectDefinitionId;
-	private FinderPath _finderPathWithoutPaginationFindByObjectDefinitionId;
-	private FinderPath _finderPathCountByObjectDefinitionId;
-	private CollectionPersistenceFinder<ObjectFolderItem>
-		_collectionPersistenceFinderByObjectDefinitionId;
-
-	/**
-	 * Returns all the object folder items where objectDefinitionId = &#63;.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @return the matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByObjectDefinitionId(
-		long objectDefinitionId) {
-
-		return findByObjectDefinitionId(
-			objectDefinitionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object folder items where objectDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param start the lower bound of the range of object folder items
-	 * @param end the upper bound of the range of object folder items (not inclusive)
-	 * @return the range of matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByObjectDefinitionId(
-		long objectDefinitionId, int start, int end) {
-
-		return findByObjectDefinitionId(objectDefinitionId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectFolderItem, NoSuchObjectFolderItemException>
+			_collectionPersistenceFinderByObjectDefinitionId;
 
 	/**
 	 * Returns an ordered range of all the object folder items where objectDefinitionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param start the lower bound of the range of object folder items
-	 * @param end the upper bound of the range of object folder items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByObjectDefinitionId(
-		long objectDefinitionId, int start, int end,
-		OrderByComparator<ObjectFolderItem> orderByComparator) {
-
-		return findByObjectDefinitionId(
-			objectDefinitionId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object folder items where objectDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectDefinitionId the object definition ID
@@ -482,18 +299,8 @@ public class ObjectFolderItemPersistenceImpl
 			OrderByComparator<ObjectFolderItem> orderByComparator)
 		throws NoSuchObjectFolderItemException {
 
-		ObjectFolderItem objectFolderItem = fetchByObjectDefinitionId_First(
-			objectDefinitionId, orderByComparator);
-
-		if (objectFolderItem != null) {
-			return objectFolderItem;
-		}
-
-		throw new NoSuchObjectFolderItemException(
-			_collectionPersistenceFinderByObjectDefinitionId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {objectDefinitionId}));
+		return _collectionPersistenceFinderByObjectDefinitionId.findFirst(
+			finderCache, new Object[] {objectDefinitionId}, orderByComparator);
 	}
 
 	/**
@@ -535,70 +342,15 @@ public class ObjectFolderItemPersistenceImpl
 			finderCache, new Object[] {objectDefinitionId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByObjectFolderId;
-	private FinderPath _finderPathWithoutPaginationFindByObjectFolderId;
-	private FinderPath _finderPathCountByObjectFolderId;
-	private CollectionPersistenceFinder<ObjectFolderItem>
-		_collectionPersistenceFinderByObjectFolderId;
-
-	/**
-	 * Returns all the object folder items where objectFolderId = &#63;.
-	 *
-	 * @param objectFolderId the object folder ID
-	 * @return the matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByObjectFolderId(long objectFolderId) {
-		return findByObjectFolderId(
-			objectFolderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object folder items where objectFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectFolderId the object folder ID
-	 * @param start the lower bound of the range of object folder items
-	 * @param end the upper bound of the range of object folder items (not inclusive)
-	 * @return the range of matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByObjectFolderId(
-		long objectFolderId, int start, int end) {
-
-		return findByObjectFolderId(objectFolderId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectFolderItem, NoSuchObjectFolderItemException>
+			_collectionPersistenceFinderByObjectFolderId;
 
 	/**
 	 * Returns an ordered range of all the object folder items where objectFolderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectFolderId the object folder ID
-	 * @param start the lower bound of the range of object folder items
-	 * @param end the upper bound of the range of object folder items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object folder items
-	 */
-	@Override
-	public List<ObjectFolderItem> findByObjectFolderId(
-		long objectFolderId, int start, int end,
-		OrderByComparator<ObjectFolderItem> orderByComparator) {
-
-		return findByObjectFolderId(
-			objectFolderId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object folder items where objectFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFolderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectFolderId the object folder ID
@@ -633,16 +385,8 @@ public class ObjectFolderItemPersistenceImpl
 			OrderByComparator<ObjectFolderItem> orderByComparator)
 		throws NoSuchObjectFolderItemException {
 
-		ObjectFolderItem objectFolderItem = fetchByObjectFolderId_First(
-			objectFolderId, orderByComparator);
-
-		if (objectFolderItem != null) {
-			return objectFolderItem;
-		}
-
-		throw new NoSuchObjectFolderItemException(
-			_collectionPersistenceFinderByObjectFolderId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {objectFolderId}));
+		return _collectionPersistenceFinderByObjectFolderId.findFirst(
+			finderCache, new Object[] {objectFolderId}, orderByComparator);
 	}
 
 	/**
@@ -684,9 +428,9 @@ public class ObjectFolderItemPersistenceImpl
 			finderCache, new Object[] {objectFolderId});
 	}
 
-	private FinderPath _finderPathFetchByODI_OFI;
-	private UniquePersistenceFinder<ObjectFolderItem>
-		_uniquePersistenceFinderByODI_OFI;
+	private UniquePersistenceFinder
+		<ObjectFolderItem, NoSuchObjectFolderItemException>
+			_uniquePersistenceFinderByODI_OFI;
 
 	/**
 	 * Returns the object folder item where objectDefinitionId = &#63; and objectFolderId = &#63; or throws a <code>NoSuchObjectFolderItemException</code> if it could not be found.
@@ -701,37 +445,8 @@ public class ObjectFolderItemPersistenceImpl
 			long objectDefinitionId, long objectFolderId)
 		throws NoSuchObjectFolderItemException {
 
-		ObjectFolderItem objectFolderItem = fetchByODI_OFI(
-			objectDefinitionId, objectFolderId);
-
-		if (objectFolderItem == null) {
-			String message =
-				_uniquePersistenceFinderByODI_OFI.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {objectDefinitionId, objectFolderId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectFolderItemException(message);
-		}
-
-		return objectFolderItem;
-	}
-
-	/**
-	 * Returns the object folder item where objectDefinitionId = &#63; and objectFolderId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param objectFolderId the object folder ID
-	 * @return the matching object folder item, or <code>null</code> if a matching object folder item could not be found
-	 */
-	@Override
-	public ObjectFolderItem fetchByODI_OFI(
-		long objectDefinitionId, long objectFolderId) {
-
-		return fetchByODI_OFI(objectDefinitionId, objectFolderId, true);
+		return _uniquePersistenceFinderByODI_OFI.find(
+			finderCache, new Object[] {objectDefinitionId, objectFolderId});
 	}
 
 	/**
@@ -1005,141 +720,134 @@ public class ObjectFolderItemPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_OBJECTFOLDERITEM_WHERE,
 			_SQL_COUNT_OBJECTFOLDERITEM_WHERE,
-			ObjectFolderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ObjectFolderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"objectFolderItem.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, ObjectFolderItem::getUuid));
-
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
+				"objectFolderItem.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, ObjectFolderItem::getUuid));
 
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_OBJECTFOLDERITEM_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_OBJECTFOLDERITEM_WHERE,
 				_SQL_COUNT_OBJECTFOLDERITEM_WHERE,
 				ObjectFolderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"objectFolderItem.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, ObjectFolderItem::getUuid),
+					"objectFolderItem.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					ObjectFolderItem::getUuid),
 				new FinderColumn<>(
 					"objectFolderItem.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, ObjectFolderItem::getCompanyId));
 
-		_finderPathWithPaginationFindByObjectDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByObjectDefinitionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"objectDefinitionId"}, true);
-
-		_finderPathWithoutPaginationFindByObjectDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByObjectDefinitionId", new String[] {Long.class.getName()},
-			new String[] {"objectDefinitionId"}, true);
-
-		_finderPathCountByObjectDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByObjectDefinitionId", new String[] {Long.class.getName()},
-			new String[] {"objectDefinitionId"}, false);
-
 		_collectionPersistenceFinderByObjectDefinitionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByObjectDefinitionId,
-				_finderPathWithoutPaginationFindByObjectDefinitionId,
-				_finderPathCountByObjectDefinitionId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByObjectDefinitionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByObjectDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"objectDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByObjectDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"objectDefinitionId"}, false),
 				_SQL_SELECT_OBJECTFOLDERITEM_WHERE,
 				_SQL_COUNT_OBJECTFOLDERITEM_WHERE,
 				ObjectFolderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"objectFolderItem.", "objectDefinitionId",
 					FinderColumn.Type.LONG, "=", true, true,
 					ObjectFolderItem::getObjectDefinitionId));
 
-		_finderPathWithPaginationFindByObjectFolderId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByObjectFolderId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"objectFolderId"}, true);
-
-		_finderPathWithoutPaginationFindByObjectFolderId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByObjectFolderId",
-			new String[] {Long.class.getName()},
-			new String[] {"objectFolderId"}, true);
-
-		_finderPathCountByObjectFolderId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByObjectFolderId",
-			new String[] {Long.class.getName()},
-			new String[] {"objectFolderId"}, false);
-
 		_collectionPersistenceFinderByObjectFolderId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByObjectFolderId,
-				_finderPathWithoutPaginationFindByObjectFolderId,
-				_finderPathCountByObjectFolderId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByObjectFolderId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectFolderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByObjectFolderId", new String[] {Long.class.getName()},
+					new String[] {"objectFolderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByObjectFolderId",
+					new String[] {Long.class.getName()},
+					new String[] {"objectFolderId"}, false),
 				_SQL_SELECT_OBJECTFOLDERITEM_WHERE,
 				_SQL_COUNT_OBJECTFOLDERITEM_WHERE,
 				ObjectFolderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"objectFolderItem.", "objectFolderId",
 					FinderColumn.Type.LONG, "=", true, true,
 					ObjectFolderItem::getObjectFolderId));
 
-		_finderPathFetchByODI_OFI = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByODI_OFI",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"objectDefinitionId", "objectFolderId"}, false,
-			ObjectFolderItem::getObjectDefinitionId,
-			ObjectFolderItem::getObjectFolderId);
-
 		_uniquePersistenceFinderByODI_OFI = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByODI_OFI, _SQL_SELECT_OBJECTFOLDERITEM_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByODI_OFI",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"objectDefinitionId", "objectFolderId"}, 0, 0,
+				false, ObjectFolderItem::getObjectDefinitionId,
+				ObjectFolderItem::getObjectFolderId),
+			_SQL_SELECT_OBJECTFOLDERITEM_WHERE, "",
 			new FinderColumn<>(
 				"objectFolderItem.", "objectDefinitionId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				ObjectFolderItem::getObjectDefinitionId),
 			new FinderColumn<>(
 				"objectFolderItem.", "objectFolderId", FinderColumn.Type.LONG,
@@ -1214,4 +922,4 @@ public class ObjectFolderItemPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:918617411
+// LIFERAY-SERVICE-BUILDER-HASH:-1792696795

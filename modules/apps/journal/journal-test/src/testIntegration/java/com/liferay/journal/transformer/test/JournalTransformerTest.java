@@ -72,6 +72,7 @@ import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
@@ -176,6 +177,10 @@ public class JournalTransformerTest {
 	@Test
 	public void testCreateTemplateNode() {
 		_testCreateTemplateNodeDocumentLibraryDDMFormField();
+		_testCreateTemplateNodeNumericDDMFormFieldWithMismatchedLocale(
+			LocaleUtil.SPAIN, LocaleUtil.US, "20.3", "20,30");
+		_testCreateTemplateNodeNumericDDMFormFieldWithMismatchedLocale(
+			LocaleUtil.US, LocaleUtil.SPAIN, "123,45", "123.45");
 		_testCreateTemplateNodeNumericDDMFormFieldWithTrailingZero(
 			"2,3", LocaleUtil.SPAIN, "2,30");
 		_testCreateTemplateNodeNumericDDMFormFieldWithTrailingZero(
@@ -503,7 +508,9 @@ public class JournalTransformerTest {
 				WebKeys.THEME_DISPLAY, themeDisplay);
 			mockHttpServletRequest.setMethod(HttpMethods.GET);
 			mockHttpServletRequest.setParameter(
-				"currentURL", "http://localhost:8080/currentURL");
+				"currentURL",
+				"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+					"/currentURL");
 
 			themeDisplay.setRequest(mockHttpServletRequest);
 
@@ -847,6 +854,47 @@ public class JournalTransformerTest {
 		Assert.assertTrue(MapUtil.isEmpty(templateNode.getOptionsMap()));
 	}
 
+	private void _testCreateTemplateNodeNumericDDMFormFieldWithMismatchedLocale(
+		Locale dataLocale, Locale displayLocale, String expectedValue,
+		String text) {
+
+		DDMFormField ddmFormField = new DDMFormField(
+			"numeric", DDMFormFieldTypeConstants.NUMERIC);
+
+		ddmFormField.setDataType("double");
+
+		Document document = SAXReaderUtil.createDocument();
+
+		Element rootElement = document.addElement("root");
+
+		Element dynamicContentElement = rootElement.addElement(
+			"dynamic-content");
+
+		dynamicContentElement.addAttribute(
+			"language-id", LocaleUtil.toLanguageId(dataLocale));
+		dynamicContentElement.setText(text);
+
+		Locale originalThemeDisplayLocale =
+			LocaleThreadLocal.getThemeDisplayLocale();
+
+		try {
+			LocaleThreadLocal.setThemeDisplayLocale(displayLocale);
+
+			TemplateNode templateNode = ReflectionTestUtil.invoke(
+				_journalTransformer, "_createTemplateNode",
+				new Class<?>[] {
+					DDMFormField.class, Element.class, Locale.class,
+					ThemeDisplay.class
+				},
+				ddmFormField, rootElement, displayLocale, new ThemeDisplay());
+
+			Assert.assertEquals(expectedValue, templateNode.getData());
+		}
+		finally {
+			LocaleThreadLocal.setThemeDisplayLocale(originalThemeDisplayLocale);
+		}
+	}
+
 	private void _testCreateTemplateNodeNumericDDMFormFieldWithTrailingZero(
 		String expectedValue, Locale locale, String text) {
 
@@ -870,13 +918,17 @@ public class JournalTransformerTest {
 		try {
 			LocaleThreadLocal.setThemeDisplayLocale(locale);
 
+			ThemeDisplay themeDisplay = new ThemeDisplay();
+
+			themeDisplay.setSiteDefaultLocale(locale);
+
 			TemplateNode templateNode = ReflectionTestUtil.invoke(
 				_journalTransformer, "_createTemplateNode",
 				new Class<?>[] {
 					DDMFormField.class, Element.class, Locale.class,
 					ThemeDisplay.class
 				},
-				ddmFormField, rootElement, locale, new ThemeDisplay());
+				ddmFormField, rootElement, locale, themeDisplay);
 
 			Assert.assertEquals(expectedValue, templateNode.getData());
 		}

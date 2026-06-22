@@ -47,6 +47,27 @@ public class ImportProcess implements Cloneable, Serializable {
 
 	protected Creator creator;
 
+	public Date getDateCompleted() {
+		return dateCompleted;
+	}
+
+	public void setDateCompleted(Date dateCompleted) {
+		this.dateCompleted = dateCompleted;
+	}
+
+	public void setDateCompleted(
+		UnsafeSupplier<Date, Exception> dateCompletedUnsafeSupplier) {
+
+		try {
+			dateCompleted = dateCompletedUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Date dateCompleted;
+
 	public Date getDateCreated() {
 		return dateCreated;
 	}
@@ -89,6 +110,27 @@ public class ImportProcess implements Cloneable, Serializable {
 
 	protected Date dateModified;
 
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+
+	public void setErrorMessage(
+		UnsafeSupplier<String, Exception> errorMessageUnsafeSupplier) {
+
+		try {
+			errorMessage = errorMessageUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String errorMessage;
+
 	public Long getId() {
 		return id;
 	}
@@ -107,6 +149,25 @@ public class ImportProcess implements Cloneable, Serializable {
 	}
 
 	protected Long id;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setName(UnsafeSupplier<String, Exception> nameUnsafeSupplier) {
+		try {
+			name = nameUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String name;
 
 	public Status getStatus() {
 		return status;
@@ -128,27 +189,6 @@ public class ImportProcess implements Cloneable, Serializable {
 	}
 
 	protected Status status;
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public void setTitle(
-		UnsafeSupplier<String, Exception> titleUnsafeSupplier) {
-
-		try {
-			title = titleUnsafeSupplier.get();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected String title;
 
 	@Override
 	public ImportProcess clone() throws CloneNotSupportedException {
@@ -182,4 +222,4 @@ public class ImportProcess implements Cloneable, Serializable {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:372057093
+// LIFERAY-REST-BUILDER-HASH:-1722186140

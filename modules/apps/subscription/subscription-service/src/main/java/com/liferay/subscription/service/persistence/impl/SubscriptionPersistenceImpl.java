@@ -5,16 +5,11 @@
 
 package com.liferay.subscription.service.persistence.impl;
 
-import com.liferay.petra.lang.SafeCloseable;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -23,13 +18,14 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
+import com.liferay.portal.kernel.service.persistence.impl.ArrayableFinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
+import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.subscription.exception.NoSuchSubscriptionException;
 import com.liferay.subscription.model.Subscription;
 import com.liferay.subscription.model.SubscriptionTable;
@@ -88,67 +84,15 @@ public class SubscriptionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<Subscription>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the subscriptions where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the subscriptions where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @return the range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByGroupId(long groupId, int start, int end) {
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<Subscription, NoSuchSubscriptionException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the subscriptions where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<Subscription> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the subscriptions where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -164,14 +108,9 @@ public class SubscriptionPersistenceImpl
 		OrderByComparator<Subscription> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				finderCache, new Object[] {groupId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -187,16 +126,8 @@ public class SubscriptionPersistenceImpl
 			long groupId, OrderByComparator<Subscription> orderByComparator)
 		throws NoSuchSubscriptionException {
 
-		Subscription subscription = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (subscription != null) {
-			return subscription;
-		}
-
-		throw new NoSuchSubscriptionException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -233,75 +164,19 @@ public class SubscriptionPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				finderCache, new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUserId;
-	private FinderPath _finderPathWithoutPaginationFindByUserId;
-	private FinderPath _finderPathCountByUserId;
-	private CollectionPersistenceFinder<Subscription>
-		_collectionPersistenceFinderByUserId;
-
-	/**
-	 * Returns all the subscriptions where userId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @return the matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByUserId(long userId) {
-		return findByUserId(userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the subscriptions where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @return the range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByUserId(long userId, int start, int end) {
-		return findByUserId(userId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<Subscription, NoSuchSubscriptionException>
+			_collectionPersistenceFinderByUserId;
 
 	/**
 	 * Returns an ordered range of all the subscriptions where userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByUserId(
-		long userId, int start, int end,
-		OrderByComparator<Subscription> orderByComparator) {
-
-		return findByUserId(userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the subscriptions where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -317,14 +192,9 @@ public class SubscriptionPersistenceImpl
 		OrderByComparator<Subscription> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByUserId.find(
-				finderCache, new Object[] {userId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUserId.find(
+			finderCache, new Object[] {userId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -340,16 +210,8 @@ public class SubscriptionPersistenceImpl
 			long userId, OrderByComparator<Subscription> orderByComparator)
 		throws NoSuchSubscriptionException {
 
-		Subscription subscription = fetchByUserId_First(
-			userId, orderByComparator);
-
-		if (subscription != null) {
-			return subscription;
-		}
-
-		throw new NoSuchSubscriptionException(
-			_collectionPersistenceFinderByUserId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId}));
+		return _collectionPersistenceFinderByUserId.findFirst(
+			finderCache, new Object[] {userId}, orderByComparator);
 	}
 
 	/**
@@ -386,81 +248,19 @@ public class SubscriptionPersistenceImpl
 	 */
 	@Override
 	public int countByUserId(long userId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByUserId.count(
-				finderCache, new Object[] {userId});
-		}
+		return _collectionPersistenceFinderByUserId.count(
+			finderCache, new Object[] {userId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_U;
-	private FinderPath _finderPathWithoutPaginationFindByG_U;
-	private FinderPath _finderPathCountByG_U;
-	private CollectionPersistenceFinder<Subscription>
-		_collectionPersistenceFinderByG_U;
-
-	/**
-	 * Returns all the subscriptions where groupId = &#63; and userId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @return the matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByG_U(long groupId, long userId) {
-		return findByG_U(
-			groupId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the subscriptions where groupId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @return the range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByG_U(
-		long groupId, long userId, int start, int end) {
-
-		return findByG_U(groupId, userId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<Subscription, NoSuchSubscriptionException>
+			_collectionPersistenceFinderByG_U;
 
 	/**
 	 * Returns an ordered range of all the subscriptions where groupId = &#63; and userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByG_U(
-		long groupId, long userId, int start, int end,
-		OrderByComparator<Subscription> orderByComparator) {
-
-		return findByG_U(groupId, userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the subscriptions where groupId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -477,14 +277,9 @@ public class SubscriptionPersistenceImpl
 		OrderByComparator<Subscription> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByG_U.find(
-				finderCache, new Object[] {groupId, userId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_U.find(
+			finderCache, new Object[] {groupId, userId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -502,16 +297,8 @@ public class SubscriptionPersistenceImpl
 			OrderByComparator<Subscription> orderByComparator)
 		throws NoSuchSubscriptionException {
 
-		Subscription subscription = fetchByG_U_First(
-			groupId, userId, orderByComparator);
-
-		if (subscription != null) {
-			return subscription;
-		}
-
-		throw new NoSuchSubscriptionException(
-			_collectionPersistenceFinderByG_U.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, userId}));
+		return _collectionPersistenceFinderByG_U.findFirst(
+			finderCache, new Object[] {groupId, userId}, orderByComparator);
 	}
 
 	/**
@@ -552,82 +339,19 @@ public class SubscriptionPersistenceImpl
 	 */
 	@Override
 	public int countByG_U(long groupId, long userId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByG_U.count(
-				finderCache, new Object[] {groupId, userId});
-		}
+		return _collectionPersistenceFinderByG_U.count(
+			finderCache, new Object[] {groupId, userId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<Subscription>
-		_collectionPersistenceFinderByC_C;
-
-	/**
-	 * Returns all the subscriptions where companyId = &#63; and classNameId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @return the matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByC_C(long companyId, long classNameId) {
-		return findByC_C(
-			companyId, classNameId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the subscriptions where companyId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @return the range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByC_C(
-		long companyId, long classNameId, int start, int end) {
-
-		return findByC_C(companyId, classNameId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<Subscription, NoSuchSubscriptionException>
+			_collectionPersistenceFinderByC_C;
 
 	/**
 	 * Returns an ordered range of all the subscriptions where companyId = &#63; and classNameId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByC_C(
-		long companyId, long classNameId, int start, int end,
-		OrderByComparator<Subscription> orderByComparator) {
-
-		return findByC_C(
-			companyId, classNameId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the subscriptions where companyId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -644,14 +368,9 @@ public class SubscriptionPersistenceImpl
 		OrderByComparator<Subscription> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByC_C.find(
-				finderCache, new Object[] {companyId, classNameId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_C.find(
+			finderCache, new Object[] {companyId, classNameId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -669,17 +388,9 @@ public class SubscriptionPersistenceImpl
 			OrderByComparator<Subscription> orderByComparator)
 		throws NoSuchSubscriptionException {
 
-		Subscription subscription = fetchByC_C_First(
-			companyId, classNameId, orderByComparator);
-
-		if (subscription != null) {
-			return subscription;
-		}
-
-		throw new NoSuchSubscriptionException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, classNameId}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			finderCache, new Object[] {companyId, classNameId},
+			orderByComparator);
 	}
 
 	/**
@@ -721,82 +432,19 @@ public class SubscriptionPersistenceImpl
 	 */
 	@Override
 	public int countByC_C(long companyId, long classNameId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByC_C.count(
-				finderCache, new Object[] {companyId, classNameId});
-		}
+		return _collectionPersistenceFinderByC_C.count(
+			finderCache, new Object[] {companyId, classNameId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByU_C;
-	private FinderPath _finderPathWithoutPaginationFindByU_C;
-	private FinderPath _finderPathCountByU_C;
-	private CollectionPersistenceFinder<Subscription>
-		_collectionPersistenceFinderByU_C;
-
-	/**
-	 * Returns all the subscriptions where userId = &#63; and classNameId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @return the matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByU_C(long userId, long classNameId) {
-		return findByU_C(
-			userId, classNameId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the subscriptions where userId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @return the range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByU_C(
-		long userId, long classNameId, int start, int end) {
-
-		return findByU_C(userId, classNameId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<Subscription, NoSuchSubscriptionException>
+			_collectionPersistenceFinderByU_C;
 
 	/**
 	 * Returns an ordered range of all the subscriptions where userId = &#63; and classNameId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByU_C(
-		long userId, long classNameId, int start, int end,
-		OrderByComparator<Subscription> orderByComparator) {
-
-		return findByU_C(
-			userId, classNameId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the subscriptions where userId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -813,14 +461,9 @@ public class SubscriptionPersistenceImpl
 		OrderByComparator<Subscription> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByU_C.find(
-				finderCache, new Object[] {userId, classNameId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByU_C.find(
+			finderCache, new Object[] {userId, classNameId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -838,16 +481,8 @@ public class SubscriptionPersistenceImpl
 			OrderByComparator<Subscription> orderByComparator)
 		throws NoSuchSubscriptionException {
 
-		Subscription subscription = fetchByU_C_First(
-			userId, classNameId, orderByComparator);
-
-		if (subscription != null) {
-			return subscription;
-		}
-
-		throw new NoSuchSubscriptionException(
-			_collectionPersistenceFinderByU_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId, classNameId}));
+		return _collectionPersistenceFinderByU_C.findFirst(
+			finderCache, new Object[] {userId, classNameId}, orderByComparator);
 	}
 
 	/**
@@ -888,89 +523,19 @@ public class SubscriptionPersistenceImpl
 	 */
 	@Override
 	public int countByU_C(long userId, long classNameId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByU_C.count(
-				finderCache, new Object[] {userId, classNameId});
-		}
+		return _collectionPersistenceFinderByU_C.count(
+			finderCache, new Object[] {userId, classNameId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C_C;
-	private FinderPath _finderPathCountByC_C_C;
-	private CollectionPersistenceFinder<Subscription>
-		_collectionPersistenceFinderByC_C_C;
-
-	/**
-	 * Returns all the subscriptions where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByC_C_C(
-		long companyId, long classNameId, long classPK) {
-
-		return findByC_C_C(
-			companyId, classNameId, classPK, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the subscriptions where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @return the range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByC_C_C(
-		long companyId, long classNameId, long classPK, int start, int end) {
-
-		return findByC_C_C(companyId, classNameId, classPK, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<Subscription, NoSuchSubscriptionException>
+			_collectionPersistenceFinderByC_C_C;
 
 	/**
 	 * Returns an ordered range of all the subscriptions where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByC_C_C(
-		long companyId, long classNameId, long classPK, int start, int end,
-		OrderByComparator<Subscription> orderByComparator) {
-
-		return findByC_C_C(
-			companyId, classNameId, classPK, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the subscriptions where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -988,14 +553,9 @@ public class SubscriptionPersistenceImpl
 		OrderByComparator<Subscription> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByC_C_C.find(
-				finderCache, new Object[] {companyId, classNameId, classPK},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_C_C.find(
+			finderCache, new Object[] {companyId, classNameId, classPK}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1014,17 +574,9 @@ public class SubscriptionPersistenceImpl
 			OrderByComparator<Subscription> orderByComparator)
 		throws NoSuchSubscriptionException {
 
-		Subscription subscription = fetchByC_C_C_First(
-			companyId, classNameId, classPK, orderByComparator);
-
-		if (subscription != null) {
-			return subscription;
-		}
-
-		throw new NoSuchSubscriptionException(
-			_collectionPersistenceFinderByC_C_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, classNameId, classPK}));
+		return _collectionPersistenceFinderByC_C_C.findFirst(
+			finderCache, new Object[] {companyId, classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -1069,98 +621,21 @@ public class SubscriptionPersistenceImpl
 	 */
 	@Override
 	public int countByC_C_C(long companyId, long classNameId, long classPK) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			return _collectionPersistenceFinderByC_C_C.count(
-				finderCache, new Object[] {companyId, classNameId, classPK});
-		}
+		return _collectionPersistenceFinderByC_C_C.count(
+			finderCache, new Object[] {companyId, classNameId, classPK});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_U_C_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_U_C_C;
-	private FinderPath _finderPathFetchByC_U_C_C;
-	private FinderPath _finderPathCountByC_U_C_C;
-	private FinderPath _finderPathWithPaginationCountByC_U_C_C;
-
-	/**
-	 * Returns all the subscriptions where companyId = &#63; and userId = &#63; and classNameId = &#63; and classPK = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param classPKs the class pks
-	 * @return the matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByC_U_C_C(
-		long companyId, long userId, long classNameId, long[] classPKs) {
-
-		return findByC_U_C_C(
-			companyId, userId, classNameId, classPKs, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the subscriptions where companyId = &#63; and userId = &#63; and classNameId = &#63; and classPK = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param classPKs the class pks
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @return the range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByC_U_C_C(
-		long companyId, long userId, long classNameId, long[] classPKs,
-		int start, int end) {
-
-		return findByC_U_C_C(
-			companyId, userId, classNameId, classPKs, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the subscriptions where companyId = &#63; and userId = &#63; and classNameId = &#63; and classPK = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param classPKs the class pks
-	 * @param start the lower bound of the range of subscriptions
-	 * @param end the upper bound of the range of subscriptions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching subscriptions
-	 */
-	@Override
-	public List<Subscription> findByC_U_C_C(
-		long companyId, long userId, long classNameId, long[] classPKs,
-		int start, int end, OrderByComparator<Subscription> orderByComparator) {
-
-		return findByC_U_C_C(
-			companyId, userId, classNameId, classPKs, start, end,
-			orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<Subscription, NoSuchSubscriptionException>
+			_collectionPersistenceFinderByC_U_C_C;
+	private UniquePersistenceFinder<Subscription, NoSuchSubscriptionException>
+		_uniquePersistenceFinderByC_U_C_C;
 
 	/**
 	 * Returns an ordered range of all the subscriptions where companyId = &#63; and userId = &#63; and classNameId = &#63; and classPK = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SubscriptionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1179,16 +654,11 @@ public class SubscriptionPersistenceImpl
 		int start, int end, OrderByComparator<Subscription> orderByComparator,
 		boolean useFinderCache) {
 
-		if (classPKs == null) {
-			classPKs = new long[0];
-		}
-		else if (classPKs.length > 1) {
-			classPKs = ArrayUtil.sortedUnique(classPKs);
-		}
+		classPKs = ArrayUtil.sortedUnique(classPKs);
 
 		if (classPKs.length == 1) {
 			Subscription subscription = fetchByC_U_C_C(
-				companyId, userId, classNameId, classPKs[0]);
+				companyId, userId, classNameId, classPKs[0], useFinderCache);
 
 			if (subscription == null) {
 				return Collections.emptyList();
@@ -1202,124 +672,10 @@ public class SubscriptionPersistenceImpl
 			}
 		}
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						companyId, userId, classNameId,
-						StringUtil.merge(classPKs)
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					companyId, userId, classNameId, StringUtil.merge(classPKs),
-					start, end, orderByComparator
-				};
-			}
-
-			List<Subscription> list = null;
-
-			if (useFinderCache) {
-				list = (List<Subscription>)finderCache.getResult(
-					_finderPathWithPaginationFindByC_U_C_C, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (Subscription subscription : list) {
-						if ((companyId != subscription.getCompanyId()) ||
-							(userId != subscription.getUserId()) ||
-							(classNameId != subscription.getClassNameId()) ||
-							!ArrayUtil.contains(
-								classPKs, subscription.getClassPK())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_SUBSCRIPTION_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_USERID_2);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_CLASSNAMEID_2);
-
-				if (classPKs.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_C_U_C_C_CLASSPK_7);
-
-					sb.append(StringUtil.merge(classPKs));
-
-					sb.append(")");
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(SubscriptionModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(userId);
-
-					queryPos.add(classNameId);
-
-					list = (List<Subscription>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByC_U_C_C, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByC_U_C_C.find(
+			finderCache,
+			new Object[] {companyId, userId, classNameId, classPKs}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1337,52 +693,9 @@ public class SubscriptionPersistenceImpl
 			long companyId, long userId, long classNameId, long classPK)
 		throws NoSuchSubscriptionException {
 
-		Subscription subscription = fetchByC_U_C_C(
-			companyId, userId, classNameId, classPK);
-
-		if (subscription == null) {
-			StringBundler sb = new StringBundler(10);
-
-			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-			sb.append("companyId=");
-			sb.append(companyId);
-
-			sb.append(", userId=");
-			sb.append(userId);
-
-			sb.append(", classNameId=");
-			sb.append(classNameId);
-
-			sb.append(", classPK=");
-			sb.append(classPK);
-
-			sb.append("}");
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(sb.toString());
-			}
-
-			throw new NoSuchSubscriptionException(sb.toString());
-		}
-
-		return subscription;
-	}
-
-	/**
-	 * Returns the subscription where companyId = &#63; and userId = &#63; and classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching subscription, or <code>null</code> if a matching subscription could not be found
-	 */
-	@Override
-	public Subscription fetchByC_U_C_C(
-		long companyId, long userId, long classNameId, long classPK) {
-
-		return fetchByC_U_C_C(companyId, userId, classNameId, classPK, true);
+		return _uniquePersistenceFinderByC_U_C_C.find(
+			finderCache,
+			new Object[] {companyId, userId, classNameId, classPK});
 	}
 
 	/**
@@ -1400,100 +713,9 @@ public class SubscriptionPersistenceImpl
 		long companyId, long userId, long classNameId, long classPK,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			Object[] finderArgs = null;
-
-			if (useFinderCache) {
-				finderArgs = new Object[] {
-					companyId, userId, classNameId, classPK
-				};
-			}
-
-			Object result = null;
-
-			if (useFinderCache) {
-				result = finderCache.getResult(
-					_finderPathFetchByC_U_C_C, finderArgs, this);
-			}
-
-			if (result instanceof Subscription) {
-				Subscription subscription = (Subscription)result;
-
-				if ((companyId != subscription.getCompanyId()) ||
-					(userId != subscription.getUserId()) ||
-					(classNameId != subscription.getClassNameId()) ||
-					(classPK != subscription.getClassPK())) {
-
-					result = null;
-				}
-			}
-
-			if (result == null) {
-				StringBundler sb = new StringBundler(6);
-
-				sb.append(_SQL_SELECT_SUBSCRIPTION_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_USERID_2);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_CLASSPK_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(userId);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(classPK);
-
-					List<Subscription> list = query.list();
-
-					if (list.isEmpty()) {
-						if (useFinderCache) {
-							finderCache.putResult(
-								_finderPathFetchByC_U_C_C, finderArgs, list);
-						}
-					}
-					else {
-						Subscription subscription = list.get(0);
-
-						result = subscription;
-
-						cacheResult(subscription);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			if (result instanceof List<?>) {
-				return null;
-			}
-			else {
-				return (Subscription)result;
-			}
-		}
+		return _uniquePersistenceFinderByC_U_C_C.fetch(
+			finderCache, new Object[] {companyId, userId, classNameId, classPK},
+			useFinderCache);
 	}
 
 	/**
@@ -1529,65 +751,11 @@ public class SubscriptionPersistenceImpl
 	public int countByC_U_C_C(
 		long companyId, long userId, long classNameId, long classPK) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			FinderPath finderPath = _finderPathCountByC_U_C_C;
-
-			Object[] finderArgs = new Object[] {
-				companyId, userId, classNameId, classPK
-			};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(5);
-
-				sb.append(_SQL_COUNT_SUBSCRIPTION_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_USERID_2);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_CLASSPK_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(userId);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(classPK);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByC_U_C_C.count(
+			finderCache,
+			new Object[] {
+				companyId, userId, classNameId, new long[] {classPK}
+			});
 	}
 
 	/**
@@ -1603,100 +771,12 @@ public class SubscriptionPersistenceImpl
 	public int countByC_U_C_C(
 		long companyId, long userId, long classNameId, long[] classPKs) {
 
-		if (classPKs == null) {
-			classPKs = new long[0];
-		}
-		else if (classPKs.length > 1) {
-			classPKs = ArrayUtil.sortedUnique(classPKs);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					Subscription.class)) {
-
-			Object[] finderArgs = new Object[] {
-				companyId, userId, classNameId, StringUtil.merge(classPKs)
-			};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByC_U_C_C, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_SUBSCRIPTION_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_USERID_2);
-
-				sb.append(_FINDER_COLUMN_C_U_C_C_CLASSNAMEID_2);
-
-				if (classPKs.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_C_U_C_C_CLASSPK_7);
-
-					sb.append(StringUtil.merge(classPKs));
-
-					sb.append(")");
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(userId);
-
-					queryPos.add(classNameId);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByC_U_C_C, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByC_U_C_C.count(
+			finderCache,
+			new Object[] {
+				companyId, userId, classNameId, ArrayUtil.sortedUnique(classPKs)
+			});
 	}
-
-	private static final String _FINDER_COLUMN_C_U_C_C_COMPANYID_2 =
-		"subscription.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_U_C_C_USERID_2 =
-		"subscription.userId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_U_C_C_CLASSNAMEID_2 =
-		"subscription.classNameId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_U_C_C_CLASSPK_2 =
-		"subscription.classPK = ?";
-
-	private static final String _FINDER_COLUMN_C_U_C_C_CLASSPK_7 =
-		"subscription.classPK IN (";
 
 	public SubscriptionPersistenceImpl() {
 		setModelClass(Subscription.class);
@@ -1973,241 +1053,248 @@ public class SubscriptionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_SUBSCRIPTION_WHERE,
-				_SQL_COUNT_SUBSCRIPTION_WHERE,
-				SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_SUBSCRIPTION_WHERE, _SQL_COUNT_SUBSCRIPTION_WHERE,
+				SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"subscription.", "groupId", FinderColumn.Type.LONG, "=",
 					true, true, Subscription::getGroupId));
 
-		_finderPathWithPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId"}, true);
-
-		_finderPathWithoutPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, true);
-
-		_finderPathCountByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"},
-			false);
-
 		_collectionPersistenceFinderByUserId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUserId,
-				_finderPathWithoutPaginationFindByUserId,
-				_finderPathCountByUserId, _SQL_SELECT_SUBSCRIPTION_WHERE,
-				_SQL_COUNT_SUBSCRIPTION_WHERE,
-				SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, false),
+				_SQL_SELECT_SUBSCRIPTION_WHERE, _SQL_COUNT_SUBSCRIPTION_WHERE,
+				SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"subscription.", "userId", FinderColumn.Type.LONG, "=",
 					true, true, Subscription::getUserId));
 
-		_finderPathWithPaginationFindByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "userId"}, true);
-
-		_finderPathWithoutPaginationFindByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "userId"}, true);
-
-		_finderPathCountByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "userId"}, false);
-
 		_collectionPersistenceFinderByG_U = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_U,
-			_finderPathWithoutPaginationFindByG_U, _finderPathCountByG_U,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "userId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "userId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "userId"}, false),
 			_SQL_SELECT_SUBSCRIPTION_WHERE, _SQL_COUNT_SUBSCRIPTION_WHERE,
-			SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"subscription.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, Subscription::getGroupId),
+				true, Subscription::getGroupId),
 			new FinderColumn<>(
 				"subscription.", "userId", FinderColumn.Type.LONG, "=", true,
 				true, Subscription::getUserId));
 
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "classNameId"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "classNameId"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "classNameId"}, false);
-
 		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "classNameId"}, false),
 			_SQL_SELECT_SUBSCRIPTION_WHERE, _SQL_COUNT_SUBSCRIPTION_WHERE,
-			SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"subscription.", "companyId", FinderColumn.Type.LONG, "=", true,
-				false, Subscription::getCompanyId),
+				true, Subscription::getCompanyId),
 			new FinderColumn<>(
 				"subscription.", "classNameId", FinderColumn.Type.LONG, "=",
 				true, true, Subscription::getClassNameId));
-
-		_finderPathWithPaginationFindByU_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"userId", "classNameId"}, true);
-
-		_finderPathWithoutPaginationFindByU_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"userId", "classNameId"}, true);
-
-		_finderPathCountByU_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByU_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"userId", "classNameId"}, false);
 
 		_collectionPersistenceFinderByU_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByU_C,
-			_finderPathWithoutPaginationFindByU_C, _finderPathCountByU_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"userId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"userId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByU_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"userId", "classNameId"}, false),
 			_SQL_SELECT_SUBSCRIPTION_WHERE, _SQL_COUNT_SUBSCRIPTION_WHERE,
-			SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"subscription.", "userId", FinderColumn.Type.LONG, "=", true,
-				false, Subscription::getUserId),
+				true, Subscription::getUserId),
 			new FinderColumn<>(
 				"subscription.", "classNameId", FinderColumn.Type.LONG, "=",
 				true, true, Subscription::getClassNameId));
 
-		_finderPathWithPaginationFindByC_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "classNameId", "classPK"}, true);
-
-		_finderPathWithoutPaginationFindByC_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"companyId", "classNameId", "classPK"}, true);
-
-		_finderPathCountByC_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"companyId", "classNameId", "classPK"}, false);
-
 		_collectionPersistenceFinderByC_C_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C_C,
-			_finderPathWithoutPaginationFindByC_C_C, _finderPathCountByC_C_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"companyId", "classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"companyId", "classNameId", "classPK"}, false),
 			_SQL_SELECT_SUBSCRIPTION_WHERE, _SQL_COUNT_SUBSCRIPTION_WHERE,
-			SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"subscription.", "companyId", FinderColumn.Type.LONG, "=", true,
-				false, Subscription::getCompanyId),
+				true, Subscription::getCompanyId),
 			new FinderColumn<>(
 				"subscription.", "classNameId", FinderColumn.Type.LONG, "=",
-				true, false, Subscription::getClassNameId),
+				true, true, Subscription::getClassNameId),
 			new FinderColumn<>(
 				"subscription.", "classPK", FinderColumn.Type.LONG, "=", true,
 				true, Subscription::getClassPK));
 
-		_finderPathWithPaginationFindByC_U_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_U_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "userId", "classNameId", "classPK"},
-			true);
+		_collectionPersistenceFinderByC_U_C_C =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_U_C_C",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"companyId", "userId", "classNameId", "classPK"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_U_C_C",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Long.class.getName()
+					},
+					new String[] {
+						"companyId", "userId", "classNameId", "classPK"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_U_C_C",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Long.class.getName()
+					},
+					new String[] {
+						"companyId", "userId", "classNameId", "classPK"
+					},
+					false),
+				_SQL_SELECT_SUBSCRIPTION_WHERE, _SQL_COUNT_SUBSCRIPTION_WHERE,
+				SubscriptionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"subscription.", "companyId", FinderColumn.Type.LONG, "=",
+					true, true, Subscription::getCompanyId),
+				new FinderColumn<>(
+					"subscription.", "userId", FinderColumn.Type.LONG, "=",
+					true, true, Subscription::getUserId),
+				new FinderColumn<>(
+					"subscription.", "classNameId", FinderColumn.Type.LONG, "=",
+					true, true, Subscription::getClassNameId),
+				new ArrayableFinderColumn<>(
+					"subscription.", "classPK", FinderColumn.Type.LONG, "=",
+					false, true, true, Subscription::getClassPK));
 
-		_finderPathWithoutPaginationFindByC_U_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_U_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"companyId", "userId", "classNameId", "classPK"},
-			true);
-
-		_finderPathFetchByC_U_C_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_U_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"companyId", "userId", "classNameId", "classPK"},
-			false, Subscription::getCompanyId, Subscription::getUserId,
-			Subscription::getClassNameId, Subscription::getClassPK);
-
-		_finderPathCountByC_U_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_U_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"companyId", "userId", "classNameId", "classPK"},
-			false);
-
-		_finderPathWithPaginationCountByC_U_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_U_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"companyId", "userId", "classNameId", "classPK"},
-			false);
+		_uniquePersistenceFinderByC_U_C_C = new UniquePersistenceFinder<>(
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_U_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName(), Long.class.getName()
+				},
+				new String[] {"companyId", "userId", "classNameId", "classPK"},
+				0, 0, false, Subscription::getCompanyId,
+				Subscription::getUserId, Subscription::getClassNameId,
+				Subscription::getClassPK),
+			_SQL_SELECT_SUBSCRIPTION_WHERE, "",
+			new FinderColumn<>(
+				"subscription.", "companyId", FinderColumn.Type.LONG, "=", true,
+				true, Subscription::getCompanyId),
+			new FinderColumn<>(
+				"subscription.", "userId", FinderColumn.Type.LONG, "=", true,
+				true, Subscription::getUserId),
+			new FinderColumn<>(
+				"subscription.", "classNameId", FinderColumn.Type.LONG, "=",
+				true, true, Subscription::getClassNameId),
+			new FinderColumn<>(
+				"subscription.", "classPK", FinderColumn.Type.LONG, "=", true,
+				true, Subscription::getClassPK));
 
 		SubscriptionUtil.setPersistence(this);
 	}
@@ -2278,4 +1365,4 @@ public class SubscriptionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:402453664
+// LIFERAY-SERVICE-BUILDER-HASH:753706069

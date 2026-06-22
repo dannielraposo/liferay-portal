@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -117,6 +118,13 @@ public class DBResourceUtilTest {
 				new String[] {"virtualHostId", "ctCollectionId"},
 				portalTablesPrimaryKeyColumnNames.get("VirtualHost"));
 		}
+	}
+
+	@Test
+	public void testParseCreateTableSQLWhenSQLIsNull() {
+		Set<String> tableNames = DBResourceUtil.parseCreateTableSQL(null);
+
+		Assert.assertTrue(tableNames.isEmpty());
 	}
 
 	private InputStream _getSQLFileInputStream(String lineSeparator) {

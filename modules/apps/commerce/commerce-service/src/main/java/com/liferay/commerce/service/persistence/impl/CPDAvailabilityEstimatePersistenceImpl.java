@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -82,68 +81,15 @@ public class CPDAvailabilityEstimatePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CPDAvailabilityEstimate>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the cpd availability estimates where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching cpd availability estimates
-	 */
-	@Override
-	public List<CPDAvailabilityEstimate> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cpd availability estimates where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cpd availability estimates
-	 * @param end the upper bound of the range of cpd availability estimates (not inclusive)
-	 * @return the range of matching cpd availability estimates
-	 */
-	@Override
-	public List<CPDAvailabilityEstimate> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDAvailabilityEstimate, NoSuchCPDAvailabilityEstimateException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the cpd availability estimates where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cpd availability estimates
-	 * @param end the upper bound of the range of cpd availability estimates (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cpd availability estimates
-	 */
-	@Override
-	public List<CPDAvailabilityEstimate> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CPDAvailabilityEstimate> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cpd availability estimates where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -178,16 +124,8 @@ public class CPDAvailabilityEstimatePersistenceImpl
 			OrderByComparator<CPDAvailabilityEstimate> orderByComparator)
 		throws NoSuchCPDAvailabilityEstimateException {
 
-		CPDAvailabilityEstimate cpdAvailabilityEstimate = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (cpdAvailabilityEstimate != null) {
-			return cpdAvailabilityEstimate;
-		}
-
-		throw new NoSuchCPDAvailabilityEstimateException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -229,75 +167,15 @@ public class CPDAvailabilityEstimatePersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CPDAvailabilityEstimate>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the cpd availability estimates where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching cpd availability estimates
-	 */
-	@Override
-	public List<CPDAvailabilityEstimate> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cpd availability estimates where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cpd availability estimates
-	 * @param end the upper bound of the range of cpd availability estimates (not inclusive)
-	 * @return the range of matching cpd availability estimates
-	 */
-	@Override
-	public List<CPDAvailabilityEstimate> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDAvailabilityEstimate, NoSuchCPDAvailabilityEstimateException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the cpd availability estimates where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cpd availability estimates
-	 * @param end the upper bound of the range of cpd availability estimates (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cpd availability estimates
-	 */
-	@Override
-	public List<CPDAvailabilityEstimate> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CPDAvailabilityEstimate> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cpd availability estimates where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -334,16 +212,8 @@ public class CPDAvailabilityEstimatePersistenceImpl
 			OrderByComparator<CPDAvailabilityEstimate> orderByComparator)
 		throws NoSuchCPDAvailabilityEstimateException {
 
-		CPDAvailabilityEstimate cpdAvailabilityEstimate = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (cpdAvailabilityEstimate != null) {
-			return cpdAvailabilityEstimate;
-		}
-
-		throw new NoSuchCPDAvailabilityEstimateException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -388,77 +258,15 @@ public class CPDAvailabilityEstimatePersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath
-		_finderPathWithPaginationFindByCommerceAvailabilityEstimateId;
-	private FinderPath
-		_finderPathWithoutPaginationFindByCommerceAvailabilityEstimateId;
-	private FinderPath _finderPathCountByCommerceAvailabilityEstimateId;
-	private CollectionPersistenceFinder<CPDAvailabilityEstimate>
-		_collectionPersistenceFinderByCommerceAvailabilityEstimateId;
-
-	/**
-	 * Returns all the cpd availability estimates where commerceAvailabilityEstimateId = &#63;.
-	 *
-	 * @param commerceAvailabilityEstimateId the commerce availability estimate ID
-	 * @return the matching cpd availability estimates
-	 */
-	@Override
-	public List<CPDAvailabilityEstimate> findByCommerceAvailabilityEstimateId(
-		long commerceAvailabilityEstimateId) {
-
-		return findByCommerceAvailabilityEstimateId(
-			commerceAvailabilityEstimateId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cpd availability estimates where commerceAvailabilityEstimateId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceAvailabilityEstimateId the commerce availability estimate ID
-	 * @param start the lower bound of the range of cpd availability estimates
-	 * @param end the upper bound of the range of cpd availability estimates (not inclusive)
-	 * @return the range of matching cpd availability estimates
-	 */
-	@Override
-	public List<CPDAvailabilityEstimate> findByCommerceAvailabilityEstimateId(
-		long commerceAvailabilityEstimateId, int start, int end) {
-
-		return findByCommerceAvailabilityEstimateId(
-			commerceAvailabilityEstimateId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDAvailabilityEstimate, NoSuchCPDAvailabilityEstimateException>
+			_collectionPersistenceFinderByCommerceAvailabilityEstimateId;
 
 	/**
 	 * Returns an ordered range of all the cpd availability estimates where commerceAvailabilityEstimateId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceAvailabilityEstimateId the commerce availability estimate ID
-	 * @param start the lower bound of the range of cpd availability estimates
-	 * @param end the upper bound of the range of cpd availability estimates (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cpd availability estimates
-	 */
-	@Override
-	public List<CPDAvailabilityEstimate> findByCommerceAvailabilityEstimateId(
-		long commerceAvailabilityEstimateId, int start, int end,
-		OrderByComparator<CPDAvailabilityEstimate> orderByComparator) {
-
-		return findByCommerceAvailabilityEstimateId(
-			commerceAvailabilityEstimateId, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cpd availability estimates where commerceAvailabilityEstimateId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDAvailabilityEstimateModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commerceAvailabilityEstimateId the commerce availability estimate ID
@@ -494,19 +302,10 @@ public class CPDAvailabilityEstimatePersistenceImpl
 			OrderByComparator<CPDAvailabilityEstimate> orderByComparator)
 		throws NoSuchCPDAvailabilityEstimateException {
 
-		CPDAvailabilityEstimate cpdAvailabilityEstimate =
-			fetchByCommerceAvailabilityEstimateId_First(
-				commerceAvailabilityEstimateId, orderByComparator);
-
-		if (cpdAvailabilityEstimate != null) {
-			return cpdAvailabilityEstimate;
-		}
-
-		throw new NoSuchCPDAvailabilityEstimateException(
-			_collectionPersistenceFinderByCommerceAvailabilityEstimateId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {commerceAvailabilityEstimateId}));
+		return _collectionPersistenceFinderByCommerceAvailabilityEstimateId.
+			findFirst(
+				finderCache, new Object[] {commerceAvailabilityEstimateId},
+				orderByComparator);
 	}
 
 	/**
@@ -554,9 +353,9 @@ public class CPDAvailabilityEstimatePersistenceImpl
 			count(finderCache, new Object[] {commerceAvailabilityEstimateId});
 	}
 
-	private FinderPath _finderPathFetchByCProductId;
-	private UniquePersistenceFinder<CPDAvailabilityEstimate>
-		_uniquePersistenceFinderByCProductId;
+	private UniquePersistenceFinder
+		<CPDAvailabilityEstimate, NoSuchCPDAvailabilityEstimateException>
+			_uniquePersistenceFinderByCProductId;
 
 	/**
 	 * Returns the cpd availability estimate where CProductId = &#63; or throws a <code>NoSuchCPDAvailabilityEstimateException</code> if it could not be found.
@@ -569,33 +368,8 @@ public class CPDAvailabilityEstimatePersistenceImpl
 	public CPDAvailabilityEstimate findByCProductId(long CProductId)
 		throws NoSuchCPDAvailabilityEstimateException {
 
-		CPDAvailabilityEstimate cpdAvailabilityEstimate = fetchByCProductId(
-			CProductId);
-
-		if (cpdAvailabilityEstimate == null) {
-			String message =
-				_uniquePersistenceFinderByCProductId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {CProductId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPDAvailabilityEstimateException(message);
-		}
-
-		return cpdAvailabilityEstimate;
-	}
-
-	/**
-	 * Returns the cpd availability estimate where CProductId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param CProductId the c product ID
-	 * @return the matching cpd availability estimate, or <code>null</code> if a matching cpd availability estimate could not be found
-	 */
-	@Override
-	public CPDAvailabilityEstimate fetchByCProductId(long CProductId) {
-		return fetchByCProductId(CProductId, true);
+		return _uniquePersistenceFinderByCProductId.find(
+			finderCache, new Object[] {CProductId});
 	}
 
 	/**
@@ -875,105 +649,90 @@ public class CPDAvailabilityEstimatePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_CPDAVAILABILITYESTIMATE_WHERE,
 			_SQL_COUNT_CPDAVAILABILITYESTIMATE_WHERE,
 			CPDAvailabilityEstimateModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"cpdAvailabilityEstimate.", "uuid", FinderColumn.Type.STRING,
-				"=", true, true, CPDAvailabilityEstimate::getUuid));
-
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
+				"cpdAvailabilityEstimate.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPDAvailabilityEstimate::getUuid));
 
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_CPDAVAILABILITYESTIMATE_WHERE,
 				_SQL_COUNT_CPDAVAILABILITYESTIMATE_WHERE,
 				CPDAvailabilityEstimateModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"cpdAvailabilityEstimate.", "uuid",
-					FinderColumn.Type.STRING, "=", true, false,
+					"cpdAvailabilityEstimate.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
 					CPDAvailabilityEstimate::getUuid),
 				new FinderColumn<>(
 					"cpdAvailabilityEstimate.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CPDAvailabilityEstimate::getCompanyId));
 
-		_finderPathWithPaginationFindByCommerceAvailabilityEstimateId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-				"findByCommerceAvailabilityEstimateId",
-				new String[] {
-					Long.class.getName(), Integer.class.getName(),
-					Integer.class.getName(), OrderByComparator.class.getName()
-				},
-				new String[] {"commerceAvailabilityEstimateId"}, true);
-
-		_finderPathWithoutPaginationFindByCommerceAvailabilityEstimateId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByCommerceAvailabilityEstimateId",
-				new String[] {Long.class.getName()},
-				new String[] {"commerceAvailabilityEstimateId"}, true);
-
-		_finderPathCountByCommerceAvailabilityEstimateId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCommerceAvailabilityEstimateId",
-			new String[] {Long.class.getName()},
-			new String[] {"commerceAvailabilityEstimateId"}, false);
-
 		_collectionPersistenceFinderByCommerceAvailabilityEstimateId =
 			new CollectionPersistenceFinder<>(
 				this,
-				_finderPathWithPaginationFindByCommerceAvailabilityEstimateId,
-				_finderPathWithoutPaginationFindByCommerceAvailabilityEstimateId,
-				_finderPathCountByCommerceAvailabilityEstimateId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCommerceAvailabilityEstimateId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"commerceAvailabilityEstimateId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCommerceAvailabilityEstimateId",
+					new String[] {Long.class.getName()},
+					new String[] {"commerceAvailabilityEstimateId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCommerceAvailabilityEstimateId",
+					new String[] {Long.class.getName()},
+					new String[] {"commerceAvailabilityEstimateId"}, false),
 				_SQL_SELECT_CPDAVAILABILITYESTIMATE_WHERE,
 				_SQL_COUNT_CPDAVAILABILITYESTIMATE_WHERE,
 				CPDAvailabilityEstimateModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpdAvailabilityEstimate.",
 					"commerceAvailabilityEstimateId", FinderColumn.Type.LONG,
@@ -981,14 +740,14 @@ public class CPDAvailabilityEstimatePersistenceImpl
 					CPDAvailabilityEstimate::
 						getCommerceAvailabilityEstimateId));
 
-		_finderPathFetchByCProductId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByCProductId",
-			new String[] {Long.class.getName()}, new String[] {"CProductId"},
-			false, CPDAvailabilityEstimate::getCProductId);
-
 		_uniquePersistenceFinderByCProductId = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByCProductId,
-			_SQL_SELECT_CPDAVAILABILITYESTIMATE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByCProductId",
+				new String[] {Long.class.getName()},
+				new String[] {"CProductId"}, 0, 0, false,
+				CPDAvailabilityEstimate::getCProductId),
+			_SQL_SELECT_CPDAVAILABILITYESTIMATE_WHERE, "",
 			new FinderColumn<>(
 				"cpdAvailabilityEstimate.", "CProductId",
 				FinderColumn.Type.LONG, "=", true, true,
@@ -1063,4 +822,4 @@ public class CPDAvailabilityEstimatePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1122702210
+// LIFERAY-SERVICE-BUILDER-HASH:-1401249838

@@ -12,9 +12,10 @@ import com.liferay.exportimport.report.model.ExportImportReportEntry;
 import com.liferay.exportimport.report.service.ExportImportReportEntryLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
+import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.test.rule.Inject;
@@ -23,6 +24,7 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,6 +40,11 @@ public class ExportImportReportEntryLocalServiceTest {
 	@Rule
 	public static final LiferayIntegrationTestRule liferayIntegrationTestRule =
 		new LiferayIntegrationTestRule();
+
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		_company = CompanyTestUtil.addCompany();
+	}
 
 	@Test
 	@TestInfo("LPD-77587")
@@ -151,6 +158,40 @@ public class ExportImportReportEntryLocalServiceTest {
 	}
 
 	@Test
+	@TestInfo("LPD-65084")
+	public void testAddMissingReferenceExportImportReportEntry()
+		throws Exception {
+
+		Group group = GroupTestUtil.addGroup();
+
+		String classExternalReferenceCode = RandomTestUtil.randomString();
+		long classNameId = RandomTestUtil.randomLong();
+		long exportImportConfigurationId = RandomTestUtil.randomLong();
+		String modelNameLanguageKey = RandomTestUtil.randomString();
+
+		ExportImportReportEntry exportImportReportEntry =
+			_exportImportReportEntryLocalService.
+				addMissingReferenceExportImportReportEntry(
+					group.getGroupId(), TestPropsValues.getCompanyId(),
+					classExternalReferenceCode, classNameId,
+					exportImportConfigurationId, modelNameLanguageKey);
+
+		Assert.assertEquals(
+			group.getGroupId(), exportImportReportEntry.getGroupId());
+		Assert.assertEquals(
+			StringBundler.concat(
+				"Missing Reference: Entity ", modelNameLanguageKey,
+				" with external reference code ", classExternalReferenceCode,
+				" in scope ", group.getGroupId(),
+				" was not found. Please ensure the referenced entity is ",
+				"imported."),
+			exportImportReportEntry.getErrorMessage());
+		Assert.assertEquals(
+			ExportImportReportEntryConstants.TYPE_MISSING_REFERENCE,
+			exportImportReportEntry.getType());
+	}
+
+	@Test
 	public void testGetExportImportReportEntries() throws Exception {
 		long exportImportConfigurationId = RandomTestUtil.randomLong();
 
@@ -169,14 +210,12 @@ public class ExportImportReportEntryLocalServiceTest {
 			RandomTestUtil.randomString(), RandomTestUtil.randomLong(),
 			RandomTestUtil.randomLong(), RandomTestUtil.randomString());
 
-		Company company = CompanyTestUtil.addCompany();
-
 		_exportImportReportEntryLocalService.addEmptyExportImportReportEntry(
-			RandomTestUtil.randomLong(), company.getCompanyId(),
+			RandomTestUtil.randomLong(), _company.getCompanyId(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomLong(),
 			exportImportConfigurationId, RandomTestUtil.randomString());
 		_exportImportReportEntryLocalService.addEmptyExportImportReportEntry(
-			RandomTestUtil.randomLong(), company.getCompanyId(),
+			RandomTestUtil.randomLong(), _company.getCompanyId(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomLong(),
 			RandomTestUtil.randomLong(), RandomTestUtil.randomString());
 
@@ -187,8 +226,45 @@ public class ExportImportReportEntryLocalServiceTest {
 		Assert.assertEquals(
 			exportImportReportEntries.toString(), 1,
 			exportImportReportEntries.size());
+	}
 
-		_companyLocalService.deleteCompany(company);
+	@Test
+	public void testGetExportImportReportEntriesCount() throws Exception {
+		long exportImportConfigurationId = RandomTestUtil.randomLong();
+
+		Assert.assertEquals(
+			0,
+			_exportImportReportEntryLocalService.
+				getExportImportReportEntriesCount(
+					TestPropsValues.getCompanyId(),
+					exportImportConfigurationId));
+
+		_exportImportReportEntryLocalService.addEmptyExportImportReportEntry(
+			RandomTestUtil.randomLong(), TestPropsValues.getCompanyId(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomLong(),
+			exportImportConfigurationId, RandomTestUtil.randomString());
+
+		_exportImportReportEntryLocalService.addEmptyExportImportReportEntry(
+			RandomTestUtil.randomLong(), TestPropsValues.getCompanyId(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomLong(),
+			RandomTestUtil.randomLong(), RandomTestUtil.randomString());
+
+		_exportImportReportEntryLocalService.addEmptyExportImportReportEntry(
+			RandomTestUtil.randomLong(), _company.getCompanyId(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomLong(),
+			exportImportConfigurationId, RandomTestUtil.randomString());
+
+		_exportImportReportEntryLocalService.addEmptyExportImportReportEntry(
+			RandomTestUtil.randomLong(), _company.getCompanyId(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomLong(),
+			RandomTestUtil.randomLong(), RandomTestUtil.randomString());
+
+		Assert.assertEquals(
+			1,
+			_exportImportReportEntryLocalService.
+				getExportImportReportEntriesCount(
+					TestPropsValues.getCompanyId(),
+					exportImportConfigurationId));
 	}
 
 	@Test
@@ -333,6 +409,53 @@ public class ExportImportReportEntryLocalServiceTest {
 	}
 
 	@Test
+	@TestInfo("LPD-65084")
+	public void testGetOrAddMissingReferenceExportImportReportEntry()
+		throws Exception {
+
+		int count =
+			_exportImportReportEntryLocalService.
+				getExportImportReportEntriesCount();
+
+		long groupId = RandomTestUtil.randomLong();
+		long companyId = TestPropsValues.getCompanyId();
+		String classExternalReferenceCode = RandomTestUtil.randomString();
+		long classNameId = RandomTestUtil.randomLong();
+		long exportImportConfigurationId = RandomTestUtil.randomLong();
+		String modelNameLanguageKey = RandomTestUtil.randomString();
+
+		ExportImportReportEntry exportImportReportEntry =
+			_exportImportReportEntryLocalService.
+				getOrAddMissingReferenceExportImportReportEntry(
+					groupId, companyId, classExternalReferenceCode, classNameId,
+					exportImportConfigurationId, modelNameLanguageKey);
+
+		Assert.assertEquals(
+			ExportImportReportEntryConstants.TYPE_MISSING_REFERENCE,
+			exportImportReportEntry.getType());
+
+		Assert.assertEquals(
+			count + 1,
+			_exportImportReportEntryLocalService.
+				getExportImportReportEntriesCount());
+
+		ExportImportReportEntry duplicateExportImportReportEntry =
+			_exportImportReportEntryLocalService.
+				getOrAddMissingReferenceExportImportReportEntry(
+					groupId, companyId, classExternalReferenceCode, classNameId,
+					exportImportConfigurationId, modelNameLanguageKey);
+
+		Assert.assertEquals(
+			exportImportReportEntry.getExportImportReportEntryId(),
+			duplicateExportImportReportEntry.getExportImportReportEntryId());
+
+		Assert.assertEquals(
+			count + 1,
+			_exportImportReportEntryLocalService.
+				getExportImportReportEntriesCount());
+	}
+
+	@Test
 	public void testResolveEmptyExportImportReportEntries() throws Exception {
 		String classExternalReferenceCode = RandomTestUtil.randomString();
 		long classNameId = RandomTestUtil.randomLong();
@@ -464,8 +587,7 @@ public class ExportImportReportEntryLocalServiceTest {
 			updateExportImportReportEntry(exportImportReportEntry);
 	}
 
-	@Inject
-	private CompanyLocalService _companyLocalService;
+	private static Company _company;
 
 	@Inject
 	private ExportImportReportEntryLocalService

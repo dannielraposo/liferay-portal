@@ -6,17 +6,25 @@
 package com.liferay.headless.asset.library.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.depot.constants.DepotConstants;
+import com.liferay.depot.constants.DepotRolesConstants;
+import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.headless.asset.library.client.dto.v1_0.Role;
 import com.liferay.headless.asset.library.client.pagination.Page;
+import com.liferay.headless.asset.library.client.pagination.Pagination;
 import com.liferay.headless.asset.library.client.problem.Problem;
+import com.liferay.headless.asset.library.client.resource.v1_0.RoleResource;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeSupplier;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserGroupRoleService;
@@ -25,16 +33,25 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserGroupTestUtil;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
+import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -66,6 +83,18 @@ public class RoleResourceTest extends BaseRoleResourceTestCase {
 
 		_userGroupLocalService.addGroupUserGroup(
 			testDepotEntry.getGroupId(), _userGroup);
+	}
+
+	@FeatureFlags(
+		featureFlags = {@FeatureFlag("LPD-17564"), @FeatureFlag("LPD-58677")}
+	)
+	@Override
+	@Test
+	public void testGetAssetLibraryRolesPage() throws Exception {
+		_testGetAssetLibraryRolesPage(
+			DepotRolesConstants.ASSET_LIBRARY_ADMINISTRATOR);
+		_testGetAssetLibraryRolesPage(DepotRolesConstants.ASSET_LIBRARY_MEMBER);
+		_testGetAssetLibraryRolesPageWithSubtype();
 	}
 
 	@Override
@@ -108,9 +137,38 @@ public class RoleResourceTest extends BaseRoleResourceTestCase {
 				externalReferenceCode = role.getExternalReferenceCode();
 				id = role.getRoleId();
 				name = role.getName();
+				name_i18n = LocalizedMapUtil.getI18nMap(role.getTitleMap());
 				roleType = role.getType();
 			}
 		};
+	}
+
+	@Override
+	protected Role testGetAssetLibraryRolesPage_addRole(
+			String assetLibraryExternalReferenceCode, Role role)
+		throws Exception {
+
+		com.liferay.portal.kernel.model.Role depotRole = RoleTestUtil.addRole(
+			RoleConstants.TYPE_DEPOT);
+
+		_roles.add(depotRole);
+
+		return new Role() {
+			{
+				externalReferenceCode = depotRole.getExternalReferenceCode();
+				id = depotRole.getRoleId();
+				name = depotRole.getName();
+				roleType = depotRole.getType();
+			}
+		};
+	}
+
+	@Override
+	protected String
+			testGetAssetLibraryRolesPage_getIrrelevantAssetLibraryExternalReferenceCode()
+		throws Exception {
+
+		return null;
 	}
 
 	@Override
@@ -184,6 +242,116 @@ public class RoleResourceTest extends BaseRoleResourceTestCase {
 		}
 	}
 
+	private RoleResource _getRoleResource(String roleName) throws Exception {
+		String password = RandomTestUtil.randomString();
+
+		User user = UserTestUtil.addUser(
+			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
+			password, RandomTestUtil.randomString() + "@liferay.com",
+			RandomTestUtil.randomString(), LocaleUtil.getDefault(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			new long[] {testDepotEntry.getGroupId()},
+			ServiceContextTestUtil.getServiceContext());
+
+		com.liferay.portal.kernel.model.Role role = _roleLocalService.getRole(
+			testCompany.getCompanyId(), roleName);
+
+		_userGroupRoleService.addUserGroupRoles(
+			user.getUserId(), testDepotEntry.getGroupId(),
+			new long[] {role.getRoleId()});
+
+		return RoleResource.builder(
+		).authentication(
+			user.getEmailAddress(), password
+		).endpoint(
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
+	}
+
+	private void _testGetAssetLibraryRolesPage(String roleName)
+		throws Exception {
+
+		RoleResource roleResource = _getRoleResource(roleName);
+
+		Page<Role> page = roleResource.getAssetLibraryRolesPage(
+			testDepotEntryGroup.getExternalReferenceCode(),
+			Pagination.of(1, 10));
+
+		List<String> names = TransformUtil.transform(
+			page.getItems(), Role::getName);
+
+		Assert.assertTrue(
+			names.toString(),
+			names.contains(DepotRolesConstants.ASSET_LIBRARY_ADMINISTRATOR));
+		Assert.assertTrue(
+			names.toString(),
+			names.contains(DepotRolesConstants.ASSET_LIBRARY_MEMBER));
+		Assert.assertTrue(
+			names.toString(),
+			names.contains(DepotRolesConstants.ASSET_LIBRARY_OWNER));
+	}
+
+	private void _testGetAssetLibraryRolesPageWithSubtype() throws Exception {
+		_depotEntry = _depotEntryLocalService.addDepotEntry(
+			Collections.singletonMap(
+				LocaleUtil.getDefault(), RandomTestUtil.randomString()),
+			null, DepotConstants.TYPE_SPACE,
+			new ServiceContext() {
+				{
+					setCompanyId(testCompany.getCompanyId());
+					setUserId(TestPropsValues.getUserId());
+				}
+			});
+
+		com.liferay.portal.kernel.model.Role serviceBuilderRole1 =
+			_roleLocalService.addRole(
+				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
+				null, 0, RandomTestUtil.randomString(), null, null,
+				RoleConstants.TYPE_DEPOT, DepotRolesConstants.SUBTYPE_PROJECT,
+				null);
+
+		_roles.add(serviceBuilderRole1);
+
+		com.liferay.portal.kernel.model.Role serviceBuilderRole2 =
+			_roleLocalService.addRole(
+				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
+				null, 0, RandomTestUtil.randomString(), null, null,
+				RoleConstants.TYPE_DEPOT, DepotRolesConstants.SUBTYPE_SPACE,
+				null);
+
+		_roles.add(serviceBuilderRole2);
+
+		Group group = _depotEntry.getGroup();
+
+		Page<Role> page = roleResource.getAssetLibraryRolesPage(
+			group.getExternalReferenceCode(), Pagination.of(1, 100));
+
+		List<Role> roles = ListUtil.fromCollection(page.getItems());
+
+		Assert.assertTrue(
+			roles.toString(),
+			ListUtil.exists(
+				roles,
+				role -> Objects.equals(
+					DepotRolesConstants.ASSET_LIBRARY_ADMINISTRATOR,
+					role.getName())));
+		Assert.assertFalse(
+			roles.toString(),
+			ListUtil.exists(
+				roles,
+				role -> Objects.equals(
+					serviceBuilderRole1.getName(), role.getName())));
+		Assert.assertTrue(
+			roles.toString(),
+			ListUtil.exists(
+				roles,
+				role -> Objects.equals(
+					serviceBuilderRole2.getName(), role.getName())));
+	}
+
 	private void _testPutRolesPage(
 			UnsafeSupplier<Page<Role>, Exception> unsafeSupplier,
 			UnsafeConsumer<Role[], Exception> unsafeBiConsumer)
@@ -220,6 +388,9 @@ public class RoleResourceTest extends BaseRoleResourceTestCase {
 
 		_assertRolesPage(new Role[] {randomRole1, randomRole2}, unsafeSupplier);
 	}
+
+	@DeleteAfterTestRun
+	private DepotEntry _depotEntry;
 
 	@Inject
 	private DepotEntryLocalService _depotEntryLocalService;

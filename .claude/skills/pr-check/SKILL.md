@@ -1,0 +1,122 @@
+---
+
+allowed-tools: [Agent, Bash, Edit, Glob, Grep, Read, Skill, Write]
+description: Check that a PR is ready to be sent for review.
+name: pr-check
+
+---
+
+# PR Check
+
+Run premerge checks against the current branch. The skill iterates through the validations under `validations`, runs each one whose trigger matches the diff, and reports PASS or FAIL. Integration tests, Playwright tests, and Poshi tests are out of scope. Use the `test-plan` skill when their coverage is needed.
+
+## Preconditions
+
+- **Branch rebased on local `master`.** Compare `git merge-base HEAD master` to `git rev-parse master`; when they differ, abort and tell the developer to rebase (`git rebase master`). The `format-source-current-branch` validation diffs against the local `master` tip to decide which files to format — when the branch's merge-base lags behind that tip, SF picks up reverse-direction diffs from the master commits the branch has not absorbed and the `<TICKET> SF` autocommit captures unrelated rewrites.
+
+- **Working tree clean.** `git status --porcelain` must return empty. When dirty, abort and ask the developer to commit first — the autocommit steps inside drift validations would otherwise capture their uncommitted edits.
+
+- **Diff baseline is local `master`.** The skill never fetches from a remote and does not compare against an `upstream/master` ref. Whether local `master` is up to date is the developer's call.
+
+- **Diff is nonempty.** When the three-dot diff produces no files, exit with a one-line message — no validation produces useful signal on a clean branch.
+
+## Input
+
+### Diff
+
+```bash
+git diff --name-status "$(git merge-base HEAD master)...HEAD"
+```
+
+## Expected Output
+
+**`PASS`** or **`FAIL`**, followed by a **Results Summary** table the `pr` and `pr-check-publish` skills reuse to record what was tested on the GitHub PR.
+
+The procedure runs in two passes over the validations, in the order below. The order is dependency-driven: drift first (later validations see the regenerated tree), then formatting, then build, then tests.
+
+1. [Instance Wrapper Build](validations/instance-wrapper-build.md)
+
+1. [REST Builder](validations/rest-builder.md)
+
+1. [Service Builder](validations/service-builder.md)
+
+1. [Source Format](validations/source-format.md)
+
+1. [Module Registration](validations/module-registration.md)
+
+1. [Portlet Title](validations/portlet-title.md)
+
+1. [Full Portal Build](validations/full-portal-build.md)
+
+1. [Per-Module Compile](validations/per-module-compile.md)
+
+1. [Integration Test Compile](validations/integration-test-compile.md)
+
+1. [Cross-Module Compile](validations/cross-module-compile.md)
+
+1. [Baseline](validations/baseline.md)
+
+1. [JSP Compile](validations/jsp-compile.md)
+
+1. [Theme Build](validations/theme-build.md)
+
+1. [Workspace Build](validations/workspace-build.md)
+
+1. [Poshi Syntax](validations/poshi-syntax.md)
+
+1. [Structural Smoke](validations/structural-smoke.md)
+
+1. [Java Unit Tests](validations/java-unit-test.md)
+
+1. [JavaScript Unit Tests](validations/javascript-unit-test.md)
+
+Process each validation in a subagent.
+
+### Pass 1: Estimate
+
+Read every validation file under `.claude/skills/pr-check/validations` in a single parallel batch — one Read tool call per file, all in the same tool-use turn. From each file, take the regex inside its `## Match` section.
+
+In your next turn, compose a single bash script that:
+
+- computes the diff: `git diff --name-only "$(git merge-base HEAD master)...HEAD"`
+- for each validation, tests its regex against the diff and prints the validation name when it fires (a leading `!` in the regex inverts: fire when any diff path does *not* match the rest)
+- ` &! ` in the regex splits it into an include side and an exclude side. The validation fires when a diff path matches the include side but not the exclude side.
+- runs as a single Bash tool invocation
+
+From the script's output, sum the matched validations' `## Time Estimate` values for the cumulative total. The matching is mechanical; consult each file's prose `## Trigger` only when a result needs human-judgment context (e.g., Service Builder output-only catch-up).
+
+When the total exceeds 20 minutes, surface the breakdown and ask the developer whether to trim a validation or proceed.
+
+### Pass 2: Execute
+
+For each matched validation, spawn one subagent. **Pass it only the `## Command` and `## Autocommit` sections of the validation file, not the full file.** Record PASS or FAIL. Do not halt on FAIL — continue so the developer sees the full picture.
+
+When the validation's **Command** is a build (gradle, ant, npm, jest), bound the output:
+
+```bash
+<command> 2>&1 | tail --lines=100
+```
+
+Decide PASS/FAIL from the build tool's success markers in the captured output (`BUILD SUCCESSFUL` / `BUILD FAILED`, `Tests: N passed, M failed`, etc.). Apply only to build commands. Leave inert commands like `git status --porcelain` and `git diff --quiet` untouched.
+
+When all validations pass, report `PASS`. When any fail, report `FAIL` and surface the failed validations.
+
+## Results Summary
+
+After the two passes complete, emit a Results Summary block. It is the canonical record of what was tested, embedded verbatim by the `pr` skill into the PR description and reused by the `pr-check-publish` skill when recording a run on an existing PR.
+
+Capture the tested commit with `git rev-parse HEAD` **after** Pass 2 completes, so the SHA reflects the tree that was actually exercised — including any autocommits the validations made, such as the `<TICKET> SF` source-format commit. This is the commit the `pr` skill pushes as the PR head and the commit the webhook binds the `pr-check` status to, so a reviewer can tell whether the current head is the one that was tested.
+
+The block is the overall state and tested SHA, followed by a table with one row per **matched** validation — the validations that actually ran, in the execution order above. Validations whose `## Match` regex did not fire are omitted rather than listed as skipped, so the table reflects only what the diff exercised.
+
+```markdown
+**pr-check: PASS** — tested on `<head-SHA>`
+
+| Validation | Result |
+| --- | --- |
+| Source Format | PASS |
+| Full Portal Build | PASS |
+| Java Unit Tests | PASS |
+```
+
+The overall state is `PASS` only when every row is `PASS`; any `FAIL` row makes it `FAIL`.

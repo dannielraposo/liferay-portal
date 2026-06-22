@@ -7,6 +7,7 @@ package com.liferay.marketplace;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.marketplace.constants.MarketplaceConstants;
+import com.liferay.marketplace.permission.AccountMemberPermission;
 import com.liferay.marketplace.service.AnalyticsService;
 import com.liferay.marketplace.service.KoroneikiService;
 import com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.Account;
@@ -34,9 +35,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -72,7 +76,9 @@ public class AnalyticsRestController extends BaseRestController {
 			}
 		}
 		catch (Exception exception) {
-			_log.error(exception);
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
 
 			return ResponseEntity.status(
 				HttpStatus.BAD_REQUEST
@@ -178,6 +184,36 @@ public class AnalyticsRestController extends BaseRestController {
 			).toUri());
 	}
 
+	@GetMapping("project/corpProjectUuid/{corpProjectUuid}")
+	public ResponseEntity<?> getProjectCorpProjectUuid(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable String corpProjectUuid,
+			@RequestParam String environmentName)
+		throws Exception {
+
+		_accountMemberPermission.check(corpProjectUuid, jwt);
+
+		JSONObject analyticsProjectJSONObject =
+			_analyticsService.getCorpProjectUuidJSONObject(
+				_analyticsService.getAnalyticsContextJSONObject(
+					environmentName),
+				corpProjectUuid);
+
+		if (analyticsProjectJSONObject == null) {
+			return ResponseEntity.status(
+				HttpStatus.NOT_FOUND
+			).body(
+				null
+			);
+		}
+
+		return ResponseEntity.status(
+			HttpStatus.OK
+		).body(
+			analyticsProjectJSONObject
+		);
+	}
+
 	@GetMapping("project/{projectId}/data-source/token")
 	public String getProjectDataSourceToken(@PathVariable String projectId)
 		throws Exception {
@@ -219,6 +255,9 @@ public class AnalyticsRestController extends BaseRestController {
 
 	private static final Log _log = LogFactory.getLog(
 		AnalyticsRestController.class);
+
+	@Autowired
+	private AccountMemberPermission _accountMemberPermission;
 
 	@Value("${liferay.marketplace.analytics.auth.url}")
 	private String _analyticsAuthUrl;

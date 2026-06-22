@@ -6,6 +6,7 @@
 import {expect, mergeTests} from '@playwright/test';
 
 import {apiHelpersTest} from '../../../fixtures/apiHelpersTest';
+import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
 import {isolatedSiteTest} from '../../../fixtures/isolatedSiteTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {pageEditorPagesTest} from '../../../fixtures/pageEditorPagesTest';
@@ -18,6 +19,9 @@ import {journalPagesTest} from '../../journal-web/main/fixtures/journalPagesTest
 export const test = mergeTests(
 	loginTest(),
 	apiHelpersTest,
+	featureFlagsTest({
+		'LPD-11235': {enabled: true},
+	}),
 	isolatedSiteTest,
 	journalPagesTest,
 	pageEditorPagesTest,
@@ -59,6 +63,12 @@ test(
 			await page.goto(`/web${site.friendlyUrlPath}${layout.friendlyURL}`);
 
 			await widgetPagePage.addPortlet('Web Content Display');
+
+			await page
+				.locator(
+					'[id^="portlet_com_liferay_journal_content_web_portlet_JournalContentPortlet_INSTANCE"]'
+				)
+				.hover();
 
 			await page
 				.locator(

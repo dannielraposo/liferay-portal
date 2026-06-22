@@ -8,6 +8,7 @@ package com.liferay.marketplace;
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Catalog;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
@@ -15,11 +16,14 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.marketplace.constants.MarketplaceConstants;
 import com.liferay.marketplace.model.SalesforceOpportunity;
+import com.liferay.marketplace.service.AnalyticsService;
 import com.liferay.marketplace.service.KoroneikiService;
 import com.liferay.marketplace.service.MarketplaceService;
 import com.liferay.marketplace.service.SalesforceService;
 import com.liferay.marketplace.util.MarketplaceUtil;
+import com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.ProductPurchase;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.Map;
@@ -60,9 +64,30 @@ public class ObjectActionProductPurchaseRestController
 		Order order = _marketplaceService.getOrder(
 			commerceOrderJSONObject.getLong("id"));
 
+		String orderTypeExternalReferenceCode =
+			order.getOrderTypeExternalReferenceCode();
+
+		Map<String, String> productSpecificationsMap =
+			_marketplaceService.getProductSpecificationsMap(
+				_marketplaceService.getOrderProductId(order));
+
 		int paymentStatus = commerceOrderJSONObject.getInt("paymentStatus");
 
-		_postNotificationQueueEntry(order);
+		if (Objects.equals(orderTypeExternalReferenceCode, "AI_HUB") &&
+			(commerceOrderJSONObject.getInt("orderStatus") !=
+				MarketplaceConstants.ORDER_STATUS_COMPLETED) &&
+			(paymentStatus ==
+				MarketplaceConstants.ORDER_PAYMENT_STATUS_AUTHORIZED)) {
+
+			_marketplaceService.updateOrder(
+				null, order.getId(),
+				MarketplaceConstants.ORDER_STATUS_PROCESSING);
+
+			_setUpSalesforceOpportunity(
+				productSpecificationsMap.get("license-type"), order);
+
+			return;
+		}
 
 		if ((paymentStatus !=
 				MarketplaceConstants.ORDER_PAYMENT_STATUS_COMPLETED) &&
@@ -79,14 +104,10 @@ public class ObjectActionProductPurchaseRestController
 			return;
 		}
 
+		_postNotificationQueueEntry(order);
+
 		_marketplaceService.updateOrder(
 			null, order.getId(), MarketplaceConstants.ORDER_STATUS_PROCESSING);
-
-		String orderTypeExternalReferenceCode =
-			order.getOrderTypeExternalReferenceCode();
-		Map<String, String> productSpecificationsMap =
-			_marketplaceService.getProductSpecificationsMap(
-				_marketplaceService.getOrderProductId(order));
 
 		if (Objects.equals(orderTypeExternalReferenceCode, "ADDONS")) {
 			_setUpAddOns(jwt, order, productSpecificationsMap);
@@ -128,11 +149,8 @@ public class ObjectActionProductPurchaseRestController
 	}
 
 	private String _getExchangeRate(Order order) {
-		Map<String, String> customFields =
-			(Map<String, String>)order.getCustomFields();
-
-		JSONObject orderMetadataJSONObject = new JSONObject(
-			customFields.getOrDefault("order-metadata", "{}"));
+		JSONObject orderMetadataJSONObject =
+			MarketplaceUtil.getOrderMetadataJSONObject(order);
 
 		if (!Objects.equals(order.getCurrencyCode(), "USD") ||
 			!orderMetadataJSONObject.has("exchangeRate")) {
@@ -444,11 +462,8 @@ public class ObjectActionProductPurchaseRestController
 			return;
 		}
 
-		if (Objects.equals(solutionType, "ai-hub") ||
-			Objects.equals(solutionType, "liferay-data-platform")) {
-
-			_setUpCustomAddOn(
-				productSpecificationsMap.get("license-type"), order);
+		if (Objects.equals(solutionType, "liferay-data-platform")) {
+			_setUpLDPAddOn(jwt, order);
 		}
 	}
 
@@ -461,11 +476,8 @@ public class ObjectActionProductPurchaseRestController
 			return;
 		}
 
-		Map<String, String> customFields =
-			(Map<String, String>)order.getCustomFields();
-
-		JSONObject orderMetadataJSONObject = new JSONObject(
-			customFields.getOrDefault("order-metadata", "{}"));
+		JSONObject orderMetadataJSONObject =
+			MarketplaceUtil.getOrderMetadataJSONObject(order);
 
 		if (_koroneikiService.hasEntitlement(
 				_koroneikiService.getKoroneikiAccount(
@@ -495,16 +507,53 @@ public class ObjectActionProductPurchaseRestController
 		}
 	}
 
-	private void _setUpCustomAddOn(String licenseType, Order order)
+	private void _setUpLDPAddOn(Jwt jwt, Order order) throws Exception {
+		ProductPurchase[] productPurchases =
+			_koroneikiService.postAccountProductPurchases(
+				jwt, "3 Months Limited Beta", order);
+
+		ProductPurchase productPurchase = productPurchases[0];
+
+		if (productPurchase == null) {
+			return;
+		}
+
+		JSONObject orderMetadataJSONObject =
+			MarketplaceUtil.getOrderMetadataJSONObject(order);
+
+		_marketplaceService.updateOrder(
+			HashMapBuilder.put(
+				"order-metadata",
+				orderMetadataJSONObject.put(
+					"analyticsProject",
+					_analyticsService.provisionAnalyticsProject(
+						orderMetadataJSONObject.getJSONObject("analyticsForm"),
+						"internal", order.getAccountExternalReferenceCode())
+				).toString()
+			).build(),
+			order.getId(), MarketplaceConstants.ORDER_STATUS_COMPLETED);
+	}
+
+	private void _setUpSalesforceOpportunity(String licenseType, Order order)
 		throws Exception {
 
+		OrderItem[] orderItems = order.getOrderItems();
+
+		if (ArrayUtil.isEmpty(orderItems)) {
+			return;
+		}
+
 		BillingAddress billingAddress = order.getBillingAddress();
+
+		OrderItem orderItem = orderItems[0];
+
+		Sku sku = _marketplaceService.getSku(orderItem.getSkuId());
 
 		JSONObject jsonObject = _salesforceService.postSalesforceOpportunity(
 			new SalesforceOpportunity(
 				_marketplaceService.getCountryByA2(
 					billingAddress.getCountryISOCode()),
-				licenseType, order,
+				licenseType, order, sku,
 				_marketplaceService.getUserAccount(
 					order.getCreatorEmailAddress())));
 
@@ -534,6 +583,9 @@ public class ObjectActionProductPurchaseRestController
 
 	private static final Log _log = LogFactory.getLog(
 		ObjectActionProductPurchaseRestController.class);
+
+	@Autowired
+	private AnalyticsService _analyticsService;
 
 	@Autowired
 	private KoroneikiService _koroneikiService;

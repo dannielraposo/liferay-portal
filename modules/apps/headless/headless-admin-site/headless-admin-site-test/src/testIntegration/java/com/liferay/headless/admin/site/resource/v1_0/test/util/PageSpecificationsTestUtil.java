@@ -424,6 +424,33 @@ public class PageSpecificationsTestUtil {
 			null, scopeGroupId);
 	}
 
+	public static ContentPageSpecification
+		getContentPageSpecificationWithPageExperiences(
+			String contentPageSpecificationExternalReferenceCode,
+			String defaultPageExperienceExternalReferenceCode,
+			String defaultPageExperienceUuid, long groupId,
+			String pageExperienceExternalReferenceCode,
+			String pageExperienceKey, String pageExperienceUuid,
+			PageSpecification.Status status) {
+
+		PageExperience defaultPageExperience =
+			PageExperiencesTestUtil.getDefaultPageExperience(
+				defaultPageExperienceExternalReferenceCode,
+				PageElementsTestUtil.getPageElements(
+					RandomTestUtil.randomInt(1, 3), StringPool.BLANK, groupId),
+				contentPageSpecificationExternalReferenceCode,
+				defaultPageExperienceUuid);
+		PageExperience pageExperience =
+			PageExperiencesTestUtil.getPageExperience(
+				pageExperienceExternalReferenceCode, pageExperienceKey, 1,
+				pageExperienceUuid);
+
+		return getContentPageSpecification(
+			contentPageSpecificationExternalReferenceCode, null, null,
+			new PageExperience[] {defaultPageExperience, pageExperience},
+			groupId, status);
+	}
+
 	public static CustomField[] getCustomFields() {
 		return new CustomField[] {
 			_getCustomField(_EXPANDO_ATTRIBUTE_NAMES[0], (String)null),
@@ -590,7 +617,7 @@ public class PageSpecificationsTestUtil {
 			columns.add("column-3");
 		}
 		else {
-			for (int i = 1; i <= 100; i++) {
+			for (int i = 1; i <= 10; i++) {
 				columns.add(LayoutTypePortletConstants.COLUMN_PREFIX + i);
 			}
 		}

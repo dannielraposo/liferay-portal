@@ -13,13 +13,11 @@ import com.liferay.dynamic.data.mapping.model.impl.DDMStructureVersionModelImpl;
 import com.liferay.dynamic.data.mapping.service.persistence.DDMStructureVersionPersistence;
 import com.liferay.dynamic.data.mapping.service.persistence.DDMStructureVersionUtil;
 import com.liferay.dynamic.data.mapping.service.persistence.impl.constants.DDMPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -87,70 +85,15 @@ public class DDMStructureVersionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByStructureId;
-	private FinderPath _finderPathWithoutPaginationFindByStructureId;
-	private FinderPath _finderPathCountByStructureId;
-	private CollectionPersistenceFinder<DDMStructureVersion>
-		_collectionPersistenceFinderByStructureId;
-
-	/**
-	 * Returns all the ddm structure versions where structureId = &#63;.
-	 *
-	 * @param structureId the structure ID
-	 * @return the matching ddm structure versions
-	 */
-	@Override
-	public List<DDMStructureVersion> findByStructureId(long structureId) {
-		return findByStructureId(
-			structureId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the ddm structure versions where structureId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param structureId the structure ID
-	 * @param start the lower bound of the range of ddm structure versions
-	 * @param end the upper bound of the range of ddm structure versions (not inclusive)
-	 * @return the range of matching ddm structure versions
-	 */
-	@Override
-	public List<DDMStructureVersion> findByStructureId(
-		long structureId, int start, int end) {
-
-		return findByStructureId(structureId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DDMStructureVersion, NoSuchStructureVersionException>
+			_collectionPersistenceFinderByStructureId;
 
 	/**
 	 * Returns an ordered range of all the ddm structure versions where structureId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param structureId the structure ID
-	 * @param start the lower bound of the range of ddm structure versions
-	 * @param end the upper bound of the range of ddm structure versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching ddm structure versions
-	 */
-	@Override
-	public List<DDMStructureVersion> findByStructureId(
-		long structureId, int start, int end,
-		OrderByComparator<DDMStructureVersion> orderByComparator) {
-
-		return findByStructureId(
-			structureId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the ddm structure versions where structureId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param structureId the structure ID
@@ -166,14 +109,9 @@ public class DDMStructureVersionPersistenceImpl
 		OrderByComparator<DDMStructureVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DDMStructureVersion.class)) {
-
-			return _collectionPersistenceFinderByStructureId.find(
-				finderCache, new Object[] {structureId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByStructureId.find(
+			finderCache, new Object[] {structureId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -190,16 +128,8 @@ public class DDMStructureVersionPersistenceImpl
 			OrderByComparator<DDMStructureVersion> orderByComparator)
 		throws NoSuchStructureVersionException {
 
-		DDMStructureVersion ddmStructureVersion = fetchByStructureId_First(
-			structureId, orderByComparator);
-
-		if (ddmStructureVersion != null) {
-			return ddmStructureVersion;
-		}
-
-		throw new NoSuchStructureVersionException(
-			_collectionPersistenceFinderByStructureId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {structureId}));
+		return _collectionPersistenceFinderByStructureId.findFirst(
+			finderCache, new Object[] {structureId}, orderByComparator);
 	}
 
 	/**
@@ -237,18 +167,13 @@ public class DDMStructureVersionPersistenceImpl
 	 */
 	@Override
 	public int countByStructureId(long structureId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DDMStructureVersion.class)) {
-
-			return _collectionPersistenceFinderByStructureId.count(
-				finderCache, new Object[] {structureId});
-		}
+		return _collectionPersistenceFinderByStructureId.count(
+			finderCache, new Object[] {structureId});
 	}
 
-	private FinderPath _finderPathFetchByS_V;
-	private UniquePersistenceFinder<DDMStructureVersion>
-		_uniquePersistenceFinderByS_V;
+	private UniquePersistenceFinder
+		<DDMStructureVersion, NoSuchStructureVersionException>
+			_uniquePersistenceFinderByS_V;
 
 	/**
 	 * Returns the ddm structure version where structureId = &#63; and version = &#63; or throws a <code>NoSuchStructureVersionException</code> if it could not be found.
@@ -262,35 +187,8 @@ public class DDMStructureVersionPersistenceImpl
 	public DDMStructureVersion findByS_V(long structureId, String version)
 		throws NoSuchStructureVersionException {
 
-		DDMStructureVersion ddmStructureVersion = fetchByS_V(
-			structureId, version);
-
-		if (ddmStructureVersion == null) {
-			String message =
-				_uniquePersistenceFinderByS_V.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {structureId, version});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchStructureVersionException(message);
-		}
-
-		return ddmStructureVersion;
-	}
-
-	/**
-	 * Returns the ddm structure version where structureId = &#63; and version = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param structureId the structure ID
-	 * @param version the version
-	 * @return the matching ddm structure version, or <code>null</code> if a matching ddm structure version could not be found
-	 */
-	@Override
-	public DDMStructureVersion fetchByS_V(long structureId, String version) {
-		return fetchByS_V(structureId, version, true);
+		return _uniquePersistenceFinderByS_V.find(
+			finderCache, new Object[] {structureId, version});
 	}
 
 	/**
@@ -305,14 +203,8 @@ public class DDMStructureVersionPersistenceImpl
 	public DDMStructureVersion fetchByS_V(
 		long structureId, String version, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DDMStructureVersion.class)) {
-
-			return _uniquePersistenceFinderByS_V.fetch(
-				finderCache, new Object[] {structureId, version},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByS_V.fetch(
+			finderCache, new Object[] {structureId, version}, useFinderCache);
 	}
 
 	/**
@@ -345,73 +237,15 @@ public class DDMStructureVersionPersistenceImpl
 			finderCache, new Object[] {structureId, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByS_S;
-	private FinderPath _finderPathWithoutPaginationFindByS_S;
-	private FinderPath _finderPathCountByS_S;
-	private CollectionPersistenceFinder<DDMStructureVersion>
-		_collectionPersistenceFinderByS_S;
-
-	/**
-	 * Returns all the ddm structure versions where structureId = &#63; and status = &#63;.
-	 *
-	 * @param structureId the structure ID
-	 * @param status the status
-	 * @return the matching ddm structure versions
-	 */
-	@Override
-	public List<DDMStructureVersion> findByS_S(long structureId, int status) {
-		return findByS_S(
-			structureId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the ddm structure versions where structureId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param structureId the structure ID
-	 * @param status the status
-	 * @param start the lower bound of the range of ddm structure versions
-	 * @param end the upper bound of the range of ddm structure versions (not inclusive)
-	 * @return the range of matching ddm structure versions
-	 */
-	@Override
-	public List<DDMStructureVersion> findByS_S(
-		long structureId, int status, int start, int end) {
-
-		return findByS_S(structureId, status, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DDMStructureVersion, NoSuchStructureVersionException>
+			_collectionPersistenceFinderByS_S;
 
 	/**
 	 * Returns an ordered range of all the ddm structure versions where structureId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param structureId the structure ID
-	 * @param status the status
-	 * @param start the lower bound of the range of ddm structure versions
-	 * @param end the upper bound of the range of ddm structure versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching ddm structure versions
-	 */
-	@Override
-	public List<DDMStructureVersion> findByS_S(
-		long structureId, int status, int start, int end,
-		OrderByComparator<DDMStructureVersion> orderByComparator) {
-
-		return findByS_S(
-			structureId, status, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the ddm structure versions where structureId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param structureId the structure ID
@@ -428,14 +262,9 @@ public class DDMStructureVersionPersistenceImpl
 		OrderByComparator<DDMStructureVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DDMStructureVersion.class)) {
-
-			return _collectionPersistenceFinderByS_S.find(
-				finderCache, new Object[] {structureId, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByS_S.find(
+			finderCache, new Object[] {structureId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -453,16 +282,8 @@ public class DDMStructureVersionPersistenceImpl
 			OrderByComparator<DDMStructureVersion> orderByComparator)
 		throws NoSuchStructureVersionException {
 
-		DDMStructureVersion ddmStructureVersion = fetchByS_S_First(
-			structureId, status, orderByComparator);
-
-		if (ddmStructureVersion != null) {
-			return ddmStructureVersion;
-		}
-
-		throw new NoSuchStructureVersionException(
-			_collectionPersistenceFinderByS_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {structureId, status}));
+		return _collectionPersistenceFinderByS_S.findFirst(
+			finderCache, new Object[] {structureId, status}, orderByComparator);
 	}
 
 	/**
@@ -503,13 +324,8 @@ public class DDMStructureVersionPersistenceImpl
 	 */
 	@Override
 	public int countByS_S(long structureId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DDMStructureVersion.class)) {
-
-			return _collectionPersistenceFinderByS_S.count(
-				finderCache, new Object[] {structureId, status});
-		}
+		return _collectionPersistenceFinderByS_S.count(
+			finderCache, new Object[] {structureId, status});
 	}
 
 	public DDMStructureVersionPersistenceImpl() {
@@ -800,82 +616,75 @@ public class DDMStructureVersionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByStructureId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByStructureId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"structureId"}, true);
-
-		_finderPathWithoutPaginationFindByStructureId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByStructureId",
-			new String[] {Long.class.getName()}, new String[] {"structureId"},
-			true);
-
-		_finderPathCountByStructureId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByStructureId",
-			new String[] {Long.class.getName()}, new String[] {"structureId"},
-			false);
-
 		_collectionPersistenceFinderByStructureId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByStructureId,
-				_finderPathWithoutPaginationFindByStructureId,
-				_finderPathCountByStructureId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByStructureId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"structureId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByStructureId", new String[] {Long.class.getName()},
+					new String[] {"structureId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByStructureId", new String[] {Long.class.getName()},
+					new String[] {"structureId"}, false),
 				_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE,
 				_SQL_COUNT_DDMSTRUCTUREVERSION_WHERE,
 				DDMStructureVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"ddmStructureVersion.", "structureId",
 					FinderColumn.Type.LONG, "=", true, true,
 					DDMStructureVersion::getStructureId));
 
-		_finderPathFetchByS_V = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByS_V",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"structureId", "version"}, false,
-			DDMStructureVersion::getStructureId,
-			DDMStructureVersion::getVersion);
-
 		_uniquePersistenceFinderByS_V = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByS_V, _SQL_SELECT_DDMSTRUCTUREVERSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByS_V",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"structureId", "version"}, 0, 2, false,
+				DDMStructureVersion::getStructureId,
+				convertNullFunction(DDMStructureVersion::getVersion)),
+			_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE, "",
 			new FinderColumn<>(
 				"ddmStructureVersion.", "structureId", FinderColumn.Type.LONG,
-				"=", true, false, DDMStructureVersion::getStructureId),
+				"=", true, true, DDMStructureVersion::getStructureId),
 			new FinderColumn<>(
 				"ddmStructureVersion.", "version", FinderColumn.Type.STRING,
 				"=", true, true, DDMStructureVersion::getVersion));
 
-		_finderPathWithPaginationFindByS_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByS_S",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"structureId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByS_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByS_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"structureId", "status"}, true);
-
-		_finderPathCountByS_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByS_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"structureId", "status"}, false);
-
 		_collectionPersistenceFinderByS_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByS_S,
-			_finderPathWithoutPaginationFindByS_S, _finderPathCountByS_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByS_S",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"structureId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByS_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"structureId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByS_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"structureId", "status"}, false),
 			_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE,
 			_SQL_COUNT_DDMSTRUCTUREVERSION_WHERE,
 			DDMStructureVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"ddmStructureVersion.", "structureId", FinderColumn.Type.LONG,
-				"=", true, false, DDMStructureVersion::getStructureId),
+				"=", true, true, DDMStructureVersion::getStructureId),
 			new FinderColumn<>(
 				"ddmStructureVersion.", "status", FinderColumn.Type.INTEGER,
 				"=", true, true, DDMStructureVersion::getStatus));
@@ -952,4 +761,4 @@ public class DDMStructureVersionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-622061298
+// LIFERAY-SERVICE-BUILDER-HASH:-1854630218

@@ -42,7 +42,7 @@ import org.osgi.service.component.annotations.Reference;
 )
 @Generated("")
 @OpenAPIDefinition(
-	info = @Info(description = "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.exportimport.report.rest', and version '1.0.0'.. A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.exportimport.rest.client', and version '1.0.6'.", license = @License(name = "Apache 2.0", url = "http://www.apache.org/licenses/LICENSE-2.0.html"), title = "", version = "v1.0")
+	info = @Info(description = "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.exportimport.report.rest', and version '1.0.0'.. A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.exportimport.rest.client', and version '1.0.8'.", license = @License(name = "Apache 2.0", url = "http://www.apache.org/licenses/LICENSE-2.0.html"), title = "", version = "v1.0")
 )
 @Path("/v1.0")
 public class OpenAPIResourceImpl {
@@ -85,6 +85,12 @@ public class OpenAPIResourceImpl {
 
 	private final Set<Class<?>> _resourceClasses = new HashSet<Class<?>>() {
 		{
+			add(ExportPreviewResourceImpl.class);
+
+			add(ExportProcessResourceImpl.class);
+
+			add(ImportPreviewResourceImpl.class);
+
 			add(ImportProcessResourceImpl.class);
 
 			add(ReportEntryResourceImpl.class);
@@ -94,4 +100,4 @@ public class OpenAPIResourceImpl {
 	};
 
 }
-// LIFERAY-REST-BUILDER-HASH:-491907383
+// LIFERAY-REST-BUILDER-HASH:1046196135

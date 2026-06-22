@@ -1,0 +1,38 @@
+{
+	"masterPage": {
+		"key": "liferay-one"
+	},
+	"pageElement": {
+		"pageElements": [
+			{
+				"definition": {
+					"indexed": true,
+					"layout": {
+						"contentDisplay": "Block",
+						"widthType": "Fixed"
+					}
+				},
+				"pageElements": [
+					{
+						"definition": {
+							"widgetInstance": {
+								"widgetConfig": {
+									"properties": "route=my-account"
+								},
+								"widgetName": "[$CLIENT_EXTENSION_ENTRY_ERC:LXC:liferay-one-custom-element$]"
+							}
+						},
+						"type": "Widget"
+					}
+				],
+				"type": "Section"
+			}
+		],
+		"type": "Root"
+	},
+	"settings": {
+		"masterPage": {
+			"key": "liferay-one"
+		}
+	}
+}

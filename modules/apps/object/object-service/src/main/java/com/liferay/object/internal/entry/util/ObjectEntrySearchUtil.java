@@ -6,6 +6,7 @@
 package com.liferay.object.internal.entry.util;
 
 import com.liferay.document.library.kernel.model.DLFileEntryTable;
+import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntryTable;
@@ -19,10 +20,12 @@ import com.liferay.petra.sql.dsl.DSLFunctionFactoryUtil;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.Table;
 import com.liferay.petra.sql.dsl.expression.Predicate;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.GuestOrUserUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -39,6 +42,38 @@ import java.util.Locale;
  * @author Carolina Barbosa
  */
 public class ObjectEntrySearchUtil {
+
+	public static Predicate getAssigneeFieldPredicate(
+		Table<?> table, String dbColumnName, String search) {
+
+		String[] parts = StringUtil.split(search, CharPool.UNDERLINE);
+
+		if (parts.length != 2) {
+			return null;
+		}
+
+		long classNameId = GetterUtil.getLong(parts[0]);
+		long classPK = GetterUtil.getLong(parts[1]);
+
+		if ((classNameId == 0L) || (classPK == 0L)) {
+			return null;
+		}
+
+		Column<?, Long> classNameIdColumn = (Column<?, Long>)table.getColumn(
+			"classNameId_" + dbColumnName);
+		Column<?, Long> classPKColumn = (Column<?, Long>)table.getColumn(
+			"classPK_" + dbColumnName);
+
+		if ((classNameIdColumn == null) || (classPKColumn == null)) {
+			return null;
+		}
+
+		return classNameIdColumn.eq(
+			classNameId
+		).and(
+			classPKColumn.eq(classPK)
+		);
+	}
 
 	public static String getLanguageId() throws PortalException {
 		Locale locale = null;
@@ -87,6 +122,35 @@ public class ObjectEntrySearchUtil {
 			).eq(
 				(languageId == null) ? getLanguageId() : languageId
 			)
+		);
+	}
+
+	public static Predicate getObjectEntryIndexPredicate(
+		Long[] groupIds, ObjectDefinition objectDefinition,
+		Predicate predicate) {
+
+		return ObjectEntryTable.INSTANCE.companyId.eq(
+			objectDefinition.getCompanyId()
+		).and(
+			() -> {
+				if (StringUtil.equals(
+						objectDefinition.getScope(),
+						ObjectDefinitionConstants.SCOPE_COMPANY)) {
+
+					return ObjectEntryTable.INSTANCE.groupId.eq(0L);
+				}
+
+				if (ArrayUtil.isEmpty(groupIds)) {
+					return null;
+				}
+
+				return ObjectEntryTable.INSTANCE.groupId.in(groupIds);
+			}
+		).and(
+			ObjectEntryTable.INSTANCE.objectDefinitionId.eq(
+				objectDefinition.getObjectDefinitionId())
+		).and(
+			predicate
 		);
 	}
 

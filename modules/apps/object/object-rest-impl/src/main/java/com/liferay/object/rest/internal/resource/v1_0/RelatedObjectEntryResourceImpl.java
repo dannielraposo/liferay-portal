@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.GuestOrUserUtil;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.service.PersistedModelLocalServiceRegistryUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
@@ -283,7 +284,14 @@ public class RelatedObjectEntryResourceImpl
 
 		String path = uri.getPath();
 
-		String restContextPath = path.split("/")[2] + "/v1.0/" + previousPath;
+		String modulePath = Portal.PATH_MODULE + "/";
+
+		int index = path.indexOf(modulePath) + modulePath.length();
+
+		String applicationPath = path.substring(
+			index, path.indexOf("/", index));
+
+		String restContextPath = applicationPath + "/v1.0/" + previousPath;
 
 		for (ObjectDefinition systemObjectDefinition :
 				_objectDefinitionLocalService.

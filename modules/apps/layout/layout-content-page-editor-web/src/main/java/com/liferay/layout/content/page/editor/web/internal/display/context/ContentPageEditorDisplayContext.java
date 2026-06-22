@@ -139,8 +139,8 @@ import com.liferay.site.navigation.item.selector.SiteNavigationMenuItemSelectorC
 import com.liferay.site.navigation.item.selector.SiteNavigationMenuItemSelectorReturnType;
 import com.liferay.staging.StagingGroupHelper;
 import com.liferay.style.book.model.StyleBookEntry;
-import com.liferay.style.book.service.StyleBookEntryLocalService;
 import com.liferay.style.book.util.DefaultStyleBookEntryUtil;
+import com.liferay.style.book.util.StyleBookEntryProviderUtil;
 import com.liferay.style.book.util.StyleBookUtil;
 
 import jakarta.portlet.PortletRequest;
@@ -193,7 +193,6 @@ public class ContentPageEditorDisplayContext {
 		SegmentsExperimentRelLocalService segmentsExperimentRelLocalService,
 		SegmentsEntryService segmentsEntryService, Staging staging,
 		StagingGroupHelper stagingGroupHelper,
-		StyleBookEntryLocalService styleBookEntryLocalService,
 		WorkflowDefinitionLinkLocalService workflowDefinitionLinkLocalService) {
 
 		_contentPageEditorSidebarPanels = contentPageEditorSidebarPanels;
@@ -223,7 +222,6 @@ public class ContentPageEditorDisplayContext {
 		_segmentsExperimentRelLocalService = segmentsExperimentRelLocalService;
 		_segmentsEntryService = segmentsEntryService;
 		_staging = staging;
-		_styleBookEntryLocalService = styleBookEntryLocalService;
 		_workflowDefinitionLinkLocalService =
 			workflowDefinitionLinkLocalService;
 
@@ -563,6 +561,9 @@ public class ContentPageEditorDisplayContext {
 					"/layout_content_page_editor" +
 						"/get_info_item_one_to_many_relationships")
 			).put(
+				"getLayoutDataURL",
+				_getResourceURL("/layout_content_page_editor/get_layout_data")
+			).put(
 				"getLayoutFriendlyURL",
 				_getResourceURL(
 					"/layout_content_page_editor/get_layout_friendly_url")
@@ -616,6 +617,14 @@ public class ContentPageEditorDisplayContext {
 				"layoutConversionWarningMessages",
 				MultiSessionMessages.get(
 					portletRequest, "layoutConversionWarningMessages")
+			).put(
+				"layoutExternalReferenceCode",
+				() -> {
+					Layout layout = themeDisplay.getLayout();
+
+					return GetterUtil.getString(
+						layout.getExternalReferenceCode());
+				}
 			).put(
 				"layoutItemSelectorURL", _getLayoutItemSelectorURL()
 			).put(
@@ -722,6 +731,14 @@ public class ContentPageEditorDisplayContext {
 			).put(
 				"sidebarPanels", getSidebarPanels()
 			).put(
+				"siteExternalReferenceCode",
+				() -> {
+					Group group = themeDisplay.getScopeGroup();
+
+					return GetterUtil.getString(
+						group.getExternalReferenceCode());
+				}
+			).put(
 				"siteNavigationMenuItemSelectorURL",
 				_getSiteNavigationMenuItemSelectorURL()
 			).put(
@@ -729,28 +746,22 @@ public class ContentPageEditorDisplayContext {
 				() -> {
 					Layout layout = themeDisplay.getLayout();
 
-					String styleBookEntryERC = GetterUtil.getString(
-						layout.getStyleBookEntryERC());
+					StyleBookEntry styleBookEntry =
+						StyleBookEntryProviderUtil.getStyleBookEntry(layout);
 
-					if (Validator.isNotNull(styleBookEntryERC)) {
-						StyleBookEntry styleBookEntry =
-							_styleBookEntryLocalService.
-								fetchStyleBookEntryByExternalReferenceCode(
-									styleBookEntryERC,
-									_staging.getLiveGroupId(
-										layout.getGroupId()));
+					if (styleBookEntry == null) {
+						return StringPool.BLANK;
+					}
 
-						FrontendTokenDefinition frontendTokenDefinition =
-							_frontendTokenDefinitionRegistry.
-								getFrontendTokenDefinition(layout);
+					FrontendTokenDefinition frontendTokenDefinition =
+						_frontendTokenDefinitionRegistry.
+							getFrontendTokenDefinition(layout);
 
-						if ((styleBookEntry != null) &&
-							Objects.equals(
-								frontendTokenDefinition.getThemeId(),
-								styleBookEntry.getThemeId())) {
+					if (Objects.equals(
+							frontendTokenDefinition.getThemeId(),
+							styleBookEntry.getThemeId())) {
 
-							return styleBookEntryERC;
-						}
+						return styleBookEntry.getExternalReferenceCode();
 					}
 
 					return StringPool.BLANK;
@@ -1310,13 +1321,19 @@ public class ContentPageEditorDisplayContext {
 
 			segmentsEntries = _segmentsEntryService.getSegmentsEntries(
 				stagingGroupHelper.getStagedPortletGroupId(
-					getGroupId(), SegmentsPortletKeys.SEGMENTS));
+					getGroupId(), SegmentsPortletKeys.SEGMENTS),
+				new String[] {
+					SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
+					SegmentsEntryConstants.SOURCE_DEFAULT,
+					SegmentsEntryConstants.SOURCE_REFERRED
+				},
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 		}
 		else {
 			segmentsEntries = _segmentsEntryService.getSegmentsEntries(
 				stagingGroupHelper.getStagedPortletGroupId(
 					getGroupId(), SegmentsPortletKeys.SEGMENTS),
-				SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
+				new String[] {SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND},
 				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 		}
 
@@ -2085,7 +2102,8 @@ public class ContentPageEditorDisplayContext {
 			).build());
 
 		List<StyleBookEntry> styleBookEntries =
-			_styleBookEntryLocalService.getStyleBookEntries(
+			StyleBookEntryProviderUtil.getStyleBookEntries(
+				themeDisplay.getCompanyId(),
 				_staging.getLiveGroupId(themeDisplay.getScopeGroupId()),
 				frontendTokenDefinition.getThemeId());
 
@@ -2288,7 +2306,6 @@ public class ContentPageEditorDisplayContext {
 		_segmentsExperimentRelLocalService;
 	private List<Map<String, Object>> _sidebarPanels;
 	private final Staging _staging;
-	private final StyleBookEntryLocalService _styleBookEntryLocalService;
 	private ItemSelectorCriterion _urlItemSelectorCriterion;
 	private final WorkflowDefinitionLinkLocalService
 		_workflowDefinitionLinkLocalService;

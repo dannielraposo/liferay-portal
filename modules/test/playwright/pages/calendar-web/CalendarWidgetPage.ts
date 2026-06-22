@@ -29,6 +29,7 @@ export class CalendarWidgetPage {
 	readonly descriptionLocalesDropdownMenu: Locator;
 	readonly endDate: Locator;
 	readonly endTime: Locator;
+	readonly eventDetailsWorkflowStatus: Locator;
 	readonly hideSidebarIcon: Locator;
 	readonly invitations: Locator;
 	readonly inviteResource: Locator;
@@ -116,6 +117,9 @@ export class CalendarWidgetPage {
 			.frameLocator('iframe')
 			.locator('input[type="time"]')
 			.last();
+		this.eventDetailsWorkflowStatus = page
+			.frameLocator('iframe')
+			.locator('.panel-body .workflow-value');
 		this.hideSidebarIcon = page.locator(
 			'.calendar-portlet-column-toggler .lexicon-icon-caret-left'
 		);
@@ -271,14 +275,10 @@ export class CalendarWidgetPage {
 
 	async clickAddEventButton() {
 		await this.addEventButton.click();
-
-		await this.page.waitForLoadState('networkidle');
 	}
 
 	async clickAddEventMenuitem() {
 		await this.addEventMenuItem.click();
-
-		await this.page.waitForLoadState('networkidle');
 	}
 
 	async clickCalendarColor(calendarColorHex: string) {
@@ -337,6 +337,18 @@ export class CalendarWidgetPage {
 		}
 	}
 
+	async deleteEvent(title: string) {
+		await this.page
+			.locator('.scheduler-event-content', {hasText: title})
+			.click();
+
+		this.page.once('dialog', async (dialog) => {
+			await dialog.accept();
+		});
+
+		await this.page.getByRole('button', {name: 'Delete'}).click();
+	}
+
 	async fillEventWithRecurrenceAndAllDay(
 		allDay: boolean,
 		recurrence: Recurrence
@@ -378,6 +390,16 @@ export class CalendarWidgetPage {
 
 	async openCalendarGroupActionsDropdownMenu(groupName: string) {
 		await this.page.getByLabel(`Manage Calendar ${groupName}`).click();
+	}
+
+	async openEventDetails(title: string) {
+		await this.page
+			.locator('.scheduler-event-content', {hasText: title})
+			.click();
+
+		await this.page.getByRole('button', {name: 'View Details'}).click();
+
+		await this.page.waitForLoadState('networkidle');
 	}
 
 	async openInvitations() {

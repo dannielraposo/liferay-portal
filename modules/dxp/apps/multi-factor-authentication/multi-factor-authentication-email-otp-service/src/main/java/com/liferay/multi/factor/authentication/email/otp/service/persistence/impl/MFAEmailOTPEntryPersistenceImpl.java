@@ -16,7 +16,6 @@ import com.liferay.multi.factor.authentication.email.otp.service.persistence.imp
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -72,8 +71,7 @@ public class MFAEmailOTPEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByUserId;
-	private UniquePersistenceFinder<MFAEmailOTPEntry>
+	private UniquePersistenceFinder<MFAEmailOTPEntry, NoSuchEntryException>
 		_uniquePersistenceFinderByUserId;
 
 	/**
@@ -87,32 +85,8 @@ public class MFAEmailOTPEntryPersistenceImpl
 	public MFAEmailOTPEntry findByUserId(long userId)
 		throws NoSuchEntryException {
 
-		MFAEmailOTPEntry mfaEmailOTPEntry = fetchByUserId(userId);
-
-		if (mfaEmailOTPEntry == null) {
-			String message =
-				_uniquePersistenceFinderByUserId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchEntryException(message);
-		}
-
-		return mfaEmailOTPEntry;
-	}
-
-	/**
-	 * Returns the mfa email otp entry where userId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param userId the user ID
-	 * @return the matching mfa email otp entry, or <code>null</code> if a matching mfa email otp entry could not be found
-	 */
-	@Override
-	public MFAEmailOTPEntry fetchByUserId(long userId) {
-		return fetchByUserId(userId, true);
+		return _uniquePersistenceFinderByUserId.find(
+			finderCache, new Object[] {userId});
 	}
 
 	/**
@@ -357,13 +331,13 @@ public class MFAEmailOTPEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByUserId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, false,
-			MFAEmailOTPEntry::getUserId);
-
 		_uniquePersistenceFinderByUserId = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUserId, _SQL_SELECT_MFAEMAILOTPENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUserId",
+				new String[] {Long.class.getName()}, new String[] {"userId"}, 0,
+				0, false, MFAEmailOTPEntry::getUserId),
+			_SQL_SELECT_MFAEMAILOTPENTRY_WHERE, "",
 			new FinderColumn<>(
 				"mfaEmailOTPEntry.", "userId", FinderColumn.Type.LONG, "=",
 				true, true, MFAEmailOTPEntry::getUserId));
@@ -410,9 +384,6 @@ public class MFAEmailOTPEntryPersistenceImpl
 	@Reference
 	protected FinderCache finderCache;
 
-	private static final String _ENTITY_ALIAS_PREFIX =
-		MFAEmailOTPEntryModelImpl.ENTITY_ALIAS + ".";
-
 	private static final String _SQL_SELECT_MFAEMAILOTPENTRY =
 		"SELECT mfaEmailOTPEntry FROM MFAEmailOTPEntry mfaEmailOTPEntry";
 
@@ -431,4 +402,4 @@ public class MFAEmailOTPEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1999435387
+// LIFERAY-SERVICE-BUILDER-HASH:1659426173

@@ -39,14 +39,17 @@ import com.liferay.object.constants.ObjectActionNameConstants;
 import com.liferay.object.constants.ObjectActionTriggerConstants;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.constants.ObjectDefinitionSettingConstants;
+import com.liferay.object.constants.ObjectEntryFolderConstants;
 import com.liferay.object.constants.ObjectFieldSettingConstants;
 import com.liferay.object.constants.ObjectFolderConstants;
 import com.liferay.object.constants.ObjectRelationshipConstants;
 import com.liferay.object.constants.ObjectValidationRuleConstants;
 import com.liferay.object.constants.ObjectValidationRuleSettingConstants;
+import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectFolder;
 import com.liferay.object.service.ObjectActionLocalService;
 import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectFolderLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
@@ -88,6 +91,7 @@ import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -114,6 +118,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.junit.Assert;
@@ -130,7 +136,11 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 /**
  * @author Javier Gamarra
  */
-@FeatureFlags(featureFlags = @FeatureFlag(value = "LPD-34594"))
+@FeatureFlags(
+	featureFlags = {
+		@FeatureFlag(value = "LPD-34594"), @FeatureFlag(value = "LPD-69877")
+	}
+)
 @RunWith(Arquillian.class)
 public class ObjectDefinitionResourceTest
 	extends BaseObjectDefinitionResourceTestCase {
@@ -429,173 +439,12 @@ public class ObjectDefinitionResourceTest
 					objectDefinitionsJSONObject.getString("items"))));
 	}
 
+	@Override
 	@Test
-	public void testPatchPostPutObjectDefinitionWithPermissions()
-		throws Exception {
+	public void testPatchObjectDefinition() throws Exception {
+		super.testPatchObjectDefinition();
 
-		// Invalid permissions
-
-		JSONArray invalidPermissionsJSONArray = JSONUtil.putAll(
-			_getPermissionsJSONObject(
-				new String[] {ActionKeys.DELETE},
-				RandomTestUtil.randomString()));
-
-		_assertNotFound(
-			_patchPutObjectDefinitionWithPermissions(
-				Http.Method.PATCH, true,
-				_postObjectDefinitionWithPermissions(true, null),
-				invalidPermissionsJSONArray));
-		_assertNotFound(
-			_patchPutObjectDefinitionWithPermissions(
-				Http.Method.PUT, true,
-				_postObjectDefinitionWithPermissions(true, null),
-				invalidPermissionsJSONArray));
-		_assertNotFound(
-			_postObjectDefinitionWithPermissions(
-				true, invalidPermissionsJSONArray));
-
-		// No permissions in the body request
-
-		_assertObjectDefinitionWithPermissions(
-			JSONUtil.putAll(_getOwnerPermissionsJSONObject()),
-			_patchPutObjectDefinitionWithPermissions(
-				Http.Method.PATCH, true,
-				_postObjectDefinitionWithPermissions(true, null), null));
-		_assertObjectDefinitionWithPermissions(
-			JSONUtil.putAll(_getOwnerPermissionsJSONObject()),
-			_patchPutObjectDefinitionWithPermissions(
-				Http.Method.PUT, true,
-				_postObjectDefinitionWithPermissions(true, null), null));
-		_assertObjectDefinitionWithPermissions(
-			JSONUtil.putAll(_getOwnerPermissionsJSONObject()),
-			_postObjectDefinitionWithPermissions(true, null));
-		_assertObjectDefinitionWithPermissions(
-			JSONUtil.putAll(_getOwnerPermissionsJSONObject()),
-			_putByExternalReferenceCodeObjectDefinitionWithPermissions(
-				true, _postObjectDefinitionWithPermissions(true, null), null));
-
-		// Permissions with different roles
-
-		Role role1 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
-
-		_resourcePermissionLocalService.addResourcePermission(
-			TestPropsValues.getCompanyId(),
-			"com.liferay.object.model.ObjectDefinition",
-			ResourceConstants.SCOPE_COMPANY,
-			String.valueOf(TestPropsValues.getCompanyId()), role1.getRoleId(),
-			ActionKeys.DELETE);
-
-		Role role2 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
-
-		JSONObject objectDefinitionJSONObject =
-			_postObjectDefinitionWithPermissions(
-				true,
-				JSONUtil.putAll(
-					_getPermissionsJSONObject(
-						new String[] {ActionKeys.PERMISSIONS}, role1.getName()),
-					_getPermissionsJSONObject(
-						new String[] {ActionKeys.UPDATE, ActionKeys.VIEW},
-						role2.getName())));
-
-		_assertObjectDefinitionWithPermissions(
-			JSONUtil.putAll(
-				_getPermissionsJSONObject(
-					new String[] {ActionKeys.DELETE, ActionKeys.PERMISSIONS},
-					role1.getName()),
-				_getPermissionsJSONObject(
-					new String[] {ActionKeys.UPDATE, ActionKeys.VIEW},
-					role2.getName())),
-			objectDefinitionJSONObject);
-
-		Role role3 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
-
-		_assertObjectDefinitionWithPermissions(
-			JSONUtil.putAll(
-				_getPermissionsJSONObject(
-					new String[] {ActionKeys.DELETE}, role1.getName()),
-				_getPermissionsJSONObject(
-					new String[] {ActionKeys.VIEW}, role3.getName())),
-			_patchPutObjectDefinitionWithPermissions(
-				Http.Method.PATCH, true, objectDefinitionJSONObject,
-				JSONUtil.putAll(
-					_getPermissionsJSONObject(
-						new String[] {ActionKeys.VIEW}, role3.getName()))));
-		_assertObjectDefinitionWithPermissions(
-			JSONUtil.putAll(
-				_getPermissionsJSONObject(
-					new String[] {ActionKeys.DELETE}, role1.getName()),
-				_getPermissionsJSONObject(
-					new String[] {ActionKeys.UPDATE}, role3.getName())),
-			_patchPutObjectDefinitionWithPermissions(
-				Http.Method.PUT, true, objectDefinitionJSONObject,
-				JSONUtil.putAll(
-					_getPermissionsJSONObject(
-						new String[] {ActionKeys.UPDATE}, role3.getName()))));
-		_assertObjectDefinitionWithPermissions(
-			JSONUtil.putAll(
-				_getPermissionsJSONObject(
-					new String[] {ActionKeys.DELETE, ActionKeys.UPDATE},
-					role1.getName()),
-				_getPermissionsJSONObject(
-					new String[] {ActionKeys.DELETE, ActionKeys.VIEW},
-					role3.getName())),
-			_putByExternalReferenceCodeObjectDefinitionWithPermissions(
-				true, objectDefinitionJSONObject,
-				JSONUtil.putAll(
-					_getPermissionsJSONObject(
-						new String[] {ActionKeys.UPDATE}, role1.getName()),
-					_getPermissionsJSONObject(
-						new String[] {ActionKeys.DELETE, ActionKeys.VIEW},
-						role3.getName()))));
-
-		// Permissions with empty list
-
-		JSONArray companyPermissionsJSONArray = JSONUtil.putAll(
-			_getPermissionsJSONObject(
-				new String[] {ActionKeys.DELETE}, role1.getName()));
-
-		_assertObjectDefinitionWithPermissions(
-			companyPermissionsJSONArray,
-			_patchPutObjectDefinitionWithPermissions(
-				Http.Method.PATCH, true, objectDefinitionJSONObject,
-				_jsonFactory.createJSONArray()));
-		_assertObjectDefinitionWithPermissions(
-			companyPermissionsJSONArray,
-			_patchPutObjectDefinitionWithPermissions(
-				Http.Method.PUT, true, objectDefinitionJSONObject,
-				_jsonFactory.createJSONArray()));
-		_assertObjectDefinitionWithPermissions(
-			companyPermissionsJSONArray,
-			_postObjectDefinitionWithPermissions(
-				true, _jsonFactory.createJSONArray()));
-		_assertObjectDefinitionWithPermissions(
-			companyPermissionsJSONArray,
-			_putByExternalReferenceCodeObjectDefinitionWithPermissions(
-				true, objectDefinitionJSONObject,
-				_jsonFactory.createJSONArray()));
-
-		// Permissions without nested fields
-
-		objectDefinitionJSONObject = _patchPutObjectDefinitionWithPermissions(
-			Http.Method.PATCH, false, objectDefinitionJSONObject, null);
-
-		Assert.assertNull(objectDefinitionJSONObject.get("permissions"));
-
-		objectDefinitionJSONObject = _patchPutObjectDefinitionWithPermissions(
-			Http.Method.PUT, false, objectDefinitionJSONObject, null);
-
-		Assert.assertNull(objectDefinitionJSONObject.get("permissions"));
-
-		objectDefinitionJSONObject = _postObjectDefinitionWithPermissions(
-			false, null);
-
-		Assert.assertNull(objectDefinitionJSONObject.get("permissions"));
-
-		objectDefinitionJSONObject =
-			_putByExternalReferenceCodeObjectDefinitionWithPermissions(
-				false, objectDefinitionJSONObject, null);
-
-		Assert.assertNull(objectDefinitionJSONObject.get("permissions"));
+		_testPatchObjectDefinitionWithPermissions();
 	}
 
 	@FeatureFlag("LPD-17564")
@@ -887,7 +736,9 @@ public class ObjectDefinitionResourceTest
 		assertValid(postObjectDefinition);
 
 		_testPostObjectDefinitionBatch();
+		_testPostObjectDefinitionWithAllowStandaloneObjectEntry();
 		_testPostObjectDefinitionWithAssigneeObjectField();
+		_testPostObjectDefinitionWithPermissions();
 		_testPostObjectDefinitionWithSystemAggregationObjectField();
 		_testPostObjectDefinitionWithWorkflowDefinitionLinks();
 	}
@@ -920,7 +771,7 @@ public class ObjectDefinitionResourceTest
 				serviceBuilderAccountEntryObjectDefinition.
 					getObjectDefinitionId(),
 				postObjectDefinition.getId(), 0,
-				ObjectRelationshipConstants.DELETION_TYPE_DISASSOCIATE, false,
+				ObjectRelationshipConstants.DELETION_TYPE_CASCADE, false,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				"a" + RandomTestUtil.randomString(), false,
 				ObjectRelationshipConstants.TYPE_ONE_TO_MANY, null));
@@ -2101,6 +1952,8 @@ public class ObjectDefinitionResourceTest
 			null, objectField);
 
 		_testPutObjectDefinitionByExternalReferenceCodeWithSystemAggregationObjectField();
+		_testPutObjectDefinitionWithAllowStandaloneObjectEntry();
+		_testPutObjectDefinitionWithPermissions();
 	}
 
 	@Override
@@ -2370,6 +2223,17 @@ public class ObjectDefinitionResourceTest
 			JSONCompareMode.LENIENT);
 	}
 
+	private void _assertObjectEntryCRUDOperationIds(
+			Consumer<Set<String>> consumer, String restContextPath)
+		throws Exception {
+
+		Set<String> operationIds = _getOpenAPIOperationIds(restContextPath);
+
+		operationIds.retainAll(_objectEntryCRUDOperationIds);
+
+		consumer.accept(operationIds);
+	}
+
 	private <T> void _assertObjectField(
 		T expectedValue, Function<ObjectField, T> function,
 		ObjectField objectField) {
@@ -2555,6 +2419,21 @@ public class ObjectDefinitionResourceTest
 		return relationshipObjectField;
 	}
 
+	private ObjectDefinitionSetting[] _getObjectDefinitionSettings(
+		String allowStandaloneObjectEntryValue) {
+
+		return new ObjectDefinitionSetting[] {
+			new ObjectDefinitionSetting() {
+				{
+					setName(
+						ObjectDefinitionSettingConstants.
+							NAME_ALLOW_STANDALONE_OBJECT_ENTRY);
+					setValue(allowStandaloneObjectEntryValue);
+				}
+			}
+		};
+	}
+
 	private ObjectField _getObjectField(
 		ObjectDefinition objectDefinition, String objectFieldName) {
 
@@ -2567,6 +2446,30 @@ public class ObjectDefinitionResourceTest
 			Arrays.toString(objectFields), 1, objectFields.length);
 
 		return objectFields[0];
+	}
+
+	private Set<String> _getOpenAPIOperationIds(String restContextPath)
+		throws Exception {
+
+		Set<String> operationIds = new HashSet<>();
+
+		JSONObject openAPIJSONObject = HTTPTestUtil.invokeToJSONObject(
+			null, restContextPath + "/openapi.json", Http.Method.GET);
+
+		JSONObject pathsJSONObject = openAPIJSONObject.getJSONObject("paths");
+
+		for (String path : pathsJSONObject.keySet()) {
+			JSONObject pathJSONObject = pathsJSONObject.getJSONObject(path);
+
+			for (String httpMethod : pathJSONObject.keySet()) {
+				JSONObject operationJSONObject = pathJSONObject.getJSONObject(
+					httpMethod);
+
+				operationIds.add(operationJSONObject.getString("operationId"));
+			}
+		}
+
+		return operationIds;
 	}
 
 	private JSONObject _getOwnerPermissionsJSONObject() {
@@ -2835,7 +2738,8 @@ public class ObjectDefinitionResourceTest
 			).authentication(
 				user.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
 			).endpoint(
-				testCompany.getVirtualHostname(), 8080, "http"
+				testCompany.getVirtualHostname(),
+				PortalUtil.getPortalServerPort(false), "http"
 			).locale(
 				locale
 			).build();
@@ -2877,6 +2781,14 @@ public class ObjectDefinitionResourceTest
 
 		Assert.assertArrayEquals(
 			new ObjectDefinitionSetting[] {
+				new ObjectDefinitionSetting() {
+					{
+						name =
+							ObjectDefinitionSettingConstants.
+								NAME_ALLOW_STANDALONE_OBJECT_ENTRY;
+						value = StringPool.TRUE;
+					}
+				},
 				new ObjectDefinitionSetting() {
 					{
 						name =
@@ -2993,6 +2905,91 @@ public class ObjectDefinitionResourceTest
 				Arrays.asList(objectDefinition.getWorkflowDefinitionLinks())));
 	}
 
+	private void _testPatchObjectDefinitionWithPermissions() throws Exception {
+
+		// Invalid permissions
+
+		_assertNotFound(
+			_patchPutObjectDefinitionWithPermissions(
+				Http.Method.PATCH, true,
+				_postObjectDefinitionWithPermissions(true, null),
+				JSONUtil.putAll(
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.DELETE},
+						RandomTestUtil.randomString()))));
+
+		// No permissions in the body request
+
+		_assertObjectDefinitionWithPermissions(
+			JSONUtil.putAll(_getOwnerPermissionsJSONObject()),
+			_patchPutObjectDefinitionWithPermissions(
+				Http.Method.PATCH, true,
+				_postObjectDefinitionWithPermissions(true, null), null));
+
+		// Permissions with different roles
+
+		Role role1 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		_resourcePermissionLocalService.addResourcePermission(
+			TestPropsValues.getCompanyId(),
+			"com.liferay.object.model.ObjectDefinition",
+			ResourceConstants.SCOPE_COMPANY,
+			String.valueOf(TestPropsValues.getCompanyId()), role1.getRoleId(),
+			ActionKeys.DELETE);
+
+		Role role2 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		JSONObject objectDefinitionJSONObject =
+			_postObjectDefinitionWithPermissions(
+				true,
+				JSONUtil.putAll(
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.PERMISSIONS}, role1.getName()),
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.UPDATE, ActionKeys.VIEW},
+						role2.getName())));
+
+		Role role3 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		_assertObjectDefinitionWithPermissions(
+			JSONUtil.putAll(
+				_getPermissionsJSONObject(
+					new String[] {ActionKeys.DELETE}, role1.getName()),
+				_getPermissionsJSONObject(
+					new String[] {ActionKeys.VIEW}, role3.getName())),
+			_patchPutObjectDefinitionWithPermissions(
+				Http.Method.PATCH, true, objectDefinitionJSONObject,
+				JSONUtil.putAll(
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.VIEW}, role3.getName()))));
+
+		// Permissions with empty list
+
+		_assertObjectDefinitionWithPermissions(
+			JSONUtil.putAll(
+				_getPermissionsJSONObject(
+					new String[] {ActionKeys.DELETE}, role1.getName())),
+			_patchPutObjectDefinitionWithPermissions(
+				Http.Method.PATCH, true, objectDefinitionJSONObject,
+				_jsonFactory.createJSONArray()));
+
+		// Permissions without nested fields
+
+		Assert.assertNull(
+			_patchPutObjectDefinitionWithPermissions(
+				Http.Method.PATCH, false, objectDefinitionJSONObject, null
+			).get(
+				"permissions"
+			));
+
+		_resourcePermissionLocalService.removeResourcePermission(
+			TestPropsValues.getCompanyId(),
+			"com.liferay.object.model.ObjectDefinition",
+			ResourceConstants.SCOPE_COMPANY,
+			String.valueOf(TestPropsValues.getCompanyId()), role1.getRoleId(),
+			ActionKeys.DELETE);
+	}
+
 	private void _testPostObjectDefinitionBatch() throws Exception {
 		String externalReferenceCode1 = RandomTestUtil.randomString();
 		String externalReferenceCode2 = RandomTestUtil.randomString();
@@ -3043,7 +3040,8 @@ public class ObjectDefinitionResourceTest
 			).authentication(
 				user.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
 			).endpoint(
-				testCompany.getVirtualHostname(), 8080, "http"
+				testCompany.getVirtualHostname(),
+				PortalUtil.getPortalServerPort(false), "http"
 			).parameter(
 				"createStrategy", "UPSERT"
 			).locale(
@@ -3072,6 +3070,34 @@ public class ObjectDefinitionResourceTest
 		Assert.assertNotNull(
 			objectDefinitionResource.getObjectDefinitionByExternalReferenceCode(
 				objectDefinition2.getExternalReferenceCode()));
+	}
+
+	private void _testPostObjectDefinitionWithAllowStandaloneObjectEntry()
+		throws Exception {
+
+		Assert.assertEquals(
+			400,
+			HTTPTestUtil.invokeToHttpCode(
+				JSONUtil.put(
+					"label", RandomTestUtil.randomLocaleStringMap()
+				).put(
+					"name", ObjectDefinitionTestUtil.getRandomName()
+				).put(
+					"objectDefinitionSettings",
+					JSONUtil.putAll(
+						JSONUtil.put(
+							"name",
+							ObjectDefinitionSettingConstants.
+								NAME_ALLOW_STANDALONE_OBJECT_ENTRY
+						).put(
+							"value", "true"
+						))
+				).put(
+					"pluralLabel", RandomTestUtil.randomLocaleStringMap()
+				).put(
+					"scope", ObjectDefinitionConstants.SCOPE_COMPANY
+				).toString(),
+				"object-admin/v1.0/object-definitions", Http.Method.POST));
 	}
 
 	private void _testPostObjectDefinitionWithAssigneeObjectField()
@@ -3105,6 +3131,80 @@ public class ObjectDefinitionResourceTest
 			postObjectDefinition);
 
 		_assertAssignToMeObjectAction(postObjectDefinition);
+	}
+
+	private void _testPostObjectDefinitionWithPermissions() throws Exception {
+
+		// Invalid permissions
+
+		_assertNotFound(
+			_postObjectDefinitionWithPermissions(
+				true,
+				JSONUtil.putAll(
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.DELETE},
+						RandomTestUtil.randomString()))));
+
+		// No permissions in the body request
+
+		_assertObjectDefinitionWithPermissions(
+			JSONUtil.putAll(_getOwnerPermissionsJSONObject()),
+			_postObjectDefinitionWithPermissions(true, null));
+
+		// Permissions with different roles
+
+		Role role1 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		_resourcePermissionLocalService.addResourcePermission(
+			TestPropsValues.getCompanyId(),
+			"com.liferay.object.model.ObjectDefinition",
+			ResourceConstants.SCOPE_COMPANY,
+			String.valueOf(TestPropsValues.getCompanyId()), role1.getRoleId(),
+			ActionKeys.DELETE);
+
+		Role role2 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		_assertObjectDefinitionWithPermissions(
+			JSONUtil.putAll(
+				_getPermissionsJSONObject(
+					new String[] {ActionKeys.DELETE, ActionKeys.PERMISSIONS},
+					role1.getName()),
+				_getPermissionsJSONObject(
+					new String[] {ActionKeys.UPDATE, ActionKeys.VIEW},
+					role2.getName())),
+			_postObjectDefinitionWithPermissions(
+				true,
+				JSONUtil.putAll(
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.PERMISSIONS}, role1.getName()),
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.UPDATE, ActionKeys.VIEW},
+						role2.getName()))));
+
+		// Permissions with empty list
+
+		_assertObjectDefinitionWithPermissions(
+			JSONUtil.putAll(
+				_getPermissionsJSONObject(
+					new String[] {ActionKeys.DELETE}, role1.getName())),
+			_postObjectDefinitionWithPermissions(
+				true, _jsonFactory.createJSONArray()));
+
+		// Permissions without nested fields
+
+		Assert.assertNull(
+			_postObjectDefinitionWithPermissions(
+				false, null
+			).get(
+				"permissions"
+			));
+
+		_resourcePermissionLocalService.removeResourcePermission(
+			TestPropsValues.getCompanyId(),
+			"com.liferay.object.model.ObjectDefinition",
+			ResourceConstants.SCOPE_COMPANY,
+			String.valueOf(TestPropsValues.getCompanyId()), role1.getRoleId(),
+			ActionKeys.DELETE);
 	}
 
 	private void _testPostObjectDefinitionWithSystemAggregationObjectField()
@@ -3279,6 +3379,296 @@ public class ObjectDefinitionResourceTest
 				putObjectDefinition.getId(), aggregationObjectFieldName));
 	}
 
+	private void _testPutObjectDefinitionWithAllowStandaloneObjectEntry()
+		throws Exception {
+
+		// Allow standalone object entry setting is disabled
+
+		ObjectDefinition parentObjectDefinition =
+			objectDefinitionResource.postObjectDefinition(
+				randomObjectDefinition());
+
+		parentObjectDefinition =
+			objectDefinitionResource.postObjectDefinitionPublish(
+				parentObjectDefinition.getId());
+
+		ObjectDefinition childObjectDefinition =
+			objectDefinitionResource.postObjectDefinition(
+				randomObjectDefinition());
+
+		childObjectDefinition =
+			objectDefinitionResource.postObjectDefinitionPublish(
+				childObjectDefinition.getId());
+
+		com.liferay.object.model.ObjectRelationship
+			serviceBuilderObjectRelationship = TreeTestUtil.bind(
+				parentObjectDefinition.getId(), childObjectDefinition.getId(),
+				_objectRelationshipLocalService);
+
+		childObjectDefinition.setObjectDefinitionSettings(
+			_getObjectDefinitionSettings("false"));
+
+		Assert.assertEquals(
+			200,
+			HTTPTestUtil.invokeToHttpCode(
+				childObjectDefinition.toString(),
+				"object-admin/v1.0/object-definitions/" +
+					childObjectDefinition.getId(),
+				Http.Method.PUT));
+
+		com.liferay.object.model.ObjectDefinition
+			serviceBuilderChildObjectDefinition =
+				_objectDefinitionLocalService.getObjectDefinition(
+					childObjectDefinition.getId());
+
+		Assert.assertFalse(
+			serviceBuilderChildObjectDefinition.isAllowStandaloneObjectEntry());
+
+		ObjectEntry parentObjectEntry = _objectEntryLocalService.addObjectEntry(
+			0, TestPropsValues.getUserId(), parentObjectDefinition.getId(),
+			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+			null, Collections.emptyMap(),
+			ServiceContextTestUtil.getServiceContext());
+
+		String restContextPath = StringUtil.removeFirst(
+			parentObjectDefinition.getRestContextPath(), "/o");
+
+		Assert.assertEquals(
+			200,
+			HTTPTestUtil.invokeToHttpCode(
+				"{}",
+				StringBundler.concat(
+					restContextPath, "/", parentObjectEntry.getObjectEntryId(),
+					"/", serviceBuilderObjectRelationship.getName()),
+				Http.Method.POST));
+
+		_objectEntryLocalService.deleteObjectEntry(
+			parentObjectEntry.getObjectEntryId());
+
+		restContextPath = StringUtil.removeFirst(
+			childObjectDefinition.getRestContextPath(), "/o");
+
+		Assert.assertEquals(
+			409,
+			HTTPTestUtil.invokeToHttpCode(
+				null, restContextPath, Http.Method.GET));
+
+		_assertObjectEntryCRUDOperationIds(
+			operationIds -> Assert.assertTrue(operationIds.isEmpty()),
+			restContextPath);
+
+		// Allow standalone object entry setting is enabled
+
+		childObjectDefinition.setObjectDefinitionSettings(
+			_getObjectDefinitionSettings("true"));
+
+		Assert.assertEquals(
+			200,
+			HTTPTestUtil.invokeToHttpCode(
+				childObjectDefinition.toString(),
+				"object-admin/v1.0/object-definitions/" +
+					childObjectDefinition.getId(),
+				Http.Method.PUT));
+
+		serviceBuilderChildObjectDefinition =
+			_objectDefinitionLocalService.getObjectDefinition(
+				childObjectDefinition.getId());
+
+		Assert.assertTrue(
+			serviceBuilderChildObjectDefinition.isAllowStandaloneObjectEntry());
+
+		Assert.assertEquals(
+			200,
+			HTTPTestUtil.invokeToHttpCode(
+				null, restContextPath, Http.Method.GET));
+
+		_assertObjectEntryCRUDOperationIds(
+			operationIds -> Assert.assertFalse(operationIds.isEmpty()),
+			restContextPath);
+
+		// Invalid value
+
+		childObjectDefinition.setObjectDefinitionSettings(
+			_getObjectDefinitionSettings(RandomTestUtil.randomString()));
+
+		Assert.assertEquals(
+			400,
+			HTTPTestUtil.invokeToHttpCode(
+				childObjectDefinition.toString(),
+				"object-admin/v1.0/object-definitions/" +
+					childObjectDefinition.getId(),
+				Http.Method.PUT));
+
+		// Object definition is not a root descendant node
+
+		parentObjectDefinition.setObjectDefinitionSettings(
+			_getObjectDefinitionSettings("true"));
+
+		Assert.assertEquals(
+			400,
+			HTTPTestUtil.invokeToHttpCode(
+				parentObjectDefinition.toString(),
+				"object-admin/v1.0/object-definitions/" +
+					parentObjectDefinition.getId(),
+				Http.Method.PUT));
+
+		// Standalone object entries already exist
+
+		ObjectEntry childObjectEntry = _objectEntryLocalService.addObjectEntry(
+			0, TestPropsValues.getUserId(), childObjectDefinition.getId(),
+			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+			null, Collections.emptyMap(),
+			ServiceContextTestUtil.getServiceContext());
+
+		childObjectDefinition.setObjectDefinitionSettings(
+			_getObjectDefinitionSettings("false"));
+
+		try {
+			objectDefinitionResource.putObjectDefinition(
+				childObjectDefinition.getId(), childObjectDefinition);
+
+			Assert.fail();
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
+			Assert.assertEquals(
+				StringBundler.concat(
+					"Standalone object entries already exist for object ",
+					"definition ", childObjectDefinition.getName(), "."),
+				problem.getTitle());
+		}
+
+		_objectEntryLocalService.deleteObjectEntry(
+			childObjectEntry.getObjectEntryId());
+
+		TreeTestUtil.unbind(
+			parentObjectDefinition.getId(), _objectRelationshipLocalService);
+
+		_objectDefinitionLocalService.deleteObjectDefinition(
+			parentObjectDefinition.getId());
+		_objectDefinitionLocalService.deleteObjectDefinition(
+			childObjectDefinition.getId());
+	}
+
+	private void _testPutObjectDefinitionWithPermissions() throws Exception {
+
+		// Invalid permissions
+
+		_assertNotFound(
+			_patchPutObjectDefinitionWithPermissions(
+				Http.Method.PUT, true,
+				_postObjectDefinitionWithPermissions(true, null),
+				JSONUtil.putAll(
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.DELETE},
+						RandomTestUtil.randomString()))));
+
+		// No permissions in the body request
+
+		_assertObjectDefinitionWithPermissions(
+			JSONUtil.putAll(_getOwnerPermissionsJSONObject()),
+			_patchPutObjectDefinitionWithPermissions(
+				Http.Method.PUT, true,
+				_postObjectDefinitionWithPermissions(true, null), null));
+		_assertObjectDefinitionWithPermissions(
+			JSONUtil.putAll(_getOwnerPermissionsJSONObject()),
+			_putByExternalReferenceCodeObjectDefinitionWithPermissions(
+				true, _postObjectDefinitionWithPermissions(true, null), null));
+
+		// Permissions with different roles
+
+		Role role1 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		_resourcePermissionLocalService.addResourcePermission(
+			TestPropsValues.getCompanyId(),
+			"com.liferay.object.model.ObjectDefinition",
+			ResourceConstants.SCOPE_COMPANY,
+			String.valueOf(TestPropsValues.getCompanyId()), role1.getRoleId(),
+			ActionKeys.DELETE);
+
+		Role role2 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		JSONObject objectDefinitionJSONObject =
+			_postObjectDefinitionWithPermissions(
+				true,
+				JSONUtil.putAll(
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.PERMISSIONS}, role1.getName()),
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.UPDATE, ActionKeys.VIEW},
+						role2.getName())));
+
+		Role role3 = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		_assertObjectDefinitionWithPermissions(
+			JSONUtil.putAll(
+				_getPermissionsJSONObject(
+					new String[] {ActionKeys.DELETE}, role1.getName()),
+				_getPermissionsJSONObject(
+					new String[] {ActionKeys.UPDATE}, role3.getName())),
+			_patchPutObjectDefinitionWithPermissions(
+				Http.Method.PUT, true, objectDefinitionJSONObject,
+				JSONUtil.putAll(
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.UPDATE}, role3.getName()))));
+		_assertObjectDefinitionWithPermissions(
+			JSONUtil.putAll(
+				_getPermissionsJSONObject(
+					new String[] {ActionKeys.DELETE, ActionKeys.UPDATE},
+					role1.getName()),
+				_getPermissionsJSONObject(
+					new String[] {ActionKeys.DELETE, ActionKeys.VIEW},
+					role3.getName())),
+			_putByExternalReferenceCodeObjectDefinitionWithPermissions(
+				true, objectDefinitionJSONObject,
+				JSONUtil.putAll(
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.UPDATE}, role1.getName()),
+					_getPermissionsJSONObject(
+						new String[] {ActionKeys.DELETE, ActionKeys.VIEW},
+						role3.getName()))));
+
+		// Permissions with empty list
+
+		JSONArray companyPermissionsJSONArray = JSONUtil.putAll(
+			_getPermissionsJSONObject(
+				new String[] {ActionKeys.DELETE}, role1.getName()));
+
+		_assertObjectDefinitionWithPermissions(
+			companyPermissionsJSONArray,
+			_patchPutObjectDefinitionWithPermissions(
+				Http.Method.PUT, true, objectDefinitionJSONObject,
+				_jsonFactory.createJSONArray()));
+		_assertObjectDefinitionWithPermissions(
+			companyPermissionsJSONArray,
+			_putByExternalReferenceCodeObjectDefinitionWithPermissions(
+				true, objectDefinitionJSONObject,
+				_jsonFactory.createJSONArray()));
+
+		// Permissions without nested fields
+
+		objectDefinitionJSONObject = _patchPutObjectDefinitionWithPermissions(
+			Http.Method.PUT, false, objectDefinitionJSONObject, null);
+
+		Assert.assertNull(objectDefinitionJSONObject.get("permissions"));
+
+		Assert.assertNull(
+			_putByExternalReferenceCodeObjectDefinitionWithPermissions(
+				false, objectDefinitionJSONObject, null
+			).get(
+				"permissions"
+			));
+
+		_resourcePermissionLocalService.removeResourcePermission(
+			TestPropsValues.getCompanyId(),
+			"com.liferay.object.model.ObjectDefinition",
+			ResourceConstants.SCOPE_COMPANY,
+			String.valueOf(TestPropsValues.getCompanyId()), role1.getRoleId(),
+			ActionKeys.DELETE);
+	}
+
 	private JSONObject _waitForFinish(
 			String expectedExecuteStatus, boolean importTask,
 			JSONObject jsonObject)
@@ -3306,6 +3696,18 @@ public class ObjectDefinitionResourceTest
 		}
 	}
 
+	private static final List<String> _objectEntryCRUDOperationIds =
+		Arrays.asList(
+			"deleteByExternalReferenceCode", "deleteObjectEntry",
+			"deleteScopeScopeKeyByExternalReferenceCode",
+			"getByExternalReferenceCode", "getObjectEntriesPage",
+			"getObjectEntry", "getScopeScopeKeyByExternalReferenceCode",
+			"getScopeScopeKeyPage", "patchByExternalReferenceCode",
+			"patchObjectEntry", "patchScopeScopeKeyByExternalReferenceCode",
+			"postObjectEntry", "postScopeScopeKey",
+			"putByExternalReferenceCode", "putObjectEntry",
+			"putScopeScopeKeyByExternalReferenceCode");
+
 	@Inject
 	private DepotEntryLocalService _depotEntryLocalService;
 
@@ -3330,6 +3732,9 @@ public class ObjectDefinitionResourceTest
 	@DeleteAfterTestRun
 	private final List<com.liferay.object.model.ObjectDefinition>
 		_objectDefinitions = new ArrayList<>();
+
+	@Inject
+	private ObjectEntryLocalService _objectEntryLocalService;
 
 	@Inject
 	private ObjectFieldLocalService _objectFieldLocalService;

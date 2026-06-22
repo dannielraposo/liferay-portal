@@ -494,16 +494,16 @@ test(
 
 		await expect(async () => {
 			await usersAndOrganizationsPage.organizationsTable.orderButton.click();
-			await usersAndOrganizationsPage.organizationsTable
-				.orderMenuItem('Name')
-				.click({timeout: 500});
+			await usersAndOrganizationsPage.organizationsTable.clickOrderMenuItem(
+				'Name'
+			);
 		}).toPass({timeout: 5000});
 
 		await expect(async () => {
 			await usersAndOrganizationsPage.organizationsTable.orderButton.click();
-			await usersAndOrganizationsPage.organizationsTable
-				.orderMenuItem('Ascending')
-				.click({timeout: 500});
+			await usersAndOrganizationsPage.organizationsTable.clickOrderMenuItem(
+				'Ascending'
+			);
 
 			await expect(
 				usersAndOrganizationsPage.organizationsTable.cell(
@@ -518,9 +518,9 @@ test(
 
 		await expect(async () => {
 			await usersAndOrganizationsPage.organizationsTable.orderButton.click();
-			await usersAndOrganizationsPage.organizationsTable
-				.orderMenuItem('Descending')
-				.click({timeout: 500});
+			await usersAndOrganizationsPage.organizationsTable.clickOrderMenuItem(
+				'Descending'
+			);
 
 			await expect(
 				usersAndOrganizationsPage.organizationsTable.cell(
@@ -535,9 +535,9 @@ test(
 
 		await expect(async () => {
 			await usersAndOrganizationsPage.organizationsTable.orderButton.click();
-			await usersAndOrganizationsPage.organizationsTable
-				.orderMenuItem('Ascending')
-				.click({timeout: 500});
+			await usersAndOrganizationsPage.organizationsTable.clickOrderMenuItem(
+				'Ascending'
+			);
 		}).toPass({timeout: 5000});
 	}
 );
@@ -1198,11 +1198,14 @@ test(
 			});
 		}).toPass({timeout: 20000});
 
-		const xssOrgName = `AnyName${getRandomInt()}<img src=x onerror="alert('xssOrg')">`;
+		const xssOrgNamePrefix = `AnyName${getRandomInt()}`;
+		const xssOrgName = `${xssOrgNamePrefix}<img src=x onerror="alert('xssOrg')">`;
 
 		await editOrganizationPage.nameInput.fill(xssOrgName);
 		await editOrganizationPage.countrySelect.selectOption(`${country.key}`);
 		await editOrganizationPage.saveButton.click();
+
+		await waitForAlert(page);
 
 		try {
 			await usersAndOrganizationsPage.goToOrganizations();
@@ -1215,12 +1218,18 @@ test(
 				}
 			});
 
-			await expect(
-				page.getByText(xssOrgName, {exact: true})
-			).toBeVisible();
-			await expect(
-				page.getByText(xssString, {exact: true})
-			).toBeVisible();
+			await expect(async () => {
+				await usersAndOrganizationsPage.organizationsTable.search(
+					xssOrgNamePrefix
+				);
+
+				await expect(
+					page.getByText(xssOrgName, {exact: true})
+				).toBeVisible({timeout: 5000});
+				await expect(
+					page.getByText(xssString, {exact: true})
+				).toBeVisible({timeout: 5000});
+			}).toPass({timeout: 60000});
 		}
 		finally {
 			page.on('dialog', async (dialog) => await dialog.accept());
@@ -1245,12 +1254,26 @@ test(
 
 			await usersAndOrganizationsPage.goToOrganizations();
 			await usersAndOrganizationsPage.changeView('Table');
-			await (
-				await usersAndOrganizationsPage.organizationsTable.rowCheckbox(
-					xssOrgName
-				)
-			).check();
-			await usersAndOrganizationsPage.deleteButton.click();
+
+			await usersAndOrganizationsPage.goToOrganizations();
+
+			await usersAndOrganizationsPage.organizationsTable.search(
+				xssOrgNamePrefix
+			);
+
+			await expect(async () => {
+				await (
+					await usersAndOrganizationsPage.organizationsTable.rowActions(
+						xssOrgName
+					)
+				).click();
+
+				await expect(
+					usersAndOrganizationsPage.deleteOrganizationMenuItem
+				).toBeVisible({timeout: 500});
+			}).toPass({timeout: 5000});
+
+			await usersAndOrganizationsPage.deleteOrganizationMenuItem.click();
 
 			await waitForAlert(page);
 		}

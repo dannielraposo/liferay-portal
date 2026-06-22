@@ -5,7 +5,6 @@
 
 package com.liferay.portal.service.persistence.impl;
 
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -15,8 +14,6 @@ import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchImageException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.model.ImageTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -77,9 +74,7 @@ public class ImagePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByLtSize;
-	private FinderPath _finderPathWithPaginationCountByLtSize;
-	private CollectionPersistenceFinder<Image>
+	private CollectionPersistenceFinder<Image, NoSuchImageException>
 		_collectionPersistenceFinderByLtSize;
 
 	/**
@@ -150,14 +145,9 @@ public class ImagePersistenceImpl
 		int size, int start, int end,
 		OrderByComparator<Image> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					Image.class)) {
-
-			return _collectionPersistenceFinderByLtSize.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {size}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByLtSize.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {size}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -173,15 +163,9 @@ public class ImagePersistenceImpl
 			int size, OrderByComparator<Image> orderByComparator)
 		throws NoSuchImageException {
 
-		Image image = fetchByLtSize_First(size, orderByComparator);
-
-		if (image != null) {
-			return image;
-		}
-
-		throw new NoSuchImageException(
-			_collectionPersistenceFinderByLtSize.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {size}));
+		return _collectionPersistenceFinderByLtSize.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {size},
+			orderByComparator);
 	}
 
 	/**
@@ -219,13 +203,8 @@ public class ImagePersistenceImpl
 	 */
 	@Override
 	public int countByLtSize(int size) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					Image.class)) {
-
-			return _collectionPersistenceFinderByLtSize.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {size});
-		}
+		return _collectionPersistenceFinderByLtSize.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {size});
 	}
 
 	public ImagePersistenceImpl() {
@@ -488,28 +467,27 @@ public class ImagePersistenceImpl
 	 * Initializes the image persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByLtSize = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtSize",
-			new String[] {
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"size_"}, true);
-
-		_finderPathWithPaginationCountByLtSize = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtSize",
-			new String[] {Integer.class.getName()}, new String[] {"size_"},
-			false);
-
 		_collectionPersistenceFinderByLtSize =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLtSize, null,
-				_finderPathWithPaginationCountByLtSize, _SQL_SELECT_IMAGE_WHERE,
-				_SQL_COUNT_IMAGE_WHERE, ImageModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtSize",
+					new String[] {
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"size_"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtSize",
+					new String[] {Integer.class.getName()},
+					new String[] {"size_"}, false),
+				_SQL_SELECT_IMAGE_WHERE, _SQL_COUNT_IMAGE_WHERE,
+				ImageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"image.", "size", FinderColumn.Type.INTEGER, "<", true,
-					true, Image::getSize));
+					"image.", "size", "size_", FinderColumn.Type.INTEGER, "<",
+					true, true, Image::getSize));
 
 		ImageUtil.setPersistence(this);
 	}
@@ -535,9 +513,6 @@ public class ImagePersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No Image exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		ImagePersistenceImpl.class);
-
 	private static final Set<String> _badColumnNames = SetUtil.fromArray(
 		new String[] {"type", "size"});
 
@@ -547,4 +522,4 @@ public class ImagePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:754629728
+// LIFERAY-SERVICE-BUILDER-HASH:-1038373264

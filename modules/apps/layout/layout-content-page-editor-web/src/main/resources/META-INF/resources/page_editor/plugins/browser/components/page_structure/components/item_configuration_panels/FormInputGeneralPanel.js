@@ -17,9 +17,9 @@ import {FREEMARKER_FRAGMENT_ENTRY_PROCESSOR} from '../../../../../../app/config/
 import {LAYOUT_DATA_ITEM_TYPES} from '../../../../../../app/config/constants/layoutDataItemTypes';
 import {config} from '../../../../../../app/config/index';
 import {
-	useObjectFields,
-	useObjectLabel,
-} from '../../../../../../app/contexts/ObjectDataContext';
+	useFormMappingFields,
+	useFormMappingFieldsLabel,
+} from '../../../../../../app/contexts/FormDataContext';
 import {
 	useDispatch,
 	useSelector,
@@ -34,6 +34,7 @@ import InfoItemService from '../../../../../../app/services/InfoItemService';
 import updateFragmentConfiguration from '../../../../../../app/thunks/updateFragmentConfiguration';
 import {CACHE_KEYS} from '../../../../../../app/utils/cache';
 import getMappedRelationship from '../../../../../../app/utils/editable_value/getMappedRelationship';
+import getSelectedField from '../../../../../../app/utils/getSelectedField';
 import {hasLocalizableFields} from '../../../../../../app/utils/hasLocalizableFields';
 import {isRequiredFormField} from '../../../../../../app/utils/isRequiredFormField';
 import useCache from '../../../../../../app/utils/useCache';
@@ -49,6 +50,7 @@ const HELP_TEXT_CONFIGURATION_KEY = 'inputHelpText';
 const LABEL_CONFIGURATION_KEY = 'inputLabel';
 const REQUIRED_CONFIGURATION_KEY = 'inputRequired';
 const SHOW_HELP_TEXT_CONFIGURATION_KEY = 'inputShowHelpText';
+const SHOW_PREFIX_CONFIGURATION_KEY = 'showPrefix';
 
 const SOURCE_TYPES = {
 	mainObject: 'main-object',
@@ -181,7 +183,7 @@ export function FormInputGeneralPanel({item}) {
 			[item.itemId, item.parentId]
 		);
 
-	const formFields = useObjectFields(
+	const formFields = useFormMappingFields(
 		fieldSetName ? {name: fieldSetName} : {classNameId, classTypeId}
 	);
 
@@ -345,7 +347,22 @@ export function FormInputGeneralPanel({item}) {
 			allowedInputTypes
 		);
 
-		return [...inputCommonFields, ...fieldSetsWithoutLabel];
+		const fields = [...inputCommonFields, ...fieldSetsWithoutLabel];
+
+		const mappedField = getSelectedField({
+			fields: formFields,
+			value: configurationValues[FIELD_ID_CONFIGURATION_KEY],
+		});
+
+		const countrySource = mappedField?.attributes?.countrySource;
+
+		if (countrySource !== 'fixed') {
+			return fields.filter(
+				(field) => field.name !== SHOW_PREFIX_CONFIGURATION_KEY
+			);
+		}
+
+		return fields;
 	}, [
 		allowedInputTypes,
 		configurationValues,
@@ -592,7 +609,7 @@ function FormInputMappingOptions({
 		[classNameId, classTypeId]
 	);
 
-	const label = useObjectLabel(
+	const label = useFormMappingFieldsLabel(
 		fieldSetName ? {name: fieldSetName} : {classNameId, classTypeId}
 	);
 

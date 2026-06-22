@@ -12,13 +12,22 @@ import {waitForLoadingToBeRemoved} from 'test/helpers';
 
 jest.unmock('react-dom');
 
-jest.mock('shared/hooks/useFrontendDataSet', () => ({
-	useFrontendDataSet: () => {
-		const FakeDataSet = ({id}: {id: string}) => (
-			<div data-testid='fds-component' id={id} />
-		);
+type FakeFilter = {
+	id: string;
+	preloadedData?: {
+		exclude: boolean;
+		selectedItems: Array<{label?: string; value: string}>;
+	};
+};
 
-		return FakeDataSet;
+let lastFilters: FakeFilter[] | undefined;
+
+jest.mock('@liferay/frontend-data-set-web', () => ({
+	...jest.requireActual('@liferay/frontend-data-set-web'),
+	FrontendDataSet: ({filters, id}: {filters: FakeFilter[]; id: string}) => {
+		lastFilters = filters;
+
+		return <div data-testid='fds-component' id={id} />;
 	}
 }));
 
@@ -57,10 +66,10 @@ const buildHistory = (path = '/workspace/23/123/accounts') => {
 
 const store = mockStore();
 
-// `useRequest` is consumed by both `List` (data source search, expects an
-// object with `total`) and `TotalAccounts` (account metrics, expects an array
-// of `IAccountMetric`). Differentiate by `variables.delta`, which is only
-// present in the data source search call.
+// `useRequest` is consumed by both `List` (fetchChannels, expects an object
+// with `total`) and `TotalAccounts` (account metrics, expects an array of
+// `IAccountMetric`). Differentiate by `variables.channelIds`, which is only
+// present in the fetchChannels call.
 
 const accountMetricsMock = [
 	{
@@ -83,7 +92,7 @@ const accountMetricsMock = [
 const useRequestImpl =
 	({total = 1}: {total?: number} = {}) =>
 	({variables}: {variables: {[key: string]: any}}) =>
-		variables?.delta !== undefined
+		variables?.channelIds !== undefined
 			? {data: {total}}
 			: {data: accountMetricsMock};
 
@@ -104,6 +113,7 @@ const renderList = (
 describe('List', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		lastFilters = undefined;
 
 		mockedUseHistory.mockReturnValue({push: mockHistoryPush});
 		mockedUseRequest.mockImplementation(useRequestImpl());
@@ -140,6 +150,17 @@ describe('List', () => {
 			renderList();
 
 			expect(screen.getByTestId('fds-component')).toHaveAttribute('id');
+		});
+
+		it('should preload the rangeKey filter with Last 30 Days by default', () => {
+			renderList();
+
+			const rangeKeyFilter = lastFilters?.find(f => f.id === 'rangeKey');
+
+			expect(rangeKeyFilter?.preloadedData).toEqual({
+				exclude: false,
+				selectedItems: [{label: 'Last 30 days', value: '30'}]
+			});
 		});
 
 		it('should match the snapshot', async () => {

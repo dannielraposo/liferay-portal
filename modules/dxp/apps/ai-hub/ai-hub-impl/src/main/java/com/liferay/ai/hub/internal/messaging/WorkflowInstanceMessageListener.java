@@ -6,18 +6,22 @@
 package com.liferay.ai.hub.internal.messaging;
 
 import com.liferay.ai.hub.internal.agent.util.AgentUtil;
+import com.liferay.ai.hub.internal.audit.constants.AIHubEventTypes;
+import com.liferay.ai.hub.internal.constants.AIHubDestinationNames;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.messaging.BaseMessageListener;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.DestinationConfiguration;
 import com.liferay.portal.kernel.messaging.DestinationFactory;
 import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.messaging.MessageListener;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.workflow.WorkflowInstance;
+import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
 import com.liferay.portal.workflow.kaleo.runtime.constants.WorkflowInstanceDestinationNames;
 
-import java.io.Serializable;
-
-import java.util.Map;
+import java.util.Date;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -57,21 +61,58 @@ public class WorkflowInstanceMessageListener extends BaseMessageListener {
 	@Override
 	protected void doReceive(Message message) throws Exception {
 		if (message.contains("exception")) {
-			AgentUtil.completeExceptionally(
-				(Exception)message.get("exception"),
-				message.getLong("workflowInstanceId"));
-
-			return;
+			AgentUtil.completeExceptionally(message);
+		}
+		else {
+			AgentUtil.complete(message);
 		}
 
-		AgentUtil.complete(
-			(Map<String, Serializable>)message.get("workflowContext"),
-			message.getLong("workflowInstanceId"));
+		message.put(
+			"additionalInformation",
+			JSONUtil.put(
+				"duration",
+				() -> {
+					Date messageCreateDate = (Date)message.get("createDate");
+
+					WorkflowInstance workflowInstance =
+						_workflowInstanceManager.getWorkflowInstance(
+							message.getLong("companyId"),
+							message.getLong("workflowInstanceId"));
+
+					Date workflowInstanceStartDate =
+						workflowInstance.getStartDate();
+
+					return messageCreateDate.getTime() -
+						workflowInstanceStartDate.getTime();
+				}
+			).put(
+				"exceptionMessage",
+				() -> {
+					if (!message.contains("exception")) {
+						return null;
+					}
+
+					Exception exception = (Exception)message.get("exception");
+
+					return exception.getMessage();
+				}
+			));
+		message.put(
+			"eventType",
+			message.contains("exception") ?
+				AIHubEventTypes.AI_HUB_AGENT_INSTANCE_COMPLETE_EXCEPTIONALLY :
+					AIHubEventTypes.AI_HUB_AGENT_INSTANCE_COMPLETE);
+
+		MessageBusUtil.sendMessage(
+			AIHubDestinationNames.AI_HUB_AGENT_INSTANCE, message);
 	}
 
 	@Reference
 	private DestinationFactory _destinationFactory;
 
 	private ServiceRegistration<Destination> _destinationServiceRegistration;
+
+	@Reference
+	private WorkflowInstanceManager _workflowInstanceManager;
 
 }

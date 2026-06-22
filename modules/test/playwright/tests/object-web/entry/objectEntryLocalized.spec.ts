@@ -4,6 +4,7 @@
  */
 
 import {
+	ObjectDefinition,
 	ObjectDefinitionAPI,
 	ObjectRelationshipAPI,
 } from '@liferay/object-admin-rest-client-js';
@@ -35,6 +36,8 @@ export const test = mergeTests(
 	isolatedSiteTest,
 	editObjectDefinitionPagesTest,
 	featureFlagsTest({
+		'LPD-70673': {enabled: true}, // Email Address field type
+		'LPD-83570': {enabled: true},
 		'LPS-178052': {enabled: true},
 	}),
 	formsPagesTest,
@@ -507,6 +510,134 @@ test.describe('Localized object entries are saved correctly', () => {
 		await expect(dateInput).toHaveValue('11/01/2025');
 
 		await expect(dateTimeInput).toHaveValue('20/02/2025 22:00');
+	});
+
+	test('Email Address fields', async ({
+		apiHelpers,
+		page,
+		viewObjectEntriesPage,
+	}) => {
+		const objectDefinitionLabel = 'ObjectDefinitionLabel' + getRandomInt();
+		const objectDefinitionName = 'ObjectDefinitionName' + getRandomInt();
+
+		const objectFields = generateObjectFields({
+			objectFieldBusinessTypes: [
+				{
+					businessType: 'EmailAddress',
+					localized: true,
+				},
+			],
+		});
+
+		const objectDefinitionAPIClient =
+			await apiHelpers.buildRestClient(ObjectDefinitionAPI);
+
+		const {body: objectDefinition} =
+			await objectDefinitionAPIClient.postObjectDefinition({
+				active: true,
+				enableLocalization: true,
+				label: {
+					en_US: objectDefinitionLabel,
+				},
+				name: objectDefinitionName,
+				objectFields,
+				pluralLabel: {
+					en_US: objectDefinitionLabel,
+				},
+				portlet: true,
+				scope: 'company',
+				status: {
+					code: 0,
+				},
+			});
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		await viewObjectEntriesPage.goto(objectDefinition.className);
+
+		await viewObjectEntriesPage.clickAddObjectEntry(objectDefinitionLabel);
+
+		const emailInput = page.locator(
+			`[data-field-name="${objectFields[0].name}"] input[type="text"]`
+		);
+
+		const englishEmail = 'user@example.com';
+		const catalanEmail = 'usuario@ejemplo.es';
+
+		// with english locale, fill the email field
+
+		await emailInput.fill(englishEmail);
+
+		// switch to catalan locale
+
+		await page.getByRole('button', {name: 'en-us'}).first().click();
+
+		const catalanOption = page.getByRole('menuitem', {
+			name: 'català (Espanya)',
+		});
+
+		await catalanOption.click();
+
+		// with catalan locale selected for the first time, value should be copied from english
+
+		await expect(emailInput).toHaveValue(englishEmail);
+
+		// change the email for catalan
+
+		await emailInput.fill(catalanEmail);
+
+		await page.getByRole('button', {name: 'ca-es'}).last().click();
+
+		// catalan should show as translated, english as default
+
+		await expect(catalanOption.getByText('translated')).toBeVisible();
+
+		await expect(
+			page
+				.getByRole('menuitem', {name: 'English (United States)'})
+				.getByText('default')
+		).toBeVisible();
+
+		// save
+
+		const responsePromise = page.waitForResponse(
+			`**${objectDefinition.restContextPath}`
+		);
+
+		await catalanOption.click();
+
+		await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+		const response = await responsePromise;
+
+		await expect(
+			page.getByText('Success:Your request completed successfully.')
+		).toBeVisible();
+
+		// go back to list
+
+		await viewObjectEntriesPage.backButton.click();
+
+		const responseBody = await response.json();
+
+		// navigate to the entry
+
+		await page.getByRole('link', {name: responseBody.id}).click();
+
+		// verify english value is preserved
+
+		await expect(emailInput).toHaveValue(englishEmail);
+
+		// switch to catalan and verify its value
+
+		await page.getByRole('button', {name: 'en-us'}).first().click();
+
+		await catalanOption.first().click();
+
+		await expect(emailInput).toHaveValue(catalanEmail);
 	});
 
 	test('Multiselect Picklist fields', async ({
@@ -1015,6 +1146,222 @@ test.describe('Localized object entries are saved correctly', () => {
 			expect(inputValue === catalanValues[name]).toBeTruthy();
 		}
 	});
+
+	test(
+		'Phone Number fields',
+		{tag: ['@LPD-70691']},
+		async ({apiHelpers, page, viewObjectEntriesPage}) => {
+			const enLocalNumber = '8775433729';
+			const ptLocalNumber = '8121216000';
+
+			const fixedPrefix = '+1';
+			const enUserPrefix = '+1';
+			const ptUserPrefix = '+55';
+
+			const objectFields = generateObjectFields({
+				objectFieldBusinessTypes: [
+					{
+						businessType: 'PhoneNumber',
+						localized: true,
+						objectFieldSettings: [
+							{
+								name: 'countrySource',
+								value: 'fixed',
+							},
+							{
+								name: 'country',
+								value: 'US',
+							},
+						],
+					},
+					{
+						businessType: 'PhoneNumber',
+						localized: true,
+					},
+				],
+			});
+
+			const fixedFieldLabel = objectFields[0].label!['en_US'];
+			const userFieldLabel = objectFields[1].label!['en_US'];
+
+			const fixedFieldContainer = page.getByRole('group', {
+				name: fixedFieldLabel,
+			});
+
+			const fixedPhoneInput =
+				fixedFieldContainer.getByLabel('Phone Number');
+
+			const userFieldContainer = page.getByRole('group', {
+				name: userFieldLabel,
+			});
+
+			const userPhoneInput =
+				userFieldContainer.getByLabel('Phone Number');
+			const userPrefixDropdown =
+				userFieldContainer.getByLabel('Country Code');
+
+			let objectDefinition: ObjectDefinition;
+
+			await test.step('Create an object definition', async () => {
+				const objectDefinitionAPIClient =
+					await apiHelpers.buildRestClient(ObjectDefinitionAPI);
+
+				const {body} =
+					await objectDefinitionAPIClient.postObjectDefinition({
+						active: true,
+						enableLocalization: true,
+						label: {en_US: getRandomString()},
+						name: 'ObjectDefinitionName' + getRandomInt(),
+						objectFields,
+						pluralLabel: {en_US: 'NewObject'},
+						portlet: true,
+						scope: 'company',
+						status: {code: 0},
+					});
+
+				objectDefinition = body;
+
+				apiHelpers.data.push({
+					id: objectDefinition.id,
+					type: 'objectDefinition',
+				});
+			});
+
+			await test.step('Navigate to the object definition and add an entry', async () => {
+				await viewObjectEntriesPage.goto(objectDefinition.className!);
+
+				await viewObjectEntriesPage.clickAddObjectEntry(
+					objectDefinition.label!['en_US']
+				);
+			});
+
+			await test.step('Verify the error message is displayed', async () => {
+				const fixedErrorMessage = page
+					.locator('.form-group', {has: fixedFieldContainer})
+					.getByText('Please enter a valid phone number.');
+
+				await fixedPhoneInput.fill('1');
+
+				await fixedPhoneInput.blur();
+
+				await expect(fixedErrorMessage).toBeVisible();
+
+				await fixedPhoneInput.clear();
+
+				await expect(fixedErrorMessage).not.toBeVisible();
+
+				const userErrorMessage = page
+					.locator('.form-group', {has: userFieldContainer})
+					.getByText('Please enter a valid phone number.');
+
+				await userPhoneInput.fill('1');
+
+				await userPhoneInput.blur();
+
+				await expect(userErrorMessage).toBeVisible();
+
+				await userPhoneInput.clear();
+
+				await expect(userErrorMessage).not.toBeVisible();
+			});
+
+			await test.step('Fill both phone number fields with the en_US values', async () => {
+				await expect(
+					fixedFieldContainer.getByText(fixedPrefix)
+				).toBeVisible();
+
+				await fixedPhoneInput.fill(enLocalNumber);
+
+				await userPrefixDropdown.click();
+
+				await page.getByRole('option', {name: /United States/}).click();
+
+				await expect(userPrefixDropdown).toHaveText(enUserPrefix);
+
+				await userPhoneInput.fill(enLocalNumber);
+			});
+
+			await test.step('Switch to pt_BR and fill the translated values for both fields', async () => {
+				await page.getByRole('button', {name: 'en-us'}).first().click();
+
+				await page
+					.getByRole('menuitem', {name: 'português (Brasil)'})
+					.click();
+
+				await fixedPhoneInput.fill(ptLocalNumber);
+
+				await userPrefixDropdown.click();
+
+				await page.getByRole('option', {name: /Brazil/}).click();
+
+				await expect(userPrefixDropdown).toHaveText(ptUserPrefix);
+
+				await userPhoneInput.fill(ptLocalNumber);
+			});
+
+			await test.step('Switch back to en_US and verify the en_US values are preserved', async () => {
+				await fixedFieldContainer
+					.getByRole('button', {name: 'pt-br'})
+					.click();
+
+				await page
+					.getByRole('menuitem', {name: 'English (United States)'})
+					.click();
+
+				await expect(fixedPhoneInput).toHaveValue(enLocalNumber);
+				await expect(userPrefixDropdown).toHaveText(enUserPrefix);
+				await expect(userPhoneInput).toHaveValue(enLocalNumber);
+			});
+
+			await test.step('Switch to pt_BR and verify the pt_BR values are preserved', async () => {
+				await fixedFieldContainer
+					.getByRole('button', {name: 'en-us'})
+					.click();
+
+				await page
+					.getByRole('menuitem', {name: 'português (Brasil)'})
+					.click();
+
+				await expect(fixedPhoneInput).toHaveValue(ptLocalNumber);
+				await expect(userPrefixDropdown).toHaveText(ptUserPrefix);
+				await expect(userPhoneInput).toHaveValue(ptLocalNumber);
+			});
+
+			await test.step('Save the entry', async () => {
+				await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+				await expect(
+					viewObjectEntriesPage.successMessage
+				).toBeVisible();
+			});
+
+			await test.step('Verify the en_US values persist after save', async () => {
+				await expect(fixedPhoneInput).toHaveValue(enLocalNumber);
+				await expect(userPrefixDropdown).toHaveText(enUserPrefix);
+				await expect(
+					userPrefixDropdown.locator('.lexicon-icon-en-us')
+				).toBeVisible();
+				await expect(userPhoneInput).toHaveValue(enLocalNumber);
+			});
+
+			await test.step('Verify the pt_BR values persist after save', async () => {
+				await fixedFieldContainer
+					.getByRole('button', {name: 'en-us'})
+					.click();
+
+				await page
+					.getByRole('menuitem', {name: 'português (Brasil)'})
+					.click();
+
+				await expect(fixedPhoneInput).toHaveValue(ptLocalNumber);
+				await expect(userPrefixDropdown).toHaveText(ptUserPrefix);
+				await expect(
+					userPrefixDropdown.locator('.lexicon-icon-pt-br')
+				).toBeVisible();
+				await expect(userPhoneInput).toHaveValue(ptLocalNumber);
+			});
+		}
+	);
 
 	test('Picklist fields', async ({
 		apiHelpers,

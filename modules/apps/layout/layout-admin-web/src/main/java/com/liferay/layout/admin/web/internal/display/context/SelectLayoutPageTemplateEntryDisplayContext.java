@@ -11,6 +11,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryServiceUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -123,6 +124,15 @@ public class SelectLayoutPageTemplateEntryDisplayContext {
 	public List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
 		int start, int end) {
 
+		if (!_isWidgetPageFeatureFlagEnabled()) {
+			return LayoutPageTemplateEntryServiceUtil.
+				getLayoutPageTemplateEntriesByType(
+					_themeDisplay.getScopeGroupId(),
+					getLayoutPageTemplateCollectionId(),
+					LayoutPageTemplateEntryTypeConstants.BASIC, start, end,
+					null);
+		}
+
 		return LayoutPageTemplateEntryServiceUtil.getLayoutPageTemplateEntries(
 			_themeDisplay.getScopeGroupId(),
 			getLayoutPageTemplateCollectionId(),
@@ -130,6 +140,14 @@ public class SelectLayoutPageTemplateEntryDisplayContext {
 	}
 
 	public int getLayoutPageTemplateEntriesCount() {
+		if (!_isWidgetPageFeatureFlagEnabled()) {
+			return LayoutPageTemplateEntryServiceUtil.
+				getLayoutPageTemplateEntriesCountByType(
+					_themeDisplay.getScopeGroupId(),
+					getLayoutPageTemplateCollectionId(),
+					LayoutPageTemplateEntryTypeConstants.BASIC);
+		}
+
 		return LayoutPageTemplateEntryServiceUtil.
 			getLayoutPageTemplateEntriesCount(
 				_themeDisplay.getScopeGroupId(),
@@ -260,6 +278,12 @@ public class SelectLayoutPageTemplateEntryDisplayContext {
 		_selectedTab = ParamUtil.getString(
 			_httpServletRequest, "selectedTab", "basic-templates");
 
+		if (Objects.equals(_selectedTab, "global-templates") &&
+			!isShowGlobalTemplates()) {
+
+			_selectedTab = "basic-templates";
+		}
+
 		return _selectedTab;
 	}
 
@@ -278,21 +302,35 @@ public class SelectLayoutPageTemplateEntryDisplayContext {
 			return _types;
 		}
 
+		boolean widgetPageFeatureFlagEnabled =
+			_isWidgetPageFeatureFlagEnabled();
+
 		_types = ListUtil.filter(
 			ListUtil.fromArray(LayoutTypeControllerTracker.getTypes()),
 			type -> {
 				LayoutTypeController layoutTypeController =
 					LayoutTypeControllerTracker.getLayoutTypeController(type);
 
+				boolean deprecatedType = false;
+
+				if (type.equals(LayoutConstants.TYPE_FULL_PAGE_APPLICATION) ||
+					type.equals(LayoutConstants.TYPE_PANEL) ||
+					type.equals(LayoutConstants.TYPE_PORTLET)) {
+
+					deprecatedType = true;
+				}
+
 				if (ParamUtil.getBoolean(_httpServletRequest, "emptyLayout")) {
 					return layoutTypeController.isInstanceable() &&
 						   !layoutTypeController.isPrimaryType() &&
+						   (!deprecatedType || widgetPageFeatureFlagEnabled) &&
 						   !type.equals(LayoutConstants.TYPE_URL) &&
 						   !type.equals(LayoutConstants.TYPE_EMBEDDED);
 				}
 
 				return layoutTypeController.isInstanceable() &&
-					   !layoutTypeController.isPrimaryType();
+					   !layoutTypeController.isPrimaryType() &&
+					   (!deprecatedType || widgetPageFeatureFlagEnabled);
 			});
 
 		return _types;
@@ -330,6 +368,16 @@ public class SelectLayoutPageTemplateEntryDisplayContext {
 		}
 
 		return true;
+	}
+
+	public boolean isShowGlobalTemplates() {
+		if (_isWidgetPageFeatureFlagEnabled() &&
+			(getGlobalLayoutPageTemplateEntriesCount() > 0)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private String _getLayoutPageTemplateEntryAddLayoutURL(
@@ -370,6 +418,11 @@ public class SelectLayoutPageTemplateEntryDisplayContext {
 		}
 
 		return addLayoutURL.toString();
+	}
+
+	private boolean _isWidgetPageFeatureFlagEnabled() {
+		return FeatureFlagManagerUtil.isEnabled(
+			_themeDisplay.getCompanyId(), "LPD-76864");
 	}
 
 	private String _backURL;

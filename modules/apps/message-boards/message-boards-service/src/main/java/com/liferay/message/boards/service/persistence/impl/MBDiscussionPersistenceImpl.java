@@ -13,13 +13,11 @@ import com.liferay.message.boards.model.impl.MBDiscussionModelImpl;
 import com.liferay.message.boards.service.persistence.MBDiscussionPersistence;
 import com.liferay.message.boards.service.persistence.MBDiscussionUtil;
 import com.liferay.message.boards.service.persistence.impl.constants.MBPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -88,66 +86,14 @@ public class MBDiscussionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<MBDiscussion>
+	private CollectionPersistenceFinder<MBDiscussion, NoSuchDiscussionException>
 		_collectionPersistenceFinderByUuid;
 
 	/**
-	 * Returns all the message boards discussions where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching message boards discussions
-	 */
-	@Override
-	public List<MBDiscussion> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards discussions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBDiscussionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of message boards discussions
-	 * @param end the upper bound of the range of message boards discussions (not inclusive)
-	 * @return the range of matching message boards discussions
-	 */
-	@Override
-	public List<MBDiscussion> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the message boards discussions where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBDiscussionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of message boards discussions
-	 * @param end the upper bound of the range of message boards discussions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards discussions
-	 */
-	@Override
-	public List<MBDiscussion> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<MBDiscussion> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards discussions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBDiscussionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBDiscussionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -163,14 +109,9 @@ public class MBDiscussionPersistenceImpl
 		OrderByComparator<MBDiscussion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBDiscussion.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -186,15 +127,8 @@ public class MBDiscussionPersistenceImpl
 			String uuid, OrderByComparator<MBDiscussion> orderByComparator)
 		throws NoSuchDiscussionException {
 
-		MBDiscussion mbDiscussion = fetchByUuid_First(uuid, orderByComparator);
-
-		if (mbDiscussion != null) {
-			return mbDiscussion;
-		}
-
-		throw new NoSuchDiscussionException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -231,17 +165,11 @@ public class MBDiscussionPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBDiscussion.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<MBDiscussion>
+	private UniquePersistenceFinder<MBDiscussion, NoSuchDiscussionException>
 		_uniquePersistenceFinderByUUID_G;
 
 	/**
@@ -256,33 +184,8 @@ public class MBDiscussionPersistenceImpl
 	public MBDiscussion findByUUID_G(String uuid, long groupId)
 		throws NoSuchDiscussionException {
 
-		MBDiscussion mbDiscussion = fetchByUUID_G(uuid, groupId);
-
-		if (mbDiscussion == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchDiscussionException(message);
-		}
-
-		return mbDiscussion;
-	}
-
-	/**
-	 * Returns the message boards discussion where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching message boards discussion, or <code>null</code> if a matching message boards discussion could not be found
-	 */
-	@Override
-	public MBDiscussion fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -297,13 +200,8 @@ public class MBDiscussionPersistenceImpl
 	public MBDiscussion fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBDiscussion.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -335,73 +233,14 @@ public class MBDiscussionPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<MBDiscussion>
+	private CollectionPersistenceFinder<MBDiscussion, NoSuchDiscussionException>
 		_collectionPersistenceFinderByUuid_C;
 
 	/**
-	 * Returns all the message boards discussions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching message boards discussions
-	 */
-	@Override
-	public List<MBDiscussion> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards discussions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBDiscussionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message boards discussions
-	 * @param end the upper bound of the range of message boards discussions (not inclusive)
-	 * @return the range of matching message boards discussions
-	 */
-	@Override
-	public List<MBDiscussion> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the message boards discussions where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBDiscussionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message boards discussions
-	 * @param end the upper bound of the range of message boards discussions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards discussions
-	 */
-	@Override
-	public List<MBDiscussion> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<MBDiscussion> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards discussions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBDiscussionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBDiscussionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -418,14 +257,9 @@ public class MBDiscussionPersistenceImpl
 		OrderByComparator<MBDiscussion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBDiscussion.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -443,16 +277,8 @@ public class MBDiscussionPersistenceImpl
 			OrderByComparator<MBDiscussion> orderByComparator)
 		throws NoSuchDiscussionException {
 
-		MBDiscussion mbDiscussion = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (mbDiscussion != null) {
-			return mbDiscussion;
-		}
-
-		throw new NoSuchDiscussionException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -493,17 +319,11 @@ public class MBDiscussionPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBDiscussion.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathFetchByThreadId;
-	private UniquePersistenceFinder<MBDiscussion>
+	private UniquePersistenceFinder<MBDiscussion, NoSuchDiscussionException>
 		_uniquePersistenceFinderByThreadId;
 
 	/**
@@ -517,32 +337,8 @@ public class MBDiscussionPersistenceImpl
 	public MBDiscussion findByThreadId(long threadId)
 		throws NoSuchDiscussionException {
 
-		MBDiscussion mbDiscussion = fetchByThreadId(threadId);
-
-		if (mbDiscussion == null) {
-			String message =
-				_uniquePersistenceFinderByThreadId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {threadId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchDiscussionException(message);
-		}
-
-		return mbDiscussion;
-	}
-
-	/**
-	 * Returns the message boards discussion where threadId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param threadId the thread ID
-	 * @return the matching message boards discussion, or <code>null</code> if a matching message boards discussion could not be found
-	 */
-	@Override
-	public MBDiscussion fetchByThreadId(long threadId) {
-		return fetchByThreadId(threadId, true);
+		return _uniquePersistenceFinderByThreadId.find(
+			finderCache, new Object[] {threadId});
 	}
 
 	/**
@@ -554,13 +350,8 @@ public class MBDiscussionPersistenceImpl
 	 */
 	@Override
 	public MBDiscussion fetchByThreadId(long threadId, boolean useFinderCache) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBDiscussion.class)) {
-
-			return _uniquePersistenceFinderByThreadId.fetch(
-				finderCache, new Object[] {threadId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByThreadId.fetch(
+			finderCache, new Object[] {threadId}, useFinderCache);
 	}
 
 	/**
@@ -590,8 +381,8 @@ public class MBDiscussionPersistenceImpl
 			finderCache, new Object[] {threadId});
 	}
 
-	private FinderPath _finderPathFetchByC_C;
-	private UniquePersistenceFinder<MBDiscussion> _uniquePersistenceFinderByC_C;
+	private UniquePersistenceFinder<MBDiscussion, NoSuchDiscussionException>
+		_uniquePersistenceFinderByC_C;
 
 	/**
 	 * Returns the message boards discussion where classNameId = &#63; and classPK = &#63; or throws a <code>NoSuchDiscussionException</code> if it could not be found.
@@ -605,34 +396,8 @@ public class MBDiscussionPersistenceImpl
 	public MBDiscussion findByC_C(long classNameId, long classPK)
 		throws NoSuchDiscussionException {
 
-		MBDiscussion mbDiscussion = fetchByC_C(classNameId, classPK);
-
-		if (mbDiscussion == null) {
-			String message =
-				_uniquePersistenceFinderByC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {classNameId, classPK});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchDiscussionException(message);
-		}
-
-		return mbDiscussion;
-	}
-
-	/**
-	 * Returns the message boards discussion where classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching message boards discussion, or <code>null</code> if a matching message boards discussion could not be found
-	 */
-	@Override
-	public MBDiscussion fetchByC_C(long classNameId, long classPK) {
-		return fetchByC_C(classNameId, classPK, true);
+		return _uniquePersistenceFinderByC_C.find(
+			finderCache, new Object[] {classNameId, classPK});
 	}
 
 	/**
@@ -647,14 +412,8 @@ public class MBDiscussionPersistenceImpl
 	public MBDiscussion fetchByC_C(
 		long classNameId, long classPK, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBDiscussion.class)) {
-
-			return _uniquePersistenceFinderByC_C.fetch(
-				finderCache, new Object[] {classNameId, classPK},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByC_C.fetch(
+			finderCache, new Object[] {classNameId, classPK}, useFinderCache);
 	}
 
 	/**
@@ -987,103 +746,95 @@ public class MBDiscussionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_MBDISCUSSION_WHERE, _SQL_COUNT_MBDISCUSSION_WHERE,
-			MBDiscussionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MBDiscussionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"mbDiscussion.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, MBDiscussion::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, MBDiscussion::getUuid,
-			MBDiscussion::getGroupId);
+				"mbDiscussion.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, MBDiscussion::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_MBDISCUSSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(MBDiscussion::getUuid),
+				MBDiscussion::getGroupId),
+			_SQL_SELECT_MBDISCUSSION_WHERE, "",
 			new FinderColumn<>(
-				"mbDiscussion.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, MBDiscussion::getUuid),
+				"mbDiscussion.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, MBDiscussion::getUuid),
 			new FinderColumn<>(
 				"mbDiscussion.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, MBDiscussion::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_MBDISCUSSION_WHERE,
-				_SQL_COUNT_MBDISCUSSION_WHERE,
-				MBDiscussionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_MBDISCUSSION_WHERE, _SQL_COUNT_MBDISCUSSION_WHERE,
+				MBDiscussionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"mbDiscussion.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, MBDiscussion::getUuid),
+					"mbDiscussion.", "uuid", "uuid_", FinderColumn.Type.STRING,
+					"=", true, true, MBDiscussion::getUuid),
 				new FinderColumn<>(
 					"mbDiscussion.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, MBDiscussion::getCompanyId));
 
-		_finderPathFetchByThreadId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByThreadId",
-			new String[] {Long.class.getName()}, new String[] {"threadId"},
-			false, MBDiscussion::getThreadId);
-
 		_uniquePersistenceFinderByThreadId = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByThreadId, _SQL_SELECT_MBDISCUSSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByThreadId",
+				new String[] {Long.class.getName()}, new String[] {"threadId"},
+				0, 0, false, MBDiscussion::getThreadId),
+			_SQL_SELECT_MBDISCUSSION_WHERE, "",
 			new FinderColumn<>(
 				"mbDiscussion.", "threadId", FinderColumn.Type.LONG, "=", true,
 				true, MBDiscussion::getThreadId));
 
-		_finderPathFetchByC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, false,
-			MBDiscussion::getClassNameId, MBDiscussion::getClassPK);
-
 		_uniquePersistenceFinderByC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_C, _SQL_SELECT_MBDISCUSSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "classPK"}, 0, 0, false,
+				MBDiscussion::getClassNameId, MBDiscussion::getClassPK),
+			_SQL_SELECT_MBDISCUSSION_WHERE, "",
 			new FinderColumn<>(
 				"mbDiscussion.", "classNameId", FinderColumn.Type.LONG, "=",
-				true, false, MBDiscussion::getClassNameId),
+				true, true, MBDiscussion::getClassNameId),
 			new FinderColumn<>(
 				"mbDiscussion.", "classPK", FinderColumn.Type.LONG, "=", true,
 				true, MBDiscussion::getClassPK));
@@ -1160,4 +911,4 @@ public class MBDiscussionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:172148629
+// LIFERAY-SERVICE-BUILDER-HASH:754924334

@@ -98,6 +98,14 @@ async function handleRequest<T>(
 		};
 	}
 	catch (error) {
+		if ((error as Error).name === 'AbortError') {
+			return {
+				data: null,
+				error: null as any,
+				status: 'aborted',
+			};
+		}
+
 		return {
 			data: null,
 			error: (error as Error).message || UNEXPECTED_ERROR_MESSAGE,
@@ -106,11 +114,12 @@ async function handleRequest<T>(
 	}
 }
 
-async function get<T>(url: string) {
+async function get<T>(url: string, signal?: AbortSignal) {
 	return handleRequest<T>(() =>
 		fetch(url, {
 			headers: HEADERS_ALL_LANGUAGES,
 			method: 'GET',
+			signal,
 		})
 	);
 }

@@ -10,9 +10,11 @@ const modifiedDate = new Date().toISOString();
 
 export type Individual = {
 	birthDate?: string;
-	dataSourceId?: number;
+	dataSourceId?: number | string;
 	familyName?: string;
+	firstName?: string;
 	id: string;
+	jobTitle?: string;
 	name: string;
 };
 
@@ -28,26 +30,41 @@ export async function createIndividuals({
 			birthDate = '1970-01-01T00:00:00.000Z',
 			dataSourceId = 0,
 			familyName = 'Smith',
+			firstName,
 			id,
+			jobTitle,
 			name,
-		}) => ({
-			birthday: birthDate,
-			emailAddress: `${name}@liferay.com`,
-			fields: [
-				{dataSourceId, name: 'birthday', value: birthDate},
-				{
-					dataSourceId,
-					name: 'emailAddress',
-					value: `${name}@liferay.com`,
-				},
-				{dataSourceId, name: 'firstName', value: name},
-				{dataSourceId, name: 'lastName', value: familyName},
-			],
-			firstName: name,
-			id,
-			lastName: familyName,
-			modifiedDate,
-		})
+		}) => {
+			const givenName = firstName ?? name;
+
+			return {
+				birthday: birthDate,
+				dataSourceId,
+				dataSourceIds: [dataSourceId],
+				emailAddress: `${name}@liferay.com`,
+				fields: [
+					{
+						dataSourceId,
+						name: 'birthday',
+						value: String(new Date(birthDate).getTime()),
+					},
+					{
+						dataSourceId,
+						name: 'emailAddress',
+						value: `${name}@liferay.com`,
+					},
+					{dataSourceId, name: 'firstName', value: givenName},
+					{dataSourceId, name: 'lastName', value: familyName},
+					...(jobTitle
+						? [{dataSourceId, name: 'jobTitle', value: jobTitle}]
+						: []),
+				],
+				firstName: givenName,
+				id,
+				lastName: familyName,
+				modifiedDate,
+			};
+		}
 	);
 
 	await apiHelpers.jsonWebServicesOSBAsah.createIndividuals(

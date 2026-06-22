@@ -13,13 +13,11 @@ import com.liferay.depot.model.impl.DepotEntryModelImpl;
 import com.liferay.depot.service.persistence.DepotEntryPersistence;
 import com.liferay.depot.service.persistence.DepotEntryUtil;
 import com.liferay.depot.service.persistence.impl.constants.DepotPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -88,66 +86,14 @@ public class DepotEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<DepotEntry>
+	private CollectionPersistenceFinder<DepotEntry, NoSuchEntryException>
 		_collectionPersistenceFinderByUuid;
 
 	/**
-	 * Returns all the depot entries where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching depot entries
-	 */
-	@Override
-	public List<DepotEntry> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the depot entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of depot entries
-	 * @param end the upper bound of the range of depot entries (not inclusive)
-	 * @return the range of matching depot entries
-	 */
-	@Override
-	public List<DepotEntry> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the depot entries where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of depot entries
-	 * @param end the upper bound of the range of depot entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching depot entries
-	 */
-	@Override
-	public List<DepotEntry> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<DepotEntry> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the depot entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -163,14 +109,9 @@ public class DepotEntryPersistenceImpl
 		OrderByComparator<DepotEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DepotEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -186,15 +127,8 @@ public class DepotEntryPersistenceImpl
 			String uuid, OrderByComparator<DepotEntry> orderByComparator)
 		throws NoSuchEntryException {
 
-		DepotEntry depotEntry = fetchByUuid_First(uuid, orderByComparator);
-
-		if (depotEntry != null) {
-			return depotEntry;
-		}
-
-		throw new NoSuchEntryException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -231,17 +165,11 @@ public class DepotEntryPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DepotEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<DepotEntry>
+	private UniquePersistenceFinder<DepotEntry, NoSuchEntryException>
 		_uniquePersistenceFinderByUUID_G;
 
 	/**
@@ -256,33 +184,8 @@ public class DepotEntryPersistenceImpl
 	public DepotEntry findByUUID_G(String uuid, long groupId)
 		throws NoSuchEntryException {
 
-		DepotEntry depotEntry = fetchByUUID_G(uuid, groupId);
-
-		if (depotEntry == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchEntryException(message);
-		}
-
-		return depotEntry;
-	}
-
-	/**
-	 * Returns the depot entry where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching depot entry, or <code>null</code> if a matching depot entry could not be found
-	 */
-	@Override
-	public DepotEntry fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -297,13 +200,8 @@ public class DepotEntryPersistenceImpl
 	public DepotEntry fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DepotEntry.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -335,73 +233,14 @@ public class DepotEntryPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<DepotEntry>
+	private CollectionPersistenceFinder<DepotEntry, NoSuchEntryException>
 		_collectionPersistenceFinderByUuid_C;
 
 	/**
-	 * Returns all the depot entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching depot entries
-	 */
-	@Override
-	public List<DepotEntry> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the depot entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of depot entries
-	 * @param end the upper bound of the range of depot entries (not inclusive)
-	 * @return the range of matching depot entries
-	 */
-	@Override
-	public List<DepotEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the depot entries where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of depot entries
-	 * @param end the upper bound of the range of depot entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching depot entries
-	 */
-	@Override
-	public List<DepotEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<DepotEntry> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the depot entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -418,14 +257,9 @@ public class DepotEntryPersistenceImpl
 		OrderByComparator<DepotEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DepotEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -443,16 +277,8 @@ public class DepotEntryPersistenceImpl
 			OrderByComparator<DepotEntry> orderByComparator)
 		throws NoSuchEntryException {
 
-		DepotEntry depotEntry = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (depotEntry != null) {
-			return depotEntry;
-		}
-
-		throw new NoSuchEntryException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -493,17 +319,11 @@ public class DepotEntryPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DepotEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathFetchByGroupId;
-	private UniquePersistenceFinder<DepotEntry>
+	private UniquePersistenceFinder<DepotEntry, NoSuchEntryException>
 		_uniquePersistenceFinderByGroupId;
 
 	/**
@@ -515,32 +335,8 @@ public class DepotEntryPersistenceImpl
 	 */
 	@Override
 	public DepotEntry findByGroupId(long groupId) throws NoSuchEntryException {
-		DepotEntry depotEntry = fetchByGroupId(groupId);
-
-		if (depotEntry == null) {
-			String message =
-				_uniquePersistenceFinderByGroupId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchEntryException(message);
-		}
-
-		return depotEntry;
-	}
-
-	/**
-	 * Returns the depot entry where groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching depot entry, or <code>null</code> if a matching depot entry could not be found
-	 */
-	@Override
-	public DepotEntry fetchByGroupId(long groupId) {
-		return fetchByGroupId(groupId, true);
+		return _uniquePersistenceFinderByGroupId.find(
+			finderCache, new Object[] {groupId});
 	}
 
 	/**
@@ -552,13 +348,8 @@ public class DepotEntryPersistenceImpl
 	 */
 	@Override
 	public DepotEntry fetchByGroupId(long groupId, boolean useFinderCache) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DepotEntry.class)) {
-
-			return _uniquePersistenceFinderByGroupId.fetch(
-				finderCache, new Object[] {groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByGroupId.fetch(
+			finderCache, new Object[] {groupId}, useFinderCache);
 	}
 
 	/**
@@ -588,72 +379,14 @@ public class DepotEntryPersistenceImpl
 			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_T;
-	private FinderPath _finderPathWithoutPaginationFindByC_T;
-	private FinderPath _finderPathCountByC_T;
-	private CollectionPersistenceFinder<DepotEntry>
+	private CollectionPersistenceFinder<DepotEntry, NoSuchEntryException>
 		_collectionPersistenceFinderByC_T;
 
 	/**
-	 * Returns all the depot entries where companyId = &#63; and type = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param type the type
-	 * @return the matching depot entries
-	 */
-	@Override
-	public List<DepotEntry> findByC_T(long companyId, int type) {
-		return findByC_T(
-			companyId, type, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the depot entries where companyId = &#63; and type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param type the type
-	 * @param start the lower bound of the range of depot entries
-	 * @param end the upper bound of the range of depot entries (not inclusive)
-	 * @return the range of matching depot entries
-	 */
-	@Override
-	public List<DepotEntry> findByC_T(
-		long companyId, int type, int start, int end) {
-
-		return findByC_T(companyId, type, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the depot entries where companyId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param type the type
-	 * @param start the lower bound of the range of depot entries
-	 * @param end the upper bound of the range of depot entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching depot entries
-	 */
-	@Override
-	public List<DepotEntry> findByC_T(
-		long companyId, int type, int start, int end,
-		OrderByComparator<DepotEntry> orderByComparator) {
-
-		return findByC_T(companyId, type, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the depot entries where companyId = &#63; and type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DepotEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -670,14 +403,9 @@ public class DepotEntryPersistenceImpl
 		OrderByComparator<DepotEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DepotEntry.class)) {
-
-			return _collectionPersistenceFinderByC_T.find(
-				finderCache, new Object[] {companyId, type}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_T.find(
+			finderCache, new Object[] {companyId, type}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -695,16 +423,8 @@ public class DepotEntryPersistenceImpl
 			OrderByComparator<DepotEntry> orderByComparator)
 		throws NoSuchEntryException {
 
-		DepotEntry depotEntry = fetchByC_T_First(
-			companyId, type, orderByComparator);
-
-		if (depotEntry != null) {
-			return depotEntry;
-		}
-
-		throw new NoSuchEntryException(
-			_collectionPersistenceFinderByC_T.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, type}));
+		return _collectionPersistenceFinderByC_T.findFirst(
+			finderCache, new Object[] {companyId, type}, orderByComparator);
 	}
 
 	/**
@@ -745,13 +465,8 @@ public class DepotEntryPersistenceImpl
 	 */
 	@Override
 	public int countByC_T(long companyId, int type) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DepotEntry.class)) {
-
-			return _collectionPersistenceFinderByC_T.count(
-				finderCache, new Object[] {companyId, type});
-		}
+		return _collectionPersistenceFinderByC_T.count(
+			finderCache, new Object[] {companyId, type});
 	}
 
 	public DepotEntryPersistenceImpl() {
@@ -1047,122 +762,110 @@ public class DepotEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_DEPOTENTRY_WHERE, _SQL_COUNT_DEPOTENTRY_WHERE,
-			DepotEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			DepotEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"depotEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, DepotEntry::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, DepotEntry::getUuid,
-			DepotEntry::getGroupId);
+				"depotEntry.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, DepotEntry::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_DEPOTENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(DepotEntry::getUuid),
+				DepotEntry::getGroupId),
+			_SQL_SELECT_DEPOTENTRY_WHERE, "",
 			new FinderColumn<>(
-				"depotEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, DepotEntry::getUuid),
+				"depotEntry.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, DepotEntry::getUuid),
 			new FinderColumn<>(
 				"depotEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, DepotEntry::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_DEPOTENTRY_WHERE,
-				_SQL_COUNT_DEPOTENTRY_WHERE, DepotEntryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_DEPOTENTRY_WHERE, _SQL_COUNT_DEPOTENTRY_WHERE,
+				DepotEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"depotEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-					false, DepotEntry::getUuid),
+					"depotEntry.", "uuid", "uuid_", FinderColumn.Type.STRING,
+					"=", true, true, DepotEntry::getUuid),
 				new FinderColumn<>(
 					"depotEntry.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, DepotEntry::getCompanyId));
 
-		_finderPathFetchByGroupId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false, DepotEntry::getGroupId);
-
 		_uniquePersistenceFinderByGroupId = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByGroupId, _SQL_SELECT_DEPOTENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByGroupId",
+				new String[] {Long.class.getName()}, new String[] {"groupId"},
+				0, 0, false, DepotEntry::getGroupId),
+			_SQL_SELECT_DEPOTENTRY_WHERE, "",
 			new FinderColumn<>(
 				"depotEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, DepotEntry::getGroupId));
 
-		_finderPathWithPaginationFindByC_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_T",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "type_"}, true);
-
-		_finderPathWithoutPaginationFindByC_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_T",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"companyId", "type_"}, true);
-
-		_finderPathCountByC_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_T",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"companyId", "type_"}, false);
-
 		_collectionPersistenceFinderByC_T = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_T,
-			_finderPathWithoutPaginationFindByC_T, _finderPathCountByC_T,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_T",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "type_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_T",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"companyId", "type_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_T",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"companyId", "type_"}, false),
 			_SQL_SELECT_DEPOTENTRY_WHERE, _SQL_COUNT_DEPOTENTRY_WHERE,
-			DepotEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			DepotEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"depotEntry.", "companyId", FinderColumn.Type.LONG, "=", true,
-				false, DepotEntry::getCompanyId),
+				true, DepotEntry::getCompanyId),
 			new FinderColumn<>(
-				"depotEntry.", "type", FinderColumn.Type.INTEGER, "=", true,
-				true, DepotEntry::getType));
+				"depotEntry.", "type", "type_", FinderColumn.Type.INTEGER, "=",
+				true, true, DepotEntry::getType));
 
 		DepotEntryUtil.setPersistence(this);
 	}
@@ -1236,4 +939,4 @@ public class DepotEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-457011914
+// LIFERAY-SERVICE-BUILDER-HASH:2107543980

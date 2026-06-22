@@ -89,11 +89,43 @@ exports[`List rendering should match the snapshot 1`] = `
     >
       <div
         class="card card-root"
+        style="min-height: 300px;"
       >
         <div
           data-testid="fds-component"
           id="assetTable"
         >
+          <div
+            data-testid="fds-empty-state"
+          >
+            <div
+              data-testid="fds-empty-state-title"
+            >
+              There are no assets found.
+            </div>
+            <div
+              data-testid="fds-empty-state-description"
+            >
+              <span
+                class="mr-1"
+              >
+                Check back later to verify if data has been received from your data sources, or you can try a different date range.
+              </span>
+              <a
+                class=""
+                href="https://learn.liferay.com/w/dxp/personalization/analytics-cloud/touchpoints/assets-analytics"
+                rel="noreferrer noopener"
+                target="_blank"
+              >
+                Learn more about assets.
+                <span
+                  class="sr-only"
+                >
+                  (Opens a new window)
+                </span>
+              </a>
+            </div>
+          </div>
           <div
             data-testid="fds-filters"
           >

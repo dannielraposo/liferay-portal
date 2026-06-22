@@ -11,17 +11,16 @@ import AccountSticker from '../../../common/components/AccountSticker';
 import './../../../../css/components/LatestActivity.scss';
 import useAnalyticsQuery from '../../../common/hooks/useAnalyticsQuery';
 import {TLatestActivity} from '../../../common/utils/types';
-import LatestActivityQuery from '../queries/LatestActivityQuery';
 import {BASE_URL} from '../utils/constants';
 import AnalyticsFrame from './AnalyticsFrame';
 import Loader from './Loader';
 import {TimeDataRenderer} from './data_renderers/TimeDataRenderer';
 
 const LatestActivity = ({
-	dsrDevEnvEnabled: useDevEnvData,
+	isAnalyticsEnabled,
 	namespace,
 }: {
-	dsrDevEnvEnabled: boolean;
+	isAnalyticsEnabled: boolean;
 	namespace: string;
 }) => {
 	const [data, setData] = useState<TLatestActivity[]>([]);
@@ -29,13 +28,9 @@ const LatestActivity = ({
 
 	const {isLoading, response} = useAnalyticsQuery({
 		element,
-		query: LatestActivityQuery,
-		settings: {
-			checkViewportVisibility: true,
-			useDevEnvData,
-		},
+		query: {paths: [{key: 'events', path: '/events'}]},
+		settings: {isAnalyticsEnabled},
 		variables: {
-			channelId: '',
 			includeAnonymousUsers: false,
 			page: 0,
 			rangeKey: 7,
@@ -45,7 +40,17 @@ const LatestActivity = ({
 
 	useEffect(() => {
 		if (response) {
-			setData(response);
+			const eventEntries = response.events?.eventEntries ?? [];
+
+			setData(
+				eventEntries.map((eventEntry: any) => ({
+					action: eventEntry.name,
+					createDate: eventEntry.createDate,
+					name:
+						eventEntry.individualName ??
+						Liferay.Language.get('anonymous'),
+				}))
+			);
 		}
 
 		return () => {};
@@ -55,83 +60,93 @@ const LatestActivity = ({
 		<AnalyticsFrame
 			icon="click"
 			title={Liferay.Language.get('latest-activity')}
-			url={`${BASE_URL}/view-timeline`}
+			url={isAnalyticsEnabled ? `${BASE_URL}/view-timeline` : undefined}
 		>
 			<div className="latest-activity-container" ref={setElement}>
-				{isLoading ? (
-					<Loader />
-				) : !data?.length ? (
-					<p className="mt-3 text-center text-muted">
-						{Liferay.Language.get('no-data-available')}
-					</p>
-				) : (
-					<div className="latest-activity-fds">
-						<FrontendDataSet
-							customDataRenderers={{
-								timeDataRenderer: TimeDataRenderer,
-							}}
-							customRenderers={{
-								tableCell: [
-									{
-										component: ({
-											itemData,
-										}: {
-											itemData: TLatestActivity;
-										}) => (
-											<div className="d-flex inline-item">
-												<AccountSticker
-													logoURL={itemData.logoURL}
-													name={itemData.name}
-													shape="user-icon"
-												/>
+				{isAnalyticsEnabled ? (
+					isLoading ? (
+						<Loader />
+					) : !data?.length ? (
+						<p className="mt-3 text-center text-muted">
+							{Liferay.Language.get('no-data-available')}
+						</p>
+					) : (
+						<div className="latest-activity-fds">
+							<FrontendDataSet
+								customDataRenderers={{
+									timeDataRenderer: TimeDataRenderer,
+								}}
+								customRenderers={{
+									tableCell: [
+										{
+											component: ({
+												itemData,
+											}: {
+												itemData: TLatestActivity;
+											}) => (
+												<div className="d-flex inline-item">
+													<AccountSticker
+														logoURL={
+															itemData.logoURL
+														}
+														name={itemData.name}
+														shape="user-icon"
+													/>
 
-												<p className="font-weight-semi-bold inline-item-after mb-0">
-													{Liferay.Language.get(
-														itemData.name
-													)}
-												</p>
-											</div>
-										),
-										name: 'userLatestActivity',
-										type: 'internal',
+													<p className="font-weight-semi-bold inline-item-after mb-0">
+														{itemData.name}
+													</p>
+												</div>
+											),
+											name: 'userLatestActivity',
+											type: 'internal',
+										},
+									],
+								}}
+								id={namespace}
+								items={data}
+								showManagementBar={false}
+								showPagination={false}
+								showSearch={false}
+								showSelectAll={false}
+								views={[
+									{
+										contentRenderer: 'table',
+										label: Liferay.Language.get('table'),
+										name: 'table',
+										schema: {
+											fields: [
+												{
+													contentRenderer:
+														'userLatestActivity',
+													fieldName: 'name',
+													label: `${Liferay.Language.get('name')}`,
+												},
+												{
+													fieldName: 'action',
+													label: `${Liferay.Language.get('action')}`,
+												},
+												{
+													contentRenderer:
+														'timeDataRenderer',
+													fieldName: 'createDate',
+													label: `${Liferay.Language.get('time')}`,
+												},
+											],
+										},
+										thumbnail: 'table',
 									},
-								],
-							}}
-							id={namespace}
-							items={data}
-							showManagementBar={false}
-							showPagination={false}
-							showSearch={false}
-							showSelectAll={false}
-							views={[
-								{
-									contentRenderer: 'table',
-									label: Liferay.Language.get('table'),
-									name: 'table',
-									schema: {
-										fields: [
-											{
-												contentRenderer:
-													'userLatestActivity',
-												fieldName: 'name',
-												label: `${Liferay.Language.get('name')}`,
-											},
-											{
-												fieldName: 'action',
-												label: `${Liferay.Language.get('action')}`,
-											},
-											{
-												contentRenderer:
-													'timeDataRenderer',
-												fieldName: 'createDate',
-												label: `${Liferay.Language.get('time')}`,
-											},
-										],
-									},
-									thumbnail: 'table',
-								},
-							]}
-						/>
+								]}
+							/>
+						</div>
+					)
+				) : (
+					<div className="dsr-analytics-empty-message">
+						<p className="mb-0 text-center text-muted">
+							{Liferay.Language.get(
+								'analytics-cloud-is-not-configured'
+							)}
+						</p>
 					</div>
 				)}
 			</div>

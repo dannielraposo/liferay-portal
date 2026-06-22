@@ -46,19 +46,21 @@ type CMSFileItemSelectorModalConfig = {
 function urlBuilder({
 	base = location.origin,
 	filters = [],
+	folderId,
 	resource = '/o/search/v1.0/search',
 }: {
 	base?: string;
 	filters?: string[];
+	folderId?: number | null;
 	resource?: string;
 }) {
 	const finalURL = new URL(resource, base);
 
-	const filter = [
-		"(cmsKind eq 'object')",
-		"(cmsSection eq 'files')",
-		'(status in (0, 2, 3))',
-	]
+	const scopePredicates = folderId
+		? [`(folderId eq ${folderId})`]
+		: ["(cmsSection eq 'files')", '(cmsRoot eq true)'];
+
+	const filter = [...scopePredicates, '(status in (0, 2, 3))']
 		.concat(filters.filter(Boolean))
 		.join(' and ');
 
@@ -158,6 +160,46 @@ const FDS_PROPS: Omit<
 
 			thumbnail: 'cards2',
 		},
+		{
+			contentRenderer: 'table',
+			label: Liferay.Language.get('table'),
+			name: 'table',
+			schema: {
+				fields: [
+					{
+						contentRenderer: 'cmsFilesTitleCellRenderer',
+						fieldName: 'title',
+						label: Liferay.Language.get('title'),
+						sortable: true,
+					},
+					{
+						contentRenderer: 'cmsFilesFallbackCellRenderer',
+						fieldName: 'embedded.file.mimeType',
+						label: Liferay.Language.get('type'),
+						sortable: false,
+					},
+					{
+						contentRenderer: 'cmsFilesFallbackCellRenderer',
+						fieldName: 'embedded.file.size',
+						label: Liferay.Language.get('size'),
+						sortable: false,
+					},
+					{
+						contentRenderer: 'dateTime',
+						fieldName: 'dateModified',
+						label: Liferay.Language.get('modified-date'),
+						sortable: true,
+					},
+					{
+						contentRenderer: 'dateTime',
+						fieldName: 'dateCreated',
+						label: Liferay.Language.get('create-date'),
+						sortable: true,
+					},
+				],
+			},
+			thumbnail: 'table',
+		},
 	],
 };
 
@@ -177,16 +219,16 @@ function normalizeExtensions(allowedExtensions: string) {
 
 	const extensions = cleanExtensions.map((item) => `'${item}'`).join(',');
 
-	return `(extension in (${extensions}))`;
+	return `(extension in (${extensions}) or cmsKind eq 'folder')`;
 }
 
 export default function openCMSFileSelectorModal({
 	allowDragAndDrop = false,
 	allowedExtensions,
 	config,
-	createItemURL,
 	fdsProps,
 	filters,
+	folderMemoryKey,
 	groupId,
 	itemTypeLabel,
 	maxFileSize,
@@ -195,36 +237,48 @@ export default function openCMSFileSelectorModal({
 	allowDragAndDrop?: boolean;
 	allowedExtensions?: string;
 	config?: Partial<CMSFileItemSelectorModalConfig>;
-	createItemURL?: string;
 	fdsProps?: Partial<CMSFileItemSelectorModalProps['fdsProps']>;
 	filters?: string[];
+
+	/**
+	 * Stable identifier of the field opening the selector. When provided, the
+	 * selector reopens at the folder where this field's previous selection was
+	 * made. Each field must pass its own key so the remembered folder is not
+	 * shared between fields.
+	 */
+	folderMemoryKey?: string;
 	groupId: number;
 	itemTypeLabel?: string;
 	maxFileSize?: number;
 	onSelect: (items: Array<CMSFile>) => void;
 }) {
+	let effectiveFilters: string[] = [];
+
+	if (filters?.length) {
+		effectiveFilters = filters;
+	}
+	else if (allowedExtensions) {
+		effectiveFilters = [normalizeExtensions(allowedExtensions)];
+	}
+
+	const buildApiURL = (folderId: number | null) =>
+		urlBuilder({
+			filters: effectiveFilters,
+			folderId: folderId ?? undefined,
+		});
+
 	const finalConfig = {
 		...CMS_FILE_ITEM_SELECTOR_CONFIG,
 		...config,
+		apiURL: buildApiURL(null),
 	};
-
-	if (filters?.length) {
-		finalConfig.apiURL = urlBuilder({filters});
-	}
-	else if (allowedExtensions) {
-		const extensions = normalizeExtensions(allowedExtensions);
-
-		finalConfig.apiURL = urlBuilder({
-			filters: [extensions],
-		});
-	}
 
 	return render(
 		DetachedCMSFilesItemSelectorModal,
 		{
 			...finalConfig,
 			allowedExtensions,
-			createItemURL,
+			buildApiURL,
 			fdsProps: {
 				...FDS_PROPS,
 				emptyState: allowDragAndDrop
@@ -245,6 +299,7 @@ export default function openCMSFileSelectorModal({
 			filesUploaderComponent: allowDragAndDrop
 				? CMSFileUploaderComponent
 				: undefined,
+			folderMemoryKey,
 			groupId,
 			itemTypeLabel: itemTypeLabel ?? Liferay.Language.get('files'),
 			maxFileSize,

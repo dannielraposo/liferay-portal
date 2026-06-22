@@ -53,8 +53,10 @@ function onInputChange() {
 		showInputError({
 			errorContainer: fileSizeError,
 			errorMessageContainer: fileSizeErrorMessage,
-			errorType: 'file-size',
 			formGroup,
+			message: fileSizeErrorMessage.getAttribute(
+				'data-file-size-feedback'
+			),
 		});
 
 		fileInput.value = '';
@@ -79,7 +81,10 @@ function onInputChange() {
 	}
 
 	fileName.innerText = fileInput.files[0].name;
-	fileInput.setAttribute('name', input.name);
+
+	if (!input.localizable) {
+		fileInput.setAttribute('name', input.name);
+	}
 
 	hiddenFileInput.setAttribute('name', '');
 	hiddenFileInput.value = '';
@@ -146,6 +151,7 @@ function onSelectFile(event, onChange, setTranslationInputValue) {
 							value: 'embedded.file.id',
 						},
 					},
+					folderMemoryKey: `cms-file-upload:${fileInput.id}`,
 					groupId: input.attributes.groupId,
 					maxFileSize: mbToBytes(input.attributes.maxFileSize),
 					onSelect(items) {

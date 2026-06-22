@@ -4,7 +4,7 @@
  */
 
 import '@testing-library/jest-dom';
-import {render} from '@testing-library/react';
+import {render, screen} from '@testing-library/react';
 import React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 
@@ -33,11 +33,31 @@ jest.mock(
 	})
 );
 
+jest.mock(
+	'../../../src/main/resources/META-INF/resources/js/common/hooks/useAnalyticsQuery',
+	() => {
+		const {
+			recentEngagementChartFixture,
+		} = require('../fixtures/RecentEngagementChartFixture');
+
+		return {
+			__esModule: true,
+			default: jest.fn(() => ({
+				isLoading: false,
+				response: recentEngagementChartFixture,
+				sendRequest: jest.fn(),
+			})),
+		};
+	}
+);
+
 describe('RecentEngagementChart component', () => {
 	let container: HTMLElement;
 
 	beforeEach(() => {
-		const view = render(<RecentEngagementChart dsrDevEnvEnabled={true} />);
+		const view = render(
+			<RecentEngagementChart isAnalyticsEnabled={true} />
+		);
 
 		container = view.container;
 	});
@@ -71,5 +91,13 @@ describe('RecentEngagementChart component', () => {
 		);
 
 		expect(xAxisTick).toHaveTextContent('Feb 20');
+	});
+
+	it('renders the not-configured message when analytics cloud is not configured', () => {
+		render(<RecentEngagementChart isAnalyticsEnabled={false} />);
+
+		expect(
+			screen.getByText('analytics-cloud-is-not-configured')
+		).toBeInTheDocument();
 	});
 });

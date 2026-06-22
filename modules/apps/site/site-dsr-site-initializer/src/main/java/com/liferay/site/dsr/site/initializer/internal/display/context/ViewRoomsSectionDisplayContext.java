@@ -22,10 +22,12 @@ import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.site.dsr.site.initializer.internal.constants.DSRConstants;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -101,36 +103,57 @@ public class ViewRoomsSectionDisplayContext extends BaseSectionDisplayContext {
 	}
 
 	@Override
-	public List<FDSActionDropdownItem> getFDSActionDropdownItems() {
-		return FDSActionDropdownItemList.of(
-			FDSActionDropdownItemBuilder.setHref(
-				() -> StringBundler.concat(
-					themeDisplay.getPortalURL(), themeDisplay.getPathMain(),
-					DSRConstants.DSR_FRIENDLY_URL, "/view_room?siteId=",
-					"{embedded.siteId}")
-			).setIcon(
-				"view"
-			).setLabel(
-				LanguageUtil.get(httpServletRequest, "view")
-			).setPermissionKey(
-				"get"
-			).build(
-				"view"
-			),
-			FDSActionDropdownItemBuilder.setHref(
-				() -> StringBundler.concat(
-					themeDisplay.getPortalURL(), themeDisplay.getPathMain(),
-					DSRConstants.DSR_FRIENDLY_URL,
-					"/view_room?mode=edit&siteId={embedded.siteId}")
-			).setIcon(
-				"pencil"
-			).setLabel(
-				LanguageUtil.get(httpServletRequest, "edit")
-			).setPermissionKey(
-				"update"
-			).build(
-				"edit"
-			),
+	public List<FDSActionDropdownItem> getFDSActionDropdownItems()
+		throws Exception {
+
+		FDSActionDropdownItemList fdsActionDropdownItems =
+			FDSActionDropdownItemList.of(
+				FDSActionDropdownItemBuilder.setHref(
+					() -> StringBundler.concat(
+						themeDisplay.getPortalURL(), themeDisplay.getPathMain(),
+						DSRConstants.DSR_FRIENDLY_URL, "/view_room?siteId=",
+						"{embedded.siteId}")
+				).setIcon(
+					"view"
+				).setLabel(
+					LanguageUtil.get(httpServletRequest, "view")
+				).setPermissionKey(
+					"get"
+				).build(
+					"view"
+				),
+				FDSActionDropdownItemBuilder.setHref(
+					() -> StringBundler.concat(
+						themeDisplay.getPortalURL(), themeDisplay.getPathMain(),
+						DSRConstants.DSR_FRIENDLY_URL,
+						"/view_room?mode=edit&siteId={embedded.siteId}")
+				).setIcon(
+					"pencil"
+				).setLabel(
+					LanguageUtil.get(httpServletRequest, "edit")
+				).setPermissionKey(
+					"update"
+				).build(
+					"edit"
+				));
+
+		if (hasAddObjectEntryPortletResourcePermission()) {
+			fdsActionDropdownItems.add(
+				FDSActionDropdownItemBuilder.setHref(
+					"#"
+				).setIcon(
+					"copy"
+				).setLabel(
+					LanguageUtil.get(httpServletRequest, "duplicate")
+				).setPermissionKey(
+					"update"
+				).build(
+					"duplicate"
+				));
+		}
+
+		Collections.addAll(
+			fdsActionDropdownItems,
 			FDSActionDropdownItemBuilder.setHref(
 				"#"
 			).setIcon(
@@ -141,6 +164,21 @@ public class ViewRoomsSectionDisplayContext extends BaseSectionDisplayContext {
 				"update"
 			).build(
 				"share"
+			),
+			FDSActionDropdownItemBuilder.setHref(
+				() -> StringBundler.concat(
+					themeDisplay.getPathFriendlyURLPublic(),
+					DSRConstants.DSR_FRIENDLY_URL, "/e/room-settings/",
+					PortalUtil.getClassNameId(objectDefinition.getClassName()),
+					"/{embedded.id}?redirect=", themeDisplay.getURLCurrent())
+			).setIcon(
+				"cog"
+			).setLabel(
+				LanguageUtil.get(httpServletRequest, "settings")
+			).setPermissionKey(
+				"update"
+			).build(
+				"settings"
 			),
 			FDSActionDropdownItemBuilder.setHref(
 				"#"
@@ -155,6 +193,8 @@ public class ViewRoomsSectionDisplayContext extends BaseSectionDisplayContext {
 			).build(
 				"delete"
 			));
+
+		return fdsActionDropdownItems;
 	}
 
 	public boolean isHomePage() {

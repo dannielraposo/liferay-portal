@@ -15,6 +15,19 @@ import com.liferay.portal.kernel.model.Company;
  */
 public class EnabledUtil {
 
+	public static void checkAddWidgetPageEnabled(Company company) {
+		if (LazyReferencingThreadLocal.isEnabled() ||
+			ExportImportThreadLocal.isExportInProcess() ||
+			ExportImportThreadLocal.isImportInProcess() ||
+			ExportImportThreadLocal.isStagingInProcess()) {
+
+			return;
+		}
+
+		FeatureFlagManagerUtil.checkEnabled(
+			company.getCompanyId(), "LPD-76864");
+	}
+
 	public static void checkEnabled(Company company) {
 		checkEnabled(company, false);
 	}
@@ -28,13 +41,12 @@ public class EnabledUtil {
 			return;
 		}
 
-		if (!FeatureFlagManagerUtil.isEnabled(
-				company.getCompanyId(), "LPD-35443") ||
-			(privateLayout &&
-			 !FeatureFlagManagerUtil.isEnabled(
-				 company.getCompanyId(), "LPD-38869"))) {
+		FeatureFlagManagerUtil.checkEnabled(
+			company.getCompanyId(), "LPD-35443");
 
-			throw new UnsupportedOperationException();
+		if (privateLayout) {
+			FeatureFlagManagerUtil.checkEnabled(
+				company.getCompanyId(), "LPD-38869");
 		}
 	}
 

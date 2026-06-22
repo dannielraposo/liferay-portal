@@ -16,7 +16,6 @@ import com.liferay.change.tracking.service.persistence.impl.constants.CTPersiste
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -69,8 +68,7 @@ public class CTScorePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByCtCollectionId;
-	private UniquePersistenceFinder<CTScore>
+	private UniquePersistenceFinder<CTScore, NoSuchScoreException>
 		_uniquePersistenceFinderByCtCollectionId;
 
 	/**
@@ -84,32 +82,8 @@ public class CTScorePersistenceImpl
 	public CTScore findByCtCollectionId(long ctCollectionId)
 		throws NoSuchScoreException {
 
-		CTScore ctScore = fetchByCtCollectionId(ctCollectionId);
-
-		if (ctScore == null) {
-			String message =
-				_uniquePersistenceFinderByCtCollectionId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {ctCollectionId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchScoreException(message);
-		}
-
-		return ctScore;
-	}
-
-	/**
-	 * Returns the ct score where ctCollectionId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param ctCollectionId the ct collection ID
-	 * @return the matching ct score, or <code>null</code> if a matching ct score could not be found
-	 */
-	@Override
-	public CTScore fetchByCtCollectionId(long ctCollectionId) {
-		return fetchByCtCollectionId(ctCollectionId, true);
+		return _uniquePersistenceFinderByCtCollectionId.find(
+			finderCache, new Object[] {ctCollectionId});
 	}
 
 	/**
@@ -325,15 +299,15 @@ public class CTScorePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByCtCollectionId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByCtCollectionId",
-			new String[] {Long.class.getName()},
-			new String[] {"ctCollectionId"}, false, CTScore::getCtCollectionId);
-
 		_uniquePersistenceFinderByCtCollectionId =
 			new UniquePersistenceFinder<>(
-				this, _finderPathFetchByCtCollectionId,
-				_SQL_SELECT_CTSCORE_WHERE,
+				this,
+				createUniqueFinderPath(
+					FINDER_CLASS_NAME_ENTITY, "fetchByCtCollectionId",
+					new String[] {Long.class.getName()},
+					new String[] {"ctCollectionId"}, 0, 0, false,
+					CTScore::getCtCollectionId),
+				_SQL_SELECT_CTSCORE_WHERE, "",
 				new FinderColumn<>(
 					"ctScore.", "ctCollectionId", FinderColumn.Type.LONG, "=",
 					true, true, CTScore::getCtCollectionId));
@@ -380,9 +354,6 @@ public class CTScorePersistenceImpl
 	@Reference
 	protected FinderCache finderCache;
 
-	private static final String _ENTITY_ALIAS_PREFIX =
-		CTScoreModelImpl.ENTITY_ALIAS + ".";
-
 	private static final String _SQL_SELECT_CTSCORE =
 		"SELECT ctScore FROM CTScore ctScore";
 
@@ -401,4 +372,4 @@ public class CTScorePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-156742839
+// LIFERAY-SERVICE-BUILDER-HASH:-162302717

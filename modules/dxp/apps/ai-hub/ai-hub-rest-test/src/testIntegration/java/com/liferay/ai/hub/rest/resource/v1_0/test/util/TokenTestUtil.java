@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,10 +38,11 @@ public class TokenTestUtil {
 				List.of(GrantType.CLIENT_CREDENTIALS), "client_secret_post",
 				user.getUserId(),
 				OAuth2SecureRandomGenerator.generateClientId(),
-				ClientProfile.WEB_APPLICATION.id(),
+				ClientProfile.HEADLESS_SERVER.id(),
 				OAuth2SecureRandomGenerator.generateClientSecret(), "",
-				List.of(), "http://localhost:8080", 0, null, "AI Hub", "",
-				List.of("http://localhost:8080"), false,
+				List.of(),
+				"http://localhost:" + PortalUtil.getPortalServerPort(false), 0,
+				null, "AI Hub", "", null, false,
 				Arrays.asList("Liferay.AI.Hub.REST.everything"), false,
 				new ServiceContext());
 
@@ -51,7 +53,8 @@ public class TokenTestUtil {
 			).put(
 				"clientSecret", oAuth2Application.getClientSecret()
 			).put(
-				"serviceURL", "http://localhost:8080"
+				"serviceURL",
+				"http://localhost:" + PortalUtil.getPortalServerPort(false)
 			).build());
 
 		return HTTPTestUtil.invokeToJSONObject(

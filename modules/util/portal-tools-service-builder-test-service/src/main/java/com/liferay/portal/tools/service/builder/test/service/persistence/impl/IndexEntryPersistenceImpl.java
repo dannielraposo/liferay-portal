@@ -5,7 +5,6 @@
 
 package com.liferay.portal.tools.service.builder.test.service.persistence.impl;
 
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
@@ -81,61 +80,8 @@ public class IndexEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByOwnerId;
-	private FinderPath _finderPathWithoutPaginationFindByOwnerId;
-	private FinderPath _finderPathCountByOwnerId;
-	private CollectionPersistenceFinder<IndexEntry>
+	private CollectionPersistenceFinder<IndexEntry, NoSuchIndexEntryException>
 		_collectionPersistenceFinderByOwnerId;
-
-	/**
-	 * Returns all the index entries where ownerId = &#63;.
-	 *
-	 * @param ownerId the owner ID
-	 * @return the matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByOwnerId(long ownerId) {
-		return findByOwnerId(
-			ownerId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the index entries where ownerId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ownerId the owner ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @return the range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByOwnerId(long ownerId, int start, int end) {
-		return findByOwnerId(ownerId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the index entries where ownerId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ownerId the owner ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByOwnerId(
-		long ownerId, int start, int end,
-		OrderByComparator<IndexEntry> orderByComparator) {
-
-		return findByOwnerId(ownerId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the index entries where ownerId = &#63;.
@@ -157,14 +103,9 @@ public class IndexEntryPersistenceImpl
 		OrderByComparator<IndexEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByOwnerId.find(
-				finderCache, new Object[] {ownerId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByOwnerId.find(
+			finderCache, new Object[] {ownerId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -180,16 +121,8 @@ public class IndexEntryPersistenceImpl
 			long ownerId, OrderByComparator<IndexEntry> orderByComparator)
 		throws NoSuchIndexEntryException {
 
-		IndexEntry indexEntry = fetchByOwnerId_First(
-			ownerId, orderByComparator);
-
-		if (indexEntry != null) {
-			return indexEntry;
-		}
-
-		throw new NoSuchIndexEntryException(
-			_collectionPersistenceFinderByOwnerId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {ownerId}));
+		return _collectionPersistenceFinderByOwnerId.findFirst(
+			finderCache, new Object[] {ownerId}, orderByComparator);
 	}
 
 	/**
@@ -226,69 +159,12 @@ public class IndexEntryPersistenceImpl
 	 */
 	@Override
 	public int countByOwnerId(long ownerId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByOwnerId.count(
-				finderCache, new Object[] {ownerId});
-		}
+		return _collectionPersistenceFinderByOwnerId.count(
+			finderCache, new Object[] {ownerId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByPlid;
-	private FinderPath _finderPathWithoutPaginationFindByPlid;
-	private FinderPath _finderPathCountByPlid;
-	private CollectionPersistenceFinder<IndexEntry>
+	private CollectionPersistenceFinder<IndexEntry, NoSuchIndexEntryException>
 		_collectionPersistenceFinderByPlid;
-
-	/**
-	 * Returns all the index entries where plid = &#63;.
-	 *
-	 * @param plid the plid
-	 * @return the matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByPlid(long plid) {
-		return findByPlid(plid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the index entries where plid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @return the range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByPlid(long plid, int start, int end) {
-		return findByPlid(plid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the index entries where plid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByPlid(
-		long plid, int start, int end,
-		OrderByComparator<IndexEntry> orderByComparator) {
-
-		return findByPlid(plid, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the index entries where plid = &#63;.
@@ -310,14 +186,9 @@ public class IndexEntryPersistenceImpl
 		OrderByComparator<IndexEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByPlid.find(
-				finderCache, new Object[] {plid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByPlid.find(
+			finderCache, new Object[] {plid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -333,15 +204,8 @@ public class IndexEntryPersistenceImpl
 			long plid, OrderByComparator<IndexEntry> orderByComparator)
 		throws NoSuchIndexEntryException {
 
-		IndexEntry indexEntry = fetchByPlid_First(plid, orderByComparator);
-
-		if (indexEntry != null) {
-			return indexEntry;
-		}
-
-		throw new NoSuchIndexEntryException(
-			_collectionPersistenceFinderByPlid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {plid}));
+		return _collectionPersistenceFinderByPlid.findFirst(
+			finderCache, new Object[] {plid}, orderByComparator);
 	}
 
 	/**
@@ -378,72 +242,12 @@ public class IndexEntryPersistenceImpl
 	 */
 	@Override
 	public int countByPlid(long plid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByPlid.count(
-				finderCache, new Object[] {plid});
-		}
+		return _collectionPersistenceFinderByPlid.count(
+			finderCache, new Object[] {plid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByPortletId;
-	private FinderPath _finderPathWithoutPaginationFindByPortletId;
-	private FinderPath _finderPathCountByPortletId;
-	private CollectionPersistenceFinder<IndexEntry>
+	private CollectionPersistenceFinder<IndexEntry, NoSuchIndexEntryException>
 		_collectionPersistenceFinderByPortletId;
-
-	/**
-	 * Returns all the index entries where portletId = &#63;.
-	 *
-	 * @param portletId the portlet ID
-	 * @return the matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByPortletId(String portletId) {
-		return findByPortletId(
-			portletId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the index entries where portletId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param portletId the portlet ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @return the range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByPortletId(
-		String portletId, int start, int end) {
-
-		return findByPortletId(portletId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the index entries where portletId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param portletId the portlet ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByPortletId(
-		String portletId, int start, int end,
-		OrderByComparator<IndexEntry> orderByComparator) {
-
-		return findByPortletId(portletId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the index entries where portletId = &#63;.
@@ -465,14 +269,9 @@ public class IndexEntryPersistenceImpl
 		OrderByComparator<IndexEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByPortletId.find(
-				finderCache, new Object[] {portletId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByPortletId.find(
+			finderCache, new Object[] {portletId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -488,16 +287,8 @@ public class IndexEntryPersistenceImpl
 			String portletId, OrderByComparator<IndexEntry> orderByComparator)
 		throws NoSuchIndexEntryException {
 
-		IndexEntry indexEntry = fetchByPortletId_First(
-			portletId, orderByComparator);
-
-		if (indexEntry != null) {
-			return indexEntry;
-		}
-
-		throw new NoSuchIndexEntryException(
-			_collectionPersistenceFinderByPortletId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {portletId}));
+		return _collectionPersistenceFinderByPortletId.findFirst(
+			finderCache, new Object[] {portletId}, orderByComparator);
 	}
 
 	/**
@@ -534,76 +325,12 @@ public class IndexEntryPersistenceImpl
 	 */
 	@Override
 	public int countByPortletId(String portletId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByPortletId.count(
-				finderCache, new Object[] {portletId});
-		}
+		return _collectionPersistenceFinderByPortletId.count(
+			finderCache, new Object[] {portletId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByO_P;
-	private FinderPath _finderPathWithoutPaginationFindByO_P;
-	private FinderPath _finderPathCountByO_P;
-	private CollectionPersistenceFinder<IndexEntry>
+	private CollectionPersistenceFinder<IndexEntry, NoSuchIndexEntryException>
 		_collectionPersistenceFinderByO_P;
-
-	/**
-	 * Returns all the index entries where ownerType = &#63; and portletId = &#63;.
-	 *
-	 * @param ownerType the owner type
-	 * @param portletId the portlet ID
-	 * @return the matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_P(int ownerType, String portletId) {
-		return findByO_P(
-			ownerType, portletId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the index entries where ownerType = &#63; and portletId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ownerType the owner type
-	 * @param portletId the portlet ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @return the range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_P(
-		int ownerType, String portletId, int start, int end) {
-
-		return findByO_P(ownerType, portletId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the index entries where ownerType = &#63; and portletId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ownerType the owner type
-	 * @param portletId the portlet ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_P(
-		int ownerType, String portletId, int start, int end,
-		OrderByComparator<IndexEntry> orderByComparator) {
-
-		return findByO_P(
-			ownerType, portletId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the index entries where ownerType = &#63; and portletId = &#63;.
@@ -626,14 +353,9 @@ public class IndexEntryPersistenceImpl
 		OrderByComparator<IndexEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByO_P.find(
-				finderCache, new Object[] {ownerType, portletId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByO_P.find(
+			finderCache, new Object[] {ownerType, portletId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -651,16 +373,9 @@ public class IndexEntryPersistenceImpl
 			OrderByComparator<IndexEntry> orderByComparator)
 		throws NoSuchIndexEntryException {
 
-		IndexEntry indexEntry = fetchByO_P_First(
-			ownerType, portletId, orderByComparator);
-
-		if (indexEntry != null) {
-			return indexEntry;
-		}
-
-		throw new NoSuchIndexEntryException(
-			_collectionPersistenceFinderByO_P.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {ownerType, portletId}));
+		return _collectionPersistenceFinderByO_P.findFirst(
+			finderCache, new Object[] {ownerType, portletId},
+			orderByComparator);
 	}
 
 	/**
@@ -702,75 +417,12 @@ public class IndexEntryPersistenceImpl
 	 */
 	@Override
 	public int countByO_P(int ownerType, String portletId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByO_P.count(
-				finderCache, new Object[] {ownerType, portletId});
-		}
+		return _collectionPersistenceFinderByO_P.count(
+			finderCache, new Object[] {ownerType, portletId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByP_P;
-	private FinderPath _finderPathWithoutPaginationFindByP_P;
-	private FinderPath _finderPathCountByP_P;
-	private CollectionPersistenceFinder<IndexEntry>
+	private CollectionPersistenceFinder<IndexEntry, NoSuchIndexEntryException>
 		_collectionPersistenceFinderByP_P;
-
-	/**
-	 * Returns all the index entries where plid = &#63; and portletId = &#63;.
-	 *
-	 * @param plid the plid
-	 * @param portletId the portlet ID
-	 * @return the matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByP_P(long plid, String portletId) {
-		return findByP_P(
-			plid, portletId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the index entries where plid = &#63; and portletId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param portletId the portlet ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @return the range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByP_P(
-		long plid, String portletId, int start, int end) {
-
-		return findByP_P(plid, portletId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the index entries where plid = &#63; and portletId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param portletId the portlet ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByP_P(
-		long plid, String portletId, int start, int end,
-		OrderByComparator<IndexEntry> orderByComparator) {
-
-		return findByP_P(plid, portletId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the index entries where plid = &#63; and portletId = &#63;.
@@ -793,14 +445,9 @@ public class IndexEntryPersistenceImpl
 		OrderByComparator<IndexEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByP_P.find(
-				finderCache, new Object[] {plid, portletId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByP_P.find(
+			finderCache, new Object[] {plid, portletId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -818,16 +465,8 @@ public class IndexEntryPersistenceImpl
 			OrderByComparator<IndexEntry> orderByComparator)
 		throws NoSuchIndexEntryException {
 
-		IndexEntry indexEntry = fetchByP_P_First(
-			plid, portletId, orderByComparator);
-
-		if (indexEntry != null) {
-			return indexEntry;
-		}
-
-		throw new NoSuchIndexEntryException(
-			_collectionPersistenceFinderByP_P.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {plid, portletId}));
+		return _collectionPersistenceFinderByP_P.findFirst(
+			finderCache, new Object[] {plid, portletId}, orderByComparator);
 	}
 
 	/**
@@ -868,82 +507,12 @@ public class IndexEntryPersistenceImpl
 	 */
 	@Override
 	public int countByP_P(long plid, String portletId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByP_P.count(
-				finderCache, new Object[] {plid, portletId});
-		}
+		return _collectionPersistenceFinderByP_P.count(
+			finderCache, new Object[] {plid, portletId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByO_O_P;
-	private FinderPath _finderPathWithoutPaginationFindByO_O_P;
-	private FinderPath _finderPathCountByO_O_P;
-	private CollectionPersistenceFinder<IndexEntry>
+	private CollectionPersistenceFinder<IndexEntry, NoSuchIndexEntryException>
 		_collectionPersistenceFinderByO_O_P;
-
-	/**
-	 * Returns all the index entries where ownerId = &#63; and ownerType = &#63; and plid = &#63;.
-	 *
-	 * @param ownerId the owner ID
-	 * @param ownerType the owner type
-	 * @param plid the plid
-	 * @return the matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_O_P(
-		long ownerId, int ownerType, long plid) {
-
-		return findByO_O_P(
-			ownerId, ownerType, plid, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the index entries where ownerId = &#63; and ownerType = &#63; and plid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ownerId the owner ID
-	 * @param ownerType the owner type
-	 * @param plid the plid
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @return the range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_O_P(
-		long ownerId, int ownerType, long plid, int start, int end) {
-
-		return findByO_O_P(ownerId, ownerType, plid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the index entries where ownerId = &#63; and ownerType = &#63; and plid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ownerId the owner ID
-	 * @param ownerType the owner type
-	 * @param plid the plid
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_O_P(
-		long ownerId, int ownerType, long plid, int start, int end,
-		OrderByComparator<IndexEntry> orderByComparator) {
-
-		return findByO_O_P(
-			ownerId, ownerType, plid, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the index entries where ownerId = &#63; and ownerType = &#63; and plid = &#63;.
@@ -967,14 +536,9 @@ public class IndexEntryPersistenceImpl
 		OrderByComparator<IndexEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByO_O_P.find(
-				finderCache, new Object[] {ownerId, ownerType, plid}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByO_O_P.find(
+			finderCache, new Object[] {ownerId, ownerType, plid}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -993,17 +557,9 @@ public class IndexEntryPersistenceImpl
 			OrderByComparator<IndexEntry> orderByComparator)
 		throws NoSuchIndexEntryException {
 
-		IndexEntry indexEntry = fetchByO_O_P_First(
-			ownerId, ownerType, plid, orderByComparator);
-
-		if (indexEntry != null) {
-			return indexEntry;
-		}
-
-		throw new NoSuchIndexEntryException(
-			_collectionPersistenceFinderByO_O_P.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {ownerId, ownerType, plid}));
+		return _collectionPersistenceFinderByO_O_P.findFirst(
+			finderCache, new Object[] {ownerId, ownerType, plid},
+			orderByComparator);
 	}
 
 	/**
@@ -1048,82 +604,12 @@ public class IndexEntryPersistenceImpl
 	 */
 	@Override
 	public int countByO_O_P(long ownerId, int ownerType, long plid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByO_O_P.count(
-				finderCache, new Object[] {ownerId, ownerType, plid});
-		}
+		return _collectionPersistenceFinderByO_O_P.count(
+			finderCache, new Object[] {ownerId, ownerType, plid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByO_O_PI;
-	private FinderPath _finderPathWithoutPaginationFindByO_O_PI;
-	private FinderPath _finderPathCountByO_O_PI;
-	private CollectionPersistenceFinder<IndexEntry>
+	private CollectionPersistenceFinder<IndexEntry, NoSuchIndexEntryException>
 		_collectionPersistenceFinderByO_O_PI;
-
-	/**
-	 * Returns all the index entries where ownerId = &#63; and ownerType = &#63; and portletId = &#63;.
-	 *
-	 * @param ownerId the owner ID
-	 * @param ownerType the owner type
-	 * @param portletId the portlet ID
-	 * @return the matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_O_PI(
-		long ownerId, int ownerType, String portletId) {
-
-		return findByO_O_PI(
-			ownerId, ownerType, portletId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the index entries where ownerId = &#63; and ownerType = &#63; and portletId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ownerId the owner ID
-	 * @param ownerType the owner type
-	 * @param portletId the portlet ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @return the range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_O_PI(
-		long ownerId, int ownerType, String portletId, int start, int end) {
-
-		return findByO_O_PI(ownerId, ownerType, portletId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the index entries where ownerId = &#63; and ownerType = &#63; and portletId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ownerId the owner ID
-	 * @param ownerType the owner type
-	 * @param portletId the portlet ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_O_PI(
-		long ownerId, int ownerType, String portletId, int start, int end,
-		OrderByComparator<IndexEntry> orderByComparator) {
-
-		return findByO_O_PI(
-			ownerId, ownerType, portletId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the index entries where ownerId = &#63; and ownerType = &#63; and portletId = &#63;.
@@ -1147,14 +633,9 @@ public class IndexEntryPersistenceImpl
 		OrderByComparator<IndexEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByO_O_PI.find(
-				finderCache, new Object[] {ownerId, ownerType, portletId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByO_O_PI.find(
+			finderCache, new Object[] {ownerId, ownerType, portletId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1173,17 +654,9 @@ public class IndexEntryPersistenceImpl
 			OrderByComparator<IndexEntry> orderByComparator)
 		throws NoSuchIndexEntryException {
 
-		IndexEntry indexEntry = fetchByO_O_PI_First(
-			ownerId, ownerType, portletId, orderByComparator);
-
-		if (indexEntry != null) {
-			return indexEntry;
-		}
-
-		throw new NoSuchIndexEntryException(
-			_collectionPersistenceFinderByO_O_PI.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {ownerId, ownerType, portletId}));
+		return _collectionPersistenceFinderByO_O_PI.findFirst(
+			finderCache, new Object[] {ownerId, ownerType, portletId},
+			orderByComparator);
 	}
 
 	/**
@@ -1228,82 +701,12 @@ public class IndexEntryPersistenceImpl
 	 */
 	@Override
 	public int countByO_O_PI(long ownerId, int ownerType, String portletId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByO_O_PI.count(
-				finderCache, new Object[] {ownerId, ownerType, portletId});
-		}
+		return _collectionPersistenceFinderByO_O_PI.count(
+			finderCache, new Object[] {ownerId, ownerType, portletId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByO_P_P;
-	private FinderPath _finderPathWithoutPaginationFindByO_P_P;
-	private FinderPath _finderPathCountByO_P_P;
-	private CollectionPersistenceFinder<IndexEntry>
+	private CollectionPersistenceFinder<IndexEntry, NoSuchIndexEntryException>
 		_collectionPersistenceFinderByO_P_P;
-
-	/**
-	 * Returns all the index entries where ownerType = &#63; and plid = &#63; and portletId = &#63;.
-	 *
-	 * @param ownerType the owner type
-	 * @param plid the plid
-	 * @param portletId the portlet ID
-	 * @return the matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_P_P(
-		int ownerType, long plid, String portletId) {
-
-		return findByO_P_P(
-			ownerType, plid, portletId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the index entries where ownerType = &#63; and plid = &#63; and portletId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ownerType the owner type
-	 * @param plid the plid
-	 * @param portletId the portlet ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @return the range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_P_P(
-		int ownerType, long plid, String portletId, int start, int end) {
-
-		return findByO_P_P(ownerType, plid, portletId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the index entries where ownerType = &#63; and plid = &#63; and portletId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>IndexEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ownerType the owner type
-	 * @param plid the plid
-	 * @param portletId the portlet ID
-	 * @param start the lower bound of the range of index entries
-	 * @param end the upper bound of the range of index entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching index entries
-	 */
-	@Override
-	public List<IndexEntry> findByO_P_P(
-		int ownerType, long plid, String portletId, int start, int end,
-		OrderByComparator<IndexEntry> orderByComparator) {
-
-		return findByO_P_P(
-			ownerType, plid, portletId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the index entries where ownerType = &#63; and plid = &#63; and portletId = &#63;.
@@ -1327,14 +730,9 @@ public class IndexEntryPersistenceImpl
 		OrderByComparator<IndexEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByO_P_P.find(
-				finderCache, new Object[] {ownerType, plid, portletId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByO_P_P.find(
+			finderCache, new Object[] {ownerType, plid, portletId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1353,17 +751,9 @@ public class IndexEntryPersistenceImpl
 			OrderByComparator<IndexEntry> orderByComparator)
 		throws NoSuchIndexEntryException {
 
-		IndexEntry indexEntry = fetchByO_P_P_First(
-			ownerType, plid, portletId, orderByComparator);
-
-		if (indexEntry != null) {
-			return indexEntry;
-		}
-
-		throw new NoSuchIndexEntryException(
-			_collectionPersistenceFinderByO_P_P.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {ownerType, plid, portletId}));
+		return _collectionPersistenceFinderByO_P_P.findFirst(
+			finderCache, new Object[] {ownerType, plid, portletId},
+			orderByComparator);
 	}
 
 	/**
@@ -1408,18 +798,11 @@ public class IndexEntryPersistenceImpl
 	 */
 	@Override
 	public int countByO_P_P(int ownerType, long plid, String portletId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByO_P_P.count(
-				finderCache, new Object[] {ownerType, plid, portletId});
-		}
+		return _collectionPersistenceFinderByO_P_P.count(
+			finderCache, new Object[] {ownerType, plid, portletId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_O_O_LikeP;
-	private FinderPath _finderPathWithPaginationCountByC_O_O_LikeP;
-	private CollectionPersistenceFinder<IndexEntry>
+	private CollectionPersistenceFinder<IndexEntry, NoSuchIndexEntryException>
 		_collectionPersistenceFinderByC_O_O_LikeP;
 
 	/**
@@ -1513,15 +896,10 @@ public class IndexEntryPersistenceImpl
 		int start, int end, OrderByComparator<IndexEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByC_O_O_LikeP.find(
-				finderCache,
-				new Object[] {companyId, ownerId, ownerType, portletId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_O_O_LikeP.find(
+			finderCache,
+			new Object[] {companyId, ownerId, ownerType, portletId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1541,17 +919,10 @@ public class IndexEntryPersistenceImpl
 			OrderByComparator<IndexEntry> orderByComparator)
 		throws NoSuchIndexEntryException {
 
-		IndexEntry indexEntry = fetchByC_O_O_LikeP_First(
-			companyId, ownerId, ownerType, portletId, orderByComparator);
-
-		if (indexEntry != null) {
-			return indexEntry;
-		}
-
-		throw new NoSuchIndexEntryException(
-			_collectionPersistenceFinderByC_O_O_LikeP.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, ownerId, ownerType, portletId}));
+		return _collectionPersistenceFinderByC_O_O_LikeP.findFirst(
+			finderCache,
+			new Object[] {companyId, ownerId, ownerType, portletId},
+			orderByComparator);
 	}
 
 	/**
@@ -1605,18 +976,12 @@ public class IndexEntryPersistenceImpl
 	public int countByC_O_O_LikeP(
 		long companyId, long ownerId, int ownerType, String portletId) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _collectionPersistenceFinderByC_O_O_LikeP.count(
-				finderCache,
-				new Object[] {companyId, ownerId, ownerType, portletId});
-		}
+		return _collectionPersistenceFinderByC_O_O_LikeP.count(
+			finderCache,
+			new Object[] {companyId, ownerId, ownerType, portletId});
 	}
 
-	private FinderPath _finderPathFetchByO_O_P_P;
-	private UniquePersistenceFinder<IndexEntry>
+	private UniquePersistenceFinder<IndexEntry, NoSuchIndexEntryException>
 		_uniquePersistenceFinderByO_O_P_P;
 
 	/**
@@ -1634,39 +999,8 @@ public class IndexEntryPersistenceImpl
 			long ownerId, int ownerType, long plid, String portletId)
 		throws NoSuchIndexEntryException {
 
-		IndexEntry indexEntry = fetchByO_O_P_P(
-			ownerId, ownerType, plid, portletId);
-
-		if (indexEntry == null) {
-			String message =
-				_uniquePersistenceFinderByO_O_P_P.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {ownerId, ownerType, plid, portletId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchIndexEntryException(message);
-		}
-
-		return indexEntry;
-	}
-
-	/**
-	 * Returns the index entry where ownerId = &#63; and ownerType = &#63; and plid = &#63; and portletId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param ownerId the owner ID
-	 * @param ownerType the owner type
-	 * @param plid the plid
-	 * @param portletId the portlet ID
-	 * @return the matching index entry, or <code>null</code> if a matching index entry could not be found
-	 */
-	@Override
-	public IndexEntry fetchByO_O_P_P(
-		long ownerId, int ownerType, long plid, String portletId) {
-
-		return fetchByO_O_P_P(ownerId, ownerType, plid, portletId, true);
+		return _uniquePersistenceFinderByO_O_P_P.find(
+			finderCache, new Object[] {ownerId, ownerType, plid, portletId});
 	}
 
 	/**
@@ -1684,14 +1018,9 @@ public class IndexEntryPersistenceImpl
 		long ownerId, int ownerType, long plid, String portletId,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _uniquePersistenceFinderByO_O_P_P.fetch(
-				finderCache, new Object[] {ownerId, ownerType, plid, portletId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByO_O_P_P.fetch(
+			finderCache, new Object[] {ownerId, ownerType, plid, portletId},
+			useFinderCache);
 	}
 
 	/**
@@ -1731,8 +1060,8 @@ public class IndexEntryPersistenceImpl
 			finderCache, new Object[] {ownerId, ownerType, plid, portletId});
 	}
 
-	private FinderPath _finderPathFetchByERC_C;
-	private UniquePersistenceFinder<IndexEntry> _uniquePersistenceFinderByERC_C;
+	private UniquePersistenceFinder<IndexEntry, NoSuchIndexEntryException>
+		_uniquePersistenceFinderByERC_C;
 
 	/**
 	 * Returns the index entry where externalReferenceCode = &#63; and companyId = &#63; or throws a <code>NoSuchIndexEntryException</code> if it could not be found.
@@ -1746,36 +1075,8 @@ public class IndexEntryPersistenceImpl
 	public IndexEntry findByERC_C(String externalReferenceCode, long companyId)
 		throws NoSuchIndexEntryException {
 
-		IndexEntry indexEntry = fetchByERC_C(externalReferenceCode, companyId);
-
-		if (indexEntry == null) {
-			String message =
-				_uniquePersistenceFinderByERC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, companyId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchIndexEntryException(message);
-		}
-
-		return indexEntry;
-	}
-
-	/**
-	 * Returns the index entry where externalReferenceCode = &#63; and companyId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param companyId the company ID
-	 * @return the matching index entry, or <code>null</code> if a matching index entry could not be found
-	 */
-	@Override
-	public IndexEntry fetchByERC_C(
-		String externalReferenceCode, long companyId) {
-
-		return fetchByERC_C(externalReferenceCode, companyId, true);
+		return _uniquePersistenceFinderByERC_C.find(
+			finderCache, new Object[] {externalReferenceCode, companyId});
 	}
 
 	/**
@@ -1790,14 +1091,9 @@ public class IndexEntryPersistenceImpl
 	public IndexEntry fetchByERC_C(
 		String externalReferenceCode, long companyId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					IndexEntry.class)) {
-
-			return _uniquePersistenceFinderByERC_C.fetch(
-				finderCache, new Object[] {externalReferenceCode, companyId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByERC_C.fetch(
+			finderCache, new Object[] {externalReferenceCode, companyId},
+			useFinderCache);
 	}
 
 	/**
@@ -2138,348 +1434,328 @@ public class IndexEntryPersistenceImpl
 	 * Initializes the index entry persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByOwnerId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByOwnerId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"ownerId"}, true);
-
-		_finderPathWithoutPaginationFindByOwnerId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByOwnerId",
-			new String[] {Long.class.getName()}, new String[] {"ownerId"},
-			true);
-
-		_finderPathCountByOwnerId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByOwnerId",
-			new String[] {Long.class.getName()}, new String[] {"ownerId"},
-			false);
-
 		_collectionPersistenceFinderByOwnerId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByOwnerId,
-				_finderPathWithoutPaginationFindByOwnerId,
-				_finderPathCountByOwnerId, _SQL_SELECT_INDEXENTRY_WHERE,
-				_SQL_COUNT_INDEXENTRY_WHERE, IndexEntryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByOwnerId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"ownerId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByOwnerId",
+					new String[] {Long.class.getName()},
+					new String[] {"ownerId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByOwnerId",
+					new String[] {Long.class.getName()},
+					new String[] {"ownerId"}, false),
+				_SQL_SELECT_INDEXENTRY_WHERE, _SQL_COUNT_INDEXENTRY_WHERE,
+				IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"indexEntry.", "ownerId", FinderColumn.Type.LONG, "=", true,
 					true, IndexEntry::getOwnerId));
 
-		_finderPathWithPaginationFindByPlid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByPlid",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"plid"}, true);
-
-		_finderPathWithoutPaginationFindByPlid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByPlid",
-			new String[] {Long.class.getName()}, new String[] {"plid"}, true);
-
-		_finderPathCountByPlid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByPlid",
-			new String[] {Long.class.getName()}, new String[] {"plid"}, false);
-
 		_collectionPersistenceFinderByPlid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByPlid,
-			_finderPathWithoutPaginationFindByPlid, _finderPathCountByPlid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByPlid",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"plid"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByPlid",
+				new String[] {Long.class.getName()}, new String[] {"plid"},
+				true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByPlid",
+				new String[] {Long.class.getName()}, new String[] {"plid"},
+				false),
 			_SQL_SELECT_INDEXENTRY_WHERE, _SQL_COUNT_INDEXENTRY_WHERE,
-			IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"indexEntry.", "plid", FinderColumn.Type.LONG, "=", true, true,
 				IndexEntry::getPlid));
-
-		_finderPathWithPaginationFindByPortletId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByPortletId",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"portletId"}, true);
-
-		_finderPathWithoutPaginationFindByPortletId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByPortletId",
-			new String[] {String.class.getName()}, new String[] {"portletId"},
-			true);
-
-		_finderPathCountByPortletId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByPortletId",
-			new String[] {String.class.getName()}, new String[] {"portletId"},
-			false);
 
 		_collectionPersistenceFinderByPortletId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByPortletId,
-				_finderPathWithoutPaginationFindByPortletId,
-				_finderPathCountByPortletId, _SQL_SELECT_INDEXENTRY_WHERE,
-				_SQL_COUNT_INDEXENTRY_WHERE, IndexEntryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByPortletId",
+					new String[] {
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"portletId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByPortletId", new String[] {String.class.getName()},
+					new String[] {"portletId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByPortletId", new String[] {String.class.getName()},
+					new String[] {"portletId"}, 0, 1, false, null),
+				_SQL_SELECT_INDEXENTRY_WHERE, _SQL_COUNT_INDEXENTRY_WHERE,
+				IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"indexEntry.", "portletId", FinderColumn.Type.STRING, "=",
 					true, true, IndexEntry::getPortletId));
 
-		_finderPathWithPaginationFindByO_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_P",
-			new String[] {
-				Integer.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"ownerType", "portletId"}, true);
-
-		_finderPathWithoutPaginationFindByO_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_P",
-			new String[] {Integer.class.getName(), String.class.getName()},
-			new String[] {"ownerType", "portletId"}, true);
-
-		_finderPathCountByO_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_P",
-			new String[] {Integer.class.getName(), String.class.getName()},
-			new String[] {"ownerType", "portletId"}, false);
-
 		_collectionPersistenceFinderByO_P = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByO_P,
-			_finderPathWithoutPaginationFindByO_P, _finderPathCountByO_P,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_P",
+				new String[] {
+					Integer.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"ownerType", "portletId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_P",
+				new String[] {Integer.class.getName(), String.class.getName()},
+				new String[] {"ownerType", "portletId"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_P",
+				new String[] {Integer.class.getName(), String.class.getName()},
+				new String[] {"ownerType", "portletId"}, 0, 2, false, null),
 			_SQL_SELECT_INDEXENTRY_WHERE, _SQL_COUNT_INDEXENTRY_WHERE,
-			IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"indexEntry.", "ownerType", FinderColumn.Type.INTEGER, "=",
-				true, false, IndexEntry::getOwnerType),
+				true, true, IndexEntry::getOwnerType),
 			new FinderColumn<>(
 				"indexEntry.", "portletId", FinderColumn.Type.STRING, "=", true,
 				true, IndexEntry::getPortletId));
 
-		_finderPathWithPaginationFindByP_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByP_P",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"plid", "portletId"}, true);
-
-		_finderPathWithoutPaginationFindByP_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_P",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"plid", "portletId"}, true);
-
-		_finderPathCountByP_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_P",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"plid", "portletId"}, false);
-
 		_collectionPersistenceFinderByP_P = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByP_P,
-			_finderPathWithoutPaginationFindByP_P, _finderPathCountByP_P,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByP_P",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"plid", "portletId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_P",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"plid", "portletId"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_P",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"plid", "portletId"}, 0, 2, false, null),
 			_SQL_SELECT_INDEXENTRY_WHERE, _SQL_COUNT_INDEXENTRY_WHERE,
-			IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"indexEntry.", "plid", FinderColumn.Type.LONG, "=", true, false,
+				"indexEntry.", "plid", FinderColumn.Type.LONG, "=", true, true,
 				IndexEntry::getPlid),
 			new FinderColumn<>(
 				"indexEntry.", "portletId", FinderColumn.Type.STRING, "=", true,
 				true, IndexEntry::getPortletId));
 
-		_finderPathWithPaginationFindByO_O_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_O_P",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"ownerId", "ownerType", "plid"}, true);
-
-		_finderPathWithoutPaginationFindByO_O_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_O_P",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Long.class.getName()
-			},
-			new String[] {"ownerId", "ownerType", "plid"}, true);
-
-		_finderPathCountByO_O_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_O_P",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Long.class.getName()
-			},
-			new String[] {"ownerId", "ownerType", "plid"}, false);
-
 		_collectionPersistenceFinderByO_O_P = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByO_O_P,
-			_finderPathWithoutPaginationFindByO_O_P, _finderPathCountByO_O_P,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_O_P",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"ownerId", "ownerType", "plid"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_O_P",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"ownerId", "ownerType", "plid"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_O_P",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"ownerId", "ownerType", "plid"}, false),
 			_SQL_SELECT_INDEXENTRY_WHERE, _SQL_COUNT_INDEXENTRY_WHERE,
-			IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"indexEntry.", "ownerId", FinderColumn.Type.LONG, "=", true,
-				false, IndexEntry::getOwnerId),
+				true, IndexEntry::getOwnerId),
 			new FinderColumn<>(
 				"indexEntry.", "ownerType", FinderColumn.Type.INTEGER, "=",
-				true, false, IndexEntry::getOwnerType),
+				true, true, IndexEntry::getOwnerType),
 			new FinderColumn<>(
 				"indexEntry.", "plid", FinderColumn.Type.LONG, "=", true, true,
 				IndexEntry::getPlid));
 
-		_finderPathWithPaginationFindByO_O_PI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_O_PI",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"ownerId", "ownerType", "portletId"}, true);
-
-		_finderPathWithoutPaginationFindByO_O_PI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_O_PI",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"ownerId", "ownerType", "portletId"}, true);
-
-		_finderPathCountByO_O_PI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_O_PI",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"ownerId", "ownerType", "portletId"}, false);
-
 		_collectionPersistenceFinderByO_O_PI =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByO_O_PI,
-				_finderPathWithoutPaginationFindByO_O_PI,
-				_finderPathCountByO_O_PI, _SQL_SELECT_INDEXENTRY_WHERE,
-				_SQL_COUNT_INDEXENTRY_WHERE, IndexEntryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_O_PI",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"ownerId", "ownerType", "portletId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_O_PI",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						String.class.getName()
+					},
+					new String[] {"ownerId", "ownerType", "portletId"}, 0, 4,
+					true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_O_PI",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						String.class.getName()
+					},
+					new String[] {"ownerId", "ownerType", "portletId"}, 0, 4,
+					false, null),
+				_SQL_SELECT_INDEXENTRY_WHERE, _SQL_COUNT_INDEXENTRY_WHERE,
+				IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"indexEntry.", "ownerId", FinderColumn.Type.LONG, "=", true,
-					false, IndexEntry::getOwnerId),
+					true, IndexEntry::getOwnerId),
 				new FinderColumn<>(
 					"indexEntry.", "ownerType", FinderColumn.Type.INTEGER, "=",
-					true, false, IndexEntry::getOwnerType),
+					true, true, IndexEntry::getOwnerType),
 				new FinderColumn<>(
 					"indexEntry.", "portletId", FinderColumn.Type.STRING, "=",
 					true, true, IndexEntry::getPortletId));
 
-		_finderPathWithPaginationFindByO_P_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_P_P",
-			new String[] {
-				Integer.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"ownerType", "plid", "portletId"}, true);
-
-		_finderPathWithoutPaginationFindByO_P_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_P_P",
-			new String[] {
-				Integer.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"ownerType", "plid", "portletId"}, true);
-
-		_finderPathCountByO_P_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_P_P",
-			new String[] {
-				Integer.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"ownerType", "plid", "portletId"}, false);
-
 		_collectionPersistenceFinderByO_P_P = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByO_P_P,
-			_finderPathWithoutPaginationFindByO_P_P, _finderPathCountByO_P_P,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_P_P",
+				new String[] {
+					Integer.class.getName(), Long.class.getName(),
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"ownerType", "plid", "portletId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_P_P",
+				new String[] {
+					Integer.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"ownerType", "plid", "portletId"}, 0, 4, true,
+				null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_P_P",
+				new String[] {
+					Integer.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"ownerType", "plid", "portletId"}, 0, 4, false,
+				null),
 			_SQL_SELECT_INDEXENTRY_WHERE, _SQL_COUNT_INDEXENTRY_WHERE,
-			IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"indexEntry.", "ownerType", FinderColumn.Type.INTEGER, "=",
-				true, false, IndexEntry::getOwnerType),
+				true, true, IndexEntry::getOwnerType),
 			new FinderColumn<>(
-				"indexEntry.", "plid", FinderColumn.Type.LONG, "=", true, false,
+				"indexEntry.", "plid", FinderColumn.Type.LONG, "=", true, true,
 				IndexEntry::getPlid),
 			new FinderColumn<>(
 				"indexEntry.", "portletId", FinderColumn.Type.STRING, "=", true,
 				true, IndexEntry::getPortletId));
 
-		_finderPathWithPaginationFindByC_O_O_LikeP = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_O_O_LikeP",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "ownerId", "ownerType", "portletId"},
-			true);
-
-		_finderPathWithPaginationCountByC_O_O_LikeP = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_O_O_LikeP",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), String.class.getName()
-			},
-			new String[] {"companyId", "ownerId", "ownerType", "portletId"},
-			false);
-
 		_collectionPersistenceFinderByC_O_O_LikeP =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByC_O_O_LikeP, null,
-				_finderPathWithPaginationCountByC_O_O_LikeP,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_O_O_LikeP",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"companyId", "ownerId", "ownerType", "portletId"
+					},
+					true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByC_O_O_LikeP",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), String.class.getName()
+					},
+					new String[] {
+						"companyId", "ownerId", "ownerType", "portletId"
+					},
+					false),
 				_SQL_SELECT_INDEXENTRY_WHERE, _SQL_COUNT_INDEXENTRY_WHERE,
-				IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				IndexEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"indexEntry.", "companyId", FinderColumn.Type.LONG, "=",
-					true, false, IndexEntry::getCompanyId),
+					true, true, IndexEntry::getCompanyId),
 				new FinderColumn<>(
 					"indexEntry.", "ownerId", FinderColumn.Type.LONG, "=", true,
-					false, IndexEntry::getOwnerId),
+					true, IndexEntry::getOwnerId),
 				new FinderColumn<>(
 					"indexEntry.", "ownerType", FinderColumn.Type.INTEGER, "=",
-					true, false, IndexEntry::getOwnerType),
+					true, true, IndexEntry::getOwnerType),
 				new FinderColumn<>(
 					"indexEntry.", "portletId", FinderColumn.Type.STRING,
 					"LIKE", true, true, IndexEntry::getPortletId));
 
-		_finderPathFetchByO_O_P_P = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByO_O_P_P",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Long.class.getName(), String.class.getName()
-			},
-			new String[] {"ownerId", "ownerType", "plid", "portletId"}, false,
-			IndexEntry::getOwnerId, IndexEntry::getOwnerType,
-			IndexEntry::getPlid, IndexEntry::getPortletId);
-
 		_uniquePersistenceFinderByO_O_P_P = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByO_O_P_P, _SQL_SELECT_INDEXENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByO_O_P_P",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Long.class.getName(), String.class.getName()
+				},
+				new String[] {"ownerId", "ownerType", "plid", "portletId"}, 0,
+				8, false, IndexEntry::getOwnerId, IndexEntry::getOwnerType,
+				IndexEntry::getPlid,
+				convertNullFunction(IndexEntry::getPortletId)),
+			_SQL_SELECT_INDEXENTRY_WHERE, "",
 			new FinderColumn<>(
 				"indexEntry.", "ownerId", FinderColumn.Type.LONG, "=", true,
-				false, IndexEntry::getOwnerId),
+				true, IndexEntry::getOwnerId),
 			new FinderColumn<>(
 				"indexEntry.", "ownerType", FinderColumn.Type.INTEGER, "=",
-				true, false, IndexEntry::getOwnerType),
+				true, true, IndexEntry::getOwnerType),
 			new FinderColumn<>(
-				"indexEntry.", "plid", FinderColumn.Type.LONG, "=", true, false,
+				"indexEntry.", "plid", FinderColumn.Type.LONG, "=", true, true,
 				IndexEntry::getPlid),
 			new FinderColumn<>(
 				"indexEntry.", "portletId", FinderColumn.Type.STRING, "=", true,
 				true, IndexEntry::getPortletId));
 
-		_finderPathFetchByERC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "companyId"}, false,
-			IndexEntry::getExternalReferenceCode, IndexEntry::getCompanyId);
-
 		_uniquePersistenceFinderByERC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_C, _SQL_SELECT_INDEXENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "companyId"}, 0, 1,
+				false,
+				convertNullFunction(IndexEntry::getExternalReferenceCode),
+				IndexEntry::getCompanyId),
+			_SQL_SELECT_INDEXENTRY_WHERE, "",
 			new FinderColumn<>(
 				"indexEntry.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				IndexEntry::getExternalReferenceCode),
 			new FinderColumn<>(
 				"indexEntry.", "companyId", FinderColumn.Type.LONG, "=", true,
@@ -2527,4 +1803,4 @@ public class IndexEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:464212999
+// LIFERAY-SERVICE-BUILDER-HASH:-1521438413

@@ -13,6 +13,7 @@ import NoResultsDisplay from 'shared/components/NoResultsDisplay';
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import RowActions from 'shared/components/RowActions';
 import SearchableEntityTable from 'shared/components/SearchableEntityTable';
+import SequentialEventOrderPopover from 'shared/components/SequentialEventOrderPopover';
 import ToThousandsCell from 'shared/components/table/cell-components/ToThousandsCell';
 import URLConstants from 'shared/util/url-constants';
 import UserCell from 'shared/components/table/cell-components/UserCell';
@@ -45,6 +46,7 @@ import {
 	USER_NAME
 } from 'shared/util/router';
 import {DateCell} from 'shared/components/table/cell-components';
+import {ENABLE_REAL_TIME_SEGMENTS} from 'shared/util/feature-flags';
 import {FeatureName, useLimitReached} from 'shared/hooks/useLimitReached';
 import {formatDateToTimeZone} from 'shared/util/date';
 import {
@@ -191,9 +193,7 @@ export const List: React.FC<IListProps> = ({
 	const selectedSegmentTypes = filterBy?.get(SEGMENT_TYPE)?.toArray() || [];
 
 	const {data, error, loading, refetch} = useRequest({
-		dataSourceFn: API.individualSegment.search as (params: {
-			[key: string]: any;
-		}) => Promise<any>,
+		dataSourceFn: API.individualSegment.search,
 		variables: {
 			channelId,
 			delta,
@@ -212,9 +212,7 @@ export const List: React.FC<IListProps> = ({
 		loading: usageLoading,
 		refetch: refetchUsage
 	} = useRequest({
-		dataSourceFn: API.projects.fetchFeatureUsages as (params: {
-			[key: string]: any;
-		}) => Promise<any>,
+		dataSourceFn: API.projects.fetchFeatureUsages,
 		variables: {groupId}
 	});
 
@@ -223,10 +221,13 @@ export const List: React.FC<IListProps> = ({
 		featureName: FeatureName.Batch
 	});
 
-	const isRealTimeDisabled = useLimitReached({
+	const realTimeLimitReached = useLimitReached({
 		data: usageData,
 		featureName: FeatureName.RealTime
 	});
+
+	const isRealTimeDisabled =
+		ENABLE_REAL_TIME_SEGMENTS && realTimeLimitReached;
 
 	const allActionsDisabled = isBatchDisabled && isRealTimeDisabled;
 
@@ -489,77 +490,108 @@ export const List: React.FC<IListProps> = ({
 				<Nav>
 					<Nav.Item>
 						<div className='d-flex align-items-center'>
-							<ClayDropDown
-								alignmentPosition={Align.BottomRight}
-								trigger={
-									<ClayButton
-										aria-label={
-											pageActionsLabel &&
-											Liferay.Language.get('menu')
-										}
-										className='button-root p-2 rounded-lg'
-										disabled={
-											error ||
-											loading ||
-											allActionsDisabled
-										}
-										displayType='primary'
-										size='sm'
-									>
-										<>
-											<span>{pageActionsLabel}</span>
-											<ClayIcon
-												className='icon-root ml-2'
-												symbol='caret-bottom'
-											/>
-										</>
-									</ClayButton>
-								}
-							>
-								{usageDropDownMessage && (
-									<div
-										className='alert alert-fluid alert-info'
-										role='alert'
-									>
-										{usageDropDownMessage}
-									</div>
-								)}
-
-								<ClayDropDown.Item
-									data-testid='batch-segment-dropdown-item'
-									disabled={usageLoading || isBatchDisabled}
-									href={setUriQueryValues(
-										{type: SegmentTypes.Batch},
-										toRoute(
-											Routes.CONTACTS_SEGMENT_CREATE,
-											{channelId, groupId}
-										)
-									)}
-								>
-									<ClayIcon
-										className='mr-2'
-										symbol='diagram'
-									/>
-									{Liferay.Language.get('batch')}
-								</ClayDropDown.Item>
-
-								<ClayDropDown.Item
-									data-testid='real-time-segment-dropdown-item'
-									disabled={
-										usageLoading || isRealTimeDisabled
+							{ENABLE_REAL_TIME_SEGMENTS ? (
+								<ClayDropDown
+									alignmentPosition={Align.BottomRight}
+									trigger={
+										<ClayButton
+											aria-label={
+												pageActionsLabel &&
+												Liferay.Language.get('menu')
+											}
+											className='button-root p-2 rounded-lg'
+											disabled={
+												error ||
+												loading ||
+												allActionsDisabled
+											}
+											displayType='primary'
+											size='sm'
+										>
+											<>
+												<span>{pageActionsLabel}</span>
+												<ClayIcon
+													className='icon-root ml-2'
+													symbol='caret-bottom'
+												/>
+											</>
+										</ClayButton>
 									}
-									href={setUriQueryValues(
-										{type: SegmentTypes.RealTime},
-										toRoute(
-											Routes.CONTACTS_SEGMENT_CREATE,
-											{channelId, groupId}
-										)
-									)}
 								>
-									<ClayIcon className='mr-2' symbol='bolt' />
-									{Liferay.Language.get('real-time')}
-								</ClayDropDown.Item>
-							</ClayDropDown>
+									{usageDropDownMessage && (
+										<div
+											className='alert alert-fluid alert-info'
+											role='alert'
+										>
+											{usageDropDownMessage}
+										</div>
+									)}
+
+									<ClayDropDown.Item
+										data-testid='batch-segment-dropdown-item'
+										disabled={
+											usageLoading || isBatchDisabled
+										}
+										href={setUriQueryValues(
+											{type: SegmentTypes.Batch},
+											toRoute(
+												Routes.CONTACTS_SEGMENT_CREATE,
+												{channelId, groupId}
+											)
+										)}
+									>
+										<ClayIcon
+											className='mr-2'
+											symbol='diagram'
+										/>
+										{Liferay.Language.get('batch')}
+									</ClayDropDown.Item>
+
+									<ClayDropDown.Item
+										data-testid='real-time-segment-dropdown-item'
+										disabled={
+											usageLoading || isRealTimeDisabled
+										}
+										href={setUriQueryValues(
+											{type: SegmentTypes.RealTime},
+											toRoute(
+												Routes.CONTACTS_SEGMENT_CREATE,
+												{channelId, groupId}
+											)
+										)}
+									>
+										<ClayIcon
+											className='mr-2'
+											symbol='bolt'
+										/>
+										{Liferay.Language.get('real-time')}
+									</ClayDropDown.Item>
+								</ClayDropDown>
+							) : (
+								<ClayButton
+									aria-label={pageActionsLabel}
+									className='button-root p-2 rounded-lg'
+									data-testid='batch-segment-button'
+									disabled={
+										error || loading || isBatchDisabled
+									}
+									displayType='primary'
+									onClick={() =>
+										history.push(
+											setUriQueryValues(
+												{type: SegmentTypes.Batch},
+												toRoute(
+													Routes.CONTACTS_SEGMENT_CREATE,
+													{channelId, groupId}
+												)
+											)
+										)
+									}
+									size='sm'
+								>
+									{pageActionsLabel}
+								</ClayButton>
+							)}
 
 							{usageMessage && (
 								<ClayButton
@@ -661,6 +693,7 @@ export const List: React.FC<IListProps> = ({
 									cellRenderer: (item: {
 										data: {
 											segmentType: 'BATCH' | 'REAL_TIME';
+											sequential: boolean;
 										};
 									}) => {
 										const segmentTypeMap = {
@@ -680,6 +713,12 @@ export const List: React.FC<IListProps> = ({
 														item.data.segmentType
 													]
 												}
+
+												{item.data.segmentType ===
+													SegmentTypes.RealTime &&
+													item.data.sequential && (
+														<SequentialEventOrderPopover />
+													)}
 											</td>
 										);
 									},

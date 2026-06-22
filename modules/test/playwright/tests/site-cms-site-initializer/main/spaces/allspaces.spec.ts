@@ -39,12 +39,18 @@ test(
 		await test.step('Check the space is visible in All Spaces and left panel', async () => {
 			await page.goto(PORTLET_URLS.cmsAllSpaces);
 
-			expect(page.getByRole('menuitem', {name: spaceName})).toBeVisible();
-			expect(page.getByRole('link', {name: spaceName})).toBeVisible();
+			await expect(
+				page.getByRole('menuitem', {name: spaceName})
+			).toBeVisible();
+			await expect(
+				page.getByRole('link', {name: spaceName})
+			).toBeVisible();
 		});
 
 		await test.step('delete space from All Spaces', async () => {
-			await page.getByRole('cell', {name: 'Actions'}).nth(2).click();
+			await page
+				.getByRole('button', {name: `${spaceName} Actions`})
+				.click();
 			await page.getByRole('menuitem', {name: 'Delete'}).click();
 			await page.getByRole('button', {name: 'Delete'}).click();
 
@@ -55,10 +61,12 @@ test(
 		});
 
 		await test.step('Check the space is not visible in All Spaces nor in the left Spaces panel', async () => {
-			expect(
+			await expect(
 				page.getByRole('menuitem', {name: spaceName})
 			).not.toBeVisible();
-			expect(page.getByRole('link', {name: spaceName})).not.toBeVisible();
+			await expect(
+				page.getByRole('link', {name: spaceName})
+			).not.toBeVisible();
 		});
 	}
 );
@@ -81,8 +89,12 @@ test(
 		await test.step('Check the space is visible in All Spaces and left panel', async () => {
 			await page.goto(PORTLET_URLS.cmsAllSpaces);
 
-			expect(page.getByRole('menuitem', {name: spaceName})).toBeVisible();
-			expect(page.getByRole('link', {name: spaceName})).toBeVisible();
+			await expect(
+				page.getByRole('menuitem', {name: spaceName})
+			).toBeVisible();
+			await expect(
+				page.getByRole('link', {name: spaceName})
+			).toBeVisible();
 		});
 
 		await test.step(`Go to View Connected Sites modal and connect the space to ${siteName} site`, async () => {
@@ -104,9 +116,11 @@ test(
 				`Success:Site ${siteName} was successfully connected to the space.`
 			);
 
-			expect(page.getByRole('button', {name: 'Connect'})).toBeDisabled();
+			await expect(
+				page.getByRole('button', {name: 'Connect'})
+			).toBeDisabled();
 
-			expect(page.getByText(siteName)).toBeVisible();
+			await expect(page.getByText(siteName)).toBeVisible();
 		});
 	}
 );

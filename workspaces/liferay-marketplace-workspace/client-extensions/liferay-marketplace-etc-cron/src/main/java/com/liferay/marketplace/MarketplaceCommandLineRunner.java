@@ -692,8 +692,8 @@ public class MarketplaceCommandLineRunner
 			new JSONObject(
 			).put(
 				"value",
-				new JSONObject(
-					productPurchases
+				new JSONArray(
+					productPurchases.values()
 				).toString()
 			).toString(),
 			"PRODUCT-PURCHASES-COUNT");
@@ -991,7 +991,7 @@ public class MarketplaceCommandLineRunner
 				)),
 			" and createDate le ",
 			dateTimeFormatter.format(windowStartZonedDateTime.minusDays(7)),
-			" and orderTypeExternalReferenceCode eq 'CMP_BETA'");
+			" and orderTypeExternalReferenceCode in ('ADDONS', 'CMP_BETA')");
 
 		Page<Order> page = _getOrdersPage(filterString, -1, -1);
 
@@ -1030,7 +1030,7 @@ public class MarketplaceCommandLineRunner
 		put(
 			_liferayOAuth2AccessTokenManager.getAuthorization(
 				_liferayOAuthApplicationExternalReferenceCodes),
-			data,
+			body,
 			UriComponentsBuilder.fromPath(
 				"/o/c/reports/by-external-reference-code/" +
 					externalReferenceCode

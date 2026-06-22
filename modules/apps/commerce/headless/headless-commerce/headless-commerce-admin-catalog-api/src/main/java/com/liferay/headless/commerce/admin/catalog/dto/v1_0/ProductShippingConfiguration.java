@@ -38,7 +38,13 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName("ProductShippingConfiguration")
+@GraphQLName(
+	description = "Physical shipping attributes (dimensions, weight, shippable flags, extra shipping cost) used by shipping engines to compute rates and labels; sourced from the product itself at the product level and from the configuration entry when embedded inside a product configuration.",
+	value = "ProductShippingConfiguration"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Physical shipping attributes (dimensions, weight, shippable flags, extra shipping cost) used by shipping engines to compute rates and labels; sourced from the product itself at the product level and from the configuration entry when embedded inside a product configuration."
+)
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "ProductShippingConfiguration")
 public class ProductShippingConfiguration implements Serializable {
@@ -54,7 +60,10 @@ public class ProductShippingConfiguration implements Serializable {
 	}
 
 	@DecimalMin("0")
-	@io.swagger.v3.oas.annotations.media.Schema(example = "202")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Depth of the packaged product expressed in the catalog's measurement unit.",
+		example = "202"
+	)
 	@Valid
 	public BigDecimal getDepth() {
 		if (_depthSupplier != null) {
@@ -89,14 +98,19 @@ public class ProductShippingConfiguration implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Depth of the packaged product expressed in the catalog's measurement unit."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected BigDecimal depth;
 
 	@JsonIgnore
 	private Supplier<BigDecimal> _depthSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema(example = "true")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Whether the product is exempt from shipping charges regardless of shipping method; defaults to true on create when omitted.",
+		example = "true"
+	)
 	public Boolean getFreeShipping() {
 		if (_freeShippingSupplier != null) {
 			freeShipping = _freeShippingSupplier.get();
@@ -130,7 +144,9 @@ public class ProductShippingConfiguration implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Whether the product is exempt from shipping charges regardless of shipping method; defaults to true on create when omitted."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Boolean freeShipping;
 
@@ -138,7 +154,10 @@ public class ProductShippingConfiguration implements Serializable {
 	private Supplier<Boolean> _freeShippingSupplier;
 
 	@DecimalMin("0")
-	@io.swagger.v3.oas.annotations.media.Schema(example = "202")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Height of the packaged product expressed in the catalog's measurement unit.",
+		example = "202"
+	)
 	@Valid
 	public BigDecimal getHeight() {
 		if (_heightSupplier != null) {
@@ -173,14 +192,19 @@ public class ProductShippingConfiguration implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Height of the packaged product expressed in the catalog's measurement unit."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected BigDecimal height;
 
 	@JsonIgnore
 	private Supplier<BigDecimal> _heightSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema(example = "true")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Whether the product participates in shipping at all; when false, shipping engines skip it and dimensions and weight are ignored; defaults to true on create when omitted.",
+		example = "true"
+	)
 	public Boolean getShippable() {
 		if (_shippableSupplier != null) {
 			shippable = _shippableSupplier.get();
@@ -214,7 +238,9 @@ public class ProductShippingConfiguration implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Whether the product participates in shipping at all; when false, shipping engines skip it and dimensions and weight are ignored; defaults to true on create when omitted."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Boolean shippable;
 
@@ -222,7 +248,10 @@ public class ProductShippingConfiguration implements Serializable {
 	private Supplier<Boolean> _shippableSupplier;
 
 	@DecimalMin("0")
-	@io.swagger.v3.oas.annotations.media.Schema(example = "202")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Additional fixed surcharge added on top of the shipping method's calculated rate, expressed in the channel's currency.",
+		example = "202"
+	)
 	@Valid
 	public BigDecimal getShippingExtraPrice() {
 		if (_shippingExtraPriceSupplier != null) {
@@ -258,14 +287,19 @@ public class ProductShippingConfiguration implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Additional fixed surcharge added on top of the shipping method's calculated rate, expressed in the channel's currency."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected BigDecimal shippingExtraPrice;
 
 	@JsonIgnore
 	private Supplier<BigDecimal> _shippingExtraPriceSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema(example = "true")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Whether the product must ship in its own package rather than be combined with the rest of the cart; defaults to true on create when omitted.",
+		example = "true"
+	)
 	public Boolean getShippingSeparately() {
 		if (_shippingSeparatelySupplier != null) {
 			shippingSeparately = _shippingSeparatelySupplier.get();
@@ -299,7 +333,9 @@ public class ProductShippingConfiguration implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Whether the product must ship in its own package rather than be combined with the rest of the cart; defaults to true on create when omitted."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Boolean shippingSeparately;
 
@@ -307,7 +343,10 @@ public class ProductShippingConfiguration implements Serializable {
 	private Supplier<Boolean> _shippingSeparatelySupplier;
 
 	@DecimalMin("0")
-	@io.swagger.v3.oas.annotations.media.Schema(example = "202")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Weight of the packaged product expressed in the catalog's measurement unit.",
+		example = "202"
+	)
 	@Valid
 	public BigDecimal getWeight() {
 		if (_weightSupplier != null) {
@@ -342,7 +381,9 @@ public class ProductShippingConfiguration implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Weight of the packaged product expressed in the catalog's measurement unit."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected BigDecimal weight;
 
@@ -350,7 +391,10 @@ public class ProductShippingConfiguration implements Serializable {
 	private Supplier<BigDecimal> _weightSupplier;
 
 	@DecimalMin("0")
-	@io.swagger.v3.oas.annotations.media.Schema(example = "202")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Width of the packaged product expressed in the catalog's measurement unit.",
+		example = "202"
+	)
 	@Valid
 	public BigDecimal getWidth() {
 		if (_widthSupplier != null) {
@@ -385,7 +429,9 @@ public class ProductShippingConfiguration implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Width of the packaged product expressed in the catalog's measurement unit."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected BigDecimal width;
 
@@ -618,4 +664,4 @@ public class ProductShippingConfiguration implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1164430483
+// LIFERAY-REST-BUILDER-HASH:444727792

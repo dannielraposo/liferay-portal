@@ -132,12 +132,12 @@ public class MarketplaceRestController extends BaseRestController {
 							orderItemName, order.getTotalFormatted());
 					}
 
+					csvPrinter.flush();
+
 					if (i >= page.getLastPage()) {
 						break;
 					}
 				}
-
-				csvPrinter.flush();
 			}
 			catch (Exception exception) {
 				throw new IOException(exception);
@@ -148,7 +148,7 @@ public class MarketplaceRestController extends BaseRestController {
 		).header(
 			HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=orders.csv"
 		).contentType(
-			MediaType.TEXT_PLAIN
+			MediaType.parseMediaType("text/csv")
 		).body(
 			streamingResponseBody
 		);
@@ -567,11 +567,8 @@ public class MarketplaceRestController extends BaseRestController {
 	}
 
 	private void _setExchangeRate(Order order) throws Exception {
-		Map<String, String> customFields =
-			(Map<String, String>)order.getCustomFields();
-
-		JSONObject orderMetadataJSONObject = new JSONObject(
-			customFields.getOrDefault("order-metadata", "{}"));
+		JSONObject orderMetadataJSONObject =
+			MarketplaceUtil.getOrderMetadataJSONObject(order);
 
 		if (orderMetadataJSONObject.has("exchangeRate")) {
 			return;
@@ -592,6 +589,9 @@ public class MarketplaceRestController extends BaseRestController {
 		if (currency == null) {
 			return;
 		}
+
+		Map<String, String> customFields =
+			(Map<String, String>)order.getCustomFields();
 
 		customFields.put(
 			"order-metadata",

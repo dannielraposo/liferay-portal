@@ -76,9 +76,13 @@ public abstract class BasePriceEntryResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-entries/{priceEntryId}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes the price entry addressed by internal id."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target price-entry binding. Server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "priceEntryId"
 			)
@@ -148,9 +152,13 @@ public abstract class BasePriceEntryResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-entries/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes the price entry by company-scoped external reference code. Throws NoSuchPriceEntryException when ERC is unknown."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -178,9 +186,13 @@ public abstract class BasePriceEntryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-entries/{priceEntryId}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the price entry addressed by internal id."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target price-entry binding. Server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "priceEntryId"
 			)
@@ -208,9 +220,13 @@ public abstract class BasePriceEntryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-entries/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the price entry by company-scoped external reference code. Throws NoSuchPriceEntryException when ERC is unknown."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -240,29 +256,38 @@ public abstract class BasePriceEntryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-lists/by-externalReferenceCode/{externalReferenceCode}/price-entries'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Pages PriceEntries for a PriceList by ERC via SearchUtil with price entry filter."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Filterable fields are sourced from the matching EntityModel and listed in each list operation's description.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Free-text search expression matched against the indexed fields of the underlying entity. The matched fields are sourced from the matching Indexer and listed in each list operation's description.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression with one or more field:asc|desc pairs separated by commas. Sortable fields are sourced from the matching EntityModel and listed in each list operation's description.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -300,29 +325,38 @@ public abstract class BasePriceEntryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-lists/{id}/price-entries'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Pages PriceEntries for a PriceList by id with search and OData filter via SearchUtil."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Filterable fields are sourced from the matching EntityModel and listed in each list operation's description.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Free-text search expression matched against the indexed fields of the underlying entity. The matched fields are sourced from the matching Indexer and listed in each list operation's description.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression with one or more field:asc|desc pairs separated by commas. Sortable fields are sourced from the matching EntityModel and listed in each list operation's description.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -358,9 +392,13 @@ public abstract class BasePriceEntryResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-entries/{priceEntryId}' -d $'{"active": ___, "bulkPricing": ___, "customFields": ___, "discountDiscovery": ___, "discountLevel1": ___, "discountLevel2": ___, "discountLevel3": ___, "discountLevel4": ___, "discountLevelsFormatted": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "hasTierPrice": ___, "neverExpire": ___, "price": ___, "priceEntryId": ___, "priceFormatted": ___, "priceListExternalReferenceCode": ___, "priceListId": ___, "priceOnApplication": ___, "quantity": ___, "skuExternalReferenceCode": ___, "skuId": ___, "tierPrices": ___, "unitOfMeasureKey": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Updates price entry by id using JSON Merge Patch semantics. Also updates nested tier prices if supplied."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target price-entry binding. Server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "priceEntryId"
 			)
@@ -390,9 +428,13 @@ public abstract class BasePriceEntryResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-entries/by-externalReferenceCode/{externalReferenceCode}' -d $'{"active": ___, "bulkPricing": ___, "customFields": ___, "discountDiscovery": ___, "discountLevel1": ___, "discountLevel2": ___, "discountLevel3": ___, "discountLevel4": ___, "discountLevelsFormatted": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "hasTierPrice": ___, "neverExpire": ___, "price": ___, "priceEntryId": ___, "priceFormatted": ___, "priceListExternalReferenceCode": ___, "priceListId": ___, "priceOnApplication": ___, "quantity": ___, "skuExternalReferenceCode": ___, "skuId": ___, "tierPrices": ___, "unitOfMeasureKey": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Updates price entry by ERC using JSON Merge Patch semantics. Throws NoSuchPriceEntryException when ERC is unknown."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -424,9 +466,13 @@ public abstract class BasePriceEntryResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-lists/by-externalReferenceCode/{externalReferenceCode}/price-entries' -d $'{"active": ___, "bulkPricing": ___, "customFields": ___, "discountDiscovery": ___, "discountLevel1": ___, "discountLevel2": ___, "discountLevel3": ___, "discountLevel4": ___, "discountLevelsFormatted": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "hasTierPrice": ___, "neverExpire": ___, "price": ___, "priceEntryId": ___, "priceFormatted": ___, "priceListExternalReferenceCode": ___, "priceListId": ___, "priceOnApplication": ___, "quantity": ___, "skuExternalReferenceCode": ___, "skuId": ___, "tierPrices": ___, "unitOfMeasureKey": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates price entry for PriceList by ERC. Throws NoSuchPriceListException when price list ERC is unknown."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -458,9 +504,13 @@ public abstract class BasePriceEntryResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-lists/{id}/price-entries' -d $'{"active": ___, "bulkPricing": ___, "customFields": ___, "discountDiscovery": ___, "discountLevel1": ___, "discountLevel2": ___, "discountLevel3": ___, "discountLevel4": ___, "discountLevelsFormatted": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "hasTierPrice": ___, "neverExpire": ___, "price": ___, "priceEntryId": ___, "priceFormatted": ___, "priceListExternalReferenceCode": ___, "priceListId": ___, "priceOnApplication": ___, "quantity": ___, "skuExternalReferenceCode": ___, "skuId": ___, "tierPrices": ___, "unitOfMeasureKey": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates price entry for PriceList by id."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -1297,4 +1347,4 @@ public abstract class BasePriceEntryResourceImpl
 		LogFactoryUtil.getLog(BasePriceEntryResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1958971868
+// LIFERAY-REST-BUILDER-HASH:-917901195

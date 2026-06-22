@@ -6,12 +6,12 @@ import ClayLink from '@clayui/link';
 import ClaySticker from '@clayui/sticker';
 import FaroConstants from 'shared/util/constants';
 import React, {useMemo, useState} from 'react';
+import URLConstants from 'shared/util/url-constants';
 import {DropdownRangeKey} from 'shared/components/dropdown-range-key/DropdownRangeKey';
+import {FrontendDataSet, pagination} from 'shared/components/FrontendDataSet';
 import {getMimeType} from 'assets/components/mime-type';
 import {InfoPanel} from 'assets/components/InfoPanel';
-import {pagination, useSnapshots} from 'shared/util/frontend-data-set';
 import {pickBy} from 'lodash';
-
 import {RangeSelectors} from 'shared/types';
 import {
 	removeUriQueryParam,
@@ -21,7 +21,6 @@ import {
 } from 'shared/util/router';
 import {toThousands} from 'shared/util/numbers';
 import {useChannelContext} from 'shared/context/channel';
-import {useFrontendDataSet} from 'shared/hooks/useFrontendDataSet';
 import {useHistory, useParams} from 'react-router-dom';
 import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
 
@@ -117,6 +116,24 @@ const columns = {
 		}
 };
 
+const assetsEmptyStateDescription = (
+	<>
+		<span className='mr-1'>
+			{Liferay.Language.get(
+				'check-back-later-to-verify-if-data-has-been-received-from-your-data-sources,-or-you-can-try-a-different-date-range'
+			)}
+		</span>
+
+		<ClayLink
+			href={URLConstants.AssetsDefinitionDocumentation}
+			key='DOCUMENTATION'
+			target='_blank'
+		>
+			{Liferay.Language.get('learn-more-about-assets')}
+		</ClayLink>
+	</>
+);
+
 const List = () => {
 	const history = useHistory();
 	const {selectedChannel} = useChannelContext();
@@ -128,10 +145,6 @@ const List = () => {
 	);
 
 	const [infoPanelData, setInfoPanelData] = useState<any>(null);
-
-	const snapshots = useSnapshots('assetTable');
-
-	const FrontendDataSet = useFrontendDataSet();
 
 	let rangeSelectorParams = `rangeKey=${rangeSelectors.rangeKey}`;
 
@@ -238,122 +251,116 @@ const List = () => {
 			</BasePage.SubHeader>
 
 			<BasePage.Body fluid sidebarOpened={!!infoPanelData}>
-				<Card>
-					{FrontendDataSet && (
-						<FrontendDataSet
-							apiURL={`/o/faro/contacts/${groupId}/asset-summary?channelId=${channelId}&${rangeSelectorParams}`}
-							// Trick to turn off dirty the URL with paramas.
-
-							configInURLBehavior='off'
-							customDataRenderers={{
-								assetMetricRenderer:
-									columns.assetMetricRenderer,
-								assetTitleRenderer: columns.assetTitleRenderer({
-									channelId: channelId!,
-									groupId: groupId!,
-									rangeSelectorParams
-								})
-							}}
-							filters={filters}
-							id='assetTable'
-							itemsActions={[
-								{
-									data: {
-										id: 'infoPanel'
-									},
-									icon: 'info-circle-open',
-									label: Liferay.Language.get('show-details'),
-									onClick: setInfoPanelData
+				<Card minHeight={300}>
+					<FrontendDataSet
+						apiURL={`/o/faro/contacts/${groupId}/asset-summary?channelId=${channelId}&${rangeSelectorParams}`}
+						customDataRenderers={{
+							assetMetricRenderer: columns.assetMetricRenderer,
+							assetTitleRenderer: columns.assetTitleRenderer({
+								channelId: channelId!,
+								groupId: groupId!,
+								rangeSelectorParams
+							})
+						}}
+						emptyState={{
+							description:
+								assetsEmptyStateDescription as unknown as string,
+							image: '/states/satellite.svg',
+							title: Liferay.Language.get(
+								'there-are-no-assets-found'
+							)
+						}}
+						filters={filters}
+						id='assetTable'
+						itemsActions={[
+							{
+								data: {
+									id: 'infoPanel'
 								},
-								{
-									data: {
-										id: 'viewAsset'
-									},
-									icon: 'view',
-									label: Liferay.Language.get('view'),
-									onClick: ({itemData}: {itemData: any}) => {
-										history.push(
-											getAssetURL({
-												channelId: channelId!,
-												groupId: groupId!,
-												itemData,
-												rangeSelectorParams
-											})
-										);
-									}
+								icon: 'info-circle-open',
+								label: Liferay.Language.get('show-details'),
+								onClick: setInfoPanelData
+							},
+							{
+								data: {
+									id: 'viewAsset'
+								},
+								icon: 'view',
+								label: Liferay.Language.get('view'),
+								onClick: ({itemData}: {itemData: any}) => {
+									history.push(
+										getAssetURL({
+											channelId: channelId!,
+											groupId: groupId!,
+											itemData,
+											rangeSelectorParams
+										})
+									);
 								}
-							]}
-							// Trick to restart FDS every time the rangeSelectors changes.
+							}
+						]}
+						// Trick to restart FDS every time the rangeSelectors changes.
 
-							key={Object.values(rangeSelectors).join()}
-							pagination={pagination}
-							showPagination
-							snapshots={snapshots}
-							snapshotsEnabled
-							views={[
-								{
-									contentRenderer: 'table',
-									default: true,
-									label: Liferay.Language.get('default-view'),
-									name: 'table',
-									schema: {
-										fields: [
-											{
-												_key: 'assetTitle',
-												contentRenderer:
-													'assetTitleRenderer',
-												fieldName: 'assetTitle',
-												label: Liferay.Language.get(
-													'title'
-												),
-												sortable: true,
-												truncate: true
-											},
-											{
-												_key: 'assetTypeMetric',
-												fieldName: 'assetType',
-												label: Liferay.Language.get(
-													'type'
-												),
-												sortable: true
-											},
-											{
-												_key: 'viewsMetric',
-												contentRenderer:
-													'assetMetricRenderer',
-												fieldName: 'viewsMetric',
-												label: Liferay.Language.get(
-													'views'
-												),
-												sortable: true
-											},
-											{
-												_key: 'impressionsMetric',
-												contentRenderer:
-													'assetMetricRenderer',
-												fieldName: 'impressionsMetric',
-												label: Liferay.Language.get(
-													'impressions'
-												),
-												sortable: true
-											},
-											{
-												_key: 'downloadsMetric',
-												contentRenderer:
-													'assetMetricRenderer',
-												fieldName: 'downloadsMetric',
-												label: Liferay.Language.get(
-													'downloads'
-												),
-												sortable: true
-											}
-										]
-									},
-									thumbnail: 'table'
-								}
-							]}
-						/>
-					)}
+						key={Object.values(rangeSelectors).join()}
+						pagination={pagination}
+						showPagination
+						snapshotsEnabled
+						views={[
+							{
+								contentRenderer: 'table',
+								default: true,
+								label: Liferay.Language.get('default-view'),
+								name: 'table',
+								schema: {
+									fields: [
+										{
+											contentRenderer:
+												'assetTitleRenderer',
+											fieldName: 'assetTitle',
+											label: Liferay.Language.get(
+												'title'
+											),
+											sortable: true,
+											truncate: true
+										},
+										{
+											fieldName: 'assetType',
+											label: Liferay.Language.get('type'),
+											sortable: true
+										},
+										{
+											contentRenderer:
+												'assetMetricRenderer',
+											fieldName: 'viewsMetric',
+											label: Liferay.Language.get(
+												'views'
+											),
+											sortable: true
+										},
+										{
+											contentRenderer:
+												'assetMetricRenderer',
+											fieldName: 'impressionsMetric',
+											label: Liferay.Language.get(
+												'impressions'
+											),
+											sortable: true
+										},
+										{
+											contentRenderer:
+												'assetMetricRenderer',
+											fieldName: 'downloadsMetric',
+											label: Liferay.Language.get(
+												'downloads'
+											),
+											sortable: true
+										}
+									]
+								},
+								thumbnail: 'table'
+							}
+						]}
+					/>
 				</Card>
 
 				<InfoPanel

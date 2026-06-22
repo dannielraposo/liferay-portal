@@ -13,13 +13,11 @@ import com.liferay.commerce.product.model.impl.CPInstanceUnitOfMeasureModelImpl;
 import com.liferay.commerce.product.service.persistence.CPInstanceUnitOfMeasurePersistence;
 import com.liferay.commerce.product.service.persistence.CPInstanceUnitOfMeasureUtil;
 import com.liferay.commerce.product.service.persistence.impl.constants.CommercePersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -89,68 +87,15 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CPInstanceUnitOfMeasure>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the cp instance unit of measures where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instance unit of measures where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @return the range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPInstanceUnitOfMeasure, NoSuchCPInstanceUnitOfMeasureException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the cp instance unit of measures where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instance unit of measures where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -166,14 +111,9 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -190,16 +130,8 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 			OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator)
 		throws NoSuchCPInstanceUnitOfMeasureException {
 
-		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (cpInstanceUnitOfMeasure != null) {
-			return cpInstanceUnitOfMeasure;
-		}
-
-		throw new NoSuchCPInstanceUnitOfMeasureException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -237,84 +169,19 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CPInstanceUnitOfMeasure>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the cp instance unit of measures where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instance unit of measures where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @return the range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPInstanceUnitOfMeasure, NoSuchCPInstanceUnitOfMeasureException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the cp instance unit of measures where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instance unit of measures where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -331,14 +198,9 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -356,16 +218,8 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 			OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator)
 		throws NoSuchCPInstanceUnitOfMeasureException {
 
-		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (cpInstanceUnitOfMeasure != null) {
-			return cpInstanceUnitOfMeasure;
-		}
-
-		throw new NoSuchCPInstanceUnitOfMeasureException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -406,79 +260,19 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCPInstanceId;
-	private FinderPath _finderPathWithoutPaginationFindByCPInstanceId;
-	private FinderPath _finderPathCountByCPInstanceId;
-	private CollectionPersistenceFinder<CPInstanceUnitOfMeasure>
-		_collectionPersistenceFinderByCPInstanceId;
-
-	/**
-	 * Returns all the cp instance unit of measures where CPInstanceId = &#63;.
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @return the matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByCPInstanceId(long CPInstanceId) {
-		return findByCPInstanceId(
-			CPInstanceId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instance unit of measures where CPInstanceId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @return the range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByCPInstanceId(
-		long CPInstanceId, int start, int end) {
-
-		return findByCPInstanceId(CPInstanceId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPInstanceUnitOfMeasure, NoSuchCPInstanceUnitOfMeasureException>
+			_collectionPersistenceFinderByCPInstanceId;
 
 	/**
 	 * Returns an ordered range of all the cp instance unit of measures where CPInstanceId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByCPInstanceId(
-		long CPInstanceId, int start, int end,
-		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator) {
-
-		return findByCPInstanceId(
-			CPInstanceId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instance unit of measures where CPInstanceId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CPInstanceId the cp instance ID
@@ -494,14 +288,9 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByCPInstanceId.find(
-				finderCache, new Object[] {CPInstanceId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCPInstanceId.find(
+			finderCache, new Object[] {CPInstanceId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -518,16 +307,8 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 			OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator)
 		throws NoSuchCPInstanceUnitOfMeasureException {
 
-		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure =
-			fetchByCPInstanceId_First(CPInstanceId, orderByComparator);
-
-		if (cpInstanceUnitOfMeasure != null) {
-			return cpInstanceUnitOfMeasure;
-		}
-
-		throw new NoSuchCPInstanceUnitOfMeasureException(
-			_collectionPersistenceFinderByCPInstanceId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {CPInstanceId}));
+		return _collectionPersistenceFinderByCPInstanceId.findFirst(
+			finderCache, new Object[] {CPInstanceId}, orderByComparator);
 	}
 
 	/**
@@ -565,81 +346,19 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	 */
 	@Override
 	public int countByCPInstanceId(long CPInstanceId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByCPInstanceId.count(
-				finderCache, new Object[] {CPInstanceId});
-		}
+		return _collectionPersistenceFinderByCPInstanceId.count(
+			finderCache, new Object[] {CPInstanceId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_S;
-	private FinderPath _finderPathWithoutPaginationFindByC_S;
-	private FinderPath _finderPathCountByC_S;
-	private CollectionPersistenceFinder<CPInstanceUnitOfMeasure>
-		_collectionPersistenceFinderByC_S;
-
-	/**
-	 * Returns all the cp instance unit of measures where companyId = &#63; and sku = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param sku the sku
-	 * @return the matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_S(long companyId, String sku) {
-		return findByC_S(
-			companyId, sku, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instance unit of measures where companyId = &#63; and sku = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param sku the sku
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @return the range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_S(
-		long companyId, String sku, int start, int end) {
-
-		return findByC_S(companyId, sku, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPInstanceUnitOfMeasure, NoSuchCPInstanceUnitOfMeasureException>
+			_collectionPersistenceFinderByC_S;
 
 	/**
 	 * Returns an ordered range of all the cp instance unit of measures where companyId = &#63; and sku = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param sku the sku
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_S(
-		long companyId, String sku, int start, int end,
-		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator) {
-
-		return findByC_S(companyId, sku, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instance unit of measures where companyId = &#63; and sku = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -656,14 +375,9 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByC_S.find(
-				finderCache, new Object[] {companyId, sku}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_S.find(
+			finderCache, new Object[] {companyId, sku}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -681,16 +395,8 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 			OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator)
 		throws NoSuchCPInstanceUnitOfMeasureException {
 
-		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure = fetchByC_S_First(
-			companyId, sku, orderByComparator);
-
-		if (cpInstanceUnitOfMeasure != null) {
-			return cpInstanceUnitOfMeasure;
-		}
-
-		throw new NoSuchCPInstanceUnitOfMeasureException(
-			_collectionPersistenceFinderByC_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, sku}));
+		return _collectionPersistenceFinderByC_S.findFirst(
+			finderCache, new Object[] {companyId, sku}, orderByComparator);
 	}
 
 	/**
@@ -731,84 +437,19 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	 */
 	@Override
 	public int countByC_S(long companyId, String sku) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByC_S.count(
-				finderCache, new Object[] {companyId, sku});
-		}
+		return _collectionPersistenceFinderByC_S.count(
+			finderCache, new Object[] {companyId, sku});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_A;
-	private FinderPath _finderPathWithoutPaginationFindByC_A;
-	private FinderPath _finderPathCountByC_A;
-	private CollectionPersistenceFinder<CPInstanceUnitOfMeasure>
-		_collectionPersistenceFinderByC_A;
-
-	/**
-	 * Returns all the cp instance unit of measures where CPInstanceId = &#63; and active = &#63;.
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @param active the active
-	 * @return the matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_A(
-		long CPInstanceId, boolean active) {
-
-		return findByC_A(
-			CPInstanceId, active, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instance unit of measures where CPInstanceId = &#63; and active = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @param active the active
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @return the range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_A(
-		long CPInstanceId, boolean active, int start, int end) {
-
-		return findByC_A(CPInstanceId, active, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPInstanceUnitOfMeasure, NoSuchCPInstanceUnitOfMeasureException>
+			_collectionPersistenceFinderByC_A;
 
 	/**
 	 * Returns an ordered range of all the cp instance unit of measures where CPInstanceId = &#63; and active = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @param active the active
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_A(
-		long CPInstanceId, boolean active, int start, int end,
-		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator) {
-
-		return findByC_A(
-			CPInstanceId, active, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instance unit of measures where CPInstanceId = &#63; and active = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CPInstanceId the cp instance ID
@@ -825,14 +466,9 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByC_A.find(
-				finderCache, new Object[] {CPInstanceId, active}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_A.find(
+			finderCache, new Object[] {CPInstanceId, active}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -850,16 +486,9 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 			OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator)
 		throws NoSuchCPInstanceUnitOfMeasureException {
 
-		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure = fetchByC_A_First(
-			CPInstanceId, active, orderByComparator);
-
-		if (cpInstanceUnitOfMeasure != null) {
-			return cpInstanceUnitOfMeasure;
-		}
-
-		throw new NoSuchCPInstanceUnitOfMeasureException(
-			_collectionPersistenceFinderByC_A.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {CPInstanceId, active}));
+		return _collectionPersistenceFinderByC_A.findFirst(
+			finderCache, new Object[] {CPInstanceId, active},
+			orderByComparator);
 	}
 
 	/**
@@ -901,18 +530,13 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	 */
 	@Override
 	public int countByC_A(long CPInstanceId, boolean active) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByC_A.count(
-				finderCache, new Object[] {CPInstanceId, active});
-		}
+		return _collectionPersistenceFinderByC_A.count(
+			finderCache, new Object[] {CPInstanceId, active});
 	}
 
-	private FinderPath _finderPathFetchByC_K;
-	private UniquePersistenceFinder<CPInstanceUnitOfMeasure>
-		_uniquePersistenceFinderByC_K;
+	private UniquePersistenceFinder
+		<CPInstanceUnitOfMeasure, NoSuchCPInstanceUnitOfMeasureException>
+			_uniquePersistenceFinderByC_K;
 
 	/**
 	 * Returns the cp instance unit of measure where CPInstanceId = &#63; and key = &#63; or throws a <code>NoSuchCPInstanceUnitOfMeasureException</code> if it could not be found.
@@ -926,34 +550,8 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	public CPInstanceUnitOfMeasure findByC_K(long CPInstanceId, String key)
 		throws NoSuchCPInstanceUnitOfMeasureException {
 
-		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure = fetchByC_K(
-			CPInstanceId, key);
-
-		if (cpInstanceUnitOfMeasure == null) {
-			String message =
-				_uniquePersistenceFinderByC_K.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {CPInstanceId, key});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPInstanceUnitOfMeasureException(message);
-		}
-
-		return cpInstanceUnitOfMeasure;
-	}
-
-	/**
-	 * Returns the cp instance unit of measure where CPInstanceId = &#63; and key = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @param key the key
-	 * @return the matching cp instance unit of measure, or <code>null</code> if a matching cp instance unit of measure could not be found
-	 */
-	@Override
-	public CPInstanceUnitOfMeasure fetchByC_K(long CPInstanceId, String key) {
-		return fetchByC_K(CPInstanceId, key, true);
+		return _uniquePersistenceFinderByC_K.find(
+			finderCache, new Object[] {CPInstanceId, key});
 	}
 
 	/**
@@ -968,13 +566,8 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	public CPInstanceUnitOfMeasure fetchByC_K(
 		long CPInstanceId, String key, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _uniquePersistenceFinderByC_K.fetch(
-				finderCache, new Object[] {CPInstanceId, key}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByC_K.fetch(
+			finderCache, new Object[] {CPInstanceId, key}, useFinderCache);
 	}
 
 	/**
@@ -1007,75 +600,15 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 			finderCache, new Object[] {CPInstanceId, key});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_P;
-	private FinderPath _finderPathWithoutPaginationFindByC_P;
-	private FinderPath _finderPathCountByC_P;
-	private CollectionPersistenceFinder<CPInstanceUnitOfMeasure>
-		_collectionPersistenceFinderByC_P;
-
-	/**
-	 * Returns all the cp instance unit of measures where CPInstanceId = &#63; and primary = &#63;.
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @param primary the primary
-	 * @return the matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_P(
-		long CPInstanceId, boolean primary) {
-
-		return findByC_P(
-			CPInstanceId, primary, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instance unit of measures where CPInstanceId = &#63; and primary = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @param primary the primary
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @return the range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_P(
-		long CPInstanceId, boolean primary, int start, int end) {
-
-		return findByC_P(CPInstanceId, primary, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPInstanceUnitOfMeasure, NoSuchCPInstanceUnitOfMeasureException>
+			_collectionPersistenceFinderByC_P;
 
 	/**
 	 * Returns an ordered range of all the cp instance unit of measures where CPInstanceId = &#63; and primary = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @param primary the primary
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_P(
-		long CPInstanceId, boolean primary, int start, int end,
-		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator) {
-
-		return findByC_P(
-			CPInstanceId, primary, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instance unit of measures where CPInstanceId = &#63; and primary = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CPInstanceId the cp instance ID
@@ -1092,14 +625,9 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByC_P.find(
-				finderCache, new Object[] {CPInstanceId, primary}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_P.find(
+			finderCache, new Object[] {CPInstanceId, primary}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1117,17 +645,9 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 			OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator)
 		throws NoSuchCPInstanceUnitOfMeasureException {
 
-		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure = fetchByC_P_First(
-			CPInstanceId, primary, orderByComparator);
-
-		if (cpInstanceUnitOfMeasure != null) {
-			return cpInstanceUnitOfMeasure;
-		}
-
-		throw new NoSuchCPInstanceUnitOfMeasureException(
-			_collectionPersistenceFinderByC_P.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {CPInstanceId, primary}));
+		return _collectionPersistenceFinderByC_P.findFirst(
+			finderCache, new Object[] {CPInstanceId, primary},
+			orderByComparator);
 	}
 
 	/**
@@ -1169,87 +689,19 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	 */
 	@Override
 	public int countByC_P(long CPInstanceId, boolean primary) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByC_P.count(
-				finderCache, new Object[] {CPInstanceId, primary});
-		}
+		return _collectionPersistenceFinderByC_P.count(
+			finderCache, new Object[] {CPInstanceId, primary});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_K_S;
-	private FinderPath _finderPathWithoutPaginationFindByC_K_S;
-	private FinderPath _finderPathCountByC_K_S;
-	private CollectionPersistenceFinder<CPInstanceUnitOfMeasure>
-		_collectionPersistenceFinderByC_K_S;
-
-	/**
-	 * Returns all the cp instance unit of measures where companyId = &#63; and key = &#63; and sku = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param key the key
-	 * @param sku the sku
-	 * @return the matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_K_S(
-		long companyId, String key, String sku) {
-
-		return findByC_K_S(
-			companyId, key, sku, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instance unit of measures where companyId = &#63; and key = &#63; and sku = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param key the key
-	 * @param sku the sku
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @return the range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_K_S(
-		long companyId, String key, String sku, int start, int end) {
-
-		return findByC_K_S(companyId, key, sku, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPInstanceUnitOfMeasure, NoSuchCPInstanceUnitOfMeasureException>
+			_collectionPersistenceFinderByC_K_S;
 
 	/**
 	 * Returns an ordered range of all the cp instance unit of measures where companyId = &#63; and key = &#63; and sku = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param key the key
-	 * @param sku the sku
-	 * @param start the lower bound of the range of cp instance unit of measures
-	 * @param end the upper bound of the range of cp instance unit of measures (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instance unit of measures
-	 */
-	@Override
-	public List<CPInstanceUnitOfMeasure> findByC_K_S(
-		long companyId, String key, String sku, int start, int end,
-		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator) {
-
-		return findByC_K_S(
-			companyId, key, sku, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instance unit of measures where companyId = &#63; and key = &#63; and sku = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceUnitOfMeasureModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1267,14 +719,9 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 		OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByC_K_S.find(
-				finderCache, new Object[] {companyId, key, sku}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_K_S.find(
+			finderCache, new Object[] {companyId, key, sku}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1293,16 +740,8 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 			OrderByComparator<CPInstanceUnitOfMeasure> orderByComparator)
 		throws NoSuchCPInstanceUnitOfMeasureException {
 
-		CPInstanceUnitOfMeasure cpInstanceUnitOfMeasure = fetchByC_K_S_First(
-			companyId, key, sku, orderByComparator);
-
-		if (cpInstanceUnitOfMeasure != null) {
-			return cpInstanceUnitOfMeasure;
-		}
-
-		throw new NoSuchCPInstanceUnitOfMeasureException(
-			_collectionPersistenceFinderByC_K_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, key, sku}));
+		return _collectionPersistenceFinderByC_K_S.findFirst(
+			finderCache, new Object[] {companyId, key, sku}, orderByComparator);
 	}
 
 	/**
@@ -1346,13 +785,8 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	 */
 	@Override
 	public int countByC_K_S(long companyId, String key, String sku) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstanceUnitOfMeasure.class)) {
-
-			return _collectionPersistenceFinderByC_K_S.count(
-				finderCache, new Object[] {companyId, key, sku});
-		}
+		return _collectionPersistenceFinderByC_K_S.count(
+			finderCache, new Object[] {companyId, key, sku});
 	}
 
 	public CPInstanceUnitOfMeasurePersistenceImpl() {
@@ -1678,262 +1112,237 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_CPINSTANCEUNITOFMEASURE_WHERE,
 			_SQL_COUNT_CPINSTANCEUNITOFMEASURE_WHERE,
 			CPInstanceUnitOfMeasureModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"cpInstanceUnitOfMeasure.", "uuid", FinderColumn.Type.STRING,
-				"=", true, true, CPInstanceUnitOfMeasure::getUuid));
-
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
+				"cpInstanceUnitOfMeasure.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPInstanceUnitOfMeasure::getUuid));
 
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_CPINSTANCEUNITOFMEASURE_WHERE,
 				_SQL_COUNT_CPINSTANCEUNITOFMEASURE_WHERE,
 				CPInstanceUnitOfMeasureModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"cpInstanceUnitOfMeasure.", "uuid",
-					FinderColumn.Type.STRING, "=", true, false,
+					"cpInstanceUnitOfMeasure.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
 					CPInstanceUnitOfMeasure::getUuid),
 				new FinderColumn<>(
 					"cpInstanceUnitOfMeasure.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CPInstanceUnitOfMeasure::getCompanyId));
 
-		_finderPathWithPaginationFindByCPInstanceId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPInstanceId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"CPInstanceId"}, true);
-
-		_finderPathWithoutPaginationFindByCPInstanceId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCPInstanceId",
-			new String[] {Long.class.getName()}, new String[] {"CPInstanceId"},
-			true);
-
-		_finderPathCountByCPInstanceId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCPInstanceId",
-			new String[] {Long.class.getName()}, new String[] {"CPInstanceId"},
-			false);
-
 		_collectionPersistenceFinderByCPInstanceId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCPInstanceId,
-				_finderPathWithoutPaginationFindByCPInstanceId,
-				_finderPathCountByCPInstanceId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCPInstanceId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CPInstanceId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCPInstanceId", new String[] {Long.class.getName()},
+					new String[] {"CPInstanceId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCPInstanceId", new String[] {Long.class.getName()},
+					new String[] {"CPInstanceId"}, false),
 				_SQL_SELECT_CPINSTANCEUNITOFMEASURE_WHERE,
 				_SQL_COUNT_CPINSTANCEUNITOFMEASURE_WHERE,
 				CPInstanceUnitOfMeasureModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpInstanceUnitOfMeasure.", "CPInstanceId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CPInstanceUnitOfMeasure::getCPInstanceId));
 
-		_finderPathWithPaginationFindByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "sku"}, true);
-
-		_finderPathWithoutPaginationFindByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "sku"}, true);
-
-		_finderPathCountByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "sku"}, false);
-
 		_collectionPersistenceFinderByC_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_S,
-			_finderPathWithoutPaginationFindByC_S, _finderPathCountByC_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "sku"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "sku"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "sku"}, 0, 2, false, null),
 			_SQL_SELECT_CPINSTANCEUNITOFMEASURE_WHERE,
 			_SQL_COUNT_CPINSTANCEUNITOFMEASURE_WHERE,
 			CPInstanceUnitOfMeasureModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"cpInstanceUnitOfMeasure.", "companyId", FinderColumn.Type.LONG,
-				"=", true, false, CPInstanceUnitOfMeasure::getCompanyId),
+				"=", true, true, CPInstanceUnitOfMeasure::getCompanyId),
 			new FinderColumn<>(
 				"cpInstanceUnitOfMeasure.", "sku", FinderColumn.Type.STRING,
 				"=", true, true, CPInstanceUnitOfMeasure::getSku));
 
-		_finderPathWithPaginationFindByC_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"CPInstanceId", "active_"}, true);
-
-		_finderPathWithoutPaginationFindByC_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"CPInstanceId", "active_"}, true);
-
-		_finderPathCountByC_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"CPInstanceId", "active_"}, false);
-
 		_collectionPersistenceFinderByC_A = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_A,
-			_finderPathWithoutPaginationFindByC_A, _finderPathCountByC_A,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"CPInstanceId", "active_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"CPInstanceId", "active_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"CPInstanceId", "active_"}, false),
 			_SQL_SELECT_CPINSTANCEUNITOFMEASURE_WHERE,
 			_SQL_COUNT_CPINSTANCEUNITOFMEASURE_WHERE,
 			CPInstanceUnitOfMeasureModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"cpInstanceUnitOfMeasure.", "CPInstanceId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CPInstanceUnitOfMeasure::getCPInstanceId),
 			new FinderColumn<>(
-				"cpInstanceUnitOfMeasure.", "active", FinderColumn.Type.BOOLEAN,
-				"=", true, true, CPInstanceUnitOfMeasure::isActive));
-
-		_finderPathFetchByC_K = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_K",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"CPInstanceId", "key_"}, false,
-			CPInstanceUnitOfMeasure::getCPInstanceId,
-			CPInstanceUnitOfMeasure::getKey);
+				"cpInstanceUnitOfMeasure.", "active", "active_",
+				FinderColumn.Type.BOOLEAN, "=", true, true,
+				CPInstanceUnitOfMeasure::isActive));
 
 		_uniquePersistenceFinderByC_K = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_K,
-			_SQL_SELECT_CPINSTANCEUNITOFMEASURE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_K",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"CPInstanceId", "key_"}, 0, 2, false,
+				CPInstanceUnitOfMeasure::getCPInstanceId,
+				convertNullFunction(CPInstanceUnitOfMeasure::getKey)),
+			_SQL_SELECT_CPINSTANCEUNITOFMEASURE_WHERE, "",
 			new FinderColumn<>(
 				"cpInstanceUnitOfMeasure.", "CPInstanceId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CPInstanceUnitOfMeasure::getCPInstanceId),
 			new FinderColumn<>(
-				"cpInstanceUnitOfMeasure.", "key", FinderColumn.Type.STRING,
-				"=", true, true, CPInstanceUnitOfMeasure::getKey));
-
-		_finderPathWithPaginationFindByC_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_P",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"CPInstanceId", "primary_"}, true);
-
-		_finderPathWithoutPaginationFindByC_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_P",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"CPInstanceId", "primary_"}, true);
-
-		_finderPathCountByC_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_P",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"CPInstanceId", "primary_"}, false);
+				"cpInstanceUnitOfMeasure.", "key", "key_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPInstanceUnitOfMeasure::getKey));
 
 		_collectionPersistenceFinderByC_P = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_P,
-			_finderPathWithoutPaginationFindByC_P, _finderPathCountByC_P,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_P",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"CPInstanceId", "primary_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_P",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"CPInstanceId", "primary_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_P",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"CPInstanceId", "primary_"}, false),
 			_SQL_SELECT_CPINSTANCEUNITOFMEASURE_WHERE,
 			_SQL_COUNT_CPINSTANCEUNITOFMEASURE_WHERE,
 			CPInstanceUnitOfMeasureModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"cpInstanceUnitOfMeasure.", "CPInstanceId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CPInstanceUnitOfMeasure::getCPInstanceId),
 			new FinderColumn<>(
-				"cpInstanceUnitOfMeasure.", "primary",
+				"cpInstanceUnitOfMeasure.", "primary", "primary_",
 				FinderColumn.Type.BOOLEAN, "=", true, true,
 				CPInstanceUnitOfMeasure::isPrimary));
 
-		_finderPathWithPaginationFindByC_K_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_K_S",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "key_", "sku"}, true);
-
-		_finderPathWithoutPaginationFindByC_K_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_K_S",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"companyId", "key_", "sku"}, true);
-
-		_finderPathCountByC_K_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_K_S",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"companyId", "key_", "sku"}, false);
-
 		_collectionPersistenceFinderByC_K_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_K_S,
-			_finderPathWithoutPaginationFindByC_K_S, _finderPathCountByC_K_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_K_S",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "key_", "sku"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_K_S",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"companyId", "key_", "sku"}, 0, 6, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_K_S",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"companyId", "key_", "sku"}, 0, 6, false, null),
 			_SQL_SELECT_CPINSTANCEUNITOFMEASURE_WHERE,
 			_SQL_COUNT_CPINSTANCEUNITOFMEASURE_WHERE,
 			CPInstanceUnitOfMeasureModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"cpInstanceUnitOfMeasure.", "companyId", FinderColumn.Type.LONG,
-				"=", true, false, CPInstanceUnitOfMeasure::getCompanyId),
+				"=", true, true, CPInstanceUnitOfMeasure::getCompanyId),
 			new FinderColumn<>(
-				"cpInstanceUnitOfMeasure.", "key", FinderColumn.Type.STRING,
-				"=", true, false, CPInstanceUnitOfMeasure::getKey),
+				"cpInstanceUnitOfMeasure.", "key", "key_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPInstanceUnitOfMeasure::getKey),
 			new FinderColumn<>(
 				"cpInstanceUnitOfMeasure.", "sku", FinderColumn.Type.STRING,
 				"=", true, true, CPInstanceUnitOfMeasure::getSku));
@@ -2013,4 +1422,4 @@ public class CPInstanceUnitOfMeasurePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1908867124
+// LIFERAY-SERVICE-BUILDER-HASH:1751959181

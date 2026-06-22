@@ -14,16 +14,12 @@ import com.liferay.commerce.product.model.impl.CPInstanceModelImpl;
 import com.liferay.commerce.product.service.persistence.CPInstancePersistence;
 import com.liferay.commerce.product.service.persistence.CPInstanceUtil;
 import com.liferay.commerce.product.service.persistence.impl.constants.CommercePersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -34,12 +30,12 @@ import com.liferay.portal.kernel.sanitizer.SanitizerException;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -101,60 +97,8 @@ public class CPInstancePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CPInstance>
+	private CollectionPersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the cp instances where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instances where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CPInstance> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the cp instances where uuid = &#63;.
@@ -176,14 +120,9 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -199,15 +138,8 @@ public class CPInstancePersistenceImpl
 			String uuid, OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByUuid_First(uuid, orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -244,17 +176,11 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<CPInstance>
+	private UniquePersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_uniquePersistenceFinderByUUID_G;
 
 	/**
@@ -269,33 +195,8 @@ public class CPInstancePersistenceImpl
 	public CPInstance findByUUID_G(String uuid, long groupId)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByUUID_G(uuid, groupId);
-
-		if (cpInstance == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPInstanceException(message);
-		}
-
-		return cpInstance;
-	}
-
-	/**
-	 * Returns the cp instance where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching cp instance, or <code>null</code> if a matching cp instance could not be found
-	 */
-	@Override
-	public CPInstance fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -310,13 +211,8 @@ public class CPInstancePersistenceImpl
 	public CPInstance fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -348,67 +244,8 @@ public class CPInstancePersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CPInstance>
+	private CollectionPersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the cp instances where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instances where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CPInstance> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the cp instances where uuid = &#63; and companyId = &#63;.
@@ -431,14 +268,9 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -456,16 +288,8 @@ public class CPInstancePersistenceImpl
 			OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -506,70 +330,13 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<CPInstance>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the cp instances where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByGroupId(long groupId, int start, int end) {
-		return findByGroupId(groupId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instances where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<CPInstance> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder
+		<CPInstance, NoSuchCPInstanceException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the cp instances where groupId = &#63;.
@@ -591,14 +358,9 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				finderCache, new Object[] {groupId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -614,16 +376,8 @@ public class CPInstancePersistenceImpl
 			long groupId, OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -639,37 +393,6 @@ public class CPInstancePersistenceImpl
 
 		return _collectionPersistenceFinderByGroupId.fetchFirst(
 			finderCache, new Object[] {groupId}, orderByComparator);
-	}
-
-	/**
-	 * Returns all the cp instances that the user has permission to view where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching cp instances that the user has permission to view
-	 */
-	@Override
-	public List<CPInstance> filterFindByGroupId(long groupId) {
-		return filterFindByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances that the user has permission to view where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances that the user has permission to view
-	 */
-	@Override
-	public List<CPInstance> filterFindByGroupId(
-		long groupId, int start, int end) {
-
-		return filterFindByGroupId(groupId, start, end, null);
 	}
 
 	/**
@@ -690,93 +413,9 @@ public class CPInstancePersistenceImpl
 		long groupId, int start, int end,
 		OrderByComparator<CPInstance> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByGroupId(groupId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByGroupId(
-					groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_CPINSTANCE_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_CPINSTANCE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_CPINSTANCE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(CPInstanceModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(CPInstanceModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CPInstance.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, CPInstanceImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, CPInstanceImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			return (List<CPInstance>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterFind(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			groupId);
 	}
 
 	/**
@@ -798,13 +437,8 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				finderCache, new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {groupId});
 	}
 
 	/**
@@ -815,114 +449,12 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int filterCountByGroupId(long groupId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByGroupId(groupId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<CPInstance> cpInstances = findByGroupId(groupId);
-
-			cpInstances = InlineSQLHelperUtil.filter(cpInstances, groupId);
-
-			return cpInstances.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_CPINSTANCE_WHERE);
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CPInstance.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterCount(
+			finderCache, new Object[] {groupId}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_GROUPID_GROUPID_2 =
-		"cpInstance.groupId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<CPInstance>
+	private CollectionPersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_collectionPersistenceFinderByCompanyId;
-
-	/**
-	 * Returns all the cp instances where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instances where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<CPInstance> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the cp instances where companyId = &#63;.
@@ -944,14 +476,9 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				finderCache, new Object[] {companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			finderCache, new Object[] {companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -967,16 +494,8 @@ public class CPInstancePersistenceImpl
 			long companyId, OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -1013,73 +532,12 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				finderCache, new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			finderCache, new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCPDefinitionId;
-	private FinderPath _finderPathWithoutPaginationFindByCPDefinitionId;
-	private FinderPath _finderPathCountByCPDefinitionId;
-	private CollectionPersistenceFinder<CPInstance>
+	private CollectionPersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_collectionPersistenceFinderByCPDefinitionId;
-
-	/**
-	 * Returns all the cp instances where CPDefinitionId = &#63;.
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @return the matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByCPDefinitionId(long CPDefinitionId) {
-		return findByCPDefinitionId(
-			CPDefinitionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances where CPDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByCPDefinitionId(
-		long CPDefinitionId, int start, int end) {
-
-		return findByCPDefinitionId(CPDefinitionId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instances where CPDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByCPDefinitionId(
-		long CPDefinitionId, int start, int end,
-		OrderByComparator<CPInstance> orderByComparator) {
-
-		return findByCPDefinitionId(
-			CPDefinitionId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the cp instances where CPDefinitionId = &#63;.
@@ -1101,14 +559,9 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByCPDefinitionId.find(
-				finderCache, new Object[] {CPDefinitionId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCPDefinitionId.find(
+			finderCache, new Object[] {CPDefinitionId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1125,16 +578,8 @@ public class CPInstancePersistenceImpl
 			OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByCPDefinitionId_First(
-			CPDefinitionId, orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByCPDefinitionId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {CPDefinitionId}));
+		return _collectionPersistenceFinderByCPDefinitionId.findFirst(
+			finderCache, new Object[] {CPDefinitionId}, orderByComparator);
 	}
 
 	/**
@@ -1171,73 +616,12 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int countByCPDefinitionId(long CPDefinitionId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByCPDefinitionId.count(
-				finderCache, new Object[] {CPDefinitionId});
-		}
+		return _collectionPersistenceFinderByCPDefinitionId.count(
+			finderCache, new Object[] {CPDefinitionId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCPInstanceUuid;
-	private FinderPath _finderPathWithoutPaginationFindByCPInstanceUuid;
-	private FinderPath _finderPathCountByCPInstanceUuid;
-	private CollectionPersistenceFinder<CPInstance>
+	private CollectionPersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_collectionPersistenceFinderByCPInstanceUuid;
-
-	/**
-	 * Returns all the cp instances where CPInstanceUuid = &#63;.
-	 *
-	 * @param CPInstanceUuid the cp instance uuid
-	 * @return the matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByCPInstanceUuid(String CPInstanceUuid) {
-		return findByCPInstanceUuid(
-			CPInstanceUuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances where CPInstanceUuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPInstanceUuid the cp instance uuid
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByCPInstanceUuid(
-		String CPInstanceUuid, int start, int end) {
-
-		return findByCPInstanceUuid(CPInstanceUuid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instances where CPInstanceUuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPInstanceUuid the cp instance uuid
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByCPInstanceUuid(
-		String CPInstanceUuid, int start, int end,
-		OrderByComparator<CPInstance> orderByComparator) {
-
-		return findByCPInstanceUuid(
-			CPInstanceUuid, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the cp instances where CPInstanceUuid = &#63;.
@@ -1259,14 +643,9 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByCPInstanceUuid.find(
-				finderCache, new Object[] {CPInstanceUuid}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCPInstanceUuid.find(
+			finderCache, new Object[] {CPInstanceUuid}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1283,16 +662,8 @@ public class CPInstancePersistenceImpl
 			OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByCPInstanceUuid_First(
-			CPInstanceUuid, orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByCPInstanceUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {CPInstanceUuid}));
+		return _collectionPersistenceFinderByCPInstanceUuid.findFirst(
+			finderCache, new Object[] {CPInstanceUuid}, orderByComparator);
 	}
 
 	/**
@@ -1330,75 +701,13 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int countByCPInstanceUuid(String CPInstanceUuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByCPInstanceUuid.count(
-				finderCache, new Object[] {CPInstanceUuid});
-		}
+		return _collectionPersistenceFinderByCPInstanceUuid.count(
+			finderCache, new Object[] {CPInstanceUuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_ST;
-	private FinderPath _finderPathWithoutPaginationFindByG_ST;
-	private FinderPath _finderPathCountByG_ST;
-	private CollectionPersistenceFinder<CPInstance>
-		_collectionPersistenceFinderByG_ST;
-
-	/**
-	 * Returns all the cp instances where groupId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @return the matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByG_ST(long groupId, int status) {
-		return findByG_ST(
-			groupId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances where groupId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByG_ST(
-		long groupId, int status, int start, int end) {
-
-		return findByG_ST(groupId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instances where groupId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByG_ST(
-		long groupId, int status, int start, int end,
-		OrderByComparator<CPInstance> orderByComparator) {
-
-		return findByG_ST(groupId, status, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder
+		<CPInstance, NoSuchCPInstanceException>
+			_collectionPersistenceFinderByG_ST;
 
 	/**
 	 * Returns an ordered range of all the cp instances where groupId = &#63; and status = &#63;.
@@ -1421,14 +730,9 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByG_ST.find(
-				finderCache, new Object[] {groupId, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_ST.find(
+			finderCache, new Object[] {groupId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1446,16 +750,8 @@ public class CPInstancePersistenceImpl
 			OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByG_ST_First(
-			groupId, status, orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByG_ST.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, status}));
+		return _collectionPersistenceFinderByG_ST.findFirst(
+			finderCache, new Object[] {groupId, status}, orderByComparator);
 	}
 
 	/**
@@ -1473,39 +769,6 @@ public class CPInstancePersistenceImpl
 
 		return _collectionPersistenceFinderByG_ST.fetchFirst(
 			finderCache, new Object[] {groupId, status}, orderByComparator);
-	}
-
-	/**
-	 * Returns all the cp instances that the user has permission to view where groupId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @return the matching cp instances that the user has permission to view
-	 */
-	@Override
-	public List<CPInstance> filterFindByG_ST(long groupId, int status) {
-		return filterFindByG_ST(
-			groupId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances that the user has permission to view where groupId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances that the user has permission to view
-	 */
-	@Override
-	public List<CPInstance> filterFindByG_ST(
-		long groupId, int status, int start, int end) {
-
-		return filterFindByG_ST(groupId, status, start, end, null);
 	}
 
 	/**
@@ -1527,97 +790,9 @@ public class CPInstancePersistenceImpl
 		long groupId, int status, int start, int end,
 		OrderByComparator<CPInstance> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_ST(groupId, status, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_ST(
-					groupId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_CPINSTANCE_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_CPINSTANCE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_ST_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_ST_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_CPINSTANCE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(CPInstanceModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(CPInstanceModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CPInstance.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, CPInstanceImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, CPInstanceImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(status);
-
-			return (List<CPInstance>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_ST.filterFind(
+			finderCache, new Object[] {groupId, status}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -1641,13 +816,8 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int countByG_ST(long groupId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByG_ST.count(
-				finderCache, new Object[] {groupId, status});
-		}
+		return _collectionPersistenceFinderByG_ST.count(
+			finderCache, new Object[] {groupId, status});
 	}
 
 	/**
@@ -1659,124 +829,12 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_ST(long groupId, int status) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_ST(groupId, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<CPInstance> cpInstances = findByG_ST(groupId, status);
-
-			cpInstances = InlineSQLHelperUtil.filter(cpInstances, groupId);
-
-			return cpInstances.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_CPINSTANCE_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_ST_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_ST_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CPInstance.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_ST.filterCount(
+			finderCache, new Object[] {groupId, status}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_ST_GROUPID_2 =
-		"cpInstance.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_ST_STATUS_2 =
-		"cpInstance.status = ?";
-
-	private FinderPath _finderPathWithPaginationFindByC_S;
-	private FinderPath _finderPathWithoutPaginationFindByC_S;
-	private FinderPath _finderPathCountByC_S;
-	private CollectionPersistenceFinder<CPInstance>
+	private CollectionPersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_collectionPersistenceFinderByC_S;
-
-	/**
-	 * Returns all the cp instances where companyId = &#63; and sku = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param sku the sku
-	 * @return the matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByC_S(long companyId, String sku) {
-		return findByC_S(
-			companyId, sku, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances where companyId = &#63; and sku = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param sku the sku
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByC_S(
-		long companyId, String sku, int start, int end) {
-
-		return findByC_S(companyId, sku, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instances where companyId = &#63; and sku = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param sku the sku
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByC_S(
-		long companyId, String sku, int start, int end,
-		OrderByComparator<CPInstance> orderByComparator) {
-
-		return findByC_S(companyId, sku, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the cp instances where companyId = &#63; and sku = &#63;.
@@ -1799,14 +857,9 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByC_S.find(
-				finderCache, new Object[] {companyId, sku}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_S.find(
+			finderCache, new Object[] {companyId, sku}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1824,16 +877,8 @@ public class CPInstancePersistenceImpl
 			OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByC_S_First(
-			companyId, sku, orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByC_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, sku}));
+		return _collectionPersistenceFinderByC_S.findFirst(
+			finderCache, new Object[] {companyId, sku}, orderByComparator);
 	}
 
 	/**
@@ -1874,17 +919,12 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int countByC_S(long companyId, String sku) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByC_S.count(
-				finderCache, new Object[] {companyId, sku});
-		}
+		return _collectionPersistenceFinderByC_S.count(
+			finderCache, new Object[] {companyId, sku});
 	}
 
-	private FinderPath _finderPathFetchByC_C;
-	private UniquePersistenceFinder<CPInstance> _uniquePersistenceFinderByC_C;
+	private UniquePersistenceFinder<CPInstance, NoSuchCPInstanceException>
+		_uniquePersistenceFinderByC_C;
 
 	/**
 	 * Returns the cp instance where CPDefinitionId = &#63; and CPInstanceUuid = &#63; or throws a <code>NoSuchCPInstanceException</code> if it could not be found.
@@ -1898,34 +938,8 @@ public class CPInstancePersistenceImpl
 	public CPInstance findByC_C(long CPDefinitionId, String CPInstanceUuid)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByC_C(CPDefinitionId, CPInstanceUuid);
-
-		if (cpInstance == null) {
-			String message =
-				_uniquePersistenceFinderByC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {CPDefinitionId, CPInstanceUuid});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPInstanceException(message);
-		}
-
-		return cpInstance;
-	}
-
-	/**
-	 * Returns the cp instance where CPDefinitionId = &#63; and CPInstanceUuid = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param CPInstanceUuid the cp instance uuid
-	 * @return the matching cp instance, or <code>null</code> if a matching cp instance could not be found
-	 */
-	@Override
-	public CPInstance fetchByC_C(long CPDefinitionId, String CPInstanceUuid) {
-		return fetchByC_C(CPDefinitionId, CPInstanceUuid, true);
+		return _uniquePersistenceFinderByC_C.find(
+			finderCache, new Object[] {CPDefinitionId, CPInstanceUuid});
 	}
 
 	/**
@@ -1940,14 +954,9 @@ public class CPInstancePersistenceImpl
 	public CPInstance fetchByC_C(
 		long CPDefinitionId, String CPInstanceUuid, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _uniquePersistenceFinderByC_C.fetch(
-				finderCache, new Object[] {CPDefinitionId, CPInstanceUuid},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByC_C.fetch(
+			finderCache, new Object[] {CPDefinitionId, CPInstanceUuid},
+			useFinderCache);
 	}
 
 	/**
@@ -1979,8 +988,7 @@ public class CPInstancePersistenceImpl
 			finderCache, new Object[] {CPDefinitionId, CPInstanceUuid});
 	}
 
-	private FinderPath _finderPathFetchByCPDI_S;
-	private UniquePersistenceFinder<CPInstance>
+	private UniquePersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_uniquePersistenceFinderByCPDI_S;
 
 	/**
@@ -1995,34 +1003,8 @@ public class CPInstancePersistenceImpl
 	public CPInstance findByCPDI_S(long CPDefinitionId, String sku)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByCPDI_S(CPDefinitionId, sku);
-
-		if (cpInstance == null) {
-			String message =
-				_uniquePersistenceFinderByCPDI_S.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {CPDefinitionId, sku});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPInstanceException(message);
-		}
-
-		return cpInstance;
-	}
-
-	/**
-	 * Returns the cp instance where CPDefinitionId = &#63; and sku = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param sku the sku
-	 * @return the matching cp instance, or <code>null</code> if a matching cp instance could not be found
-	 */
-	@Override
-	public CPInstance fetchByCPDI_S(long CPDefinitionId, String sku) {
-		return fetchByCPDI_S(CPDefinitionId, sku, true);
+		return _uniquePersistenceFinderByCPDI_S.find(
+			finderCache, new Object[] {CPDefinitionId, sku});
 	}
 
 	/**
@@ -2037,14 +1019,8 @@ public class CPInstancePersistenceImpl
 	public CPInstance fetchByCPDI_S(
 		long CPDefinitionId, String sku, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _uniquePersistenceFinderByCPDI_S.fetch(
-				finderCache, new Object[] {CPDefinitionId, sku},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByCPDI_S.fetch(
+			finderCache, new Object[] {CPDefinitionId, sku}, useFinderCache);
 	}
 
 	/**
@@ -2076,67 +1052,8 @@ public class CPInstancePersistenceImpl
 			finderCache, new Object[] {CPDefinitionId, sku});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_ST;
-	private FinderPath _finderPathWithoutPaginationFindByC_ST;
-	private FinderPath _finderPathCountByC_ST;
-	private CollectionPersistenceFinder<CPInstance>
+	private CollectionPersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_collectionPersistenceFinderByC_ST;
-
-	/**
-	 * Returns all the cp instances where CPDefinitionId = &#63; and status = &#63;.
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param status the status
-	 * @return the matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByC_ST(long CPDefinitionId, int status) {
-		return findByC_ST(
-			CPDefinitionId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances where CPDefinitionId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param status the status
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByC_ST(
-		long CPDefinitionId, int status, int start, int end) {
-
-		return findByC_ST(CPDefinitionId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instances where CPDefinitionId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param status the status
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByC_ST(
-		long CPDefinitionId, int status, int start, int end,
-		OrderByComparator<CPInstance> orderByComparator) {
-
-		return findByC_ST(
-			CPDefinitionId, status, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the cp instances where CPDefinitionId = &#63; and status = &#63;.
@@ -2159,14 +1076,9 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByC_ST.find(
-				finderCache, new Object[] {CPDefinitionId, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_ST.find(
+			finderCache, new Object[] {CPDefinitionId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2184,17 +1096,9 @@ public class CPInstancePersistenceImpl
 			OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByC_ST_First(
-			CPDefinitionId, status, orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByC_ST.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {CPDefinitionId, status}));
+		return _collectionPersistenceFinderByC_ST.findFirst(
+			finderCache, new Object[] {CPDefinitionId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -2236,18 +1140,11 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int countByC_ST(long CPDefinitionId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByC_ST.count(
-				finderCache, new Object[] {CPDefinitionId, status});
-		}
+		return _collectionPersistenceFinderByC_ST.count(
+			finderCache, new Object[] {CPDefinitionId, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByLtD_S;
-	private FinderPath _finderPathWithPaginationCountByLtD_S;
-	private CollectionPersistenceFinder<CPInstance>
+	private CollectionPersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_collectionPersistenceFinderByLtD_S;
 
 	/**
@@ -2327,14 +1224,9 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByLtD_S.find(
-				finderCache, new Object[] {displayDate, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByLtD_S.find(
+			finderCache, new Object[] {displayDate, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2352,16 +1244,8 @@ public class CPInstancePersistenceImpl
 			OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByLtD_S_First(
-			displayDate, status, orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByLtD_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {displayDate, status}));
+		return _collectionPersistenceFinderByLtD_S.findFirst(
+			finderCache, new Object[] {displayDate, status}, orderByComparator);
 	}
 
 	/**
@@ -2402,18 +1286,11 @@ public class CPInstancePersistenceImpl
 	 */
 	@Override
 	public int countByLtD_S(Date displayDate, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByLtD_S.count(
-				finderCache, new Object[] {displayDate, status});
-		}
+		return _collectionPersistenceFinderByLtD_S.count(
+			finderCache, new Object[] {displayDate, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_LtD_S;
-	private FinderPath _finderPathWithPaginationCountByC_LtD_S;
-	private CollectionPersistenceFinder<CPInstance>
+	private CollectionPersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_collectionPersistenceFinderByC_LtD_S;
 
 	/**
@@ -2502,14 +1379,9 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByC_LtD_S.find(
-				finderCache, new Object[] {CPDefinitionId, displayDate, status},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_LtD_S.find(
+			finderCache, new Object[] {CPDefinitionId, displayDate, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2528,17 +1400,9 @@ public class CPInstancePersistenceImpl
 			OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByC_LtD_S_First(
-			CPDefinitionId, displayDate, status, orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByC_LtD_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {CPDefinitionId, displayDate, status}));
+		return _collectionPersistenceFinderByC_LtD_S.findFirst(
+			finderCache, new Object[] {CPDefinitionId, displayDate, status},
+			orderByComparator);
 	}
 
 	/**
@@ -2587,89 +1451,12 @@ public class CPInstancePersistenceImpl
 	public int countByC_LtD_S(
 		long CPDefinitionId, Date displayDate, int status) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByC_LtD_S.count(
-				finderCache,
-				new Object[] {CPDefinitionId, displayDate, status});
-		}
+		return _collectionPersistenceFinderByC_LtD_S.count(
+			finderCache, new Object[] {CPDefinitionId, displayDate, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByR_R_S;
-	private FinderPath _finderPathWithoutPaginationFindByR_R_S;
-	private FinderPath _finderPathCountByR_R_S;
-	private CollectionPersistenceFinder<CPInstance>
+	private CollectionPersistenceFinder<CPInstance, NoSuchCPInstanceException>
 		_collectionPersistenceFinderByR_R_S;
-
-	/**
-	 * Returns all the cp instances where replacementCPInstanceUuid = &#63; and replacementCProductId = &#63; and status = &#63;.
-	 *
-	 * @param replacementCPInstanceUuid the replacement cp instance uuid
-	 * @param replacementCProductId the replacement c product ID
-	 * @param status the status
-	 * @return the matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByR_R_S(
-		String replacementCPInstanceUuid, long replacementCProductId,
-		int status) {
-
-		return findByR_R_S(
-			replacementCPInstanceUuid, replacementCProductId, status,
-			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp instances where replacementCPInstanceUuid = &#63; and replacementCProductId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param replacementCPInstanceUuid the replacement cp instance uuid
-	 * @param replacementCProductId the replacement c product ID
-	 * @param status the status
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @return the range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByR_R_S(
-		String replacementCPInstanceUuid, long replacementCProductId,
-		int status, int start, int end) {
-
-		return findByR_R_S(
-			replacementCPInstanceUuid, replacementCProductId, status, start,
-			end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp instances where replacementCPInstanceUuid = &#63; and replacementCProductId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPInstanceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param replacementCPInstanceUuid the replacement cp instance uuid
-	 * @param replacementCProductId the replacement c product ID
-	 * @param status the status
-	 * @param start the lower bound of the range of cp instances
-	 * @param end the upper bound of the range of cp instances (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp instances
-	 */
-	@Override
-	public List<CPInstance> findByR_R_S(
-		String replacementCPInstanceUuid, long replacementCProductId,
-		int status, int start, int end,
-		OrderByComparator<CPInstance> orderByComparator) {
-
-		return findByR_R_S(
-			replacementCPInstanceUuid, replacementCProductId, status, start,
-			end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the cp instances where replacementCPInstanceUuid = &#63; and replacementCProductId = &#63; and status = &#63;.
@@ -2694,17 +1481,12 @@ public class CPInstancePersistenceImpl
 		OrderByComparator<CPInstance> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByR_R_S.find(
-				finderCache,
-				new Object[] {
-					replacementCPInstanceUuid, replacementCProductId, status
-				},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByR_R_S.find(
+			finderCache,
+			new Object[] {
+				replacementCPInstanceUuid, replacementCProductId, status
+			},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2723,20 +1505,12 @@ public class CPInstancePersistenceImpl
 			int status, OrderByComparator<CPInstance> orderByComparator)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByR_R_S_First(
-			replacementCPInstanceUuid, replacementCProductId, status,
+		return _collectionPersistenceFinderByR_R_S.findFirst(
+			finderCache,
+			new Object[] {
+				replacementCPInstanceUuid, replacementCProductId, status
+			},
 			orderByComparator);
-
-		if (cpInstance != null) {
-			return cpInstance;
-		}
-
-		throw new NoSuchCPInstanceException(
-			_collectionPersistenceFinderByR_R_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {
-					replacementCPInstanceUuid, replacementCProductId, status
-				}));
 	}
 
 	/**
@@ -2793,20 +1567,15 @@ public class CPInstancePersistenceImpl
 		String replacementCPInstanceUuid, long replacementCProductId,
 		int status) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _collectionPersistenceFinderByR_R_S.count(
-				finderCache,
-				new Object[] {
-					replacementCPInstanceUuid, replacementCProductId, status
-				});
-		}
+		return _collectionPersistenceFinderByR_R_S.count(
+			finderCache,
+			new Object[] {
+				replacementCPInstanceUuid, replacementCProductId, status
+			});
 	}
 
-	private FinderPath _finderPathFetchByERC_C;
-	private UniquePersistenceFinder<CPInstance> _uniquePersistenceFinderByERC_C;
+	private UniquePersistenceFinder<CPInstance, NoSuchCPInstanceException>
+		_uniquePersistenceFinderByERC_C;
 
 	/**
 	 * Returns the cp instance where externalReferenceCode = &#63; and companyId = &#63; or throws a <code>NoSuchCPInstanceException</code> if it could not be found.
@@ -2820,36 +1589,8 @@ public class CPInstancePersistenceImpl
 	public CPInstance findByERC_C(String externalReferenceCode, long companyId)
 		throws NoSuchCPInstanceException {
 
-		CPInstance cpInstance = fetchByERC_C(externalReferenceCode, companyId);
-
-		if (cpInstance == null) {
-			String message =
-				_uniquePersistenceFinderByERC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, companyId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPInstanceException(message);
-		}
-
-		return cpInstance;
-	}
-
-	/**
-	 * Returns the cp instance where externalReferenceCode = &#63; and companyId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param companyId the company ID
-	 * @return the matching cp instance, or <code>null</code> if a matching cp instance could not be found
-	 */
-	@Override
-	public CPInstance fetchByERC_C(
-		String externalReferenceCode, long companyId) {
-
-		return fetchByERC_C(externalReferenceCode, companyId, true);
+		return _uniquePersistenceFinderByERC_C.find(
+			finderCache, new Object[] {externalReferenceCode, companyId});
 	}
 
 	/**
@@ -2864,14 +1605,9 @@ public class CPInstancePersistenceImpl
 	public CPInstance fetchByERC_C(
 		String externalReferenceCode, long companyId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPInstance.class)) {
-
-			return _uniquePersistenceFinderByERC_C.fetch(
-				finderCache, new Object[] {externalReferenceCode, companyId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByERC_C.fetch(
+			finderCache, new Object[] {externalReferenceCode, companyId},
+			useFinderCache);
 	}
 
 	/**
@@ -3305,440 +2041,416 @@ public class CPInstancePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
-			CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"cpInstance.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, CPInstance::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, CPInstance::getUuid,
-			CPInstance::getGroupId);
+				"cpInstance.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, CPInstance::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_CPINSTANCE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(CPInstance::getUuid),
+				CPInstance::getGroupId),
+			_SQL_SELECT_CPINSTANCE_WHERE, "",
 			new FinderColumn<>(
-				"cpInstance.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, CPInstance::getUuid),
+				"cpInstance.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, CPInstance::getUuid),
 			new FinderColumn<>(
 				"cpInstance.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, CPInstance::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_CPINSTANCE_WHERE,
-				_SQL_COUNT_CPINSTANCE_WHERE, CPInstanceModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
+				CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"cpInstance.", "uuid", FinderColumn.Type.STRING, "=", true,
-					false, CPInstance::getUuid),
+					"cpInstance.", "uuid", "uuid_", FinderColumn.Type.STRING,
+					"=", true, true, CPInstance::getUuid),
 				new FinderColumn<>(
 					"cpInstance.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, CPInstance::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_CPINSTANCE_WHERE,
-				_SQL_COUNT_CPINSTANCE_WHERE, CPInstanceModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
+				CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpInstance.", "groupId", FinderColumn.Type.LONG, "=", true,
 					true, CPInstance::getGroupId));
 
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId, _SQL_SELECT_CPINSTANCE_WHERE,
-				_SQL_COUNT_CPINSTANCE_WHERE, CPInstanceModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
+				CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpInstance.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, CPInstance::getCompanyId));
 
-		_finderPathWithPaginationFindByCPDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPDefinitionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"CPDefinitionId"}, true);
-
-		_finderPathWithoutPaginationFindByCPDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCPDefinitionId",
-			new String[] {Long.class.getName()},
-			new String[] {"CPDefinitionId"}, true);
-
-		_finderPathCountByCPDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCPDefinitionId",
-			new String[] {Long.class.getName()},
-			new String[] {"CPDefinitionId"}, false);
-
 		_collectionPersistenceFinderByCPDefinitionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCPDefinitionId,
-				_finderPathWithoutPaginationFindByCPDefinitionId,
-				_finderPathCountByCPDefinitionId, _SQL_SELECT_CPINSTANCE_WHERE,
-				_SQL_COUNT_CPINSTANCE_WHERE, CPInstanceModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCPDefinitionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CPDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCPDefinitionId", new String[] {Long.class.getName()},
+					new String[] {"CPDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCPDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"CPDefinitionId"}, false),
+				_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
+				CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpInstance.", "CPDefinitionId", FinderColumn.Type.LONG,
 					"=", true, true, CPInstance::getCPDefinitionId));
 
-		_finderPathWithPaginationFindByCPInstanceUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPInstanceUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"CPInstanceUuid"}, true);
-
-		_finderPathWithoutPaginationFindByCPInstanceUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCPInstanceUuid",
-			new String[] {String.class.getName()},
-			new String[] {"CPInstanceUuid"}, true);
-
-		_finderPathCountByCPInstanceUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCPInstanceUuid",
-			new String[] {String.class.getName()},
-			new String[] {"CPInstanceUuid"}, false);
-
 		_collectionPersistenceFinderByCPInstanceUuid =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCPInstanceUuid,
-				_finderPathWithoutPaginationFindByCPInstanceUuid,
-				_finderPathCountByCPInstanceUuid, _SQL_SELECT_CPINSTANCE_WHERE,
-				_SQL_COUNT_CPINSTANCE_WHERE, CPInstanceModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCPInstanceUuid",
+					new String[] {
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CPInstanceUuid"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCPInstanceUuid",
+					new String[] {String.class.getName()},
+					new String[] {"CPInstanceUuid"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCPInstanceUuid",
+					new String[] {String.class.getName()},
+					new String[] {"CPInstanceUuid"}, 0, 1, false, null),
+				_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
+				CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpInstance.", "CPInstanceUuid", FinderColumn.Type.STRING,
 					"=", true, true, CPInstance::getCPInstanceUuid));
 
-		_finderPathWithPaginationFindByG_ST = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_ST",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByG_ST = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_ST",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"groupId", "status"}, true);
-
-		_finderPathCountByG_ST = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_ST",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"groupId", "status"}, false);
-
-		_collectionPersistenceFinderByG_ST = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_ST,
-			_finderPathWithoutPaginationFindByG_ST, _finderPathCountByG_ST,
-			_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
-			CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"cpInstance.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, CPInstance::getGroupId),
-			new FinderColumn<>(
-				"cpInstance.", "status", FinderColumn.Type.INTEGER, "=", true,
-				true, CPInstance::getStatus));
-
-		_finderPathWithPaginationFindByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "sku"}, true);
-
-		_finderPathWithoutPaginationFindByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "sku"}, true);
-
-		_finderPathCountByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "sku"}, false);
-
-		_collectionPersistenceFinderByC_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_S,
-			_finderPathWithoutPaginationFindByC_S, _finderPathCountByC_S,
-			_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
-			CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"cpInstance.", "companyId", FinderColumn.Type.LONG, "=", true,
-				false, CPInstance::getCompanyId),
-			new FinderColumn<>(
-				"cpInstance.", "sku", FinderColumn.Type.STRING, "=", true, true,
-				CPInstance::getSku));
-
-		_finderPathFetchByC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"CPDefinitionId", "CPInstanceUuid"}, false,
-			CPInstance::getCPDefinitionId, CPInstance::getCPInstanceUuid);
-
-		_uniquePersistenceFinderByC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_C, _SQL_SELECT_CPINSTANCE_WHERE,
-			new FinderColumn<>(
-				"cpInstance.", "CPDefinitionId", FinderColumn.Type.LONG, "=",
-				true, false, CPInstance::getCPDefinitionId),
-			new FinderColumn<>(
-				"cpInstance.", "CPInstanceUuid", FinderColumn.Type.STRING, "=",
-				true, true, CPInstance::getCPInstanceUuid));
-
-		_finderPathFetchByCPDI_S = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByCPDI_S",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"CPDefinitionId", "sku"}, false,
-			CPInstance::getCPDefinitionId, CPInstance::getSku);
-
-		_uniquePersistenceFinderByCPDI_S = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByCPDI_S, _SQL_SELECT_CPINSTANCE_WHERE,
-			new FinderColumn<>(
-				"cpInstance.", "CPDefinitionId", FinderColumn.Type.LONG, "=",
-				true, false, CPInstance::getCPDefinitionId),
-			new FinderColumn<>(
-				"cpInstance.", "sku", FinderColumn.Type.STRING, "=", true, true,
-				CPInstance::getSku));
-
-		_finderPathWithPaginationFindByC_ST = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_ST",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"CPDefinitionId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByC_ST = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_ST",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"CPDefinitionId", "status"}, true);
-
-		_finderPathCountByC_ST = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_ST",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"CPDefinitionId", "status"}, false);
-
-		_collectionPersistenceFinderByC_ST = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_ST,
-			_finderPathWithoutPaginationFindByC_ST, _finderPathCountByC_ST,
-			_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
-			CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"cpInstance.", "CPDefinitionId", FinderColumn.Type.LONG, "=",
-				true, false, CPInstance::getCPDefinitionId),
-			new FinderColumn<>(
-				"cpInstance.", "status", FinderColumn.Type.INTEGER, "=", true,
-				true, CPInstance::getStatus));
-
-		_finderPathWithPaginationFindByLtD_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtD_S",
-			new String[] {
-				Date.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"displayDate", "status"}, true);
-
-		_finderPathWithPaginationCountByLtD_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtD_S",
-			new String[] {Date.class.getName(), Integer.class.getName()},
-			new String[] {"displayDate", "status"}, false);
-
-		_collectionPersistenceFinderByLtD_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByLtD_S, null,
-			_finderPathWithPaginationCountByLtD_S, _SQL_SELECT_CPINSTANCE_WHERE,
-			_SQL_COUNT_CPINSTANCE_WHERE, CPInstanceModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"cpInstance.", "displayDate", FinderColumn.Type.DATE, "<", true,
-				false, CPInstance::getDisplayDate),
-			new FinderColumn<>(
-				"cpInstance.", "status", FinderColumn.Type.INTEGER, "=", true,
-				true, CPInstance::getStatus));
-
-		_finderPathWithPaginationFindByC_LtD_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_LtD_S",
-			new String[] {
-				Long.class.getName(), Date.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"CPDefinitionId", "displayDate", "status"}, true);
-
-		_finderPathWithPaginationCountByC_LtD_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_LtD_S",
-			new String[] {
-				Long.class.getName(), Date.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"CPDefinitionId", "displayDate", "status"}, false);
-
-		_collectionPersistenceFinderByC_LtD_S =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByC_LtD_S, null,
-				_finderPathWithPaginationCountByC_LtD_S,
+		_collectionPersistenceFinderByG_ST =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_ST",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_ST",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"groupId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_ST",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"groupId", "status"}, false),
 				_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
-				CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"cpInstance.", "CPDefinitionId", FinderColumn.Type.LONG,
-					"=", true, false, CPInstance::getCPDefinitionId),
-				new FinderColumn<>(
-					"cpInstance.", "displayDate", FinderColumn.Type.DATE, "<",
-					true, false, CPInstance::getDisplayDate),
+					"cpInstance.", "groupId", FinderColumn.Type.LONG, "=", true,
+					true, CPInstance::getGroupId),
 				new FinderColumn<>(
 					"cpInstance.", "status", FinderColumn.Type.INTEGER, "=",
 					true, true, CPInstance::getStatus));
 
-		_finderPathWithPaginationFindByR_R_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByR_R_S",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {
-				"replacementCPInstanceUuid", "replacementCProductId", "status"
-			},
-			true);
-
-		_finderPathWithoutPaginationFindByR_R_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByR_R_S",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {
-				"replacementCPInstanceUuid", "replacementCProductId", "status"
-			},
-			true);
-
-		_finderPathCountByR_R_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByR_R_S",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {
-				"replacementCPInstanceUuid", "replacementCProductId", "status"
-			},
-			false);
-
-		_collectionPersistenceFinderByR_R_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByR_R_S,
-			_finderPathWithoutPaginationFindByR_R_S, _finderPathCountByR_R_S,
+		_collectionPersistenceFinderByC_S = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "sku"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "sku"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "sku"}, 0, 2, false, null),
 			_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
-			CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"cpInstance.", "replacementCPInstanceUuid",
-				FinderColumn.Type.STRING, "=", true, false,
-				CPInstance::getReplacementCPInstanceUuid),
+				"cpInstance.", "companyId", FinderColumn.Type.LONG, "=", true,
+				true, CPInstance::getCompanyId),
 			new FinderColumn<>(
-				"cpInstance.", "replacementCProductId", FinderColumn.Type.LONG,
-				"=", true, false, CPInstance::getReplacementCProductId),
+				"cpInstance.", "sku", FinderColumn.Type.STRING, "=", true, true,
+				CPInstance::getSku));
+
+		_uniquePersistenceFinderByC_C = new UniquePersistenceFinder<>(
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"CPDefinitionId", "CPInstanceUuid"}, 0, 2, false,
+				CPInstance::getCPDefinitionId,
+				convertNullFunction(CPInstance::getCPInstanceUuid)),
+			_SQL_SELECT_CPINSTANCE_WHERE, "",
+			new FinderColumn<>(
+				"cpInstance.", "CPDefinitionId", FinderColumn.Type.LONG, "=",
+				true, true, CPInstance::getCPDefinitionId),
+			new FinderColumn<>(
+				"cpInstance.", "CPInstanceUuid", FinderColumn.Type.STRING, "=",
+				true, true, CPInstance::getCPInstanceUuid));
+
+		_uniquePersistenceFinderByCPDI_S = new UniquePersistenceFinder<>(
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByCPDI_S",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"CPDefinitionId", "sku"}, 0, 2, false,
+				CPInstance::getCPDefinitionId,
+				convertNullFunction(CPInstance::getSku)),
+			_SQL_SELECT_CPINSTANCE_WHERE, "",
+			new FinderColumn<>(
+				"cpInstance.", "CPDefinitionId", FinderColumn.Type.LONG, "=",
+				true, true, CPInstance::getCPDefinitionId),
+			new FinderColumn<>(
+				"cpInstance.", "sku", FinderColumn.Type.STRING, "=", true, true,
+				CPInstance::getSku));
+
+		_collectionPersistenceFinderByC_ST = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_ST",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"CPDefinitionId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_ST",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"CPDefinitionId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_ST",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"CPDefinitionId", "status"}, false),
+			_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
+			CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+			new FinderColumn<>(
+				"cpInstance.", "CPDefinitionId", FinderColumn.Type.LONG, "=",
+				true, true, CPInstance::getCPDefinitionId),
 			new FinderColumn<>(
 				"cpInstance.", "status", FinderColumn.Type.INTEGER, "=", true,
 				true, CPInstance::getStatus));
 
-		_finderPathFetchByERC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "companyId"}, false,
-			CPInstance::getExternalReferenceCode, CPInstance::getCompanyId);
+		_collectionPersistenceFinderByLtD_S = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtD_S",
+				new String[] {
+					Date.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"displayDate", "status"}, true),
+			null,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtD_S",
+				new String[] {Date.class.getName(), Integer.class.getName()},
+				new String[] {"displayDate", "status"}, false),
+			_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
+			CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+			new FinderColumn<>(
+				"cpInstance.", "displayDate", FinderColumn.Type.DATE, "<", true,
+				true, CPInstance::getDisplayDate),
+			new FinderColumn<>(
+				"cpInstance.", "status", FinderColumn.Type.INTEGER, "=", true,
+				true, CPInstance::getStatus));
+
+		_collectionPersistenceFinderByC_LtD_S =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_LtD_S",
+					new String[] {
+						Long.class.getName(), Date.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CPDefinitionId", "displayDate", "status"},
+					true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_LtD_S",
+					new String[] {
+						Long.class.getName(), Date.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"CPDefinitionId", "displayDate", "status"},
+					false),
+				_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
+				CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"cpInstance.", "CPDefinitionId", FinderColumn.Type.LONG,
+					"=", true, true, CPInstance::getCPDefinitionId),
+				new FinderColumn<>(
+					"cpInstance.", "displayDate", FinderColumn.Type.DATE, "<",
+					true, true, CPInstance::getDisplayDate),
+				new FinderColumn<>(
+					"cpInstance.", "status", FinderColumn.Type.INTEGER, "=",
+					true, true, CPInstance::getStatus));
+
+		_collectionPersistenceFinderByR_R_S = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByR_R_S",
+				new String[] {
+					String.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {
+					"replacementCPInstanceUuid", "replacementCProductId",
+					"status"
+				},
+				true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByR_R_S",
+				new String[] {
+					String.class.getName(), Long.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {
+					"replacementCPInstanceUuid", "replacementCProductId",
+					"status"
+				},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByR_R_S",
+				new String[] {
+					String.class.getName(), Long.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {
+					"replacementCPInstanceUuid", "replacementCProductId",
+					"status"
+				},
+				0, 1, false, null),
+			_SQL_SELECT_CPINSTANCE_WHERE, _SQL_COUNT_CPINSTANCE_WHERE,
+			CPInstanceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+			new FinderColumn<>(
+				"cpInstance.", "replacementCPInstanceUuid",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPInstance::getReplacementCPInstanceUuid),
+			new FinderColumn<>(
+				"cpInstance.", "replacementCProductId", FinderColumn.Type.LONG,
+				"=", true, true, CPInstance::getReplacementCProductId),
+			new FinderColumn<>(
+				"cpInstance.", "status", FinderColumn.Type.INTEGER, "=", true,
+				true, CPInstance::getStatus));
 
 		_uniquePersistenceFinderByERC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_C, _SQL_SELECT_CPINSTANCE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "companyId"}, 0, 1,
+				false,
+				convertNullFunction(CPInstance::getExternalReferenceCode),
+				CPInstance::getCompanyId),
+			_SQL_SELECT_CPINSTANCE_WHERE, "",
 			new FinderColumn<>(
 				"cpInstance.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				CPInstance::getExternalReferenceCode),
 			new FinderColumn<>(
 				"cpInstance.", "companyId", FinderColumn.Type.LONG, "=", true,
@@ -3801,29 +2513,6 @@ public class CPInstancePersistenceImpl
 	private static final String _SQL_COUNT_CPINSTANCE_WHERE =
 		"SELECT COUNT(cpInstance) FROM CPInstance cpInstance WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"cpInstance.CPInstanceId";
-
-	private static final String _FILTER_SQL_SELECT_CPINSTANCE_WHERE =
-		"SELECT DISTINCT {cpInstance.*} FROM CPInstance cpInstance WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_CPINSTANCE_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {CPInstance.*} FROM (SELECT DISTINCT cpInstance.CPInstanceId FROM CPInstance cpInstance WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_CPINSTANCE_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN CPInstance ON TEMP_TABLE.CPInstanceId = CPInstance.CPInstanceId";
-
-	private static final String _FILTER_SQL_COUNT_CPINSTANCE_WHERE =
-		"SELECT COUNT(DISTINCT cpInstance.CPInstanceId) AS COUNT_VALUE FROM CPInstance cpInstance WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "cpInstance";
-
-	private static final String _FILTER_ENTITY_TABLE = "CPInstance";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "CPInstance.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No CPInstance exists with the key {";
 
@@ -3839,4 +2528,4 @@ public class CPInstancePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-332002521
+// LIFERAY-SERVICE-BUILDER-HASH:602102055

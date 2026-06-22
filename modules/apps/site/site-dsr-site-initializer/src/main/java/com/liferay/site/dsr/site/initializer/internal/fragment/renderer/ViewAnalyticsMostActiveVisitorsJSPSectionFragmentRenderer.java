@@ -26,6 +26,11 @@ public class ViewAnalyticsMostActiveVisitorsJSPSectionFragmentRenderer
 		<ViewAnalyticsMostActiveVisitorsAnalyticsSectionDisplayContext> {
 
 	@Override
+	public String getCollectionKey() {
+		return "digital-sales-room-analytics";
+	}
+
+	@Override
 	public String getLabelKey() {
 		return "most-active-visitors";
 	}
@@ -41,7 +46,7 @@ public class ViewAnalyticsMostActiveVisitorsJSPSectionFragmentRenderer
 				WebKeys.THEME_DISPLAY);
 
 		return new ViewAnalyticsMostActiveVisitorsAnalyticsSectionDisplayContext(
-			httpServletRequest,
+			analyticsSettingsManager, httpServletRequest,
 			_objectDefinitionLocalService.
 				fetchObjectDefinitionByExternalReferenceCode(
 					"L_DSR_ROOM", themeDisplay.getCompanyId()));

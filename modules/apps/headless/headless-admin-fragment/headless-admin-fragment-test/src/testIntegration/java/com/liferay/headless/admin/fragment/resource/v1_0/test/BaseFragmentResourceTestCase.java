@@ -37,11 +37,13 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
+import com.liferay.portal.search.test.rule.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
@@ -109,7 +111,8 @@ public abstract class BaseFragmentResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -119,7 +122,8 @@ public abstract class BaseFragmentResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -462,6 +466,270 @@ public abstract class BaseFragmentResourceTestCase {
 	}
 
 	@Test
+	public void testGetSiteFragmentsPage() throws Exception {
+		String siteExternalReferenceCode =
+			testGetSiteFragmentsPage_getSiteExternalReferenceCode();
+		String irrelevantSiteExternalReferenceCode =
+			testGetSiteFragmentsPage_getIrrelevantSiteExternalReferenceCode();
+
+		Page<Fragment> page = fragmentResource.getSiteFragmentsPage(
+			siteExternalReferenceCode, null, Pagination.of(1, 10));
+
+		long totalCount = page.getTotalCount();
+
+		if (irrelevantSiteExternalReferenceCode != null) {
+			Fragment irrelevantFragment = testGetSiteFragmentsPage_addFragment(
+				irrelevantSiteExternalReferenceCode,
+				randomIrrelevantFragment());
+
+			page = fragmentResource.getSiteFragmentsPage(
+				irrelevantSiteExternalReferenceCode, null,
+				Pagination.of(1, (int)totalCount + 1));
+
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
+
+			assertContains(irrelevantFragment, (List<Fragment>)page.getItems());
+			assertValid(
+				page,
+				testGetSiteFragmentsPage_getExpectedActions(
+					irrelevantSiteExternalReferenceCode));
+		}
+
+		Fragment fragment1 = testGetSiteFragmentsPage_addFragment(
+			siteExternalReferenceCode, randomFragment());
+
+		Fragment fragment2 = testGetSiteFragmentsPage_addFragment(
+			siteExternalReferenceCode, randomFragment());
+
+		page = fragmentResource.getSiteFragmentsPage(
+			siteExternalReferenceCode, null, Pagination.of(1, 10));
+
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
+
+		assertContains(fragment1, (List<Fragment>)page.getItems());
+		assertContains(fragment2, (List<Fragment>)page.getItems());
+		assertValid(
+			page,
+			testGetSiteFragmentsPage_getExpectedActions(
+				siteExternalReferenceCode));
+	}
+
+	protected Map<String, Map<String, String>>
+			testGetSiteFragmentsPage_getExpectedActions(
+				String siteExternalReferenceCode)
+		throws Exception {
+
+		Map<String, Map<String, String>> expectedActions = new HashMap<>();
+
+		Map createBatchAction = new HashMap<>();
+		createBatchAction.put("method", "POST");
+		createBatchAction.put(
+			"href",
+			("http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/fragments/batch").
+					replace(
+						"{siteExternalReferenceCode}",
+						String.valueOf(siteExternalReferenceCode)));
+
+		expectedActions.put("createBatch", createBatchAction);
+
+		return expectedActions;
+	}
+
+	@Test
+	public void testGetSiteFragmentsPageWithFilterDateTimeEquals()
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(
+			EntityField.Type.DATE_TIME);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		String siteExternalReferenceCode =
+			testGetSiteFragmentsPage_getSiteExternalReferenceCode();
+
+		Fragment fragment1 = randomFragment();
+
+		fragment1 = testGetSiteFragmentsPage_addFragment(
+			siteExternalReferenceCode, fragment1);
+
+		for (EntityField entityField : entityFields) {
+			Page<Fragment> page = fragmentResource.getSiteFragmentsPage(
+				siteExternalReferenceCode,
+				getFilterString(entityField, "between", fragment1),
+				Pagination.of(1, 2));
+
+			assertEquals(
+				Collections.singletonList(fragment1),
+				(List<Fragment>)page.getItems());
+		}
+	}
+
+	@Test
+	public void testGetSiteFragmentsPageWithFilterDoubleEquals()
+		throws Exception {
+
+		testGetSiteFragmentsPageWithFilter("eq", EntityField.Type.DOUBLE);
+	}
+
+	@Test
+	public void testGetSiteFragmentsPageWithFilterStringContains()
+		throws Exception {
+
+		testGetSiteFragmentsPageWithFilter("contains", EntityField.Type.STRING);
+	}
+
+	@Test
+	public void testGetSiteFragmentsPageWithFilterStringEquals()
+		throws Exception {
+
+		testGetSiteFragmentsPageWithFilter("eq", EntityField.Type.STRING);
+	}
+
+	@Test
+	public void testGetSiteFragmentsPageWithFilterStringStartsWith()
+		throws Exception {
+
+		testGetSiteFragmentsPageWithFilter(
+			"startswith", EntityField.Type.STRING);
+	}
+
+	protected void testGetSiteFragmentsPageWithFilter(
+			String operator, EntityField.Type type)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		String siteExternalReferenceCode =
+			testGetSiteFragmentsPage_getSiteExternalReferenceCode();
+
+		Fragment fragment1 = testGetSiteFragmentsPage_addFragment(
+			siteExternalReferenceCode, randomFragment());
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Fragment fragment2 = testGetSiteFragmentsPage_addFragment(
+			siteExternalReferenceCode, randomFragment());
+
+		for (EntityField entityField : entityFields) {
+			Page<Fragment> page = fragmentResource.getSiteFragmentsPage(
+				siteExternalReferenceCode,
+				getFilterString(entityField, operator, fragment1),
+				Pagination.of(1, 2));
+
+			assertEquals(
+				Collections.singletonList(fragment1),
+				(List<Fragment>)page.getItems());
+		}
+	}
+
+	@Test
+	public void testGetSiteFragmentsPageWithPagination() throws Exception {
+		String siteExternalReferenceCode =
+			testGetSiteFragmentsPage_getSiteExternalReferenceCode();
+
+		Page<Fragment> fragmentsPage = fragmentResource.getSiteFragmentsPage(
+			siteExternalReferenceCode, null, null);
+
+		int totalCount = GetterUtil.getInteger(fragmentsPage.getTotalCount());
+
+		Fragment fragment1 = testGetSiteFragmentsPage_addFragment(
+			siteExternalReferenceCode, randomFragment());
+
+		Fragment fragment2 = testGetSiteFragmentsPage_addFragment(
+			siteExternalReferenceCode, randomFragment());
+
+		Fragment fragment3 = testGetSiteFragmentsPage_addFragment(
+			siteExternalReferenceCode, randomFragment());
+
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
+
+		int pageSizeLimit = 500;
+
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<Fragment> page1 = fragmentResource.getSiteFragmentsPage(
+				siteExternalReferenceCode, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+					pageSizeLimit));
+
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
+
+			assertContains(fragment1, (List<Fragment>)page1.getItems());
+
+			Page<Fragment> page2 = fragmentResource.getSiteFragmentsPage(
+				siteExternalReferenceCode, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+					pageSizeLimit));
+
+			assertContains(fragment2, (List<Fragment>)page2.getItems());
+
+			Page<Fragment> page3 = fragmentResource.getSiteFragmentsPage(
+				siteExternalReferenceCode, null,
+				Pagination.of(
+					(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+					pageSizeLimit));
+
+			assertContains(fragment3, (List<Fragment>)page3.getItems());
+		}
+		else {
+			Page<Fragment> page1 = fragmentResource.getSiteFragmentsPage(
+				siteExternalReferenceCode, null,
+				Pagination.of(1, totalCount + 2));
+
+			List<Fragment> fragments1 = (List<Fragment>)page1.getItems();
+
+			Assert.assertEquals(
+				fragments1.toString(), totalCount + 2, fragments1.size());
+
+			Page<Fragment> page2 = fragmentResource.getSiteFragmentsPage(
+				siteExternalReferenceCode, null,
+				Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<Fragment> fragments2 = (List<Fragment>)page2.getItems();
+
+			Assert.assertEquals(fragments2.toString(), 1, fragments2.size());
+
+			Page<Fragment> page3 = fragmentResource.getSiteFragmentsPage(
+				siteExternalReferenceCode, null,
+				Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(fragment1, (List<Fragment>)page3.getItems());
+			assertContains(fragment2, (List<Fragment>)page3.getItems());
+			assertContains(fragment3, (List<Fragment>)page3.getItems());
+		}
+	}
+
+	protected Fragment testGetSiteFragmentsPage_addFragment(
+			String siteExternalReferenceCode, Fragment fragment)
+		throws Exception {
+
+		return fragmentResource.postSiteFragment(
+			siteExternalReferenceCode, fragment);
+	}
+
+	protected String testGetSiteFragmentsPage_getSiteExternalReferenceCode()
+		throws Exception {
+
+		return testGroup.getExternalReferenceCode();
+	}
+
+	protected String
+			testGetSiteFragmentsPage_getIrrelevantSiteExternalReferenceCode()
+		throws Exception {
+
+		return irrelevantGroup.getExternalReferenceCode();
+	}
+
+	@Test
 	public void testPostSiteFragment() throws Exception {
 		Fragment randomFragment = randomFragment();
 
@@ -561,7 +829,8 @@ public abstract class BaseFragmentResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).parameters(
 			parameters
 		).build();
@@ -589,6 +858,9 @@ public abstract class BaseFragmentResourceTestCase {
 
 		return testGroup.getExternalReferenceCode();
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected void assertContains(Fragment fragment, List<Fragment> fragments) {
 		boolean contains = false;
@@ -743,6 +1015,16 @@ public abstract class BaseFragmentResourceTestCase {
 
 			if (Objects.equals("readOnly", additionalAssertFieldName)) {
 				if (fragment.getReadOnly() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"thumbnailURLReference", additionalAssertFieldName)) {
+
+				if (fragment.getThumbnailURLReference() == null) {
 					valid = false;
 				}
 
@@ -996,6 +1278,19 @@ public abstract class BaseFragmentResourceTestCase {
 			if (Objects.equals("readOnly", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						fragment1.getReadOnly(), fragment2.getReadOnly())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"thumbnailURLReference", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						fragment1.getThumbnailURLReference(),
+						fragment2.getThumbnailURLReference())) {
 
 					return false;
 				}
@@ -1392,6 +1687,11 @@ public abstract class BaseFragmentResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("thumbnailURLReference")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("type")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -1410,7 +1710,9 @@ public abstract class BaseFragmentResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -1699,4 +2001,4 @@ public abstract class BaseFragmentResourceTestCase {
 		_fragmentResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:556785542
+// LIFERAY-REST-BUILDER-HASH:-1931625404

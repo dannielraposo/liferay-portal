@@ -1,5 +1,5 @@
 /**
- * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
@@ -7,28 +7,14 @@ import AgentDefinitionItemTitle from './AgentDefinitionItemTitle';
 
 import type {
 	IInternalRenderer,
-	IItemsActions,
 	IListSchema,
 	IView,
 } from '@liferay/frontend-data-set-web';
 
-function applyStyles(itemsActions: Array<IItemsActions>): Array<IItemsActions> {
-	return itemsActions.map((action: IItemsActions) => {
-		const newItems = action.items ? applyStyles(action.items) : undefined;
-		const itemsChanged = newItems !== action.items;
-
-		if (!itemsChanged) {
-			return action;
-		}
-
-		return {
-			...action,
-			...(itemsChanged && {items: newItems}),
-		};
-	});
-}
-
-export default function propsTransformer({itemsActions, ...otherProps}: any) {
+export default function AgentDefinitionItemTitlePropsTransformer({
+	itemsActions,
+	...otherProps
+}: any) {
 	const customListTitleRenderer: IInternalRenderer = {
 		component: AgentDefinitionItemTitle,
 		name: 'customListTitleRenderer',
@@ -39,26 +25,25 @@ export default function propsTransformer({itemsActions, ...otherProps}: any) {
 
 	const listView = views.find((view) => view.name === 'list')!;
 
-	const listSchema = listView.schema as IListSchema;
+	if (listView) {
+		const listSchema = listView.schema as IListSchema;
 
-	listView.setItemComponentProps = ({props}: {props: any}) => {
-		const updatedProps = {
+		listView.setItemComponentProps = ({props}: {props: any}) => ({
 			...props,
 			schema: {
 				...listSchema,
+				description: '',
 				titleRendererName: 'customListTitleRenderer',
 			},
-		};
-
-		return updatedProps;
-	};
+		});
+	}
 
 	return {
 		...otherProps,
 		customRenderers: {
 			listSection: [customListTitleRenderer],
 		},
-		itemsActions: applyStyles(itemsActions),
+		itemsActions,
 		views,
 	};
 }

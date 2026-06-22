@@ -25,6 +25,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +41,9 @@ import java.util.function.Supplier;
 @GraphQLName(
 	description = "Represents each member of a content set and can contain different types of assets.",
 	value = "ContentSetElement"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Represents each member of a content set and can contain different types of assets."
 )
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "ContentSetElement")
@@ -304,8 +309,17 @@ public class ContentSetElement implements Serializable {
 
 			sb.append("\"content\": ");
 
-			if (content instanceof Map) {
+			if (content instanceof Collection) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray((Collection<?>)content));
+			}
+			else if (content instanceof Map) {
 				sb.append(JSONFactoryUtil.createJSONObject((Map<?, ?>)content));
+			}
+			else if (content instanceof Object[]) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						Arrays.asList((Object[])content)));
 			}
 			else if (content instanceof String) {
 				sb.append("\"");
@@ -474,4 +488,4 @@ public class ContentSetElement implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:950470817
+// LIFERAY-REST-BUILDER-HASH:-749452907

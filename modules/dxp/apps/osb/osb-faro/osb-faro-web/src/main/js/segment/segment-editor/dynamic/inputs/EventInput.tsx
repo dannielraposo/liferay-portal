@@ -327,8 +327,11 @@ const EventInput: React.FC<IEventInputProps> = ({
 		<div className='criteria-statement'>
 			<SafeResults {...result} page={false} pageDisplay={false}>
 				{(data: any) => {
-					const attributes =
+					const rawAttributes =
 						data?.eventProperties?.eventProperties || [];
+					const attributes = rawAttributes.map((attr: Attribute) => ({
+						...attr
+					}));
 
 					return (
 						<>
@@ -348,7 +351,9 @@ const EventInput: React.FC<IEventInputProps> = ({
 									label
 									shrink
 								>
-									{Liferay.Language.get('performed-fragment')}
+									{Liferay.Language.get(
+										'performed'
+									).toLowerCase()}
 								</Form.GroupItem>
 
 								<Form.GroupItem
@@ -408,7 +413,7 @@ const EventInput: React.FC<IEventInputProps> = ({
 										shrink
 									>
 										{Liferay.Language.get(
-											'where-attribute-fragment'
+											'where-attribute'
 										)}
 									</Form.GroupItem>
 

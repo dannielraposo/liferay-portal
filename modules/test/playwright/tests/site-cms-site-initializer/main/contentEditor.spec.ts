@@ -212,7 +212,7 @@ test(
 
 		await contentsPage.editContent(blogTitle);
 
-		expect(page.getByPlaceholder('New Blog')).toHaveValue(blogTitle);
+		await expect(page.getByPlaceholder('New Blog')).toHaveValue(blogTitle);
 
 		// Delete content
 
@@ -360,7 +360,11 @@ test(
 
 		// Check that the content is visible that means we redirected to the folder
 
-		await expect(page.getByText(title)).toBeVisible();
+		await expect(
+			page
+				.locator('tr', {hasText: title})
+				.or(page.locator('.card-row', {hasText: title}))
+		).toBeVisible();
 
 		// Delete content and folder
 
@@ -370,7 +374,11 @@ test(
 
 		await folderPage.deleteFolder(folderName);
 
-		await expect(page.getByText(folderName)).not.toBeVisible();
+		await expect(
+			page
+				.locator('tr', {hasText: folderName})
+				.or(page.locator('.card-row', {hasText: folderName}))
+		).not.toBeVisible();
 	}
 );
 
@@ -703,7 +711,7 @@ test.describe('Comments Panel', () => {
 			await page
 				.getByRole('option', {name: 'View, Download, Comment, and'})
 				.click();
-			await page.getByRole('button', {name: 'Save'}).click();
+			await page.getByRole('button', {name: 'Share'}).click();
 
 			await performLogout(page);
 
@@ -881,6 +889,42 @@ test.describe('Schedule Panel', () => {
 });
 
 test.describe('Categorization Panel', () => {
+	const selectCategory = async ({
+		categoryName,
+		page,
+	}: {
+		categoryName: string;
+		page: Page;
+	}) => {
+		const categoriesAutocomplete = page.getByPlaceholder('Add category');
+
+		await categoriesAutocomplete.fill(categoryName);
+
+		const option = page.getByRole('option', {name: categoryName});
+
+		await option.waitFor();
+		await option.click();
+	};
+
+	const selectTag = async ({
+		page,
+		tagName,
+	}: {
+		page: Page;
+		tagName: string;
+	}) => {
+		const tagsAutocomplete = page.getByPlaceholder('Add tag');
+
+		await tagsAutocomplete.fill(tagName);
+
+		const newTagOption = page.getByRole('option', {
+			name: 'Create New Tag:',
+		});
+
+		await newTagOption.waitFor();
+		await newTagOption.click();
+	};
+
 	test(
 		'Add categories and tags to the content',
 		{tag: ['@LPD-62047', '@LPD-69196']},
@@ -891,30 +935,6 @@ test.describe('Categorization Panel', () => {
 			tagsPage,
 			vocabulariesPage,
 		}) => {
-			const selectCategory = async (categoryName: string) => {
-				const categoriesAutocomplete =
-					page.getByPlaceholder('Add category');
-
-				await categoriesAutocomplete.fill(categoryName);
-
-				const option = page.getByRole('option', {name: categoryName});
-
-				await option.waitFor();
-				await option.click();
-			};
-
-			const selectTag = async (tagName: string) => {
-				const tagsAutocomplete = page.getByPlaceholder('Add tag');
-
-				await tagsAutocomplete.fill(tagName);
-
-				const newTagOption = page.getByRole('option', {
-					name: 'Create New Tag:',
-				});
-
-				await newTagOption.waitFor();
-				await newTagOption.click();
-			};
 
 			// Create space
 
@@ -949,125 +969,306 @@ test.describe('Categorization Panel', () => {
 				vocabularyName,
 			});
 
-			// Create a content and publish it
-
-			await contentsPage.goto();
-
-			await contentsPage.createContent('Basic Web Content');
-
 			const title = getRandomString();
 
-			await page.getByPlaceholder('New Basic Web Content').fill(title);
+			const tagNames: string[] = [];
 
-			await contentsPage.publishButton.click();
+			try {
 
-			// Edit the content to set a categorization
+				// Create a content and publish it
 
-			const content = page.locator('.table-list-title a', {
-				hasText: title,
+				await contentsPage.goto();
+
+				await contentsPage.createContent('Basic Web Content');
+
+				await page
+					.getByPlaceholder('New Basic Web Content')
+					.fill(title);
+
+				await contentsPage.publishButton.click();
+
+				// Edit the content to set a categorization
+
+				const content = page.locator('.table-list-title a', {
+					hasText: title,
+				});
+
+				await content.waitFor();
+				await content.click();
+
+				await contentsPage.openSidePanel('Categorization');
+
+				// Assert that a tag shared with a specific space is only visible to that space
+
+				const tagsAutocomplete = page.getByPlaceholder('Add tag');
+
+				await tagsAutocomplete.click();
+
+				const tagsDropdownMenuEntry = page.locator(
+					'.dropdown-menu > ul > li > button'
+				);
+
+				await expect(
+					tagsDropdownMenuEntry.getByText(allSpacesTagName)
+				).toBeVisible();
+				await expect(
+					tagsDropdownMenuEntry.getByText(defaultSpaceTagName)
+				).toBeVisible();
+				await expect(
+					tagsDropdownMenuEntry.getByText(spaceTagName)
+				).toBeHidden();
+
+				// Add a category to the content
+
+				await selectCategory({categoryName, page});
+
+				const categoryLabel = page.locator('.label-item', {
+					hasText: categoryName,
+				});
+
+				await expect(categoryLabel).toBeAttached();
+
+				// Add a tag to the content
+
+				const firstTagName = getRandomString();
+
+				tagNames.push(firstTagName);
+
+				await selectTag({page, tagName: firstTagName});
+
+				let tagLabel = page.locator('.label-item', {
+					hasText: firstTagName,
+				});
+
+				await expect(tagLabel).toBeAttached();
+
+				// Cancel the content and edit it again to check that nothing has been saved
+
+				await page.getByLabel('Cancel', {exact: true}).click();
+
+				await content.waitFor();
+				await content.click();
+
+				await contentsPage.openSidePanel('Categorization');
+
+				await expect(categoryLabel).not.toBeAttached();
+				await expect(tagLabel).not.toBeAttached();
+
+				// Select again the category and the tag and publish it
+
+				await selectCategory({categoryName, page});
+
+				const secondTagName = getRandomString();
+
+				tagNames.push(secondTagName);
+
+				tagLabel = page.locator('.label-item', {
+					hasText: secondTagName,
+				});
+
+				await selectTag({page, tagName: secondTagName});
+
+				await expect(categoryLabel).toBeAttached();
+				await expect(tagLabel).toBeAttached();
+
+				await contentsPage.publishButton.click();
+
+				// Edit the content and check that the categorization is still there
+
+				await content.click();
+
+				await contentsPage.openSidePanel('Categorization');
+
+				await expect(tagLabel).toBeAttached();
+				await expect(categoryLabel).toBeAttached();
+
+				// Assert the applied category and tag are marked as selected
+				// in the dropdown menu
+
+				await page.getByPlaceholder('Add category').click();
+
+				const selectedCategoryOption = page.getByRole('option', {
+					name: categoryName,
+				});
+
+				await expect(selectedCategoryOption).toHaveAttribute(
+					'aria-selected',
+					'true'
+				);
+				await expect(
+					selectedCategoryOption.locator('.lexicon-icon-check-small')
+				).toBeVisible();
+
+				await page.keyboard.press('Escape');
+
+				await page.getByPlaceholder('Add tag').click();
+
+				const selectedTagOption = page.getByRole('option', {
+					name: secondTagName,
+				});
+
+				await expect(selectedTagOption).toHaveAttribute(
+					'aria-selected',
+					'true'
+				);
+				await expect(
+					selectedTagOption.locator('.lexicon-icon-check-small')
+				).toBeVisible();
+
+				await page.keyboard.press('Escape');
+
+				// Delete content
+
+				await contentsPage.goto();
+				await contentsPage.deleteContent(title);
+			}
+			finally {
+
+				// Delete tags
+
+				await tagsPage.goto();
+
+				for (const tagName of tagNames) {
+					await tagsPage.deleteTag(tagName);
+				}
+
+				await tagsPage.deleteTag(allSpacesTagName);
+				await tagsPage.deleteTag(defaultSpaceTagName);
+				await tagsPage.deleteTag(spaceTagName);
+
+				// Delete vocabulary and its categories
+
+				await vocabulariesPage.goto();
+				await vocabulariesPage.deleteVocabulary(vocabularyName);
+
+				// Delete space
+
+				await apiHelpers.headlessAssetLibrary.deleteAssetLibrary(
+					spaceId
+				);
+			}
+		}
+	);
+
+	test(
+		'Prevent publish and preserve tags when a required vocabulary has no selected category, then publish once a category is selected',
+		{tag: '@LPD-89784'},
+		async ({
+			apiHelpers,
+			contentsPage,
+			page,
+			tagsPage,
+			vocabulariesPage,
+		}) => {
+			const site = await apiHelpers.headlessAdminSite.getSite('L_CMS');
+
+			const categoryName = getRandomString();
+			const vocabularyName = getRandomString();
+
+			await createCategories({
+				apiHelpers,
+				assetLibraries: [{id: -1}],
+				assetTypes: [
+					{
+						required: true,
+						subtype: 'AllAssetSubtypes',
+						type: 'AllAssetTypes',
+					},
+				],
+				categoryNames: [{name: categoryName}],
+				siteId: site.id,
+				vocabularyName,
 			});
 
-			await content.waitFor();
-			await content.click();
+			let tagName;
 
-			await contentsPage.openSidePanel('Categorization');
+			try {
+				await contentsPage.goto();
+				await contentsPage.createContent('Basic Web Content');
 
-			// Assert that a tag shared with a specific space is only visible to that space
+				const title = getRandomString();
 
-			const tagsAutocomplete = page.getByPlaceholder('Add tag');
+				await page
+					.getByPlaceholder('New Basic Web Content')
+					.fill(title);
 
-			await tagsAutocomplete.click();
+				await contentsPage.openSidePanel('Categorization');
 
-			const tagsDropdownMenuEntry = page.locator(
-				'.dropdown-menu > ul > li > button'
-			);
+				tagName = getRandomString();
 
-			await expect(
-				tagsDropdownMenuEntry.getByText(allSpacesTagName)
-			).toBeVisible();
-			await expect(
-				tagsDropdownMenuEntry.getByText(defaultSpaceTagName)
-			).toBeVisible();
-			await expect(
-				tagsDropdownMenuEntry.getByText(spaceTagName)
-			).toBeHidden();
+				await selectTag({page, tagName});
 
-			// Add a category to the content
+				await contentsPage.publishButton.click();
 
-			await selectCategory(categoryName);
+				await expect(
+					page
+						.locator('.content-editor__side-panel .sidebar-header')
+						.filter({hasText: 'Categorization'})
+				).toBeVisible();
 
-			const categoryLabel = page.locator('.label-item', {
-				hasText: categoryName,
-			});
+				await expect(
+					page
+						.locator('.form-group.has-error')
+						.getByPlaceholder('Add category')
+				).toBeFocused();
 
-			await expect(categoryLabel).toBeAttached();
+				await expect(
+					page.getByText(
+						'Please enter at least one category for all mandatory vocabularies.'
+					)
+				).toBeVisible();
 
-			// Add a tag to the content
+				await expect(
+					page.locator('.label-item', {hasText: tagName})
+				).toBeAttached();
 
-			let tagName = getRandomString();
+				await expect(
+					page.getByPlaceholder('New Basic Web Content')
+				).toHaveValue(title);
 
-			await selectTag(tagName);
+				// Select the required category and publish again
 
-			let tagLabel = page.locator('.label-item', {hasText: tagName});
+				await selectCategory({categoryName, page});
 
-			await expect(tagLabel).toBeAttached();
+				await expect(
+					page.locator('.label-item', {hasText: categoryName})
+				).toBeAttached();
 
-			// Cancel the content and edit it again to check that nothing has been saved
+				await expect(
+					page.locator('.form-group.has-error')
+				).toBeHidden();
 
-			await page.getByLabel('Cancel', {exact: true}).click();
+				await expect(
+					page.getByText(
+						'Please enter at least one category for all mandatory vocabularies.'
+					)
+				).toBeHidden();
 
-			await content.waitFor();
-			await content.click();
+				await contentsPage.publishButton.click();
 
-			await contentsPage.openSidePanel('Categorization');
+				await expect(
+					page.locator('.table-list-title a', {hasText: title})
+				).toBeVisible();
 
-			await expect(categoryLabel).not.toBeAttached();
-			await expect(tagLabel).not.toBeAttached();
+				// Delete content
 
-			// Select again the category and the tag and publish it
+				await contentsPage.goto();
+				await contentsPage.deleteContent(title);
+			}
+			finally {
 
-			await selectCategory(categoryName);
+				// Delete tags
 
-			tagName = getRandomString();
-			tagLabel = page.locator('.label-item', {hasText: tagName});
+				if (tagName) {
+					await tagsPage.goto();
+					await tagsPage.deleteTag(tagName);
+				}
 
-			await selectTag(tagName);
+				// Delete vocabulary and its categories
 
-			await expect(categoryLabel).toBeAttached();
-			await expect(tagLabel).toBeAttached();
-
-			await contentsPage.publishButton.click();
-
-			// Edit the content and check that the categorization is still there
-
-			await content.click();
-
-			await contentsPage.openSidePanel('Categorization');
-
-			await expect(tagLabel).toBeAttached();
-			await expect(categoryLabel).toBeAttached();
-
-			// Delete content
-
-			await contentsPage.goto();
-			await contentsPage.deleteContent(title);
-
-			// Delete tag
-
-			await tagsPage.goto();
-			await tagsPage.deleteTag(tagName);
-			await tagsPage.deleteTag(allSpacesTagName);
-			await tagsPage.deleteTag(defaultSpaceTagName);
-			await tagsPage.deleteTag(spaceTagName);
-
-			// Delete vocabulary
-
-			await vocabulariesPage.goto();
-			await vocabulariesPage.deleteVocabulary(vocabularyName);
-
-			// Delete space
-
-			await apiHelpers.headlessAssetLibrary.deleteAssetLibrary(spaceId);
+				await vocabulariesPage.goto();
+				await vocabulariesPage.deleteVocabulary(vocabularyName);
+			}
 		}
 	);
 });
@@ -1091,14 +1292,17 @@ test(
 
 		await contentsPage.saveContentAsDraft();
 
-		// Check that the content is saved as draft
+		// Go back to the Content list and check that the content is saved as
+		// draft
+
+		await contentsPage.goto();
 
 		await expect(
 			page
 				.locator('tr', {hasText: title})
 				.or(page.locator('.card-row', {hasText: title}))
 				.locator('.cell-embedded-status')
-		).toHaveText('draft');
+		).toHaveText(/draft/i);
 
 		// Delete content
 
@@ -1185,12 +1389,12 @@ test.describe('Schedule Publication', () => {
 					.locator('tr', {hasText: title})
 					.or(page.locator('.card-row', {hasText: title}))
 					.locator('.cell-embedded-status')
-			).toHaveText('scheduled');
+			).toHaveText(/scheduled/i);
 
 			await contentsPage.viewShowDetails(title);
 
-			expect(page.getByText('Display Date')).toBeVisible();
-			expect(page.getByText(`10/31/${nextYear}`)).toBeVisible();
+			await expect(page.getByText('Display Date')).toBeVisible();
+			await expect(page.getByText(`10/31/${nextYear}`)).toBeVisible();
 
 			// Delete content
 
@@ -1246,7 +1450,7 @@ test.describe('Schedule Publication', () => {
 			// Check that it remains on the page and the error is shown
 
 			await expect(
-				page.getByRole('heading', {name: 'Edit Basic Web Content'})
+				page.getByRole('heading', {name: 'New Basic Web Content'})
 			).toBeAttached();
 
 			await expect(
@@ -1378,7 +1582,7 @@ test.describe('Schedule Publication', () => {
 
 test(
 	'The Rich Text required error only occurs when the field has no value',
-	{tag: '@LPD-69695'},
+	{tag: ['@LPD-69695', '@LPD-93785']},
 	async ({contentsPage, page, structureBuilderPage}) => {
 
 		// Create a structure with a required Rich Text field
@@ -1415,6 +1619,10 @@ test(
 		await expect(
 			page.locator('.rich-text-input [data-required-error]')
 		).toHaveText('This field is required.');
+
+		// The AI Creator button is not available in the CMS Rich Text editor
+
+		await expect(page.getByTitle('Create AI Content')).toBeHidden();
 
 		// Fill the Rich Text field and publish the content
 
@@ -1568,11 +1776,6 @@ test(
 			trigger: card.locator('button'),
 		});
 
-		await page
-			.getByRole('dialog')
-			.getByRole('button', {name: 'Delete Entry'})
-			.click();
-
 		await waitForAlert(page, `Success:${title} was moved`, {
 			autoClose: false,
 		});
@@ -1616,6 +1819,19 @@ test(
 
 		await structureBuilderPage.publishStructure();
 
+		// Verify the embedded structure renders in the customize editor
+
+		await structureBuilderPage.customizeEditor();
+
+		await expect(
+			page.locator('.lfr-layout-structure-item-basic-component-accordion')
+		).toBeVisible();
+
+		await page
+			.locator('.management-bar')
+			.getByRole('link', {name: 'Back'})
+			.click();
+
 		// Go to CMS Contents
 
 		await contentsPage.goto();
@@ -1640,17 +1856,17 @@ test(
 
 		// Fill the fields
 
-		const firstText = page
+		const titleTextboxes = page
 			.locator('.lfr-layout-structure-item-form-relationship')
-			.getByRole('textbox', {exact: true, name: 'Title'})
-			.first();
+			.getByRole('textbox', {exact: true, name: 'Title'});
+
+		await expect(titleTextboxes).toHaveCount(2);
+
+		const firstText = titleTextboxes.first();
 
 		await firstText.fill('First Text');
 
-		const secondText = page
-			.locator('.lfr-layout-structure-item-form-relationship')
-			.getByRole('textbox', {exact: true, name: 'Title'})
-			.last();
+		const secondText = titleTextboxes.last();
 
 		await secondText.fill('Second Text');
 
@@ -1679,11 +1895,6 @@ test(
 			trigger: card.locator('button'),
 		});
 
-		await page
-			.getByRole('dialog')
-			.getByRole('button', {name: 'Delete Entry'})
-			.click();
-
 		await waitForAlert(page, `Success:${title} was moved`, {
 			autoClose: false,
 		});
@@ -1693,7 +1904,7 @@ test(
 test(
 	'Repetable text input is validated correctly',
 	{
-		tag: '@LPD-69446',
+		tag: ['@LPD-69446', '@LPD-92353'],
 	},
 	async ({contentsPage, page, structureBuilderPage}) => {
 
@@ -1747,7 +1958,9 @@ test(
 
 		const firstText = page.getByRole('textbox', {name: 'Text'}).first();
 
-		await firstText.fill('MoreThan5Characters');
+		await firstText.pressSequentially('MoreThan5Characters');
+
+		await expect(firstText).toHaveValue('MoreThan5Characters');
 
 		// Save content
 
@@ -1758,8 +1971,6 @@ test(
 		await expect(
 			page.getByText('Value exceeds maximum length of 5 for field Text.')
 		).toBeVisible();
-
-		await expect(firstText).toHaveValue('MoreThan5Characters');
 
 		// Delete content
 
@@ -1868,11 +2079,13 @@ test(
 			'webp',
 		];
 
+		const filePrefix = getRandomString();
+
 		const allowedFileNames = allowedFileExtensions.map(
-			(extension) => `sample.${extension}`
+			(extension) => `${filePrefix}.${extension}`
 		);
 
-		const fileNames = [...allowedFileNames, 'sample.pdf'];
+		const fileNames = [...allowedFileNames, `${filePrefix}.pdf`];
 
 		for (const fileName of fileNames) {
 			const objectEntry = await apiHelpers.objectEntry.postObjectEntry(
@@ -1909,6 +2122,16 @@ test(
 			visualizationMode: EFDSVisualizationMode.CARDS,
 		});
 
+		const searchInput = page.getByRole('searchbox', {name: 'Search'});
+
+		await searchInput.fill(filePrefix);
+		await searchInput.press('Enter');
+
+		await waitForFDS({
+			page,
+			visualizationMode: EFDSVisualizationMode.CARDS,
+		});
+
 		for (const fileName of allowedFileNames) {
 			await expect(
 				page.getByLabel(fileName, {exact: true})
@@ -1916,8 +2139,90 @@ test(
 		}
 
 		await expect(
-			page.getByLabel('sample.pdf', {exact: true})
+			page.getByLabel(`${filePrefix}.pdf`, {exact: true})
 		).not.toBeVisible();
+	}
+);
+
+test(
+	'Image selector lets the user open the multiple file uploader from the Upload Files button',
+	{tag: '@LPD-88407'},
+	async ({contentsPage, page}) => {
+		await contentsPage.goto();
+
+		await contentsPage.createContent('Basic Web Content');
+
+		await waitForEditor({page});
+
+		await page.getByRole('button', {name: 'Image'}).click();
+
+		await expect(page.getByText('Select Image')).toBeVisible();
+
+		const uploadFilesButton = page.getByRole('button', {
+			name: 'Upload Files',
+		});
+
+		await expect(uploadFilesButton).toBeVisible();
+
+		await uploadFilesButton.click();
+
+		await expect(
+			page.getByText('Drag and Drop your files or')
+		).toBeVisible();
+
+		await expect(
+			page.getByRole('button', {name: 'Select Files'})
+		).toBeVisible();
+	}
+);
+
+test(
+	'Video selector inserts an uploaded video file as a video element',
+	{tag: '@LPD-88969'},
+	async ({apiHelpers, contentsPage, page}) => {
+		const videoFileBase64 = 'AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDE=';
+
+		const applicationName = 'cms/basic-documents';
+
+		const fileName = `sample-${getRandomString()}.mp4`;
+
+		const objectEntry = await apiHelpers.objectEntry.postObjectEntry(
+			{
+				file: {
+					fileBase64: videoFileBase64,
+					name: fileName,
+				},
+				objectEntryFolderExternalReferenceCode: 'L_FILES',
+				title: fileName,
+			},
+			applicationName,
+			'Default'
+		);
+
+		postedObjectEntries.push({
+			applicationName,
+			id: String(objectEntry.id),
+		});
+
+		await contentsPage.goto();
+
+		await contentsPage.createContent('Basic Web Content');
+
+		await waitForEditor({page});
+
+		await page.getByRole('button', {name: 'Video'}).click();
+
+		await expect(
+			page.getByTestId('visualization-mode-cards')
+		).toBeVisible();
+
+		await page.getByLabel(`Select ${fileName}`).check();
+
+		await page.getByRole('button', {exact: true, name: 'Select'}).click();
+
+		await expect(page.locator('.modal-header')).toBeHidden();
+
+		await expect(page.locator('.ck-editor__editable video')).toBeVisible();
 	}
 );
 

@@ -7,60 +7,36 @@ import {expect, mergeTests} from '@playwright/test';
 
 import {apiHelpersTest} from '../../../fixtures/apiHelpersTest';
 import {assetPublisherPagesTest} from '../../../fixtures/assetPublisherPagesTest';
-import {dataApiHelpersTest} from '../../../fixtures/dataApiHelpersTest';
 import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
+import {isolatedChannelTest} from '../../../fixtures/isolatedChannelTest';
 import {loginAnalyticsCloudTest} from '../../../fixtures/loginAnalyticsCloudTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {pageEditorPagesTest} from '../../../fixtures/pageEditorPagesTest';
+import {clickAndExpectToBeVisible} from '../../../utils/clickAndExpectToBeVisible';
 import getRandomString from '../../../utils/getRandomString';
-import {createChannel} from './utils/channel';
+import {createIndividuals, generateIndividual} from './utils/individuals';
 import {ACPage, navigateToACPageViaURL} from './utils/navigation';
-import {changeTimeFilter} from './utils/time-filter';
-import {searchByTerm} from './utils/utils';
 
 export const test = mergeTests(
 	apiHelpersTest,
-	dataApiHelpersTest,
 	assetPublisherPagesTest,
 	pageEditorPagesTest,
 	featureFlagsTest({
 		'LPD-39304': {enabled: true},
 		'LPS-178052': {enabled: true},
 	}),
+	isolatedChannelTest,
 	loginAnalyticsCloudTest(),
 	loginTest()
 );
 
-const randomString = getRandomString();
-
-const channelName = 'My Property ' + randomString;
 const pageTitle = 'My Page';
 
-let channel;
-let project;
-
-test.beforeEach(async ({apiHelpers}) => {
-	const result = await createChannel({
-		apiHelpers,
-		channelName,
-	});
-
-	channel = result.channel;
-	project = result.project;
-});
-
-test.afterEach(async ({apiHelpers}) => {
-	await test.step('Delete channel and delete site on the DXP side', async () => {
-		await apiHelpers.jsonWebServicesOSBFaro.deleteChannel(
-			`[${channel.id}]`,
-			project.groupId
-		);
-	});
-});
-
 test('Documents visitor behavior card shows expected amount of views', async ({
+	analyticsChannel: channel,
 	apiHelpers,
 	page,
+	project,
 }) => {
 	await test.step('Create document events to appear within the Last 24 hours period in AC', async () => {
 		const date1 = new Date();
@@ -124,74 +100,291 @@ test('Documents visitor behavior card shows expected amount of views', async ({
 		]);
 	});
 
-	await test.step('Go to Analytics Cloud asset page', async () => {
-		navigateToACPageViaURL({
+	await navigateToACPageViaURL({
+		acPage: ACPage.assetPage,
+		channelID: channel.id,
+		page,
+		projectID: project.groupId,
+	});
+
+	await clickAndExpectToBeVisible({
+		autoClick: true,
+		target: page.getByRole('menuitem', {name: 'Last 24 hours'}),
+		trigger: page.getByRole('button', {name: 'Last 30 days'}),
+	});
+
+	// Open the document overview from the asset list
+
+	await page.getByRole('link', {exact: true, name: 'My Document 1'}).click();
+
+	await expect(page.getByText('Visitors Behavior')).toBeVisible();
+
+	await expect(
+		page
+			.locator('.analytics-metrics-tabs .card-tab')
+			.filter({hasText: 'Downloads'})
+			.locator('.metric-value')
+	).toHaveText('3');
+
+	await expect(
+		page
+			.locator('.analytics-metrics-tabs .card-tab')
+			.filter({hasText: 'Impressions'})
+			.locator('.metric-value')
+	).toHaveText('2');
+});
+
+test(
+	'Document overview surfaces appears-on, technology, and audience metrics',
+	{
+		tag: ['@LRAC-8419', '@LRAC-8403', '@LRAC-8414'],
+	},
+	async ({analyticsChannel: channel, apiHelpers, page, project}) => {
+
+		// Seed two known individuals and one anonymous identity so the audience card splits 2 known / 1 anonymous (66.67% / 33.33%)
+
+		const knownIndividualA = generateIndividual({name: 'ac'});
+		const knownIndividualB = generateIndividual({name: 'liferay'});
+
+		await createIndividuals({
+			apiHelpers,
+			individuals: [knownIndividualA, knownIndividualB],
+		});
+
+		const date = new Date();
+		const anonymousIdentityId = getRandomString();
+
+		await apiHelpers.jsonWebServicesOSBAsah.createIdentities([
+			{createDate: date.toISOString(), id: anonymousIdentityId},
+		]);
+
+		// Three documentDownloaded events from three distinct viewers (Downloads = 3, all Desktop)
+
+		await apiHelpers.jsonWebServicesOSBAsah.createEvents([
+			{
+				applicationId: 'Document',
+				assetId: '1',
+				assetTitle: 'DM AC Title',
+				browserName: 'Chrome',
+				canonicalUrl:
+					'/web/site-name/ac-page/-/document_library/view_file/1',
+				channelId: channel.id,
+				dataSourceId: 0,
+				deviceType: 'Desktop',
+				eventDate: date.toISOString(),
+				eventId: 'documentDownloaded',
+				title: 'DM AC Title',
+				userId: knownIndividualA.id,
+			},
+			{
+				applicationId: 'Document',
+				assetId: '1',
+				assetTitle: 'DM AC Title',
+				browserName: 'Chrome',
+				canonicalUrl:
+					'/web/site-name/ac-page/-/document_library/view_file/1',
+				channelId: channel.id,
+				dataSourceId: 0,
+				deviceType: 'Desktop',
+				eventDate: date.toISOString(),
+				eventId: 'documentDownloaded',
+				title: 'DM AC Title',
+				userId: knownIndividualB.id,
+			},
+			{
+				applicationId: 'Document',
+				assetId: '1',
+				assetTitle: 'DM AC Title',
+				browserName: 'Chrome',
+				canonicalUrl:
+					'/web/site-name/ac-page/-/document_library/view_file/1',
+				channelId: channel.id,
+				dataSourceId: 0,
+				deviceType: 'Desktop',
+				eventDate: date.toISOString(),
+				eventId: 'documentDownloaded',
+				title: 'DM AC Title',
+				userId: anonymousIdentityId,
+			},
+		]);
+
+		// Open the document overview
+
+		await navigateToACPageViaURL({
 			acPage: ACPage.assetPage,
 			channelID: channel.id,
 			page,
 			projectID: project.groupId,
 		});
-	});
 
-	await test.step('Go to Documents and Media session', async () => {
-		await page
-			.locator('.navbar-collapse')
-			.getByText('Documents and Media')
-			.click();
-	});
-
-	await test.step('Change the time filter to Last 24 hours', async () => {
-		await changeTimeFilter({
-			page,
-			timeFilterPeriod: 'Last 24 hours',
+		await clickAndExpectToBeVisible({
+			autoClick: true,
+			target: page.getByRole('menuitem', {name: 'Last 24 hours'}),
+			trigger: page.getByRole('button', {name: 'Last 30 days'}),
 		});
-	});
 
-	await test.step('Assert the document is appearing at the list', async () => {
-		const documentTitles = await page
-			.locator('.documents-and-media-root .table-title')
-			.all();
+		await page
+			.getByRole('link', {exact: true, name: 'DM AC Title'})
+			.click();
 
-		expect(documentTitles.length).toBe(1);
-	});
+		// Visitors Behavior shows Downloads = 3
 
-	let documentTitles;
+		await expect(
+			page
+				.locator('.analytics-metrics-tabs .card-tab')
+				.filter({hasText: 'Downloads'})
+				.locator('.metric-value')
+		).toHaveText('3');
 
-	await test.step('Assert the document list', async () => {
-		await searchByTerm({page, searchTerm: 'My Document 1'});
+		// Asset Appears On lists the seeded document page URL
 
-		documentTitles = await page
-			.locator('.documents-and-media-root .table-title')
-			.all();
-
-		expect(documentTitles.length).toBe(1);
-
-		expect(
-			await page
-				.locator('.documents-and-media-root .table-title')
-				.getByText('My Document 1')
+		await expect(
+			page.getByRole('cell', {
+				name: '/web/site-name/ac-page/-/document_library/view_file/1',
+			})
 		).toBeVisible();
-	});
 
-	await test.step('Go into document and check Visitors Behavior metrics', async () => {
-		await documentTitles[0].click();
+		// Downloads by Technology surfaces the Desktop device
 
-		await expect(await page.getByText('Visitors Behavior')).toBeVisible();
+		await expect(
+			page
+				.locator('.card-root')
+				.filter({hasText: 'Downloads by Technology'})
+				.getByText('Desktop')
+		).toBeVisible();
 
-		const metricTabs = await page
-			.locator('.analytics-metrics-tabs .card-tab')
-			.all();
+		// Audience card splits 66.67% known / 33.33% anonymous
 
-		const downloadsMetricTab = metricTabs[0];
+		await expect(page.getByText('66.67%')).toBeVisible();
+		await expect(page.getByText('33.33%')).toBeVisible();
+	}
+);
 
-		expect(
-			await downloadsMetricTab.locator('.metric-value').textContent()
-		).toBe('3');
+test(
+	'Document downloads are tracked on the Documents and Media asset',
+	{
+		tag: ['@LRAC-10671', '@LRAC-10672', '@LRAC-10673'],
+	},
+	async ({analyticsChannel: channel, apiHelpers, page, project}) => {
+		const date = new Date();
 
-		const impressionsMetricTab = metricTabs[1];
+		const documentDownloadedEvent = {
+			applicationId: 'Document',
+			assetId: '1',
+			assetTitle: 'DM AC Title',
+			canonicalUrl:
+				'/web/site-name/ac-page/-/document_library/view_file/1',
+			channelId: channel.id,
+			eventDate: date.toISOString(),
+			eventId: 'documentDownloaded',
+			title: 'DM AC Title',
+			userId: '1',
+		};
 
-		expect(
-			await impressionsMetricTab.locator('.metric-value').textContent()
-		).toBe('2');
-	});
-});
+		await apiHelpers.jsonWebServicesOSBAsah.createEvents([
+			documentDownloadedEvent,
+			documentDownloadedEvent,
+		]);
+
+		await navigateToACPageViaURL({
+			acPage: ACPage.assetPage,
+			channelID: channel.id,
+			page,
+			projectID: project.groupId,
+		});
+
+		await clickAndExpectToBeVisible({
+			autoClick: true,
+			target: page.getByRole('menuitem', {name: 'Last 24 hours'}),
+			trigger: page.getByRole('button', {name: 'Last 30 days'}),
+		});
+
+		await page
+			.getByRole('link', {exact: true, name: 'DM AC Title'})
+			.click();
+
+		// The Visitors Behavior card reflects the two downloads
+
+		await expect(
+			page
+				.locator('.analytics-metrics-tabs .card-tab')
+				.filter({hasText: 'Downloads'})
+				.locator('.metric-value')
+		).toHaveText('2');
+	}
+);
+
+test(
+	'Document rating is shown on the Documents and Media asset',
+	{
+		tag: ['@LRAC-11450', '@LRAC-11509'],
+	},
+	async ({analyticsChannel: channel, apiHelpers, page, project}) => {
+		const documentTitle = 'DM AC Title';
+		const canonicalUrl =
+			'/web/site-name/ac-page/-/document_library/view_file/1';
+
+		const date = new Date();
+
+		// Seed a download so the document asset appears in the list, plus a
+		// four-star (8.00/10) rating vote on the same document
+
+		await apiHelpers.jsonWebServicesOSBAsah.createEvents([
+			{
+				applicationId: 'Document',
+				assetId: '1',
+				assetTitle: documentTitle,
+				canonicalUrl,
+				channelId: channel.id,
+				eventDate: date.toISOString(),
+				eventId: 'documentDownloaded',
+				title: documentTitle,
+				userId: '1',
+			},
+			{
+				applicationId: 'Ratings',
+				assetId: '1',
+				canonicalUrl,
+				channelId: channel.id,
+				eventDate: date.toISOString(),
+				eventId: 'VOTE',
+				properties: [
+					{
+						name: 'className',
+						value: 'com.liferay.document.library.kernel.model.DLFileEntry',
+					},
+					{name: 'ratingType', value: 'stars'},
+					{name: 'score', value: '0.8'},
+				],
+				title: documentTitle,
+				userId: '1',
+			},
+		]);
+
+		await navigateToACPageViaURL({
+			acPage: ACPage.assetPage,
+			channelID: channel.id,
+			page,
+			projectID: project.groupId,
+		});
+
+		await clickAndExpectToBeVisible({
+			autoClick: true,
+			target: page.getByRole('menuitem', {name: 'Last 24 hours'}),
+			trigger: page.getByRole('button', {name: 'Last 30 days'}),
+		});
+
+		await page
+			.getByRole('link', {exact: true, name: documentTitle})
+			.click();
+
+		// The Visitors Behavior Rating metric reflects the four-star vote
+
+		await expect(
+			page
+				.locator('.analytics-metrics-tabs .card-tab')
+				.filter({hasText: 'Rating'})
+				.locator('.metric-value')
+		).toContainText('8.00');
+	}
+);

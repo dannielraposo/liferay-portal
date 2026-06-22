@@ -78,6 +78,7 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.test.rule.Inject;
@@ -145,12 +146,12 @@ public class OrderResourceTest extends BaseOrderResourceTestCase {
 			_commerceCurrency.getCode(), _serviceContext);
 
 		_country = _countryLocalService.addCountry(
-			"XY", "XYZ", true, true, RandomTestUtil.randomString(),
+			null, "XY", "XYZ", true, true, RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.nextDouble(), true, true, false, _serviceContext);
 
 		_region = _regionLocalService.addRegion(
-			_country.getCountryId(), true, RandomTestUtil.randomString(),
+			null, _country.getCountryId(), true, RandomTestUtil.randomString(),
 			RandomTestUtil.nextDouble(), RandomTestUtil.randomString(),
 			_serviceContext);
 
@@ -477,7 +478,8 @@ public class OrderResourceTest extends BaseOrderResourceTestCase {
 			).authentication(
 				user.getEmailAddress(), "test"
 			).endpoint(
-				testCompany.getVirtualHostname(), 8080, "http"
+				testCompany.getVirtualHostname(),
+				PortalUtil.getPortalServerPort(false), "http"
 			).locale(
 				LocaleUtil.getDefault()
 			).build();

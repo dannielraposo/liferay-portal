@@ -82,6 +82,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProgressTracker;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsValues;
@@ -482,9 +483,11 @@ public class EditInfoItemStrutsActionTest {
 	@Test
 	public void testAddInfoItemWithEmbeddedSuccessMessage() throws Exception {
 		_testAddInfoItem(
-			null, "http://localhost:8080/home", null, null, null, null, null,
-			null, "123456", "123456", null, null, null, null,
-			WorkflowConstants.STATUS_APPROVED);
+			null,
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/home",
+			null, null, null, null, null, null, "123456", "123456", null, null,
+			null, null, WorkflowConstants.STATUS_APPROVED);
 	}
 
 	@Test
@@ -524,8 +527,10 @@ public class EditInfoItemStrutsActionTest {
 	public void testAddInfoItemWithPageSuccessMessage() throws Exception {
 		_testAddInfoItem(
 			null, null, null, null, null, null, null, null, "123456", "123456",
-			null, null, "http://localhost:8080/home", null,
-			WorkflowConstants.STATUS_APPROVED);
+			null, null,
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/home",
+			null, WorkflowConstants.STATUS_APPROVED);
 	}
 
 	@FeatureFlag("LPD-17564")
@@ -657,9 +662,14 @@ public class EditInfoItemStrutsActionTest {
 			new MockMultipartHttpServletRequest();
 
 		mockMultipartHttpServletRequest.addHeader(
-			HttpHeaders.REFERER, "http://localhost:8080/error");
+			HttpHeaders.REFERER,
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/error");
 		mockMultipartHttpServletRequest.setContentType(
 			"multipart/form-data;boundary=" + System.currentTimeMillis());
+
+		ListTypeEntry listTypeEntry1 = _listTypeEntries.get(0);
+		ListTypeEntry listTypeEntry2 = _listTypeEntries.get(1);
 
 		Map<String, List<String>> regularParameters =
 			HashMapBuilder.<String, List<String>>put(
@@ -670,7 +680,14 @@ public class EditInfoItemStrutsActionTest {
 				"groupId",
 				Collections.singletonList(String.valueOf(_group.getGroupId()))
 			).put(
-				"myBoolean", Collections.singletonList(Boolean.TRUE.toString())
+				"ObjectField_myBoolean",
+				Collections.singletonList(Boolean.TRUE.toString())
+			).put(
+				"ObjectField_myLocalizedMultiselectPicklist_en_US",
+				Arrays.asList(listTypeEntry1.getKey(), listTypeEntry2.getKey())
+			).put(
+				"ObjectField_myMultiselectPicklist",
+				Arrays.asList(listTypeEntry1.getKey(), listTypeEntry2.getKey())
 			).put(
 				"p_l_id",
 				Collections.singletonList(String.valueOf(_layout.getPlid()))
@@ -710,14 +727,20 @@ public class EditInfoItemStrutsActionTest {
 
 		regularParameters.put(
 			"checkboxNames",
-			Collections.singletonList("ObjectField_myBoolean"));
+			Arrays.asList(
+				"ObjectField_myBoolean",
+				"ObjectField_myLocalizedMultiselectPicklist",
+				"ObjectField_myMultiselectPicklist"));
 		regularParameters.put(
 			"classNameId", Collections.singletonList(_classNameId));
 		regularParameters.put(
 			"classPK",
 			Collections.singletonList(
 				String.valueOf(objectEntry.getObjectEntryId())));
-		regularParameters.remove("myBoolean");
+		regularParameters.remove("ObjectField_myBoolean");
+		regularParameters.remove(
+			"ObjectField_myLocalizedMultiselectPicklist_en_US");
+		regularParameters.remove("ObjectField_myMultiselectPicklist");
 
 		mockHttpServletResponse = new MockHttpServletResponse();
 
@@ -740,6 +763,12 @@ public class EditInfoItemStrutsActionTest {
 
 		Assert.assertEquals(
 			Boolean.FALSE.toString(), String.valueOf(values.get("myBoolean")));
+		Assert.assertEquals(
+			StringPool.BLANK,
+			String.valueOf(values.get("myLocalizedMultiselectPicklist")));
+		Assert.assertEquals(
+			StringPool.BLANK,
+			String.valueOf(values.get("myMultiselectPicklist")));
 	}
 
 	@Test
@@ -984,6 +1013,16 @@ public class EditInfoItemStrutsActionTest {
 			).name(
 				"myMultiselectPicklist"
 			).build(),
+			new MultiselectPicklistObjectFieldBuilder(
+			).labelMap(
+				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString())
+			).listTypeDefinitionId(
+				_listTypeDefinition.getListTypeDefinitionId()
+			).localized(
+				true
+			).name(
+				"myLocalizedMultiselectPicklist"
+			).build(),
 			ObjectFieldUtil.createObjectField(
 				ObjectFieldConstants.BUSINESS_TYPE_DATE,
 				ObjectFieldConstants.DB_TYPE_DATE,
@@ -1148,7 +1187,9 @@ public class EditInfoItemStrutsActionTest {
 			new MockMultipartHttpServletRequest();
 
 		mockMultipartHttpServletRequest.addHeader(
-			HttpHeaders.REFERER, "http://localhost:8080/error");
+			HttpHeaders.REFERER,
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/error");
 		mockMultipartHttpServletRequest.setContentType(
 			"multipart/form-data;boundary=" + System.currentTimeMillis());
 
@@ -1253,7 +1294,9 @@ public class EditInfoItemStrutsActionTest {
 		}
 
 		mockMultipartHttpServletRequest.addHeader(
-			HttpHeaders.REFERER, "http://localhost:8080/error");
+			HttpHeaders.REFERER,
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/error");
 
 		return UploadTestUtil.createUploadPortletRequest(
 			UploadTestUtil.createUploadServletRequest(

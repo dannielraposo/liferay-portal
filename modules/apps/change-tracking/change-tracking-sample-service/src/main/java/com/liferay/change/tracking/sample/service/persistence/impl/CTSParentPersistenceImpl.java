@@ -13,17 +13,13 @@ import com.liferay.change.tracking.sample.model.impl.CTSParentModelImpl;
 import com.liferay.change.tracking.sample.service.persistence.CTSParentPersistence;
 import com.liferay.change.tracking.sample.service.persistence.CTSParentUtil;
 import com.liferay.change.tracking.sample.service.persistence.impl.constants.CTSPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
@@ -80,67 +76,14 @@ public class CTSParentPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<CTSParent>
+	private CollectionPersistenceFinder<CTSParent, NoSuchCTSParentException>
 		_collectionPersistenceFinderByCompanyId;
 
 	/**
-	 * Returns all the cts parents where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching cts parents
-	 */
-	@Override
-	public List<CTSParent> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cts parents where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTSParentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cts parents
-	 * @param end the upper bound of the range of cts parents (not inclusive)
-	 * @return the range of matching cts parents
-	 */
-	@Override
-	public List<CTSParent> findByCompanyId(long companyId, int start, int end) {
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the cts parents where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTSParentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cts parents
-	 * @param end the upper bound of the range of cts parents (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cts parents
-	 */
-	@Override
-	public List<CTSParent> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<CTSParent> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cts parents where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTSParentModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTSParentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -156,14 +99,9 @@ public class CTSParentPersistenceImpl
 		OrderByComparator<CTSParent> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CTSParent.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				finderCache, new Object[] {companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			finderCache, new Object[] {companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -179,16 +117,8 @@ public class CTSParentPersistenceImpl
 			long companyId, OrderByComparator<CTSParent> orderByComparator)
 		throws NoSuchCTSParentException {
 
-		CTSParent ctsParent = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (ctsParent != null) {
-			return ctsParent;
-		}
-
-		throw new NoSuchCTSParentException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -225,83 +155,18 @@ public class CTSParentPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CTSParent.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				finderCache, new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			finderCache, new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<CTSParent>
+	private CollectionPersistenceFinder<CTSParent, NoSuchCTSParentException>
 		_collectionPersistenceFinderByC_C;
 
 	/**
-	 * Returns all the cts parents where companyId = &#63; and ctsGrandParentId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param ctsGrandParentId the cts grand parent ID
-	 * @return the matching cts parents
-	 */
-	@Override
-	public List<CTSParent> findByC_C(long companyId, long ctsGrandParentId) {
-		return findByC_C(
-			companyId, ctsGrandParentId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the cts parents where companyId = &#63; and ctsGrandParentId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTSParentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param ctsGrandParentId the cts grand parent ID
-	 * @param start the lower bound of the range of cts parents
-	 * @param end the upper bound of the range of cts parents (not inclusive)
-	 * @return the range of matching cts parents
-	 */
-	@Override
-	public List<CTSParent> findByC_C(
-		long companyId, long ctsGrandParentId, int start, int end) {
-
-		return findByC_C(companyId, ctsGrandParentId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the cts parents where companyId = &#63; and ctsGrandParentId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTSParentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param ctsGrandParentId the cts grand parent ID
-	 * @param start the lower bound of the range of cts parents
-	 * @param end the upper bound of the range of cts parents (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cts parents
-	 */
-	@Override
-	public List<CTSParent> findByC_C(
-		long companyId, long ctsGrandParentId, int start, int end,
-		OrderByComparator<CTSParent> orderByComparator) {
-
-		return findByC_C(
-			companyId, ctsGrandParentId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cts parents where companyId = &#63; and ctsGrandParentId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTSParentModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTSParentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -318,14 +183,9 @@ public class CTSParentPersistenceImpl
 		OrderByComparator<CTSParent> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CTSParent.class)) {
-
-			return _collectionPersistenceFinderByC_C.find(
-				finderCache, new Object[] {companyId, ctsGrandParentId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_C.find(
+			finderCache, new Object[] {companyId, ctsGrandParentId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -343,17 +203,9 @@ public class CTSParentPersistenceImpl
 			OrderByComparator<CTSParent> orderByComparator)
 		throws NoSuchCTSParentException {
 
-		CTSParent ctsParent = fetchByC_C_First(
-			companyId, ctsGrandParentId, orderByComparator);
-
-		if (ctsParent != null) {
-			return ctsParent;
-		}
-
-		throw new NoSuchCTSParentException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, ctsGrandParentId}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			finderCache, new Object[] {companyId, ctsGrandParentId},
+			orderByComparator);
 	}
 
 	/**
@@ -395,13 +247,8 @@ public class CTSParentPersistenceImpl
 	 */
 	@Override
 	public int countByC_C(long companyId, long ctsGrandParentId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CTSParent.class)) {
-
-			return _collectionPersistenceFinderByC_C.count(
-				finderCache, new Object[] {companyId, ctsGrandParentId});
-		}
+		return _collectionPersistenceFinderByC_C.count(
+			finderCache, new Object[] {companyId, ctsGrandParentId});
 	}
 
 	public CTSParentPersistenceImpl() {
@@ -638,62 +485,54 @@ public class CTSParentPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId, _SQL_SELECT_CTSPARENT_WHERE,
-				_SQL_COUNT_CTSPARENT_WHERE, CTSParentModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_CTSPARENT_WHERE, _SQL_COUNT_CTSPARENT_WHERE,
+				CTSParentModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"ctsParent.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, CTSParent::getCompanyId));
 
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "ctsGrandParentId"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "ctsGrandParentId"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "ctsGrandParentId"}, false);
-
 		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "ctsGrandParentId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "ctsGrandParentId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "ctsGrandParentId"}, false),
 			_SQL_SELECT_CTSPARENT_WHERE, _SQL_COUNT_CTSPARENT_WHERE,
-			CTSParentModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			CTSParentModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"ctsParent.", "companyId", FinderColumn.Type.LONG, "=", true,
-				false, CTSParent::getCompanyId),
+				true, CTSParent::getCompanyId),
 			new FinderColumn<>(
 				"ctsParent.", "ctsGrandParentId", FinderColumn.Type.LONG, "=",
 				true, true, CTSParent::getCtsGrandParentId));
@@ -758,13 +597,10 @@ public class CTSParentPersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No CTSParent exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		CTSParentPersistenceImpl.class);
-
 	@Override
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-406047957
+// LIFERAY-SERVICE-BUILDER-HASH:-1696593042

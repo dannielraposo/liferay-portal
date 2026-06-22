@@ -4,53 +4,48 @@ import OverviewCDP from '../OverviewCDP';
 import React from 'react';
 import {cleanup, render} from '@testing-library/react';
 import {Individual} from 'shared/util/records';
-import {MockedProvider} from '@apollo/client/testing';
-import {
-	mockEventMetrics,
-	mockPreferenceReq,
-	mockSessions,
-	mockTimeRangeReq
-} from 'test/graphql-data';
 import {Provider} from 'react-redux';
 import {StaticRouter} from 'react-router';
-import {waitForLoadingToBeRemoved} from 'test/helpers';
 
 jest.unmock('react-dom');
 
-const variables = {channelId: undefined};
+jest.mock('../../components/ContextualInformation', () => ({
+	__esModule: true,
+	default: () => <div>{'ContextualInformation'}</div>
+}));
+
+jest.mock('../../hoc/ProfileCardCDP', () => ({
+	__esModule: true,
+	default: () => <div>{'ProfileCardCDP'}</div>
+}));
+
+const mockIndividual = data.getImmutableMock(Individual, data.mockIndividual);
+
+const renderComponent = () =>
+	render(
+		<Provider store={mockStore()}>
+			<StaticRouter>
+				<OverviewCDP groupId='23' individual={mockIndividual} />
+			</StaticRouter>
+		</Provider>
+	);
 
 describe('IndividualOverview', () => {
-	afterEach(cleanup);
+	afterEach(() => {
+		cleanup();
+	});
 
-	it('should render', async () => {
-		const {container} = render(
-			<MockedProvider
-				mocks={[
-					mockEventMetrics(variables),
-					mockTimeRangeReq(),
-					mockPreferenceReq(),
-					mockSessions(variables)
-				]}
-			>
-				<Provider store={mockStore()}>
-					<StaticRouter>
-						<OverviewCDP
-							groupId='23'
-							id='test'
-							individual={data.getImmutableMock(
-								Individual,
-								data.mockIndividual
-							)}
-						/>
-					</StaticRouter>
-				</Provider>
-			</MockedProvider>
-		);
+	it('should render the contextual information and profile card sections', () => {
+		const {getByText} = renderComponent();
 
-		jest.runAllTimers();
+		expect(getByText('ContextualInformation')).toBeTruthy();
+		expect(getByText('ProfileCardCDP')).toBeTruthy();
+	});
 
-		await waitForLoadingToBeRemoved(container);
+	it('should not render the no site data synced empty state', () => {
+		const {queryByText} = renderComponent();
 
-		expect(container).toMatchSnapshot();
+		expect(queryByText('No Site Data Synced')).not.toBeInTheDocument();
+		expect(queryByText('Connect Data Source')).not.toBeInTheDocument();
 	});
 });

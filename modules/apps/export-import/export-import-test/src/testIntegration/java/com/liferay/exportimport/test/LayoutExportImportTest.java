@@ -14,6 +14,7 @@ import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.fragment.service.FragmentEntryLocalService;
+import com.liferay.friendly.url.constants.FriendlyURLEntryConstants;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.layout.friendly.url.LayoutFriendlyURLEntryHelper;
@@ -26,6 +27,7 @@ import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
 import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
 import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.LayoutFriendlyURLsException;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -55,6 +57,9 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -653,6 +658,8 @@ public class LayoutExportImportTest extends BaseExportImportTestCase {
 				group.getGroupId(),
 				_layoutFriendlyURLEntryHelper.getClassNameId(
 					layoutA.isPrivateLayout()),
+				FriendlyURLEntryConstants.
+					FRIENDLY_URL_ENTRY_PARENT_CLASS_PK_DEFAULT,
 				friendlyURLA);
 
 		_friendlyURLEntryLocalService.deleteFriendlyURLEntry(
@@ -669,6 +676,8 @@ public class LayoutExportImportTest extends BaseExportImportTestCase {
 			group.getGroupId(),
 			_layoutFriendlyURLEntryHelper.getClassNameId(
 				layoutB.isPrivateLayout()),
+			FriendlyURLEntryConstants.
+				FRIENDLY_URL_ENTRY_PARENT_CLASS_PK_DEFAULT,
 			friendlyURLB);
 
 		_friendlyURLEntryLocalService.deleteFriendlyURLEntry(
@@ -681,10 +690,29 @@ public class LayoutExportImportTest extends BaseExportImportTestCase {
 		_layoutLocalService.updateFriendlyURL(
 			layoutA.getUserId(), layoutA.getPlid(), friendlyURLB + "-de", "de");
 
-		exportImportLayouts(layoutIds, getImportParameterMap());
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.batch.engine.internal." +
+					"BatchEngineImportTaskExecutorImpl",
+				LoggerTestUtil.ERROR)) {
 
-		_assertNewFriendlyURL(layoutA, friendlyURLB);
-		_assertNewFriendlyURL(layoutB, friendlyURLA);
+			exportImportLayouts(layoutIds, getImportParameterMap());
+
+			List<LogEntry> logEntries = logCapture.getLogEntries();
+
+			Assert.assertEquals(
+				logEntries.toString(), layoutIds.length, logEntries.size());
+
+			for (LogEntry logEntry : logEntries) {
+				Throwable throwable = logEntry.getThrowable();
+
+				Assert.assertTrue(
+					String.valueOf(throwable),
+					throwable instanceof LayoutFriendlyURLsException);
+			}
+		}
+
+		_assertFriendlyURL(layoutA, friendlyURLA);
+		_assertFriendlyURL(layoutB, friendlyURLB);
 	}
 
 	@FeatureFlag("LPD-34594")
@@ -771,19 +799,25 @@ public class LayoutExportImportTest extends BaseExportImportTestCase {
 		}
 	}
 
-	private void _assertNewFriendlyURL(Layout layout, String friendlyURL)
+	private void _assertFriendlyURL(Layout layout, String friendlyURL)
 		throws Exception {
 
 		Layout importedLayout = _layoutLocalService.getLayoutByUuidAndGroupId(
 			layout.getUuid(), importedGroup.getGroupId(),
 			layout.isPrivateLayout());
 
+		Assert.assertEquals(
+			friendlyURL,
+			importedLayout.getFriendlyURL(LocaleUtil.getDefault()));
+
 		FriendlyURLEntry friendlyURLEntry =
 			_friendlyURLEntryLocalService.fetchFriendlyURLEntry(
 				importedGroup.getGroupId(),
 				_layoutFriendlyURLEntryHelper.getClassNameId(
 					importedLayout.isPrivateLayout()),
-				friendlyURL + "-1");
+				FriendlyURLEntryConstants.
+					FRIENDLY_URL_ENTRY_PARENT_CLASS_PK_DEFAULT,
+				friendlyURL);
 
 		Assert.assertEquals(
 			importedLayout.getPlid(), friendlyURLEntry.getClassPK());

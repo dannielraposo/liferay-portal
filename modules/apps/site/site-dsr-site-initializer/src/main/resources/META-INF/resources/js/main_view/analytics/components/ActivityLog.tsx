@@ -9,7 +9,6 @@ import React, {useEffect, useState} from 'react';
 import useAnalyticsQuery from '../../../common/hooks/useAnalyticsQuery';
 
 import './../../../../css/components/ActivityLog.scss';
-import ActivityLogQuery from '../queries/ActivityLogQuery';
 import {
 	IActivityLogEntry,
 	ILogEntry,
@@ -22,21 +21,81 @@ import UserLogEntry from './UserLogEntry';
 
 export const TYPES = [
 	{
+		category: 'comment',
 		icon: 'comments',
-		key: 'comment',
-		label: Liferay.Language.get('commented-on'),
+		key: 'commentPosted',
+		label: Liferay.Language.get('commented'),
 	},
 	{
-		icon: 'upload',
-		key: 'upload',
-		label: Liferay.Language.get('uploaded-a-x'),
+		category: 'download',
+		icon: 'download',
+		key: 'documentDownloaded',
+		label: sub(
+			Liferay.Language.get('downloaded-a-x'),
+			Liferay.Language.get('document')
+		),
 	},
 	{
+		category: 'view',
 		icon: 'view',
-		key: 'view',
-		label: Liferay.Language.get('viewed-a-x'),
+		key: 'documentPreviewed',
+		label: sub(
+			Liferay.Language.get('viewed-a-x'),
+			Liferay.Language.get('document')
+		),
+	},
+	{
+		category: 'upload',
+		icon: 'upload',
+		key: 'documentUploaded',
+		label: sub(
+			Liferay.Language.get('uploaded-a-x'),
+			Liferay.Language.get('document')
+		),
+	},
+	{
+		category: 'view',
+		icon: 'view',
+		key: 'pageViewed',
+		label: sub(
+			Liferay.Language.get('viewed-a-x'),
+			Liferay.Language.get('page')
+		),
 	},
 ];
+
+interface IUserSessionEvent {
+	assetTitle: string;
+	createDate: string;
+	emailAddressHashed: string;
+	name: string;
+	properties?: [{name: string; value: string}];
+}
+
+interface IUserSessionsPage {
+	totalEvents?: number;
+	userSessions?: Array<{
+		userName?: string;
+		userSessionEvents?: IUserSessionEvent[];
+	}>;
+}
+
+const toActivityLogEntries = (
+	response: IUserSessionsPage
+): IActivityLogEntry[] => {
+	const userSessions = response?.userSessions ?? [];
+
+	return userSessions.flatMap((userSession) =>
+		(userSession.userSessionEvents ?? []).map((event) => ({
+			createDate: Date.parse(event.createDate),
+			description: event.properties?.find(({name}) => name === 'comment')
+				?.value,
+			title: event.assetTitle,
+			type: event.name,
+			userName: userSession.userName,
+		}))
+	);
+};
 
 const formatData = (data: IActivityLogEntry[]) => {
 	return data.reduce((activityLog: TActivityLog, item: IActivityLogEntry) => {
@@ -61,13 +120,9 @@ const formatData = (data: IActivityLogEntry[]) => {
 
 		const logEntry: ILogEntry = {
 			...item,
+			category: type ? type.category : '',
 			icon: type ? type.icon : '',
-			label: type
-				? sub(
-						Liferay.Language.get(type.label),
-						Liferay.Language.get(item.label || '')
-					)
-				: '',
+			label: type ? type.label : item.label,
 			time: timeString,
 		};
 
@@ -89,28 +144,19 @@ const formatData = (data: IActivityLogEntry[]) => {
 	}, {});
 };
 
-function ActivityLog({
-	dsrDevEnvEnabled: useDevEnvData,
-}: {
-	dsrDevEnvEnabled: boolean;
-}) {
+function ActivityLog({isAnalyticsEnabled}: {isAnalyticsEnabled: boolean}) {
 	const [data, setData] = useState<TActivityLog>({});
 	const [element, setElement] = useState<HTMLElement | null>(null);
 
 	const {isLoading, response} = useAnalyticsQuery({
 		element,
-		query: ActivityLogQuery,
-		settings: {
-			checkViewportVisibility: true,
-			useDevEnvData,
-		},
+		query: {paths: [{key: 'userSessions', path: '/user-sessions'}]},
+		settings: {isAnalyticsEnabled},
 		variables: {
-			channelId: '',
 			entityType: 'INDIVIDUAL',
 			keywords: '',
-			page: 1,
+			page: 0,
 			rangeEnd: null,
-			rangeKey: 7,
 			rangeStart: null,
 			size: 20,
 		},
@@ -118,9 +164,7 @@ function ActivityLog({
 
 	useEffect(() => {
 		if (response) {
-			const formattedData = formatData(response);
-
-			setData(formattedData);
+			setData(formatData(toActivityLogEntries(response.userSessions)));
 		}
 
 		return () => {};
@@ -132,34 +176,44 @@ function ActivityLog({
 			title={Liferay.Language.get('activity-log')}
 		>
 			<div ref={setElement}>
-				{isLoading ? (
-					<Loader />
-				) : !Object.keys(data).length ? (
-					<p className="mt-3 text-center text-muted">
-						{Liferay.Language.get('no-data-available')}
-					</p>
-				) : (
-					Object.entries(data).map(
-						([date, userLogs]: [string, IUserLogsEntry[]]) => (
-							<>
-								<div className="activity-logs-date fw-600 mb-3 px-3 py-2 text-secondary">
-									{date}
-								</div>
+				{isAnalyticsEnabled ? (
+					isLoading ? (
+						<Loader />
+					) : !Object.keys(data).length ? (
+						<p className="mt-3 text-center text-muted">
+							{Liferay.Language.get('no-data-available')}
+						</p>
+					) : (
+						Object.entries(data).map(
+							([date, userLogs]: [string, IUserLogsEntry[]]) => (
+								<>
+									<div className="activity-logs-date fw-600 mb-3 px-3 py-2 text-secondary">
+										{date}
+									</div>
 
-								{userLogs.map(
-									(
-										userLogsEntry: IUserLogsEntry,
-										index: number
-									) => (
-										<UserLogEntry
-											key={index}
-											{...userLogsEntry}
-										/>
-									)
-								)}
-							</>
+									{userLogs.map(
+										(
+											userLogsEntry: IUserLogsEntry,
+											index: number
+										) => (
+											<UserLogEntry
+												key={index}
+												{...userLogsEntry}
+											/>
+										)
+									)}
+								</>
+							)
 						)
 					)
+				) : (
+					<div className="dsr-analytics-empty-message">
+						<p className="mb-0 text-center text-muted">
+							{Liferay.Language.get(
+								'analytics-cloud-is-not-configured'
+							)}
+						</p>
+					</div>
 				)}
 			</div>
 		</AnalyticsFrame>

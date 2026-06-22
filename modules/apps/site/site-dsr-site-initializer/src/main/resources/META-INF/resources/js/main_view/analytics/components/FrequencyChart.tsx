@@ -16,9 +16,13 @@ import {
 
 import useAnalyticsQuery from '../../../common/hooks/useAnalyticsQuery';
 import {IFrequencyChartItem} from '../../../common/utils/types';
-import FrequencyChartQuery from '../queries/FrequencyChartQuery';
 import AnalyticsFrame from './AnalyticsFrame';
 import Loader from './Loader';
+
+interface IVisitFrequencyItem {
+	count: number;
+	name: string;
+}
 
 const margin = {
 	bottom: 5,
@@ -45,44 +49,34 @@ const getFrequencyLabel = (type: string): string => {
 };
 
 const formatData = (
-	frequencyChartItems: IFrequencyChartItem[]
+	visitFrequencyItems: IVisitFrequencyItem[]
 ): IFrequencyChartItem[] => {
-	if (!frequencyChartItems) {
+	if (!visitFrequencyItems) {
 		return [];
 	}
 
-	return frequencyChartItems.map((frequencyChartItem) => ({
-		frequencyType: getFrequencyLabel(frequencyChartItem.frequencyType),
-		visitCount: frequencyChartItem.visitCount || 0,
+	return visitFrequencyItems.map((visitFrequencyItem) => ({
+		frequencyType: getFrequencyLabel(visitFrequencyItem.name),
+		visitCount: visitFrequencyItem.count || 0,
 	}));
 };
 
-function FrequencyChart({
-	dsrDevEnvEnabled: useDevEnvData,
-}: {
-	dsrDevEnvEnabled: boolean;
-}) {
+function FrequencyChart({isAnalyticsEnabled}: {isAnalyticsEnabled: boolean}) {
 	const [data, setData] = useState<IFrequencyChartItem[]>([]);
 	const [element, setElement] = useState<HTMLElement | null>(null);
 
 	const {isLoading, response} = useAnalyticsQuery({
 		element,
-		query: FrequencyChartQuery,
-		settings: {
-			checkViewportVisibility: true,
-			useDevEnvData,
-		},
+		query: {paths: [{key: 'visitFrequency', path: '/visit-frequency'}]},
+		settings: {isAnalyticsEnabled},
 		variables: {
-			channelId: '',
 			rangeKey: 30,
 		},
 	});
 
 	useEffect(() => {
 		if (response) {
-			const formattedData = formatData(response);
-
-			setData(formattedData);
+			setData(formatData(response.visitFrequency?.visitFrequencyItems));
 		}
 
 		return () => {};
@@ -91,62 +85,74 @@ function FrequencyChart({
 	return (
 		<AnalyticsFrame
 			icon="liferay-ac"
-			title={Liferay.Language.get('visits-frequency')}
+			title={Liferay.Language.get('average-visits')}
 		>
 			<div ref={setElement}>
-				{isLoading ? (
-					<Loader />
-				) : !data?.length ? (
-					<p className="mt-3 text-center text-muted">
-						{Liferay.Language.get('no-data-available')}
-					</p>
-				) : (
-					<ResponsiveContainer aspect={1.4028} width="100%">
-						<BarChart data={data} margin={margin}>
-							{data.map(
-								(
-									frequencyChartItem: IFrequencyChartItem,
-									index: number
-								) => {
-									return (
-										<ReferenceLine
-											key={`bg-strip-${index}`}
-											stroke="#E5F1FF"
-											strokeOpacity={0.3}
-											strokeWidth={60}
-											x={frequencyChartItem.frequencyType}
-										/>
-									);
-								}
-							)}
-
-							<CartesianGrid
-								stroke="#ccc"
-								strokeDasharray="5 5"
-								vertical={(props: any) => (
-									<line
-										key={props.key}
-										stroke="none"
-										x1={props.x1}
-										x2={props.x2}
-										y1={props.y1}
-										y2={props.y2}
-									/>
+				{isAnalyticsEnabled ? (
+					isLoading ? (
+						<Loader />
+					) : !data?.length ? (
+						<p className="mt-3 text-center text-muted">
+							{Liferay.Language.get('no-data-available')}
+						</p>
+					) : (
+						<ResponsiveContainer aspect={1.4028} width="100%">
+							<BarChart data={data} margin={margin}>
+								{data.map(
+									(
+										frequencyChartItem: IFrequencyChartItem,
+										index: number
+									) => {
+										return (
+											<ReferenceLine
+												key={`bg-strip-${index}`}
+												stroke="#E5F1FF"
+												strokeOpacity={0.3}
+												strokeWidth={60}
+												x={
+													frequencyChartItem.frequencyType
+												}
+											/>
+										);
+									}
 								)}
-							/>
 
-							<Bar
-								barSize={60}
-								dataKey="visitCount"
-								fill="#97C5FF"
-								radius={[4, 4, 0, 0]}
-							/>
+								<CartesianGrid
+									stroke="#ccc"
+									strokeDasharray="5 5"
+									vertical={(props: any) => (
+										<line
+											key={props.key}
+											stroke="none"
+											x1={props.x1}
+											x2={props.x2}
+											y1={props.y1}
+											y2={props.y2}
+										/>
+									)}
+								/>
 
-							<XAxis dataKey="frequencyType" />
+								<Bar
+									barSize={60}
+									dataKey="visitCount"
+									fill="#97C5FF"
+									radius={[4, 4, 0, 0]}
+								/>
 
-							<YAxis />
-						</BarChart>
-					</ResponsiveContainer>
+								<XAxis dataKey="frequencyType" />
+
+								<YAxis />
+							</BarChart>
+						</ResponsiveContainer>
+					)
+				) : (
+					<div className="dsr-analytics-empty-message">
+						<p className="mb-0 text-center text-muted">
+							{Liferay.Language.get(
+								'analytics-cloud-is-not-configured'
+							)}
+						</p>
+					</div>
 				)}
 			</div>
 		</AnalyticsFrame>

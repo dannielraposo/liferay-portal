@@ -1,10 +1,10 @@
 dependencies {
 	testImplementation group: "com.liferay", name: "jakarta.ws.rs", version: "3.1.0.LIFERAY-PATCHED-1"
-	testImplementation group: "com.liferay", name: "org.osgi.service.jaxrs", version: "1.0.0.JAKARTA-LIFERAY-PATCHED-1"
 	testImplementation group: "com.liferay.jakarta.portlet", name: "com.liferay.jakarta.portlet-api", version: "4.0.0"
 	testImplementation group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	testImplementation group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
 	testImplementation group: "jakarta.servlet", name: "jakarta.servlet-api", version: "6.0.0"
+	testImplementation group: "org.osgi", name: "org.osgi.service.jaxrs", version: "1.0.1"
 	testImplementation group: "org.osgi", name: "osgi.core", version: "6.0.0"
 	testImplementation group: "org.skyscreamer", name: "jsonassert", version: "1.2.3"
 	testImplementation project(":apps:depot:depot-api")
@@ -48,9 +48,11 @@ dependencies {
 	testIntegrationImplementation project(":apps:data-engine:data-engine-rest-api")
 	testIntegrationImplementation project(":apps:dynamic-data-lists:dynamic-data-lists-api")
 	testIntegrationImplementation project(":apps:dynamic-data-mapping:dynamic-data-mapping-form-builder")
+	testIntegrationImplementation project(":apps:dynamic-data-mapping:dynamic-data-mapping-item-selector-api")
 	testIntegrationImplementation project(":apps:export-import:export-import-test-util")
 	testIntegrationImplementation project(":apps:fragment:fragment-api")
 	testIntegrationImplementation project(":apps:fragment:fragment-service")
+	testIntegrationImplementation project(":apps:item-selector:item-selector-api")
 	testIntegrationImplementation project(":apps:journal:journal-article-dynamic-data-mapping-form-field-type-api")
 	testIntegrationImplementation project(":apps:journal:journal-test-util")
 	testIntegrationImplementation project(":apps:portal-configuration:portal-configuration-test-util")

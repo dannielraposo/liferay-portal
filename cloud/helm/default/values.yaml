@@ -23,15 +23,25 @@ autoscaling:
             annotations: {}
             spec: {}
         triggers:
+            cpu-usage-percent:
+                metadata:
+                    value: "80"
+                metricType: Utilization
+                type: cpu
             hikari-active-connections:
                 metadata:
                     metricName: hikari_active_connections
-                    query: max({__name__=~"com_zaxxer_hikari_pool_hikaripool_.*_activeconnections"})
+                    query: max(hikaricp_ActiveConnections{namespace="{{ include "liferay.namespace" . }}"})
                     threshold: "50"
+            jvm-memory-heap-used-percent:
+                metadata:
+                    metricName: jvm_memory_heap_used_percent
+                    query: max(jvm_memory_used_bytes{area="heap",namespace="{{ include "liferay.namespace" . }}"} / jvm_memory_max_bytes{area="heap",namespace="{{ include "liferay.namespace" . }}"} * 100)
+                    threshold: "80"
             jvm-threads-current:
                 metadata:
                     metricName: jvm_threads_current
-                    query: jvm_threads_current
+                    query: max(jvm_threads_current{namespace="{{ include "liferay.namespace" . }}"})
                     threshold: "500"
     type: hpa
 configmap:
@@ -53,18 +63,13 @@ customInitContainers:
                             {{- end }}
                     envFrom:
                         -   secretRef:
-                                name: managed-service-details
+                                name: overlay-bucket-details
                     image: {{ printf "%s:%s" .overlay.image.repository (.overlay.image.tag | toString) }}
                     name: liferay-overlay
+                    {{- with .securityContext }}
                     securityContext:
-                        allowPrivilegeEscalation: false
-                        capabilities:
-                            drop:
-                                -   ALL
-                        runAsNonRoot: true
-                        runAsUser: 1000
-                        seccompProfile:
-                            type: RuntimeDefault
+                        {{- toYaml . | nindent 24 }}
+                    {{- end }}
                     volumeMounts:
                         -   mountPath: /liferay-init-scripts/overlay-sync.sh
                             name: {{ .overlay.initScriptsVolumeName }}
@@ -216,6 +221,10 @@ env:
     -   name: JMX_AGENT_YAML
         value: |
             rules:
+            -   pattern: "com.zaxxer.hikari<type=Pool \\(([^)]+)\\)><>(\\w+)"
+                name: hikaricp_$2
+                labels:
+                    pool: "$1"
             -   pattern: ".*"
     -   name: LIFERAY_CLUSTER_PERIOD_LINK_PERIOD_BIND_PERIOD_ADDR_OPENBRACKET__QUOTE_CLUSTER_MINUS_LINK_MINUS_CONTROL_QUOTE__CLOSEBRACKET_
         value: ${env.POD_IP}
@@ -228,7 +237,7 @@ env:
     -   name: LIFERAY_TOMCAT_SESSION_REPLICATION_ENABLED
         value: "true"
     -   name: LIFERAY_VIRTUAL_PERIOD_HOSTS_PERIOD_IGNORE_PERIOD_HOSTS
-        value: 127.0.0.1,localhost,${env:POD_IP}
+        value: 127.0.0.1,localhost,${env.POD_IP}
     -   name: POD_APP
         valueFrom:
             fieldRef:
@@ -270,7 +279,7 @@ image:
     pullPolicy: IfNotPresent
     pullSecrets: []
     repository: liferay/dxp
-    tag: latest
+    tag: 2026.q1.8-lts
 initContainers: []
 livenessProbe:
     failureThreshold: 3
@@ -313,12 +322,7 @@ overlay:
     initScriptsVolumeName: liferay-init-scripts-default
     type: ""
 podLabels: {}
-podSecurityContext:
-    fsGroup: 1000
-    runAsNonRoot: true
-    runAsUser: 1000
-    seccompProfile:
-        type: RuntimeDefault
+podSecurityContext: {}
 portalBundleDenyList: []
 portalComponentDenyList: []
 portalProperties:
@@ -353,15 +357,7 @@ resources:
         cpu: 2000m
         memory: 6Gi
 schedulingGates: []
-securityContext:
-    allowPrivilegeEscalation: false
-    capabilities:
-        drop:
-            -   ALL
-    runAsNonRoot: true
-    runAsUser: 1000
-    seccompProfile:
-        type: RuntimeDefault
+securityContext: {}
 service:
     annotations: {}
     ports:
@@ -425,6 +421,9 @@ volumeMounts:
     -   mountPath: /opt/liferay/osgi/state
         name: liferay-persistent-volume
         subPath: osgi/state
+    -   mountPath: /opt/liferay/osgi/war
+        name: liferay-persistent-volume
+        subPath: osgi/war
     -   mountPath: /opt/liferay/portal-cloud.properties
         name: liferay-configmap
         subPath: portal-cloud.properties

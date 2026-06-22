@@ -1,19 +1,19 @@
 {
 	"dependencies": {
-		"@clayui/alert": "^3.161.0",
-		"@clayui/button": "^3.161.0",
-		"@clayui/core": "^3.161.0",
-		"@clayui/date-picker": "^3.161.0",
-		"@clayui/drop-down": "^3.161.0",
-		"@clayui/empty-state": "^3.161.0",
-		"@clayui/form": "^3.161.0",
-		"@clayui/icon": "^3.161.0",
-		"@clayui/label": "^3.161.0",
-		"@clayui/layout": "^3.161.0",
-		"@clayui/loading-indicator": "^3.161.0",
-		"@clayui/modal": "^3.161.0",
-		"@clayui/popover": "^3.161.0",
-		"@clayui/table": "^3.161.0",
+		"@clayui/alert": "^3.165.0",
+		"@clayui/button": "^3.165.0",
+		"@clayui/core": "^3.165.0",
+		"@clayui/date-picker": "^3.165.0",
+		"@clayui/drop-down": "^3.165.0",
+		"@clayui/empty-state": "^3.165.0",
+		"@clayui/form": "^3.165.0",
+		"@clayui/icon": "^3.165.0",
+		"@clayui/label": "^3.165.0",
+		"@clayui/layout": "^3.165.0",
+		"@clayui/loading-indicator": "^3.165.0",
+		"@clayui/modal": "^3.165.0",
+		"@clayui/popover": "^3.165.0",
+		"@clayui/table": "^3.165.0",
 		"@liferay/frontend-js-react-web": "*",
 		"@liferay/layout-js-components-web": "*",
 		"@liferay/template-web": "*",
@@ -32,5 +32,5 @@
 		"format": "node-scripts format",
 		"test": "USE_REACT_16=true node-scripts test"
 	},
-	"version": "5.0.210"
+	"version": "5.0.212"
 }

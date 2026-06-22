@@ -11,21 +11,19 @@ import com.liferay.cookies.configuration.CookiesConfigurationProvider;
 import com.liferay.cookies.configuration.CookiesPreferenceHandlingConfiguration;
 import com.liferay.cookies.configuration.banner.CookiesBannerConfiguration;
 import com.liferay.cookies.configuration.consent.CookiesConsentConfiguration;
-import com.liferay.cookies.internal.configuration.admin.service.CookiesPreferenceHandlingManagedServiceFactory;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
 import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
@@ -41,13 +39,10 @@ import java.io.IOException;
 
 import java.util.Date;
 import java.util.Dictionary;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
-import org.osgi.service.cm.ManagedServiceFactory;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -57,6 +52,36 @@ import org.osgi.service.component.annotations.Reference;
 @Component(service = CookiesConfigurationProvider.class)
 public class CookiesConfigurationProviderImpl
 	implements CookiesConfigurationProvider {
+
+	@Override
+	public void forceCookiesPreferenceHandlingReconsent(
+			ExtendedObjectClassDefinition.Scope scope, long scopePK)
+		throws Exception {
+
+		Configuration configuration = null;
+
+		if (scope == ExtendedObjectClassDefinition.Scope.SYSTEM) {
+			configuration = _configurationAdmin.getConfiguration(
+				CookiesPreferenceHandlingConfiguration.class.getName(), "?");
+		}
+		else {
+			configuration = _getScopedConfiguration(scope, scopePK);
+		}
+
+		if (configuration == null) {
+			return;
+		}
+
+		Dictionary<String, Object> properties = configuration.getProperties();
+
+		if (properties == null) {
+			properties = new HashMapDictionary<>();
+		}
+
+		properties.put("modifiedDate", System.currentTimeMillis());
+
+		configuration.update(properties);
+	}
 
 	@Override
 	public String getCompanyConfigurationURL(
@@ -132,78 +157,80 @@ public class CookiesConfigurationProviderImpl
 	public int getCookiesPreferenceHandlingConsentRenewalPeriod(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK,
-			this::_getCompanyCookiesPreferenceHandlingConsentRenewalPeriod,
-			this::_getGroupCookiesPreferenceHandlingConsentRenewalPeriod,
-			this::_getSystemCookiesPreferenceHandlingConsentRenewalPeriod);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.consentRenewalPeriod();
 	}
 
 	@Override
 	public String getCookiesPreferenceHandlingConsentRenewalPeriodTimeUnit(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK,
-			this::
-				_getCompanyCookiesPreferenceHandlingConsentRenewalPeriodTimeUnit,
-			this::
-				_getGroupCookiesPreferenceHandlingConsentRenewalPeriodTimeUnit,
-			this::
-				_getSystemCookiesPreferenceHandlingConsentRenewalPeriodTimeUnit);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.
+			consentRenewalPeriodTimeUnit();
 	}
 
+	@Override
 	public long getCookiesPreferenceHandlingCustomFloatingIconImageId(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK,
-			this::_getCompanyCookiesPreferenceHandlingCustomFloatingIconImageId,
-			this::_getGroupCookiesPreferenceHandlingCustomFloatingIconImageId,
-			this::_getSystemCookiesPreferenceHandlingCustomFloatingIconImageId);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.
+			customFloatingIconImageId();
 	}
 
 	@Override
 	public int getCookiesPreferenceHandlingDissentRenewalPeriod(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK,
-			this::_getCompanyCookiesPreferenceHandlingDissentRenewalPeriod,
-			this::_getGroupCookiesPreferenceHandlingDissentRenewalPeriod,
-			this::_getSystemCookiesPreferenceHandlingDissentRenewalPeriod);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.dissentRenewalPeriod();
 	}
 
 	@Override
 	public String getCookiesPreferenceHandlingDissentRenewalPeriodTimeUnit(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK,
-			this::
-				_getCompanyCookiesPreferenceHandlingDissentRenewalPeriodTimeUnit,
-			this::
-				_getGroupCookiesPreferenceHandlingDissentRenewalPeriodTimeUnit,
-			this::
-				_getSystemCookiesPreferenceHandlingDissentRenewalPeriodTimeUnit);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.
+			dissentRenewalPeriodTimeUnit();
 	}
 
 	@Override
 	public String getCookiesPreferenceHandlingFloatingIcon(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK, this::_getCompanyFloatingIcon,
-			this::_getGroupFloatingIcon, this::_getSystemFloatingIcon);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.floatingIcon();
 	}
 
 	@Override
 	public long getCookiesPreferenceHandlingModifiedDate(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK, this::_getCompanyModifiedDate,
-			this::_getGroupModifiedDate, this::_getSystemModifiedDate);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.modifiedDate();
 	}
 
 	@Override
@@ -279,6 +306,17 @@ public class CookiesConfigurationProviderImpl
 	}
 
 	@Override
+	public boolean isCookiesPreferenceHandlingActive(
+		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
+
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.active();
+	}
+
+	@Override
 	public boolean isCookiesPreferenceHandlingConfigurationDefined(
 			ExtendedObjectClassDefinition.Scope scope, long scopePK)
 		throws Exception {
@@ -312,52 +350,56 @@ public class CookiesConfigurationProviderImpl
 	public boolean isCookiesPreferenceHandlingEnabled(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK, this::_isCompanyCookiesPreferenceHandlingEnabled,
-			this::_isGroupCookiesPreferenceHandlingEnabled,
-			this::_isSystemCookiesPreferenceHandlingEnabled);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.enabled();
 	}
 
 	@Override
 	public boolean isCookiesPreferenceHandlingExplicitConsentMode(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK,
-			this::_isCompanyCookiesPreferenceHandlingExplicitConsentMode,
-			this::_isGroupCookiesPreferenceHandlingExplicitConsentMode,
-			this::_isSystemCookiesPreferenceHandlingExplicitConsentMode);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.explicitConsentMode();
 	}
 
 	@Override
 	public boolean isCookiesPreferenceHandlingFloatingIconEnabled(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK, this::_isCompanyFloatingIconEnabled,
-			this::_isGroupFloatingIconEnabled,
-			this::_isSystemFloatingIconEnabled);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.floatingIconEnabled();
 	}
 
 	@Override
 	public boolean isCookiesPreferenceHandlingGlobalPrivacyControlEnabled(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK, this::_isCompanyGlobalPrivacyControlEnabled,
-			this::_isGroupGlobalPrivacyControlEnabled,
-			this::_isSystemGlobalPrivacyControlEnabled);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.
+			globalPrivacyControlEnabled();
 	}
 
 	@Override
 	public boolean isCookiesPreferenceHandlingStoreConsent(
 		ExtendedObjectClassDefinition.Scope scope, long scopePK) {
 
-		return _getScopeConfigurationAttribute(
-			scope, scopePK,
-			this::_isCompanyCookiesPreferenceHandlingStoreConsent,
-			this::_isGroupCookiesPreferenceHandlingStoreConsent,
-			this::_isSystemCookiesPreferenceHandlingStoreConsent);
+		CookiesPreferenceHandlingConfiguration
+			cookiesPreferenceHandlingConfiguration =
+				_getCookiesPreferenceHandlingConfiguration(scope, scopePK);
+
+		return cookiesPreferenceHandlingConfiguration.storeConsent();
 	}
 
 	@Override
@@ -384,14 +426,15 @@ public class CookiesConfigurationProviderImpl
 
 	@Override
 	public void updateCookiesPreferenceHandlingConfiguration(
-			int consentRenewalPeriod, boolean enabled,
+			boolean active, int consentRenewalPeriod, boolean enabled,
 			boolean explicitConsentMode,
 			ExtendedObjectClassDefinition.Scope scope, long scopePK,
 			boolean storeConsent)
 		throws Exception {
 
 		Dictionary<String, Object> dictionary = _createDictionary(
-			consentRenewalPeriod, enabled, explicitConsentMode, storeConsent);
+			active, consentRenewalPeriod, enabled, explicitConsentMode,
+			storeConsent);
 
 		if (scope == ExtendedObjectClassDefinition.Scope.COMPANY) {
 			_configurationProvider.saveCompanyConfiguration(
@@ -415,10 +458,12 @@ public class CookiesConfigurationProviderImpl
 	}
 
 	private HashMapDictionary<String, Object> _createDictionary(
-		int consentRenewalPeriod, boolean enabled, boolean explicitConsentMode,
-		boolean storeConsent) {
+		boolean active, int consentRenewalPeriod, boolean enabled,
+		boolean explicitConsentMode, boolean storeConsent) {
 
 		return HashMapDictionaryBuilder.<String, Object>put(
+			"active", active
+		).put(
 			"consentRenewalPeriod", consentRenewalPeriod
 		).put(
 			"enabled", enabled
@@ -433,84 +478,6 @@ public class CookiesConfigurationProviderImpl
 		).build();
 	}
 
-	private int _getCompanyCookiesPreferenceHandlingConsentRenewalPeriod(
-		long companyId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyConsentRenewalPeriod(companyId);
-	}
-
-	private String
-		_getCompanyCookiesPreferenceHandlingConsentRenewalPeriodTimeUnit(
-			long companyId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyConsentRenewalPeriodTimeUnit(companyId);
-	}
-
-	private long _getCompanyCookiesPreferenceHandlingCustomFloatingIconImageId(
-		long companyId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyCustomFloatingIconImageId(companyId);
-	}
-
-	private int _getCompanyCookiesPreferenceHandlingDissentRenewalPeriod(
-		long companyId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyDissentRenewalPeriod(companyId);
-	}
-
-	private String
-		_getCompanyCookiesPreferenceHandlingDissentRenewalPeriodTimeUnit(
-			long companyId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyDissentRenewalPeriodTimeUnit(companyId);
-	}
-
-	private String _getCompanyFloatingIcon(long companyId) {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyFloatingIcon(companyId);
-	}
-
 	private long _getCompanyId(long groupId) {
 		Group group = _groupLocalService.fetchGroup(groupId);
 
@@ -523,33 +490,14 @@ public class CookiesConfigurationProviderImpl
 		return companyId;
 	}
 
-	private long _getCompanyModifiedDate(long companyId) {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyModifiedDate(companyId);
-	}
-
 	private <T> T _getCookiesConfiguration(
 			Class<T> clazz, ThemeDisplay themeDisplay)
 		throws Exception {
 
-		LayoutSet layoutSet = _layoutSetLocalService.fetchLayoutSet(
-			themeDisplay.getServerName());
+		Group scopeGroup = themeDisplay.getScopeGroup();
 
-		if (layoutSet != null) {
-			Group group = layoutSet.getGroup();
-
-			return _configurationProvider.getGroupConfiguration(
-				clazz, group.getCompanyId(), group.getGroupId());
-		}
-
-		return _configurationProvider.getCompanyConfiguration(
-			clazz, themeDisplay.getCompanyId());
+		return _configurationProvider.getGroupConfiguration(
+			clazz, scopeGroup.getCompanyId(), scopeGroup.getGroupId());
 	}
 
 	private Configuration _getCookiesPreferenceHandlingCompanyConfiguration(
@@ -572,6 +520,32 @@ public class CookiesConfigurationProviderImpl
 		}
 		catch (InvalidSyntaxException | IOException exception) {
 			throw new ConfigurationException(exception);
+		}
+	}
+
+	private CookiesPreferenceHandlingConfiguration
+		_getCookiesPreferenceHandlingConfiguration(
+			ExtendedObjectClassDefinition.Scope scope, long scopePK) {
+
+		try {
+			if (scope.equals(ExtendedObjectClassDefinition.Scope.COMPANY)) {
+				return _configurationProvider.getCompanyConfiguration(
+					CookiesPreferenceHandlingConfiguration.class, scopePK);
+			}
+			else if (scope.equals(ExtendedObjectClassDefinition.Scope.GROUP)) {
+				return _configurationProvider.getGroupConfiguration(
+					CookiesPreferenceHandlingConfiguration.class,
+					_getCompanyId(scopePK), scopePK);
+			}
+			else if (scope.equals(ExtendedObjectClassDefinition.Scope.SYSTEM)) {
+				return _configurationProvider.getSystemConfiguration(
+					CookiesPreferenceHandlingConfiguration.class);
+			}
+
+			throw new IllegalArgumentException("Unsupported scope: " + scope);
+		}
+		catch (ConfigurationException configurationException) {
+			return ReflectionUtil.throwException(configurationException);
 		}
 	}
 
@@ -598,115 +572,6 @@ public class CookiesConfigurationProviderImpl
 		}
 	}
 
-	private int _getGroupCookiesPreferenceHandlingConsentRenewalPeriod(
-		long groupId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getGroupConsentRenewalPeriod(_getCompanyId(groupId), groupId);
-	}
-
-	private String
-		_getGroupCookiesPreferenceHandlingConsentRenewalPeriodTimeUnit(
-			long groupId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getGroupConsentRenewalPeriodTimeUnit(
-				_getCompanyId(groupId), groupId);
-	}
-
-	private long _getGroupCookiesPreferenceHandlingCustomFloatingIconImageId(
-		long groupId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getGroupCustomFloatingIconImageId(_getCompanyId(groupId), groupId);
-	}
-
-	private int _getGroupCookiesPreferenceHandlingDissentRenewalPeriod(
-		long groupId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getGroupDissentRenewalPeriod(_getCompanyId(groupId), groupId);
-	}
-
-	private String
-		_getGroupCookiesPreferenceHandlingDissentRenewalPeriodTimeUnit(
-			long groupId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getGroupDissentRenewalPeriodTimeUnit(
-				_getCompanyId(groupId), groupId);
-	}
-
-	private String _getGroupFloatingIcon(long groupId) {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getGroupFloatingIcon(_getCompanyId(groupId), groupId);
-	}
-
-	private long _getGroupModifiedDate(long groupId) {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getGroupModifiedDate(_getCompanyId(groupId), groupId);
-	}
-
-	private <T> T _getScopeConfigurationAttribute(
-		ExtendedObjectClassDefinition.Scope scope, long scopePK,
-		Function<Long, T> companyFunction, Function<Long, T> groupFunction,
-		Supplier<T> systemFunction) {
-
-		if (scope == ExtendedObjectClassDefinition.Scope.COMPANY) {
-			return companyFunction.apply(scopePK);
-		}
-		else if (scope == ExtendedObjectClassDefinition.Scope.GROUP) {
-			return groupFunction.apply(scopePK);
-		}
-		else if (scope == ExtendedObjectClassDefinition.Scope.SYSTEM) {
-			return systemFunction.get();
-		}
-
-		throw new IllegalArgumentException("Unsupported scope: " + scope);
-	}
-
 	private Configuration _getScopedConfiguration(
 			ExtendedObjectClassDefinition.Scope scope, long scopePK)
 		throws Exception {
@@ -724,263 +589,6 @@ public class CookiesConfigurationProviderImpl
 		return configurations[0];
 	}
 
-	private int _getSystemCookiesPreferenceHandlingConsentRenewalPeriod() {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemConsentRenewalPeriod();
-	}
-
-	private String
-		_getSystemCookiesPreferenceHandlingConsentRenewalPeriodTimeUnit() {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemConsentRenewalPeriodTimeUnit();
-	}
-
-	private long
-		_getSystemCookiesPreferenceHandlingCustomFloatingIconImageId() {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemCustomFloatingIconImageId();
-	}
-
-	private int _getSystemCookiesPreferenceHandlingDissentRenewalPeriod() {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemDissentRenewalPeriod();
-	}
-
-	private String
-		_getSystemCookiesPreferenceHandlingDissentRenewalPeriodTimeUnit() {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemDissentRenewalPeriodTimeUnit();
-	}
-
-	private String _getSystemFloatingIcon() {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemFloatingIcon();
-	}
-
-	private long _getSystemModifiedDate() {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemModifiedDate();
-	}
-
-	private boolean _isCompanyCookiesPreferenceHandlingEnabled(long companyId) {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyEnabled(companyId);
-	}
-
-	private boolean _isCompanyCookiesPreferenceHandlingExplicitConsentMode(
-		long companyId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyExplicitConsentMode(companyId);
-	}
-
-	private boolean _isCompanyCookiesPreferenceHandlingStoreConsent(
-		long companyId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyStoreConsent(companyId);
-	}
-
-	private boolean _isCompanyFloatingIconEnabled(long companyId) {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyFloatingIconEnabled(companyId);
-	}
-
-	private boolean _isCompanyGlobalPrivacyControlEnabled(long companyId) {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getCompanyGlobalPrivacyControlEnabled(companyId);
-	}
-
-	private boolean _isGroupCookiesPreferenceHandlingEnabled(long groupId) {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.getGroupEnabled(
-			_getCompanyId(groupId), groupId);
-	}
-
-	private boolean _isGroupCookiesPreferenceHandlingExplicitConsentMode(
-		long groupId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getGroupExplicitConsentMode(_getCompanyId(groupId), groupId);
-	}
-
-	private boolean _isGroupCookiesPreferenceHandlingStoreConsent(
-		long groupId) {
-
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getGroupStoreConsent(_getCompanyId(groupId), groupId);
-	}
-
-	private boolean _isGroupFloatingIconEnabled(long groupId) {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getGroupFloatingIconEnabled(_getCompanyId(groupId), groupId);
-	}
-
-	private boolean _isGroupGlobalPrivacyControlEnabled(long groupId) {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getGroupGlobalPrivacyControlEnabled(
-				_getCompanyId(groupId), groupId);
-	}
-
-	private boolean _isSystemCookiesPreferenceHandlingEnabled() {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemEnabled();
-	}
-
-	private boolean _isSystemCookiesPreferenceHandlingExplicitConsentMode() {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemExplicitConsentMode();
-	}
-
-	private boolean _isSystemCookiesPreferenceHandlingStoreConsent() {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemStoreConsent();
-	}
-
-	private boolean _isSystemFloatingIconEnabled() {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemFloatingIconEnabled();
-	}
-
-	private boolean _isSystemGlobalPrivacyControlEnabled() {
-		if (_cookiesPreferenceHandlingManagedServiceFactory == null) {
-			_cookiesPreferenceHandlingManagedServiceFactory =
-				(CookiesPreferenceHandlingManagedServiceFactory)
-					_managedServiceFactory;
-		}
-
-		return _cookiesPreferenceHandlingManagedServiceFactory.
-			getSystemGlobalPrivacyControlEnabled();
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		CookiesConfigurationProviderImpl.class);
 
@@ -990,19 +598,8 @@ public class CookiesConfigurationProviderImpl
 	@Reference
 	private ConfigurationProvider _configurationProvider;
 
-	private CookiesPreferenceHandlingManagedServiceFactory
-		_cookiesPreferenceHandlingManagedServiceFactory;
-
 	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private LayoutSetLocalService _layoutSetLocalService;
-
-	@Reference(
-		target = "(component.name=com.liferay.cookies.internal.configuration.admin.service.CookiesPreferenceHandlingManagedServiceFactory)"
-	)
-	private ManagedServiceFactory _managedServiceFactory;
 
 	@Reference
 	private PermissionCheckerFactory _permissionCheckerFactory;

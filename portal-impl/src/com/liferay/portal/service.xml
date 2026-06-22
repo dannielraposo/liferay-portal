@@ -252,7 +252,7 @@
 			<finder-column name="classPK" />
 		</finder>
 	</entity>
-	<entity change-tracking-enabled="true" local-service="true" name="Country" remote-service="true" uuid="true">
+	<entity change-tracking-enabled="true" external-reference-code="company" local-service="true" name="Country" remote-service="true" uuid="true">
 
 		<!-- PK fields -->
 
@@ -281,6 +281,7 @@
 		<column name="subjectToVAT" type="boolean" />
 		<column name="zipRequired" type="boolean" />
 		<column name="lastPublishDate" type="Date" />
+		<column name="status" type="int" />
 
 		<!-- Localized entity -->
 
@@ -635,6 +636,7 @@
 		<column name="themeId" type="String" />
 		<column name="colorSchemeId" type="String" />
 		<column name="styleBookEntryERC" type="String" />
+		<column name="styleBookEntryScopeERC" type="String" />
 		<column name="css" type="String" />
 		<column name="priority" type="int" />
 		<column name="faviconFileEntryERC" type="String" />
@@ -1909,7 +1911,7 @@
 			<finder-column name="layoutSetId" />
 		</finder>
 	</entity>
-	<entity change-tracking-enabled="true" local-service="true" name="Region" remote-service="true" uuid="true">
+	<entity change-tracking-enabled="true" external-reference-code="company" local-service="true" name="Region" remote-service="true" uuid="true">
 
 		<!-- PK fields -->
 
@@ -1931,6 +1933,7 @@
 		<column name="position" type="double" />
 		<column name="regionCode" type="String" />
 		<column name="lastPublishDate" type="Date" />
+		<column name="status" type="int" />
 
 		<!-- Localized entity -->
 
@@ -2486,6 +2489,7 @@
 		<column name="classPK" type="long" />
 		<column name="key" type="String" />
 		<column name="type" type="int" />
+		<column name="emailAddress" type="String" />
 		<column name="extraInfo" type="String" />
 		<column name="expirationDate" type="Date" />
 
@@ -2504,6 +2508,11 @@
 			<finder-column name="companyId" />
 			<finder-column name="classNameId" />
 			<finder-column name="classPK" />
+		</finder>
+		<finder name="C_T_EA" return-type="Collection">
+			<finder-column name="companyId" />
+			<finder-column name="type" />
+			<finder-column name="emailAddress" />
 		</finder>
 		<finder name="C_C_T" return-type="Collection">
 			<finder-column name="classNameId" />
@@ -3343,6 +3352,7 @@
 		<exception>RoleAssignment</exception>
 		<exception>RoleName</exception>
 		<exception>RolePermissions</exception>
+		<exception>RoleSubtype</exception>
 		<exception>SendPassword</exception>
 		<exception>SitemapChangeFrequency</exception>
 		<exception>SitemapInclude</exception>

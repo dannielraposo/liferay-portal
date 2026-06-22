@@ -3,23 +3,85 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {expect, mergeTests} from '@playwright/test';
+import {Page, expect, mergeTests} from '@playwright/test';
 
+import {dataApiHelpersTest} from '../../../../fixtures/dataApiHelpersTest';
 import {featureFlagsTest} from '../../../../fixtures/featureFlagsTest';
 import {loginTest} from '../../../../fixtures/loginTest';
+import {ApiHelpers} from '../../../../helpers/ApiHelpers';
+import {createCategories} from '../../../../helpers/CreateCategories';
 import {checkAccessibility} from '../../../../utils/checkAccessibility';
 import {clickAndExpectToBeVisible} from '../../../../utils/clickAndExpectToBeVisible';
 import {getRandomInt} from '../../../../utils/getRandomInt';
 import getRandomString from '../../../../utils/getRandomString';
+import {categorizationPagesTest} from '../fixtures/categorizationPagesTest';
 import {cmsPagesTest} from '../fixtures/cmsPagesTest';
+import {ContentsPage} from '../pages/ContentsPage';
 
 const test = mergeTests(
+	categorizationPagesTest,
 	cmsPagesTest,
+	dataApiHelpersTest,
 	featureFlagsTest({
 		'LPD-17564': {enabled: true},
 	}),
 	loginTest()
 );
+
+const createdVocabularyNames: string[] = [];
+
+test.afterEach(async ({vocabulariesPage}) => {
+	if (!createdVocabularyNames.length) {
+		return;
+	}
+
+	await vocabulariesPage.goto();
+
+	for (const name of createdVocabularyNames) {
+		await vocabulariesPage.deleteVocabulary(name);
+	}
+
+	createdVocabularyNames.length = 0;
+});
+
+const createScopedVocabularyAndContent = async ({
+	apiHelpers,
+	assetLibraries,
+	assetTypes,
+	categoryName,
+	contentsPage,
+	page,
+	siteId,
+}: {
+	apiHelpers: ApiHelpers;
+	assetLibraries: AssetLibrary[];
+	assetTypes: AssetType[];
+	categoryName: string;
+	contentsPage: ContentsPage;
+	page: Page;
+	siteId: string;
+}) => {
+	await createCategories({
+		apiHelpers,
+		assetLibraries,
+		assetTypes,
+		categoryNames: [{name: categoryName}],
+		siteId,
+		vocabularyName: getRandomString(),
+	});
+
+	await contentsPage.goto();
+
+	await contentsPage.createContent('Basic Web Content');
+
+	const title = getRandomString();
+
+	await page.getByPlaceholder('New Basic Web Content').fill(title);
+
+	await contentsPage.publishButton.click();
+
+	await page.locator('.table-list-title a', {hasText: title}).click();
+};
 
 test(
 	'Assert can delete vocabulary from dropdown actions',
@@ -50,6 +112,10 @@ test(
 			page.getByRole('heading', {name: `Delete "${name}"`})
 		).toBeVisible();
 
+		await expect(page.locator('.liferay-modal .modal-dialog')).toHaveClass(
+			/modal-dialog-centered/
+		);
+
 		await clickAndExpectToBeVisible({
 			target: page.getByText(
 				'Success:Your request completed successfully.'
@@ -76,9 +142,11 @@ test(
 	'Assert can edit vocabulary from dropdown actions',
 	{tag: '@LPD-32750'},
 	async ({editVocabularyPage, page, vocabulariesPage}) => {
-		await editVocabularyPage.goto();
-
 		const name = `Vocabulary${getRandomInt()}`;
+
+		createdVocabularyNames.push(name);
+
+		await editVocabularyPage.goto();
 
 		await editVocabularyPage.changeGeneralInfo({
 			description: getRandomString(),
@@ -105,9 +173,11 @@ test(
 	'Assert can edit vocabulary permissions from dropdown actions',
 	{tag: '@LPD-32750'},
 	async ({editVocabularyPage, page, vocabulariesPage}) => {
-		editVocabularyPage.goto();
-
 		const name = `Vocabulary${getRandomInt()}`;
+
+		createdVocabularyNames.push(name);
+
+		editVocabularyPage.goto();
 
 		await editVocabularyPage.changeGeneralInfo({
 			description: getRandomString(),
@@ -133,12 +203,65 @@ test(
 );
 
 test(
+	'Add category from vocabulary dropdown actions',
+	{tag: '@LPD-69691'},
+	async ({
+		apiHelpers,
+		categoriesPage,
+		editCategoryPage,
+		page,
+		vocabulariesPage,
+	}) => {
+		const siteId = await apiHelpers.headlessAdminUser
+			.getSiteByFriendlyUrlPath('cms')
+			.then((response) => response.id);
+
+		const vocabularyName = getRandomString();
+
+		await apiHelpers.headlessAdminTaxonomy.postSiteTaxonomyVocabulary({
+			assetLibraries: [{id: -1}],
+			assetTypes: [
+				{
+					required: true,
+					subtype: 'AllAssetSubtypes',
+					type: 'AllAssetTypes',
+				},
+			],
+			name: vocabularyName,
+			siteId,
+			visibilityType: 'PUBLIC',
+		});
+
+		await vocabulariesPage.goto();
+
+		await vocabulariesPage.execItemAction({
+			action: 'Add Category',
+			filter: vocabularyName,
+		});
+
+		await expect(page.getByText('Basic Info')).toBeVisible();
+
+		const categoryName = getRandomString();
+
+		await editCategoryPage.fillName(categoryName);
+		await editCategoryPage.clickSave();
+
+		await categoriesPage.assertBreadcrumbItemText(0, 'Categorization');
+		await categoriesPage.assertBreadcrumbItemText(1, vocabularyName);
+
+		await expect(categoriesPage.getItem(categoryName)).toBeVisible();
+	}
+);
+
+test(
 	'Can create and update vocabulary',
 	{tag: ['@LPD-32750', '@LPD-66358']},
 	async ({editVocabularyPage, page, vocabulariesPage}) => {
-		editVocabularyPage.goto();
+		let name = `Vocabulary${getRandomInt()}`;
 
-		const name = `Vocabulary${getRandomInt()}`;
+		createdVocabularyNames.push(name);
+
+		editVocabularyPage.goto();
 
 		await editVocabularyPage.changeGeneralInfo({
 			description: getRandomString(),
@@ -210,11 +333,11 @@ test(
 
 		await expect(spacesInputLocator).toHaveAttribute('value', 'All Spaces');
 
-		const newName = `Vocabulary${getRandomInt()}`;
+		name = `Vocabulary${getRandomInt()}`;
 
 		await editVocabularyPage.changeGeneralInfo({
 			description: getRandomString(),
-			name: newName,
+			name,
 		});
 
 		await editVocabularyPage.assetTypesButton.click();
@@ -226,13 +349,13 @@ test(
 		await expect(editVocabularyPage.assetTypeToggle).toBeChecked();
 
 		await clickAndExpectToBeVisible({
-			target: page.getByText(
-				`Success:${newName} was updated successfully.`
-			),
+			target: page.getByText(`Success:${name} was updated successfully.`),
 			trigger: editVocabularyPage.saveButton,
 		});
 
-		await expect(vocabulariesPage.getItem(newName)).toBeVisible();
+		createdVocabularyNames[createdVocabularyNames.length - 1] = name;
+
+		await expect(vocabulariesPage.getItem(name)).toBeVisible();
 	}
 );
 
@@ -240,9 +363,11 @@ test(
 	'Validate change asset types when saving',
 	{tag: '@LPD-52591'},
 	async ({editVocabularyPage, page, vocabulariesPage}) => {
-		editVocabularyPage.goto();
-
 		const name = `Vocabulary${getRandomInt()}`;
+
+		createdVocabularyNames.push(name);
+
+		editVocabularyPage.goto();
 
 		await editVocabularyPage.changeGeneralInfo({
 			description: getRandomString(),
@@ -296,9 +421,11 @@ test(
 	'Validate change spaces when saving',
 	{tag: '@LPD-52592'},
 	async ({editVocabularyPage, page, vocabulariesPage}) => {
-		editVocabularyPage.goto();
-
 		const name = `Vocabulary${getRandomInt()}`;
+
+		createdVocabularyNames.push(name);
+
+		editVocabularyPage.goto();
 
 		await editVocabularyPage.changeGeneralInfo({
 			description: getRandomString(),
@@ -341,7 +468,7 @@ test(
 
 test(
 	'Validate vocabulary inputs',
-	{tag: ['@LPD-32750', '@LPD-69687']},
+	{tag: ['@LPD-32750', '@LPD-69687', '@LPD-88757']},
 	async ({editVocabularyPage, page}) => {
 		editVocabularyPage.goto();
 
@@ -385,19 +512,200 @@ test(
 		});
 
 		await expect(editVocabularyPage.saveButton).toBeDisabled();
+
+		// Check the external reference code input shows an error when longer
+		// than 75 characters
+
+		await page.getByRole('menuitem', {name: 'General'}).click();
+
+		await editVocabularyPage.changeGeneralInfo({
+			externalReferenceCode: 'x'.repeat(80),
+		});
+
+		await expect(
+			page.getByText(
+				'External reference code cannot exceed 75 characters.'
+			)
+		).toBeVisible();
+
+		await expect(page.getByLabel('External Reference Code')).toHaveValue(
+			'x'.repeat(80)
+		);
 	}
 );
 
 test(
-	'Validate that a UI error appears when attempting to create a vocabulary with an existing name',
-	{tag: '@LPD-57497'},
-	async ({editVocabularyPage, page}) => {
-		await editVocabularyPage.goto();
+	'Hide a Space-restricted vocabulary from content in another Space',
+	{tag: '@LPD-89497'},
+	async ({apiHelpers, contentsPage, page}) => {
+		const siteId = await apiHelpers.headlessAdminUser
+			.getSiteByFriendlyUrlPath('cms')
+			.then((response) => response.id);
 
+		const spaceName = getRandomString();
+
+		const {id: spaceId} =
+			await apiHelpers.headlessAssetLibrary.createAssetLibrary({
+				name: spaceName,
+				settings: {},
+				type: 'Space',
+			});
+
+		const categoryName = getRandomString();
+
+		await createScopedVocabularyAndContent({
+			apiHelpers,
+			assetLibraries: [{id: spaceId, name: spaceName}],
+			assetTypes: [{required: false, type: 'AllAssetTypes'}],
+			categoryName,
+			contentsPage,
+			page,
+			siteId,
+		});
+
+		await contentsPage.openSidePanel('Categorization');
+
+		await page.getByPlaceholder('Add category').fill(categoryName);
+
+		await page.waitForTimeout(500);
+
+		await expect(
+			page.getByRole('option', {name: categoryName})
+		).toBeHidden();
+	}
+);
+
+test(
+	'Hide an asset-type-restricted vocabulary from content of another asset type',
+	{tag: '@LPD-89497'},
+	async ({apiHelpers, contentsPage, page}) => {
+		const siteId = await apiHelpers.headlessAdminUser
+			.getSiteByFriendlyUrlPath('cms')
+			.then((response) => response.id);
+
+		const categoryName = getRandomString();
+
+		await createScopedVocabularyAndContent({
+			apiHelpers,
+			assetLibraries: [{id: -1, name: 'All Spaces'}],
+			assetTypes: [{required: false, type: 'BlogPosting'}],
+			categoryName,
+			contentsPage,
+			page,
+			siteId,
+		});
+
+		await contentsPage.openSidePanel('Categorization');
+
+		await page.getByPlaceholder('Add category').fill(categoryName);
+
+		await page.waitForTimeout(500);
+
+		await expect(
+			page.getByRole('option', {name: categoryName})
+		).toBeHidden();
+	}
+);
+
+test(
+	'Open categories from the Categories column link',
+	{tag: '@LPD-89497'},
+	async ({apiHelpers, categoriesPage, vocabulariesPage}) => {
+		const siteId = await apiHelpers.headlessAdminUser
+			.getSiteByFriendlyUrlPath('cms')
+			.then((response) => response.id);
+
+		const vocabularyName = getRandomString();
+
+		const vocabularyId = await apiHelpers.headlessAdminTaxonomy
+			.postSiteTaxonomyVocabulary({
+				assetLibraries: [{id: -1}],
+				assetTypes: [
+					{
+						required: true,
+						subtype: 'AllAssetSubtypes',
+						type: 'AllAssetTypes',
+					},
+				],
+				name: vocabularyName,
+				siteId,
+				visibilityType: 'PUBLIC',
+			})
+			.then((response) => response.id);
+
+		const categoryName1 = getRandomString();
+		const categoryName2 = getRandomString();
+
+		for (const name of [categoryName1, categoryName2]) {
+			await apiHelpers.headlessAdminTaxonomy.postTaxonomyVocabularyTaxonomyCategory(
+				{
+					name,
+					vocabularyId,
+				}
+			);
+		}
+
+		await vocabulariesPage.goto();
+
+		await vocabulariesPage.clickCategoriesLink(vocabularyName);
+
+		await categoriesPage.assertBreadcrumbItemText(1, vocabularyName);
+
+		await expect(categoriesPage.getItem(categoryName1)).toBeVisible();
+		await expect(categoriesPage.getItem(categoryName2)).toBeVisible();
+	}
+);
+
+test(
+	'Search vocabularies by name',
+	{tag: '@LPD-89497'},
+	async ({apiHelpers, vocabulariesPage}) => {
+		const siteId = await apiHelpers.headlessAdminUser
+			.getSiteByFriendlyUrlPath('cms')
+			.then((response) => response.id);
+
+		const name1 = getRandomString();
+		const name2 = getRandomString();
+
+		for (const name of [name1, name2]) {
+			await apiHelpers.headlessAdminTaxonomy.postSiteTaxonomyVocabulary({
+				assetLibraries: [{id: -1}],
+				assetTypes: [
+					{
+						required: true,
+						subtype: 'AllAssetSubtypes',
+						type: 'AllAssetTypes',
+					},
+				],
+				name,
+				siteId,
+				visibilityType: 'PUBLIC',
+			});
+		}
+
+		await vocabulariesPage.goto();
+
+		await vocabulariesPage.search(name1);
+
+		await expect(vocabulariesPage.getItem(name1)).toBeVisible();
+		await expect(vocabulariesPage.getItem(name2)).toBeHidden();
+	}
+);
+
+test(
+	'Validate that a UI error appears when attempting to create a vocabulary with a duplicate name or external reference code',
+	{tag: ['@LPD-57497', '@LPD-88752']},
+	async ({editVocabularyPage, page}) => {
+		const externalReferenceCode = `ERC${getRandomInt()}`;
 		const name = `Vocabulary${getRandomInt()}`;
+
+		createdVocabularyNames.push(name);
+
+		await editVocabularyPage.goto();
 
 		await editVocabularyPage.changeGeneralInfo({
 			description: getRandomString(),
+			externalReferenceCode,
 			name,
 		});
 
@@ -408,18 +716,40 @@ test(
 			trigger: editVocabularyPage.saveButton,
 		});
 
-		await editVocabularyPage.goto();
+		await test.step('Duplicate name shows the name-specific error', async () => {
+			await editVocabularyPage.goto();
 
-		await editVocabularyPage.changeGeneralInfo({
-			description: getRandomString(),
-			name,
+			await editVocabularyPage.changeGeneralInfo({
+				description: getRandomString(),
+				externalReferenceCode: `ERC${getRandomInt()}`,
+				name,
+			});
+
+			await clickAndExpectToBeVisible({
+				target: page.getByText(
+					'Please enter a unique name. This one is already in use.',
+					{exact: true}
+				),
+				trigger: editVocabularyPage.saveButton,
+			});
 		});
 
-		await clickAndExpectToBeVisible({
-			target: page.getByText(
-				'Please enter a unique name. This one is already in use.'
-			),
-			trigger: editVocabularyPage.saveButton,
+		await test.step('Duplicate external reference code shows the ERC-specific error', async () => {
+			await editVocabularyPage.goto();
+
+			await editVocabularyPage.changeGeneralInfo({
+				description: getRandomString(),
+				externalReferenceCode,
+				name: `Vocabulary${getRandomInt()}`,
+			});
+
+			await clickAndExpectToBeVisible({
+				target: page.getByText(
+					'Please enter a unique external reference code.',
+					{exact: true}
+				),
+				trigger: editVocabularyPage.saveButton,
+			});
 		});
 	}
 );

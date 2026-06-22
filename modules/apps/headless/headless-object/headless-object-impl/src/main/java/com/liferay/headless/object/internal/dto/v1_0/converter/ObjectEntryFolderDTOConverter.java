@@ -6,14 +6,18 @@
 package com.liferay.headless.object.internal.dto.v1_0.converter;
 
 import com.liferay.headless.delivery.dto.v1_0.util.CreatorUtil;
+import com.liferay.headless.object.dto.v1_0.CollaboratorBrief;
 import com.liferay.headless.object.dto.v1_0.ObjectEntryFolder;
 import com.liferay.headless.object.dto.v1_0.ParentObjectEntryFolderBrief;
 import com.liferay.headless.object.dto.v1_0.Status;
+import com.liferay.headless.object.dto.v1_0.SystemProperties;
 import com.liferay.object.service.ObjectEntryFolderLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.Portal;
@@ -24,6 +28,9 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedFieldsSupplier;
 import com.liferay.portal.vulcan.scope.Scope;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
+import com.liferay.sharing.model.SharingEntry;
+import com.liferay.sharing.security.permission.SharingEntryAction;
+import com.liferay.sharing.service.SharingEntryLocalService;
 import com.liferay.trash.model.TrashEntry;
 import com.liferay.trash.service.TrashEntryLocalService;
 
@@ -190,6 +197,30 @@ public class ObjectEntryFolderDTOConverter
 										objectEntryFolder.getStatus())));
 						}
 					});
+				setSystemProperties(
+					() -> {
+						SharingEntry sharingEntry = NestedFieldsSupplier.supply(
+							"systemProperties.collaboratorBrief",
+							nestedField ->
+								_sharingEntryLocalService.fetchSharingEntry(
+									dtoConverterContext.getUserId(),
+									_classNameLocalService.getClassNameId(
+										com.liferay.object.model.
+											ObjectEntryFolder.class.getName()),
+									objectEntryFolder.
+										getObjectEntryFolderId()));
+
+						if (sharingEntry == null) {
+							return null;
+						}
+
+						return new SystemProperties() {
+							{
+								setCollaboratorBrief(
+									() -> _toCollaboratorBrief(sharingEntry));
+							}
+						};
+					});
 				setTitle(objectEntryFolder::getName);
 			}
 		};
@@ -232,6 +263,23 @@ public class ObjectEntryFolderDTOConverter
 		};
 	}
 
+	private CollaboratorBrief _toCollaboratorBrief(SharingEntry sharingEntry) {
+		return new CollaboratorBrief() {
+			{
+				setActionIds(
+					() -> TransformUtil.transformToArray(
+						SharingEntryAction.getSharingEntryActions(
+							sharingEntry.getActionIds()),
+						SharingEntryAction::getActionId, String.class));
+				setDateExpired(sharingEntry::getExpirationDate);
+				setShare(sharingEntry::isShareable);
+			}
+		};
+	}
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
+
 	@Reference
 	private GroupLocalService _groupLocalService;
 
@@ -246,6 +294,9 @@ public class ObjectEntryFolderDTOConverter
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private SharingEntryLocalService _sharingEntryLocalService;
 
 	@Reference
 	private TrashEntryLocalService _trashEntryLocalService;

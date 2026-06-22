@@ -6,14 +6,11 @@
 package com.liferay.object.dynamic.data.mapping.form.field.type.internal.phone.number;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTemplateContextContributor;
-import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
-import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
-import com.liferay.dynamic.data.mapping.util.DDMFormFieldTemplateContextContributorUtil;
-import com.liferay.dynamic.data.mapping.util.DDMFormFieldValueUtil;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.dynamic.data.mapping.form.field.type.constants.ObjectDDMFormFieldTypeConstants;
+import com.liferay.object.dynamic.data.mapping.form.field.type.internal.BaseDDMFormFieldTemplateContextContributor;
 import com.liferay.object.field.business.type.ObjectFieldBusinessType;
 import com.liferay.object.field.business.type.ObjectFieldBusinessTypeRegistry;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -32,57 +29,26 @@ import org.osgi.service.component.annotations.Reference;
 	service = DDMFormFieldTemplateContextContributor.class
 )
 public class PhoneNumberDDMFormFieldTemplateContextContributor
-	implements DDMFormFieldTemplateContextContributor {
+	extends BaseDDMFormFieldTemplateContextContributor {
 
 	@Override
 	public Map<String, Object> getParameters(
 		DDMFormField ddmFormField,
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext) {
 
-		DDMForm ddmForm = ddmFormField.getDDMForm();
-		boolean localizedObjectField = GetterUtil.getBoolean(
-			ddmFormField.getProperty("localizedObjectField"));
 		ObjectFieldBusinessType phoneNumberObjectFieldBusinessType =
 			_objectFieldBusinessTypeRegistry.getObjectFieldBusinessType(
 				ObjectFieldConstants.BUSINESS_TYPE_PHONE_NUMBER);
 
 		return HashMapBuilder.<String, Object>put(
-			"localizedObjectField", localizedObjectField
+			"country", GetterUtil.getString(ddmFormField.getProperty("country"))
 		).put(
-			"predefinedValue",
-			() -> {
-				LocalizedValue predefinedValue =
-					(LocalizedValue)ddmFormField.getProperty("predefinedValue");
-
-				if (predefinedValue == null) {
-					return null;
-				}
-
-				return predefinedValue.getString(
-					ddmFormFieldRenderingContext.getLocale());
-			}
-		).put(
-			"prefix", GetterUtil.getString(ddmFormField.getProperty("prefix"))
-		).put(
-			"prefixType",
-			GetterUtil.getString(ddmFormField.getProperty("prefixType"))
-		).put(
-			"value",
-			() -> {
-				if (localizedObjectField) {
-					return DDMFormFieldValueUtil.getValueJSONObject(
-						ddmFormFieldRenderingContext);
-				}
-
-				return GetterUtil.getString(
-					ddmFormFieldRenderingContext.getValue());
-			}
-		).putAll(
-			DDMFormFieldTemplateContextContributorUtil.
-				getLocalizationParameters(
-					ddmFormField, ddmForm.getDefaultLocale())
+			"countrySource",
+			GetterUtil.getString(ddmFormField.getProperty("countrySource"))
 		).putAll(
 			phoneNumberObjectFieldBusinessType.getRenderingProperties()
+		).putAll(
+			super.getParameters(ddmFormField, ddmFormFieldRenderingContext)
 		).build();
 	}
 

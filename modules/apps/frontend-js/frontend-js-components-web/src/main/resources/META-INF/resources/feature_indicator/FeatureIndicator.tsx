@@ -18,7 +18,12 @@ import LearnMessage, {
 	LearnResourcesContext,
 } from '../learn_message/LearnMessage';
 
-export type Type = 'beta' | 'deprecated' | 'enterprise' | 'maintenance';
+export type Type =
+	| 'beta'
+	| 'deprecated'
+	| 'enterprise'
+	| 'maintenance'
+	| 'private-beta';
 
 type DisplayType = 'info' | 'primary' | 'warning';
 
@@ -47,14 +52,17 @@ type featureIndicatorProps = (
 ) & {
 	className?: string;
 	dark?: boolean;
+	iconOnly?: boolean;
 	tooltipAlign?: (typeof ALIGN_POSITIONS)[number];
 };
 
-const ENTERPRISE_URL = 'https://www.liferay.com/web/lr/cms-upgrade';
+const ENTERPRISE_URL =
+	'https://www.liferay.com/web/lr/cms-upgrade?utm_medium=referral&utm_source=cms-ft&utm_content=cms-ft-upgrade&utm_cid=701VO00000wwP6IYAU';
 
 export default function FeatureIndicator({
 	className,
 	dark,
+	iconOnly,
 	interactive,
 	learnResourceContext,
 	tooltipAlign = 'top',
@@ -71,7 +79,7 @@ export default function FeatureIndicator({
 	let linkUrl;
 	let popoverText = Liferay.Language.get('this-feature-is-in-testing');
 	let popoverTitle = Liferay.Language.get('beta-feature');
-	let symbol = 'info-circle-open';
+	let symbol = 'test';
 	let tooltipTitle = Liferay.Language.get('open-beta-definition');
 
 	if (type === 'deprecated') {
@@ -109,7 +117,16 @@ export default function FeatureIndicator({
 		tooltipTitle = Liferay.Language.get('open-maintenance-mode-definition');
 	}
 
-	const showLabel = type !== 'maintenance';
+	if (type === 'private-beta') {
+		displayType = 'info';
+		label = Liferay.Language.get('private-beta');
+		popoverText = Liferay.Language.get(
+			'this-feature-is-in-private-testing'
+		);
+		popoverTitle = Liferay.Language.get('private-beta-feature');
+		symbol = 'lock';
+		tooltipTitle = Liferay.Language.get('open-private-beta-definition');
+	}
 
 	return (
 		<LearnResourcesContext.Provider value={learnResourceContext}>
@@ -128,16 +145,18 @@ export default function FeatureIndicator({
 								aria-controls={ariaControlsId}
 								aria-expanded={show}
 								aria-haspopup="dialog"
+								aria-label={iconOnly ? label : undefined}
 								className={className}
 								dark={dark}
 								data-tooltip-align={tooltipAlign}
 								displayType={displayType}
+								monospaced={iconOnly}
 								rounded
 								size="xs"
 								title={tooltipTitle}
 								translucent
 							>
-								{showLabel && (
+								{!iconOnly && (
 									<span className="inline-item text-uppercase">
 										{label}
 									</span>
@@ -146,7 +165,7 @@ export default function FeatureIndicator({
 								{symbol && (
 									<span
 										className={classNames('inline-item', {
-											'inline-item-after ml-2': showLabel,
+											'inline-item-after ml-2': !iconOnly,
 										})}
 									>
 										<ClayIcon symbol={symbol} />
@@ -178,12 +197,28 @@ export default function FeatureIndicator({
 						) : null}
 					</ClayPopover>
 				</ClayTooltipProvider>
+			) : iconOnly ? (
+				<span
+					aria-label={label}
+					className={classNames(
+						'badge',
+						`badge-${displayType}`,
+						'badge-translucent',
+						className,
+						{'clay-dark': dark}
+					)}
+					role="img"
+				>
+					<span className="badge-item">
+						<ClayIcon symbol={symbol} />
+					</span>
+				</span>
 			) : (
 				<ClayBadge
 					className={classNames('text-uppercase', className)}
 					dark={dark}
 					displayType={displayType}
-					label={showLabel ? label : undefined}
+					label={label}
 					symbol={symbol}
 					translucent
 				/>

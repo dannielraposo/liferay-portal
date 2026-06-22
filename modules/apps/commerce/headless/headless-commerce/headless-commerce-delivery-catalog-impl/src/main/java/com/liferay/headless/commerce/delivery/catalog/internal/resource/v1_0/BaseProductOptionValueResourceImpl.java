@@ -72,41 +72,53 @@ public abstract class BaseProductOptionValueResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/channels/by-externalReferenceCode/{channelExternalReferenceCode}/products/by-externalReferenceCode/{productExternalReferenceCode}/product-options/by-externalReferenceCode/{productOptionExternalReferenceCode}/product-option-values'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "External-reference-code variant of getChannelProductProductOptionProductOptionValuesPage. Resolves CommerceChannel, CProduct and CPOption through their ERC lookups and delegates to the numeric handler so permission checks, CommerceContext setup, and the returned option value list are identical. Validation -- NoSuchModelException -> 404 when any ERC is missing. List query support -- pagination only; filterable fields -- none."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code of the addressed CommerceChannel; raises 404 when no channel with this code exists in the company.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelExternalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code of the addressed CProduct; raises 404 when no product with this code exists in the company.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "productExternalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code of the addressed CPOption (parent of the CPDefinitionOptionRel); raises 404 when missing.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "productOptionExternalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the AccountEntry the request is scoped to. When omitted, AccountUtil resolves the effective account from the authenticated user's commerce account assignments and channel eligibility; when the user has multiple accounts the explicit value is required (NoSuchEntryException otherwise).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "accountId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "ISO 4217 currency code applied to the request's CommerceContext for price resolution. When omitted, the channel's default currency is used; a non-active currency raises 422.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "currencyCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index for paginated results. Combine with pageSize to walk pages; when omitted the server returns page 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. When omitted the server applies the configured default page size; the maximum page size is bounded by the portal's PortalUtil.PROPS_REST_MAX_RETURN_SIZE.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the CPDefinitionOptionValueRel currently selected by the buyer. Forwarded to the DTO converter so price and selectability for each returned value reflect this candidate selection.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "productOptionValueId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to a candidate CPInstance the buyer is configuring. Forwarded to the DTO converter so price and selectability for each option value reflect this candidate SKU.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "skuId"
 			)
@@ -160,41 +172,53 @@ public abstract class BaseProductOptionValueResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/channels/{channelId}/products/{productId}/product-options/{productOptionId}/product-option-values'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists CPDefinitionOptionValueRel entries for /channels/{channelId}/products/{productId}/product-options/{productOptionId}/product-option-values. Resolves the CPDefinition, the channel, and the effective accountId through AccountUtil; enforces CommerceProductViewPermission; pushes a ServiceContext through ServiceContextHelper and builds a CommerceContext from currencyCode. Pages CPDefinitionOptionValueRelLocalService.getCPDefinitionOptionValueRels. Optional productOptionValueId and skuId parameters are forwarded to the DTO converter so the response reflects the candidate configuration's pricing and selectability. Validation -- NoSuchCProductException -> 404 when the productId does not resolve; PrincipalException -> 403 when the caller lacks VIEW permission on the product. List query support -- pagination only; filterable fields -- none."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CommerceChannel; raises 404 when no channel with this primary key exists.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CProduct (product head). The resource resolves the active CPDefinition through fetchCPDefinitionByCProductId; raises 404 when missing.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "productId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CPDefinitionOptionRel; raises 404 when missing.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "productOptionId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the AccountEntry the request is scoped to. When omitted, AccountUtil resolves the effective account from the authenticated user's commerce account assignments and channel eligibility; when the user has multiple accounts the explicit value is required (NoSuchEntryException otherwise).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "accountId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "ISO 4217 currency code applied to the request's CommerceContext for price resolution. When omitted, the channel's default currency is used; a non-active currency raises 422.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "currencyCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index for paginated results. Combine with pageSize to walk pages; when omitted the server returns page 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. When omitted the server applies the configured default page size; the maximum page size is bounded by the portal's PortalUtil.PROPS_REST_MAX_RETURN_SIZE.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the CPDefinitionOptionValueRel currently selected by the buyer. Forwarded to the DTO converter so price and selectability for each returned value reflect this candidate selection.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "productOptionValueId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to a candidate CPInstance the buyer is configuring. Forwarded to the DTO converter so price and selectability for each option value reflect this candidate SKU.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "skuId"
 			)
@@ -249,43 +273,52 @@ public abstract class BaseProductOptionValueResourceImpl
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/channels/by-externalReferenceCode/{channelExternalReferenceCode}/products/by-externalReferenceCode/{productExternalReferenceCode}/product-options/by-externalReferenceCode/{productOptionExternalReferenceCode}/product-option-values'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves a list of ProductOptionValue with selected channel, product and product option external reference code."
+		description = "External-reference-code variant of postChannelProductProductOptionProductOptionValuesPage. Resolves channel, product and option by ERC and delegates to the numeric POST handler. The endpoint is a preview call -- the SkuOption[] body is scored against the option values to compute pricing and selectability for the candidate configuration. Not an upsert -- nothing is persisted. Validation -- NoSuchModelException -> 404 when any ERC is missing."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code of the addressed CommerceChannel; raises 404 when no channel with this code exists in the company.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelExternalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code of the addressed CProduct; raises 404 when no product with this code exists in the company.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "productExternalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code of the addressed CPOption (parent of the CPDefinitionOptionRel); raises 404 when missing.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "productOptionExternalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the AccountEntry the request is scoped to. When omitted, AccountUtil resolves the effective account from the authenticated user's commerce account assignments and channel eligibility; when the user has multiple accounts the explicit value is required (NoSuchEntryException otherwise).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "accountId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "ISO 4217 currency code applied to the request's CommerceContext for price resolution. When omitted, the channel's default currency is used; a non-active currency raises 422.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "currencyCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index for paginated results. Combine with pageSize to walk pages; when omitted the server returns page 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. When omitted the server applies the configured default page size; the maximum page size is bounded by the portal's PortalUtil.PROPS_REST_MAX_RETURN_SIZE.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the CPDefinitionOptionValueRel currently selected by the buyer. Forwarded to the DTO converter so price and selectability for each returned value reflect this candidate selection.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "productOptionValueId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to a candidate CPInstance the buyer is configuring. Forwarded to the DTO converter so price and selectability for each option value reflect this candidate SKU.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "skuId"
 			)
@@ -342,43 +375,52 @@ public abstract class BaseProductOptionValueResourceImpl
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/channels/{channelId}/products/{productId}/product-options/{productOptionId}/product-option-values'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves a list of ProductOptionValue from selected channel, product ID and product option ID."
+		description = "POST counterpart of getChannelProductProductOptionProductOptionValuesPage. Accepts a SkuOption[] body that lets the DTO converter score each option value against a partially-selected configuration (selectability, price impact, availability). The response shape and pagination match the GET, just enriched with the body's selections. Not an upsert -- nothing is persisted. Validation -- NoSuchCProductException -> 404 when the productId does not resolve; PrincipalException -> 403 when the caller lacks VIEW permission on the product."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CommerceChannel; raises 404 when no channel with this primary key exists.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CProduct (product head). The resource resolves the active CPDefinition through fetchCPDefinitionByCProductId; raises 404 when missing.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "productId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CPDefinitionOptionRel; raises 404 when missing.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "productOptionId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the AccountEntry the request is scoped to. When omitted, AccountUtil resolves the effective account from the authenticated user's commerce account assignments and channel eligibility; when the user has multiple accounts the explicit value is required (NoSuchEntryException otherwise).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "accountId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "ISO 4217 currency code applied to the request's CommerceContext for price resolution. When omitted, the channel's default currency is used; a non-active currency raises 422.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "currencyCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index for paginated results. Combine with pageSize to walk pages; when omitted the server returns page 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. When omitted the server applies the configured default page size; the maximum page size is bounded by the portal's PortalUtil.PROPS_REST_MAX_RETURN_SIZE.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the CPDefinitionOptionValueRel currently selected by the buyer. Forwarded to the DTO converter so price and selectability for each returned value reflect this candidate selection.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "productOptionValueId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to a candidate CPInstance the buyer is configuring. Forwarded to the DTO converter so price and selectability for each option value reflect this candidate SKU.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "skuId"
 			)
@@ -1090,4 +1132,4 @@ public abstract class BaseProductOptionValueResourceImpl
 		LogFactoryUtil.getLog(BaseProductOptionValueResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-201873931
+// LIFERAY-REST-BUILDER-HASH:777747888

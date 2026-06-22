@@ -30,8 +30,7 @@ components:
             type: object
         Creator:
             description:
-                Represents the user who created/authored the content. Properties follow the
-                [creator](https://schema.org/creator) specification.
+                Represents the user who created/authored the content. Properties follow the [creator](https://schema.org/creator) specification.
             properties:
                 additionalName:
                     description:
@@ -93,7 +92,7 @@ components:
                     # @review
                     description:
                         The workflow's node types.
-                    enum: [AI_DECISION, CONDITION, FORK, INITIAL_STATE, JOIN, JOIN_XOR, LLM, STATE, TASK, TERMINAL_STATE]
+                    enum: [AI_DECISION, CONDITION, FORK, HTTP_REQUEST, INITIAL_STATE, JOIN, JOIN_XOR, LLM, STATE, TASK, TERMINAL_STATE]
                     readOnly: true
                     type: string
             type: object
@@ -121,8 +120,7 @@ components:
             type: object
         Role:
             description:
-                Represents a relationship between a user and a company or site. This follows the
-                [`Role`](https://www.schema.org/Role) specification.
+                Represents a relationship between a user and a company or site. This follows the [`Role`](https://www.schema.org/Role) specification.
             properties:
                 availableLanguages:
                     description:
@@ -468,6 +466,11 @@ components:
                         A flag that indicates whether the task is complete.
                     readOnly: true
                     type: boolean
+                creator:
+                    $ref: "#/components/schemas/Creator"
+                    description:
+                        The task's creator.
+                    readOnly: true
                 dateCompletion:
                     description:
                         The task's completion date.
@@ -686,8 +689,7 @@ components:
             type: object
 info:
     description:
-        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.headless.admin.workflow.client', and version '4.0.48'."
+        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.headless.admin.workflow.client', and version '4.0.49'."
     license:
         name: Apache 2.0
         url: http://www.apache.org/licenses/LICENSE-2.0.html

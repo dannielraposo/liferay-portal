@@ -55,6 +55,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -284,6 +285,26 @@ public class AssetPublisherDisplayContextTest {
 			localizedValuesMap.get(LocaleUtil.getSiteDefault()));
 	}
 
+	@FeatureFlag(enable = false, value = "LPD-89171")
+	@Test
+	public void testGetPortletURLWhenRedirectParameterIsDisabled()
+		throws Exception {
+
+		String portletURLString = _getPortletURLString();
+
+		Assert.assertFalse(portletURLString.contains("redirect"));
+	}
+
+	@FeatureFlag("LPD-89171")
+	@Test
+	public void testGetPortletURLWhenRedirectParameterIsEnabled()
+		throws Exception {
+
+		String portletURLString = _getPortletURLString();
+
+		Assert.assertTrue(portletURLString.contains("redirect"));
+	}
+
 	@Test
 	public void testGetSelectCollectionProps() throws Exception {
 		Map<String, Object> selectCollectionProps = ReflectionTestUtil.invoke(
@@ -438,6 +459,23 @@ public class AssetPublisherDisplayContextTest {
 			AssetPublisherWebKeys.ASSET_PUBLISHER_DISPLAY_CONTEXT);
 	}
 
+	private String _getPortletURLString() throws Exception {
+		PortletPreferences portletPreferences = new PortletPreferencesImpl();
+
+		portletPreferences.setValue("paginationType", "regular");
+
+		Object assetPublisherDisplayContext = _getAssetPublisherDisplayContext(
+			LayoutTestUtil.addTypePortletLayout(_group), portletPreferences);
+
+		_mockLiferayPortletRenderRequest.setParameter(
+			"redirect", RandomTestUtil.randomString());
+
+		Object portletURL = ReflectionTestUtil.invoke(
+			assetPublisherDisplayContext, "getPortletURL", new Class<?>[0]);
+
+		return String.valueOf(portletURL);
+	}
+
 	private ThemeDisplay _getThemeDisplay(
 			Layout layout, PortletPreferences portletPreferences)
 		throws Exception {
@@ -512,9 +550,6 @@ public class AssetPublisherDisplayContextTest {
 	}
 
 	private static Configuration _assetPublisherWebConfiguration;
-	private static MockLiferayPortletRenderRequest
-		_mockLiferayPortletRenderRequest;
-	private static ThemeDisplay _themeDisplay;
 
 	@Inject
 	private AssetCategoryLocalService _assetCategoryLocalService;
@@ -542,6 +577,8 @@ public class AssetPublisherDisplayContextTest {
 	@Inject
 	private Localization _localization;
 
+	private MockLiferayPortletRenderRequest _mockLiferayPortletRenderRequest;
+
 	@Inject
 	private Portal _portal;
 
@@ -552,6 +589,8 @@ public class AssetPublisherDisplayContextTest {
 
 	@Inject
 	private PortletLocalService _portletLocalService;
+
+	private ThemeDisplay _themeDisplay;
 
 	private static class TestMockLiferayPortletRenderRequest
 		extends MockLiferayPortletRenderRequest {

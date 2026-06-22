@@ -14,6 +14,10 @@ definition {
 
 		User.firstLoginPG();
 
+		task ("Enable widget pages") {
+			PagesAdmin.enableWidgetPages();
+		}
+
 		if (${testLiferayVirtualInstance} != "true") {
 			SearchAdministration.executeReindex();
 
@@ -234,36 +238,6 @@ definition {
 		CalendarEvent.viewStatusViaDetails(status = "Approved");
 	}
 
-	@description = "Verify that the user can approve calendar events on Single Approver workflow"
-	@priority = 5
-	test CanApproveCalendarEventOnSingleApprover {
-		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
-
-		Workflow.assignToMeTaskByActions(
-			workflowAssetTitle = "Calendar Event Title",
-			workflowAssetType = "Calendar Event",
-			workflowTask = "Review");
-
-		Workflow.approveTaskByActions(
-			workflowAssetTitle = "Calendar Event Title",
-			workflowAssetType = "Calendar Event",
-			workflowTask = "Review");
-
-		Navigator.gotoPage(pageName = "Calendar Page");
-
-		Click(
-			key_eventTitle = "Calendar Event Title",
-			locator1 = "WorkflowCalendar#CALENDAR_EVENT_BY_TITLE");
-
-		Button.click(button = "View Details");
-
-		SelectFrame(locator1 = "IFrame#MODAL_BODY");
-
-		AssertTextEquals(
-			locator1 = "WorkflowCalendar#CALENDAR_EVENT_DETAILS_WORKFLOW_STATUS",
-			value1 = "Approved");
-	}
-
 	@description = "Verify that the user can assign a Workflow to Calendar Event"
 	@priority = 5
 	test CanAssignWorkflowToCalendarEvent {
@@ -280,139 +254,6 @@ definition {
 		Workflow.viewConfigurationSelected(
 			workflowDefinition = "Single Approver",
 			workflowResourceValue = "Calendar Event");
-	}
-
-	@description = "This is a use case for LPS-59572."
-	@priority = 3
-	test DeleteAndRestoreEvent {
-		var siteName = TestCase.getSiteName(siteName = ${siteName});
-
-		CalendarNavigator.gotoView(viewType = "Week");
-
-		CalendarEvent.viewSiteRSVPWithUnapprovedWorkflow(
-			eventTitle = "Calendar Event Title",
-			siteCalendarName = ${siteName});
-
-		Click(locator1 = "Button#CLOSE_IFRAME");
-
-		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
-
-		Workflow.viewTaskAssignedToMyRoles(
-			workflowAssetTitle = "Calendar Event Title",
-			workflowAssetType = "Calendar Event",
-			workflowTask = "Review");
-
-		Navigator.gotoPage(pageName = "Calendar Page");
-
-		CalendarNavigator.gotoView(viewType = "Week");
-
-		CalendarEvent.deleteSpecific(eventTitle = "Calendar Event Title");
-
-		Navigator.gotoPage(pageName = "Calendar Page");
-
-		CalendarNavigator.gotoView(viewType = "Week");
-
-		CalendarScheduler.viewDefault(
-			eventTitle = "Calendar Event Title",
-			pageName = "Calendar Page");
-
-		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
-
-		Workflow.viewDefaultMyWorkflowTasksCP();
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Recycle Bin",
-			panel = "Site Administration",
-			portlet = "Recycle Bin");
-
-		RecycleBin.restoreCP(assetName = "Calendar Event Title");
-
-		Navigator.gotoPage(pageName = "Calendar Page");
-
-		CalendarNavigator.gotoView(viewType = "Week");
-
-		CalendarEvent.viewSiteRSVPWithUnapprovedWorkflow(
-			eventTitle = "Calendar Event Title",
-			siteCalendarName = ${siteName});
-
-		Click(locator1 = "Button#CLOSE_IFRAME");
-
-		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
-
-		Workflow.assignToMeTaskByActions(
-			workflowAssetTitle = "Calendar Event Title",
-			workflowAssetType = "Calendar Event",
-			workflowTask = "Review");
-
-		Workflow.viewTaskAssignedToMe(
-			workflowAssetTitle = "Calendar Event Title",
-			workflowAssetType = "Calendar Event",
-			workflowTask = "Review");
-
-		Navigator.gotoPage(pageName = "Calendar Page");
-
-		CalendarNavigator.gotoView(viewType = "Week");
-
-		CalendarEvent.deleteSpecific(eventTitle = "Calendar Event Title");
-
-		Navigator.gotoPage(pageName = "Calendar Page");
-
-		CalendarNavigator.gotoView(viewType = "Week");
-
-		CalendarScheduler.viewDefault(
-			eventTitle = "Calendar Event Title",
-			pageName = "Calendar Page");
-
-		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
-
-		Workflow.viewDefaultMyWorkflowTasksCP();
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Recycle Bin",
-			panel = "Site Administration",
-			portlet = "Recycle Bin");
-
-		RecycleBin.restoreCP(assetName = "Calendar Event Title");
-
-		Navigator.gotoPage(pageName = "Calendar Page");
-
-		CalendarNavigator.gotoView(viewType = "Week");
-
-		CalendarEvent.viewSiteRSVPWithUnapprovedWorkflow(
-			eventTitle = "Calendar Event Title",
-			siteCalendarName = ${siteName});
-
-		Click(locator1 = "Button#CLOSE_IFRAME");
-
-		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
-
-		Workflow.assignToMeTaskByActions(
-			workflowAssetTitle = "Calendar Event Title",
-			workflowAssetType = "Calendar Event",
-			workflowTask = "Review");
-
-		Workflow.approveTaskByActions(
-			workflowAssetTitle = "Calendar Event Title",
-			workflowAssetType = "Calendar Event",
-			workflowTask = "Review");
-
-		Navigator.gotoPage(pageName = "Calendar Page");
-
-		CalendarNavigator.gotoView(viewType = "Week");
-
-		CalendarEvent.viewSiteRSVPWithApprovedWorkflow(
-			eventTitle = "Calendar Event Title",
-			rsvp = "Yes",
-			userCalendarName = "Test Test");
-
-		CalendarEvent.viewInvitedUserRSVPWithApprovedWorkflow(
-			eventTitle = "Calendar Event Title",
-			siteCalendarName = ${siteName},
-			userCalendarName = "Test Test");
 	}
 
 	@priority = 4

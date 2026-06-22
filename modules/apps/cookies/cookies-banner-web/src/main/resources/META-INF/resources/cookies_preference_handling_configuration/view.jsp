@@ -9,161 +9,225 @@
 
 <%
 CookiesPreferenceHandlingConfigurationDisplayContext cookiesPreferenceHandlingConfigurationDisplayContext = (CookiesPreferenceHandlingConfigurationDisplayContext)request.getAttribute(CookiesBannerWebKeys.COOKIES_PREFERENCE_HANDLING_CONFIGURATION_DISPLAY_CONTEXT);
+
+String forceReconsentURL = cookiesPreferenceHandlingConfigurationDisplayContext.getForceReconsentURL(renderResponse);
 %>
 
 <aui:link hashedFile="<%= true %>" href="cookies-banner-web/cookies_preference_handling_configuration/css/main.css" rel="stylesheet" type="text/css" />
 
-<div class="c-mt-5 row">
-	<div class="col-sm-12 form-group">
-		<div class="form-group__inner">
-			<clay:checkbox
-				checked="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>"
-				id='<%= liferayPortletResponse.getNamespace() + "enabled" %>'
-				label="enabled"
-				name='<%= liferayPortletResponse.getNamespace() + "enabled" %>'
-			/>
+<fieldset>
+	<legend class="sr-only"><liferay-ui:message key="consent-manager-configuration" /></legend>
 
-			<div aria-hidden="true" class="form-feedback-group">
-				<div class="form-text text-weight-normal"><liferay-ui:message key="cookie-enabled-help" /></div>
-			</div>
-		</div>
-	</div>
-</div>
+	<div class="alert <%= cookiesPreferenceHandlingConfigurationDisplayContext.isCookiesPreferenceHandlingActive() ? "alert-success" : "alert-warning" %> d-flex align-items-center justify-content-between">
+		<span>
+			<liferay-ui:message key='<%= cookiesPreferenceHandlingConfigurationDisplayContext.isCookiesPreferenceHandlingActive() ? "this-experience-is-live-and-visible-to-site-visitors" : "this-experience-is-in-draft-mode-and-not-visible-to-site-visitors" %>' />
+		</span>
 
-<div class="row">
-	<div class="col-sm-12 form-group">
-		<div class="form-group__inner">
-			<clay:checkbox
-				checked="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingExplicitConsentMode() %>"
-				disabled="<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>"
-				id='<%= liferayPortletResponse.getNamespace() + "explicitConsentMode" %>'
-				label="cookie-explicit-consent-mode"
-				name='<%= liferayPortletResponse.getNamespace() + "explicitConsentMode" %>'
-			/>
-
-			<div aria-hidden="true" class="form-feedback-group">
-				<div class="form-text text-weight-normal">
-					<liferay-ui:message key="cookie-explicit-consent-mode-help" />
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-
-<div class="row">
-	<div class="col-sm-12 form-group">
-		<label class="c-mb-1 c-mt-2 font-weight-semi-bold <%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %>" for="<portlet:namespace />consentRenewalPeriod" id="<portlet:namespace />consentRenewalPeriodLabel">
-			<liferay-ui:message key="cookie-consent-renewal-period" />
-		</label>
-
-		<div class="form-group-autofit">
-			<div class="form-group-item">
-				<aui:input disabled="<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>" id='<%= liferayPortletResponse.getNamespace() + "consentRenewalPeriod" %>' label="" max="12" min="1" name='<%= liferayPortletResponse.getNamespace() + "consentRenewalPeriod" %>' required="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>" type="number" useNamespace="<%= false %>" value="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingConsentRenewalPeriod() %>" />
-			</div>
-
-			<div class="form-group-item">
-				<aui:select disabled="<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>" id='<%= liferayPortletResponse.getNamespace() + "consentRenewalPeriodTimeUnit" %>' label="" name='<%= liferayPortletResponse.getNamespace() + "consentRenewalPeriodTimeUnit" %>' title="time-unit" useNamespace="<%= false %>" value="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingConsentRenewalPeriodTimeUnit() %>">
-					<aui:option label="days" value="days" />
-					<aui:option label="weeks" value="weeks" />
-					<aui:option label="months" selected="<%= true %>" value="months" />
-				</aui:select>
-			</div>
-		</div>
-
-		<div aria-hidden="true" class="c-mb-1 form-feedback-group">
-			<div class="form-text text-weight-normal">
-				<liferay-ui:message key="cookie-consent-renewal-period-help" />
-			</div>
-		</div>
-	</div>
-</div>
-
-<div class="row">
-	<div class="col-sm-12 form-group">
-		<label class="c-mb-1 c-mt-2 font-weight-semi-bold <%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %>" for="<portlet:namespace />dissentRenewalPeriod" id="<portlet:namespace />dissentRenewalPeriodLabel">
-			<liferay-ui:message key="cookie-dissent-renewal-period" />
-		</label>
-
-		<div class="form-group-autofit">
-			<div class="form-group-item">
-				<aui:input disabled="<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>" id='<%= liferayPortletResponse.getNamespace() + "dissentRenewalPeriod" %>' label="" max="12" min="0" name='<%= liferayPortletResponse.getNamespace() + "dissentRenewalPeriod" %>' required="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>" type="number" useNamespace="<%= false %>" value="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingDissentRenewalPeriod() %>" />
-			</div>
-
-			<div class="form-group-item">
-				<aui:select disabled="<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>" id='<%= liferayPortletResponse.getNamespace() + "dissentRenewalPeriodTimeUnit" %>' label="" name='<%= liferayPortletResponse.getNamespace() + "dissentRenewalPeriodTimeUnit" %>' title="time-unit" useNamespace="<%= false %>" value="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingDissentRenewalPeriodTimeUnit() %>">
-					<aui:option label="days" value="days" />
-					<aui:option label="weeks" value="weeks" />
-					<aui:option label="months" selected="<%= true %>" value="months" />
-				</aui:select>
-			</div>
-		</div>
-
-		<div aria-hidden="true" class="c-mb-1 form-feedback-group">
-			<div class="form-text text-weight-normal">
-				<liferay-ui:message key="cookie-dissent-renewal-period-help" />
-			</div>
-		</div>
-	</div>
-</div>
-
-<div class="row">
-	<div class="col-sm-12 form-group">
-		<button class="btn btn-secondary <%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %>" id="<portlet:namespace />forcedReconsentButton" type="button">
-			<liferay-ui:message key="forced-reconsent" />
+		<button class="btn <%= cookiesPreferenceHandlingConfigurationDisplayContext.isCookiesPreferenceHandlingActive() ? "btn-secondary" : "btn-warning" %> <%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %>" <%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %> id="<portlet:namespace />toggleActiveButton" type="button">
+			<liferay-ui:message key='<%= cookiesPreferenceHandlingConfigurationDisplayContext.isCookiesPreferenceHandlingActive() ? "deactivate" : "activate" %>' />
 		</button>
-
-		<div aria-hidden="true" class="c-mb-1 form-feedback-group">
-			<div class="form-text text-weight-normal">
-				<liferay-ui:message key="forced-reconsent-help" />
-			</div>
-		</div>
 	</div>
-</div>
 
-<aui:input name="modifiedDate" type="hidden" />
-
-<div class="row">
-	<div class="col-sm-12 form-group">
-		<div class="form-group__inner">
-			<clay:checkbox
-				checked="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingStoreConsent() %>"
-				disabled="<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>"
-				id='<%= liferayPortletResponse.getNamespace() + "storeConsent" %>'
-				label="cookie-store-consent"
-				name='<%= liferayPortletResponse.getNamespace() + "storeConsent" %>'
-			/>
-
-			<div aria-hidden="true" class="form-feedback-group">
-				<div class="form-text text-weight-normal">
-					<liferay-ui:message key="cookie-store-consent-help" />
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-
-<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPD-75064") %>'>
-	<clay:row>
-		<clay:col
-			cssClass="form-group"
-			sm="12"
-		>
+	<div class="c-mt-5 row">
+		<div class="col-sm-12 form-group">
 			<div class="form-group__inner">
 				<clay:checkbox
-					checked="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingGlobalPrivacyControlEnabled() %>"
-					disabled="<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>"
-					id='<%= liferayPortletResponse.getNamespace() + "globalPrivacyControlEnabled" %>'
-					label="global-privacy-control-enabled"
-					name='<%= liferayPortletResponse.getNamespace() + "globalPrivacyControlEnabled" %>'
+					aria-describedby='<%= liferayPortletResponse.getNamespace() + "enabledHelp" %>'
+					checked="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>"
+					id='<%= liferayPortletResponse.getNamespace() + "enabled" %>'
+					label="enabled"
+					name='<%= liferayPortletResponse.getNamespace() + "enabled" %>'
 				/>
 
-				<div aria-hidden="true" class="form-feedback-group">
-					<div class="form-text text-weight-normal"><liferay-ui:message key="global-privacy-control-enabled-help" /></div>
+				<div class="form-feedback-group" id="<portlet:namespace />enabledHelp">
+					<div class="form-text text-weight-normal"><liferay-ui:message key="cookie-enabled-help" /></div>
 				</div>
 			</div>
-		</clay:col>
-	</clay:row>
-</c:if>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-12 form-group">
+			<div class="form-group__inner">
+				<clay:checkbox
+					aria-describedby='<%= liferayPortletResponse.getNamespace() + "explicitConsentModeHelp" %>'
+					checked="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingExplicitConsentMode() %>"
+					disabled="<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>"
+					id='<%= liferayPortletResponse.getNamespace() + "explicitConsentMode" %>'
+					label="cookie-explicit-consent-mode"
+					name='<%= liferayPortletResponse.getNamespace() + "explicitConsentMode" %>'
+				/>
+
+				<div class="form-feedback-group" id="<portlet:namespace />explicitConsentModeHelp">
+					<div class="form-text text-weight-normal">
+						<liferay-ui:message key="cookie-explicit-consent-mode-help" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-12 form-group">
+			<label class="c-mb-1 c-mt-2 font-weight-semi-bold <%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %>" for="<portlet:namespace />consentRenewalPeriod" id="<portlet:namespace />consentRenewalPeriodLabel">
+				<liferay-ui:message key="cookie-consent-renewal-period" />
+			</label>
+
+			<div class="form-group-autofit">
+				<div class="form-group-item">
+					<input
+						aria-describedby="<portlet:namespace />consentRenewalPeriodHelp"
+						class="form-control"
+						<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %>
+						id="<portlet:namespace />consentRenewalPeriod"
+						max="12"
+						min="1"
+						name="<portlet:namespace />consentRenewalPeriod"
+						<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "required" : "" %>
+						type="number"
+						value="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingConsentRenewalPeriod() %>"
+					/>
+				</div>
+
+				<div class="form-group-item">
+
+					<%
+					String consentRenewalPeriodTimeUnit = cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingConsentRenewalPeriodTimeUnit();
+					%>
+
+					<select
+						aria-label='<%= HtmlUtil.escape(LanguageUtil.get(request, "time-unit")) %>'
+						class="form-control"
+						<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %>
+						id="<portlet:namespace />consentRenewalPeriodTimeUnit"
+						name="<portlet:namespace />consentRenewalPeriodTimeUnit"
+					>
+						<option <%= Objects.equals("days", consentRenewalPeriodTimeUnit) ? "selected" : "" %> value="days"><liferay-ui:message key="days" /></option>
+						<option <%= Objects.equals("weeks", consentRenewalPeriodTimeUnit) ? "selected" : "" %> value="weeks"><liferay-ui:message key="weeks" /></option>
+						<option <%= Objects.equals("months", consentRenewalPeriodTimeUnit) ? "selected" : "" %> value="months"><liferay-ui:message key="months" /></option>
+					</select>
+				</div>
+			</div>
+
+			<div class="c-mb-1 form-feedback-group" id="<portlet:namespace />consentRenewalPeriodHelp">
+				<div class="form-text text-weight-normal">
+					<liferay-ui:message key="cookie-consent-renewal-period-help" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-12 form-group">
+			<label class="c-mb-1 c-mt-2 font-weight-semi-bold <%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %>" for="<portlet:namespace />dissentRenewalPeriod" id="<portlet:namespace />dissentRenewalPeriodLabel">
+				<liferay-ui:message key="cookie-dissent-renewal-period" />
+			</label>
+
+			<div class="form-group-autofit">
+				<div class="form-group-item">
+					<input
+						aria-describedby="<portlet:namespace />dissentRenewalPeriodHelp"
+						class="form-control"
+						<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %>
+						id="<portlet:namespace />dissentRenewalPeriod"
+						max="12"
+						min="0"
+						name="<portlet:namespace />dissentRenewalPeriod"
+						<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "required" : "" %>
+						type="number"
+						value="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingDissentRenewalPeriod() %>"
+					/>
+				</div>
+
+				<div class="form-group-item">
+
+					<%
+					String dissentRenewalPeriodTimeUnit = cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingDissentRenewalPeriodTimeUnit();
+					%>
+
+					<select
+						aria-label='<%= HtmlUtil.escape(LanguageUtil.get(request, "time-unit")) %>'
+						class="form-control"
+						<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %>
+						id="<portlet:namespace />dissentRenewalPeriodTimeUnit"
+						name="<portlet:namespace />dissentRenewalPeriodTimeUnit"
+					>
+						<option <%= Objects.equals("days", dissentRenewalPeriodTimeUnit) ? "selected" : "" %> value="days"><liferay-ui:message key="days" /></option>
+						<option <%= Objects.equals("weeks", dissentRenewalPeriodTimeUnit) ? "selected" : "" %> value="weeks"><liferay-ui:message key="weeks" /></option>
+						<option <%= Objects.equals("months", dissentRenewalPeriodTimeUnit) ? "selected" : "" %> value="months"><liferay-ui:message key="months" /></option>
+					</select>
+				</div>
+			</div>
+
+			<div class="c-mb-1 form-feedback-group" id="<portlet:namespace />dissentRenewalPeriodHelp">
+				<div class="form-text text-weight-normal">
+					<liferay-ui:message key="cookie-dissent-renewal-period-help" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-12 form-group">
+			<button aria-describedby="<portlet:namespace />forcedReconsentHelp" class="btn btn-secondary <%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() ? "disabled" : "" %>" id="<portlet:namespace />forcedReconsentButton" type="button">
+				<liferay-ui:message key="forced-reconsent" />
+			</button>
+
+			<div class="c-mb-1 form-feedback-group" id="<portlet:namespace />forcedReconsentHelp">
+				<div class="form-text text-weight-normal">
+					<liferay-ui:message key="forced-reconsent-help" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<aui:input name="active" type="hidden" value="<%= cookiesPreferenceHandlingConfigurationDisplayContext.isCookiesPreferenceHandlingActive() %>" />
+
+	<aui:input name="modifiedDate" type="hidden" />
+
+	<div class="row">
+		<div class="col-sm-12 form-group">
+			<div class="form-group__inner">
+				<clay:checkbox
+					aria-describedby='<%= liferayPortletResponse.getNamespace() + "storeConsentHelp" %>'
+					checked="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingStoreConsent() %>"
+					disabled="<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>"
+					id='<%= liferayPortletResponse.getNamespace() + "storeConsent" %>'
+					label="cookie-store-consent"
+					name='<%= liferayPortletResponse.getNamespace() + "storeConsent" %>'
+				/>
+
+				<div class="form-feedback-group" id="<portlet:namespace />storeConsentHelp">
+					<div class="form-text text-weight-normal">
+						<liferay-ui:message key="cookie-store-consent-help" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</fieldset>
+
+<clay:row>
+	<clay:col
+		cssClass="form-group"
+		sm="12"
+	>
+		<div class="form-group__inner">
+			<clay:checkbox
+				aria-describedby='<%= liferayPortletResponse.getNamespace() + "globalPrivacyControlEnabledHelp" %>'
+				checked="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingGlobalPrivacyControlEnabled() %>"
+				disabled="<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>"
+				id='<%= liferayPortletResponse.getNamespace() + "globalPrivacyControlEnabled" %>'
+				label="global-privacy-control-enabled"
+				name='<%= liferayPortletResponse.getNamespace() + "globalPrivacyControlEnabled" %>'
+			/>
+
+			<div class="form-feedback-group" id="<portlet:namespace />globalPrivacyControlEnabledHelp">
+				<div class="form-text text-weight-normal"><liferay-ui:message key="global-privacy-control-enabled-help" /></div>
+			</div>
+		</div>
+	</clay:col>
+</clay:row>
 
 <h3 class="sheet-subtitle"><liferay-ui:message key="floating-icon" /></h3>
 
@@ -174,6 +238,7 @@ CookiesPreferenceHandlingConfigurationDisplayContext cookiesPreferenceHandlingCo
 	>
 		<div class="form-group__inner">
 			<clay:checkbox
+				aria-describedby='<%= liferayPortletResponse.getNamespace() + "floatingIconEnabledHelp" %>'
 				checked="<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingFloatingIconEnabled() %>"
 				disabled="<%= !cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>"
 				id='<%= liferayPortletResponse.getNamespace() + "floatingIconEnabled" %>'
@@ -181,7 +246,7 @@ CookiesPreferenceHandlingConfigurationDisplayContext cookiesPreferenceHandlingCo
 				name='<%= liferayPortletResponse.getNamespace() + "floatingIconEnabled" %>'
 			/>
 
-			<div aria-hidden="true" class="form-feedback-group">
+			<div class="form-feedback-group" id="<portlet:namespace />floatingIconEnabledHelp">
 				<div class="form-text text-weight-normal"><liferay-ui:message key="floating-icon-enabled-help" /></div>
 			</div>
 		</div>
@@ -241,7 +306,7 @@ CookiesPreferenceHandlingConfigurationDisplayContext cookiesPreferenceHandlingCo
 			/>
 		</div>
 
-		<div aria-hidden="true" class="form-feedback-group mt-2">
+		<div class="form-feedback-group mt-2">
 			<div class="form-text text-weight-normal"><liferay-ui:message key="floating-icon-help" /></div>
 		</div>
 	</clay:col>
@@ -298,15 +363,9 @@ CookiesPreferenceHandlingConfigurationDisplayContext cookiesPreferenceHandlingCo
 		}
 	}
 
-	toggleRenewalPeriodMaxAttribute(
-		false,
-		'<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingConsentRenewalPeriodTimeUnit() %>'
-	);
+	toggleRenewalPeriodMaxAttribute(false, '<%= consentRenewalPeriodTimeUnit %>');
 
-	toggleRenewalPeriodMaxAttribute(
-		true,
-		'<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingDissentRenewalPeriodTimeUnit() %>'
-	);
+	toggleRenewalPeriodMaxAttribute(true, '<%= dissentRenewalPeriodTimeUnit %>');
 
 	var form = document.<portlet:namespace />fm;
 
@@ -331,25 +390,77 @@ CookiesPreferenceHandlingConfigurationDisplayContext cookiesPreferenceHandlingCo
 			'<portlet:namespace />forcedReconsentButton'
 		);
 
-		var modifiedDate = document.getElementById(
-			'<portlet:namespace />modifiedDate'
-		);
-
-		if (forcedReconsentButton && modifiedDate) {
+		if (forcedReconsentButton) {
 			forcedReconsentButton.addEventListener('click', function (event) {
 				Liferay.Util.openConfirmModal({
 					message:
-						'<liferay-ui:message key="you-are-about-to-force-reconsent" />',
+						'<liferay-ui:message key='<%= cookiesPreferenceHandlingConfigurationDisplayContext.isCookiesPreferenceHandlingActive() ? "you-are-about-to-force-reconsent" : "you-are-about-to-change-the-consent-renewal-period-when-active" %>' />',
 					onConfirm: function (isConfirmed) {
 						if (isConfirmed) {
-							form.reset();
+							Liferay.Util.fetch('<%= forceReconsentURL %>', {
+								method: 'POST',
+							}).then((response) => {
+								if (response.ok) {
+									var modifiedDateField = document.getElementById(
+										'<portlet:namespace />modifiedDate'
+									);
 
-							modifiedDate.value = new Date().getTime();
+									if (modifiedDateField) {
+										modifiedDateField.value =
+											new Date().getTime();
+									}
 
-							form.submit();
+									form.dataset.skipActivationWarn = 'true';
+
+									form.requestSubmit();
+								}
+								else {
+									Liferay.Util.openToast({
+										message: Liferay.Language.get(
+											'your-request-failed-to-complete'
+										),
+										type: 'danger',
+									});
+								}
+							});
 						}
 					},
 				});
+			});
+		}
+
+		var activeInput = document.getElementById('<portlet:namespace />active');
+		var toggleActiveButton = document.getElementById(
+			'<portlet:namespace />toggleActiveButton'
+		);
+
+		if (activeInput && toggleActiveButton) {
+			toggleActiveButton.addEventListener('click', function (event) {
+				var isCurrentlyActive = activeInput.value === 'true';
+
+				var performToggle = function () {
+					form.reset();
+
+					activeInput.value = isCurrentlyActive ? 'false' : 'true';
+					form.dataset.skipActivationWarn = 'true';
+
+					form.requestSubmit();
+				};
+
+				if (isCurrentlyActive) {
+					Liferay.Util.openConfirmModal({
+						message:
+							'<liferay-ui:message key="you-are-about-to-deactivate-the-consent-manager" />',
+						onConfirm: function (isConfirmed) {
+							if (isConfirmed) {
+								performToggle();
+							}
+						},
+					});
+				}
+				else {
+					performToggle();
+				}
 			});
 		}
 
@@ -364,10 +475,6 @@ CookiesPreferenceHandlingConfigurationDisplayContext cookiesPreferenceHandlingCo
 				return;
 			}
 
-			if (modifiedDate) {
-				modifiedDate.value = new Date().getTime();
-			}
-
 			var dissentRenewalPeriod = document.getElementById(
 				'<portlet:namespace />dissentRenewalPeriod'
 			);
@@ -378,31 +485,61 @@ CookiesPreferenceHandlingConfigurationDisplayContext cookiesPreferenceHandlingCo
 				return;
 			}
 
+			if (form.dataset.skipActivationWarn === 'true') {
+				return;
+			}
+
 			var enabled = document.getElementById('<portlet:namespace />enabled');
 
-			if (
+			var renewalPeriodChanged =
 				(consentRenewalPeriod.value !==
 					'<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingConsentRenewalPeriod() %>' ||
 					consentRenewalPeriodTimeUnit.value !==
-						'<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingConsentRenewalPeriodTimeUnit() %>' ||
+						'<%= consentRenewalPeriodTimeUnit %>' ||
 					dissentRenewalPeriod.value !==
 						'<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingDissentRenewalPeriod() %>' ||
 					dissentRenewalPeriodTimeUnit.value !==
-						'<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingDissentRenewalPeriodTimeUnit() %>') &&
+						'<%= dissentRenewalPeriodTimeUnit %>') &&
 				enabled.checked &&
-				<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>
+				<%= cookiesPreferenceHandlingConfigurationDisplayContext.getCookiesPreferenceHandlingEnabled() %>;
+
+			if (renewalPeriodChanged) {
+				form.dataset.renewalPeriodChanged = 'true';
+			}
+			else {
+				delete form.dataset.renewalPeriodChanged;
+			}
+
+			if (
+				activeInput &&
+				activeInput.value !== 'true' &&
+				renewalPeriodChanged
 			) {
 				event.preventDefault();
 				event.stopImmediatePropagation();
 
 				Liferay.Util.openConfirmModal({
 					message:
-						'<liferay-ui:message key="you-are-about-to-change-the-consent-renewal-period" />',
-					onConfirm: (isConfirmed) => {
+						'<liferay-ui:message key="you-are-about-to-change-the-consent-renewal-period-when-active" />',
+					onConfirm: function (isConfirmed) {
 						if (isConfirmed) {
-							modifiedDate.value = new Date().getTime();
+							Liferay.Util.fetch('<%= forceReconsentURL %>', {
+								method: 'POST',
+							}).then((response) => {
+								if (response.ok) {
+									form.dataset.skipActivationWarn = 'true';
 
-							form.submit();
+									form.requestSubmit();
+								}
+								else {
+									Liferay.Util.openToast({
+										message: Liferay.Language.get(
+											'your-request-failed-to-complete'
+										),
+										type: 'danger',
+									});
+								}
+							});
 						}
 					},
 				});

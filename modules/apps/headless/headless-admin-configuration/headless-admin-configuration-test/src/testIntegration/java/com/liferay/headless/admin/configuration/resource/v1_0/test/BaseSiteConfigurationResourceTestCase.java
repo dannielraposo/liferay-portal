@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.liferay.headless.admin.configuration.client.dto.v1_0.SiteConfiguration;
 import com.liferay.headless.admin.configuration.client.http.HttpInvoker;
 import com.liferay.headless.admin.configuration.client.pagination.Page;
+import com.liferay.headless.admin.configuration.client.pagination.Pagination;
 import com.liferay.headless.admin.configuration.client.resource.v1_0.SiteConfigurationResource;
 import com.liferay.headless.admin.configuration.client.serdes.v1_0.SiteConfigurationSerDes;
 import com.liferay.petra.function.transform.TransformUtil;
@@ -31,7 +32,9 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -103,7 +106,8 @@ public abstract class BaseSiteConfigurationResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -215,7 +219,7 @@ public abstract class BaseSiteConfigurationResourceTestCase {
 
 		Page<SiteConfiguration> page =
 			siteConfigurationResource.getSiteSiteConfigurationsPage(
-				siteExternalReferenceCode);
+				siteExternalReferenceCode, Pagination.of(1, 10));
 
 		long totalCount = page.getTotalCount();
 
@@ -226,7 +230,8 @@ public abstract class BaseSiteConfigurationResourceTestCase {
 					randomIrrelevantSiteConfiguration());
 
 			page = siteConfigurationResource.getSiteSiteConfigurationsPage(
-				irrelevantSiteExternalReferenceCode);
+				irrelevantSiteExternalReferenceCode,
+				Pagination.of(1, (int)totalCount + 1));
 
 			Assert.assertEquals(totalCount + 1, page.getTotalCount());
 
@@ -248,7 +253,7 @@ public abstract class BaseSiteConfigurationResourceTestCase {
 				siteExternalReferenceCode, randomSiteConfiguration());
 
 		page = siteConfigurationResource.getSiteSiteConfigurationsPage(
-			siteExternalReferenceCode);
+			siteExternalReferenceCode, Pagination.of(1, 10));
 
 		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
@@ -273,14 +278,118 @@ public abstract class BaseSiteConfigurationResourceTestCase {
 		createBatchAction.put("method", "POST");
 		createBatchAction.put(
 			"href",
-			"http://localhost:8080/o/headless-admin-configuration/v1.0/sites/{siteExternalReferenceCode}/site-configurations/batch".
-				replace(
-					"{siteExternalReferenceCode}",
-					String.valueOf(siteExternalReferenceCode)));
+			("http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/headless-admin-configuration/v1.0/sites/{siteExternalReferenceCode}/site-configurations/batch").
+					replace(
+						"{siteExternalReferenceCode}",
+						String.valueOf(siteExternalReferenceCode)));
 
 		expectedActions.put("createBatch", createBatchAction);
 
 		return expectedActions;
+	}
+
+	@Test
+	public void testGetSiteSiteConfigurationsPageWithPagination()
+		throws Exception {
+
+		String siteExternalReferenceCode =
+			testGetSiteSiteConfigurationsPage_getSiteExternalReferenceCode();
+
+		Page<SiteConfiguration> siteConfigurationsPage =
+			siteConfigurationResource.getSiteSiteConfigurationsPage(
+				siteExternalReferenceCode, null);
+
+		int totalCount = GetterUtil.getInteger(
+			siteConfigurationsPage.getTotalCount());
+
+		SiteConfiguration siteConfiguration1 =
+			testGetSiteSiteConfigurationsPage_addSiteConfiguration(
+				siteExternalReferenceCode, randomSiteConfiguration());
+
+		SiteConfiguration siteConfiguration2 =
+			testGetSiteSiteConfigurationsPage_addSiteConfiguration(
+				siteExternalReferenceCode, randomSiteConfiguration());
+
+		SiteConfiguration siteConfiguration3 =
+			testGetSiteSiteConfigurationsPage_addSiteConfiguration(
+				siteExternalReferenceCode, randomSiteConfiguration());
+
+		// See com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration#pageSizeLimit
+
+		int pageSizeLimit = 500;
+
+		if (totalCount >= (pageSizeLimit - 2)) {
+			Page<SiteConfiguration> page1 =
+				siteConfigurationResource.getSiteSiteConfigurationsPage(
+					siteExternalReferenceCode,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
+						pageSizeLimit));
+
+			Assert.assertEquals(totalCount + 3, page1.getTotalCount());
+
+			assertContains(
+				siteConfiguration1, (List<SiteConfiguration>)page1.getItems());
+
+			Page<SiteConfiguration> page2 =
+				siteConfigurationResource.getSiteSiteConfigurationsPage(
+					siteExternalReferenceCode,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
+						pageSizeLimit));
+
+			assertContains(
+				siteConfiguration2, (List<SiteConfiguration>)page2.getItems());
+
+			Page<SiteConfiguration> page3 =
+				siteConfigurationResource.getSiteSiteConfigurationsPage(
+					siteExternalReferenceCode,
+					Pagination.of(
+						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
+						pageSizeLimit));
+
+			assertContains(
+				siteConfiguration3, (List<SiteConfiguration>)page3.getItems());
+		}
+		else {
+			Page<SiteConfiguration> page1 =
+				siteConfigurationResource.getSiteSiteConfigurationsPage(
+					siteExternalReferenceCode,
+					Pagination.of(1, totalCount + 2));
+
+			List<SiteConfiguration> siteConfigurations1 =
+				(List<SiteConfiguration>)page1.getItems();
+
+			Assert.assertEquals(
+				siteConfigurations1.toString(), totalCount + 2,
+				siteConfigurations1.size());
+
+			Page<SiteConfiguration> page2 =
+				siteConfigurationResource.getSiteSiteConfigurationsPage(
+					siteExternalReferenceCode,
+					Pagination.of(2, totalCount + 2));
+
+			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
+
+			List<SiteConfiguration> siteConfigurations2 =
+				(List<SiteConfiguration>)page2.getItems();
+
+			Assert.assertEquals(
+				siteConfigurations2.toString(), 1, siteConfigurations2.size());
+
+			Page<SiteConfiguration> page3 =
+				siteConfigurationResource.getSiteSiteConfigurationsPage(
+					siteExternalReferenceCode,
+					Pagination.of(1, (int)totalCount + 3));
+
+			assertContains(
+				siteConfiguration1, (List<SiteConfiguration>)page3.getItems());
+			assertContains(
+				siteConfiguration2, (List<SiteConfiguration>)page3.getItems());
+			assertContains(
+				siteConfiguration3, (List<SiteConfiguration>)page3.getItems());
+		}
 	}
 
 	protected SiteConfiguration
@@ -792,7 +901,9 @@ public abstract class BaseSiteConfigurationResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -1055,4 +1166,4 @@ public abstract class BaseSiteConfigurationResourceTestCase {
 		SiteConfigurationResource _siteConfigurationResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1498663233
+// LIFERAY-REST-BUILDER-HASH:634462901

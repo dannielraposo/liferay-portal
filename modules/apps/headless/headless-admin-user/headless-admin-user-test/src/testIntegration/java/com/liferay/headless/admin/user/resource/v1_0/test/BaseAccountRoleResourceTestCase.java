@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -111,7 +112,8 @@ public abstract class BaseAccountRoleResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -238,6 +240,7 @@ public abstract class BaseAccountRoleResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountRole accountRole1 =
 			testGraphQLDeleteAccountAccountRoleUserAccountAssociation_addAccountRole();
 
@@ -264,6 +267,7 @@ public abstract class BaseAccountRoleResourceTestCase {
 
 		// Using the namespace headlessAdminUser_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountRole accountRole2 =
 			testGraphQLDeleteAccountAccountRoleUserAccountAssociation_addAccountRole();
 
@@ -364,6 +368,7 @@ public abstract class BaseAccountRoleResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountRole accountRole1 =
 			testGraphQLDeleteAccountByExternalReferenceCodeAccountRoleByExternalReferenceCodeUserAccountByEmailAddress_addAccountRole();
 
@@ -397,6 +402,7 @@ public abstract class BaseAccountRoleResourceTestCase {
 
 		// Using the namespace headlessAdminUser_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountRole accountRole2 =
 			testGraphQLDeleteAccountByExternalReferenceCodeAccountRoleByExternalReferenceCodeUserAccountByEmailAddress_addAccountRole();
 
@@ -495,6 +501,7 @@ public abstract class BaseAccountRoleResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountRole accountRole1 =
 			testGraphQLDeleteAccountByExternalReferenceCodeAccountRoleByExternalReferenceCodeUserAccountByExternalReferenceCode_addAccountRole();
 
@@ -527,6 +534,7 @@ public abstract class BaseAccountRoleResourceTestCase {
 
 		// Using the namespace headlessAdminUser_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountRole accountRole2 =
 			testGraphQLDeleteAccountByExternalReferenceCodeAccountRoleByExternalReferenceCodeUserAccountByExternalReferenceCode_addAccountRole();
 
@@ -626,6 +634,7 @@ public abstract class BaseAccountRoleResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountRole accountRole1 =
 			testGraphQLDeleteAccountByExternalReferenceCodeAccountRoleUserAccountByEmailAddress_addAccountRole();
 
@@ -655,6 +664,7 @@ public abstract class BaseAccountRoleResourceTestCase {
 
 		// Using the namespace headlessAdminUser_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountRole accountRole2 =
 			testGraphQLDeleteAccountByExternalReferenceCodeAccountRoleUserAccountByEmailAddress_addAccountRole();
 
@@ -748,6 +758,7 @@ public abstract class BaseAccountRoleResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountRole accountRole1 =
 			testGraphQLDeleteAccountByExternalReferenceCodeAccountRoleUserAccountByExternalReferenceCode_addAccountRole();
 
@@ -776,6 +787,7 @@ public abstract class BaseAccountRoleResourceTestCase {
 
 		// Using the namespace headlessAdminUser_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountRole accountRole2 =
 			testGraphQLDeleteAccountByExternalReferenceCodeAccountRoleUserAccountByExternalReferenceCode_addAccountRole();
 
@@ -1443,8 +1455,9 @@ public abstract class BaseAccountRoleResourceTestCase {
 		createBatchAction.put("method", "POST");
 		createBatchAction.put(
 			"href",
-			"http://localhost:8080/o/headless-admin-user/v1.0/accounts/{accountId}/account-roles/batch".
-				replace("{accountId}", String.valueOf(accountId)));
+			("http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/headless-admin-user/v1.0/accounts/{accountId}/account-roles/batch").
+					replace("{accountId}", String.valueOf(accountId)));
 
 		expectedActions.put("createBatch", createBatchAction);
 
@@ -2524,16 +2537,22 @@ public abstract class BaseAccountRoleResourceTestCase {
 		else if (value instanceof Boolean || value instanceof Number) {
 			return value.toString();
 		}
-		else if (value instanceof Date date) {
+		else if (value instanceof Date) {
+			Date date = (Date)value;
+
 			return "\"" +
 				DateUtil.getDate(
 					date, "yyyy-MM-dd'T'HH:mm:ss'Z'", LocaleUtil.getDefault(),
 					TimeZone.getTimeZone("UTC")) + "\"";
 		}
-		else if (value instanceof Enum<?> enm) {
+		else if (value instanceof Enum) {
+			Enum<?> enm = (Enum<?>)value;
+
 			return enm.name();
 		}
-		else if (value instanceof Map<?, ?> map) {
+		else if (value instanceof Map) {
+			Map<?, ?> map = (Map<?, ?>)value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -2546,7 +2565,9 @@ public abstract class BaseAccountRoleResourceTestCase {
 
 			return "{" + String.join(", ", entries) + "}";
 		}
-		else if (value instanceof Object[] array) {
+		else if (value instanceof Object[]) {
+			Object[] array = (Object[])value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Object entry : array) {
@@ -3254,7 +3275,9 @@ public abstract class BaseAccountRoleResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -3521,4 +3544,4 @@ public abstract class BaseAccountRoleResourceTestCase {
 		_accountRoleResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:330017821
+// LIFERAY-REST-BUILDER-HASH:653556514

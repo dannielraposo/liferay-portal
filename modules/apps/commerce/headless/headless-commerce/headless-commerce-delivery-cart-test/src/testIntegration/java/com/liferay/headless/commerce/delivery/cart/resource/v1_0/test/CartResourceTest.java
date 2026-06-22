@@ -16,6 +16,10 @@ import com.liferay.commerce.discount.constants.CommerceDiscountConstants;
 import com.liferay.commerce.discount.model.CommerceDiscount;
 import com.liferay.commerce.discount.service.CommerceDiscountLocalService;
 import com.liferay.commerce.model.CommerceOrder;
+import com.liferay.commerce.order.rule.constants.COREntryConstants;
+import com.liferay.commerce.order.rule.model.COREntry;
+import com.liferay.commerce.order.rule.service.COREntryLocalService;
+import com.liferay.commerce.order.rule.service.COREntryRelLocalService;
 import com.liferay.commerce.product.model.CommerceChannel;
 import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.commerce.test.util.CommerceTestUtil;
@@ -31,6 +35,7 @@ import com.liferay.list.type.service.ListTypeEntryLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.test.util.CompanyConfigurationTemporarySwapper;
+import com.liferay.portal.kernel.encryptor.Encryptor;
 import com.liferay.portal.kernel.model.Country;
 import com.liferay.portal.kernel.model.Region;
 import com.liferay.portal.kernel.model.User;
@@ -44,10 +49,14 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.URLCodec;
+import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -120,12 +129,12 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 			true, _serviceContext);
 
 		_country = _countryLocalService.addCountry(
-			"XY", "XYZ", true, true, RandomTestUtil.randomString(),
+			null, "XY", "XYZ", true, true, RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.nextDouble(), true, true, false, _serviceContext);
 
 		_region = _regionLocalService.addRegion(
-			_country.getCountryId(), true, RandomTestUtil.randomString(),
+			null, _country.getCountryId(), true, RandomTestUtil.randomString(),
 			RandomTestUtil.nextDouble(), RandomTestUtil.randomString(),
 			_serviceContext);
 	}
@@ -152,6 +161,14 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 
 	@Override
 	@Test
+	public void testGetCart() throws Exception {
+		super.testGetCart();
+
+		_testGetCartWithOffendedOrderRule();
+	}
+
+	@Override
+	@Test
 	public void testGetCartByExternalReferenceCodePaymentUrl()
 		throws Exception {
 
@@ -161,9 +178,9 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 
 		Assert.assertEquals(
 			StringBundler.concat(
-				"http://localhost:8080/o/commerce-payment?groupId=",
-				_commerceChannel.getGroupId(), "&nextStep=", callbackURL,
-				"&uuid=", cart.getOrderUUID()),
+				"http://localhost:", PortalUtil.getPortalServerPort(false),
+				"/o/commerce-payment?groupId=", _commerceChannel.getGroupId(),
+				"&nextStep=", callbackURL, "&uuid=", cart.getOrderUUID()),
 			cartResource.getCartByExternalReferenceCodePaymentUrl(
 				cart.getExternalReferenceCode(), callbackURL));
 	}
@@ -171,16 +188,8 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 	@Override
 	@Test
 	public void testGetCartPaymentURL() throws Exception {
-		Cart cart = _createCart();
-
-		String callbackURL = RandomTestUtil.randomString();
-
-		Assert.assertEquals(
-			StringBundler.concat(
-				"http://localhost:8080/o/commerce-payment?groupId=",
-				_commerceChannel.getGroupId(), "&nextStep=", callbackURL,
-				"&uuid=", cart.getOrderUUID()),
-			cartResource.getCartPaymentURL(cart.getId(), callbackURL));
+		_testGetCartPaymentURLWithBusinessAccountEntry();
+		_testGetCartPaymentURLWithGuestAccountEntry();
 	}
 
 	@Override
@@ -516,6 +525,90 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 					commerceOrder.getStatus());
 			}
 		};
+	}
+
+	private void _testGetCartPaymentURLWithBusinessAccountEntry()
+		throws Exception {
+
+		Cart cart = _createCart();
+
+		String callbackURL = RandomTestUtil.randomString();
+
+		Assert.assertEquals(
+			StringBundler.concat(
+				"http://localhost:", PortalUtil.getPortalServerPort(false),
+				"/o/commerce-payment?groupId=", _commerceChannel.getGroupId(),
+				"&nextStep=", callbackURL, "&uuid=", cart.getOrderUUID()),
+			cartResource.getCartPaymentURL(cart.getId(), callbackURL));
+	}
+
+	private void _testGetCartPaymentURLWithGuestAccountEntry()
+		throws Exception {
+
+		AccountEntry accountEntry =
+			_accountEntryLocalService.getGuestAccountEntry(
+				testCompany.getCompanyId());
+
+		CommerceOrder commerceOrder =
+			_commerceOrderLocalService.addCommerceOrder(
+				_user.getUserId(), _commerceChannel.getGroupId(),
+				accountEntry.getAccountEntryId(), _commerceCurrency.getCode(),
+				0);
+
+		String guestToken = URLCodec.encodeURL(
+			_encryptor.encrypt(
+				testCompany.getKeyObj(),
+				String.valueOf(commerceOrder.getCommerceOrderId())));
+
+		String paymentURL = cartResource.getCartPaymentURL(
+			commerceOrder.getCommerceOrderId(), RandomTestUtil.randomString());
+
+		Assert.assertTrue(paymentURL.contains("guestToken=" + guestToken));
+	}
+
+	private void _testGetCartWithOffendedOrderRule() throws Exception {
+		Calendar calendar = CalendarFactoryUtil.getCalendar(
+			_user.getTimeZone());
+
+		COREntry corEntry = _corEntryLocalService.addCOREntry(
+			RandomTestUtil.randomString(), _user.getUserId(), true,
+			RandomTestUtil.randomString(), calendar.get(Calendar.MONTH),
+			calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.YEAR),
+			calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE),
+			calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH),
+			calendar.get(Calendar.YEAR), calendar.get(Calendar.HOUR_OF_DAY),
+			calendar.get(Calendar.MINUTE), true, RandomTestUtil.randomString(),
+			100, COREntryConstants.TYPE_MINIMUM_ORDER_AMOUNT,
+			UnicodePropertiesBuilder.put(
+				COREntryConstants.TYPE_MINIMUM_ORDER_AMOUNT_FIELD_AMOUNT,
+				"10000"
+			).put(
+				COREntryConstants.TYPE_MINIMUM_ORDER_AMOUNT_FIELD_CURRENCY_CODE,
+				_commerceCurrency.getCode()
+			).buildString(),
+			_serviceContext);
+
+		_corEntryRelLocalService.addCOREntryRel(
+			_user.getUserId(), CommerceChannel.class.getName(),
+			_commerceChannel.getCommerceChannelId(), corEntry.getCOREntryId());
+
+		Cart cart = _createCart();
+
+		Cart invalidCart = cartResource.getCart(cart.getId());
+
+		Assert.assertFalse(invalidCart.getValid());
+		Assert.assertTrue(ArrayUtil.isNotEmpty(invalidCart.getErrorMessages()));
+
+		Page<Cart> cartsPage = cartResource.getChannelCartsPage(
+			_commerceChannel.getCommerceChannelId(), null, null,
+			Pagination.of(1, 10), null);
+
+		Assert.assertTrue(cartsPage.getTotalCount() > 0);
+
+		for (Cart pageCart : cartsPage.getItems()) {
+			Assert.assertNull(pageCart.getErrorMessages());
+			Assert.assertNull(pageCart.getValid());
+		}
 	}
 
 	private void _testGetChannelCartsPageWithFilter() throws Exception {
@@ -1024,11 +1117,20 @@ public class CartResourceTest extends BaseCartResourceTestCase {
 	@Inject
 	private CommerceOrderLocalService _commerceOrderLocalService;
 
+	@Inject
+	private COREntryLocalService _corEntryLocalService;
+
+	@Inject
+	private COREntryRelLocalService _corEntryRelLocalService;
+
 	@DeleteAfterTestRun
 	private Country _country;
 
 	@Inject
 	private CountryLocalService _countryLocalService;
+
+	@Inject
+	private Encryptor _encryptor;
 
 	@Inject
 	private ListTypeDefinitionLocalService _listTypeDefinitionLocalService;

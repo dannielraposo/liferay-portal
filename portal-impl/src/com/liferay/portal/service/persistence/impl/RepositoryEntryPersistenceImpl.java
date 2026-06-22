@@ -5,14 +5,12 @@
 
 package com.liferay.portal.service.persistence.impl;
 
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchRepositoryEntryException;
 import com.liferay.portal.kernel.log.Log;
@@ -80,66 +78,15 @@ public class RepositoryEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<RepositoryEntry>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the repository entries where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching repository entries
-	 */
-	@Override
-	public List<RepositoryEntry> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the repository entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of repository entries
-	 * @param end the upper bound of the range of repository entries (not inclusive)
-	 * @return the range of matching repository entries
-	 */
-	@Override
-	public List<RepositoryEntry> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<RepositoryEntry, NoSuchRepositoryEntryException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the repository entries where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of repository entries
-	 * @param end the upper bound of the range of repository entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching repository entries
-	 */
-	@Override
-	public List<RepositoryEntry> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<RepositoryEntry> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the repository entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -155,14 +102,9 @@ public class RepositoryEntryPersistenceImpl
 		OrderByComparator<RepositoryEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					RepositoryEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -178,16 +120,9 @@ public class RepositoryEntryPersistenceImpl
 			String uuid, OrderByComparator<RepositoryEntry> orderByComparator)
 		throws NoSuchRepositoryEntryException {
 
-		RepositoryEntry repositoryEntry = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (repositoryEntry != null) {
-			return repositoryEntry;
-		}
-
-		throw new NoSuchRepositoryEntryException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid},
+			orderByComparator);
 	}
 
 	/**
@@ -225,18 +160,13 @@ public class RepositoryEntryPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					RepositoryEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<RepositoryEntry>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<RepositoryEntry, NoSuchRepositoryEntryException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the repository entry where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchRepositoryEntryException</code> if it could not be found.
@@ -250,33 +180,8 @@ public class RepositoryEntryPersistenceImpl
 	public RepositoryEntry findByUUID_G(String uuid, long groupId)
 		throws NoSuchRepositoryEntryException {
 
-		RepositoryEntry repositoryEntry = fetchByUUID_G(uuid, groupId);
-
-		if (repositoryEntry == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchRepositoryEntryException(message);
-		}
-
-		return repositoryEntry;
-	}
-
-	/**
-	 * Returns the repository entry where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching repository entry, or <code>null</code> if a matching repository entry could not be found
-	 */
-	@Override
-	public RepositoryEntry fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -291,14 +196,9 @@ public class RepositoryEntryPersistenceImpl
 	public RepositoryEntry fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					RepositoryEntry.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId},
+			useFinderCache);
 	}
 
 	/**
@@ -330,73 +230,15 @@ public class RepositoryEntryPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<RepositoryEntry>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the repository entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching repository entries
-	 */
-	@Override
-	public List<RepositoryEntry> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the repository entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of repository entries
-	 * @param end the upper bound of the range of repository entries (not inclusive)
-	 * @return the range of matching repository entries
-	 */
-	@Override
-	public List<RepositoryEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<RepositoryEntry, NoSuchRepositoryEntryException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the repository entries where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of repository entries
-	 * @param end the upper bound of the range of repository entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching repository entries
-	 */
-	@Override
-	public List<RepositoryEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<RepositoryEntry> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the repository entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -413,15 +255,9 @@ public class RepositoryEntryPersistenceImpl
 		OrderByComparator<RepositoryEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					RepositoryEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {uuid, companyId}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -439,16 +275,9 @@ public class RepositoryEntryPersistenceImpl
 			OrderByComparator<RepositoryEntry> orderByComparator)
 		throws NoSuchRepositoryEntryException {
 
-		RepositoryEntry repositoryEntry = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (repositoryEntry != null) {
-			return repositoryEntry;
-		}
-
-		throw new NoSuchRepositoryEntryException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId},
+			orderByComparator);
 	}
 
 	/**
@@ -490,80 +319,19 @@ public class RepositoryEntryPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					RepositoryEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByRepositoryId;
-	private FinderPath _finderPathWithoutPaginationFindByRepositoryId;
-	private FinderPath _finderPathCountByRepositoryId;
-	private CollectionPersistenceFinder<RepositoryEntry>
-		_collectionPersistenceFinderByRepositoryId;
-
-	/**
-	 * Returns all the repository entries where repositoryId = &#63;.
-	 *
-	 * @param repositoryId the repository ID
-	 * @return the matching repository entries
-	 */
-	@Override
-	public List<RepositoryEntry> findByRepositoryId(long repositoryId) {
-		return findByRepositoryId(
-			repositoryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the repository entries where repositoryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param repositoryId the repository ID
-	 * @param start the lower bound of the range of repository entries
-	 * @param end the upper bound of the range of repository entries (not inclusive)
-	 * @return the range of matching repository entries
-	 */
-	@Override
-	public List<RepositoryEntry> findByRepositoryId(
-		long repositoryId, int start, int end) {
-
-		return findByRepositoryId(repositoryId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<RepositoryEntry, NoSuchRepositoryEntryException>
+			_collectionPersistenceFinderByRepositoryId;
 
 	/**
 	 * Returns an ordered range of all the repository entries where repositoryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param repositoryId the repository ID
-	 * @param start the lower bound of the range of repository entries
-	 * @param end the upper bound of the range of repository entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching repository entries
-	 */
-	@Override
-	public List<RepositoryEntry> findByRepositoryId(
-		long repositoryId, int start, int end,
-		OrderByComparator<RepositoryEntry> orderByComparator) {
-
-		return findByRepositoryId(
-			repositoryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the repository entries where repositoryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RepositoryEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -579,14 +347,9 @@ public class RepositoryEntryPersistenceImpl
 		OrderByComparator<RepositoryEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					RepositoryEntry.class)) {
-
-			return _collectionPersistenceFinderByRepositoryId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {repositoryId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByRepositoryId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {repositoryId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -603,16 +366,9 @@ public class RepositoryEntryPersistenceImpl
 			OrderByComparator<RepositoryEntry> orderByComparator)
 		throws NoSuchRepositoryEntryException {
 
-		RepositoryEntry repositoryEntry = fetchByRepositoryId_First(
-			repositoryId, orderByComparator);
-
-		if (repositoryEntry != null) {
-			return repositoryEntry;
-		}
-
-		throw new NoSuchRepositoryEntryException(
-			_collectionPersistenceFinderByRepositoryId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {repositoryId}));
+		return _collectionPersistenceFinderByRepositoryId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {repositoryId},
+			orderByComparator);
 	}
 
 	/**
@@ -651,18 +407,13 @@ public class RepositoryEntryPersistenceImpl
 	 */
 	@Override
 	public int countByRepositoryId(long repositoryId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					RepositoryEntry.class)) {
-
-			return _collectionPersistenceFinderByRepositoryId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {repositoryId});
-		}
+		return _collectionPersistenceFinderByRepositoryId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {repositoryId});
 	}
 
-	private FinderPath _finderPathFetchByR_M;
-	private UniquePersistenceFinder<RepositoryEntry>
-		_uniquePersistenceFinderByR_M;
+	private UniquePersistenceFinder
+		<RepositoryEntry, NoSuchRepositoryEntryException>
+			_uniquePersistenceFinderByR_M;
 
 	/**
 	 * Returns the repository entry where repositoryId = &#63; and mappedId = &#63; or throws a <code>NoSuchRepositoryEntryException</code> if it could not be found.
@@ -676,34 +427,9 @@ public class RepositoryEntryPersistenceImpl
 	public RepositoryEntry findByR_M(long repositoryId, String mappedId)
 		throws NoSuchRepositoryEntryException {
 
-		RepositoryEntry repositoryEntry = fetchByR_M(repositoryId, mappedId);
-
-		if (repositoryEntry == null) {
-			String message =
-				_uniquePersistenceFinderByR_M.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {repositoryId, mappedId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchRepositoryEntryException(message);
-		}
-
-		return repositoryEntry;
-	}
-
-	/**
-	 * Returns the repository entry where repositoryId = &#63; and mappedId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param repositoryId the repository ID
-	 * @param mappedId the mapped ID
-	 * @return the matching repository entry, or <code>null</code> if a matching repository entry could not be found
-	 */
-	@Override
-	public RepositoryEntry fetchByR_M(long repositoryId, String mappedId) {
-		return fetchByR_M(repositoryId, mappedId, true);
+		return _uniquePersistenceFinderByR_M.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {repositoryId, mappedId});
 	}
 
 	/**
@@ -718,14 +444,9 @@ public class RepositoryEntryPersistenceImpl
 	public RepositoryEntry fetchByR_M(
 		long repositoryId, String mappedId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					RepositoryEntry.class)) {
-
-			return _uniquePersistenceFinderByR_M.fetch(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {repositoryId, mappedId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByR_M.fetch(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {repositoryId, mappedId}, useFinderCache);
 	}
 
 	/**
@@ -1060,122 +781,116 @@ public class RepositoryEntryPersistenceImpl
 	 * Initializes the repository entry persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_REPOSITORYENTRY_WHERE, _SQL_COUNT_REPOSITORYENTRY_WHERE,
-			RepositoryEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			RepositoryEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"repositoryEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, RepositoryEntry::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, RepositoryEntry::getUuid,
-			RepositoryEntry::getGroupId);
+				"repositoryEntry.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, RepositoryEntry::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_REPOSITORYENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(RepositoryEntry::getUuid),
+				RepositoryEntry::getGroupId),
+			_SQL_SELECT_REPOSITORYENTRY_WHERE, "",
 			new FinderColumn<>(
-				"repositoryEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, RepositoryEntry::getUuid),
+				"repositoryEntry.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, RepositoryEntry::getUuid),
 			new FinderColumn<>(
 				"repositoryEntry.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, RepositoryEntry::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_REPOSITORYENTRY_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_REPOSITORYENTRY_WHERE,
 				_SQL_COUNT_REPOSITORYENTRY_WHERE,
 				RepositoryEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"repositoryEntry.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, RepositoryEntry::getUuid),
+					"repositoryEntry.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					RepositoryEntry::getUuid),
 				new FinderColumn<>(
 					"repositoryEntry.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, RepositoryEntry::getCompanyId));
 
-		_finderPathWithPaginationFindByRepositoryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByRepositoryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"repositoryId"}, true);
-
-		_finderPathWithoutPaginationFindByRepositoryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByRepositoryId",
-			new String[] {Long.class.getName()}, new String[] {"repositoryId"},
-			true);
-
-		_finderPathCountByRepositoryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByRepositoryId",
-			new String[] {Long.class.getName()}, new String[] {"repositoryId"},
-			false);
-
 		_collectionPersistenceFinderByRepositoryId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByRepositoryId,
-				_finderPathWithoutPaginationFindByRepositoryId,
-				_finderPathCountByRepositoryId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByRepositoryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"repositoryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByRepositoryId", new String[] {Long.class.getName()},
+					new String[] {"repositoryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByRepositoryId", new String[] {Long.class.getName()},
+					new String[] {"repositoryId"}, false),
 				_SQL_SELECT_REPOSITORYENTRY_WHERE,
 				_SQL_COUNT_REPOSITORYENTRY_WHERE,
 				RepositoryEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"repositoryEntry.", "repositoryId", FinderColumn.Type.LONG,
 					"=", true, true, RepositoryEntry::getRepositoryId));
 
-		_finderPathFetchByR_M = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByR_M",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"repositoryId", "mappedId"}, false,
-			RepositoryEntry::getRepositoryId, RepositoryEntry::getMappedId);
-
 		_uniquePersistenceFinderByR_M = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByR_M, _SQL_SELECT_REPOSITORYENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByR_M",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"repositoryId", "mappedId"}, 0, 2, false,
+				RepositoryEntry::getRepositoryId,
+				convertNullFunction(RepositoryEntry::getMappedId)),
+			_SQL_SELECT_REPOSITORYENTRY_WHERE, "",
 			new FinderColumn<>(
 				"repositoryEntry.", "repositoryId", FinderColumn.Type.LONG, "=",
-				true, false, RepositoryEntry::getRepositoryId),
+				true, true, RepositoryEntry::getRepositoryId),
 			new FinderColumn<>(
 				"repositoryEntry.", "mappedId", FinderColumn.Type.STRING, "=",
 				true, true, RepositoryEntry::getMappedId));
@@ -1216,4 +931,4 @@ public class RepositoryEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:269596672
+// LIFERAY-SERVICE-BUILDER-HASH:184466568

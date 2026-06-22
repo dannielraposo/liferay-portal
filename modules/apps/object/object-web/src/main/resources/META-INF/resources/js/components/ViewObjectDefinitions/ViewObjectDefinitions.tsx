@@ -24,7 +24,9 @@ import objectDefinitionSystemDataRenderer from './FDSDataRenderers/ObjectDefinit
 import ObjectFolderCardHeader from './ObjectFolderCardHeader';
 import ObjectFoldersSideBar from './ObjectFoldersSidebar';
 import {
+	canCreateInObjectFolder,
 	deleteObjectDefinition,
+	getObjectDefinitionsFilter,
 	getObjectFolderActions,
 } from './objectDefinitionUtil';
 
@@ -202,15 +204,16 @@ export default function ViewObjectDefinitions({
 	}
 
 	const getURL = (selectedObjectFolderExternalReferenceCode: string) => {
-		let url: string = '';
-
-		if (selectedObjectFolderExternalReferenceCode) {
-			url = `/o/object-admin/v1.0/object-definitions?${stringUtils.stringToURLParameterFormat(
-				`filter=hidden eq false and objectFolderExternalReferenceCode eq '${selectedObjectFolderExternalReferenceCode}'`
-			)}`;
+		if (!selectedObjectFolderExternalReferenceCode) {
+			return '';
 		}
 
-		return url;
+		return `/o/object-admin/v1.0/object-definitions?${stringUtils.stringToURLParameterFormat(
+			`filter=${getObjectDefinitionsFilter(
+				selectedObjectFolderExternalReferenceCode,
+				!!Liferay.FeatureFlags['LPD-94989']
+			)}`
+		)}`;
 	};
 
 	const onActionDropdownItemClick = useCallback(
@@ -476,7 +479,9 @@ export default function ViewObjectDefinitions({
 												: undefined
 										}
 										creationMenu={
-											selectedObjectFolder
+											canCreateInObjectFolder(
+												selectedObjectFolder
+											)
 												? objectDefinitionsCreationMenu
 												: undefined
 										}

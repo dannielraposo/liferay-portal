@@ -115,11 +115,13 @@ public class OAuth2ApplicationModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table OAuth2Application (uuid_ VARCHAR(75) null,externalReferenceCode VARCHAR(1000) null,oAuth2ApplicationId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,oA2AScopeAliasesId LONG,allowedGrantTypes VARCHAR(128) null,clientAuthenticationMethod VARCHAR(75) null,clientCredentialUserId LONG,clientCredentialUserName VARCHAR(75) null,clientId VARCHAR(75) null,clientProfile INTEGER,clientSecret VARCHAR(75) null,description STRING null,features STRING null,homePageURL STRING null,iconFileEntryId LONG,jwks VARCHAR(3999) null,name VARCHAR(255) null,privacyPolicyURL STRING null,redirectURIs STRING null,rememberDevice BOOLEAN,trustedApplication BOOLEAN)";
+		"create table OAuth2Application (uuid_ VARCHAR(75) null,externalReferenceCode VARCHAR(500) null,oAuth2ApplicationId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,oA2AScopeAliasesId LONG,allowedGrantTypes VARCHAR(128) null,clientAuthenticationMethod VARCHAR(75) null,clientCredentialUserId LONG,clientCredentialUserName VARCHAR(75) null,clientId VARCHAR(75) null,clientProfile INTEGER,clientSecret VARCHAR(75) null,description STRING null,features STRING null,homePageURL STRING null,iconFileEntryId LONG,jwks VARCHAR(3999) null,name VARCHAR(255) null,privacyPolicyURL STRING null,redirectURIs STRING null,rememberDevice BOOLEAN,trustedApplication BOOLEAN)";
 
 	public static final String TABLE_SQL_DROP = "drop table OAuth2Application";
 
 	public static final String ENTITY_ALIAS = "oAuth2Application";
+
+	public static final String FILTER_PK_COLUMN_NAME = "oAuth2ApplicationId";
 
 	public static final String ORDER_BY_JPQL =
 		" ORDER BY oAuth2Application.oAuth2ApplicationId ASC";
@@ -1676,4 +1678,4 @@ public class OAuth2ApplicationModelImpl
 	private OAuth2Application _escapedModel;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:144604396
+// LIFERAY-SERVICE-BUILDER-HASH:-123573437

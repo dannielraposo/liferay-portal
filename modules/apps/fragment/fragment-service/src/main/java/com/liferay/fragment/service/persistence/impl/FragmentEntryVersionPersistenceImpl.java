@@ -13,13 +13,11 @@ import com.liferay.fragment.model.impl.FragmentEntryVersionModelImpl;
 import com.liferay.fragment.service.persistence.FragmentEntryVersionPersistence;
 import com.liferay.fragment.service.persistence.FragmentEntryVersionUtil;
 import com.liferay.fragment.service.persistence.impl.constants.FragmentPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -96,72 +94,15 @@ public class FragmentEntryVersionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByFragmentEntryId;
-	private FinderPath _finderPathWithoutPaginationFindByFragmentEntryId;
-	private FinderPath _finderPathCountByFragmentEntryId;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByFragmentEntryId;
-
-	/**
-	 * Returns all the fragment entry versions where fragmentEntryId = &#63;.
-	 *
-	 * @param fragmentEntryId the fragment entry ID
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByFragmentEntryId(
-		long fragmentEntryId) {
-
-		return findByFragmentEntryId(
-			fragmentEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where fragmentEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fragmentEntryId the fragment entry ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByFragmentEntryId(
-		long fragmentEntryId, int start, int end) {
-
-		return findByFragmentEntryId(fragmentEntryId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByFragmentEntryId;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where fragmentEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fragmentEntryId the fragment entry ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByFragmentEntryId(
-		long fragmentEntryId, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByFragmentEntryId(
-			fragmentEntryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where fragmentEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param fragmentEntryId the fragment entry ID
@@ -177,14 +118,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByFragmentEntryId.find(
-				finderCache, new Object[] {fragmentEntryId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByFragmentEntryId.find(
+			finderCache, new Object[] {fragmentEntryId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -201,16 +137,8 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion =
-			fetchByFragmentEntryId_First(fragmentEntryId, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByFragmentEntryId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {fragmentEntryId}));
+		return _collectionPersistenceFinderByFragmentEntryId.findFirst(
+			finderCache, new Object[] {fragmentEntryId}, orderByComparator);
 	}
 
 	/**
@@ -248,18 +176,13 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByFragmentEntryId(long fragmentEntryId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByFragmentEntryId.count(
-				finderCache, new Object[] {fragmentEntryId});
-		}
+		return _collectionPersistenceFinderByFragmentEntryId.count(
+			finderCache, new Object[] {fragmentEntryId});
 	}
 
-	private FinderPath _finderPathFetchByFragmentEntryId_Version;
-	private UniquePersistenceFinder<FragmentEntryVersion>
-		_uniquePersistenceFinderByFragmentEntryId_Version;
+	private UniquePersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_uniquePersistenceFinderByFragmentEntryId_Version;
 
 	/**
 	 * Returns the fragment entry version where fragmentEntryId = &#63; and version = &#63; or throws a <code>NoSuchEntryVersionException</code> if it could not be found.
@@ -274,38 +197,8 @@ public class FragmentEntryVersionPersistenceImpl
 			long fragmentEntryId, int version)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion =
-			fetchByFragmentEntryId_Version(fragmentEntryId, version);
-
-		if (fragmentEntryVersion == null) {
-			String message =
-				_uniquePersistenceFinderByFragmentEntryId_Version.
-					buildNoSuchKeyMessage(
-						_NO_SUCH_ENTITY_WITH_KEY,
-						new Object[] {fragmentEntryId, version});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchEntryVersionException(message);
-		}
-
-		return fragmentEntryVersion;
-	}
-
-	/**
-	 * Returns the fragment entry version where fragmentEntryId = &#63; and version = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param fragmentEntryId the fragment entry ID
-	 * @param version the version
-	 * @return the matching fragment entry version, or <code>null</code> if a matching fragment entry version could not be found
-	 */
-	@Override
-	public FragmentEntryVersion fetchByFragmentEntryId_Version(
-		long fragmentEntryId, int version) {
-
-		return fetchByFragmentEntryId_Version(fragmentEntryId, version, true);
+		return _uniquePersistenceFinderByFragmentEntryId_Version.find(
+			finderCache, new Object[] {fragmentEntryId, version});
 	}
 
 	/**
@@ -320,14 +213,9 @@ public class FragmentEntryVersionPersistenceImpl
 	public FragmentEntryVersion fetchByFragmentEntryId_Version(
 		long fragmentEntryId, int version, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _uniquePersistenceFinderByFragmentEntryId_Version.fetch(
-				finderCache, new Object[] {fragmentEntryId, version},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByFragmentEntryId_Version.fetch(
+			finderCache, new Object[] {fragmentEntryId, version},
+			useFinderCache);
 	}
 
 	/**
@@ -363,68 +251,15 @@ public class FragmentEntryVersionPersistenceImpl
 			finderCache, new Object[] {fragmentEntryId, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the fragment entry versions where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -440,14 +275,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -464,16 +294,8 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -511,84 +333,19 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_Version;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_Version;
-	private FinderPath _finderPathCountByUuid_Version;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByUuid_Version;
-
-	/**
-	 * Returns all the fragment entry versions where uuid = &#63; and version = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param version the version
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid_Version(
-		String uuid, int version) {
-
-		return findByUuid_Version(
-			uuid, version, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where uuid = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid_Version(
-		String uuid, int version, int start, int end) {
-
-		return findByUuid_Version(uuid, version, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByUuid_Version;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where uuid = &#63; and version = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid_Version(
-		String uuid, int version, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByUuid_Version(
-			uuid, version, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where uuid = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -605,14 +362,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByUuid_Version.find(
-				finderCache, new Object[] {uuid, version}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_Version.find(
+			finderCache, new Object[] {uuid, version}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -630,16 +382,8 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByUuid_Version_First(
-			uuid, version, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByUuid_Version.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, version}));
+		return _collectionPersistenceFinderByUuid_Version.findFirst(
+			finderCache, new Object[] {uuid, version}, orderByComparator);
 	}
 
 	/**
@@ -680,81 +424,19 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_Version(String uuid, int version) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByUuid_Version.count(
-				finderCache, new Object[] {uuid, version});
-		}
+		return _collectionPersistenceFinderByUuid_Version.count(
+			finderCache, new Object[] {uuid, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUUID_G;
-	private FinderPath _finderPathWithoutPaginationFindByUUID_G;
-	private FinderPath _finderPathCountByUUID_G;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByUUID_G;
-
-	/**
-	 * Returns all the fragment entry versions where uuid = &#63; and groupId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUUID_G(String uuid, long groupId) {
-		return findByUUID_G(
-			uuid, groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where uuid = &#63; and groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUUID_G(
-		String uuid, long groupId, int start, int end) {
-
-		return findByUUID_G(uuid, groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByUUID_G;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where uuid = &#63; and groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUUID_G(
-		String uuid, long groupId, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByUUID_G(uuid, groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where uuid = &#63; and groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -771,14 +453,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByUUID_G.find(
-				finderCache, new Object[] {uuid, groupId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -796,16 +473,8 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByUUID_G_First(
-			uuid, groupId, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId}));
+		return _collectionPersistenceFinderByUUID_G.findFirst(
+			finderCache, new Object[] {uuid, groupId}, orderByComparator);
 	}
 
 	/**
@@ -846,18 +515,13 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByUUID_G(String uuid, long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByUUID_G.count(
-				finderCache, new Object[] {uuid, groupId});
-		}
+		return _collectionPersistenceFinderByUUID_G.count(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G_Version;
-	private UniquePersistenceFinder<FragmentEntryVersion>
-		_uniquePersistenceFinderByUUID_G_Version;
+	private UniquePersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_uniquePersistenceFinderByUUID_G_Version;
 
 	/**
 	 * Returns the fragment entry version where uuid = &#63; and groupId = &#63; and version = &#63; or throws a <code>NoSuchEntryVersionException</code> if it could not be found.
@@ -873,38 +537,8 @@ public class FragmentEntryVersionPersistenceImpl
 			String uuid, long groupId, int version)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByUUID_G_Version(
-			uuid, groupId, version);
-
-		if (fragmentEntryVersion == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G_Version.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {uuid, groupId, version});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchEntryVersionException(message);
-		}
-
-		return fragmentEntryVersion;
-	}
-
-	/**
-	 * Returns the fragment entry version where uuid = &#63; and groupId = &#63; and version = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @param version the version
-	 * @return the matching fragment entry version, or <code>null</code> if a matching fragment entry version could not be found
-	 */
-	@Override
-	public FragmentEntryVersion fetchByUUID_G_Version(
-		String uuid, long groupId, int version) {
-
-		return fetchByUUID_G_Version(uuid, groupId, version, true);
+		return _uniquePersistenceFinderByUUID_G_Version.find(
+			finderCache, new Object[] {uuid, groupId, version});
 	}
 
 	/**
@@ -920,14 +554,8 @@ public class FragmentEntryVersionPersistenceImpl
 	public FragmentEntryVersion fetchByUUID_G_Version(
 		String uuid, long groupId, int version, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _uniquePersistenceFinderByUUID_G_Version.fetch(
-				finderCache, new Object[] {uuid, groupId, version},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G_Version.fetch(
+			finderCache, new Object[] {uuid, groupId, version}, useFinderCache);
 	}
 
 	/**
@@ -963,75 +591,15 @@ public class FragmentEntryVersionPersistenceImpl
 			finderCache, new Object[] {uuid, groupId, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the fragment entry versions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -1048,14 +616,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1073,16 +636,8 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -1123,88 +678,19 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C_Version;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C_Version;
-	private FinderPath _finderPathCountByUuid_C_Version;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByUuid_C_Version;
-
-	/**
-	 * Returns all the fragment entry versions where uuid = &#63; and companyId = &#63; and version = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param version the version
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid_C_Version(
-		String uuid, long companyId, int version) {
-
-		return findByUuid_C_Version(
-			uuid, companyId, version, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where uuid = &#63; and companyId = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid_C_Version(
-		String uuid, long companyId, int version, int start, int end) {
-
-		return findByUuid_C_Version(uuid, companyId, version, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByUuid_C_Version;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where uuid = &#63; and companyId = &#63; and version = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByUuid_C_Version(
-		String uuid, long companyId, int version, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByUuid_C_Version(
-			uuid, companyId, version, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where uuid = &#63; and companyId = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -1222,14 +708,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByUuid_C_Version.find(
-				finderCache, new Object[] {uuid, companyId, version}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C_Version.find(
+			finderCache, new Object[] {uuid, companyId, version}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1248,17 +729,9 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByUuid_C_Version_First(
-			uuid, companyId, version, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByUuid_C_Version.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {uuid, companyId, version}));
+		return _collectionPersistenceFinderByUuid_C_Version.findFirst(
+			finderCache, new Object[] {uuid, companyId, version},
+			orderByComparator);
 	}
 
 	/**
@@ -1305,78 +778,19 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C_Version(String uuid, long companyId, int version) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByUuid_C_Version.count(
-				finderCache, new Object[] {uuid, companyId, version});
-		}
+		return _collectionPersistenceFinderByUuid_C_Version.count(
+			finderCache, new Object[] {uuid, companyId, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1392,14 +806,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				finderCache, new Object[] {groupId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -1416,16 +825,8 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -1463,84 +864,19 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				finderCache, new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId_Version;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId_Version;
-	private FinderPath _finderPathCountByGroupId_Version;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByGroupId_Version;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and version = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param version the version
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByGroupId_Version(
-		long groupId, int version) {
-
-		return findByGroupId_Version(
-			groupId, version, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByGroupId_Version(
-		long groupId, int version, int start, int end) {
-
-		return findByGroupId_Version(groupId, version, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByGroupId_Version;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and version = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByGroupId_Version(
-		long groupId, int version, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByGroupId_Version(
-			groupId, version, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1557,14 +893,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByGroupId_Version.find(
-				finderCache, new Object[] {groupId, version}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId_Version.find(
+			finderCache, new Object[] {groupId, version}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1582,16 +913,8 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion =
-			fetchByGroupId_Version_First(groupId, version, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByGroupId_Version.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, version}));
+		return _collectionPersistenceFinderByGroupId_Version.findFirst(
+			finderCache, new Object[] {groupId, version}, orderByComparator);
 	}
 
 	/**
@@ -1632,82 +955,19 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId_Version(long groupId, int version) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByGroupId_Version.count(
-				finderCache, new Object[] {groupId, version});
-		}
+		return _collectionPersistenceFinderByGroupId_Version.count(
+			finderCache, new Object[] {groupId, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByFragmentCollectionId;
-	private FinderPath _finderPathWithoutPaginationFindByFragmentCollectionId;
-	private FinderPath _finderPathCountByFragmentCollectionId;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByFragmentCollectionId;
-
-	/**
-	 * Returns all the fragment entry versions where fragmentCollectionId = &#63;.
-	 *
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByFragmentCollectionId(
-		long fragmentCollectionId) {
-
-		return findByFragmentCollectionId(
-			fragmentCollectionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where fragmentCollectionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByFragmentCollectionId(
-		long fragmentCollectionId, int start, int end) {
-
-		return findByFragmentCollectionId(
-			fragmentCollectionId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByFragmentCollectionId;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where fragmentCollectionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByFragmentCollectionId(
-		long fragmentCollectionId, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByFragmentCollectionId(
-			fragmentCollectionId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where fragmentCollectionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param fragmentCollectionId the fragment collection ID
@@ -1723,14 +983,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByFragmentCollectionId.find(
-				finderCache, new Object[] {fragmentCollectionId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByFragmentCollectionId.find(
+			finderCache, new Object[] {fragmentCollectionId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1747,19 +1002,9 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion =
-			fetchByFragmentCollectionId_First(
-				fragmentCollectionId, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByFragmentCollectionId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {fragmentCollectionId}));
+		return _collectionPersistenceFinderByFragmentCollectionId.findFirst(
+			finderCache, new Object[] {fragmentCollectionId},
+			orderByComparator);
 	}
 
 	/**
@@ -1798,88 +1043,19 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByFragmentCollectionId(long fragmentCollectionId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByFragmentCollectionId.count(
-				finderCache, new Object[] {fragmentCollectionId});
-		}
+		return _collectionPersistenceFinderByFragmentCollectionId.count(
+			finderCache, new Object[] {fragmentCollectionId});
 	}
 
-	private FinderPath
-		_finderPathWithPaginationFindByFragmentCollectionId_Version;
-	private FinderPath
-		_finderPathWithoutPaginationFindByFragmentCollectionId_Version;
-	private FinderPath _finderPathCountByFragmentCollectionId_Version;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByFragmentCollectionId_Version;
-
-	/**
-	 * Returns all the fragment entry versions where fragmentCollectionId = &#63; and version = &#63;.
-	 *
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param version the version
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByFragmentCollectionId_Version(
-		long fragmentCollectionId, int version) {
-
-		return findByFragmentCollectionId_Version(
-			fragmentCollectionId, version, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where fragmentCollectionId = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByFragmentCollectionId_Version(
-		long fragmentCollectionId, int version, int start, int end) {
-
-		return findByFragmentCollectionId_Version(
-			fragmentCollectionId, version, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByFragmentCollectionId_Version;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where fragmentCollectionId = &#63; and version = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByFragmentCollectionId_Version(
-		long fragmentCollectionId, int version, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByFragmentCollectionId_Version(
-			fragmentCollectionId, version, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where fragmentCollectionId = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param fragmentCollectionId the fragment collection ID
@@ -1896,15 +1072,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByFragmentCollectionId_Version.
-				find(
-					finderCache, new Object[] {fragmentCollectionId, version},
-					start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByFragmentCollectionId_Version.find(
+			finderCache, new Object[] {fragmentCollectionId, version}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1922,19 +1092,10 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion =
-			fetchByFragmentCollectionId_Version_First(
-				fragmentCollectionId, version, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByFragmentCollectionId_Version.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {fragmentCollectionId, version}));
+		return _collectionPersistenceFinderByFragmentCollectionId_Version.
+			findFirst(
+				finderCache, new Object[] {fragmentCollectionId, version},
+				orderByComparator);
 	}
 
 	/**
@@ -1981,76 +1142,19 @@ public class FragmentEntryVersionPersistenceImpl
 	public int countByFragmentCollectionId_Version(
 		long fragmentCollectionId, int version) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByFragmentCollectionId_Version.
-				count(
-					finderCache, new Object[] {fragmentCollectionId, version});
-		}
+		return _collectionPersistenceFinderByFragmentCollectionId_Version.count(
+			finderCache, new Object[] {fragmentCollectionId, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByType;
-	private FinderPath _finderPathWithoutPaginationFindByType;
-	private FinderPath _finderPathCountByType;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByType;
-
-	/**
-	 * Returns all the fragment entry versions where type = &#63;.
-	 *
-	 * @param type the type
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByType(int type) {
-		return findByType(type, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param type the type
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByType(int type, int start, int end) {
-		return findByType(type, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByType;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param type the type
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByType(
-		int type, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByType(type, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param type the type
@@ -2066,14 +1170,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByType.find(
-				finderCache, new Object[] {type}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByType.find(
+			finderCache, new Object[] {type}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -2089,16 +1188,8 @@ public class FragmentEntryVersionPersistenceImpl
 			int type, OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByType_First(
-			type, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByType.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {type}));
+		return _collectionPersistenceFinderByType.findFirst(
+			finderCache, new Object[] {type}, orderByComparator);
 	}
 
 	/**
@@ -2135,84 +1226,19 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByType(int type) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByType.count(
-				finderCache, new Object[] {type});
-		}
+		return _collectionPersistenceFinderByType.count(
+			finderCache, new Object[] {type});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByType_Version;
-	private FinderPath _finderPathWithoutPaginationFindByType_Version;
-	private FinderPath _finderPathCountByType_Version;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByType_Version;
-
-	/**
-	 * Returns all the fragment entry versions where type = &#63; and version = &#63;.
-	 *
-	 * @param type the type
-	 * @param version the version
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByType_Version(
-		int type, int version) {
-
-		return findByType_Version(
-			type, version, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where type = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param type the type
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByType_Version(
-		int type, int version, int start, int end) {
-
-		return findByType_Version(type, version, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByType_Version;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where type = &#63; and version = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param type the type
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByType_Version(
-		int type, int version, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByType_Version(
-			type, version, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where type = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param type the type
@@ -2229,14 +1255,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByType_Version.find(
-				finderCache, new Object[] {type, version}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByType_Version.find(
+			finderCache, new Object[] {type, version}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2254,16 +1275,8 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByType_Version_First(
-			type, version, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByType_Version.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {type, version}));
+		return _collectionPersistenceFinderByType_Version.findFirst(
+			finderCache, new Object[] {type, version}, orderByComparator);
 	}
 
 	/**
@@ -2304,85 +1317,19 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByType_Version(int type, int version) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByType_Version.count(
-				finderCache, new Object[] {type, version});
-		}
+		return _collectionPersistenceFinderByType_Version.count(
+			finderCache, new Object[] {type, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI;
-	private FinderPath _finderPathCountByG_FCI;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI(
-		long groupId, long fragmentCollectionId) {
-
-		return findByG_FCI(
-			groupId, fragmentCollectionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI(
-		long groupId, long fragmentCollectionId, int start, int end) {
-
-		return findByG_FCI(groupId, fragmentCollectionId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI(
-		long groupId, long fragmentCollectionId, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI(
-			groupId, fragmentCollectionId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2399,14 +1346,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI.find(
-				finderCache, new Object[] {groupId, fragmentCollectionId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI.find(
+			finderCache, new Object[] {groupId, fragmentCollectionId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2424,17 +1366,9 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByG_FCI_First(
-			groupId, fragmentCollectionId, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId}));
+		return _collectionPersistenceFinderByG_FCI.findFirst(
+			finderCache, new Object[] {groupId, fragmentCollectionId},
+			orderByComparator);
 	}
 
 	/**
@@ -2476,91 +1410,19 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByG_FCI(long groupId, long fragmentCollectionId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI.count(
-				finderCache, new Object[] {groupId, fragmentCollectionId});
-		}
+		return _collectionPersistenceFinderByG_FCI.count(
+			finderCache, new Object[] {groupId, fragmentCollectionId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_Version;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_Version;
-	private FinderPath _finderPathCountByG_FCI_Version;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI_Version;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and version = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param version the version
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_Version(
-		long groupId, long fragmentCollectionId, int version) {
-
-		return findByG_FCI_Version(
-			groupId, fragmentCollectionId, version, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_Version(
-		long groupId, long fragmentCollectionId, int version, int start,
-		int end) {
-
-		return findByG_FCI_Version(
-			groupId, fragmentCollectionId, version, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI_Version;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and version = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_Version(
-		long groupId, long fragmentCollectionId, int version, int start,
-		int end, OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI_Version(
-			groupId, fragmentCollectionId, version, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2578,15 +1440,9 @@ public class FragmentEntryVersionPersistenceImpl
 		int end, OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_Version.find(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, version}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_Version.find(
+			finderCache, new Object[] {groupId, fragmentCollectionId, version},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2605,17 +1461,9 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByG_FCI_Version_First(
-			groupId, fragmentCollectionId, version, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI_Version.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId, version}));
+		return _collectionPersistenceFinderByG_FCI_Version.findFirst(
+			finderCache, new Object[] {groupId, fragmentCollectionId, version},
+			orderByComparator);
 	}
 
 	/**
@@ -2664,86 +1512,19 @@ public class FragmentEntryVersionPersistenceImpl
 	public int countByG_FCI_Version(
 		long groupId, long fragmentCollectionId, int version) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_Version.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, version});
-		}
+		return _collectionPersistenceFinderByG_FCI_Version.count(
+			finderCache, new Object[] {groupId, fragmentCollectionId, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FEK;
-	private FinderPath _finderPathWithoutPaginationFindByG_FEK;
-	private FinderPath _finderPathCountByG_FEK;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FEK;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentEntryKey = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentEntryKey the fragment entry key
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FEK(
-		long groupId, String fragmentEntryKey) {
-
-		return findByG_FEK(
-			groupId, fragmentEntryKey, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentEntryKey = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentEntryKey the fragment entry key
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FEK(
-		long groupId, String fragmentEntryKey, int start, int end) {
-
-		return findByG_FEK(groupId, fragmentEntryKey, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FEK;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentEntryKey = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentEntryKey the fragment entry key
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FEK(
-		long groupId, String fragmentEntryKey, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FEK(
-			groupId, fragmentEntryKey, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentEntryKey = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2760,14 +1541,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FEK.find(
-				finderCache, new Object[] {groupId, fragmentEntryKey}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FEK.find(
+			finderCache, new Object[] {groupId, fragmentEntryKey}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2785,17 +1561,9 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByG_FEK_First(
-			groupId, fragmentEntryKey, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FEK.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentEntryKey}));
+		return _collectionPersistenceFinderByG_FEK.findFirst(
+			finderCache, new Object[] {groupId, fragmentEntryKey},
+			orderByComparator);
 	}
 
 	/**
@@ -2837,18 +1605,13 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Override
 	public int countByG_FEK(long groupId, String fragmentEntryKey) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FEK.count(
-				finderCache, new Object[] {groupId, fragmentEntryKey});
-		}
+		return _collectionPersistenceFinderByG_FEK.count(
+			finderCache, new Object[] {groupId, fragmentEntryKey});
 	}
 
-	private FinderPath _finderPathFetchByG_FEK_Version;
-	private UniquePersistenceFinder<FragmentEntryVersion>
-		_uniquePersistenceFinderByG_FEK_Version;
+	private UniquePersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_uniquePersistenceFinderByG_FEK_Version;
 
 	/**
 	 * Returns the fragment entry version where groupId = &#63; and fragmentEntryKey = &#63; and version = &#63; or throws a <code>NoSuchEntryVersionException</code> if it could not be found.
@@ -2864,38 +1627,8 @@ public class FragmentEntryVersionPersistenceImpl
 			long groupId, String fragmentEntryKey, int version)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByG_FEK_Version(
-			groupId, fragmentEntryKey, version);
-
-		if (fragmentEntryVersion == null) {
-			String message =
-				_uniquePersistenceFinderByG_FEK_Version.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, fragmentEntryKey, version});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchEntryVersionException(message);
-		}
-
-		return fragmentEntryVersion;
-	}
-
-	/**
-	 * Returns the fragment entry version where groupId = &#63; and fragmentEntryKey = &#63; and version = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentEntryKey the fragment entry key
-	 * @param version the version
-	 * @return the matching fragment entry version, or <code>null</code> if a matching fragment entry version could not be found
-	 */
-	@Override
-	public FragmentEntryVersion fetchByG_FEK_Version(
-		long groupId, String fragmentEntryKey, int version) {
-
-		return fetchByG_FEK_Version(groupId, fragmentEntryKey, version, true);
+		return _uniquePersistenceFinderByG_FEK_Version.find(
+			finderCache, new Object[] {groupId, fragmentEntryKey, version});
 	}
 
 	/**
@@ -2912,14 +1645,9 @@ public class FragmentEntryVersionPersistenceImpl
 		long groupId, String fragmentEntryKey, int version,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _uniquePersistenceFinderByG_FEK_Version.fetch(
-				finderCache, new Object[] {groupId, fragmentEntryKey, version},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_FEK_Version.fetch(
+			finderCache, new Object[] {groupId, fragmentEntryKey, version},
+			useFinderCache);
 	}
 
 	/**
@@ -2957,82 +1685,15 @@ public class FragmentEntryVersionPersistenceImpl
 			finderCache, new Object[] {groupId, fragmentEntryKey, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_LikeN;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_LikeN;
-	private FinderPath _finderPathCountByG_FCI_LikeN;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI_LikeN;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN(
-		long groupId, long fragmentCollectionId, String name) {
-
-		return findByG_FCI_LikeN(
-			groupId, fragmentCollectionId, name, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN(
-		long groupId, long fragmentCollectionId, String name, int start,
-		int end) {
-
-		return findByG_FCI_LikeN(
-			groupId, fragmentCollectionId, name, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI_LikeN;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN(
-		long groupId, long fragmentCollectionId, String name, int start,
-		int end, OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI_LikeN(
-			groupId, fragmentCollectionId, name, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -3050,14 +1711,9 @@ public class FragmentEntryVersionPersistenceImpl
 		int end, OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN.find(
-				finderCache, new Object[] {groupId, fragmentCollectionId, name},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN.find(
+			finderCache, new Object[] {groupId, fragmentCollectionId, name},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3076,17 +1732,9 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByG_FCI_LikeN_First(
-			groupId, fragmentCollectionId, name, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI_LikeN.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId, name}));
+		return _collectionPersistenceFinderByG_FCI_LikeN.findFirst(
+			finderCache, new Object[] {groupId, fragmentCollectionId, name},
+			orderByComparator);
 	}
 
 	/**
@@ -3135,96 +1783,19 @@ public class FragmentEntryVersionPersistenceImpl
 	public int countByG_FCI_LikeN(
 		long groupId, long fragmentCollectionId, String name) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, name});
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN.count(
+			finderCache, new Object[] {groupId, fragmentCollectionId, name});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_LikeN_Version;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_LikeN_Version;
-	private FinderPath _finderPathCountByG_FCI_LikeN_Version;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI_LikeN_Version;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and version = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @param version the version
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN_Version(
-		long groupId, long fragmentCollectionId, String name, int version) {
-
-		return findByG_FCI_LikeN_Version(
-			groupId, fragmentCollectionId, name, version, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN_Version(
-		long groupId, long fragmentCollectionId, String name, int version,
-		int start, int end) {
-
-		return findByG_FCI_LikeN_Version(
-			groupId, fragmentCollectionId, name, version, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI_LikeN_Version;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and version = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN_Version(
-		long groupId, long fragmentCollectionId, String name, int version,
-		int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI_LikeN_Version(
-			groupId, fragmentCollectionId, name, version, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -3244,15 +1815,10 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN_Version.find(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, name, version},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN_Version.find(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, name, version}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3272,22 +1838,10 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion =
-			fetchByG_FCI_LikeN_Version_First(
-				groupId, fragmentCollectionId, name, version,
-				orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI_LikeN_Version.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {
-						groupId, fragmentCollectionId, name, version
-					}));
+		return _collectionPersistenceFinderByG_FCI_LikeN_Version.findFirst(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, name, version},
+			orderByComparator);
 	}
 
 	/**
@@ -3341,91 +1895,20 @@ public class FragmentEntryVersionPersistenceImpl
 	public int countByG_FCI_LikeN_Version(
 		long groupId, long fragmentCollectionId, String name, int version) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN_Version.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, name, version});
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN_Version.count(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, name, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_T;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_T;
-	private FinderPath _finderPathCountByG_FCI_T;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI_T;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T(
-		long groupId, long fragmentCollectionId, int type) {
-
-		return findByG_FCI_T(
-			groupId, fragmentCollectionId, type, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T(
-		long groupId, long fragmentCollectionId, int type, int start, int end) {
-
-		return findByG_FCI_T(
-			groupId, fragmentCollectionId, type, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI_T;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T(
-		long groupId, long fragmentCollectionId, int type, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI_T(
-			groupId, fragmentCollectionId, type, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -3443,14 +1926,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_T.find(
-				finderCache, new Object[] {groupId, fragmentCollectionId, type},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_T.find(
+			finderCache, new Object[] {groupId, fragmentCollectionId, type},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3469,17 +1947,9 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByG_FCI_T_First(
-			groupId, fragmentCollectionId, type, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI_T.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId, type}));
+		return _collectionPersistenceFinderByG_FCI_T.findFirst(
+			finderCache, new Object[] {groupId, fragmentCollectionId, type},
+			orderByComparator);
 	}
 
 	/**
@@ -3528,96 +1998,19 @@ public class FragmentEntryVersionPersistenceImpl
 	public int countByG_FCI_T(
 		long groupId, long fragmentCollectionId, int type) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_T.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, type});
-		}
+		return _collectionPersistenceFinderByG_FCI_T.count(
+			finderCache, new Object[] {groupId, fragmentCollectionId, type});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_T_Version;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_T_Version;
-	private FinderPath _finderPathCountByG_FCI_T_Version;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI_T_Version;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and version = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @param version the version
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T_Version(
-		long groupId, long fragmentCollectionId, int type, int version) {
-
-		return findByG_FCI_T_Version(
-			groupId, fragmentCollectionId, type, version, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T_Version(
-		long groupId, long fragmentCollectionId, int type, int version,
-		int start, int end) {
-
-		return findByG_FCI_T_Version(
-			groupId, fragmentCollectionId, type, version, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI_T_Version;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and version = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T_Version(
-		long groupId, long fragmentCollectionId, int type, int version,
-		int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI_T_Version(
-			groupId, fragmentCollectionId, type, version, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -3637,15 +2030,10 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_T_Version.find(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, type, version},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_T_Version.find(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, type, version}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3665,19 +2053,10 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion =
-			fetchByG_FCI_T_Version_First(
-				groupId, fragmentCollectionId, type, version,
-				orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI_T_Version.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId, type, version}));
+		return _collectionPersistenceFinderByG_FCI_T_Version.findFirst(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, type, version},
+			orderByComparator);
 	}
 
 	/**
@@ -3731,92 +2110,20 @@ public class FragmentEntryVersionPersistenceImpl
 	public int countByG_FCI_T_Version(
 		long groupId, long fragmentCollectionId, int type, int version) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_T_Version.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, type, version});
-		}
+		return _collectionPersistenceFinderByG_FCI_T_Version.count(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, type, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_S;
-	private FinderPath _finderPathCountByG_FCI_S;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI_S;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param status the status
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_S(
-		long groupId, long fragmentCollectionId, int status) {
-
-		return findByG_FCI_S(
-			groupId, fragmentCollectionId, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param status the status
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_S(
-		long groupId, long fragmentCollectionId, int status, int start,
-		int end) {
-
-		return findByG_FCI_S(
-			groupId, fragmentCollectionId, status, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI_S;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param status the status
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_S(
-		long groupId, long fragmentCollectionId, int status, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI_S(
-			groupId, fragmentCollectionId, status, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -3834,15 +2141,9 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_S.find(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, status}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_S.find(
+			finderCache, new Object[] {groupId, fragmentCollectionId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3861,17 +2162,9 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByG_FCI_S_First(
-			groupId, fragmentCollectionId, status, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId, status}));
+		return _collectionPersistenceFinderByG_FCI_S.findFirst(
+			finderCache, new Object[] {groupId, fragmentCollectionId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -3920,96 +2213,19 @@ public class FragmentEntryVersionPersistenceImpl
 	public int countByG_FCI_S(
 		long groupId, long fragmentCollectionId, int status) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_S.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, status});
-		}
+		return _collectionPersistenceFinderByG_FCI_S.count(
+			finderCache, new Object[] {groupId, fragmentCollectionId, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_S_Version;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_S_Version;
-	private FinderPath _finderPathCountByG_FCI_S_Version;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI_S_Version;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63; and version = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param status the status
-	 * @param version the version
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_S_Version(
-		long groupId, long fragmentCollectionId, int status, int version) {
-
-		return findByG_FCI_S_Version(
-			groupId, fragmentCollectionId, status, version, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param status the status
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_S_Version(
-		long groupId, long fragmentCollectionId, int status, int version,
-		int start, int end) {
-
-		return findByG_FCI_S_Version(
-			groupId, fragmentCollectionId, status, version, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI_S_Version;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63; and version = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param status the status
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_S_Version(
-		long groupId, long fragmentCollectionId, int status, int version,
-		int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI_S_Version(
-			groupId, fragmentCollectionId, status, version, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4029,15 +2245,10 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_S_Version.find(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, status, version},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_S_Version.find(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, status, version},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -4057,19 +2268,10 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion =
-			fetchByG_FCI_S_Version_First(
-				groupId, fragmentCollectionId, status, version,
-				orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI_S_Version.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId, status, version}));
+		return _collectionPersistenceFinderByG_FCI_S_Version.findFirst(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, status, version},
+			orderByComparator);
 	}
 
 	/**
@@ -4123,96 +2325,20 @@ public class FragmentEntryVersionPersistenceImpl
 	public int countByG_FCI_S_Version(
 		long groupId, long fragmentCollectionId, int status, int version) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_S_Version.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, status, version});
-		}
+		return _collectionPersistenceFinderByG_FCI_S_Version.count(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, status, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_LikeN_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_LikeN_S;
-	private FinderPath _finderPathCountByG_FCI_LikeN_S;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI_LikeN_S;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @param status the status
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN_S(
-		long groupId, long fragmentCollectionId, String name, int status) {
-
-		return findByG_FCI_LikeN_S(
-			groupId, fragmentCollectionId, name, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @param status the status
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN_S(
-		long groupId, long fragmentCollectionId, String name, int status,
-		int start, int end) {
-
-		return findByG_FCI_LikeN_S(
-			groupId, fragmentCollectionId, name, status, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI_LikeN_S;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @param status the status
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN_S(
-		long groupId, long fragmentCollectionId, String name, int status,
-		int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI_LikeN_S(
-			groupId, fragmentCollectionId, name, status, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4232,15 +2358,10 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN_S.find(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, name, status},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN_S.find(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, name, status}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -4260,17 +2381,10 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByG_FCI_LikeN_S_First(
-			groupId, fragmentCollectionId, name, status, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI_LikeN_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId, name, status}));
+		return _collectionPersistenceFinderByG_FCI_LikeN_S.findFirst(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, name, status},
+			orderByComparator);
 	}
 
 	/**
@@ -4324,101 +2438,20 @@ public class FragmentEntryVersionPersistenceImpl
 	public int countByG_FCI_LikeN_S(
 		long groupId, long fragmentCollectionId, String name, int status) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN_S.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, name, status});
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN_S.count(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, name, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_LikeN_S_Version;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_LikeN_S_Version;
-	private FinderPath _finderPathCountByG_FCI_LikeN_S_Version;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI_LikeN_S_Version;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and status = &#63; and version = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @param status the status
-	 * @param version the version
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN_S_Version(
-		long groupId, long fragmentCollectionId, String name, int status,
-		int version) {
-
-		return findByG_FCI_LikeN_S_Version(
-			groupId, fragmentCollectionId, name, status, version,
-			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and status = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @param status the status
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN_S_Version(
-		long groupId, long fragmentCollectionId, String name, int status,
-		int version, int start, int end) {
-
-		return findByG_FCI_LikeN_S_Version(
-			groupId, fragmentCollectionId, name, status, version, start, end,
-			null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI_LikeN_S_Version;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and status = &#63; and version = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param name the name
-	 * @param status the status
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_LikeN_S_Version(
-		long groupId, long fragmentCollectionId, String name, int status,
-		int version, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI_LikeN_S_Version(
-			groupId, fragmentCollectionId, name, status, version, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and name = &#63; and status = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4439,17 +2472,10 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN_S_Version.find(
-				finderCache,
-				new Object[] {
-					groupId, fragmentCollectionId, name, status, version
-				},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN_S_Version.find(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, name, status, version},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -4471,22 +2497,10 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion =
-			fetchByG_FCI_LikeN_S_Version_First(
-				groupId, fragmentCollectionId, name, status, version,
-				orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI_LikeN_S_Version.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {
-						groupId, fragmentCollectionId, name, status, version
-					}));
+		return _collectionPersistenceFinderByG_FCI_LikeN_S_Version.findFirst(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, name, status, version},
+			orderByComparator);
 	}
 
 	/**
@@ -4548,98 +2562,22 @@ public class FragmentEntryVersionPersistenceImpl
 		long groupId, long fragmentCollectionId, String name, int status,
 		int version) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN_S_Version.count(
-				finderCache,
-				new Object[] {
-					groupId, fragmentCollectionId, name, status, version
-				});
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN_S_Version.count(
+			finderCache,
+			new Object[] {
+				groupId, fragmentCollectionId, name, status, version
+			});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_T_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_T_S;
-	private FinderPath _finderPathCountByG_FCI_T_S;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI_T_S;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @param status the status
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T_S(
-		long groupId, long fragmentCollectionId, int type, int status) {
-
-		return findByG_FCI_T_S(
-			groupId, fragmentCollectionId, type, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @param status the status
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T_S(
-		long groupId, long fragmentCollectionId, int type, int status,
-		int start, int end) {
-
-		return findByG_FCI_T_S(
-			groupId, fragmentCollectionId, type, status, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI_T_S;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @param status the status
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T_S(
-		long groupId, long fragmentCollectionId, int type, int status,
-		int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI_T_S(
-			groupId, fragmentCollectionId, type, status, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4659,15 +2597,10 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_T_S.find(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, type, status},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_T_S.find(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, type, status}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -4687,17 +2620,10 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion = fetchByG_FCI_T_S_First(
-			groupId, fragmentCollectionId, type, status, orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI_T_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId, type, status}));
+		return _collectionPersistenceFinderByG_FCI_T_S.findFirst(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, type, status},
+			orderByComparator);
 	}
 
 	/**
@@ -4751,101 +2677,20 @@ public class FragmentEntryVersionPersistenceImpl
 	public int countByG_FCI_T_S(
 		long groupId, long fragmentCollectionId, int type, int status) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_T_S.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, type, status});
-		}
+		return _collectionPersistenceFinderByG_FCI_T_S.count(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, type, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_T_S_Version;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_T_S_Version;
-	private FinderPath _finderPathCountByG_FCI_T_S_Version;
-	private CollectionPersistenceFinder<FragmentEntryVersion>
-		_collectionPersistenceFinderByG_FCI_T_S_Version;
-
-	/**
-	 * Returns all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and status = &#63; and version = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @param status the status
-	 * @param version the version
-	 * @return the matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T_S_Version(
-		long groupId, long fragmentCollectionId, int type, int status,
-		int version) {
-
-		return findByG_FCI_T_S_Version(
-			groupId, fragmentCollectionId, type, status, version,
-			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and status = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @param status the status
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @return the range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T_S_Version(
-		long groupId, long fragmentCollectionId, int type, int status,
-		int version, int start, int end) {
-
-		return findByG_FCI_T_S_Version(
-			groupId, fragmentCollectionId, type, status, version, start, end,
-			null);
-	}
+	private CollectionPersistenceFinder
+		<FragmentEntryVersion, NoSuchEntryVersionException>
+			_collectionPersistenceFinderByG_FCI_T_S_Version;
 
 	/**
 	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and status = &#63; and version = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param type the type
-	 * @param status the status
-	 * @param version the version
-	 * @param start the lower bound of the range of fragment entry versions
-	 * @param end the upper bound of the range of fragment entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment entry versions
-	 */
-	@Override
-	public List<FragmentEntryVersion> findByG_FCI_T_S_Version(
-		long groupId, long fragmentCollectionId, int type, int status,
-		int version, int start, int end,
-		OrderByComparator<FragmentEntryVersion> orderByComparator) {
-
-		return findByG_FCI_T_S_Version(
-			groupId, fragmentCollectionId, type, status, version, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment entry versions where groupId = &#63; and fragmentCollectionId = &#63; and type = &#63; and status = &#63; and version = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4866,17 +2711,10 @@ public class FragmentEntryVersionPersistenceImpl
 		OrderByComparator<FragmentEntryVersion> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_T_S_Version.find(
-				finderCache,
-				new Object[] {
-					groupId, fragmentCollectionId, type, status, version
-				},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_T_S_Version.find(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, type, status, version},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -4898,22 +2736,10 @@ public class FragmentEntryVersionPersistenceImpl
 			OrderByComparator<FragmentEntryVersion> orderByComparator)
 		throws NoSuchEntryVersionException {
 
-		FragmentEntryVersion fragmentEntryVersion =
-			fetchByG_FCI_T_S_Version_First(
-				groupId, fragmentCollectionId, type, status, version,
-				orderByComparator);
-
-		if (fragmentEntryVersion != null) {
-			return fragmentEntryVersion;
-		}
-
-		throw new NoSuchEntryVersionException(
-			_collectionPersistenceFinderByG_FCI_T_S_Version.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {
-						groupId, fragmentCollectionId, type, status, version
-					}));
+		return _collectionPersistenceFinderByG_FCI_T_S_Version.findFirst(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, type, status, version},
+			orderByComparator);
 	}
 
 	/**
@@ -4975,16 +2801,11 @@ public class FragmentEntryVersionPersistenceImpl
 		long groupId, long fragmentCollectionId, int type, int status,
 		int version) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentEntryVersion.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_T_S_Version.count(
-				finderCache,
-				new Object[] {
-					groupId, fragmentCollectionId, type, status, version
-				});
-		}
+		return _collectionPersistenceFinderByG_FCI_T_S_Version.count(
+			finderCache,
+			new Object[] {
+				groupId, fragmentCollectionId, type, status, version
+			});
 	}
 
 	public FragmentEntryVersionPersistenceImpl() {
@@ -5349,1155 +3170,1145 @@ public class FragmentEntryVersionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByFragmentEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByFragmentEntryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"fragmentEntryId"}, true);
-
-		_finderPathWithoutPaginationFindByFragmentEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByFragmentEntryId",
-			new String[] {Long.class.getName()},
-			new String[] {"fragmentEntryId"}, true);
-
-		_finderPathCountByFragmentEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByFragmentEntryId",
-			new String[] {Long.class.getName()},
-			new String[] {"fragmentEntryId"}, false);
-
 		_collectionPersistenceFinderByFragmentEntryId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByFragmentEntryId,
-				_finderPathWithoutPaginationFindByFragmentEntryId,
-				_finderPathCountByFragmentEntryId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByFragmentEntryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"fragmentEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByFragmentEntryId",
+					new String[] {Long.class.getName()},
+					new String[] {"fragmentEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByFragmentEntryId",
+					new String[] {Long.class.getName()},
+					new String[] {"fragmentEntryId"}, false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentEntryId",
 					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentEntryId));
 
-		_finderPathFetchByFragmentEntryId_Version = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByFragmentEntryId_Version",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"fragmentEntryId", "version"}, false,
-			FragmentEntryVersion::getFragmentEntryId,
-			FragmentEntryVersion::getVersion);
-
 		_uniquePersistenceFinderByFragmentEntryId_Version =
 			new UniquePersistenceFinder<>(
-				this, _finderPathFetchByFragmentEntryId_Version,
-				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
+				this,
+				createUniqueFinderPath(
+					FINDER_CLASS_NAME_ENTITY, "fetchByFragmentEntryId_Version",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"fragmentEntryId", "version"}, 0, 0, false,
+					FragmentEntryVersion::getFragmentEntryId,
+					FragmentEntryVersion::getVersion),
+				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentEntryId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentEntryId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
 
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 			_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 			FragmentEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
-				"fragmentEntryVersion.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, FragmentEntryVersion::getUuid));
-
-		_finderPathWithPaginationFindByUuid_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_Version",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "version"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_Version",
-			new String[] {String.class.getName(), Integer.class.getName()},
-			new String[] {"uuid_", "version"}, true);
-
-		_finderPathCountByUuid_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_Version",
-			new String[] {String.class.getName(), Integer.class.getName()},
-			new String[] {"uuid_", "version"}, false);
+				"fragmentEntryVersion.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				FragmentEntryVersion::getUuid));
 
 		_collectionPersistenceFinderByUuid_Version =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_Version,
-				_finderPathWithoutPaginationFindByUuid_Version,
-				_finderPathCountByUuid_Version,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByUuid_Version",
+					new String[] {
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "version"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByUuid_Version",
+					new String[] {
+						String.class.getName(), Integer.class.getName()
+					},
+					new String[] {"uuid_", "version"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByUuid_Version",
+					new String[] {
+						String.class.getName(), Integer.class.getName()
+					},
+					new String[] {"uuid_", "version"}, 0, 1, false, null),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"fragmentEntryVersion.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, FragmentEntryVersion::getUuid),
+					"fragmentEntryVersion.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					FragmentEntryVersion::getUuid),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
 
-		_finderPathWithPaginationFindByUUID_G = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUUID_G",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "groupId"}, true);
-
-		_finderPathWithoutPaginationFindByUUID_G = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, true);
-
-		_finderPathCountByUUID_G = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false);
-
 		_collectionPersistenceFinderByUUID_G =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUUID_G,
-				_finderPathWithoutPaginationFindByUUID_G,
-				_finderPathCountByUUID_G,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUUID_G",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUUID_G",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "groupId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUUID_G",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "groupId"}, 0, 1, false, null),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"fragmentEntryVersion.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, FragmentEntryVersion::getUuid),
+					"fragmentEntryVersion.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					FragmentEntryVersion::getUuid),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
 					"=", true, true, FragmentEntryVersion::getGroupId));
 
-		_finderPathFetchByUUID_G_Version = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G_Version",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"uuid_", "groupId", "version"}, false,
-			FragmentEntryVersion::getUuid, FragmentEntryVersion::getGroupId,
-			FragmentEntryVersion::getVersion);
-
 		_uniquePersistenceFinderByUUID_G_Version =
 			new UniquePersistenceFinder<>(
-				this, _finderPathFetchByUUID_G_Version,
-				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
+				this,
+				createUniqueFinderPath(
+					FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G_Version",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"uuid_", "groupId", "version"}, 0, 1, false,
+					convertNullFunction(FragmentEntryVersion::getUuid),
+					FragmentEntryVersion::getGroupId,
+					FragmentEntryVersion::getVersion),
+				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE, "",
 				new FinderColumn<>(
-					"fragmentEntryVersion.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, FragmentEntryVersion::getUuid),
+					"fragmentEntryVersion.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					FragmentEntryVersion::getUuid),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"fragmentEntryVersion.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, FragmentEntryVersion::getUuid),
+					"fragmentEntryVersion.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					FragmentEntryVersion::getUuid),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getCompanyId));
 
-		_finderPathWithPaginationFindByUuid_C_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C_Version",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId", "version"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C_Version",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"uuid_", "companyId", "version"}, true);
-
-		_finderPathCountByUuid_C_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C_Version",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"uuid_", "companyId", "version"}, false);
-
 		_collectionPersistenceFinderByUuid_C_Version =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C_Version,
-				_finderPathWithoutPaginationFindByUuid_C_Version,
-				_finderPathCountByUuid_C_Version,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByUuid_C_Version",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId", "version"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByUuid_C_Version",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"uuid_", "companyId", "version"}, 0, 1, true,
+					null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByUuid_C_Version",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"uuid_", "companyId", "version"}, 0, 1, false,
+					null),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"fragmentEntryVersion.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, FragmentEntryVersion::getUuid),
+					"fragmentEntryVersion.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					FragmentEntryVersion::getUuid),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "companyId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getCompanyId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
 					"=", true, true, FragmentEntryVersion::getGroupId));
 
-		_finderPathWithPaginationFindByGroupId_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId_Version",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "version"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId_Version",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"groupId", "version"}, true);
-
-		_finderPathCountByGroupId_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId_Version",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"groupId", "version"}, false);
-
 		_collectionPersistenceFinderByGroupId_Version =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId_Version,
-				_finderPathWithoutPaginationFindByGroupId_Version,
-				_finderPathCountByGroupId_Version,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByGroupId_Version",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "version"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByGroupId_Version",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"groupId", "version"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByGroupId_Version",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"groupId", "version"}, false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
 
-		_finderPathWithPaginationFindByFragmentCollectionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByFragmentCollectionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"fragmentCollectionId"}, true);
-
-		_finderPathWithoutPaginationFindByFragmentCollectionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByFragmentCollectionId", new String[] {Long.class.getName()},
-			new String[] {"fragmentCollectionId"}, true);
-
-		_finderPathCountByFragmentCollectionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByFragmentCollectionId", new String[] {Long.class.getName()},
-			new String[] {"fragmentCollectionId"}, false);
-
 		_collectionPersistenceFinderByFragmentCollectionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByFragmentCollectionId,
-				_finderPathWithoutPaginationFindByFragmentCollectionId,
-				_finderPathCountByFragmentCollectionId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByFragmentCollectionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"fragmentCollectionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByFragmentCollectionId",
+					new String[] {Long.class.getName()},
+					new String[] {"fragmentCollectionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByFragmentCollectionId",
+					new String[] {Long.class.getName()},
+					new String[] {"fragmentCollectionId"}, false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
 					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId));
 
-		_finderPathWithPaginationFindByFragmentCollectionId_Version =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-				"findByFragmentCollectionId_Version",
-				new String[] {
-					Long.class.getName(), Integer.class.getName(),
-					Integer.class.getName(), Integer.class.getName(),
-					OrderByComparator.class.getName()
-				},
-				new String[] {"fragmentCollectionId", "version"}, true);
-
-		_finderPathWithoutPaginationFindByFragmentCollectionId_Version =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByFragmentCollectionId_Version",
-				new String[] {Long.class.getName(), Integer.class.getName()},
-				new String[] {"fragmentCollectionId", "version"}, true);
-
-		_finderPathCountByFragmentCollectionId_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByFragmentCollectionId_Version",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"fragmentCollectionId", "version"}, false);
-
 		_collectionPersistenceFinderByFragmentCollectionId_Version =
 			new CollectionPersistenceFinder<>(
 				this,
-				_finderPathWithPaginationFindByFragmentCollectionId_Version,
-				_finderPathWithoutPaginationFindByFragmentCollectionId_Version,
-				_finderPathCountByFragmentCollectionId_Version,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByFragmentCollectionId_Version",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"fragmentCollectionId", "version"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByFragmentCollectionId_Version",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"fragmentCollectionId", "version"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByFragmentCollectionId_Version",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"fragmentCollectionId", "version"}, false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
 
-		_finderPathWithPaginationFindByType = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByType",
-			new String[] {
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"type_"}, true);
-
-		_finderPathWithoutPaginationFindByType = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByType",
-			new String[] {Integer.class.getName()}, new String[] {"type_"},
-			true);
-
-		_finderPathCountByType = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByType",
-			new String[] {Integer.class.getName()}, new String[] {"type_"},
-			false);
-
 		_collectionPersistenceFinderByType = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByType,
-			_finderPathWithoutPaginationFindByType, _finderPathCountByType,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByType",
+				new String[] {
+					Integer.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"type_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByType",
+				new String[] {Integer.class.getName()}, new String[] {"type_"},
+				true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByType",
+				new String[] {Integer.class.getName()}, new String[] {"type_"},
+				false),
 			_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 			_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 			FragmentEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
-				"fragmentEntryVersion.", "type", FinderColumn.Type.INTEGER, "=",
-				true, true, FragmentEntryVersion::getType));
-
-		_finderPathWithPaginationFindByType_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByType_Version",
-			new String[] {
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"type_", "version"}, true);
-
-		_finderPathWithoutPaginationFindByType_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByType_Version",
-			new String[] {Integer.class.getName(), Integer.class.getName()},
-			new String[] {"type_", "version"}, true);
-
-		_finderPathCountByType_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByType_Version",
-			new String[] {Integer.class.getName(), Integer.class.getName()},
-			new String[] {"type_", "version"}, false);
+				"fragmentEntryVersion.", "type", "type_",
+				FinderColumn.Type.INTEGER, "=", true, true,
+				FragmentEntryVersion::getType));
 
 		_collectionPersistenceFinderByType_Version =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByType_Version,
-				_finderPathWithoutPaginationFindByType_Version,
-				_finderPathCountByType_Version,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByType_Version",
+					new String[] {
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"type_", "version"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByType_Version",
+					new String[] {
+						Integer.class.getName(), Integer.class.getName()
+					},
+					new String[] {"type_", "version"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByType_Version",
+					new String[] {
+						Integer.class.getName(), Integer.class.getName()
+					},
+					new String[] {"type_", "version"}, false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"fragmentEntryVersion.", "type", FinderColumn.Type.INTEGER,
-					"=", true, false, FragmentEntryVersion::getType),
+					"fragmentEntryVersion.", "type", "type_",
+					FinderColumn.Type.INTEGER, "=", true, true,
+					FragmentEntryVersion::getType),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
 
-		_finderPathWithPaginationFindByG_FCI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId"}, true);
-
-		_finderPathWithoutPaginationFindByG_FCI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "fragmentCollectionId"}, true);
-
-		_finderPathCountByG_FCI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "fragmentCollectionId"}, false);
-
 		_collectionPersistenceFinderByG_FCI = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_FCI,
-			_finderPathWithoutPaginationFindByG_FCI, _finderPathCountByG_FCI,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "fragmentCollectionId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "fragmentCollectionId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "fragmentCollectionId"}, false),
 			_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 			_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 			FragmentEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, FragmentEntryVersion::getGroupId),
+				true, true, FragmentEntryVersion::getGroupId),
 			new FinderColumn<>(
 				"fragmentEntryVersion.", "fragmentCollectionId",
 				FinderColumn.Type.LONG, "=", true, true,
 				FragmentEntryVersion::getFragmentCollectionId));
 
-		_finderPathWithPaginationFindByG_FCI_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "version"}, true);
-
-		_finderPathWithoutPaginationFindByG_FCI_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "version"}, true);
-
-		_finderPathCountByG_FCI_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "version"}, false);
-
 		_collectionPersistenceFinderByG_FCI_Version =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_Version,
-				_finderPathWithoutPaginationFindByG_FCI_Version,
-				_finderPathCountByG_FCI_Version,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByG_FCI_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "version"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByG_FCI_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "version"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByG_FCI_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "version"},
+					false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
 
-		_finderPathWithPaginationFindByG_FEK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FEK",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentEntryKey"}, true);
-
-		_finderPathWithoutPaginationFindByG_FEK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FEK",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "fragmentEntryKey"}, true);
-
-		_finderPathCountByG_FEK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FEK",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "fragmentEntryKey"}, false);
-
 		_collectionPersistenceFinderByG_FEK = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_FEK,
-			_finderPathWithoutPaginationFindByG_FEK, _finderPathCountByG_FEK,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FEK",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "fragmentEntryKey"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FEK",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "fragmentEntryKey"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FEK",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "fragmentEntryKey"}, 0, 2, false,
+				null),
 			_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 			_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 			FragmentEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, FragmentEntryVersion::getGroupId),
+				true, true, FragmentEntryVersion::getGroupId),
 			new FinderColumn<>(
 				"fragmentEntryVersion.", "fragmentEntryKey",
 				FinderColumn.Type.STRING, "=", true, true,
 				FragmentEntryVersion::getFragmentEntryKey));
 
-		_finderPathFetchByG_FEK_Version = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_FEK_Version",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentEntryKey", "version"}, false,
-			FragmentEntryVersion::getGroupId,
-			FragmentEntryVersion::getFragmentEntryKey,
-			FragmentEntryVersion::getVersion);
-
 		_uniquePersistenceFinderByG_FEK_Version = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_FEK_Version,
-			_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_FEK_Version",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {"groupId", "fragmentEntryKey", "version"}, 0, 2,
+				false, FragmentEntryVersion::getGroupId,
+				convertNullFunction(FragmentEntryVersion::getFragmentEntryKey),
+				FragmentEntryVersion::getVersion),
+			_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE, "",
 			new FinderColumn<>(
 				"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, FragmentEntryVersion::getGroupId),
+				true, true, FragmentEntryVersion::getGroupId),
 			new FinderColumn<>(
 				"fragmentEntryVersion.", "fragmentEntryKey",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				FragmentEntryVersion::getFragmentEntryKey),
 			new FinderColumn<>(
 				"fragmentEntryVersion.", "version", FinderColumn.Type.INTEGER,
 				"=", true, true, FragmentEntryVersion::getVersion));
 
-		_finderPathWithPaginationFindByG_FCI_LikeN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_LikeN",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name"}, true);
-
-		_finderPathWithoutPaginationFindByG_FCI_LikeN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_LikeN",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name"}, true);
-
-		_finderPathCountByG_FCI_LikeN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_LikeN",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name"}, false);
-
 		_collectionPersistenceFinderByG_FCI_LikeN =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_LikeN,
-				_finderPathWithoutPaginationFindByG_FCI_LikeN,
-				_finderPathCountByG_FCI_LikeN,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_LikeN",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "name"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByG_FCI_LikeN",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "name"}, 0,
+					4, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByG_FCI_LikeN",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "name"}, 0,
+					4, false, null),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "name", FinderColumn.Type.STRING,
 					"=", true, true, FragmentEntryVersion::getName));
 
-		_finderPathWithPaginationFindByG_FCI_LikeN_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_LikeN_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name", "version"},
-			true);
-
-		_finderPathWithoutPaginationFindByG_FCI_LikeN_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByG_FCI_LikeN_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name", "version"},
-			true);
-
-		_finderPathCountByG_FCI_LikeN_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByG_FCI_LikeN_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name", "version"},
-			false);
-
 		_collectionPersistenceFinderByG_FCI_LikeN_Version =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_LikeN_Version,
-				_finderPathWithoutPaginationFindByG_FCI_LikeN_Version,
-				_finderPathCountByG_FCI_LikeN_Version,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByG_FCI_LikeN_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "name", "version"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByG_FCI_LikeN_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "name", "version"
+					},
+					0, 4, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByG_FCI_LikeN_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "name", "version"
+					},
+					0, 4, false, null),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "name", FinderColumn.Type.STRING,
-					"=", true, false, FragmentEntryVersion::getName),
+					"=", true, true, FragmentEntryVersion::getName),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
-
-		_finderPathWithPaginationFindByG_FCI_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_T",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "type_"}, true);
-
-		_finderPathWithoutPaginationFindByG_FCI_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_T",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "type_"}, true);
-
-		_finderPathCountByG_FCI_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_T",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "type_"}, false);
 
 		_collectionPersistenceFinderByG_FCI_T =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_T,
-				_finderPathWithoutPaginationFindByG_FCI_T,
-				_finderPathCountByG_FCI_T,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_T",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "type_"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_T",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "type_"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_T",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "type_"},
+					false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
-					"fragmentEntryVersion.", "type", FinderColumn.Type.INTEGER,
-					"=", true, true, FragmentEntryVersion::getType));
-
-		_finderPathWithPaginationFindByG_FCI_T_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_T_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {
-				"groupId", "fragmentCollectionId", "type_", "version"
-			},
-			true);
-
-		_finderPathWithoutPaginationFindByG_FCI_T_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_T_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName()
-			},
-			new String[] {
-				"groupId", "fragmentCollectionId", "type_", "version"
-			},
-			true);
-
-		_finderPathCountByG_FCI_T_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_T_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName()
-			},
-			new String[] {
-				"groupId", "fragmentCollectionId", "type_", "version"
-			},
-			false);
+					"fragmentEntryVersion.", "type", "type_",
+					FinderColumn.Type.INTEGER, "=", true, true,
+					FragmentEntryVersion::getType));
 
 		_collectionPersistenceFinderByG_FCI_T_Version =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_T_Version,
-				_finderPathWithoutPaginationFindByG_FCI_T_Version,
-				_finderPathCountByG_FCI_T_Version,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByG_FCI_T_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "type_", "version"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByG_FCI_T_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "type_", "version"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByG_FCI_T_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "type_", "version"
+					},
+					false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
-					"fragmentEntryVersion.", "type", FinderColumn.Type.INTEGER,
-					"=", true, false, FragmentEntryVersion::getType),
+					"fragmentEntryVersion.", "type", "type_",
+					FinderColumn.Type.INTEGER, "=", true, true,
+					FragmentEntryVersion::getType),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
-
-		_finderPathWithPaginationFindByG_FCI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByG_FCI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "status"}, true);
-
-		_finderPathCountByG_FCI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "status"}, false);
 
 		_collectionPersistenceFinderByG_FCI_S =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_S,
-				_finderPathWithoutPaginationFindByG_FCI_S,
-				_finderPathCountByG_FCI_S,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "status"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "status"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "status"},
+					false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "status",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getStatus));
-
-		_finderPathWithPaginationFindByG_FCI_S_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_S_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {
-				"groupId", "fragmentCollectionId", "status", "version"
-			},
-			true);
-
-		_finderPathWithoutPaginationFindByG_FCI_S_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_S_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName()
-			},
-			new String[] {
-				"groupId", "fragmentCollectionId", "status", "version"
-			},
-			true);
-
-		_finderPathCountByG_FCI_S_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_S_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName()
-			},
-			new String[] {
-				"groupId", "fragmentCollectionId", "status", "version"
-			},
-			false);
 
 		_collectionPersistenceFinderByG_FCI_S_Version =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_S_Version,
-				_finderPathWithoutPaginationFindByG_FCI_S_Version,
-				_finderPathCountByG_FCI_S_Version,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByG_FCI_S_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "status", "version"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByG_FCI_S_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "status", "version"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByG_FCI_S_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "status", "version"
+					},
+					false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "status",
-					FinderColumn.Type.INTEGER, "=", true, false,
+					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getStatus),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
-
-		_finderPathWithPaginationFindByG_FCI_LikeN_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_LikeN_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name", "status"},
-			true);
-
-		_finderPathWithoutPaginationFindByG_FCI_LikeN_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_LikeN_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name", "status"},
-			true);
-
-		_finderPathCountByG_FCI_LikeN_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_LikeN_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name", "status"},
-			false);
 
 		_collectionPersistenceFinderByG_FCI_LikeN_S =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_LikeN_S,
-				_finderPathWithoutPaginationFindByG_FCI_LikeN_S,
-				_finderPathCountByG_FCI_LikeN_S,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByG_FCI_LikeN_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "name", "status"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByG_FCI_LikeN_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "name", "status"
+					},
+					0, 4, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByG_FCI_LikeN_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "name", "status"
+					},
+					0, 4, false, null),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "name", FinderColumn.Type.STRING,
-					"=", true, false, FragmentEntryVersion::getName),
+					"=", true, true, FragmentEntryVersion::getName),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "status",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getStatus));
 
-		_finderPathWithPaginationFindByG_FCI_LikeN_S_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByG_FCI_LikeN_S_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {
-				"groupId", "fragmentCollectionId", "name", "status", "version"
-			},
-			true);
-
-		_finderPathWithoutPaginationFindByG_FCI_LikeN_S_Version =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByG_FCI_LikeN_S_Version",
-				new String[] {
-					Long.class.getName(), Long.class.getName(),
-					String.class.getName(), Integer.class.getName(),
-					Integer.class.getName()
-				},
-				new String[] {
-					"groupId", "fragmentCollectionId", "name", "status",
-					"version"
-				},
-				true);
-
-		_finderPathCountByG_FCI_LikeN_S_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByG_FCI_LikeN_S_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {
-				"groupId", "fragmentCollectionId", "name", "status", "version"
-			},
-			false);
-
 		_collectionPersistenceFinderByG_FCI_LikeN_S_Version =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_LikeN_S_Version,
-				_finderPathWithoutPaginationFindByG_FCI_LikeN_S_Version,
-				_finderPathCountByG_FCI_LikeN_S_Version,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByG_FCI_LikeN_S_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "name", "status",
+						"version"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByG_FCI_LikeN_S_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "name", "status",
+						"version"
+					},
+					0, 4, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByG_FCI_LikeN_S_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "name", "status",
+						"version"
+					},
+					0, 4, false, null),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "name", FinderColumn.Type.STRING,
-					"=", true, false, FragmentEntryVersion::getName),
+					"=", true, true, FragmentEntryVersion::getName),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "status",
-					FinderColumn.Type.INTEGER, "=", true, false,
+					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getStatus),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getVersion));
 
-		_finderPathWithPaginationFindByG_FCI_T_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_T_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "type_", "status"},
-			true);
-
-		_finderPathWithoutPaginationFindByG_FCI_T_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_T_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "type_", "status"},
-			true);
-
-		_finderPathCountByG_FCI_T_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_T_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "type_", "status"},
-			false);
-
 		_collectionPersistenceFinderByG_FCI_T_S =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_T_S,
-				_finderPathWithoutPaginationFindByG_FCI_T_S,
-				_finderPathCountByG_FCI_T_S,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_T_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "type_", "status"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByG_FCI_T_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "type_", "status"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByG_FCI_T_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "type_", "status"
+					},
+					false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
-					"fragmentEntryVersion.", "type", FinderColumn.Type.INTEGER,
-					"=", true, false, FragmentEntryVersion::getType),
+					"fragmentEntryVersion.", "type", "type_",
+					FinderColumn.Type.INTEGER, "=", true, true,
+					FragmentEntryVersion::getType),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "status",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getStatus));
 
-		_finderPathWithPaginationFindByG_FCI_T_S_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_T_S_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {
-				"groupId", "fragmentCollectionId", "type_", "status", "version"
-			},
-			true);
-
-		_finderPathWithoutPaginationFindByG_FCI_T_S_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByG_FCI_T_S_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {
-				"groupId", "fragmentCollectionId", "type_", "status", "version"
-			},
-			true);
-
-		_finderPathCountByG_FCI_T_S_Version = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByG_FCI_T_S_Version",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {
-				"groupId", "fragmentCollectionId", "type_", "status", "version"
-			},
-			false);
-
 		_collectionPersistenceFinderByG_FCI_T_S_Version =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_T_S_Version,
-				_finderPathWithoutPaginationFindByG_FCI_T_S_Version,
-				_finderPathCountByG_FCI_T_S_Version,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByG_FCI_T_S_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "type_", "status",
+						"version"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByG_FCI_T_S_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "type_", "status",
+						"version"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByG_FCI_T_S_Version",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "type_", "status",
+						"version"
+					},
+					false),
 				_SQL_SELECT_FRAGMENTENTRYVERSION_WHERE,
 				_SQL_COUNT_FRAGMENTENTRYVERSION_WHERE,
 				FragmentEntryVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentEntryVersion::getGroupId),
+					"=", true, true, FragmentEntryVersion::getGroupId),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentEntryVersion::getFragmentCollectionId),
 				new FinderColumn<>(
-					"fragmentEntryVersion.", "type", FinderColumn.Type.INTEGER,
-					"=", true, false, FragmentEntryVersion::getType),
+					"fragmentEntryVersion.", "type", "type_",
+					FinderColumn.Type.INTEGER, "=", true, true,
+					FragmentEntryVersion::getType),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "status",
-					FinderColumn.Type.INTEGER, "=", true, false,
+					FinderColumn.Type.INTEGER, "=", true, true,
 					FragmentEntryVersion::getStatus),
 				new FinderColumn<>(
 					"fragmentEntryVersion.", "version",
@@ -6576,4 +4387,4 @@ public class FragmentEntryVersionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1158492366
+// LIFERAY-SERVICE-BUILDER-HASH:594767909

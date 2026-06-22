@@ -388,10 +388,14 @@ public class XLIFFTranslationSnapshotProvider
 					targetLocaleId);
 
 				for (TextPart targetTextPart : targetTextContainer.getParts()) {
+					if (!targetTextPart.isSegment()) {
+						continue;
+					}
+
 					TextFragment targetTextFragment =
 						targetTextPart.getContent();
 
-					if (Validator.isNull(targetTextFragment.getText())) {
+					if (targetTextFragment.getText() == null) {
 						continue;
 					}
 

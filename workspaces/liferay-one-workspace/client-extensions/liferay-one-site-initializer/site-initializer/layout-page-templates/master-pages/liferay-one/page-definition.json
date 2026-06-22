@@ -1,0 +1,111 @@
+{
+	"pageElement": {
+		"pageElements": [
+			{
+				"definition": {
+					"fragment": {
+						"key": "header",
+						"siteKey": "[$GROUP_KEY$]"
+					},
+					"fragmentConfig": {
+						"primaryNavigationDDMTemplateKey": "NAVIGATION_PRIMARY",
+						"showAccountMenu": true,
+						"showLanguageMenu": true,
+						"showSearch": true,
+						"showSiteName": true,
+						"sitesNavigationDDMTemplateKey": "NAVIGATION_SITES"
+					},
+					"fragmentFields": [
+						{
+							"id": "link_okta",
+							"value": {
+								"fragmentLink": {
+									"value": {
+										"href": {
+											"value": "https://login.liferay.com/enduser/settings"
+										}
+									}
+								}
+							}
+						}
+					],
+					"indexed": true
+				},
+				"pageElements": [
+					{
+						"definition": {
+							"fragmentDropZoneId": "0"
+						},
+						"pageElements": [
+							{
+								"definition": {
+									"widgetInstance": {
+										"widgetConfig": {
+											"properties": "route=account-selector"
+										},
+										"widgetName": "[$CLIENT_EXTENSION_ENTRY_ERC:LXC:liferay-one-custom-element$]"
+									}
+								},
+								"type": "Widget"
+							}
+						],
+						"type": "FragmentDropZone"
+					}
+				],
+				"type": "Fragment"
+			},
+			{
+				"definition": {
+					"indexed": true,
+					"layout": {
+					}
+				},
+				"pageElements": [
+					{
+						"definition": {
+							"fragmentSettings": {
+								"unallowedFragments": [
+								]
+							}
+						},
+						"type": "DropZone"
+					}
+				],
+				"type": "Section"
+			},
+			{
+				"definition": {
+					"fragment": {
+						"key": "footer",
+						"siteKey": "[$GROUP_KEY$]"
+					},
+					"fragmentConfig": {
+						"footerNavigationDDMTemplateKey": "NAVIGATION_FOOTER"
+					},
+					"indexed": true
+				},
+				"type": "Fragment"
+			}
+		],
+		"type": "Root"
+	},
+	"settings": {
+		"colorSchemeName": "01",
+		"globalCSSClientExtensions": [
+			{
+				"externalReferenceCode": "LXC:liferay-one-global-css",
+				"name": "Liferay One Global CSS"
+			}
+		],
+		"styleBook": {
+			"key": "liferay-one",
+			"name": "Liferay One"
+		},
+		"themeSettings": {
+			"lfr-theme:regular:show-footer": "false",
+			"lfr-theme:regular:show-header": "false",
+			"lfr-theme:regular:show-header-search": "false",
+			"lfr-theme:regular:wrap-widget-page-content": "false"
+		}
+	}
+}

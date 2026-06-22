@@ -7,7 +7,6 @@ package com.liferay.portal.tools.service.builder.test.service.persistence.impl;
 
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -59,9 +58,9 @@ public class RenameFinderColumnEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByColumnToRename;
-	private UniquePersistenceFinder<RenameFinderColumnEntry>
-		_uniquePersistenceFinderByColumnToRename;
+	private UniquePersistenceFinder
+		<RenameFinderColumnEntry, NoSuchRenameFinderColumnEntryException>
+			_uniquePersistenceFinderByColumnToRename;
 
 	/**
 	 * Returns the rename finder column entry where columnToRename = &#63; or throws a <code>NoSuchRenameFinderColumnEntryException</code> if it could not be found.
@@ -74,35 +73,8 @@ public class RenameFinderColumnEntryPersistenceImpl
 	public RenameFinderColumnEntry findByColumnToRename(String columnToRename)
 		throws NoSuchRenameFinderColumnEntryException {
 
-		RenameFinderColumnEntry renameFinderColumnEntry = fetchByColumnToRename(
-			columnToRename);
-
-		if (renameFinderColumnEntry == null) {
-			String message =
-				_uniquePersistenceFinderByColumnToRename.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {columnToRename});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchRenameFinderColumnEntryException(message);
-		}
-
-		return renameFinderColumnEntry;
-	}
-
-	/**
-	 * Returns the rename finder column entry where columnToRename = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param columnToRename the column to rename
-	 * @return the matching rename finder column entry, or <code>null</code> if a matching rename finder column entry could not be found
-	 */
-	@Override
-	public RenameFinderColumnEntry fetchByColumnToRename(
-		String columnToRename) {
-
-		return fetchByColumnToRename(columnToRename, true);
+		return _uniquePersistenceFinderByColumnToRename.find(
+			finderCache, new Object[] {columnToRename});
 	}
 
 	/**
@@ -333,16 +305,16 @@ public class RenameFinderColumnEntryPersistenceImpl
 	 * Initializes the rename finder column entry persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathFetchByColumnToRename = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByColumnToRename",
-			new String[] {String.class.getName()},
-			new String[] {"columnToRename"}, false,
-			RenameFinderColumnEntry::getColumnToRename);
-
 		_uniquePersistenceFinderByColumnToRename =
 			new UniquePersistenceFinder<>(
-				this, _finderPathFetchByColumnToRename,
-				_SQL_SELECT_RENAMEFINDERCOLUMNENTRY_WHERE,
+				this,
+				createUniqueFinderPath(
+					FINDER_CLASS_NAME_ENTITY, "fetchByColumnToRename",
+					new String[] {String.class.getName()},
+					new String[] {"columnToRename"}, 0, 1, false,
+					convertNullFunction(
+						RenameFinderColumnEntry::getColumnToRename)),
+				_SQL_SELECT_RENAMEFINDERCOLUMNENTRY_WHERE, "",
 				new FinderColumn<>(
 					"renameFinderColumnEntry.", "columnToRename",
 					FinderColumn.Type.STRING, "=", true, true,
@@ -363,9 +335,6 @@ public class RenameFinderColumnEntryPersistenceImpl
 	@ServiceReference(type = FinderCache.class)
 	protected FinderCache finderCache;
 
-	private static final String _ENTITY_ALIAS_PREFIX =
-		RenameFinderColumnEntryModelImpl.ENTITY_ALIAS + ".";
-
 	private static final String _SQL_SELECT_RENAMEFINDERCOLUMNENTRY =
 		"SELECT renameFinderColumnEntry FROM RenameFinderColumnEntry renameFinderColumnEntry";
 
@@ -384,4 +353,4 @@ public class RenameFinderColumnEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1114503638
+// LIFERAY-SERVICE-BUILDER-HASH:-819697562

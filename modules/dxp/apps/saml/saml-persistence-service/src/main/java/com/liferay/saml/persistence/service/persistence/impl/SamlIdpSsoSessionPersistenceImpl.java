@@ -76,9 +76,9 @@ public class SamlIdpSsoSessionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByUserId;
-	private UniquePersistenceFinder<SamlIdpSsoSession>
-		_uniquePersistenceFinderByUserId;
+	private UniquePersistenceFinder
+		<SamlIdpSsoSession, NoSuchIdpSsoSessionException>
+			_uniquePersistenceFinderByUserId;
 
 	/**
 	 * Returns the saml idp sso session where userId = &#63; or throws a <code>NoSuchIdpSsoSessionException</code> if it could not be found.
@@ -91,32 +91,8 @@ public class SamlIdpSsoSessionPersistenceImpl
 	public SamlIdpSsoSession findByUserId(long userId)
 		throws NoSuchIdpSsoSessionException {
 
-		SamlIdpSsoSession samlIdpSsoSession = fetchByUserId(userId);
-
-		if (samlIdpSsoSession == null) {
-			String message =
-				_uniquePersistenceFinderByUserId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchIdpSsoSessionException(message);
-		}
-
-		return samlIdpSsoSession;
-	}
-
-	/**
-	 * Returns the saml idp sso session where userId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param userId the user ID
-	 * @return the matching saml idp sso session, or <code>null</code> if a matching saml idp sso session could not be found
-	 */
-	@Override
-	public SamlIdpSsoSession fetchByUserId(long userId) {
-		return fetchByUserId(userId, true);
+		return _uniquePersistenceFinderByUserId.find(
+			finderCache, new Object[] {userId});
 	}
 
 	/**
@@ -161,10 +137,9 @@ public class SamlIdpSsoSessionPersistenceImpl
 			finderCache, new Object[] {userId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByLtCreateDate;
-	private FinderPath _finderPathWithPaginationCountByLtCreateDate;
-	private CollectionPersistenceFinder<SamlIdpSsoSession>
-		_collectionPersistenceFinderByLtCreateDate;
+	private CollectionPersistenceFinder
+		<SamlIdpSsoSession, NoSuchIdpSsoSessionException>
+			_collectionPersistenceFinderByLtCreateDate;
 
 	/**
 	 * Returns all the saml idp sso sessions where createDate &lt; &#63;.
@@ -258,16 +233,8 @@ public class SamlIdpSsoSessionPersistenceImpl
 			OrderByComparator<SamlIdpSsoSession> orderByComparator)
 		throws NoSuchIdpSsoSessionException {
 
-		SamlIdpSsoSession samlIdpSsoSession = fetchByLtCreateDate_First(
-			createDate, orderByComparator);
-
-		if (samlIdpSsoSession != null) {
-			return samlIdpSsoSession;
-		}
-
-		throw new NoSuchIdpSsoSessionException(
-			_collectionPersistenceFinderByLtCreateDate.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {createDate}));
+		return _collectionPersistenceFinderByLtCreateDate.findFirst(
+			finderCache, new Object[] {createDate}, orderByComparator);
 	}
 
 	/**
@@ -309,9 +276,9 @@ public class SamlIdpSsoSessionPersistenceImpl
 			finderCache, new Object[] {createDate});
 	}
 
-	private FinderPath _finderPathFetchBySamlIdpSsoSessionKey;
-	private UniquePersistenceFinder<SamlIdpSsoSession>
-		_uniquePersistenceFinderBySamlIdpSsoSessionKey;
+	private UniquePersistenceFinder
+		<SamlIdpSsoSession, NoSuchIdpSsoSessionException>
+			_uniquePersistenceFinderBySamlIdpSsoSessionKey;
 
 	/**
 	 * Returns the saml idp sso session where samlIdpSsoSessionKey = &#63; or throws a <code>NoSuchIdpSsoSessionException</code> if it could not be found.
@@ -325,37 +292,8 @@ public class SamlIdpSsoSessionPersistenceImpl
 			String samlIdpSsoSessionKey)
 		throws NoSuchIdpSsoSessionException {
 
-		SamlIdpSsoSession samlIdpSsoSession = fetchBySamlIdpSsoSessionKey(
-			samlIdpSsoSessionKey);
-
-		if (samlIdpSsoSession == null) {
-			String message =
-				_uniquePersistenceFinderBySamlIdpSsoSessionKey.
-					buildNoSuchKeyMessage(
-						_NO_SUCH_ENTITY_WITH_KEY,
-						new Object[] {samlIdpSsoSessionKey});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchIdpSsoSessionException(message);
-		}
-
-		return samlIdpSsoSession;
-	}
-
-	/**
-	 * Returns the saml idp sso session where samlIdpSsoSessionKey = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param samlIdpSsoSessionKey the saml idp sso session key
-	 * @return the matching saml idp sso session, or <code>null</code> if a matching saml idp sso session could not be found
-	 */
-	@Override
-	public SamlIdpSsoSession fetchBySamlIdpSsoSessionKey(
-		String samlIdpSsoSessionKey) {
-
-		return fetchBySamlIdpSsoSessionKey(samlIdpSsoSessionKey, true);
+		return _uniquePersistenceFinderBySamlIdpSsoSessionKey.find(
+			finderCache, new Object[] {samlIdpSsoSessionKey});
 	}
 
 	/**
@@ -606,51 +544,52 @@ public class SamlIdpSsoSessionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByUserId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, false,
-			SamlIdpSsoSession::getUserId);
-
 		_uniquePersistenceFinderByUserId = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUserId, _SQL_SELECT_SAMLIDPSSOSESSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUserId",
+				new String[] {Long.class.getName()}, new String[] {"userId"}, 0,
+				0, false, SamlIdpSsoSession::getUserId),
+			_SQL_SELECT_SAMLIDPSSOSESSION_WHERE, "",
 			new FinderColumn<>(
 				"samlIdpSsoSession.", "userId", FinderColumn.Type.LONG, "=",
 				true, true, SamlIdpSsoSession::getUserId));
 
-		_finderPathWithPaginationFindByLtCreateDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtCreateDate",
-			new String[] {
-				Date.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"createDate"}, true);
-
-		_finderPathWithPaginationCountByLtCreateDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtCreateDate",
-			new String[] {Date.class.getName()}, new String[] {"createDate"},
-			false);
-
 		_collectionPersistenceFinderByLtCreateDate =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLtCreateDate, null,
-				_finderPathWithPaginationCountByLtCreateDate,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByLtCreateDate",
+					new String[] {
+						Date.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"createDate"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByLtCreateDate", new String[] {Date.class.getName()},
+					new String[] {"createDate"}, false),
 				_SQL_SELECT_SAMLIDPSSOSESSION_WHERE,
 				_SQL_COUNT_SAMLIDPSSOSESSION_WHERE,
 				SamlIdpSsoSessionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"samlIdpSsoSession.", "createDate", FinderColumn.Type.DATE,
 					"<", true, true, SamlIdpSsoSession::getCreateDate));
 
-		_finderPathFetchBySamlIdpSsoSessionKey = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchBySamlIdpSsoSessionKey",
-			new String[] {String.class.getName()},
-			new String[] {"samlIdpSsoSessionKey"}, false,
-			SamlIdpSsoSession::getSamlIdpSsoSessionKey);
-
 		_uniquePersistenceFinderBySamlIdpSsoSessionKey =
 			new UniquePersistenceFinder<>(
-				this, _finderPathFetchBySamlIdpSsoSessionKey,
-				_SQL_SELECT_SAMLIDPSSOSESSION_WHERE,
+				this,
+				createUniqueFinderPath(
+					FINDER_CLASS_NAME_ENTITY, "fetchBySamlIdpSsoSessionKey",
+					new String[] {String.class.getName()},
+					new String[] {"samlIdpSsoSessionKey"}, 0, 1, false,
+					convertNullFunction(
+						SamlIdpSsoSession::getSamlIdpSsoSessionKey)),
+				_SQL_SELECT_SAMLIDPSSOSESSION_WHERE, "",
 				new FinderColumn<>(
 					"samlIdpSsoSession.", "samlIdpSsoSessionKey",
 					FinderColumn.Type.STRING, "=", true, true,
@@ -722,4 +661,4 @@ public class SamlIdpSsoSessionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-140434594
+// LIFERAY-SERVICE-BUILDER-HASH:-1138504039

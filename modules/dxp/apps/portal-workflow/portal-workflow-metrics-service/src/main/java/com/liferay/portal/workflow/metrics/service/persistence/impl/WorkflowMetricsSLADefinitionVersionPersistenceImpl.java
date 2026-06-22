@@ -9,7 +9,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -83,69 +82,16 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<WorkflowMetricsSLADefinitionVersion>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the workflow metrics sla definition versions where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching workflow metrics sla definition versions
-	 */
-	@Override
-	public List<WorkflowMetricsSLADefinitionVersion> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the workflow metrics sla definition versions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of workflow metrics sla definition versions
-	 * @param end the upper bound of the range of workflow metrics sla definition versions (not inclusive)
-	 * @return the range of matching workflow metrics sla definition versions
-	 */
-	@Override
-	public List<WorkflowMetricsSLADefinitionVersion> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<WorkflowMetricsSLADefinitionVersion,
+		 NoSuchSLADefinitionVersionException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the workflow metrics sla definition versions where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of workflow metrics sla definition versions
-	 * @param end the upper bound of the range of workflow metrics sla definition versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching workflow metrics sla definition versions
-	 */
-	@Override
-	public List<WorkflowMetricsSLADefinitionVersion> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<WorkflowMetricsSLADefinitionVersion>
-			orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the workflow metrics sla definition versions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -182,17 +128,8 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 				orderByComparator)
 		throws NoSuchSLADefinitionVersionException {
 
-		WorkflowMetricsSLADefinitionVersion
-			workflowMetricsSLADefinitionVersion = fetchByUuid_First(
-				uuid, orderByComparator);
-
-		if (workflowMetricsSLADefinitionVersion != null) {
-			return workflowMetricsSLADefinitionVersion;
-		}
-
-		throw new NoSuchSLADefinitionVersionException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -235,9 +172,9 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<WorkflowMetricsSLADefinitionVersion>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<WorkflowMetricsSLADefinitionVersion,
+		 NoSuchSLADefinitionVersionException> _uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the workflow metrics sla definition version where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchSLADefinitionVersionException</code> if it could not be found.
@@ -252,36 +189,8 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 			String uuid, long groupId)
 		throws NoSuchSLADefinitionVersionException {
 
-		WorkflowMetricsSLADefinitionVersion
-			workflowMetricsSLADefinitionVersion = fetchByUUID_G(uuid, groupId);
-
-		if (workflowMetricsSLADefinitionVersion == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchSLADefinitionVersionException(message);
-		}
-
-		return workflowMetricsSLADefinitionVersion;
-	}
-
-	/**
-	 * Returns the workflow metrics sla definition version where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching workflow metrics sla definition version, or <code>null</code> if a matching workflow metrics sla definition version could not be found
-	 */
-	@Override
-	public WorkflowMetricsSLADefinitionVersion fetchByUUID_G(
-		String uuid, long groupId) {
-
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -331,76 +240,16 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<WorkflowMetricsSLADefinitionVersion>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the workflow metrics sla definition versions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching workflow metrics sla definition versions
-	 */
-	@Override
-	public List<WorkflowMetricsSLADefinitionVersion> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the workflow metrics sla definition versions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of workflow metrics sla definition versions
-	 * @param end the upper bound of the range of workflow metrics sla definition versions (not inclusive)
-	 * @return the range of matching workflow metrics sla definition versions
-	 */
-	@Override
-	public List<WorkflowMetricsSLADefinitionVersion> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<WorkflowMetricsSLADefinitionVersion,
+		 NoSuchSLADefinitionVersionException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the workflow metrics sla definition versions where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of workflow metrics sla definition versions
-	 * @param end the upper bound of the range of workflow metrics sla definition versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching workflow metrics sla definition versions
-	 */
-	@Override
-	public List<WorkflowMetricsSLADefinitionVersion> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<WorkflowMetricsSLADefinitionVersion>
-			orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the workflow metrics sla definition versions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -439,17 +288,8 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 				orderByComparator)
 		throws NoSuchSLADefinitionVersionException {
 
-		WorkflowMetricsSLADefinitionVersion
-			workflowMetricsSLADefinitionVersion = fetchByUuid_C_First(
-				uuid, companyId, orderByComparator);
-
-		if (workflowMetricsSLADefinitionVersion != null) {
-			return workflowMetricsSLADefinitionVersion;
-		}
-
-		throw new NoSuchSLADefinitionVersionException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -495,81 +335,16 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath
-		_finderPathWithPaginationFindByWorkflowMetricsSLADefinitionId;
-	private FinderPath
-		_finderPathWithoutPaginationFindByWorkflowMetricsSLADefinitionId;
-	private FinderPath _finderPathCountByWorkflowMetricsSLADefinitionId;
-	private CollectionPersistenceFinder<WorkflowMetricsSLADefinitionVersion>
-		_collectionPersistenceFinderByWorkflowMetricsSLADefinitionId;
-
-	/**
-	 * Returns all the workflow metrics sla definition versions where workflowMetricsSLADefinitionId = &#63;.
-	 *
-	 * @param workflowMetricsSLADefinitionId the workflow metrics sla definition ID
-	 * @return the matching workflow metrics sla definition versions
-	 */
-	@Override
-	public List<WorkflowMetricsSLADefinitionVersion>
-		findByWorkflowMetricsSLADefinitionId(
-			long workflowMetricsSLADefinitionId) {
-
-		return findByWorkflowMetricsSLADefinitionId(
-			workflowMetricsSLADefinitionId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the workflow metrics sla definition versions where workflowMetricsSLADefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param workflowMetricsSLADefinitionId the workflow metrics sla definition ID
-	 * @param start the lower bound of the range of workflow metrics sla definition versions
-	 * @param end the upper bound of the range of workflow metrics sla definition versions (not inclusive)
-	 * @return the range of matching workflow metrics sla definition versions
-	 */
-	@Override
-	public List<WorkflowMetricsSLADefinitionVersion>
-		findByWorkflowMetricsSLADefinitionId(
-			long workflowMetricsSLADefinitionId, int start, int end) {
-
-		return findByWorkflowMetricsSLADefinitionId(
-			workflowMetricsSLADefinitionId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<WorkflowMetricsSLADefinitionVersion,
+		 NoSuchSLADefinitionVersionException>
+			_collectionPersistenceFinderByWorkflowMetricsSLADefinitionId;
 
 	/**
 	 * Returns an ordered range of all the workflow metrics sla definition versions where workflowMetricsSLADefinitionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param workflowMetricsSLADefinitionId the workflow metrics sla definition ID
-	 * @param start the lower bound of the range of workflow metrics sla definition versions
-	 * @param end the upper bound of the range of workflow metrics sla definition versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching workflow metrics sla definition versions
-	 */
-	@Override
-	public List<WorkflowMetricsSLADefinitionVersion>
-		findByWorkflowMetricsSLADefinitionId(
-			long workflowMetricsSLADefinitionId, int start, int end,
-			OrderByComparator<WorkflowMetricsSLADefinitionVersion>
-				orderByComparator) {
-
-		return findByWorkflowMetricsSLADefinitionId(
-			workflowMetricsSLADefinitionId, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the workflow metrics sla definition versions where workflowMetricsSLADefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowMetricsSLADefinitionVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param workflowMetricsSLADefinitionId the workflow metrics sla definition ID
@@ -609,20 +384,10 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 					orderByComparator)
 		throws NoSuchSLADefinitionVersionException {
 
-		WorkflowMetricsSLADefinitionVersion
-			workflowMetricsSLADefinitionVersion =
-				fetchByWorkflowMetricsSLADefinitionId_First(
-					workflowMetricsSLADefinitionId, orderByComparator);
-
-		if (workflowMetricsSLADefinitionVersion != null) {
-			return workflowMetricsSLADefinitionVersion;
-		}
-
-		throw new NoSuchSLADefinitionVersionException(
-			_collectionPersistenceFinderByWorkflowMetricsSLADefinitionId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {workflowMetricsSLADefinitionId}));
+		return _collectionPersistenceFinderByWorkflowMetricsSLADefinitionId.
+			findFirst(
+				finderCache, new Object[] {workflowMetricsSLADefinitionId},
+				orderByComparator);
 	}
 
 	/**
@@ -672,9 +437,10 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 			count(finderCache, new Object[] {workflowMetricsSLADefinitionId});
 	}
 
-	private FinderPath _finderPathFetchByV_WMSLAD;
-	private UniquePersistenceFinder<WorkflowMetricsSLADefinitionVersion>
-		_uniquePersistenceFinderByV_WMSLAD;
+	private UniquePersistenceFinder
+		<WorkflowMetricsSLADefinitionVersion,
+		 NoSuchSLADefinitionVersionException>
+			_uniquePersistenceFinderByV_WMSLAD;
 
 	/**
 	 * Returns the workflow metrics sla definition version where version = &#63; and workflowMetricsSLADefinitionId = &#63; or throws a <code>NoSuchSLADefinitionVersionException</code> if it could not be found.
@@ -689,38 +455,9 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 			String version, long workflowMetricsSLADefinitionId)
 		throws NoSuchSLADefinitionVersionException {
 
-		WorkflowMetricsSLADefinitionVersion
-			workflowMetricsSLADefinitionVersion = fetchByV_WMSLAD(
-				version, workflowMetricsSLADefinitionId);
-
-		if (workflowMetricsSLADefinitionVersion == null) {
-			String message =
-				_uniquePersistenceFinderByV_WMSLAD.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {version, workflowMetricsSLADefinitionId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchSLADefinitionVersionException(message);
-		}
-
-		return workflowMetricsSLADefinitionVersion;
-	}
-
-	/**
-	 * Returns the workflow metrics sla definition version where version = &#63; and workflowMetricsSLADefinitionId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param version the version
-	 * @param workflowMetricsSLADefinitionId the workflow metrics sla definition ID
-	 * @return the matching workflow metrics sla definition version, or <code>null</code> if a matching workflow metrics sla definition version could not be found
-	 */
-	@Override
-	public WorkflowMetricsSLADefinitionVersion fetchByV_WMSLAD(
-		String version, long workflowMetricsSLADefinitionId) {
-
-		return fetchByV_WMSLAD(version, workflowMetricsSLADefinitionId, true);
+		return _uniquePersistenceFinderByV_WMSLAD.find(
+			finderCache,
+			new Object[] {version, workflowMetricsSLADefinitionId});
 	}
 
 	/**
@@ -1035,151 +772,135 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_WORKFLOWMETRICSSLADEFINITIONVERSION_WHERE,
 			_SQL_COUNT_WORKFLOWMETRICSSLADEFINITIONVERSION_WHERE,
 			WorkflowMetricsSLADefinitionVersionModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"workflowMetricsSLADefinitionVersion.", "uuid",
+				"workflowMetricsSLADefinitionVersion.", "uuid", "uuid_",
 				FinderColumn.Type.STRING, "=", true, true,
 				WorkflowMetricsSLADefinitionVersion::getUuid));
 
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			WorkflowMetricsSLADefinitionVersion::getUuid,
-			WorkflowMetricsSLADefinitionVersion::getGroupId);
-
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_WORKFLOWMETRICSSLADEFINITIONVERSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(
+					WorkflowMetricsSLADefinitionVersion::getUuid),
+				WorkflowMetricsSLADefinitionVersion::getGroupId),
+			_SQL_SELECT_WORKFLOWMETRICSSLADEFINITIONVERSION_WHERE, "",
 			new FinderColumn<>(
-				"workflowMetricsSLADefinitionVersion.", "uuid",
-				FinderColumn.Type.STRING, "=", true, false,
+				"workflowMetricsSLADefinitionVersion.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
 				WorkflowMetricsSLADefinitionVersion::getUuid),
 			new FinderColumn<>(
 				"workflowMetricsSLADefinitionVersion.", "groupId",
 				FinderColumn.Type.LONG, "=", true, true,
 				WorkflowMetricsSLADefinitionVersion::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_WORKFLOWMETRICSSLADEFINITIONVERSION_WHERE,
 				_SQL_COUNT_WORKFLOWMETRICSSLADEFINITIONVERSION_WHERE,
 				WorkflowMetricsSLADefinitionVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"workflowMetricsSLADefinitionVersion.", "uuid",
-					FinderColumn.Type.STRING, "=", true, false,
+					"workflowMetricsSLADefinitionVersion.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
 					WorkflowMetricsSLADefinitionVersion::getUuid),
 				new FinderColumn<>(
 					"workflowMetricsSLADefinitionVersion.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					WorkflowMetricsSLADefinitionVersion::getCompanyId));
 
-		_finderPathWithPaginationFindByWorkflowMetricsSLADefinitionId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-				"findByWorkflowMetricsSLADefinitionId",
-				new String[] {
-					Long.class.getName(), Integer.class.getName(),
-					Integer.class.getName(), OrderByComparator.class.getName()
-				},
-				new String[] {"wmSLADefinitionId"}, true);
-
-		_finderPathWithoutPaginationFindByWorkflowMetricsSLADefinitionId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByWorkflowMetricsSLADefinitionId",
-				new String[] {Long.class.getName()},
-				new String[] {"wmSLADefinitionId"}, true);
-
-		_finderPathCountByWorkflowMetricsSLADefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByWorkflowMetricsSLADefinitionId",
-			new String[] {Long.class.getName()},
-			new String[] {"wmSLADefinitionId"}, false);
-
 		_collectionPersistenceFinderByWorkflowMetricsSLADefinitionId =
 			new CollectionPersistenceFinder<>(
 				this,
-				_finderPathWithPaginationFindByWorkflowMetricsSLADefinitionId,
-				_finderPathWithoutPaginationFindByWorkflowMetricsSLADefinitionId,
-				_finderPathCountByWorkflowMetricsSLADefinitionId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByWorkflowMetricsSLADefinitionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"wmSLADefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByWorkflowMetricsSLADefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"wmSLADefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByWorkflowMetricsSLADefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"wmSLADefinitionId"}, false),
 				_SQL_SELECT_WORKFLOWMETRICSSLADEFINITIONVERSION_WHERE,
 				_SQL_COUNT_WORKFLOWMETRICSSLADEFINITIONVERSION_WHERE,
 				WorkflowMetricsSLADefinitionVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"workflowMetricsSLADefinitionVersion.",
-					"workflowMetricsSLADefinitionId", FinderColumn.Type.LONG,
-					"=", true, true,
+					"workflowMetricsSLADefinitionId", "wmSLADefinitionId",
+					FinderColumn.Type.LONG, "=", true, true,
 					WorkflowMetricsSLADefinitionVersion::
 						getWorkflowMetricsSLADefinitionId));
 
-		_finderPathFetchByV_WMSLAD = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByV_WMSLAD",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"version", "wmSLADefinitionId"}, false,
-			WorkflowMetricsSLADefinitionVersion::getVersion,
-			WorkflowMetricsSLADefinitionVersion::
-				getWorkflowMetricsSLADefinitionId);
-
 		_uniquePersistenceFinderByV_WMSLAD = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByV_WMSLAD,
-			_SQL_SELECT_WORKFLOWMETRICSSLADEFINITIONVERSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByV_WMSLAD",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"version", "wmSLADefinitionId"}, 0, 1, false,
+				convertNullFunction(
+					WorkflowMetricsSLADefinitionVersion::getVersion),
+				WorkflowMetricsSLADefinitionVersion::
+					getWorkflowMetricsSLADefinitionId),
+			_SQL_SELECT_WORKFLOWMETRICSSLADEFINITIONVERSION_WHERE, "",
 			new FinderColumn<>(
 				"workflowMetricsSLADefinitionVersion.", "version",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				WorkflowMetricsSLADefinitionVersion::getVersion),
 			new FinderColumn<>(
 				"workflowMetricsSLADefinitionVersion.",
-				"workflowMetricsSLADefinitionId", FinderColumn.Type.LONG, "=",
-				true, true,
+				"workflowMetricsSLADefinitionId", "wmSLADefinitionId",
+				FinderColumn.Type.LONG, "=", true, true,
 				WorkflowMetricsSLADefinitionVersion::
 					getWorkflowMetricsSLADefinitionId));
 
@@ -1259,4 +980,4 @@ public class WorkflowMetricsSLADefinitionVersionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1226328562
+// LIFERAY-SERVICE-BUILDER-HASH:489115379

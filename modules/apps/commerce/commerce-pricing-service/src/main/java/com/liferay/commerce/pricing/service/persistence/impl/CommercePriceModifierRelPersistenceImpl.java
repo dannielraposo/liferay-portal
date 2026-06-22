@@ -13,13 +13,11 @@ import com.liferay.commerce.pricing.model.impl.CommercePriceModifierRelModelImpl
 import com.liferay.commerce.pricing.service.persistence.CommercePriceModifierRelPersistence;
 import com.liferay.commerce.pricing.service.persistence.CommercePriceModifierRelUtil;
 import com.liferay.commerce.pricing.service.persistence.impl.constants.CommercePersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -85,75 +83,15 @@ public class CommercePriceModifierRelPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCommercePriceModifierId;
-	private FinderPath
-		_finderPathWithoutPaginationFindByCommercePriceModifierId;
-	private FinderPath _finderPathCountByCommercePriceModifierId;
-	private CollectionPersistenceFinder<CommercePriceModifierRel>
-		_collectionPersistenceFinderByCommercePriceModifierId;
-
-	/**
-	 * Returns all the commerce price modifier rels where commercePriceModifierId = &#63;.
-	 *
-	 * @param commercePriceModifierId the commerce price modifier ID
-	 * @return the matching commerce price modifier rels
-	 */
-	@Override
-	public List<CommercePriceModifierRel> findByCommercePriceModifierId(
-		long commercePriceModifierId) {
-
-		return findByCommercePriceModifierId(
-			commercePriceModifierId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the commerce price modifier rels where commercePriceModifierId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commercePriceModifierId the commerce price modifier ID
-	 * @param start the lower bound of the range of commerce price modifier rels
-	 * @param end the upper bound of the range of commerce price modifier rels (not inclusive)
-	 * @return the range of matching commerce price modifier rels
-	 */
-	@Override
-	public List<CommercePriceModifierRel> findByCommercePriceModifierId(
-		long commercePriceModifierId, int start, int end) {
-
-		return findByCommercePriceModifierId(
-			commercePriceModifierId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommercePriceModifierRel, NoSuchPriceModifierRelException>
+			_collectionPersistenceFinderByCommercePriceModifierId;
 
 	/**
 	 * Returns an ordered range of all the commerce price modifier rels where commercePriceModifierId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commercePriceModifierId the commerce price modifier ID
-	 * @param start the lower bound of the range of commerce price modifier rels
-	 * @param end the upper bound of the range of commerce price modifier rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce price modifier rels
-	 */
-	@Override
-	public List<CommercePriceModifierRel> findByCommercePriceModifierId(
-		long commercePriceModifierId, int start, int end,
-		OrderByComparator<CommercePriceModifierRel> orderByComparator) {
-
-		return findByCommercePriceModifierId(
-			commercePriceModifierId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce price modifier rels where commercePriceModifierId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commercePriceModifierId the commerce price modifier ID
@@ -169,14 +107,9 @@ public class CommercePriceModifierRelPersistenceImpl
 		OrderByComparator<CommercePriceModifierRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifierRel.class)) {
-
-			return _collectionPersistenceFinderByCommercePriceModifierId.find(
-				finderCache, new Object[] {commercePriceModifierId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCommercePriceModifierId.find(
+			finderCache, new Object[] {commercePriceModifierId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -193,19 +126,9 @@ public class CommercePriceModifierRelPersistenceImpl
 			OrderByComparator<CommercePriceModifierRel> orderByComparator)
 		throws NoSuchPriceModifierRelException {
 
-		CommercePriceModifierRel commercePriceModifierRel =
-			fetchByCommercePriceModifierId_First(
-				commercePriceModifierId, orderByComparator);
-
-		if (commercePriceModifierRel != null) {
-			return commercePriceModifierRel;
-		}
-
-		throw new NoSuchPriceModifierRelException(
-			_collectionPersistenceFinderByCommercePriceModifierId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {commercePriceModifierId}));
+		return _collectionPersistenceFinderByCommercePriceModifierId.findFirst(
+			finderCache, new Object[] {commercePriceModifierId},
+			orderByComparator);
 	}
 
 	/**
@@ -244,87 +167,19 @@ public class CommercePriceModifierRelPersistenceImpl
 	 */
 	@Override
 	public int countByCommercePriceModifierId(long commercePriceModifierId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifierRel.class)) {
-
-			return _collectionPersistenceFinderByCommercePriceModifierId.count(
-				finderCache, new Object[] {commercePriceModifierId});
-		}
+		return _collectionPersistenceFinderByCommercePriceModifierId.count(
+			finderCache, new Object[] {commercePriceModifierId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCPM_CN;
-	private FinderPath _finderPathWithoutPaginationFindByCPM_CN;
-	private FinderPath _finderPathCountByCPM_CN;
-	private CollectionPersistenceFinder<CommercePriceModifierRel>
-		_collectionPersistenceFinderByCPM_CN;
-
-	/**
-	 * Returns all the commerce price modifier rels where commercePriceModifierId = &#63; and classNameId = &#63;.
-	 *
-	 * @param commercePriceModifierId the commerce price modifier ID
-	 * @param classNameId the class name ID
-	 * @return the matching commerce price modifier rels
-	 */
-	@Override
-	public List<CommercePriceModifierRel> findByCPM_CN(
-		long commercePriceModifierId, long classNameId) {
-
-		return findByCPM_CN(
-			commercePriceModifierId, classNameId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce price modifier rels where commercePriceModifierId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commercePriceModifierId the commerce price modifier ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of commerce price modifier rels
-	 * @param end the upper bound of the range of commerce price modifier rels (not inclusive)
-	 * @return the range of matching commerce price modifier rels
-	 */
-	@Override
-	public List<CommercePriceModifierRel> findByCPM_CN(
-		long commercePriceModifierId, long classNameId, int start, int end) {
-
-		return findByCPM_CN(
-			commercePriceModifierId, classNameId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommercePriceModifierRel, NoSuchPriceModifierRelException>
+			_collectionPersistenceFinderByCPM_CN;
 
 	/**
 	 * Returns an ordered range of all the commerce price modifier rels where commercePriceModifierId = &#63; and classNameId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commercePriceModifierId the commerce price modifier ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of commerce price modifier rels
-	 * @param end the upper bound of the range of commerce price modifier rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce price modifier rels
-	 */
-	@Override
-	public List<CommercePriceModifierRel> findByCPM_CN(
-		long commercePriceModifierId, long classNameId, int start, int end,
-		OrderByComparator<CommercePriceModifierRel> orderByComparator) {
-
-		return findByCPM_CN(
-			commercePriceModifierId, classNameId, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce price modifier rels where commercePriceModifierId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commercePriceModifierId the commerce price modifier ID
@@ -341,15 +196,9 @@ public class CommercePriceModifierRelPersistenceImpl
 		OrderByComparator<CommercePriceModifierRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifierRel.class)) {
-
-			return _collectionPersistenceFinderByCPM_CN.find(
-				finderCache,
-				new Object[] {commercePriceModifierId, classNameId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCPM_CN.find(
+			finderCache, new Object[] {commercePriceModifierId, classNameId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -367,17 +216,9 @@ public class CommercePriceModifierRelPersistenceImpl
 			OrderByComparator<CommercePriceModifierRel> orderByComparator)
 		throws NoSuchPriceModifierRelException {
 
-		CommercePriceModifierRel commercePriceModifierRel = fetchByCPM_CN_First(
-			commercePriceModifierId, classNameId, orderByComparator);
-
-		if (commercePriceModifierRel != null) {
-			return commercePriceModifierRel;
-		}
-
-		throw new NoSuchPriceModifierRelException(
-			_collectionPersistenceFinderByCPM_CN.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {commercePriceModifierId, classNameId}));
+		return _collectionPersistenceFinderByCPM_CN.findFirst(
+			finderCache, new Object[] {commercePriceModifierId, classNameId},
+			orderByComparator);
 	}
 
 	/**
@@ -419,85 +260,19 @@ public class CommercePriceModifierRelPersistenceImpl
 	 */
 	@Override
 	public int countByCPM_CN(long commercePriceModifierId, long classNameId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifierRel.class)) {
-
-			return _collectionPersistenceFinderByCPM_CN.count(
-				finderCache,
-				new Object[] {commercePriceModifierId, classNameId});
-		}
+		return _collectionPersistenceFinderByCPM_CN.count(
+			finderCache, new Object[] {commercePriceModifierId, classNameId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCN_CPK;
-	private FinderPath _finderPathWithoutPaginationFindByCN_CPK;
-	private FinderPath _finderPathCountByCN_CPK;
-	private CollectionPersistenceFinder<CommercePriceModifierRel>
-		_collectionPersistenceFinderByCN_CPK;
-
-	/**
-	 * Returns all the commerce price modifier rels where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching commerce price modifier rels
-	 */
-	@Override
-	public List<CommercePriceModifierRel> findByCN_CPK(
-		long classNameId, long classPK) {
-
-		return findByCN_CPK(
-			classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce price modifier rels where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of commerce price modifier rels
-	 * @param end the upper bound of the range of commerce price modifier rels (not inclusive)
-	 * @return the range of matching commerce price modifier rels
-	 */
-	@Override
-	public List<CommercePriceModifierRel> findByCN_CPK(
-		long classNameId, long classPK, int start, int end) {
-
-		return findByCN_CPK(classNameId, classPK, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommercePriceModifierRel, NoSuchPriceModifierRelException>
+			_collectionPersistenceFinderByCN_CPK;
 
 	/**
 	 * Returns an ordered range of all the commerce price modifier rels where classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of commerce price modifier rels
-	 * @param end the upper bound of the range of commerce price modifier rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce price modifier rels
-	 */
-	@Override
-	public List<CommercePriceModifierRel> findByCN_CPK(
-		long classNameId, long classPK, int start, int end,
-		OrderByComparator<CommercePriceModifierRel> orderByComparator) {
-
-		return findByCN_CPK(
-			classNameId, classPK, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce price modifier rels where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -514,14 +289,9 @@ public class CommercePriceModifierRelPersistenceImpl
 		OrderByComparator<CommercePriceModifierRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifierRel.class)) {
-
-			return _collectionPersistenceFinderByCN_CPK.find(
-				finderCache, new Object[] {classNameId, classPK}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCN_CPK.find(
+			finderCache, new Object[] {classNameId, classPK}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -539,16 +309,9 @@ public class CommercePriceModifierRelPersistenceImpl
 			OrderByComparator<CommercePriceModifierRel> orderByComparator)
 		throws NoSuchPriceModifierRelException {
 
-		CommercePriceModifierRel commercePriceModifierRel = fetchByCN_CPK_First(
-			classNameId, classPK, orderByComparator);
-
-		if (commercePriceModifierRel != null) {
-			return commercePriceModifierRel;
-		}
-
-		throw new NoSuchPriceModifierRelException(
-			_collectionPersistenceFinderByCN_CPK.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {classNameId, classPK}));
+		return _collectionPersistenceFinderByCN_CPK.findFirst(
+			finderCache, new Object[] {classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -590,18 +353,13 @@ public class CommercePriceModifierRelPersistenceImpl
 	 */
 	@Override
 	public int countByCN_CPK(long classNameId, long classPK) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifierRel.class)) {
-
-			return _collectionPersistenceFinderByCN_CPK.count(
-				finderCache, new Object[] {classNameId, classPK});
-		}
+		return _collectionPersistenceFinderByCN_CPK.count(
+			finderCache, new Object[] {classNameId, classPK});
 	}
 
-	private FinderPath _finderPathFetchByCPM_CN_CPK;
-	private UniquePersistenceFinder<CommercePriceModifierRel>
-		_uniquePersistenceFinderByCPM_CN_CPK;
+	private UniquePersistenceFinder
+		<CommercePriceModifierRel, NoSuchPriceModifierRelException>
+			_uniquePersistenceFinderByCPM_CN_CPK;
 
 	/**
 	 * Returns the commerce price modifier rel where commercePriceModifierId = &#63; and classNameId = &#63; and classPK = &#63; or throws a <code>NoSuchPriceModifierRelException</code> if it could not be found.
@@ -617,41 +375,9 @@ public class CommercePriceModifierRelPersistenceImpl
 			long commercePriceModifierId, long classNameId, long classPK)
 		throws NoSuchPriceModifierRelException {
 
-		CommercePriceModifierRel commercePriceModifierRel = fetchByCPM_CN_CPK(
-			commercePriceModifierId, classNameId, classPK);
-
-		if (commercePriceModifierRel == null) {
-			String message =
-				_uniquePersistenceFinderByCPM_CN_CPK.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {
-						commercePriceModifierId, classNameId, classPK
-					});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchPriceModifierRelException(message);
-		}
-
-		return commercePriceModifierRel;
-	}
-
-	/**
-	 * Returns the commerce price modifier rel where commercePriceModifierId = &#63; and classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param commercePriceModifierId the commerce price modifier ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching commerce price modifier rel, or <code>null</code> if a matching commerce price modifier rel could not be found
-	 */
-	@Override
-	public CommercePriceModifierRel fetchByCPM_CN_CPK(
-		long commercePriceModifierId, long classNameId, long classPK) {
-
-		return fetchByCPM_CN_CPK(
-			commercePriceModifierId, classNameId, classPK, true);
+		return _uniquePersistenceFinderByCPM_CN_CPK.find(
+			finderCache,
+			new Object[] {commercePriceModifierId, classNameId, classPK});
 	}
 
 	/**
@@ -668,15 +394,10 @@ public class CommercePriceModifierRelPersistenceImpl
 		long commercePriceModifierId, long classNameId, long classPK,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifierRel.class)) {
-
-			return _uniquePersistenceFinderByCPM_CN_CPK.fetch(
-				finderCache,
-				new Object[] {commercePriceModifierId, classNameId, classPK},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByCPM_CN_CPK.fetch(
+			finderCache,
+			new Object[] {commercePriceModifierId, classNameId, classPK},
+			useFinderCache);
 	}
 
 	/**
@@ -1006,136 +727,127 @@ public class CommercePriceModifierRelPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByCommercePriceModifierId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByCommercePriceModifierId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"commercePriceModifierId"}, true);
-
-		_finderPathWithoutPaginationFindByCommercePriceModifierId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByCommercePriceModifierId",
-				new String[] {Long.class.getName()},
-				new String[] {"commercePriceModifierId"}, true);
-
-		_finderPathCountByCommercePriceModifierId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCommercePriceModifierId",
-			new String[] {Long.class.getName()},
-			new String[] {"commercePriceModifierId"}, false);
-
 		_collectionPersistenceFinderByCommercePriceModifierId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCommercePriceModifierId,
-				_finderPathWithoutPaginationFindByCommercePriceModifierId,
-				_finderPathCountByCommercePriceModifierId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCommercePriceModifierId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"commercePriceModifierId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCommercePriceModifierId",
+					new String[] {Long.class.getName()},
+					new String[] {"commercePriceModifierId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCommercePriceModifierId",
+					new String[] {Long.class.getName()},
+					new String[] {"commercePriceModifierId"}, false),
 				_SQL_SELECT_COMMERCEPRICEMODIFIERREL_WHERE,
 				_SQL_COUNT_COMMERCEPRICEMODIFIERREL_WHERE,
 				CommercePriceModifierRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commercePriceModifierRel.", "commercePriceModifierId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommercePriceModifierRel::getCommercePriceModifierId));
 
-		_finderPathWithPaginationFindByCPM_CN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPM_CN",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"commercePriceModifierId", "classNameId"}, true);
-
-		_finderPathWithoutPaginationFindByCPM_CN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCPM_CN",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"commercePriceModifierId", "classNameId"}, true);
-
-		_finderPathCountByCPM_CN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCPM_CN",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"commercePriceModifierId", "classNameId"}, false);
-
 		_collectionPersistenceFinderByCPM_CN =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCPM_CN,
-				_finderPathWithoutPaginationFindByCPM_CN,
-				_finderPathCountByCPM_CN,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPM_CN",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"commercePriceModifierId", "classNameId"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCPM_CN",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"commercePriceModifierId", "classNameId"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCPM_CN",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"commercePriceModifierId", "classNameId"},
+					false),
 				_SQL_SELECT_COMMERCEPRICEMODIFIERREL_WHERE,
 				_SQL_COUNT_COMMERCEPRICEMODIFIERREL_WHERE,
 				CommercePriceModifierRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commercePriceModifierRel.", "commercePriceModifierId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					CommercePriceModifierRel::getCommercePriceModifierId),
 				new FinderColumn<>(
 					"commercePriceModifierRel.", "classNameId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommercePriceModifierRel::getClassNameId));
 
-		_finderPathWithPaginationFindByCN_CPK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCN_CPK",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathWithoutPaginationFindByCN_CPK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCN_CPK",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathCountByCN_CPK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCN_CPK",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, false);
-
 		_collectionPersistenceFinderByCN_CPK =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCN_CPK,
-				_finderPathWithoutPaginationFindByCN_CPK,
-				_finderPathCountByCN_CPK,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCN_CPK",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"classNameId", "classPK"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCN_CPK",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"classNameId", "classPK"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCN_CPK",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"classNameId", "classPK"}, false),
 				_SQL_SELECT_COMMERCEPRICEMODIFIERREL_WHERE,
 				_SQL_COUNT_COMMERCEPRICEMODIFIERREL_WHERE,
 				CommercePriceModifierRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commercePriceModifierRel.", "classNameId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					CommercePriceModifierRel::getClassNameId),
 				new FinderColumn<>(
 					"commercePriceModifierRel.", "classPK",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommercePriceModifierRel::getClassPK));
 
-		_finderPathFetchByCPM_CN_CPK = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByCPM_CN_CPK",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"commercePriceModifierId", "classNameId", "classPK"},
-			false, CommercePriceModifierRel::getCommercePriceModifierId,
-			CommercePriceModifierRel::getClassNameId,
-			CommercePriceModifierRel::getClassPK);
-
 		_uniquePersistenceFinderByCPM_CN_CPK = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByCPM_CN_CPK,
-			_SQL_SELECT_COMMERCEPRICEMODIFIERREL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByCPM_CN_CPK",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {
+					"commercePriceModifierId", "classNameId", "classPK"
+				},
+				0, 0, false,
+				CommercePriceModifierRel::getCommercePriceModifierId,
+				CommercePriceModifierRel::getClassNameId,
+				CommercePriceModifierRel::getClassPK),
+			_SQL_SELECT_COMMERCEPRICEMODIFIERREL_WHERE, "",
 			new FinderColumn<>(
 				"commercePriceModifierRel.", "commercePriceModifierId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CommercePriceModifierRel::getCommercePriceModifierId),
 			new FinderColumn<>(
 				"commercePriceModifierRel.", "classNameId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CommercePriceModifierRel::getClassNameId),
 			new FinderColumn<>(
 				"commercePriceModifierRel.", "classPK", FinderColumn.Type.LONG,
@@ -1210,4 +922,4 @@ public class CommercePriceModifierRelPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:272337407
+// LIFERAY-SERVICE-BUILDER-HASH:1400044669

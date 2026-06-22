@@ -13,13 +13,11 @@ import com.liferay.message.boards.model.impl.MBSuspiciousActivityModelImpl;
 import com.liferay.message.boards.service.persistence.MBSuspiciousActivityPersistence;
 import com.liferay.message.boards.service.persistence.MBSuspiciousActivityUtil;
 import com.liferay.message.boards.service.persistence.impl.constants.MBPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -89,68 +87,15 @@ public class MBSuspiciousActivityPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<MBSuspiciousActivity>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the message boards suspicious activities where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards suspicious activities where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of message boards suspicious activities
-	 * @param end the upper bound of the range of message boards suspicious activities (not inclusive)
-	 * @return the range of matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MBSuspiciousActivity, NoSuchSuspiciousActivityException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the message boards suspicious activities where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of message boards suspicious activities
-	 * @param end the upper bound of the range of message boards suspicious activities (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<MBSuspiciousActivity> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards suspicious activities where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -166,14 +111,9 @@ public class MBSuspiciousActivityPersistenceImpl
 		OrderByComparator<MBSuspiciousActivity> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBSuspiciousActivity.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -190,16 +130,8 @@ public class MBSuspiciousActivityPersistenceImpl
 			OrderByComparator<MBSuspiciousActivity> orderByComparator)
 		throws NoSuchSuspiciousActivityException {
 
-		MBSuspiciousActivity mbSuspiciousActivity = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (mbSuspiciousActivity != null) {
-			return mbSuspiciousActivity;
-		}
-
-		throw new NoSuchSuspiciousActivityException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -237,18 +169,13 @@ public class MBSuspiciousActivityPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBSuspiciousActivity.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<MBSuspiciousActivity>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<MBSuspiciousActivity, NoSuchSuspiciousActivityException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the message boards suspicious activity where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchSuspiciousActivityException</code> if it could not be found.
@@ -262,34 +189,8 @@ public class MBSuspiciousActivityPersistenceImpl
 	public MBSuspiciousActivity findByUUID_G(String uuid, long groupId)
 		throws NoSuchSuspiciousActivityException {
 
-		MBSuspiciousActivity mbSuspiciousActivity = fetchByUUID_G(
-			uuid, groupId);
-
-		if (mbSuspiciousActivity == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchSuspiciousActivityException(message);
-		}
-
-		return mbSuspiciousActivity;
-	}
-
-	/**
-	 * Returns the message boards suspicious activity where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching message boards suspicious activity, or <code>null</code> if a matching message boards suspicious activity could not be found
-	 */
-	@Override
-	public MBSuspiciousActivity fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -304,13 +205,8 @@ public class MBSuspiciousActivityPersistenceImpl
 	public MBSuspiciousActivity fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBSuspiciousActivity.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -342,75 +238,15 @@ public class MBSuspiciousActivityPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<MBSuspiciousActivity>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the message boards suspicious activities where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards suspicious activities where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message boards suspicious activities
-	 * @param end the upper bound of the range of message boards suspicious activities (not inclusive)
-	 * @return the range of matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MBSuspiciousActivity, NoSuchSuspiciousActivityException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the message boards suspicious activities where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message boards suspicious activities
-	 * @param end the upper bound of the range of message boards suspicious activities (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<MBSuspiciousActivity> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards suspicious activities where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -427,14 +263,9 @@ public class MBSuspiciousActivityPersistenceImpl
 		OrderByComparator<MBSuspiciousActivity> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBSuspiciousActivity.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -452,16 +283,8 @@ public class MBSuspiciousActivityPersistenceImpl
 			OrderByComparator<MBSuspiciousActivity> orderByComparator)
 		throws NoSuchSuspiciousActivityException {
 
-		MBSuspiciousActivity mbSuspiciousActivity = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (mbSuspiciousActivity != null) {
-			return mbSuspiciousActivity;
-		}
-
-		throw new NoSuchSuspiciousActivityException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -502,78 +325,19 @@ public class MBSuspiciousActivityPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBSuspiciousActivity.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByMessageId;
-	private FinderPath _finderPathWithoutPaginationFindByMessageId;
-	private FinderPath _finderPathCountByMessageId;
-	private CollectionPersistenceFinder<MBSuspiciousActivity>
-		_collectionPersistenceFinderByMessageId;
-
-	/**
-	 * Returns all the message boards suspicious activities where messageId = &#63;.
-	 *
-	 * @param messageId the message ID
-	 * @return the matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByMessageId(long messageId) {
-		return findByMessageId(
-			messageId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards suspicious activities where messageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param messageId the message ID
-	 * @param start the lower bound of the range of message boards suspicious activities
-	 * @param end the upper bound of the range of message boards suspicious activities (not inclusive)
-	 * @return the range of matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByMessageId(
-		long messageId, int start, int end) {
-
-		return findByMessageId(messageId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MBSuspiciousActivity, NoSuchSuspiciousActivityException>
+			_collectionPersistenceFinderByMessageId;
 
 	/**
 	 * Returns an ordered range of all the message boards suspicious activities where messageId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param messageId the message ID
-	 * @param start the lower bound of the range of message boards suspicious activities
-	 * @param end the upper bound of the range of message boards suspicious activities (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByMessageId(
-		long messageId, int start, int end,
-		OrderByComparator<MBSuspiciousActivity> orderByComparator) {
-
-		return findByMessageId(messageId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards suspicious activities where messageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
 	 * </p>
 	 *
 	 * @param messageId the message ID
@@ -589,14 +353,9 @@ public class MBSuspiciousActivityPersistenceImpl
 		OrderByComparator<MBSuspiciousActivity> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBSuspiciousActivity.class)) {
-
-			return _collectionPersistenceFinderByMessageId.find(
-				finderCache, new Object[] {messageId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByMessageId.find(
+			finderCache, new Object[] {messageId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -613,16 +372,8 @@ public class MBSuspiciousActivityPersistenceImpl
 			OrderByComparator<MBSuspiciousActivity> orderByComparator)
 		throws NoSuchSuspiciousActivityException {
 
-		MBSuspiciousActivity mbSuspiciousActivity = fetchByMessageId_First(
-			messageId, orderByComparator);
-
-		if (mbSuspiciousActivity != null) {
-			return mbSuspiciousActivity;
-		}
-
-		throw new NoSuchSuspiciousActivityException(
-			_collectionPersistenceFinderByMessageId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {messageId}));
+		return _collectionPersistenceFinderByMessageId.findFirst(
+			finderCache, new Object[] {messageId}, orderByComparator);
 	}
 
 	/**
@@ -660,78 +411,19 @@ public class MBSuspiciousActivityPersistenceImpl
 	 */
 	@Override
 	public int countByMessageId(long messageId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBSuspiciousActivity.class)) {
-
-			return _collectionPersistenceFinderByMessageId.count(
-				finderCache, new Object[] {messageId});
-		}
+		return _collectionPersistenceFinderByMessageId.count(
+			finderCache, new Object[] {messageId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByThreadId;
-	private FinderPath _finderPathWithoutPaginationFindByThreadId;
-	private FinderPath _finderPathCountByThreadId;
-	private CollectionPersistenceFinder<MBSuspiciousActivity>
-		_collectionPersistenceFinderByThreadId;
-
-	/**
-	 * Returns all the message boards suspicious activities where threadId = &#63;.
-	 *
-	 * @param threadId the thread ID
-	 * @return the matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByThreadId(long threadId) {
-		return findByThreadId(
-			threadId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards suspicious activities where threadId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param start the lower bound of the range of message boards suspicious activities
-	 * @param end the upper bound of the range of message boards suspicious activities (not inclusive)
-	 * @return the range of matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByThreadId(
-		long threadId, int start, int end) {
-
-		return findByThreadId(threadId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MBSuspiciousActivity, NoSuchSuspiciousActivityException>
+			_collectionPersistenceFinderByThreadId;
 
 	/**
 	 * Returns an ordered range of all the message boards suspicious activities where threadId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param start the lower bound of the range of message boards suspicious activities
-	 * @param end the upper bound of the range of message boards suspicious activities (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards suspicious activities
-	 */
-	@Override
-	public List<MBSuspiciousActivity> findByThreadId(
-		long threadId, int start, int end,
-		OrderByComparator<MBSuspiciousActivity> orderByComparator) {
-
-		return findByThreadId(threadId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards suspicious activities where threadId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBSuspiciousActivityModelImpl</code>.
 	 * </p>
 	 *
 	 * @param threadId the thread ID
@@ -747,14 +439,9 @@ public class MBSuspiciousActivityPersistenceImpl
 		OrderByComparator<MBSuspiciousActivity> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBSuspiciousActivity.class)) {
-
-			return _collectionPersistenceFinderByThreadId.find(
-				finderCache, new Object[] {threadId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByThreadId.find(
+			finderCache, new Object[] {threadId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -771,16 +458,8 @@ public class MBSuspiciousActivityPersistenceImpl
 			OrderByComparator<MBSuspiciousActivity> orderByComparator)
 		throws NoSuchSuspiciousActivityException {
 
-		MBSuspiciousActivity mbSuspiciousActivity = fetchByThreadId_First(
-			threadId, orderByComparator);
-
-		if (mbSuspiciousActivity != null) {
-			return mbSuspiciousActivity;
-		}
-
-		throw new NoSuchSuspiciousActivityException(
-			_collectionPersistenceFinderByThreadId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {threadId}));
+		return _collectionPersistenceFinderByThreadId.findFirst(
+			finderCache, new Object[] {threadId}, orderByComparator);
 	}
 
 	/**
@@ -818,18 +497,13 @@ public class MBSuspiciousActivityPersistenceImpl
 	 */
 	@Override
 	public int countByThreadId(long threadId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBSuspiciousActivity.class)) {
-
-			return _collectionPersistenceFinderByThreadId.count(
-				finderCache, new Object[] {threadId});
-		}
+		return _collectionPersistenceFinderByThreadId.count(
+			finderCache, new Object[] {threadId});
 	}
 
-	private FinderPath _finderPathFetchByU_M;
-	private UniquePersistenceFinder<MBSuspiciousActivity>
-		_uniquePersistenceFinderByU_M;
+	private UniquePersistenceFinder
+		<MBSuspiciousActivity, NoSuchSuspiciousActivityException>
+			_uniquePersistenceFinderByU_M;
 
 	/**
 	 * Returns the message boards suspicious activity where userId = &#63; and messageId = &#63; or throws a <code>NoSuchSuspiciousActivityException</code> if it could not be found.
@@ -843,34 +517,8 @@ public class MBSuspiciousActivityPersistenceImpl
 	public MBSuspiciousActivity findByU_M(long userId, long messageId)
 		throws NoSuchSuspiciousActivityException {
 
-		MBSuspiciousActivity mbSuspiciousActivity = fetchByU_M(
-			userId, messageId);
-
-		if (mbSuspiciousActivity == null) {
-			String message =
-				_uniquePersistenceFinderByU_M.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId, messageId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchSuspiciousActivityException(message);
-		}
-
-		return mbSuspiciousActivity;
-	}
-
-	/**
-	 * Returns the message boards suspicious activity where userId = &#63; and messageId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param userId the user ID
-	 * @param messageId the message ID
-	 * @return the matching message boards suspicious activity, or <code>null</code> if a matching message boards suspicious activity could not be found
-	 */
-	@Override
-	public MBSuspiciousActivity fetchByU_M(long userId, long messageId) {
-		return fetchByU_M(userId, messageId, true);
+		return _uniquePersistenceFinderByU_M.find(
+			finderCache, new Object[] {userId, messageId});
 	}
 
 	/**
@@ -885,13 +533,8 @@ public class MBSuspiciousActivityPersistenceImpl
 	public MBSuspiciousActivity fetchByU_M(
 		long userId, long messageId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBSuspiciousActivity.class)) {
-
-			return _uniquePersistenceFinderByU_M.fetch(
-				finderCache, new Object[] {userId, messageId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByU_M.fetch(
+			finderCache, new Object[] {userId, messageId}, useFinderCache);
 	}
 
 	/**
@@ -924,9 +567,9 @@ public class MBSuspiciousActivityPersistenceImpl
 			finderCache, new Object[] {userId, messageId});
 	}
 
-	private FinderPath _finderPathFetchByU_T;
-	private UniquePersistenceFinder<MBSuspiciousActivity>
-		_uniquePersistenceFinderByU_T;
+	private UniquePersistenceFinder
+		<MBSuspiciousActivity, NoSuchSuspiciousActivityException>
+			_uniquePersistenceFinderByU_T;
 
 	/**
 	 * Returns the message boards suspicious activity where userId = &#63; and threadId = &#63; or throws a <code>NoSuchSuspiciousActivityException</code> if it could not be found.
@@ -940,34 +583,8 @@ public class MBSuspiciousActivityPersistenceImpl
 	public MBSuspiciousActivity findByU_T(long userId, long threadId)
 		throws NoSuchSuspiciousActivityException {
 
-		MBSuspiciousActivity mbSuspiciousActivity = fetchByU_T(
-			userId, threadId);
-
-		if (mbSuspiciousActivity == null) {
-			String message =
-				_uniquePersistenceFinderByU_T.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId, threadId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchSuspiciousActivityException(message);
-		}
-
-		return mbSuspiciousActivity;
-	}
-
-	/**
-	 * Returns the message boards suspicious activity where userId = &#63; and threadId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param userId the user ID
-	 * @param threadId the thread ID
-	 * @return the matching message boards suspicious activity, or <code>null</code> if a matching message boards suspicious activity could not be found
-	 */
-	@Override
-	public MBSuspiciousActivity fetchByU_T(long userId, long threadId) {
-		return fetchByU_T(userId, threadId, true);
+		return _uniquePersistenceFinderByU_T.find(
+			finderCache, new Object[] {userId, threadId});
 	}
 
 	/**
@@ -982,13 +599,8 @@ public class MBSuspiciousActivityPersistenceImpl
 	public MBSuspiciousActivity fetchByU_T(
 		long userId, long threadId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBSuspiciousActivity.class)) {
-
-			return _uniquePersistenceFinderByU_T.fetch(
-				finderCache, new Object[] {userId, threadId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByU_T.fetch(
+			finderCache, new Object[] {userId, threadId}, useFinderCache);
 	}
 
 	/**
@@ -1326,176 +938,164 @@ public class MBSuspiciousActivityPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_MBSUSPICIOUSACTIVITY_WHERE,
 			_SQL_COUNT_MBSUSPICIOUSACTIVITY_WHERE,
 			MBSuspiciousActivityModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
-				"mbSuspiciousActivity.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, MBSuspiciousActivity::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			MBSuspiciousActivity::getUuid, MBSuspiciousActivity::getGroupId);
+				"mbSuspiciousActivity.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				MBSuspiciousActivity::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_MBSUSPICIOUSACTIVITY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(MBSuspiciousActivity::getUuid),
+				MBSuspiciousActivity::getGroupId),
+			_SQL_SELECT_MBSUSPICIOUSACTIVITY_WHERE, "",
 			new FinderColumn<>(
-				"mbSuspiciousActivity.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, MBSuspiciousActivity::getUuid),
+				"mbSuspiciousActivity.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				MBSuspiciousActivity::getUuid),
 			new FinderColumn<>(
 				"mbSuspiciousActivity.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, MBSuspiciousActivity::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_MBSUSPICIOUSACTIVITY_WHERE,
 				_SQL_COUNT_MBSUSPICIOUSACTIVITY_WHERE,
 				MBSuspiciousActivityModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"mbSuspiciousActivity.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, MBSuspiciousActivity::getUuid),
+					"mbSuspiciousActivity.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					MBSuspiciousActivity::getUuid),
 				new FinderColumn<>(
 					"mbSuspiciousActivity.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					MBSuspiciousActivity::getCompanyId));
 
-		_finderPathWithPaginationFindByMessageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByMessageId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"messageId"}, true);
-
-		_finderPathWithoutPaginationFindByMessageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByMessageId",
-			new String[] {Long.class.getName()}, new String[] {"messageId"},
-			true);
-
-		_finderPathCountByMessageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByMessageId",
-			new String[] {Long.class.getName()}, new String[] {"messageId"},
-			false);
-
 		_collectionPersistenceFinderByMessageId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByMessageId,
-				_finderPathWithoutPaginationFindByMessageId,
-				_finderPathCountByMessageId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByMessageId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"messageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByMessageId", new String[] {Long.class.getName()},
+					new String[] {"messageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByMessageId", new String[] {Long.class.getName()},
+					new String[] {"messageId"}, false),
 				_SQL_SELECT_MBSUSPICIOUSACTIVITY_WHERE,
 				_SQL_COUNT_MBSUSPICIOUSACTIVITY_WHERE,
 				MBSuspiciousActivityModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mbSuspiciousActivity.", "messageId",
 					FinderColumn.Type.LONG, "=", true, true,
 					MBSuspiciousActivity::getMessageId));
 
-		_finderPathWithPaginationFindByThreadId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByThreadId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"threadId"}, true);
-
-		_finderPathWithoutPaginationFindByThreadId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByThreadId",
-			new String[] {Long.class.getName()}, new String[] {"threadId"},
-			true);
-
-		_finderPathCountByThreadId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByThreadId",
-			new String[] {Long.class.getName()}, new String[] {"threadId"},
-			false);
-
 		_collectionPersistenceFinderByThreadId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByThreadId,
-				_finderPathWithoutPaginationFindByThreadId,
-				_finderPathCountByThreadId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByThreadId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"threadId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByThreadId",
+					new String[] {Long.class.getName()},
+					new String[] {"threadId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByThreadId", new String[] {Long.class.getName()},
+					new String[] {"threadId"}, false),
 				_SQL_SELECT_MBSUSPICIOUSACTIVITY_WHERE,
 				_SQL_COUNT_MBSUSPICIOUSACTIVITY_WHERE,
 				MBSuspiciousActivityModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mbSuspiciousActivity.", "threadId", FinderColumn.Type.LONG,
 					"=", true, true, MBSuspiciousActivity::getThreadId));
 
-		_finderPathFetchByU_M = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByU_M",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"userId", "messageId"}, false,
-			MBSuspiciousActivity::getUserId,
-			MBSuspiciousActivity::getMessageId);
-
 		_uniquePersistenceFinderByU_M = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByU_M, _SQL_SELECT_MBSUSPICIOUSACTIVITY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByU_M",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"userId", "messageId"}, 0, 0, false,
+				MBSuspiciousActivity::getUserId,
+				MBSuspiciousActivity::getMessageId),
+			_SQL_SELECT_MBSUSPICIOUSACTIVITY_WHERE, "",
 			new FinderColumn<>(
 				"mbSuspiciousActivity.", "userId", FinderColumn.Type.LONG, "=",
-				true, false, MBSuspiciousActivity::getUserId),
+				true, true, MBSuspiciousActivity::getUserId),
 			new FinderColumn<>(
 				"mbSuspiciousActivity.", "messageId", FinderColumn.Type.LONG,
 				"=", true, true, MBSuspiciousActivity::getMessageId));
 
-		_finderPathFetchByU_T = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByU_T",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"userId", "threadId"}, false,
-			MBSuspiciousActivity::getUserId, MBSuspiciousActivity::getThreadId);
-
 		_uniquePersistenceFinderByU_T = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByU_T, _SQL_SELECT_MBSUSPICIOUSACTIVITY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByU_T",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"userId", "threadId"}, 0, 0, false,
+				MBSuspiciousActivity::getUserId,
+				MBSuspiciousActivity::getThreadId),
+			_SQL_SELECT_MBSUSPICIOUSACTIVITY_WHERE, "",
 			new FinderColumn<>(
 				"mbSuspiciousActivity.", "userId", FinderColumn.Type.LONG, "=",
-				true, false, MBSuspiciousActivity::getUserId),
+				true, true, MBSuspiciousActivity::getUserId),
 			new FinderColumn<>(
 				"mbSuspiciousActivity.", "threadId", FinderColumn.Type.LONG,
 				"=", true, true, MBSuspiciousActivity::getThreadId));
@@ -1572,4 +1172,4 @@ public class MBSuspiciousActivityPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1474248657
+// LIFERAY-SERVICE-BUILDER-HASH:-744772160

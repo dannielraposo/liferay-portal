@@ -51,6 +51,8 @@
 				tofile="${local.cache.artifact}"
 			/>
 
+			<mkdir dir="${project.dir}/.gradle" />
+
 			<propertyfile file="${project.dir}/.gradle/gradle.properties">
 				<entry key="@{artifact.name}.version" value="@{artifact.version}" />
 			</propertyfile>
@@ -496,75 +498,6 @@ mariadb.executable=${mariadb.executable}]]></echo>
 					<action-fail />
 				</finally>
 			</trycatch>
-		</sequential>
-	</macrodef>
-
-	<macrodef name="execute-gradle-task-build-services">
-		<attribute name="gradle.module.dir" />
-		<attribute name="gradle.task.name" />
-
-		<sequential>
-			<execute-gradle-task gradle.task.module.dir="@{gradle.module.dir}" gradle.task.name="@{gradle.task.name}">
-				<action>
-					<record-git-diffs rest.builder.or.service.builder="service">
-						<action>
-							<gradle-execute dir="@{gradle.module.dir}" forcedcacheenabled="false" task="@{gradle.task.name}">
-								<arg value="-Pcom.liferay.portal.tools.service.builder.ignore.local=false" />
-							</gradle-execute>
-						</action>
-					</record-git-diffs>
-				</action>
-				<action-fail>
-					<if>
-						<isset property="git.diffs" />
-						<then>
-							<generate-backend-batch-junit-report-gradle-task
-								gradle.task.failure.count="1"
-								gradle.task.failure.message="Detected build services changes. Please check the logs for details. Make sure to commit in all build services results."
-								gradle.task.failure.stacktrace="${git.diffs}"
-								gradle.task.module.dir="@{gradle.module.dir}"
-								gradle.task.name="@{gradle.task.name}"
-								gradle.task.start.time="${gradle.task.start.time}"
-							/>
-						</then>
-					</if>
-				</action-fail>
-			</execute-gradle-task>
-		</sequential>
-	</macrodef>
-
-	<macrodef name="execute-gradle-task-rest-builder">
-		<attribute name="gradle.module.dir" />
-		<attribute name="gradle.task.name" />
-
-		<sequential>
-			<execute-gradle-task gradle.task.module.dir="@{gradle.module.dir}" gradle.task.name="@{gradle.task.name}">
-				<action>
-					<record-git-diffs rest.builder.or.service.builder="rest">
-						<action>
-							<gradle-execute dir="@{gradle.module.dir}" forcedcacheenabled="false" task="@{gradle.task.name}">
-								<arg value="-DbuildREST.forceClientVersionDescription=false" />
-								<arg value="-Pcom.liferay.portal.tools.rest.builder.ignore.local=false" />
-							</gradle-execute>
-						</action>
-					</record-git-diffs>
-				</action>
-				<action-fail>
-					<if>
-						<isset property="git.diffs" />
-						<then>
-							<generate-backend-batch-junit-report-gradle-task
-								gradle.task.failure.count="1"
-								gradle.task.failure.message="Detected build REST changes. Please check the logs for details. Make sure to commit in all build REST results."
-								gradle.task.failure.stacktrace="${git.diffs}"
-								gradle.task.module.dir="@{gradle.module.dir}"
-								gradle.task.name="@{gradle.task.name}"
-								gradle.task.start.time="${gradle.task.start.time}"
-							/>
-						</then>
-					</if>
-				</action-fail>
-			</execute-gradle-task>
 		</sequential>
 	</macrodef>
 
@@ -2991,8 +2924,10 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 		<attribute name="database.type" />
 		<attribute default="${database.@{database.type}.version}" name="database.version" />
 		<attribute default="" name="gcs.store.enabled" />
+		<attribute default="" name="generate.license.test.properties" />
 		<attribute default="" name="ibm.store.enabled" />
 		<attribute default="" name="refreshdependencies" />
+		<attribute default="" name="setup.wizard.enabled" />
 		<attribute default="true" name="setup.testable.tomcat" />
 		<attribute default="" name="subrepository.name" />
 		<attribute default="" name="test.build.fix.pack.zip.url" />
@@ -3030,7 +2965,9 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 								<param name="database.partition.export.and.import" value="@{database.partition.export.and.import}" />
 								<param name="database.type" value="@{database.type}" />
 								<param name="gcs.store.enabled" value="@{gcs.store.enabled}" />
+								<param name="generate.license.test.properties" value="@{generate.license.test.properties}" />
 								<param name="ibm.store.enabled" value="@{ibm.store.enabled}" />
+								<param name="setup.wizard.enabled" value="@{setup.wizard.enabled}" />
 							</antcall>
 
 							<antcall inheritAll="false" target="prepare-system-ext-properties" />
@@ -8577,6 +8514,19 @@ information. Make sure to commit in all format-javadoc results.
 		</run-batch-test>
 	</target>
 
+	<target name="integration-license-postgresql163">
+		<local name="test.deploy.license" />
+
+		<property name="test.deploy.license" value="false" />
+
+		<run-modules-integration-test
+			database.type="postgresql"
+			database.version="16.3"
+			generate.license.test.properties="true"
+			setup.wizard.enabled="true"
+		/>
+	</target>
+
 	<target name="javadoc-test">
 		<run-batch-test>
 			<test-action>
@@ -9848,6 +9798,10 @@ ${output.content}</echo>
 		<run-playwright-js-test app.server.type="wildfly" database.type="mariadb" />
 	</target>
 
+	<target name="playwright-js-tomcat101-hypersonic20">
+		<run-playwright-js-test database.type="hypersonic" />
+	</target>
+
 	<target name="playwright-js-tomcat101-mysql84">
 		<run-playwright-js-test database.type="mysql" />
 	</target>
@@ -10245,6 +10199,39 @@ ${output.content}</echo>
 		<prepare-test-environment />
 	</target>
 
+	<target name="publish-source-formatter">
+		<fail message="Please set the property ${source.formatter.s3.path}." unless="source.formatter.s3.path" />
+
+		<local name="source.formatter.tree.sha" />
+
+		<exec executable="git" failonerror="true" outputproperty="source.formatter.tree.sha">
+			<arg value="rev-parse" />
+			<arg value="HEAD:modules/util/source-formatter" />
+		</exec>
+
+		<beanshell>
+			<![CDATA[
+				import com.liferay.jenkins.results.parser.CloudBucketUtil;
+
+				import java.io.File;
+
+				File libDir = new File(project.getBaseDir(), "tools/sdk/dependencies/com.liferay.source.formatter/lib");
+
+				File jarFile = new File(libDir, "com.liferay.source.formatter.jar");
+
+				if (!jarFile.exists()) {
+					throw new RuntimeException("Unable to find " + jarFile);
+				}
+
+				String treeSHA = project.getProperty("source.formatter.tree.sha").trim();
+
+				CloudBucketUtil.syncS3Files(project.getProperty("source.formatter.s3.path") + "/snapshots/" + treeSHA, libDir.getAbsolutePath());
+
+				System.out.println("Published source-formatter to S3 at tree SHA " + treeSHA);
+			]]>
+		</beanshell>
+	</target>
+
 	<target name="release-functional-smoke-tomcat-mysql84">
 		<antcall target="functional-tomcat-mysql84" />
 	</target>
@@ -10287,6 +10274,79 @@ ${output.content}</echo>
 
 	<target name="release-osgi-state-lpkg-test-postgresql163">
 		<run-release-osgi-state-lpkg-test database.type="postgresql" database.version="16.3" />
+	</target>
+
+	<target name="resolve-source-formatter">
+		<fail message="Please set the property ${source.formatter.s3.path}." unless="source.formatter.s3.path" />
+
+		<local name="source.formatter.tree.sha" />
+
+		<exec executable="git" failonerror="true" outputproperty="source.formatter.tree.sha">
+			<arg value="rev-parse" />
+			<arg value="${liferay.portal.branch}:modules/util/source-formatter" />
+		</exec>
+
+		<mkdir dir="tools/sdk/dependencies/com.liferay.source.formatter/lib" />
+
+		<trycatch property="source.formatter.s3.lookup.failure">
+			<try>
+				<beanshell>
+					<![CDATA[
+						import com.liferay.jenkins.results.parser.CloudBucketUtil;
+
+						import java.io.File;
+
+						String treeSHA = project.getProperty("source.formatter.tree.sha").trim();
+
+						String s3LibPath = project.getProperty("source.formatter.s3.path") + "/snapshots/" + treeSHA;
+
+						String s3JarPath = s3LibPath + "/com.liferay.source.formatter.jar";
+
+						if (!CloudBucketUtil.isS3ObjectPathAvailable(s3JarPath)) {
+							String message = "Unable to find " + s3JarPath;
+
+							System.out.println(message);
+
+							throw new RuntimeException(message);
+						}
+
+						String libPath = "tools/sdk/dependencies/com.liferay.source.formatter/lib";
+
+						File libDir = new File(project.getBaseDir(), libPath);
+
+						CloudBucketUtil.syncS3Files(libDir.getAbsolutePath(), s3LibPath);
+
+						File jarFile = new File(libDir, "com.liferay.source.formatter.jar");
+
+						if (!jarFile.exists() || (jarFile.length() == 0)) {
+							String message = "Unable to find " + jarFile;
+
+							System.out.println(message);
+
+							throw new RuntimeException(message);
+						}
+
+						System.out.println("Resolved source-formatter from S3 at tree SHA " + treeSHA);
+					]]>
+				</beanshell>
+			</try>
+			<catch>
+				<echo>Unable to find cached source-formatter. Building from source.</echo>
+
+				<antcall target="compile" />
+
+				<antcall target="install-portal-snapshots" />
+
+				<if>
+					<available file="modules/util/source-formatter" />
+					<then>
+						<gradle-execute dir="modules/util/source-formatter" task="deploy" />
+					</then>
+				</if>
+
+				<antcall target="publish-source-formatter" />
+			</catch>
+		</trycatch>
 	</target>
 
 	<target name="rest-builder">
@@ -10511,11 +10571,22 @@ tar --extract --file=liferay-portal-source.tar.gz modules/core/portal-bootstrap/
 						</if>
 
 						<echo>Running com.liferay.source.formatter.jar from HEAD.</echo>
+
+						<antcall target="publish-source-formatter" />
 					</then>
 					<else>
-						<antcall target="setup-sdk" />
+						<lstopwatch action="start" name="setup.source.format" />
 
-						<antcall target="setup-yarn" />
+						<antcall target="resolve-source-formatter" />
+
+						<lstopwatch action="total" name="setup.source.format" />
+
+						<if>
+							<matches pattern="${source.formatter.frontend.file.regex}" string="${git.diff}" />
+							<then>
+								<antcall target="setup-yarn" />
+							</then>
+						</if>
 
 						<loadproperties>
 							<zipentry name="META-INF/MANIFEST.MF" zipfile="tools/sdk/dependencies/com.liferay.source.formatter/lib/com.liferay.source.formatter.jar" />

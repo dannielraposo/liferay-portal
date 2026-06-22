@@ -13,13 +13,11 @@ import com.liferay.calendar.model.impl.CalendarNotificationTemplateModelImpl;
 import com.liferay.calendar.service.persistence.CalendarNotificationTemplatePersistence;
 import com.liferay.calendar.service.persistence.CalendarNotificationTemplateUtil;
 import com.liferay.calendar.service.persistence.impl.constants.CalendarPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -89,68 +87,15 @@ public class CalendarNotificationTemplatePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CalendarNotificationTemplate>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the calendar notification templates where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching calendar notification templates
-	 */
-	@Override
-	public List<CalendarNotificationTemplate> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the calendar notification templates where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of calendar notification templates
-	 * @param end the upper bound of the range of calendar notification templates (not inclusive)
-	 * @return the range of matching calendar notification templates
-	 */
-	@Override
-	public List<CalendarNotificationTemplate> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CalendarNotificationTemplate, NoSuchNotificationTemplateException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the calendar notification templates where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of calendar notification templates
-	 * @param end the upper bound of the range of calendar notification templates (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching calendar notification templates
-	 */
-	@Override
-	public List<CalendarNotificationTemplate> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CalendarNotificationTemplate> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the calendar notification templates where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -166,14 +111,9 @@ public class CalendarNotificationTemplatePersistenceImpl
 		OrderByComparator<CalendarNotificationTemplate> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CalendarNotificationTemplate.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -190,16 +130,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 			OrderByComparator<CalendarNotificationTemplate> orderByComparator)
 		throws NoSuchNotificationTemplateException {
 
-		CalendarNotificationTemplate calendarNotificationTemplate =
-			fetchByUuid_First(uuid, orderByComparator);
-
-		if (calendarNotificationTemplate != null) {
-			return calendarNotificationTemplate;
-		}
-
-		throw new NoSuchNotificationTemplateException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -237,18 +169,13 @@ public class CalendarNotificationTemplatePersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CalendarNotificationTemplate.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<CalendarNotificationTemplate>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<CalendarNotificationTemplate, NoSuchNotificationTemplateException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the calendar notification template where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchNotificationTemplateException</code> if it could not be found.
@@ -262,36 +189,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 	public CalendarNotificationTemplate findByUUID_G(String uuid, long groupId)
 		throws NoSuchNotificationTemplateException {
 
-		CalendarNotificationTemplate calendarNotificationTemplate =
-			fetchByUUID_G(uuid, groupId);
-
-		if (calendarNotificationTemplate == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchNotificationTemplateException(message);
-		}
-
-		return calendarNotificationTemplate;
-	}
-
-	/**
-	 * Returns the calendar notification template where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching calendar notification template, or <code>null</code> if a matching calendar notification template could not be found
-	 */
-	@Override
-	public CalendarNotificationTemplate fetchByUUID_G(
-		String uuid, long groupId) {
-
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -306,13 +205,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 	public CalendarNotificationTemplate fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CalendarNotificationTemplate.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -346,75 +240,15 @@ public class CalendarNotificationTemplatePersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CalendarNotificationTemplate>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the calendar notification templates where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching calendar notification templates
-	 */
-	@Override
-	public List<CalendarNotificationTemplate> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the calendar notification templates where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of calendar notification templates
-	 * @param end the upper bound of the range of calendar notification templates (not inclusive)
-	 * @return the range of matching calendar notification templates
-	 */
-	@Override
-	public List<CalendarNotificationTemplate> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CalendarNotificationTemplate, NoSuchNotificationTemplateException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the calendar notification templates where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of calendar notification templates
-	 * @param end the upper bound of the range of calendar notification templates (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching calendar notification templates
-	 */
-	@Override
-	public List<CalendarNotificationTemplate> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CalendarNotificationTemplate> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the calendar notification templates where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -431,14 +265,9 @@ public class CalendarNotificationTemplatePersistenceImpl
 		OrderByComparator<CalendarNotificationTemplate> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CalendarNotificationTemplate.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -456,16 +285,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 			OrderByComparator<CalendarNotificationTemplate> orderByComparator)
 		throws NoSuchNotificationTemplateException {
 
-		CalendarNotificationTemplate calendarNotificationTemplate =
-			fetchByUuid_C_First(uuid, companyId, orderByComparator);
-
-		if (calendarNotificationTemplate != null) {
-			return calendarNotificationTemplate;
-		}
-
-		throw new NoSuchNotificationTemplateException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -506,81 +327,19 @@ public class CalendarNotificationTemplatePersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CalendarNotificationTemplate.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCalendarId;
-	private FinderPath _finderPathWithoutPaginationFindByCalendarId;
-	private FinderPath _finderPathCountByCalendarId;
-	private CollectionPersistenceFinder<CalendarNotificationTemplate>
-		_collectionPersistenceFinderByCalendarId;
-
-	/**
-	 * Returns all the calendar notification templates where calendarId = &#63;.
-	 *
-	 * @param calendarId the calendar ID
-	 * @return the matching calendar notification templates
-	 */
-	@Override
-	public List<CalendarNotificationTemplate> findByCalendarId(
-		long calendarId) {
-
-		return findByCalendarId(
-			calendarId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the calendar notification templates where calendarId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param calendarId the calendar ID
-	 * @param start the lower bound of the range of calendar notification templates
-	 * @param end the upper bound of the range of calendar notification templates (not inclusive)
-	 * @return the range of matching calendar notification templates
-	 */
-	@Override
-	public List<CalendarNotificationTemplate> findByCalendarId(
-		long calendarId, int start, int end) {
-
-		return findByCalendarId(calendarId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CalendarNotificationTemplate, NoSuchNotificationTemplateException>
+			_collectionPersistenceFinderByCalendarId;
 
 	/**
 	 * Returns an ordered range of all the calendar notification templates where calendarId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param calendarId the calendar ID
-	 * @param start the lower bound of the range of calendar notification templates
-	 * @param end the upper bound of the range of calendar notification templates (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching calendar notification templates
-	 */
-	@Override
-	public List<CalendarNotificationTemplate> findByCalendarId(
-		long calendarId, int start, int end,
-		OrderByComparator<CalendarNotificationTemplate> orderByComparator) {
-
-		return findByCalendarId(
-			calendarId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the calendar notification templates where calendarId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CalendarNotificationTemplateModelImpl</code>.
 	 * </p>
 	 *
 	 * @param calendarId the calendar ID
@@ -596,14 +355,9 @@ public class CalendarNotificationTemplatePersistenceImpl
 		OrderByComparator<CalendarNotificationTemplate> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CalendarNotificationTemplate.class)) {
-
-			return _collectionPersistenceFinderByCalendarId.find(
-				finderCache, new Object[] {calendarId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCalendarId.find(
+			finderCache, new Object[] {calendarId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -620,16 +374,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 			OrderByComparator<CalendarNotificationTemplate> orderByComparator)
 		throws NoSuchNotificationTemplateException {
 
-		CalendarNotificationTemplate calendarNotificationTemplate =
-			fetchByCalendarId_First(calendarId, orderByComparator);
-
-		if (calendarNotificationTemplate != null) {
-			return calendarNotificationTemplate;
-		}
-
-		throw new NoSuchNotificationTemplateException(
-			_collectionPersistenceFinderByCalendarId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {calendarId}));
+		return _collectionPersistenceFinderByCalendarId.findFirst(
+			finderCache, new Object[] {calendarId}, orderByComparator);
 	}
 
 	/**
@@ -667,18 +413,13 @@ public class CalendarNotificationTemplatePersistenceImpl
 	 */
 	@Override
 	public int countByCalendarId(long calendarId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CalendarNotificationTemplate.class)) {
-
-			return _collectionPersistenceFinderByCalendarId.count(
-				finderCache, new Object[] {calendarId});
-		}
+		return _collectionPersistenceFinderByCalendarId.count(
+			finderCache, new Object[] {calendarId});
 	}
 
-	private FinderPath _finderPathFetchByC_NT_NTT;
-	private UniquePersistenceFinder<CalendarNotificationTemplate>
-		_uniquePersistenceFinderByC_NT_NTT;
+	private UniquePersistenceFinder
+		<CalendarNotificationTemplate, NoSuchNotificationTemplateException>
+			_uniquePersistenceFinderByC_NT_NTT;
 
 	/**
 	 * Returns the calendar notification template where calendarId = &#63; and notificationType = &#63; and notificationTemplateType = &#63; or throws a <code>NoSuchNotificationTemplateException</code> if it could not be found.
@@ -695,43 +436,11 @@ public class CalendarNotificationTemplatePersistenceImpl
 			String notificationTemplateType)
 		throws NoSuchNotificationTemplateException {
 
-		CalendarNotificationTemplate calendarNotificationTemplate =
-			fetchByC_NT_NTT(
-				calendarId, notificationType, notificationTemplateType);
-
-		if (calendarNotificationTemplate == null) {
-			String message =
-				_uniquePersistenceFinderByC_NT_NTT.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {
-						calendarId, notificationType, notificationTemplateType
-					});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchNotificationTemplateException(message);
-		}
-
-		return calendarNotificationTemplate;
-	}
-
-	/**
-	 * Returns the calendar notification template where calendarId = &#63; and notificationType = &#63; and notificationTemplateType = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param calendarId the calendar ID
-	 * @param notificationType the notification type
-	 * @param notificationTemplateType the notification template type
-	 * @return the matching calendar notification template, or <code>null</code> if a matching calendar notification template could not be found
-	 */
-	@Override
-	public CalendarNotificationTemplate fetchByC_NT_NTT(
-		long calendarId, String notificationType,
-		String notificationTemplateType) {
-
-		return fetchByC_NT_NTT(
-			calendarId, notificationType, notificationTemplateType, true);
+		return _uniquePersistenceFinderByC_NT_NTT.find(
+			finderCache,
+			new Object[] {
+				calendarId, notificationType, notificationTemplateType
+			});
 	}
 
 	/**
@@ -748,17 +457,12 @@ public class CalendarNotificationTemplatePersistenceImpl
 		long calendarId, String notificationType,
 		String notificationTemplateType, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CalendarNotificationTemplate.class)) {
-
-			return _uniquePersistenceFinderByC_NT_NTT.fetch(
-				finderCache,
-				new Object[] {
-					calendarId, notificationType, notificationTemplateType
-				},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByC_NT_NTT.fetch(
+			finderCache,
+			new Object[] {
+				calendarId, notificationType, notificationTemplateType
+			},
+			useFinderCache);
 	}
 
 	/**
@@ -1127,147 +831,134 @@ public class CalendarNotificationTemplatePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE,
 			_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE,
 			CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"calendarNotificationTemplate.", "uuid",
+				"calendarNotificationTemplate.", "uuid", "uuid_",
 				FinderColumn.Type.STRING, "=", true, true,
 				CalendarNotificationTemplate::getUuid));
 
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			CalendarNotificationTemplate::getUuid,
-			CalendarNotificationTemplate::getGroupId);
-
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(CalendarNotificationTemplate::getUuid),
+				CalendarNotificationTemplate::getGroupId),
+			_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE, "",
 			new FinderColumn<>(
-				"calendarNotificationTemplate.", "uuid",
-				FinderColumn.Type.STRING, "=", true, false,
+				"calendarNotificationTemplate.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
 				CalendarNotificationTemplate::getUuid),
 			new FinderColumn<>(
 				"calendarNotificationTemplate.", "groupId",
 				FinderColumn.Type.LONG, "=", true, true,
 				CalendarNotificationTemplate::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE,
 				_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE,
 				CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"calendarNotificationTemplate.", "uuid",
-					FinderColumn.Type.STRING, "=", true, false,
+					"calendarNotificationTemplate.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
 					CalendarNotificationTemplate::getUuid),
 				new FinderColumn<>(
 					"calendarNotificationTemplate.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CalendarNotificationTemplate::getCompanyId));
 
-		_finderPathWithPaginationFindByCalendarId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCalendarId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"calendarId"}, true);
-
-		_finderPathWithoutPaginationFindByCalendarId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCalendarId",
-			new String[] {Long.class.getName()}, new String[] {"calendarId"},
-			true);
-
-		_finderPathCountByCalendarId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCalendarId",
-			new String[] {Long.class.getName()}, new String[] {"calendarId"},
-			false);
-
 		_collectionPersistenceFinderByCalendarId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCalendarId,
-				_finderPathWithoutPaginationFindByCalendarId,
-				_finderPathCountByCalendarId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCalendarId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"calendarId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCalendarId", new String[] {Long.class.getName()},
+					new String[] {"calendarId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCalendarId", new String[] {Long.class.getName()},
+					new String[] {"calendarId"}, false),
 				_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE,
 				_SQL_COUNT_CALENDARNOTIFICATIONTEMPLATE_WHERE,
 				CalendarNotificationTemplateModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"calendarNotificationTemplate.", "calendarId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CalendarNotificationTemplate::getCalendarId));
 
-		_finderPathFetchByC_NT_NTT = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_NT_NTT",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName()
-			},
-			new String[] {
-				"calendarId", "notificationType", "notificationTemplateType"
-			},
-			false, CalendarNotificationTemplate::getCalendarId,
-			CalendarNotificationTemplate::getNotificationType,
-			CalendarNotificationTemplate::getNotificationTemplateType);
-
 		_uniquePersistenceFinderByC_NT_NTT = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_NT_NTT,
-			_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_NT_NTT",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName()
+				},
+				new String[] {
+					"calendarId", "notificationType", "notificationTemplateType"
+				},
+				0, 6, false, CalendarNotificationTemplate::getCalendarId,
+				convertNullFunction(
+					CalendarNotificationTemplate::getNotificationType),
+				convertNullFunction(
+					CalendarNotificationTemplate::getNotificationTemplateType)),
+			_SQL_SELECT_CALENDARNOTIFICATIONTEMPLATE_WHERE, "",
 			new FinderColumn<>(
 				"calendarNotificationTemplate.", "calendarId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CalendarNotificationTemplate::getCalendarId),
 			new FinderColumn<>(
 				"calendarNotificationTemplate.", "notificationType",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				CalendarNotificationTemplate::getNotificationType),
 			new FinderColumn<>(
 				"calendarNotificationTemplate.", "notificationTemplateType",
@@ -1347,4 +1038,4 @@ public class CalendarNotificationTemplatePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1849559285
+// LIFERAY-SERVICE-BUILDER-HASH:56568770

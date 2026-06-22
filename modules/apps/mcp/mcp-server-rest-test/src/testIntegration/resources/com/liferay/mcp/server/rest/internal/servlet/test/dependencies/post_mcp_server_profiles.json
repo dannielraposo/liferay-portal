@@ -1,0 +1,23 @@
+{
+	"properties": {
+		"body": {
+			"properties": {
+				"externalReferenceCode": {
+					"type": "string"
+				},
+				"id": {
+					"format": "int64",
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		}
+	},
+	"required": [
+		"body"
+	],
+	"type": "object"
+}

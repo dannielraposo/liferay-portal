@@ -10,6 +10,7 @@ import React from 'react';
 import EditObjectDetails from '../../components/ObjectDetails/EditObjectDetails';
 
 const editObjectDetailsProps = {
+	allowStandaloneObjectEntry: false,
 	backURL: '',
 	companies: [],
 	dbTableName: '',
@@ -42,6 +43,10 @@ jest.mock('frontend-js-web', () => ({
 			json: () => Promise.resolve({}),
 		})
 	),
+}));
+
+jest.mock('@liferay/frontend-js-react-web', () => ({
+	useBrowserTabVisibility: () => true,
 }));
 
 afterAll(() => {

@@ -38,7 +38,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -405,7 +405,7 @@ public abstract class BaseBuild implements Build {
 		String buildProfile = getParameterValue("TEST_PORTAL_BUILD_PROFILE");
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(buildProfile)) {
-			buildProfile = System.getenv("TEST_PORTAL_BUILD_PROFILE");
+			buildProfile = Environment.get("TEST_PORTAL_BUILD_PROFILE");
 		}
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(buildProfile)) {

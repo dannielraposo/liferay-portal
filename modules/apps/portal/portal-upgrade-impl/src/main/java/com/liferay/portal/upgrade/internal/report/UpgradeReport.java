@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.upgrade.ReleaseManager;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.recorder.UpgradeLogProgressTracker;
 import com.liferay.portal.kernel.upgrade.recorder.UpgradeSQLRecorder;
+import com.liferay.portal.kernel.upgrade.util.UpgradeProcessUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.EnvPropertiesUtil;
@@ -79,6 +80,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.felix.cm.PersistenceManager;
@@ -114,7 +116,13 @@ public class UpgradeReport {
 
 		_executionDateString = _getExecutionDateString();
 		_executionTimeString = _getExecutionTimeString();
+
 		_rootDir = _getRootDir();
+
+		if (_dlSizeSupplier == null) {
+			_dlSizeSupplier = () -> FileUtils.sizeOfDirectory(
+				new File(_rootDir));
+		}
 
 		Map<String, Object> reportData = _getReportData(upgradeRecorder);
 
@@ -269,16 +277,16 @@ public class UpgradeReport {
 
 				if (releaseManager == null) {
 					if (upgradeRecorder.isPreupgradeVerifyFailure()) {
-						return "No changes have been made to the system";
+						return "no changes have been made to the system";
 					}
 
-					return "Upgrade failed to complete";
+					return "upgrade failed to complete";
 				}
 
 				String statusMessage = releaseManager.getStatusMessage(false);
 
 				if (statusMessage.isEmpty()) {
-					return "There are no pending upgrades";
+					return "there are no pending upgrades";
 				}
 
 				return statusMessage;
@@ -290,7 +298,7 @@ public class UpgradeReport {
 			LinkedHashMapBuilder.put(
 				"initial.build.number",
 				(_initialBuildNumber != 0) ?
-					String.valueOf(_initialBuildNumber) : "Unable to determine"
+					String.valueOf(_initialBuildNumber) : "unable to determine"
 			).put(
 				"initial.schema.version",
 				() -> {
@@ -304,7 +312,7 @@ public class UpgradeReport {
 						return initialSchemaVersion;
 					}
 
-					return "Unable to determine";
+					return "unable to determine";
 				}
 			).put(
 				"final.build.number",
@@ -315,7 +323,7 @@ public class UpgradeReport {
 						return String.valueOf(buildNumber);
 					}
 
-					return "Unable to determine";
+					return "unable to determine";
 				}
 			).put(
 				"final.schema.version",
@@ -328,7 +336,7 @@ public class UpgradeReport {
 						return schemaVersion;
 					}
 
-					return "Unable to determine";
+					return "unable to determine";
 				}
 			).put(
 				"expected.build.number",
@@ -339,7 +347,7 @@ public class UpgradeReport {
 						return String.valueOf(buildNumber);
 					}
 
-					return "Unable to determine";
+					return "unable to determine";
 				}
 			).put(
 				"expected.schema.version",
@@ -351,7 +359,7 @@ public class UpgradeReport {
 						return schemaVersion;
 					}
 
-					return "Unable to determine";
+					return "unable to determine";
 				}
 			).build()
 		).put(
@@ -375,22 +383,34 @@ public class UpgradeReport {
 					if (PropsValues.UPGRADE_REPORT_DL_STORAGE_SIZE_TIMEOUT ==
 							0) {
 
-						return "Disabled";
+						return "disabled";
 					}
 
 					if (!StringUtil.endsWith(
 							PropsValues.DL_STORE_IMPL, "FileSystemStore")) {
 
-						return "Check externally";
+						return "check externally";
 					}
 
 					if (_rootDir == null) {
-						return "Unable to determine. Document library " +
+						return "unable to determine. Document library " +
 							"\"rootDir\" was not set";
 					}
 
+					File rootDirFile = new File(_rootDir);
+
+					if (!rootDirFile.isDirectory()) {
+						if (_log.isInfoEnabled()) {
+							_log.info(
+								"Document library directory does not exist: " +
+									_rootDir);
+						}
+
+						return "unable to determine";
+					}
+
 					FutureTask<Long> dlSizeFutureTask = new FutureTask<>(
-						() -> FileUtils.sizeOfDirectory(new File(_rootDir)));
+						_dlSizeSupplier::get);
 
 					try {
 						Thread dlSizeThread = new Thread(
@@ -432,7 +452,7 @@ public class UpgradeReport {
 							exception);
 					}
 
-					return "Unable to determine";
+					return "unable to determine";
 				}
 			).build()
 		).put(
@@ -629,11 +649,25 @@ public class UpgradeReport {
 					return null;
 				}
 
+				Map<String, Long> lastKnownTotalCounts =
+					UpgradeLogProgressTracker.getLastKnownTotalCounts();
+
 				return TransformUtil.transform(
 					lastKnownProgresses.entrySet(),
-					entry -> StringBundler.concat(
-						entry.getKey(), " processed approximately ",
-						entry.getValue(), " rows"));
+					entry -> {
+						long totalCount = GetterUtil.getLong(
+							lastKnownTotalCounts.get(entry.getKey()));
+
+						if (totalCount > 0) {
+							return StringBundler.concat(
+								entry.getKey(), " processed approximately ",
+								entry.getValue(), " of ", totalCount, " rows");
+						}
+
+						return StringBundler.concat(
+							entry.getKey(), " processed approximately ",
+							entry.getValue(), " rows");
+					});
 			}
 		).put(
 			"longest.upgrade.processes",
@@ -738,7 +772,7 @@ public class UpgradeReport {
 		}
 
 		if (reportsDir == null) {
-			if (DBUpgrader.isUpgradeClient()) {
+			if (UpgradeProcessUtil.isUpgradeClient()) {
 				reportsDir = new File(".", "reports");
 			}
 			else {
@@ -1085,6 +1119,7 @@ public class UpgradeReport {
 	private static final Snapshot<ReleaseManager> _releaseManagerSnapshot =
 		new Snapshot<>(UpgradeReport.class, ReleaseManager.class);
 
+	private Supplier<Long> _dlSizeSupplier;
 	private String _executionDateString;
 	private String _executionTimeString;
 	private final int _initialBuildNumber;

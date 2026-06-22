@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.util.GroupUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
@@ -148,37 +149,7 @@ public class ContentStructureUtil {
 							acceptAllLanguage, ddmFormField, locale),
 						ContentStructureField.class));
 				setOptions(
-					() -> {
-						DDMFormFieldOptions ddmFormFieldOptions =
-							ddmFormField.getDDMFormFieldOptions();
-
-						if (ddmFormFieldOptions == null) {
-							return new Option[0];
-						}
-
-						Map<String, LocalizedValue> map =
-							ddmFormFieldOptions.getOptions();
-
-						return TransformUtil.transformToArray(
-							map.entrySet(),
-							entry -> new Option() {
-								{
-									LocalizedValue localizedValue =
-										entry.getValue();
-
-									setLabel(
-										() -> _toString(
-											localizedValue, locale));
-									setLabel_i18n(
-										() -> LocalizedMapUtil.getI18nMap(
-											acceptAllLanguage,
-											localizedValue.getValues()));
-
-									setValue(entry::getKey);
-								}
-							},
-							Option.class);
-					});
+					() -> _toOptions(acceptAllLanguage, ddmFormField, locale));
 				setPredefinedValue(
 					() -> _toString(predefinedLocalizedValue, locale));
 				setPredefinedValue_i18n(
@@ -190,6 +161,53 @@ public class ContentStructureUtil {
 				setShowLabel(ddmFormField::isShowLabel);
 			}
 		};
+	}
+
+	private static Option _toOption(
+		boolean acceptAllLanguage, DDMFormFieldOptions ddmFormFieldOptions,
+		Map.Entry<String, LocalizedValue> entry, Locale locale) {
+
+		LocalizedValue localizedValue = entry.getValue();
+
+		return new Option() {
+			{
+				setLabel(() -> _toString(localizedValue, locale));
+				setLabel_i18n(
+					() -> LocalizedMapUtil.getI18nMap(
+						acceptAllLanguage, localizedValue.getValues()));
+				setValue(
+					() -> {
+						String optionReference =
+							ddmFormFieldOptions.getOptionReference(
+								entry.getKey());
+
+						if (Validator.isNotNull(optionReference)) {
+							return optionReference;
+						}
+
+						return entry.getKey();
+					});
+			}
+		};
+	}
+
+	private static Option[] _toOptions(
+		boolean acceptAllLanguage, DDMFormField ddmFormField, Locale locale) {
+
+		DDMFormFieldOptions ddmFormFieldOptions =
+			ddmFormField.getDDMFormFieldOptions();
+
+		if (ddmFormFieldOptions == null) {
+			return new Option[0];
+		}
+
+		Map<String, LocalizedValue> map = ddmFormFieldOptions.getOptions();
+
+		return TransformUtil.transformToArray(
+			map.entrySet(),
+			entry -> _toOption(
+				acceptAllLanguage, ddmFormFieldOptions, entry, locale),
+			Option.class);
 	}
 
 	private static String _toString(

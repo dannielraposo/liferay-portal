@@ -26,6 +26,7 @@ import com.liferay.asset.list.service.AssetListEntryLocalServiceUtil;
 import com.liferay.asset.list.service.AssetListEntrySegmentsEntryRelLocalServiceUtil;
 import com.liferay.asset.list.util.comparator.ClassNameModelResourceComparator;
 import com.liferay.asset.list.web.internal.constants.AssetListWebKeys;
+import com.liferay.asset.list.web.internal.util.AssetListTypePropertiesUtil;
 import com.liferay.asset.tags.item.selector.AssetTagsItemSelectorCriterion;
 import com.liferay.asset.tags.item.selector.AssetTagsItemSelectorReturnType;
 import com.liferay.asset.util.AssetRendererFactoryClassProvider;
@@ -65,6 +66,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
@@ -502,7 +504,14 @@ public class EditAssetListDisplayContext {
 		}
 
 		_availableSegmentsEntries = ListUtil.filter(
-			SegmentsEntryServiceUtil.getSegmentsEntries(group.getGroupId()),
+			SegmentsEntryServiceUtil.getSegmentsEntries(
+				group.getGroupId(),
+				new String[] {
+					SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
+					SegmentsEntryConstants.SOURCE_DEFAULT,
+					SegmentsEntryConstants.SOURCE_REFERRED
+				},
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null),
 			segmentsEntry -> !ArrayUtil.contains(
 				getSelectedSegmentsEntryIds(),
 				segmentsEntry.getSegmentsEntryId()));
@@ -752,6 +761,43 @@ public class EditAssetListDisplayContext {
 		return _ddmStructureFieldValue;
 	}
 
+	public List<Map<String, Object>> getFilters() {
+		String filters = _unicodeProperties.getProperty("filters");
+
+		if (Validator.isNull(filters)) {
+			return Collections.emptyList();
+		}
+
+		try {
+			JSONArray filtersJSONArray = JSONFactoryUtil.createJSONArray(
+				filters);
+
+			List<Map<String, Object>> filtersList = new ArrayList<>(
+				filtersJSONArray.length());
+
+			for (int i = 0; i < filtersJSONArray.length(); i++) {
+				JSONObject filterJSONObject = filtersJSONArray.getJSONObject(i);
+
+				Map<String, Object> filterMap = new HashMap<>();
+
+				for (String key : filterJSONObject.keySet()) {
+					filterMap.put(key, filterJSONObject.get(key));
+				}
+
+				filtersList.add(filterMap);
+			}
+
+			return filtersList;
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+
+			return Collections.emptyList();
+		}
+	}
+
 	public String getGroupItemSelectorURL() {
 		ItemSelectorCriterion itemSelectorCriterion =
 			new GroupItemSelectorCriterion();
@@ -836,9 +882,29 @@ public class EditAssetListDisplayContext {
 			return _referencedModelsGroupIds;
 		}
 
+		long[] groupIds = getSelectedGroupIds();
+
+		if (FeatureFlagManagerUtil.isEnabled(
+				_themeDisplay.getCompanyId(), "LPD-17564")) {
+
+			for (Group group : getSelectedGroups()) {
+				int depotEntryType = GetterUtil.getInteger(
+					group.getTypeSettingsProperty("depotEntryType"));
+
+				if (depotEntryType == DepotConstants.TYPE_SPACE) {
+					Group cmsGroup = GroupLocalServiceUtil.getGroup(
+						_themeDisplay.getCompanyId(), GroupConstants.CMS);
+
+					groupIds = ArrayUtil.append(
+						groupIds, cmsGroup.getGroupId());
+
+					break;
+				}
+			}
+		}
+
 		_referencedModelsGroupIds =
-			PortalUtil.getCurrentAndAncestorSiteGroupIds(
-				getSelectedGroupIds(), true);
+			PortalUtil.getCurrentAndAncestorSiteGroupIds(groupIds, true);
 
 		return _referencedModelsGroupIds;
 	}
@@ -917,44 +983,24 @@ public class EditAssetListDisplayContext {
 	}
 
 	public List<Group> getSelectedGroups() throws PortalException {
+		if (_selectedGroups != null) {
+			return _selectedGroups;
+		}
+
 		long[] groupIds = GetterUtil.getLongValues(
 			StringUtil.split(
 				PropertiesParamUtil.getString(
 					_unicodeProperties, _httpServletRequest, "groupIds")));
 
 		if (ArrayUtil.isEmpty(groupIds)) {
-			return Collections.singletonList(_themeDisplay.getScopeGroup());
+			_selectedGroups = Collections.singletonList(
+				_themeDisplay.getScopeGroup());
+		}
+		else {
+			_selectedGroups = GroupLocalServiceUtil.getGroups(groupIds);
 		}
 
-		List<Group> groups = GroupLocalServiceUtil.getGroups(groupIds);
-
-		if (!FeatureFlagManagerUtil.isEnabled(
-				_themeDisplay.getCompanyId(), "LPD-17564")) {
-
-			return groups;
-		}
-
-		List<Group> selectedGroups = ListUtil.filter(
-			groups,
-			group -> {
-				int depotEntryType = GetterUtil.getInteger(
-					group.getTypeSettingsProperty("depotEntryType"));
-
-				return depotEntryType != DepotConstants.TYPE_SPACE;
-			});
-
-		if (selectedGroups.size() == groups.size()) {
-			return selectedGroups;
-		}
-
-		Group cmsGroup = GroupLocalServiceUtil.getGroup(
-			_themeDisplay.getCompanyId(), GroupConstants.CMS);
-
-		if (!selectedGroups.contains(cmsGroup)) {
-			selectedGroups.add(cmsGroup);
-		}
-
-		return selectedGroups;
+		return _selectedGroups;
 	}
 
 	public long[] getSelectedSegmentsEntryIds() {
@@ -1030,6 +1076,39 @@ public class EditAssetListDisplayContext {
 				RequestBackedPortletURLFactoryUtil.create(_httpServletRequest),
 				_portletResponse.getNamespace() + "selectTag",
 				assetTagsItemSelectorCriterion));
+	}
+
+	public JSONArray getTypePropertiesJSONArray() {
+		long[] classNameIds = new long[0];
+		long[] classTypeIds = new long[0];
+
+		boolean anyAssetType = GetterUtil.getBoolean(
+			_unicodeProperties.getProperty(
+				"anyAssetType", Boolean.TRUE.toString()));
+		String selectionStyle = _unicodeProperties.getProperty(
+			"selectionStyle", "dynamic");
+
+		if (!anyAssetType && !selectionStyle.equals("manual")) {
+			classNameIds = getClassNameIds();
+			classTypeIds = getClassTypeIds();
+		}
+
+		return AssetListTypePropertiesUtil.getTypePropertiesJSONArray(
+			classNameIds, classTypeIds, _themeDisplay.getCompanyId(),
+			_themeDisplay.getLocale());
+	}
+
+	public String getTypePropertiesURL() {
+		LiferayPortletResponse liferayPortletResponse =
+			PortalUtil.getLiferayPortletResponse(_portletResponse);
+
+		LiferayPortletURL getTypePropertiesURL =
+			(LiferayPortletURL)liferayPortletResponse.createResourceURL();
+
+		getTypePropertiesURL.setCopyCurrentRenderParameters(false);
+		getTypePropertiesURL.setResourceID("/asset_list/get_type_properties");
+
+		return getTypePropertiesURL.toString();
 	}
 
 	public UnicodeProperties getUnicodeProperties() {
@@ -1538,6 +1617,7 @@ public class EditAssetListDisplayContext {
 	private SearchContainer<AssetListEntryAssetEntryRel> _searchContainer;
 	private final SegmentsConfigurationProvider _segmentsConfigurationProvider;
 	private Long _segmentsEntryId;
+	private List<Group> _selectedGroups;
 	private long[] _selectedSegmentsEntryIds;
 	private String _selectSegmentsEntryURL;
 	private Boolean _subtypeFieldsFilterEnabled;

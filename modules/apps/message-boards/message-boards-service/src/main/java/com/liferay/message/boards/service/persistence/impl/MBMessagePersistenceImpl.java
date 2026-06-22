@@ -14,17 +14,13 @@ import com.liferay.message.boards.model.impl.MBMessageModelImpl;
 import com.liferay.message.boards.service.persistence.MBMessagePersistence;
 import com.liferay.message.boards.service.persistence.MBMessageUtil;
 import com.liferay.message.boards.service.persistence.impl.constants.MBPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -35,12 +31,13 @@ import com.liferay.portal.kernel.sanitizer.SanitizerException;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
+import com.liferay.portal.kernel.service.persistence.impl.ArrayableFinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -49,7 +46,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
@@ -104,60 +100,8 @@ public class MBMessagePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the message-boards messages where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where uuid = &#63;.
@@ -179,14 +123,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -202,15 +141,8 @@ public class MBMessagePersistenceImpl
 			String uuid, OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByUuid_First(uuid, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -247,17 +179,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<MBMessage> _uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder<MBMessage, NoSuchMessageException>
+		_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the message-boards message where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchMessageException</code> if it could not be found.
@@ -271,33 +198,8 @@ public class MBMessagePersistenceImpl
 	public MBMessage findByUUID_G(String uuid, long groupId)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByUUID_G(uuid, groupId);
-
-		if (mbMessage == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMessageException(message);
-		}
-
-		return mbMessage;
-	}
-
-	/**
-	 * Returns the message-boards message where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching message-boards message, or <code>null</code> if a matching message-boards message could not be found
-	 */
-	@Override
-	public MBMessage fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -312,13 +214,8 @@ public class MBMessagePersistenceImpl
 	public MBMessage fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -350,67 +247,8 @@ public class MBMessagePersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the message-boards messages where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where uuid = &#63; and companyId = &#63;.
@@ -433,14 +271,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -458,16 +291,8 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -508,68 +333,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-
-	/**
-	 * Returns all the message-boards messages where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByGroupId(long groupId, int start, int end) {
-		return findByGroupId(groupId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder<MBMessage, NoSuchMessageException>
+		_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where groupId = &#63;.
@@ -591,100 +360,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByGroupId;
-					finderArgs = new Object[] {groupId};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByGroupId;
-				finderArgs = new Object[] {
-					groupId, start, end, orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if (groupId != mbMessage.getGroupId()) {
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						3 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(3);
-				}
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -700,22 +378,8 @@ public class MBMessagePersistenceImpl
 			long groupId, OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByGroupId_First(groupId, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("groupId=");
-		sb.append(groupId);
-
-		sb.append("}");
-
-		throw new NoSuchMessageException(sb.toString());
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -729,44 +393,8 @@ public class MBMessagePersistenceImpl
 	public MBMessage fetchByGroupId_First(
 		long groupId, OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByGroupId(groupId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the message-boards messages that the user has permission to view where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByGroupId(long groupId) {
-		return filterFindByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages that the user has permission to view where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByGroupId(
-		long groupId, int start, int end) {
-
-		return filterFindByGroupId(groupId, start, end, null);
+		return _collectionPersistenceFinderByGroupId.fetchFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -787,93 +415,9 @@ public class MBMessagePersistenceImpl
 		long groupId, int start, int end,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByGroupId(groupId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByGroupId(
-					groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, MBMessageImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, MBMessageImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			return (List<MBMessage>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterFind(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			groupId);
 	}
 
 	/**
@@ -883,12 +427,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public void removeByGroupId(long groupId) {
-		for (MBMessage mbMessage :
-				findByGroupId(
-					groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
-
-			remove(mbMessage);
-		}
+		_collectionPersistenceFinderByGroupId.remove(
+			finderCache, new Object[] {groupId});
 	}
 
 	/**
@@ -899,51 +439,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = _finderPathCountByGroupId;
-
-			Object[] finderArgs = new Object[] {groupId};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(2);
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {groupId});
 	}
 
 	/**
@@ -954,110 +451,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int filterCountByGroupId(long groupId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByGroupId(groupId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<MBMessage> mbMessages = findByGroupId(groupId);
-
-			mbMessages = InlineSQLHelperUtil.filter(mbMessages, groupId);
-
-			return mbMessages.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_MBMESSAGE_WHERE);
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterCount(
+			finderCache, new Object[] {groupId}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_GROUPID_GROUPID_2 =
-		"mbMessage.groupId = ? AND mbMessage.categoryId != -1";
-
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-
-	/**
-	 * Returns all the message-boards messages where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByCompanyId(long companyId, int start, int end) {
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
+		_collectionPersistenceFinderByCompanyId;
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where companyId = &#63;.
@@ -1079,100 +478,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByCompanyId;
-					finderArgs = new Object[] {companyId};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByCompanyId;
-				finderArgs = new Object[] {
-					companyId, start, end, orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if (companyId != mbMessage.getCompanyId()) {
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						3 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(3);
-				}
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			finderCache, new Object[] {companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1188,23 +496,8 @@ public class MBMessagePersistenceImpl
 			long companyId, OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("companyId=");
-		sb.append(companyId);
-
-		sb.append("}");
-
-		throw new NoSuchMessageException(sb.toString());
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -1218,14 +511,8 @@ public class MBMessagePersistenceImpl
 	public MBMessage fetchByCompanyId_First(
 		long companyId, OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByCompanyId(
-			companyId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		return _collectionPersistenceFinderByCompanyId.fetchFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -1235,12 +522,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public void removeByCompanyId(long companyId) {
-		for (MBMessage mbMessage :
-				findByCompanyId(
-					companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
-
-			remove(mbMessage);
-		}
+		_collectionPersistenceFinderByCompanyId.remove(
+			finderCache, new Object[] {companyId});
 	}
 
 	/**
@@ -1251,108 +534,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = _finderPathCountByCompanyId;
-
-			Object[] finderArgs = new Object[] {companyId};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(2);
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			finderCache, new Object[] {companyId});
 	}
 
-	private static final String _FINDER_COLUMN_COMPANYID_COMPANYID_2 =
-		"mbMessage.companyId = ? AND mbMessage.categoryId != -1";
-
-	private FinderPath _finderPathWithPaginationFindByUserId;
-	private FinderPath _finderPathWithoutPaginationFindByUserId;
-	private FinderPath _finderPathCountByUserId;
-
-	/**
-	 * Returns all the message-boards messages where userId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByUserId(long userId) {
-		return findByUserId(userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByUserId(long userId, int start, int end) {
-		return findByUserId(userId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByUserId(
-		long userId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByUserId(userId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
+		_collectionPersistenceFinderByUserId;
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where userId = &#63;.
@@ -1374,100 +561,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByUserId;
-					finderArgs = new Object[] {userId};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByUserId;
-				finderArgs = new Object[] {
-					userId, start, end, orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if (userId != mbMessage.getUserId()) {
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						3 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(3);
-				}
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_USERID_USERID_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(userId);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByUserId.find(
+			finderCache, new Object[] {userId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -1483,22 +579,8 @@ public class MBMessagePersistenceImpl
 			long userId, OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByUserId_First(userId, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("userId=");
-		sb.append(userId);
-
-		sb.append("}");
-
-		throw new NoSuchMessageException(sb.toString());
+		return _collectionPersistenceFinderByUserId.findFirst(
+			finderCache, new Object[] {userId}, orderByComparator);
 	}
 
 	/**
@@ -1512,13 +594,8 @@ public class MBMessagePersistenceImpl
 	public MBMessage fetchByUserId_First(
 		long userId, OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByUserId(userId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		return _collectionPersistenceFinderByUserId.fetchFirst(
+			finderCache, new Object[] {userId}, orderByComparator);
 	}
 
 	/**
@@ -1528,12 +605,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public void removeByUserId(long userId) {
-		for (MBMessage mbMessage :
-				findByUserId(
-					userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
-
-			remove(mbMessage);
-		}
+		_collectionPersistenceFinderByUserId.remove(
+			finderCache, new Object[] {userId});
 	}
 
 	/**
@@ -1544,111 +617,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByUserId(long userId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = _finderPathCountByUserId;
-
-			Object[] finderArgs = new Object[] {userId};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(2);
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_USERID_USERID_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(userId);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByUserId.count(
+			finderCache, new Object[] {userId});
 	}
 
-	private static final String _FINDER_COLUMN_USERID_USERID_2 =
-		"mbMessage.userId = ? AND mbMessage.categoryId != -1";
-
-	private FinderPath _finderPathWithPaginationFindByThreadId;
-	private FinderPath _finderPathWithoutPaginationFindByThreadId;
-	private FinderPath _finderPathCountByThreadId;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByThreadId;
-
-	/**
-	 * Returns all the message-boards messages where threadId = &#63;.
-	 *
-	 * @param threadId the thread ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByThreadId(long threadId) {
-		return findByThreadId(
-			threadId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where threadId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByThreadId(long threadId, int start, int end) {
-		return findByThreadId(threadId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where threadId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByThreadId(
-		long threadId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByThreadId(threadId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where threadId = &#63;.
@@ -1670,14 +644,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByThreadId.find(
-				finderCache, new Object[] {threadId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByThreadId.find(
+			finderCache, new Object[] {threadId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -1693,16 +662,8 @@ public class MBMessagePersistenceImpl
 			long threadId, OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByThreadId_First(
-			threadId, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByThreadId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {threadId}));
+		return _collectionPersistenceFinderByThreadId.findFirst(
+			finderCache, new Object[] {threadId}, orderByComparator);
 	}
 
 	/**
@@ -1739,71 +700,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByThreadId(long threadId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByThreadId.count(
-				finderCache, new Object[] {threadId});
-		}
+		return _collectionPersistenceFinderByThreadId.count(
+			finderCache, new Object[] {threadId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByThreadIdReplies;
-	private FinderPath _finderPathWithoutPaginationFindByThreadIdReplies;
-	private FinderPath _finderPathCountByThreadIdReplies;
-
-	/**
-	 * Returns all the message-boards messages where threadId = &#63;.
-	 *
-	 * @param threadId the thread ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByThreadIdReplies(long threadId) {
-		return findByThreadIdReplies(
-			threadId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where threadId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByThreadIdReplies(
-		long threadId, int start, int end) {
-
-		return findByThreadIdReplies(threadId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where threadId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByThreadIdReplies(
-		long threadId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByThreadIdReplies(
-			threadId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
+		_collectionPersistenceFinderByThreadIdReplies;
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where threadId = &#63;.
@@ -1825,101 +727,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath =
-						_finderPathWithoutPaginationFindByThreadIdReplies;
-					finderArgs = new Object[] {threadId};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByThreadIdReplies;
-				finderArgs = new Object[] {
-					threadId, start, end, orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if (threadId != mbMessage.getThreadId()) {
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						3 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(3);
-				}
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_THREADIDREPLIES_THREADID_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(threadId);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByThreadIdReplies.find(
+			finderCache, new Object[] {threadId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -1935,23 +745,8 @@ public class MBMessagePersistenceImpl
 			long threadId, OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByThreadIdReplies_First(
-			threadId, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("threadId=");
-		sb.append(threadId);
-
-		sb.append("}");
-
-		throw new NoSuchMessageException(sb.toString());
+		return _collectionPersistenceFinderByThreadIdReplies.findFirst(
+			finderCache, new Object[] {threadId}, orderByComparator);
 	}
 
 	/**
@@ -1965,14 +760,8 @@ public class MBMessagePersistenceImpl
 	public MBMessage fetchByThreadIdReplies_First(
 		long threadId, OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByThreadIdReplies(
-			threadId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		return _collectionPersistenceFinderByThreadIdReplies.fetchFirst(
+			finderCache, new Object[] {threadId}, orderByComparator);
 	}
 
 	/**
@@ -1982,12 +771,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public void removeByThreadIdReplies(long threadId) {
-		for (MBMessage mbMessage :
-				findByThreadIdReplies(
-					threadId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
-
-			remove(mbMessage);
-		}
+		_collectionPersistenceFinderByThreadIdReplies.remove(
+			finderCache, new Object[] {threadId});
 	}
 
 	/**
@@ -1998,114 +783,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByThreadIdReplies(long threadId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = _finderPathCountByThreadIdReplies;
-
-			Object[] finderArgs = new Object[] {threadId};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(2);
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_THREADIDREPLIES_THREADID_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(threadId);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByThreadIdReplies.count(
+			finderCache, new Object[] {threadId});
 	}
 
-	private static final String _FINDER_COLUMN_THREADIDREPLIES_THREADID_2 =
-		"mbMessage.threadId = ? AND mbMessage.parentMessageId != 0";
-
-	private FinderPath _finderPathWithPaginationFindByParentMessageId;
-	private FinderPath _finderPathWithoutPaginationFindByParentMessageId;
-	private FinderPath _finderPathCountByParentMessageId;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByParentMessageId;
-
-	/**
-	 * Returns all the message-boards messages where parentMessageId = &#63;.
-	 *
-	 * @param parentMessageId the parent message ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByParentMessageId(long parentMessageId) {
-		return findByParentMessageId(
-			parentMessageId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where parentMessageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param parentMessageId the parent message ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByParentMessageId(
-		long parentMessageId, int start, int end) {
-
-		return findByParentMessageId(parentMessageId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where parentMessageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param parentMessageId the parent message ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByParentMessageId(
-		long parentMessageId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByParentMessageId(
-			parentMessageId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where parentMessageId = &#63;.
@@ -2127,14 +810,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByParentMessageId.find(
-				finderCache, new Object[] {parentMessageId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByParentMessageId.find(
+			finderCache, new Object[] {parentMessageId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2151,16 +829,8 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByParentMessageId_First(
-			parentMessageId, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByParentMessageId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {parentMessageId}));
+		return _collectionPersistenceFinderByParentMessageId.findFirst(
+			finderCache, new Object[] {parentMessageId}, orderByComparator);
 	}
 
 	/**
@@ -2197,73 +867,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByParentMessageId(long parentMessageId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByParentMessageId.count(
-				finderCache, new Object[] {parentMessageId});
-		}
+		return _collectionPersistenceFinderByParentMessageId.count(
+			finderCache, new Object[] {parentMessageId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_U;
-	private FinderPath _finderPathWithoutPaginationFindByG_U;
-	private FinderPath _finderPathCountByG_U;
-
-	/**
-	 * Returns all the message-boards messages where groupId = &#63; and userId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_U(long groupId, long userId) {
-		return findByG_U(
-			groupId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where groupId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_U(
-		long groupId, long userId, int start, int end) {
-
-		return findByG_U(groupId, userId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_U(
-		long groupId, long userId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByG_U(groupId, userId, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder<MBMessage, NoSuchMessageException>
+		_collectionPersistenceFinderByG_U;
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and userId = &#63;.
@@ -2286,106 +895,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByG_U;
-					finderArgs = new Object[] {groupId, userId};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByG_U;
-				finderArgs = new Object[] {
-					groupId, userId, start, end, orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if ((groupId != mbMessage.getGroupId()) ||
-							(userId != mbMessage.getUserId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						4 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(4);
-				}
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_U_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_USERID_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(userId);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_U.find(
+			finderCache, new Object[] {groupId, userId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2403,26 +915,8 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByG_U_First(
-			groupId, userId, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		StringBundler sb = new StringBundler(6);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("groupId=");
-		sb.append(groupId);
-
-		sb.append(", userId=");
-		sb.append(userId);
-
-		sb.append("}");
-
-		throw new NoSuchMessageException(sb.toString());
+		return _collectionPersistenceFinderByG_U.findFirst(
+			finderCache, new Object[] {groupId, userId}, orderByComparator);
 	}
 
 	/**
@@ -2438,47 +932,8 @@ public class MBMessagePersistenceImpl
 		long groupId, long userId,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByG_U(
-			groupId, userId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the message-boards messages that the user has permission to view where groupId = &#63; and userId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @return the matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_U(long groupId, long userId) {
-		return filterFindByG_U(
-			groupId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages that the user has permission to view where groupId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_U(
-		long groupId, long userId, int start, int end) {
-
-		return filterFindByG_U(groupId, userId, start, end, null);
+		return _collectionPersistenceFinderByG_U.fetchFirst(
+			finderCache, new Object[] {groupId, userId}, orderByComparator);
 	}
 
 	/**
@@ -2500,97 +955,9 @@ public class MBMessagePersistenceImpl
 		long groupId, long userId, int start, int end,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_U(groupId, userId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_U(
-					groupId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_U_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_USERID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, MBMessageImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, MBMessageImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(userId);
-
-			return (List<MBMessage>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_U.filterFind(
+			finderCache, new Object[] {groupId, userId}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -2601,13 +968,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public void removeByG_U(long groupId, long userId) {
-		for (MBMessage mbMessage :
-				findByG_U(
-					groupId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(mbMessage);
-		}
+		_collectionPersistenceFinderByG_U.remove(
+			finderCache, new Object[] {groupId, userId});
 	}
 
 	/**
@@ -2619,55 +981,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByG_U(long groupId, long userId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = _finderPathCountByG_U;
-
-			Object[] finderArgs = new Object[] {groupId, userId};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_U_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_USERID_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(userId);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_U.count(
+			finderCache, new Object[] {groupId, userId});
 	}
 
 	/**
@@ -2679,125 +994,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_U(long groupId, long userId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_U(groupId, userId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<MBMessage> mbMessages = findByG_U(groupId, userId);
-
-			mbMessages = InlineSQLHelperUtil.filter(mbMessages, groupId);
-
-			return mbMessages.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_MBMESSAGE_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_U_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_USERID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(userId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_U.filterCount(
+			finderCache, new Object[] {groupId, userId}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_U_GROUPID_2 =
-		"mbMessage.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_U_USERID_2 =
-		"mbMessage.userId = ? AND (mbMessage.categoryId != -1) AND (mbMessage.anonymous = [$FALSE$])";
-
-	private FinderPath _finderPathWithPaginationFindByG_C;
-	private FinderPath _finderPathWithoutPaginationFindByG_C;
-	private FinderPath _finderPathCountByG_C;
-	private CollectionPersistenceFinder<MBMessage>
+	private FilterCollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByG_C;
-
-	/**
-	 * Returns all the message-boards messages where groupId = &#63; and categoryId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C(long groupId, long categoryId) {
-		return findByG_C(
-			groupId, categoryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where groupId = &#63; and categoryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C(
-		long groupId, long categoryId, int start, int end) {
-
-		return findByG_C(groupId, categoryId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and categoryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C(
-		long groupId, long categoryId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByG_C(
-			groupId, categoryId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and categoryId = &#63;.
@@ -2820,14 +1022,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByG_C.find(
-				finderCache, new Object[] {groupId, categoryId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_C.find(
+			finderCache, new Object[] {groupId, categoryId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2845,16 +1042,8 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByG_C_First(
-			groupId, categoryId, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByG_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, categoryId}));
+		return _collectionPersistenceFinderByG_C.findFirst(
+			finderCache, new Object[] {groupId, categoryId}, orderByComparator);
 	}
 
 	/**
@@ -2872,39 +1061,6 @@ public class MBMessagePersistenceImpl
 
 		return _collectionPersistenceFinderByG_C.fetchFirst(
 			finderCache, new Object[] {groupId, categoryId}, orderByComparator);
-	}
-
-	/**
-	 * Returns all the message-boards messages that the user has permission to view where groupId = &#63; and categoryId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @return the matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_C(long groupId, long categoryId) {
-		return filterFindByG_C(
-			groupId, categoryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages that the user has permission to view where groupId = &#63; and categoryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_C(
-		long groupId, long categoryId, int start, int end) {
-
-		return filterFindByG_C(groupId, categoryId, start, end, null);
 	}
 
 	/**
@@ -2926,98 +1082,9 @@ public class MBMessagePersistenceImpl
 		long groupId, long categoryId, int start, int end,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_C(
-				groupId, categoryId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_C(
-					groupId, categoryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_C_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_CATEGORYID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, MBMessageImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, MBMessageImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(categoryId);
-
-			return (List<MBMessage>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C.filterFind(
+			finderCache, new Object[] {groupId, categoryId}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -3041,13 +1108,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByG_C(long groupId, long categoryId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByG_C.count(
-				finderCache, new Object[] {groupId, categoryId});
-		}
+		return _collectionPersistenceFinderByG_C.count(
+			finderCache, new Object[] {groupId, categoryId});
 	}
 
 	/**
@@ -3059,66 +1121,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_C(long groupId, long categoryId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_C(groupId, categoryId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<MBMessage> mbMessages = findByG_C(groupId, categoryId);
-
-			mbMessages = InlineSQLHelperUtil.filter(mbMessages, groupId);
-
-			return mbMessages.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_MBMESSAGE_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_C_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_CATEGORYID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(categoryId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C.filterCount(
+			finderCache, new Object[] {groupId, categoryId}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_C_GROUPID_2 =
-		"mbMessage.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_CATEGORYID_2 =
-		"mbMessage.categoryId = ?";
-
-	private FinderPath _finderPathFetchByG_US;
-	private UniquePersistenceFinder<MBMessage> _uniquePersistenceFinderByG_US;
+	private UniquePersistenceFinder<MBMessage, NoSuchMessageException>
+		_uniquePersistenceFinderByG_US;
 
 	/**
 	 * Returns the message-boards message where groupId = &#63; and urlSubject = &#63; or throws a <code>NoSuchMessageException</code> if it could not be found.
@@ -3132,34 +1140,8 @@ public class MBMessagePersistenceImpl
 	public MBMessage findByG_US(long groupId, String urlSubject)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByG_US(groupId, urlSubject);
-
-		if (mbMessage == null) {
-			String message =
-				_uniquePersistenceFinderByG_US.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, urlSubject});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMessageException(message);
-		}
-
-		return mbMessage;
-	}
-
-	/**
-	 * Returns the message-boards message where groupId = &#63; and urlSubject = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param urlSubject the url subject
-	 * @return the matching message-boards message, or <code>null</code> if a matching message-boards message could not be found
-	 */
-	@Override
-	public MBMessage fetchByG_US(long groupId, String urlSubject) {
-		return fetchByG_US(groupId, urlSubject, true);
+		return _uniquePersistenceFinderByG_US.find(
+			finderCache, new Object[] {groupId, urlSubject});
 	}
 
 	/**
@@ -3174,14 +1156,8 @@ public class MBMessagePersistenceImpl
 	public MBMessage fetchByG_US(
 		long groupId, String urlSubject, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _uniquePersistenceFinderByG_US.fetch(
-				finderCache, new Object[] {groupId, urlSubject},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_US.fetch(
+			finderCache, new Object[] {groupId, urlSubject}, useFinderCache);
 	}
 
 	/**
@@ -3213,64 +1189,8 @@ public class MBMessagePersistenceImpl
 			finderCache, new Object[] {groupId, urlSubject});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_S;
-	private FinderPath _finderPathCountByG_S;
-
-	/**
-	 * Returns all the message-boards messages where groupId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_S(long groupId, int status) {
-		return findByG_S(
-			groupId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where groupId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_S(
-		long groupId, int status, int start, int end) {
-
-		return findByG_S(groupId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_S(
-		long groupId, int status, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByG_S(groupId, status, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder<MBMessage, NoSuchMessageException>
+		_collectionPersistenceFinderByG_S;
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and status = &#63;.
@@ -3293,106 +1213,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByG_S;
-					finderArgs = new Object[] {groupId, status};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByG_S;
-				finderArgs = new Object[] {
-					groupId, status, start, end, orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if ((groupId != mbMessage.getGroupId()) ||
-							(status != mbMessage.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						4 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(4);
-				}
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_S_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_S_STATUS_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(status);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_S.find(
+			finderCache, new Object[] {groupId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3410,26 +1233,8 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByG_S_First(
-			groupId, status, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		StringBundler sb = new StringBundler(6);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("groupId=");
-		sb.append(groupId);
-
-		sb.append(", status=");
-		sb.append(status);
-
-		sb.append("}");
-
-		throw new NoSuchMessageException(sb.toString());
+		return _collectionPersistenceFinderByG_S.findFirst(
+			finderCache, new Object[] {groupId, status}, orderByComparator);
 	}
 
 	/**
@@ -3445,47 +1250,8 @@ public class MBMessagePersistenceImpl
 		long groupId, int status,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByG_S(
-			groupId, status, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the message-boards messages that the user has permission to view where groupId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @return the matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_S(long groupId, int status) {
-		return filterFindByG_S(
-			groupId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages that the user has permission to view where groupId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_S(
-		long groupId, int status, int start, int end) {
-
-		return filterFindByG_S(groupId, status, start, end, null);
+		return _collectionPersistenceFinderByG_S.fetchFirst(
+			finderCache, new Object[] {groupId, status}, orderByComparator);
 	}
 
 	/**
@@ -3507,97 +1273,9 @@ public class MBMessagePersistenceImpl
 		long groupId, int status, int start, int end,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_S(groupId, status, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_S(
-					groupId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_S_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, MBMessageImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, MBMessageImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(status);
-
-			return (List<MBMessage>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_S.filterFind(
+			finderCache, new Object[] {groupId, status}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -3608,13 +1286,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public void removeByG_S(long groupId, int status) {
-		for (MBMessage mbMessage :
-				findByG_S(
-					groupId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(mbMessage);
-		}
+		_collectionPersistenceFinderByG_S.remove(
+			finderCache, new Object[] {groupId, status});
 	}
 
 	/**
@@ -3626,55 +1299,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByG_S(long groupId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = _finderPathCountByG_S;
-
-			Object[] finderArgs = new Object[] {groupId, status};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_S_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_S_STATUS_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_S.count(
+			finderCache, new Object[] {groupId, status});
 	}
 
 	/**
@@ -3686,123 +1312,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_S(long groupId, int status) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_S(groupId, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<MBMessage> mbMessages = findByG_S(groupId, status);
-
-			mbMessages = InlineSQLHelperUtil.filter(mbMessages, groupId);
-
-			return mbMessages.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_MBMESSAGE_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_S_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_S.filterCount(
+			finderCache, new Object[] {groupId, status}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_S_GROUPID_2 =
-		"mbMessage.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_S_STATUS_2 =
-		"mbMessage.status = ? AND mbMessage.categoryId != -1";
-
-	private FinderPath _finderPathWithPaginationFindByC_S;
-	private FinderPath _finderPathWithoutPaginationFindByC_S;
-	private FinderPath _finderPathCountByC_S;
-
-	/**
-	 * Returns all the message-boards messages where companyId = &#63; and status = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByC_S(long companyId, int status) {
-		return findByC_S(
-			companyId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByC_S(
-		long companyId, int status, int start, int end) {
-
-		return findByC_S(companyId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByC_S(
-		long companyId, int status, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByC_S(
-			companyId, status, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
+		_collectionPersistenceFinderByC_S;
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where companyId = &#63; and status = &#63;.
@@ -3825,106 +1340,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByC_S;
-					finderArgs = new Object[] {companyId, status};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByC_S;
-				finderArgs = new Object[] {
-					companyId, status, start, end, orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if ((companyId != mbMessage.getCompanyId()) ||
-							(status != mbMessage.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						4 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(4);
-				}
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_S_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_C_S_STATUS_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByC_S.find(
+			finderCache, new Object[] {companyId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3942,26 +1360,8 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByC_S_First(
-			companyId, status, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		StringBundler sb = new StringBundler(6);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("companyId=");
-		sb.append(companyId);
-
-		sb.append(", status=");
-		sb.append(status);
-
-		sb.append("}");
-
-		throw new NoSuchMessageException(sb.toString());
+		return _collectionPersistenceFinderByC_S.findFirst(
+			finderCache, new Object[] {companyId, status}, orderByComparator);
 	}
 
 	/**
@@ -3977,14 +1377,8 @@ public class MBMessagePersistenceImpl
 		long companyId, int status,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByC_S(
-			companyId, status, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		return _collectionPersistenceFinderByC_S.fetchFirst(
+			finderCache, new Object[] {companyId, status}, orderByComparator);
 	}
 
 	/**
@@ -3995,13 +1389,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public void removeByC_S(long companyId, int status) {
-		for (MBMessage mbMessage :
-				findByC_S(
-					companyId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(mbMessage);
-		}
+		_collectionPersistenceFinderByC_S.remove(
+			finderCache, new Object[] {companyId, status});
 	}
 
 	/**
@@ -4013,123 +1402,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByC_S(long companyId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = _finderPathCountByC_S;
-
-			Object[] finderArgs = new Object[] {companyId, status};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_S_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_C_S_STATUS_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByC_S.count(
+			finderCache, new Object[] {companyId, status});
 	}
 
-	private static final String _FINDER_COLUMN_C_S_COMPANYID_2 =
-		"mbMessage.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_S_STATUS_2 =
-		"mbMessage.status = ? AND mbMessage.categoryId != -1";
-
-	private FinderPath _finderPathWithPaginationFindByU_C;
-	private FinderPath _finderPathWithoutPaginationFindByU_C;
-	private FinderPath _finderPathCountByU_C;
-	private FinderPath _finderPathWithPaginationCountByU_C;
-
-	/**
-	 * Returns all the message-boards messages where userId = &#63; and classNameId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C(long userId, long classNameId) {
-		return findByU_C(
-			userId, classNameId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where userId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C(
-		long userId, long classNameId, int start, int end) {
-
-		return findByU_C(userId, classNameId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where userId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C(
-		long userId, long classNameId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByU_C(
-			userId, classNameId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
+		_collectionPersistenceFinderByU_C;
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where userId = &#63; and classNameId = &#63;.
@@ -4152,106 +1430,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByU_C;
-					finderArgs = new Object[] {userId, classNameId};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByU_C;
-				finderArgs = new Object[] {
-					userId, classNameId, start, end, orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if ((userId != mbMessage.getUserId()) ||
-							(classNameId != mbMessage.getClassNameId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						4 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(4);
-				}
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_U_C_USERID_2);
-
-				sb.append(_FINDER_COLUMN_U_C_CLASSNAMEID_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(userId);
-
-					queryPos.add(classNameId);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByU_C.find(
+			finderCache, new Object[] {userId, new long[] {classNameId}}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -4304,74 +1485,9 @@ public class MBMessagePersistenceImpl
 		long userId, long classNameId,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByU_C(
-			userId, classNameId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the message-boards messages where userId = &#63; and classNameId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameIds the class name IDs
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C(long userId, long[] classNameIds) {
-		return findByU_C(
-			userId, classNameIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where userId = &#63; and classNameId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameIds the class name IDs
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C(
-		long userId, long[] classNameIds, int start, int end) {
-
-		return findByU_C(userId, classNameIds, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where userId = &#63; and classNameId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameIds the class name IDs
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C(
-		long userId, long[] classNameIds, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByU_C(
-			userId, classNameIds, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByU_C.fetchFirst(
+			finderCache, new Object[] {userId, new long[] {classNameId}},
+			orderByComparator);
 	}
 
 	/**
@@ -4395,125 +1511,10 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		if (classNameIds == null) {
-			classNameIds = new long[0];
-		}
-		else if (classNameIds.length > 1) {
-			classNameIds = ArrayUtil.sortedUnique(classNameIds);
-		}
-
-		if (classNameIds.length == 1) {
-			return findByU_C(
-				userId, classNameIds[0], start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						userId, StringUtil.merge(classNameIds)
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					userId, StringUtil.merge(classNameIds), start, end,
-					orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					_finderPathWithPaginationFindByU_C, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if ((userId != mbMessage.getUserId()) ||
-							!ArrayUtil.contains(
-								classNameIds, mbMessage.getClassNameId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_U_C_USERID_2);
-
-				if (classNameIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_U_C_CLASSNAMEID_7);
-
-					sb.append(StringUtil.merge(classNameIds));
-
-					sb.append(")");
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(userId);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByU_C, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByU_C.find(
+			finderCache,
+			new Object[] {userId, ArrayUtil.sortedUnique(classNameIds)}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -4524,13 +1525,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public void removeByU_C(long userId, long classNameId) {
-		for (MBMessage mbMessage :
-				findByU_C(
-					userId, classNameId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(mbMessage);
-		}
+		_collectionPersistenceFinderByU_C.remove(
+			finderCache, new Object[] {userId, new long[] {classNameId}});
 	}
 
 	/**
@@ -4542,55 +1538,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByU_C(long userId, long classNameId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = _finderPathCountByU_C;
-
-			Object[] finderArgs = new Object[] {userId, classNameId};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_U_C_USERID_2);
-
-				sb.append(_FINDER_COLUMN_U_C_CLASSNAMEID_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(userId);
-
-					queryPos.add(classNameId);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByU_C.count(
+			finderCache, new Object[] {userId, new long[] {classNameId}});
 	}
 
 	/**
@@ -4602,147 +1551,13 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByU_C(long userId, long[] classNameIds) {
-		if (classNameIds == null) {
-			classNameIds = new long[0];
-		}
-		else if (classNameIds.length > 1) {
-			classNameIds = ArrayUtil.sortedUnique(classNameIds);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			Object[] finderArgs = new Object[] {
-				userId, StringUtil.merge(classNameIds)
-			};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByU_C, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_U_C_USERID_2);
-
-				if (classNameIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_U_C_CLASSNAMEID_7);
-
-					sb.append(StringUtil.merge(classNameIds));
-
-					sb.append(")");
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(userId);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByU_C, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByU_C.count(
+			finderCache,
+			new Object[] {userId, ArrayUtil.sortedUnique(classNameIds)});
 	}
 
-	private static final String _FINDER_COLUMN_U_C_USERID_2 =
-		"mbMessage.userId = ? AND ";
-
-	private static final String _FINDER_COLUMN_U_C_CLASSNAMEID_2 =
-		"mbMessage.classNameId = ?";
-
-	private static final String _FINDER_COLUMN_U_C_CLASSNAMEID_7 =
-		"mbMessage.classNameId IN (";
-
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByC_C;
-
-	/**
-	 * Returns all the message-boards messages where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByC_C(long classNameId, long classPK) {
-		return findByC_C(
-			classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByC_C(
-		long classNameId, long classPK, int start, int end) {
-
-		return findByC_C(classNameId, classPK, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByC_C(
-		long classNameId, long classPK, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByC_C(
-			classNameId, classPK, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where classNameId = &#63; and classPK = &#63;.
@@ -4765,14 +1580,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByC_C.find(
-				finderCache, new Object[] {classNameId, classPK}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_C.find(
+			finderCache, new Object[] {classNameId, classPK}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -4790,16 +1600,9 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByC_C_First(
-			classNameId, classPK, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {classNameId, classPK}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			finderCache, new Object[] {classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -4841,77 +1644,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByC_C(long classNameId, long classPK) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByC_C.count(
-				finderCache, new Object[] {classNameId, classPK});
-		}
+		return _collectionPersistenceFinderByC_C.count(
+			finderCache, new Object[] {classNameId, classPK});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByT_P;
-	private FinderPath _finderPathWithoutPaginationFindByT_P;
-	private FinderPath _finderPathCountByT_P;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByT_P;
-
-	/**
-	 * Returns all the message-boards messages where threadId = &#63; and parentMessageId = &#63;.
-	 *
-	 * @param threadId the thread ID
-	 * @param parentMessageId the parent message ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByT_P(long threadId, long parentMessageId) {
-		return findByT_P(
-			threadId, parentMessageId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where threadId = &#63; and parentMessageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param parentMessageId the parent message ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByT_P(
-		long threadId, long parentMessageId, int start, int end) {
-
-		return findByT_P(threadId, parentMessageId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where threadId = &#63; and parentMessageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param parentMessageId the parent message ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByT_P(
-		long threadId, long parentMessageId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByT_P(
-			threadId, parentMessageId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where threadId = &#63; and parentMessageId = &#63;.
@@ -4934,14 +1672,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByT_P.find(
-				finderCache, new Object[] {threadId, parentMessageId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByT_P.find(
+			finderCache, new Object[] {threadId, parentMessageId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -4959,17 +1692,9 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByT_P_First(
-			threadId, parentMessageId, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByT_P.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {threadId, parentMessageId}));
+		return _collectionPersistenceFinderByT_P.findFirst(
+			finderCache, new Object[] {threadId, parentMessageId},
+			orderByComparator);
 	}
 
 	/**
@@ -5011,75 +1736,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByT_P(long threadId, long parentMessageId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByT_P.count(
-				finderCache, new Object[] {threadId, parentMessageId});
-		}
+		return _collectionPersistenceFinderByT_P.count(
+			finderCache, new Object[] {threadId, parentMessageId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByT_A;
-	private FinderPath _finderPathWithoutPaginationFindByT_A;
-	private FinderPath _finderPathCountByT_A;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByT_A;
-
-	/**
-	 * Returns all the message-boards messages where threadId = &#63; and answer = &#63;.
-	 *
-	 * @param threadId the thread ID
-	 * @param answer the answer
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByT_A(long threadId, boolean answer) {
-		return findByT_A(
-			threadId, answer, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where threadId = &#63; and answer = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param answer the answer
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByT_A(
-		long threadId, boolean answer, int start, int end) {
-
-		return findByT_A(threadId, answer, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where threadId = &#63; and answer = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param answer the answer
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByT_A(
-		long threadId, boolean answer, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByT_A(threadId, answer, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where threadId = &#63; and answer = &#63;.
@@ -5102,14 +1764,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByT_A.find(
-				finderCache, new Object[] {threadId, answer}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByT_A.find(
+			finderCache, new Object[] {threadId, answer}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -5127,16 +1784,8 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByT_A_First(
-			threadId, answer, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByT_A.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {threadId, answer}));
+		return _collectionPersistenceFinderByT_A.findFirst(
+			finderCache, new Object[] {threadId, answer}, orderByComparator);
 	}
 
 	/**
@@ -5177,75 +1826,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByT_A(long threadId, boolean answer) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByT_A.count(
-				finderCache, new Object[] {threadId, answer});
-		}
+		return _collectionPersistenceFinderByT_A.count(
+			finderCache, new Object[] {threadId, answer});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByT_S;
-	private FinderPath _finderPathWithoutPaginationFindByT_S;
-	private FinderPath _finderPathCountByT_S;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByT_S;
-
-	/**
-	 * Returns all the message-boards messages where threadId = &#63; and status = &#63;.
-	 *
-	 * @param threadId the thread ID
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByT_S(long threadId, int status) {
-		return findByT_S(
-			threadId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where threadId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByT_S(
-		long threadId, int status, int start, int end) {
-
-		return findByT_S(threadId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where threadId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByT_S(
-		long threadId, int status, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByT_S(threadId, status, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where threadId = &#63; and status = &#63;.
@@ -5268,14 +1854,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByT_S.find(
-				finderCache, new Object[] {threadId, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByT_S.find(
+			finderCache, new Object[] {threadId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -5293,16 +1874,8 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByT_S_First(
-			threadId, status, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByT_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {threadId, status}));
+		return _collectionPersistenceFinderByT_S.findFirst(
+			finderCache, new Object[] {threadId, status}, orderByComparator);
 	}
 
 	/**
@@ -5343,18 +1916,11 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByT_S(long threadId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByT_S.count(
-				finderCache, new Object[] {threadId, status});
-		}
+		return _collectionPersistenceFinderByT_S.count(
+			finderCache, new Object[] {threadId, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByT_NotS;
-	private FinderPath _finderPathWithPaginationCountByT_NotS;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByT_NotS;
 
 	/**
@@ -5434,14 +2000,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByT_NotS.find(
-				finderCache, new Object[] {threadId, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByT_NotS.find(
+			finderCache, new Object[] {threadId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -5459,16 +2020,8 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByT_NotS_First(
-			threadId, status, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByT_NotS.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {threadId, status}));
+		return _collectionPersistenceFinderByT_NotS.findFirst(
+			finderCache, new Object[] {threadId, status}, orderByComparator);
 	}
 
 	/**
@@ -5509,74 +2062,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByT_NotS(long threadId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByT_NotS.count(
-				finderCache, new Object[] {threadId, status});
-		}
+		return _collectionPersistenceFinderByT_NotS.count(
+			finderCache, new Object[] {threadId, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByTR_S;
-	private FinderPath _finderPathWithoutPaginationFindByTR_S;
-	private FinderPath _finderPathCountByTR_S;
-
-	/**
-	 * Returns all the message-boards messages where threadId = &#63; and status = &#63;.
-	 *
-	 * @param threadId the thread ID
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByTR_S(long threadId, int status) {
-		return findByTR_S(
-			threadId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where threadId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByTR_S(
-		long threadId, int status, int start, int end) {
-
-		return findByTR_S(threadId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where threadId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param threadId the thread ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByTR_S(
-		long threadId, int status, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByTR_S(
-			threadId, status, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
+		_collectionPersistenceFinderByTR_S;
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where threadId = &#63; and status = &#63;.
@@ -5599,106 +2090,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByTR_S;
-					finderArgs = new Object[] {threadId, status};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByTR_S;
-				finderArgs = new Object[] {
-					threadId, status, start, end, orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if ((threadId != mbMessage.getThreadId()) ||
-							(status != mbMessage.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						4 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(4);
-				}
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_TR_S_THREADID_2);
-
-				sb.append(_FINDER_COLUMN_TR_S_STATUS_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(threadId);
-
-					queryPos.add(status);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByTR_S.find(
+			finderCache, new Object[] {threadId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -5716,26 +2110,8 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByTR_S_First(
-			threadId, status, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		StringBundler sb = new StringBundler(6);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("threadId=");
-		sb.append(threadId);
-
-		sb.append(", status=");
-		sb.append(status);
-
-		sb.append("}");
-
-		throw new NoSuchMessageException(sb.toString());
+		return _collectionPersistenceFinderByTR_S.findFirst(
+			finderCache, new Object[] {threadId, status}, orderByComparator);
 	}
 
 	/**
@@ -5751,14 +2127,8 @@ public class MBMessagePersistenceImpl
 		long threadId, int status,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByTR_S(
-			threadId, status, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		return _collectionPersistenceFinderByTR_S.fetchFirst(
+			finderCache, new Object[] {threadId, status}, orderByComparator);
 	}
 
 	/**
@@ -5769,13 +2139,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public void removeByTR_S(long threadId, int status) {
-		for (MBMessage mbMessage :
-				findByTR_S(
-					threadId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(mbMessage);
-		}
+		_collectionPersistenceFinderByTR_S.remove(
+			finderCache, new Object[] {threadId, status});
 	}
 
 	/**
@@ -5787,125 +2152,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByTR_S(long threadId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = _finderPathCountByTR_S;
-
-			Object[] finderArgs = new Object[] {threadId, status};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_TR_S_THREADID_2);
-
-				sb.append(_FINDER_COLUMN_TR_S_STATUS_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(threadId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByTR_S.count(
+			finderCache, new Object[] {threadId, status});
 	}
 
-	private static final String _FINDER_COLUMN_TR_S_THREADID_2 =
-		"mbMessage.threadId = ? AND ";
-
-	private static final String _FINDER_COLUMN_TR_S_STATUS_2 =
-		"mbMessage.status = ? AND mbMessage.parentMessageId != 0";
-
-	private FinderPath _finderPathWithPaginationFindByP_S;
-	private FinderPath _finderPathWithoutPaginationFindByP_S;
-	private FinderPath _finderPathCountByP_S;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByP_S;
-
-	/**
-	 * Returns all the message-boards messages where parentMessageId = &#63; and status = &#63;.
-	 *
-	 * @param parentMessageId the parent message ID
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByP_S(long parentMessageId, int status) {
-		return findByP_S(
-			parentMessageId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where parentMessageId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param parentMessageId the parent message ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByP_S(
-		long parentMessageId, int status, int start, int end) {
-
-		return findByP_S(parentMessageId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where parentMessageId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param parentMessageId the parent message ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByP_S(
-		long parentMessageId, int status, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByP_S(
-			parentMessageId, status, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where parentMessageId = &#63; and status = &#63;.
@@ -5928,14 +2180,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByP_S.find(
-				finderCache, new Object[] {parentMessageId, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByP_S.find(
+			finderCache, new Object[] {parentMessageId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -5953,17 +2200,9 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByP_S_First(
-			parentMessageId, status, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByP_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {parentMessageId, status}));
+		return _collectionPersistenceFinderByP_S.findFirst(
+			finderCache, new Object[] {parentMessageId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -6005,78 +2244,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByP_S(long parentMessageId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByP_S.count(
-				finderCache, new Object[] {parentMessageId, status});
-		}
+		return _collectionPersistenceFinderByP_S.count(
+			finderCache, new Object[] {parentMessageId, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_U_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_U_S;
-	private FinderPath _finderPathCountByG_U_S;
-
-	/**
-	 * Returns all the message-boards messages where groupId = &#63; and userId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_U_S(long groupId, long userId, int status) {
-		return findByG_U_S(
-			groupId, userId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where groupId = &#63; and userId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_U_S(
-		long groupId, long userId, int status, int start, int end) {
-
-		return findByG_U_S(groupId, userId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and userId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_U_S(
-		long groupId, long userId, int status, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByG_U_S(
-			groupId, userId, status, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder<MBMessage, NoSuchMessageException>
+		_collectionPersistenceFinderByG_U_S;
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and userId = &#63; and status = &#63;.
@@ -6100,111 +2273,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByG_U_S;
-					finderArgs = new Object[] {groupId, userId, status};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByG_U_S;
-				finderArgs = new Object[] {
-					groupId, userId, status, start, end, orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if ((groupId != mbMessage.getGroupId()) ||
-							(userId != mbMessage.getUserId()) ||
-							(status != mbMessage.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						5 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(5);
-				}
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_U_S_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_S_USERID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_S_STATUS_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(userId);
-
-					queryPos.add(status);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_U_S.find(
+			finderCache, new Object[] {groupId, userId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -6223,29 +2294,9 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByG_U_S_First(
-			groupId, userId, status, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		StringBundler sb = new StringBundler(8);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("groupId=");
-		sb.append(groupId);
-
-		sb.append(", userId=");
-		sb.append(userId);
-
-		sb.append(", status=");
-		sb.append(status);
-
-		sb.append("}");
-
-		throw new NoSuchMessageException(sb.toString());
+		return _collectionPersistenceFinderByG_U_S.findFirst(
+			finderCache, new Object[] {groupId, userId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -6262,52 +2313,9 @@ public class MBMessagePersistenceImpl
 		long groupId, long userId, int status,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByG_U_S(
-			groupId, userId, status, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the message-boards messages that the user has permission to view where groupId = &#63; and userId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param status the status
-	 * @return the matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_U_S(
-		long groupId, long userId, int status) {
-
-		return filterFindByG_U_S(
-			groupId, userId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages that the user has permission to view where groupId = &#63; and userId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_U_S(
-		long groupId, long userId, int status, int start, int end) {
-
-		return filterFindByG_U_S(groupId, userId, status, start, end, null);
+		return _collectionPersistenceFinderByG_U_S.fetchFirst(
+			finderCache, new Object[] {groupId, userId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -6330,102 +2338,9 @@ public class MBMessagePersistenceImpl
 		long groupId, long userId, int status, int start, int end,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_U_S(
-				groupId, userId, status, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_U_S(
-					groupId, userId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_U_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_S_USERID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_S_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, MBMessageImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, MBMessageImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(userId);
-
-			queryPos.add(status);
-
-			return (List<MBMessage>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_U_S.filterFind(
+			finderCache, new Object[] {groupId, userId, status}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -6437,13 +2352,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public void removeByG_U_S(long groupId, long userId, int status) {
-		for (MBMessage mbMessage :
-				findByG_U_S(
-					groupId, userId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, null)) {
-
-			remove(mbMessage);
-		}
+		_collectionPersistenceFinderByG_U_S.remove(
+			finderCache, new Object[] {groupId, userId, status});
 	}
 
 	/**
@@ -6456,59 +2366,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByG_U_S(long groupId, long userId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = _finderPathCountByG_U_S;
-
-			Object[] finderArgs = new Object[] {groupId, userId, status};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(4);
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_U_S_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_S_USERID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_S_STATUS_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(userId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_U_S.count(
+			finderCache, new Object[] {groupId, userId, status});
 	}
 
 	/**
@@ -6521,138 +2380,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_U_S(long groupId, long userId, int status) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_U_S(groupId, userId, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<MBMessage> mbMessages = findByG_U_S(groupId, userId, status);
-
-			mbMessages = InlineSQLHelperUtil.filter(mbMessages, groupId);
-
-			return mbMessages.size();
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_MBMESSAGE_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_U_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_S_USERID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_S_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(userId);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_U_S.filterCount(
+			finderCache, new Object[] {groupId, userId, status}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_U_S_GROUPID_2 =
-		"mbMessage.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_U_S_USERID_2 =
-		"mbMessage.userId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_U_S_STATUS_2 =
-		"mbMessage.status = ? AND (mbMessage.categoryId != -1) AND (mbMessage.anonymous = [$FALSE$])";
-
-	private FinderPath _finderPathWithPaginationFindByG_C_T;
-	private FinderPath _finderPathWithoutPaginationFindByG_C_T;
-	private FinderPath _finderPathCountByG_C_T;
-	private CollectionPersistenceFinder<MBMessage>
+	private FilterCollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByG_C_T;
-
-	/**
-	 * Returns all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_T(
-		long groupId, long categoryId, long threadId) {
-
-		return findByG_C_T(
-			groupId, categoryId, threadId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_T(
-		long groupId, long categoryId, long threadId, int start, int end) {
-
-		return findByG_C_T(groupId, categoryId, threadId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_T(
-		long groupId, long categoryId, long threadId, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByG_C_T(
-			groupId, categoryId, threadId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63;.
@@ -6676,14 +2409,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByG_C_T.find(
-				finderCache, new Object[] {groupId, categoryId, threadId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_C_T.find(
+			finderCache, new Object[] {groupId, categoryId, threadId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -6702,17 +2430,9 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByG_C_T_First(
-			groupId, categoryId, threadId, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByG_C_T.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, categoryId, threadId}));
+		return _collectionPersistenceFinderByG_C_T.findFirst(
+			finderCache, new Object[] {groupId, categoryId, threadId},
+			orderByComparator);
 	}
 
 	/**
@@ -6735,45 +2455,6 @@ public class MBMessagePersistenceImpl
 	}
 
 	/**
-	 * Returns all the message-boards messages that the user has permission to view where groupId = &#63; and categoryId = &#63; and threadId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @return the matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_C_T(
-		long groupId, long categoryId, long threadId) {
-
-		return filterFindByG_C_T(
-			groupId, categoryId, threadId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages that the user has permission to view where groupId = &#63; and categoryId = &#63; and threadId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_C_T(
-		long groupId, long categoryId, long threadId, int start, int end) {
-
-		return filterFindByG_C_T(
-			groupId, categoryId, threadId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the message-boards messages that the user has permissions to view where groupId = &#63; and categoryId = &#63; and threadId = &#63;.
 	 *
 	 * <p>
@@ -6793,102 +2474,9 @@ public class MBMessagePersistenceImpl
 		long groupId, long categoryId, long threadId, int start, int end,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_C_T(
-				groupId, categoryId, threadId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_C_T(
-					groupId, categoryId, threadId, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_C_T_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_CATEGORYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_THREADID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, MBMessageImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, MBMessageImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(categoryId);
-
-			queryPos.add(threadId);
-
-			return (List<MBMessage>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_T.filterFind(
+			finderCache, new Object[] {groupId, categoryId, threadId}, start,
+			end, orderByComparator, groupId);
 	}
 
 	/**
@@ -6914,13 +2502,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByG_C_T(long groupId, long categoryId, long threadId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByG_C_T.count(
-				finderCache, new Object[] {groupId, categoryId, threadId});
-		}
+		return _collectionPersistenceFinderByG_C_T.count(
+			finderCache, new Object[] {groupId, categoryId, threadId});
 	}
 
 	/**
@@ -6935,139 +2518,12 @@ public class MBMessagePersistenceImpl
 	public int filterCountByG_C_T(
 		long groupId, long categoryId, long threadId) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_C_T(groupId, categoryId, threadId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<MBMessage> mbMessages = findByG_C_T(
-				groupId, categoryId, threadId);
-
-			mbMessages = InlineSQLHelperUtil.filter(mbMessages, groupId);
-
-			return mbMessages.size();
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_MBMESSAGE_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_C_T_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_CATEGORYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_THREADID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(categoryId);
-
-			queryPos.add(threadId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_T.filterCount(
+			finderCache, new Object[] {groupId, categoryId, threadId}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_C_T_GROUPID_2 =
-		"mbMessage.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_T_CATEGORYID_2 =
-		"mbMessage.categoryId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_T_THREADID_2 =
-		"mbMessage.threadId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByG_C_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_C_S;
-	private FinderPath _finderPathCountByG_C_S;
-	private CollectionPersistenceFinder<MBMessage>
+	private FilterCollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByG_C_S;
-
-	/**
-	 * Returns all the message-boards messages where groupId = &#63; and categoryId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_S(
-		long groupId, long categoryId, int status) {
-
-		return findByG_C_S(
-			groupId, categoryId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_S(
-		long groupId, long categoryId, int status, int start, int end) {
-
-		return findByG_C_S(groupId, categoryId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_S(
-		long groupId, long categoryId, int status, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByG_C_S(
-			groupId, categoryId, status, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and status = &#63;.
@@ -7091,14 +2547,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByG_C_S.find(
-				finderCache, new Object[] {groupId, categoryId, status}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_C_S.find(
+			finderCache, new Object[] {groupId, categoryId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -7117,17 +2568,9 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByG_C_S_First(
-			groupId, categoryId, status, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByG_C_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, categoryId, status}));
+		return _collectionPersistenceFinderByG_C_S.findFirst(
+			finderCache, new Object[] {groupId, categoryId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -7150,44 +2593,6 @@ public class MBMessagePersistenceImpl
 	}
 
 	/**
-	 * Returns all the message-boards messages that the user has permission to view where groupId = &#63; and categoryId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param status the status
-	 * @return the matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_C_S(
-		long groupId, long categoryId, int status) {
-
-		return filterFindByG_C_S(
-			groupId, categoryId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages that the user has permission to view where groupId = &#63; and categoryId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_C_S(
-		long groupId, long categoryId, int status, int start, int end) {
-
-		return filterFindByG_C_S(groupId, categoryId, status, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the message-boards messages that the user has permissions to view where groupId = &#63; and categoryId = &#63; and status = &#63;.
 	 *
 	 * <p>
@@ -7207,102 +2612,9 @@ public class MBMessagePersistenceImpl
 		long groupId, long categoryId, int status, int start, int end,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_C_S(
-				groupId, categoryId, status, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_C_S(
-					groupId, categoryId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_C_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_S_CATEGORYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_S_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, MBMessageImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, MBMessageImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(categoryId);
-
-			queryPos.add(status);
-
-			return (List<MBMessage>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_S.filterFind(
+			finderCache, new Object[] {groupId, categoryId, status}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -7328,13 +2640,8 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByG_C_S(long groupId, long categoryId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByG_C_S.count(
-				finderCache, new Object[] {groupId, categoryId, status});
-		}
+		return _collectionPersistenceFinderByG_C_S.count(
+			finderCache, new Object[] {groupId, categoryId, status});
 	}
 
 	/**
@@ -7347,139 +2654,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_C_S(long groupId, long categoryId, int status) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_C_S(groupId, categoryId, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<MBMessage> mbMessages = findByG_C_S(
-				groupId, categoryId, status);
-
-			mbMessages = InlineSQLHelperUtil.filter(mbMessages, groupId);
-
-			return mbMessages.size();
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_MBMESSAGE_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_C_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_S_CATEGORYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_S_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(categoryId);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_S.filterCount(
+			finderCache, new Object[] {groupId, categoryId, status}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_C_S_GROUPID_2 =
-		"mbMessage.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_S_CATEGORYID_2 =
-		"mbMessage.categoryId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_S_STATUS_2 =
-		"mbMessage.status = ?";
-
-	private FinderPath _finderPathWithPaginationFindByU_C_C;
-	private FinderPath _finderPathWithoutPaginationFindByU_C_C;
-	private FinderPath _finderPathCountByU_C_C;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByU_C_C;
-
-	/**
-	 * Returns all the message-boards messages where userId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_C(
-		long userId, long classNameId, long classPK) {
-
-		return findByU_C_C(
-			userId, classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where userId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_C(
-		long userId, long classNameId, long classPK, int start, int end) {
-
-		return findByU_C_C(userId, classNameId, classPK, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where userId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_C(
-		long userId, long classNameId, long classPK, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByU_C_C(
-			userId, classNameId, classPK, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where userId = &#63; and classNameId = &#63; and classPK = &#63;.
@@ -7503,14 +2683,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByU_C_C.find(
-				finderCache, new Object[] {userId, classNameId, classPK}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByU_C_C.find(
+			finderCache, new Object[] {userId, classNameId, classPK}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -7529,17 +2704,9 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByU_C_C_First(
-			userId, classNameId, classPK, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByU_C_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {userId, classNameId, classPK}));
+		return _collectionPersistenceFinderByU_C_C.findFirst(
+			finderCache, new Object[] {userId, classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -7584,81 +2751,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByU_C_C(long userId, long classNameId, long classPK) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByU_C_C.count(
-				finderCache, new Object[] {userId, classNameId, classPK});
-		}
+		return _collectionPersistenceFinderByU_C_C.count(
+			finderCache, new Object[] {userId, classNameId, classPK});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByU_C_S;
-	private FinderPath _finderPathWithoutPaginationFindByU_C_S;
-	private FinderPath _finderPathCountByU_C_S;
-	private FinderPath _finderPathWithPaginationCountByU_C_S;
-
-	/**
-	 * Returns all the message-boards messages where userId = &#63; and classNameId = &#63; and status = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_S(
-		long userId, long classNameId, int status) {
-
-		return findByU_C_S(
-			userId, classNameId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where userId = &#63; and classNameId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_S(
-		long userId, long classNameId, int status, int start, int end) {
-
-		return findByU_C_S(userId, classNameId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where userId = &#63; and classNameId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_S(
-		long userId, long classNameId, int status, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByU_C_S(
-			userId, classNameId, status, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
+		_collectionPersistenceFinderByU_C_S;
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where userId = &#63; and classNameId = &#63; and status = &#63;.
@@ -7682,111 +2780,10 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByU_C_S;
-					finderArgs = new Object[] {userId, classNameId, status};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByU_C_S;
-				finderArgs = new Object[] {
-					userId, classNameId, status, start, end, orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if ((userId != mbMessage.getUserId()) ||
-							(classNameId != mbMessage.getClassNameId()) ||
-							(status != mbMessage.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						5 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(5);
-				}
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_U_C_S_USERID_2);
-
-				sb.append(_FINDER_COLUMN_U_C_S_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_U_C_S_STATUS_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(userId);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(status);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByU_C_S.find(
+			finderCache,
+			new Object[] {userId, new long[] {classNameId}, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -7844,80 +2841,10 @@ public class MBMessagePersistenceImpl
 		long userId, long classNameId, int status,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByU_C_S(
-			userId, classNameId, status, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the message-boards messages where userId = &#63; and classNameId = any &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameIds the class name IDs
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_S(
-		long userId, long[] classNameIds, int status) {
-
-		return findByU_C_S(
-			userId, classNameIds, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where userId = &#63; and classNameId = any &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameIds the class name IDs
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_S(
-		long userId, long[] classNameIds, int status, int start, int end) {
-
-		return findByU_C_S(userId, classNameIds, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where userId = &#63; and classNameId = any &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameIds the class name IDs
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_S(
-		long userId, long[] classNameIds, int status, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByU_C_S(
-			userId, classNameIds, status, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByU_C_S.fetchFirst(
+			finderCache,
+			new Object[] {userId, new long[] {classNameId}, status},
+			orderByComparator);
 	}
 
 	/**
@@ -7942,132 +2869,10 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		if (classNameIds == null) {
-			classNameIds = new long[0];
-		}
-		else if (classNameIds.length > 1) {
-			classNameIds = ArrayUtil.sortedUnique(classNameIds);
-		}
-
-		if (classNameIds.length == 1) {
-			return findByU_C_S(
-				userId, classNameIds[0], status, start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						userId, StringUtil.merge(classNameIds), status
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					userId, StringUtil.merge(classNameIds), status, start, end,
-					orderByComparator
-				};
-			}
-
-			List<MBMessage> list = null;
-
-			if (useFinderCache) {
-				list = (List<MBMessage>)finderCache.getResult(
-					_finderPathWithPaginationFindByU_C_S, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (MBMessage mbMessage : list) {
-						if ((userId != mbMessage.getUserId()) ||
-							!ArrayUtil.contains(
-								classNameIds, mbMessage.getClassNameId()) ||
-							(status != mbMessage.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_U_C_S_USERID_2);
-
-				if (classNameIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_U_C_S_CLASSNAMEID_7);
-
-					sb.append(StringUtil.merge(classNameIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_U_C_S_STATUS_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(MBMessageModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(userId);
-
-					queryPos.add(status);
-
-					list = (List<MBMessage>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByU_C_S, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByU_C_S.find(
+			finderCache,
+			new Object[] {userId, ArrayUtil.sortedUnique(classNameIds), status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -8079,13 +2884,9 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public void removeByU_C_S(long userId, long classNameId, int status) {
-		for (MBMessage mbMessage :
-				findByU_C_S(
-					userId, classNameId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, null)) {
-
-			remove(mbMessage);
-		}
+		_collectionPersistenceFinderByU_C_S.remove(
+			finderCache,
+			new Object[] {userId, new long[] {classNameId}, status});
 	}
 
 	/**
@@ -8098,59 +2899,9 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByU_C_S(long userId, long classNameId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			FinderPath finderPath = _finderPathCountByU_C_S;
-
-			Object[] finderArgs = new Object[] {userId, classNameId, status};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(4);
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_U_C_S_USERID_2);
-
-				sb.append(_FINDER_COLUMN_U_C_S_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_U_C_S_STATUS_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(userId);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByU_C_S.count(
+			finderCache,
+			new Object[] {userId, new long[] {classNameId}, status});
 	}
 
 	/**
@@ -8163,163 +2914,15 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByU_C_S(long userId, long[] classNameIds, int status) {
-		if (classNameIds == null) {
-			classNameIds = new long[0];
-		}
-		else if (classNameIds.length > 1) {
-			classNameIds = ArrayUtil.sortedUnique(classNameIds);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			Object[] finderArgs = new Object[] {
-				userId, StringUtil.merge(classNameIds), status
-			};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByU_C_S, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_MBMESSAGE_WHERE);
-
-				sb.append(_FINDER_COLUMN_U_C_S_USERID_2);
-
-				if (classNameIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_U_C_S_CLASSNAMEID_7);
-
-					sb.append(StringUtil.merge(classNameIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_U_C_S_STATUS_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(userId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByU_C_S, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByU_C_S.count(
+			finderCache,
+			new Object[] {
+				userId, ArrayUtil.sortedUnique(classNameIds), status
+			});
 	}
 
-	private static final String _FINDER_COLUMN_U_C_S_USERID_2 =
-		"mbMessage.userId = ? AND ";
-
-	private static final String _FINDER_COLUMN_U_C_S_CLASSNAMEID_2 =
-		"mbMessage.classNameId = ? AND ";
-
-	private static final String _FINDER_COLUMN_U_C_S_CLASSNAMEID_7 =
-		"mbMessage.classNameId IN (";
-
-	private static final String _FINDER_COLUMN_U_C_S_STATUS_2 =
-		"mbMessage.status = ?";
-
-	private FinderPath _finderPathWithPaginationFindByC_C_S;
-	private FinderPath _finderPathWithoutPaginationFindByC_C_S;
-	private FinderPath _finderPathCountByC_C_S;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByC_C_S;
-
-	/**
-	 * Returns all the message-boards messages where classNameId = &#63; and classPK = &#63; and status = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByC_C_S(
-		long classNameId, long classPK, int status) {
-
-		return findByC_C_S(
-			classNameId, classPK, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where classNameId = &#63; and classPK = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByC_C_S(
-		long classNameId, long classPK, int status, int start, int end) {
-
-		return findByC_C_S(classNameId, classPK, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where classNameId = &#63; and classPK = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByC_C_S(
-		long classNameId, long classPK, int status, int start, int end,
-		OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByC_C_S(
-			classNameId, classPK, status, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where classNameId = &#63; and classPK = &#63; and status = &#63;.
@@ -8343,14 +2946,9 @@ public class MBMessagePersistenceImpl
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByC_C_S.find(
-				finderCache, new Object[] {classNameId, classPK, status}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_C_S.find(
+			finderCache, new Object[] {classNameId, classPK, status}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -8369,17 +2967,9 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByC_C_S_First(
-			classNameId, classPK, status, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByC_C_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {classNameId, classPK, status}));
+		return _collectionPersistenceFinderByC_C_S.findFirst(
+			finderCache, new Object[] {classNameId, classPK, status},
+			orderByComparator);
 	}
 
 	/**
@@ -8424,88 +3014,12 @@ public class MBMessagePersistenceImpl
 	 */
 	@Override
 	public int countByC_C_S(long classNameId, long classPK, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByC_C_S.count(
-				finderCache, new Object[] {classNameId, classPK, status});
-		}
+		return _collectionPersistenceFinderByC_C_S.count(
+			finderCache, new Object[] {classNameId, classPK, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_C_T_A;
-	private FinderPath _finderPathWithoutPaginationFindByG_C_T_A;
-	private FinderPath _finderPathCountByG_C_T_A;
-	private CollectionPersistenceFinder<MBMessage>
+	private FilterCollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByG_C_T_A;
-
-	/**
-	 * Returns all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63; and answer = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param answer the answer
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_T_A(
-		long groupId, long categoryId, long threadId, boolean answer) {
-
-		return findByG_C_T_A(
-			groupId, categoryId, threadId, answer, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63; and answer = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param answer the answer
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_T_A(
-		long groupId, long categoryId, long threadId, boolean answer, int start,
-		int end) {
-
-		return findByG_C_T_A(
-			groupId, categoryId, threadId, answer, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63; and answer = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param answer the answer
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_T_A(
-		long groupId, long categoryId, long threadId, boolean answer, int start,
-		int end, OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByG_C_T_A(
-			groupId, categoryId, threadId, answer, start, end,
-			orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63; and answer = &#63;.
@@ -8530,15 +3044,9 @@ public class MBMessagePersistenceImpl
 		int end, OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByG_C_T_A.find(
-				finderCache,
-				new Object[] {groupId, categoryId, threadId, answer}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_C_T_A.find(
+			finderCache, new Object[] {groupId, categoryId, threadId, answer},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -8558,17 +3066,9 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByG_C_T_A_First(
-			groupId, categoryId, threadId, answer, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByG_C_T_A.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, categoryId, threadId, answer}));
+		return _collectionPersistenceFinderByG_C_T_A.findFirst(
+			finderCache, new Object[] {groupId, categoryId, threadId, answer},
+			orderByComparator);
 	}
 
 	/**
@@ -8592,48 +3092,6 @@ public class MBMessagePersistenceImpl
 	}
 
 	/**
-	 * Returns all the message-boards messages that the user has permission to view where groupId = &#63; and categoryId = &#63; and threadId = &#63; and answer = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param answer the answer
-	 * @return the matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_C_T_A(
-		long groupId, long categoryId, long threadId, boolean answer) {
-
-		return filterFindByG_C_T_A(
-			groupId, categoryId, threadId, answer, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages that the user has permission to view where groupId = &#63; and categoryId = &#63; and threadId = &#63; and answer = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param answer the answer
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_C_T_A(
-		long groupId, long categoryId, long threadId, boolean answer, int start,
-		int end) {
-
-		return filterFindByG_C_T_A(
-			groupId, categoryId, threadId, answer, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the message-boards messages that the user has permissions to view where groupId = &#63; and categoryId = &#63; and threadId = &#63; and answer = &#63;.
 	 *
 	 * <p>
@@ -8654,107 +3112,9 @@ public class MBMessagePersistenceImpl
 		long groupId, long categoryId, long threadId, boolean answer, int start,
 		int end, OrderByComparator<MBMessage> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_C_T_A(
-				groupId, categoryId, threadId, answer, start, end,
-				orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_C_T_A(
-					groupId, categoryId, threadId, answer, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				6 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(7);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_C_T_A_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_A_CATEGORYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_A_THREADID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_A_ANSWER_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, MBMessageImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, MBMessageImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(categoryId);
-
-			queryPos.add(threadId);
-
-			queryPos.add(answer);
-
-			return (List<MBMessage>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_T_A.filterFind(
+			finderCache, new Object[] {groupId, categoryId, threadId, answer},
+			start, end, orderByComparator, groupId);
 	}
 
 	/**
@@ -8786,14 +3146,8 @@ public class MBMessagePersistenceImpl
 	public int countByG_C_T_A(
 		long groupId, long categoryId, long threadId, boolean answer) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByG_C_T_A.count(
-				finderCache,
-				new Object[] {groupId, categoryId, threadId, answer});
-		}
+		return _collectionPersistenceFinderByG_C_T_A.count(
+			finderCache, new Object[] {groupId, categoryId, threadId, answer});
 	}
 
 	/**
@@ -8809,152 +3163,13 @@ public class MBMessagePersistenceImpl
 	public int filterCountByG_C_T_A(
 		long groupId, long categoryId, long threadId, boolean answer) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_C_T_A(groupId, categoryId, threadId, answer);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<MBMessage> mbMessages = findByG_C_T_A(
-				groupId, categoryId, threadId, answer);
-
-			mbMessages = InlineSQLHelperUtil.filter(mbMessages, groupId);
-
-			return mbMessages.size();
-		}
-
-		StringBundler sb = new StringBundler(5);
-
-		sb.append(_FILTER_SQL_COUNT_MBMESSAGE_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_C_T_A_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_A_CATEGORYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_A_THREADID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_A_ANSWER_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(categoryId);
-
-			queryPos.add(threadId);
-
-			queryPos.add(answer);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_T_A.filterCount(
+			finderCache, new Object[] {groupId, categoryId, threadId, answer},
+			groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_C_T_A_GROUPID_2 =
-		"mbMessage.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_T_A_CATEGORYID_2 =
-		"mbMessage.categoryId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_T_A_THREADID_2 =
-		"mbMessage.threadId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_T_A_ANSWER_2 =
-		"mbMessage.answer = ?";
-
-	private FinderPath _finderPathWithPaginationFindByG_C_T_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_C_T_S;
-	private FinderPath _finderPathCountByG_C_T_S;
-	private CollectionPersistenceFinder<MBMessage>
+	private FilterCollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByG_C_T_S;
-
-	/**
-	 * Returns all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_T_S(
-		long groupId, long categoryId, long threadId, int status) {
-
-		return findByG_C_T_S(
-			groupId, categoryId, threadId, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_T_S(
-		long groupId, long categoryId, long threadId, int status, int start,
-		int end) {
-
-		return findByG_C_T_S(
-			groupId, categoryId, threadId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByG_C_T_S(
-		long groupId, long categoryId, long threadId, int status, int start,
-		int end, OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByG_C_T_S(
-			groupId, categoryId, threadId, status, start, end,
-			orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where groupId = &#63; and categoryId = &#63; and threadId = &#63; and status = &#63;.
@@ -8979,15 +3194,9 @@ public class MBMessagePersistenceImpl
 		int end, OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByG_C_T_S.find(
-				finderCache,
-				new Object[] {groupId, categoryId, threadId, status}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_C_T_S.find(
+			finderCache, new Object[] {groupId, categoryId, threadId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -9007,17 +3216,9 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByG_C_T_S_First(
-			groupId, categoryId, threadId, status, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByG_C_T_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, categoryId, threadId, status}));
+		return _collectionPersistenceFinderByG_C_T_S.findFirst(
+			finderCache, new Object[] {groupId, categoryId, threadId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -9041,48 +3242,6 @@ public class MBMessagePersistenceImpl
 	}
 
 	/**
-	 * Returns all the message-boards messages that the user has permission to view where groupId = &#63; and categoryId = &#63; and threadId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param status the status
-	 * @return the matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_C_T_S(
-		long groupId, long categoryId, long threadId, int status) {
-
-		return filterFindByG_C_T_S(
-			groupId, categoryId, threadId, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages that the user has permission to view where groupId = &#63; and categoryId = &#63; and threadId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @param threadId the thread ID
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages that the user has permission to view
-	 */
-	@Override
-	public List<MBMessage> filterFindByG_C_T_S(
-		long groupId, long categoryId, long threadId, int status, int start,
-		int end) {
-
-		return filterFindByG_C_T_S(
-			groupId, categoryId, threadId, status, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the message-boards messages that the user has permissions to view where groupId = &#63; and categoryId = &#63; and threadId = &#63; and status = &#63;.
 	 *
 	 * <p>
@@ -9103,107 +3262,9 @@ public class MBMessagePersistenceImpl
 		long groupId, long categoryId, long threadId, int status, int start,
 		int end, OrderByComparator<MBMessage> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_C_T_S(
-				groupId, categoryId, threadId, status, start, end,
-				orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_C_T_S(
-					groupId, categoryId, threadId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				6 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(7);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_C_T_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_S_CATEGORYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_S_THREADID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_S_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(MBMessageModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, MBMessageImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, MBMessageImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(categoryId);
-
-			queryPos.add(threadId);
-
-			queryPos.add(status);
-
-			return (List<MBMessage>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_T_S.filterFind(
+			finderCache, new Object[] {groupId, categoryId, threadId, status},
+			start, end, orderByComparator, groupId);
 	}
 
 	/**
@@ -9235,14 +3296,8 @@ public class MBMessagePersistenceImpl
 	public int countByG_C_T_S(
 		long groupId, long categoryId, long threadId, int status) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByG_C_T_S.count(
-				finderCache,
-				new Object[] {groupId, categoryId, threadId, status});
-		}
+		return _collectionPersistenceFinderByG_C_T_S.count(
+			finderCache, new Object[] {groupId, categoryId, threadId, status});
 	}
 
 	/**
@@ -9258,152 +3313,13 @@ public class MBMessagePersistenceImpl
 	public int filterCountByG_C_T_S(
 		long groupId, long categoryId, long threadId, int status) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_C_T_S(groupId, categoryId, threadId, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<MBMessage> mbMessages = findByG_C_T_S(
-				groupId, categoryId, threadId, status);
-
-			mbMessages = InlineSQLHelperUtil.filter(mbMessages, groupId);
-
-			return mbMessages.size();
-		}
-
-		StringBundler sb = new StringBundler(5);
-
-		sb.append(_FILTER_SQL_COUNT_MBMESSAGE_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_C_T_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_S_CATEGORYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_S_THREADID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_T_S_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), MBMessage.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(categoryId);
-
-			queryPos.add(threadId);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_T_S.filterCount(
+			finderCache, new Object[] {groupId, categoryId, threadId, status},
+			groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_C_T_S_GROUPID_2 =
-		"mbMessage.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_T_S_CATEGORYID_2 =
-		"mbMessage.categoryId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_T_S_THREADID_2 =
-		"mbMessage.threadId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_T_S_STATUS_2 =
-		"mbMessage.status = ?";
-
-	private FinderPath _finderPathWithPaginationFindByU_C_C_S;
-	private FinderPath _finderPathWithoutPaginationFindByU_C_C_S;
-	private FinderPath _finderPathCountByU_C_C_S;
-	private CollectionPersistenceFinder<MBMessage>
+	private CollectionPersistenceFinder<MBMessage, NoSuchMessageException>
 		_collectionPersistenceFinderByU_C_C_S;
-
-	/**
-	 * Returns all the message-boards messages where userId = &#63; and classNameId = &#63; and classPK = &#63; and status = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param status the status
-	 * @return the matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_C_S(
-		long userId, long classNameId, long classPK, int status) {
-
-		return findByU_C_C_S(
-			userId, classNameId, classPK, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message-boards messages where userId = &#63; and classNameId = &#63; and classPK = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @return the range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_C_S(
-		long userId, long classNameId, long classPK, int status, int start,
-		int end) {
-
-		return findByU_C_C_S(
-			userId, classNameId, classPK, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the message-boards messages where userId = &#63; and classNameId = &#63; and classPK = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMessageModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param status the status
-	 * @param start the lower bound of the range of message-boards messages
-	 * @param end the upper bound of the range of message-boards messages (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message-boards messages
-	 */
-	@Override
-	public List<MBMessage> findByU_C_C_S(
-		long userId, long classNameId, long classPK, int status, int start,
-		int end, OrderByComparator<MBMessage> orderByComparator) {
-
-		return findByU_C_C_S(
-			userId, classNameId, classPK, status, start, end, orderByComparator,
-			true);
-	}
 
 	/**
 	 * Returns an ordered range of all the message-boards messages where userId = &#63; and classNameId = &#63; and classPK = &#63; and status = &#63;.
@@ -9428,15 +3344,9 @@ public class MBMessagePersistenceImpl
 		int end, OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByU_C_C_S.find(
-				finderCache,
-				new Object[] {userId, classNameId, classPK, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByU_C_C_S.find(
+			finderCache, new Object[] {userId, classNameId, classPK, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -9456,17 +3366,9 @@ public class MBMessagePersistenceImpl
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByU_C_C_S_First(
-			userId, classNameId, classPK, status, orderByComparator);
-
-		if (mbMessage != null) {
-			return mbMessage;
-		}
-
-		throw new NoSuchMessageException(
-			_collectionPersistenceFinderByU_C_C_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {userId, classNameId, classPK, status}));
+		return _collectionPersistenceFinderByU_C_C_S.findFirst(
+			finderCache, new Object[] {userId, classNameId, classPK, status},
+			orderByComparator);
 	}
 
 	/**
@@ -9518,18 +3420,12 @@ public class MBMessagePersistenceImpl
 	public int countByU_C_C_S(
 		long userId, long classNameId, long classPK, int status) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _collectionPersistenceFinderByU_C_C_S.count(
-				finderCache,
-				new Object[] {userId, classNameId, classPK, status});
-		}
+		return _collectionPersistenceFinderByU_C_C_S.count(
+			finderCache, new Object[] {userId, classNameId, classPK, status});
 	}
 
-	private FinderPath _finderPathFetchByERC_G;
-	private UniquePersistenceFinder<MBMessage> _uniquePersistenceFinderByERC_G;
+	private UniquePersistenceFinder<MBMessage, NoSuchMessageException>
+		_uniquePersistenceFinderByERC_G;
 
 	/**
 	 * Returns the message-boards message where externalReferenceCode = &#63; and groupId = &#63; or throws a <code>NoSuchMessageException</code> if it could not be found.
@@ -9543,34 +3439,8 @@ public class MBMessagePersistenceImpl
 	public MBMessage findByERC_G(String externalReferenceCode, long groupId)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByERC_G(externalReferenceCode, groupId);
-
-		if (mbMessage == null) {
-			String message =
-				_uniquePersistenceFinderByERC_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMessageException(message);
-		}
-
-		return mbMessage;
-	}
-
-	/**
-	 * Returns the message-boards message where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param groupId the group ID
-	 * @return the matching message-boards message, or <code>null</code> if a matching message-boards message could not be found
-	 */
-	@Override
-	public MBMessage fetchByERC_G(String externalReferenceCode, long groupId) {
-		return fetchByERC_G(externalReferenceCode, groupId, true);
+		return _uniquePersistenceFinderByERC_G.find(
+			finderCache, new Object[] {externalReferenceCode, groupId});
 	}
 
 	/**
@@ -9585,14 +3455,9 @@ public class MBMessagePersistenceImpl
 	public MBMessage fetchByERC_G(
 		String externalReferenceCode, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMessage.class)) {
-
-			return _uniquePersistenceFinderByERC_G.fetch(
-				finderCache, new Object[] {externalReferenceCode, groupId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByERC_G.fetch(
+			finderCache, new Object[] {externalReferenceCode, groupId},
+			useFinderCache);
 	}
 
 	/**
@@ -10022,903 +3887,962 @@ public class MBMessagePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
-			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"mbMessage.", "uuid", FinderColumn.Type.STRING, "=", true, true,
-				MBMessage::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, MBMessage::getUuid,
-			MBMessage::getGroupId);
+				"mbMessage.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, MBMessage::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_MBMESSAGE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(MBMessage::getUuid), MBMessage::getGroupId),
+			_SQL_SELECT_MBMESSAGE_WHERE, "",
 			new FinderColumn<>(
-				"mbMessage.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, MBMessage::getUuid),
+				"mbMessage.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, MBMessage::getUuid),
 			new FinderColumn<>(
 				"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, MBMessage::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_MBMESSAGE_WHERE,
-				_SQL_COUNT_MBMESSAGE_WHERE, MBMessageModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"mbMessage.", "uuid", FinderColumn.Type.STRING, "=", true,
-					false, MBMessage::getUuid),
+					"mbMessage.", "uuid", "uuid_", FinderColumn.Type.STRING,
+					"=", true, true, MBMessage::getUuid),
 				new FinderColumn<>(
 					"mbMessage.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, MBMessage::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
+		_collectionPersistenceFinderByGroupId =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"mbMessage.categoryId != -1",
+				new FinderColumn<>(
+					"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getGroupId));
 
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
+		_collectionPersistenceFinderByCompanyId =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"mbMessage.categoryId != -1",
+				new FinderColumn<>(
+					"mbMessage.", "companyId", FinderColumn.Type.LONG, "=",
+					true, true, MBMessage::getCompanyId));
 
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
-		_finderPathWithPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId"}, true);
-
-		_finderPathWithoutPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, true);
-
-		_finderPathCountByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"},
-			false);
-
-		_finderPathWithPaginationFindByThreadId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByThreadId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"threadId"}, true);
-
-		_finderPathWithoutPaginationFindByThreadId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByThreadId",
-			new String[] {Long.class.getName()}, new String[] {"threadId"},
-			true);
-
-		_finderPathCountByThreadId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByThreadId",
-			new String[] {Long.class.getName()}, new String[] {"threadId"},
-			false);
+		_collectionPersistenceFinderByUserId =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"mbMessage.categoryId != -1",
+				new FinderColumn<>(
+					"mbMessage.", "userId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getUserId));
 
 		_collectionPersistenceFinderByThreadId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByThreadId,
-				_finderPathWithoutPaginationFindByThreadId,
-				_finderPathCountByThreadId, _SQL_SELECT_MBMESSAGE_WHERE,
-				_SQL_COUNT_MBMESSAGE_WHERE, MBMessageModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByThreadId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"threadId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByThreadId",
+					new String[] {Long.class.getName()},
+					new String[] {"threadId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByThreadId", new String[] {Long.class.getName()},
+					new String[] {"threadId"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mbMessage.", "threadId", FinderColumn.Type.LONG, "=", true,
 					true, MBMessage::getThreadId));
 
-		_finderPathWithPaginationFindByThreadIdReplies = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByThreadIdReplies",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"threadId"}, true);
-
-		_finderPathWithoutPaginationFindByThreadIdReplies = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByThreadIdReplies",
-			new String[] {Long.class.getName()}, new String[] {"threadId"},
-			true);
-
-		_finderPathCountByThreadIdReplies = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByThreadIdReplies",
-			new String[] {Long.class.getName()}, new String[] {"threadId"},
-			false);
-
-		_finderPathWithPaginationFindByParentMessageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByParentMessageId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"parentMessageId"}, true);
-
-		_finderPathWithoutPaginationFindByParentMessageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByParentMessageId",
-			new String[] {Long.class.getName()},
-			new String[] {"parentMessageId"}, true);
-
-		_finderPathCountByParentMessageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByParentMessageId",
-			new String[] {Long.class.getName()},
-			new String[] {"parentMessageId"}, false);
+		_collectionPersistenceFinderByThreadIdReplies =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByThreadIdReplies",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"threadId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByThreadIdReplies",
+					new String[] {Long.class.getName()},
+					new String[] {"threadId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByThreadIdReplies",
+					new String[] {Long.class.getName()},
+					new String[] {"threadId"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"mbMessage.parentMessageId != 0",
+				new FinderColumn<>(
+					"mbMessage.", "threadId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getThreadId));
 
 		_collectionPersistenceFinderByParentMessageId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByParentMessageId,
-				_finderPathWithoutPaginationFindByParentMessageId,
-				_finderPathCountByParentMessageId, _SQL_SELECT_MBMESSAGE_WHERE,
-				_SQL_COUNT_MBMESSAGE_WHERE, MBMessageModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByParentMessageId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"parentMessageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByParentMessageId",
+					new String[] {Long.class.getName()},
+					new String[] {"parentMessageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByParentMessageId",
+					new String[] {Long.class.getName()},
+					new String[] {"parentMessageId"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mbMessage.", "parentMessageId", FinderColumn.Type.LONG,
 					"=", true, true, MBMessage::getParentMessageId));
 
-		_finderPathWithPaginationFindByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "userId"}, true);
+		_collectionPersistenceFinderByG_U =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "userId"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"(mbMessage.categoryId != -1) AND (mbMessage.anonymous = [$FALSE$])",
+				new FinderColumn<>(
+					"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getGroupId),
+				new FinderColumn<>(
+					"mbMessage.", "userId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getUserId));
 
-		_finderPathWithoutPaginationFindByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "userId"}, true);
-
-		_finderPathCountByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "userId"}, false);
-
-		_finderPathWithPaginationFindByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "categoryId"}, true);
-
-		_finderPathWithoutPaginationFindByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "categoryId"}, true);
-
-		_finderPathCountByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "categoryId"}, false);
-
-		_collectionPersistenceFinderByG_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_C,
-			_finderPathWithoutPaginationFindByG_C, _finderPathCountByG_C,
-			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
-			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getGroupId),
-			new FinderColumn<>(
-				"mbMessage.", "categoryId", FinderColumn.Type.LONG, "=", true,
-				true, MBMessage::getCategoryId));
-
-		_finderPathFetchByG_US = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_US",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "urlSubject"}, false,
-			MBMessage::getGroupId, MBMessage::getUrlSubject);
+		_collectionPersistenceFinderByG_C =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "categoryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "categoryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "categoryId"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getGroupId),
+				new FinderColumn<>(
+					"mbMessage.", "categoryId", FinderColumn.Type.LONG, "=",
+					true, true, MBMessage::getCategoryId));
 
 		_uniquePersistenceFinderByG_US = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_US, _SQL_SELECT_MBMESSAGE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_US",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "urlSubject"}, 0, 2, false,
+				MBMessage::getGroupId,
+				convertNullFunction(MBMessage::getUrlSubject)),
+			_SQL_SELECT_MBMESSAGE_WHERE, "",
 			new FinderColumn<>(
 				"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getGroupId),
+				true, MBMessage::getGroupId),
 			new FinderColumn<>(
 				"mbMessage.", "urlSubject", FinderColumn.Type.STRING, "=", true,
 				true, MBMessage::getUrlSubject));
 
-		_finderPathWithPaginationFindByG_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_S",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "status"}, true);
+		_collectionPersistenceFinderByG_S =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_S",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_S",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"groupId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_S",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"groupId", "status"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"mbMessage.categoryId != -1",
+				new FinderColumn<>(
+					"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getGroupId),
+				new FinderColumn<>(
+					"mbMessage.", "status", FinderColumn.Type.INTEGER, "=",
+					true, true, MBMessage::getStatus));
 
-		_finderPathWithoutPaginationFindByG_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"groupId", "status"}, true);
-
-		_finderPathCountByG_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"groupId", "status"}, false);
-
-		_finderPathWithPaginationFindByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"companyId", "status"}, true);
-
-		_finderPathCountByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"companyId", "status"}, false);
-
-		_finderPathWithPaginationFindByU_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"userId", "classNameId"}, true);
-
-		_finderPathWithoutPaginationFindByU_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"userId", "classNameId"}, true);
-
-		_finderPathCountByU_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByU_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"userId", "classNameId"}, false);
-
-		_finderPathWithPaginationCountByU_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByU_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"userId", "classNameId"}, false);
-
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, false);
-
-		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
+		_collectionPersistenceFinderByC_S = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"companyId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"companyId", "status"}, false),
 			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
 			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"mbMessage.categoryId != -1",
+			new FinderColumn<>(
+				"mbMessage.", "companyId", FinderColumn.Type.LONG, "=", true,
+				true, MBMessage::getCompanyId),
+			new FinderColumn<>(
+				"mbMessage.", "status", FinderColumn.Type.INTEGER, "=", true,
+				true, MBMessage::getStatus));
+
+		_collectionPersistenceFinderByU_C = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"userId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"userId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByU_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"userId", "classNameId"}, false),
+			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+			new FinderColumn<>(
+				"mbMessage.", "userId", FinderColumn.Type.LONG, "=", true, true,
+				MBMessage::getUserId),
+			new ArrayableFinderColumn<>(
+				"mbMessage.", "classNameId", FinderColumn.Type.LONG, "=", false,
+				true, true, MBMessage::getClassNameId));
+
+		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "classPK"}, false),
+			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"mbMessage.", "classNameId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getClassNameId),
+				true, MBMessage::getClassNameId),
 			new FinderColumn<>(
 				"mbMessage.", "classPK", FinderColumn.Type.LONG, "=", true,
 				true, MBMessage::getClassPK));
 
-		_finderPathWithPaginationFindByT_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_P",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"threadId", "parentMessageId"}, true);
-
-		_finderPathWithoutPaginationFindByT_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByT_P",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"threadId", "parentMessageId"}, true);
-
-		_finderPathCountByT_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByT_P",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"threadId", "parentMessageId"}, false);
-
 		_collectionPersistenceFinderByT_P = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByT_P,
-			_finderPathWithoutPaginationFindByT_P, _finderPathCountByT_P,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_P",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"threadId", "parentMessageId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByT_P",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"threadId", "parentMessageId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByT_P",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"threadId", "parentMessageId"}, false),
 			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
-			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"mbMessage.", "threadId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getThreadId),
+				true, MBMessage::getThreadId),
 			new FinderColumn<>(
 				"mbMessage.", "parentMessageId", FinderColumn.Type.LONG, "=",
 				true, true, MBMessage::getParentMessageId));
 
-		_finderPathWithPaginationFindByT_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_A",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"threadId", "answer"}, true);
-
-		_finderPathWithoutPaginationFindByT_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByT_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"threadId", "answer"}, true);
-
-		_finderPathCountByT_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByT_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"threadId", "answer"}, false);
-
 		_collectionPersistenceFinderByT_A = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByT_A,
-			_finderPathWithoutPaginationFindByT_A, _finderPathCountByT_A,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_A",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"threadId", "answer"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByT_A",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"threadId", "answer"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByT_A",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"threadId", "answer"}, false),
 			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
-			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"mbMessage.", "threadId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getThreadId),
+				true, MBMessage::getThreadId),
 			new FinderColumn<>(
 				"mbMessage.", "answer", FinderColumn.Type.BOOLEAN, "=", true,
 				true, MBMessage::isAnswer));
 
-		_finderPathWithPaginationFindByT_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_S",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"threadId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByT_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByT_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"threadId", "status"}, true);
-
-		_finderPathCountByT_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByT_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"threadId", "status"}, false);
-
 		_collectionPersistenceFinderByT_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByT_S,
-			_finderPathWithoutPaginationFindByT_S, _finderPathCountByT_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_S",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"threadId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByT_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"threadId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByT_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"threadId", "status"}, false),
 			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
-			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"mbMessage.", "threadId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getThreadId),
+				true, MBMessage::getThreadId),
 			new FinderColumn<>(
 				"mbMessage.", "status", FinderColumn.Type.INTEGER, "=", true,
 				true, MBMessage::getStatus));
 
-		_finderPathWithPaginationFindByT_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_NotS",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"threadId", "status"}, true);
-
-		_finderPathWithPaginationCountByT_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByT_NotS",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"threadId", "status"}, false);
-
 		_collectionPersistenceFinderByT_NotS =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByT_NotS, null,
-				_finderPathWithPaginationCountByT_NotS,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_NotS",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"threadId", "status"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByT_NotS",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"threadId", "status"}, false),
 				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
-				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mbMessage.", "threadId", FinderColumn.Type.LONG, "=", true,
-					false, MBMessage::getThreadId),
+					true, MBMessage::getThreadId),
 				new FinderColumn<>(
 					"mbMessage.", "status", FinderColumn.Type.INTEGER, "!=",
 					true, true, MBMessage::getStatus));
 
-		_finderPathWithPaginationFindByTR_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByTR_S",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"threadId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByTR_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByTR_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"threadId", "status"}, true);
-
-		_finderPathCountByTR_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByTR_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"threadId", "status"}, false);
-
-		_finderPathWithPaginationFindByP_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByP_S",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"parentMessageId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByP_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"parentMessageId", "status"}, true);
-
-		_finderPathCountByP_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"parentMessageId", "status"}, false);
-
-		_collectionPersistenceFinderByP_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByP_S,
-			_finderPathWithoutPaginationFindByP_S, _finderPathCountByP_S,
+		_collectionPersistenceFinderByTR_S = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByTR_S",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"threadId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByTR_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"threadId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByTR_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"threadId", "status"}, false),
 			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
 			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"mbMessage.", "parentMessageId", FinderColumn.Type.LONG, "=",
-				true, false, MBMessage::getParentMessageId),
-			new FinderColumn<>(
-				"mbMessage.", "status", FinderColumn.Type.INTEGER, "=", true,
-				true, MBMessage::getStatus));
-
-		_finderPathWithPaginationFindByG_U_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "userId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByG_U_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "userId", "status"}, true);
-
-		_finderPathCountByG_U_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "userId", "status"}, false);
-
-		_finderPathWithPaginationFindByG_C_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_T",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "threadId"}, true);
-
-		_finderPathWithoutPaginationFindByG_C_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_T",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "threadId"}, true);
-
-		_finderPathCountByG_C_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_T",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "threadId"}, false);
-
-		_collectionPersistenceFinderByG_C_T = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_C_T,
-			_finderPathWithoutPaginationFindByG_C_T, _finderPathCountByG_C_T,
-			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
-			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getGroupId),
-			new FinderColumn<>(
-				"mbMessage.", "categoryId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getCategoryId),
+			"mbMessage.parentMessageId != 0",
 			new FinderColumn<>(
 				"mbMessage.", "threadId", FinderColumn.Type.LONG, "=", true,
-				true, MBMessage::getThreadId));
-
-		_finderPathWithPaginationFindByG_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByG_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "status"}, true);
-
-		_finderPathCountByG_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "status"}, false);
-
-		_collectionPersistenceFinderByG_C_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_C_S,
-			_finderPathWithoutPaginationFindByG_C_S, _finderPathCountByG_C_S,
-			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
-			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getGroupId),
-			new FinderColumn<>(
-				"mbMessage.", "categoryId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getCategoryId),
+				true, MBMessage::getThreadId),
 			new FinderColumn<>(
 				"mbMessage.", "status", FinderColumn.Type.INTEGER, "=", true,
 				true, MBMessage::getStatus));
 
-		_finderPathWithPaginationFindByU_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId", "classNameId", "classPK"}, true);
+		_collectionPersistenceFinderByP_S = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByP_S",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"parentMessageId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"parentMessageId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"parentMessageId", "status"}, false),
+			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+			new FinderColumn<>(
+				"mbMessage.", "parentMessageId", FinderColumn.Type.LONG, "=",
+				true, true, MBMessage::getParentMessageId),
+			new FinderColumn<>(
+				"mbMessage.", "status", FinderColumn.Type.INTEGER, "=", true,
+				true, MBMessage::getStatus));
 
-		_finderPathWithoutPaginationFindByU_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"userId", "classNameId", "classPK"}, true);
+		_collectionPersistenceFinderByG_U_S =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "userId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "userId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "userId", "status"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"(mbMessage.categoryId != -1) AND (mbMessage.anonymous = [$FALSE$])",
+				new FinderColumn<>(
+					"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getGroupId),
+				new FinderColumn<>(
+					"mbMessage.", "userId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getUserId),
+				new FinderColumn<>(
+					"mbMessage.", "status", FinderColumn.Type.INTEGER, "=",
+					true, true, MBMessage::getStatus));
 
-		_finderPathCountByU_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByU_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"userId", "classNameId", "classPK"}, false);
+		_collectionPersistenceFinderByG_C_T =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_T",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "categoryId", "threadId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_T",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {"groupId", "categoryId", "threadId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_T",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {"groupId", "categoryId", "threadId"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getGroupId),
+				new FinderColumn<>(
+					"mbMessage.", "categoryId", FinderColumn.Type.LONG, "=",
+					true, true, MBMessage::getCategoryId),
+				new FinderColumn<>(
+					"mbMessage.", "threadId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getThreadId));
+
+		_collectionPersistenceFinderByG_C_S =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "categoryId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "categoryId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "categoryId", "status"}, false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
+					true, MBMessage::getGroupId),
+				new FinderColumn<>(
+					"mbMessage.", "categoryId", FinderColumn.Type.LONG, "=",
+					true, true, MBMessage::getCategoryId),
+				new FinderColumn<>(
+					"mbMessage.", "status", FinderColumn.Type.INTEGER, "=",
+					true, true, MBMessage::getStatus));
 
 		_collectionPersistenceFinderByU_C_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByU_C_C,
-			_finderPathWithoutPaginationFindByU_C_C, _finderPathCountByU_C_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"userId", "classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"userId", "classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByU_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"userId", "classNameId", "classPK"}, false),
 			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
-			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"mbMessage.", "userId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getUserId),
+				"mbMessage.", "userId", FinderColumn.Type.LONG, "=", true, true,
+				MBMessage::getUserId),
 			new FinderColumn<>(
 				"mbMessage.", "classNameId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getClassNameId),
+				true, MBMessage::getClassNameId),
 			new FinderColumn<>(
 				"mbMessage.", "classPK", FinderColumn.Type.LONG, "=", true,
 				true, MBMessage::getClassPK));
 
-		_finderPathWithPaginationFindByU_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId", "classNameId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByU_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"userId", "classNameId", "status"}, true);
-
-		_finderPathCountByU_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByU_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"userId", "classNameId", "status"}, false);
-
-		_finderPathWithPaginationCountByU_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByU_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"userId", "classNameId", "status"}, false);
-
-		_finderPathWithPaginationFindByC_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "classPK", "status"}, true);
-
-		_finderPathWithoutPaginationFindByC_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"classNameId", "classPK", "status"}, true);
-
-		_finderPathCountByC_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"classNameId", "classPK", "status"}, false);
-
-		_collectionPersistenceFinderByC_C_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C_S,
-			_finderPathWithoutPaginationFindByC_C_S, _finderPathCountByC_C_S,
+		_collectionPersistenceFinderByU_C_S = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"userId", "classNameId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {"userId", "classNameId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByU_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {"userId", "classNameId", "status"}, false),
 			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
-			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"mbMessage.", "classNameId", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getClassNameId),
-			new FinderColumn<>(
-				"mbMessage.", "classPK", FinderColumn.Type.LONG, "=", true,
-				false, MBMessage::getClassPK),
+				"mbMessage.", "userId", FinderColumn.Type.LONG, "=", true, true,
+				MBMessage::getUserId),
+			new ArrayableFinderColumn<>(
+				"mbMessage.", "classNameId", FinderColumn.Type.LONG, "=", false,
+				true, true, MBMessage::getClassNameId),
 			new FinderColumn<>(
 				"mbMessage.", "status", FinderColumn.Type.INTEGER, "=", true,
 				true, MBMessage::getStatus));
 
-		_finderPathWithPaginationFindByG_C_T_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_T_A",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "threadId", "answer"}, true);
-
-		_finderPathWithoutPaginationFindByG_C_T_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_T_A",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Boolean.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "threadId", "answer"}, true);
-
-		_finderPathCountByG_C_T_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_T_A",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Boolean.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "threadId", "answer"},
-			false);
+		_collectionPersistenceFinderByC_C_S = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"classNameId", "classPK", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {"classNameId", "classPK", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {"classNameId", "classPK", "status"}, false),
+			_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+			MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+			new FinderColumn<>(
+				"mbMessage.", "classNameId", FinderColumn.Type.LONG, "=", true,
+				true, MBMessage::getClassNameId),
+			new FinderColumn<>(
+				"mbMessage.", "classPK", FinderColumn.Type.LONG, "=", true,
+				true, MBMessage::getClassPK),
+			new FinderColumn<>(
+				"mbMessage.", "status", FinderColumn.Type.INTEGER, "=", true,
+				true, MBMessage::getStatus));
 
 		_collectionPersistenceFinderByG_C_T_A =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_C_T_A,
-				_finderPathWithoutPaginationFindByG_C_T_A,
-				_finderPathCountByG_C_T_A, _SQL_SELECT_MBMESSAGE_WHERE,
-				_SQL_COUNT_MBMESSAGE_WHERE, MBMessageModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_T_A",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Boolean.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "categoryId", "threadId", "answer"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_T_A",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {
+						"groupId", "categoryId", "threadId", "answer"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_T_A",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {
+						"groupId", "categoryId", "threadId", "answer"
+					},
+					false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
-					false, MBMessage::getGroupId),
+					true, MBMessage::getGroupId),
 				new FinderColumn<>(
 					"mbMessage.", "categoryId", FinderColumn.Type.LONG, "=",
-					true, false, MBMessage::getCategoryId),
+					true, true, MBMessage::getCategoryId),
 				new FinderColumn<>(
 					"mbMessage.", "threadId", FinderColumn.Type.LONG, "=", true,
-					false, MBMessage::getThreadId),
+					true, MBMessage::getThreadId),
 				new FinderColumn<>(
 					"mbMessage.", "answer", FinderColumn.Type.BOOLEAN, "=",
 					true, true, MBMessage::isAnswer));
 
-		_finderPathWithPaginationFindByG_C_T_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_T_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "threadId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByG_C_T_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_T_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "threadId", "status"}, true);
-
-		_finderPathCountByG_C_T_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_T_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName()
-			},
-			new String[] {"groupId", "categoryId", "threadId", "status"},
-			false);
-
 		_collectionPersistenceFinderByG_C_T_S =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_C_T_S,
-				_finderPathWithoutPaginationFindByG_C_T_S,
-				_finderPathCountByG_C_T_S, _SQL_SELECT_MBMESSAGE_WHERE,
-				_SQL_COUNT_MBMESSAGE_WHERE, MBMessageModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_T_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "categoryId", "threadId", "status"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_T_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "categoryId", "threadId", "status"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_T_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "categoryId", "threadId", "status"
+					},
+					false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
-					false, MBMessage::getGroupId),
+					true, MBMessage::getGroupId),
 				new FinderColumn<>(
 					"mbMessage.", "categoryId", FinderColumn.Type.LONG, "=",
-					true, false, MBMessage::getCategoryId),
+					true, true, MBMessage::getCategoryId),
 				new FinderColumn<>(
 					"mbMessage.", "threadId", FinderColumn.Type.LONG, "=", true,
-					false, MBMessage::getThreadId),
+					true, MBMessage::getThreadId),
 				new FinderColumn<>(
 					"mbMessage.", "status", FinderColumn.Type.INTEGER, "=",
 					true, true, MBMessage::getStatus));
-
-		_finderPathWithPaginationFindByU_C_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_C_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"userId", "classNameId", "classPK", "status"}, true);
-
-		_finderPathWithoutPaginationFindByU_C_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_C_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName()
-			},
-			new String[] {"userId", "classNameId", "classPK", "status"}, true);
-
-		_finderPathCountByU_C_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByU_C_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName()
-			},
-			new String[] {"userId", "classNameId", "classPK", "status"}, false);
 
 		_collectionPersistenceFinderByU_C_C_S =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByU_C_C_S,
-				_finderPathWithoutPaginationFindByU_C_C_S,
-				_finderPathCountByU_C_C_S, _SQL_SELECT_MBMESSAGE_WHERE,
-				_SQL_COUNT_MBMESSAGE_WHERE, MBMessageModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_C_C_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"userId", "classNameId", "classPK", "status"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_C_C_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"userId", "classNameId", "classPK", "status"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByU_C_C_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"userId", "classNameId", "classPK", "status"},
+					false),
+				_SQL_SELECT_MBMESSAGE_WHERE, _SQL_COUNT_MBMESSAGE_WHERE,
+				MBMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mbMessage.", "userId", FinderColumn.Type.LONG, "=", true,
-					false, MBMessage::getUserId),
+					true, MBMessage::getUserId),
 				new FinderColumn<>(
 					"mbMessage.", "classNameId", FinderColumn.Type.LONG, "=",
-					true, false, MBMessage::getClassNameId),
+					true, true, MBMessage::getClassNameId),
 				new FinderColumn<>(
 					"mbMessage.", "classPK", FinderColumn.Type.LONG, "=", true,
-					false, MBMessage::getClassPK),
+					true, MBMessage::getClassPK),
 				new FinderColumn<>(
 					"mbMessage.", "status", FinderColumn.Type.INTEGER, "=",
 					true, true, MBMessage::getStatus));
 
-		_finderPathFetchByERC_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "groupId"}, false,
-			MBMessage::getExternalReferenceCode, MBMessage::getGroupId);
-
 		_uniquePersistenceFinderByERC_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_G, _SQL_SELECT_MBMESSAGE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "groupId"}, 0, 1, false,
+				convertNullFunction(MBMessage::getExternalReferenceCode),
+				MBMessage::getGroupId),
+			_SQL_SELECT_MBMESSAGE_WHERE, "",
 			new FinderColumn<>(
 				"mbMessage.", "externalReferenceCode", FinderColumn.Type.STRING,
-				"=", true, false, MBMessage::getExternalReferenceCode),
+				"=", true, true, MBMessage::getExternalReferenceCode),
 			new FinderColumn<>(
 				"mbMessage.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, MBMessage::getGroupId));
@@ -10980,29 +4904,6 @@ public class MBMessagePersistenceImpl
 	private static final String _SQL_COUNT_MBMESSAGE_WHERE =
 		"SELECT COUNT(mbMessage) FROM MBMessage mbMessage WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"mbMessage.rootMessageId";
-
-	private static final String _FILTER_SQL_SELECT_MBMESSAGE_WHERE =
-		"SELECT DISTINCT {mbMessage.*} FROM MBMessage mbMessage WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {MBMessage.*} FROM (SELECT DISTINCT mbMessage.messageId FROM MBMessage mbMessage WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_MBMESSAGE_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN MBMessage ON TEMP_TABLE.messageId = MBMessage.messageId";
-
-	private static final String _FILTER_SQL_COUNT_MBMESSAGE_WHERE =
-		"SELECT COUNT(DISTINCT mbMessage.messageId) AS COUNT_VALUE FROM MBMessage mbMessage WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "mbMessage";
-
-	private static final String _FILTER_ENTITY_TABLE = "MBMessage";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "MBMessage.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No MBMessage exists with the key {";
 
@@ -11018,4 +4919,4 @@ public class MBMessagePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:298444892
+// LIFERAY-SERVICE-BUILDER-HASH:1342358461

@@ -76,31 +76,37 @@ public abstract class BasePlacedOrderItemResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-orders/by-externalReferenceCode/{externalReferenceCode}/placed-order-items'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieve placed order items."
+		description = "Lists the top-level line items of the placed order addressed by ERC. Restricts the result to parent items (child items are exposed on the nested placedOrderItems property). Supports search, sort, pagination, and an optional skuId filter to narrow to a single purchasable variant."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression. Matched against the indexed fields of the target entity (for PlacedOrder typically account name, author, externalReferenceCode, name, orderType, and purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Optional SKU identifier used to narrow placed-order-item results to a single purchasable variant. When omitted, every parent item is returned.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "skuId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression in OData order syntax (field asc|desc, comma-separated). Sortable fields depend on the endpoint and are sourced from the matching entity model.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -143,11 +149,12 @@ public abstract class BasePlacedOrderItemResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-order-items/{placedOrderItemId}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieve information of the given Placed Order."
+		description = "Returns a single placed-order line item addressed by its internal identifier. The parent order must not be OPEN; if it is, 404 is returned."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal identifier of a placed order item under a non-open placed order. Addresses the line-item scope for read and nested-shipment listing.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "placedOrderItemId"
 			)
@@ -178,11 +185,12 @@ public abstract class BasePlacedOrderItemResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-order-items/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieve information of the given placed order item."
+		description = "Returns a single placed-order line item addressed by external reference code. Resolves the item under the authenticated buyer's company. Returns 404 when the ERC does not resolve."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -215,31 +223,37 @@ public abstract class BasePlacedOrderItemResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-orders/{placedOrderId}/placed-order-items'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieve placed order items."
+		description = "Lists the top-level line items of the placed order addressed by id. Restricts the result to parent items (child items are exposed on the nested placedOrderItems property). Supports search, sort, pagination, and an optional skuId filter to narrow to a single purchasable variant."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal identifier of a placed order. Addresses a single non-open placed order owned by the authenticated buyer or a delegated account user.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "placedOrderId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression. Matched against the indexed fields of the target entity (for PlacedOrder typically account name, author, externalReferenceCode, name, orderType, and purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Optional SKU identifier used to narrow placed-order-item results to a single purchasable variant. When omitted, every parent item is returned.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "skuId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression in OData order syntax (field asc|desc, comma-separated). Sortable fields depend on the endpoint and are sourced from the matching entity model.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -281,18 +295,22 @@ public abstract class BasePlacedOrderItemResourceImpl
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal identifier of a placed order. Addresses a single non-open placed order owned by the authenticated buyer or a delegated account user.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "placedOrderId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression. Matched against the indexed fields of the target entity (for PlacedOrder typically account name, author, externalReferenceCode, name, orderType, and purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Optional SKU identifier used to narrow placed-order-item results to a single purchasable variant. When omitted, every parent item is returned.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "skuId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression in OData order syntax (field asc|desc, comma-separated). Sortable fields depend on the endpoint and are sourced from the matching entity model.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			),
@@ -1047,4 +1065,4 @@ public abstract class BasePlacedOrderItemResourceImpl
 		LogFactoryUtil.getLog(BasePlacedOrderItemResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1233941020
+// LIFERAY-REST-BUILDER-HASH:1530651840

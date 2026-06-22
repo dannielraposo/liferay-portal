@@ -1,0 +1,15 @@
+{{- if $overlay.enabled }}
+apiVersion: storage.gcp.m.upbound.io/v1beta1
+kind: BucketIAMMember
+metadata:
+    annotations:
+        gotemplating.fn.crossplane.io/composition-resource-name: liferay-gsa-overlay-bucket-iam
+    labels:
+        {{- $labels | toYaml | nindent 8 }}
+spec:
+    forProvider:
+        bucket: {{ $overlayBucketName }}
+        member: serviceAccount:{{ $gsaEmail }}
+        role: roles/storage.objectViewer
+    managementPolicies: {{ $managementPolicies }}
+{{- end }}

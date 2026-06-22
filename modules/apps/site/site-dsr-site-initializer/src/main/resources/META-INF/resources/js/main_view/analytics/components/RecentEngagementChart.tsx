@@ -7,29 +7,28 @@ import React, {useEffect, useState} from 'react';
 
 import useAnalyticsQuery from '../../../common/hooks/useAnalyticsQuery';
 import {IEngagementChartItem} from '../../../common/utils/types';
-import RecentEngagementChartQuery from '../queries/RecentEngagementChartQuery';
 import {BASE_URL} from '../utils/constants';
 import AnalyticsFrame from './AnalyticsFrame';
 import EngagementChart from './EngagementChart';
 import Loader from './Loader';
 
-function RecentEngagementChart({
-	dsrDevEnvEnabled: useDevEnvData,
+const RecentEngagementChart = ({
+	isAnalyticsEnabled,
 }: {
-	dsrDevEnvEnabled: boolean;
-}) {
+	isAnalyticsEnabled: boolean;
+}) => {
 	const [data, setData] = useState<IEngagementChartItem[]>([]);
 	const [element, setElement] = useState<HTMLElement | null>(null);
 
 	const {isLoading, response} = useAnalyticsQuery({
 		element,
-		query: RecentEngagementChartQuery,
-		settings: {
-			checkViewportVisibility: true,
-			useDevEnvData,
+		query: {
+			paths: [
+				{key: 'siteVisitors', path: '/visitors-site-histogram-metric'},
+			],
 		},
+		settings: {isAnalyticsEnabled},
 		variables: {
-			channelId: '',
 			devices: 'Any',
 			interval: 'D',
 			location: 'Any',
@@ -41,7 +40,16 @@ function RecentEngagementChart({
 
 	useEffect(() => {
 		if (response) {
-			setData(response);
+			const histogramMetrics =
+				response.siteVisitors?.histogram?.histogramMetrics ?? [];
+
+			setData(
+				histogramMetrics.map((histogramMetric: any) => ({
+					date: histogramMetric.key,
+					numberOfVisits: histogramMetric.value ?? 0,
+					timeSpent: 0,
+				}))
+			);
 		}
 
 		return () => {};
@@ -51,21 +59,31 @@ function RecentEngagementChart({
 		<AnalyticsFrame
 			icon="analytics"
 			title={Liferay.Language.get('recent-engagement')}
-			url={`${BASE_URL}/view-timeline`}
+			url={isAnalyticsEnabled ? `${BASE_URL}/view-timeline` : undefined}
 		>
 			<div ref={setElement}>
-				{isLoading ? (
-					<Loader />
-				) : !data?.length ? (
-					<p className="mt-3 text-center text-muted">
-						{Liferay.Language.get('no-data-available')}
-					</p>
+				{isAnalyticsEnabled ? (
+					isLoading ? (
+						<Loader />
+					) : !data?.length ? (
+						<p className="mt-3 text-center text-muted">
+							{Liferay.Language.get('no-data-available')}
+						</p>
+					) : (
+						<EngagementChart data={data} />
+					)
 				) : (
-					<EngagementChart data={data} />
+					<div className="dsr-analytics-empty-message">
+						<p className="mb-0 text-center text-muted">
+							{Liferay.Language.get(
+								'analytics-cloud-is-not-configured'
+							)}
+						</p>
+					</div>
 				)}
 			</div>
 		</AnalyticsFrame>
 	);
-}
+};
 
 export default RecentEngagementChart;

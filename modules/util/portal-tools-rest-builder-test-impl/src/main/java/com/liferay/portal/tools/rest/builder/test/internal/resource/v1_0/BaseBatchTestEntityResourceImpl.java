@@ -29,6 +29,7 @@ import com.liferay.portal.odata.sort.SortParser;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.tools.rest.builder.test.dto.v1_0.BatchTestEntity;
 import com.liferay.portal.tools.rest.builder.test.dto.v1_0.Filter;
+import com.liferay.portal.tools.rest.builder.test.dto.v1_0.Schema;
 import com.liferay.portal.tools.rest.builder.test.dto.v1_0.Sort;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.BatchTestEntityResource;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
@@ -76,7 +77,7 @@ public abstract class BaseBatchTestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'DELETE' 'http://localhost:8080/o/test/v1.0/batch-test-entities/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
+	 * curl -X 'DELETE' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/batch-test-entities/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -108,7 +109,7 @@ public abstract class BaseBatchTestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'GET' 'http://localhost:8080/o/test/v1.0/batch-test-entities'  -u 'test@liferay.com:test'
+	 * curl -X 'GET' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/batch-test-entities'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
@@ -126,11 +127,12 @@ public abstract class BaseBatchTestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'GET' 'http://localhost:8080/o/test/v1.0/batch-test-entities/{batchTestEntityId}'  -u 'test@liferay.com:test'
+	 * curl -X 'GET' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/batch-test-entities/{batchTestEntityId}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Numeric identifier of the Batch Test Entity to act on. Obtain the value from the `id` field of any entity returned by `GET /batch-test-entities` or by a prior create call. The value is a 64-bit signed integer, unique within the portal instance.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "batchTestEntityId"
 			)
@@ -158,7 +160,7 @@ public abstract class BaseBatchTestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'GET' 'http://localhost:8080/o/test/v1.0/batch-test-entities/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
+	 * curl -X 'GET' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/batch-test-entities/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -192,7 +194,7 @@ public abstract class BaseBatchTestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/test/v1.0/batch-test-entities/export-batch'  -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/batch-test-entities/export-batch'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -255,8 +257,11 @@ public abstract class BaseBatchTestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/test/v1.0/batch-test-entities' -d $'{"acceptAllLanguages": ___, "customFields": ___, "externalReferenceCode": ___, "name": ___, "nestedField": ___, "relatedCompanyTestEntity": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/batch-test-entities' -d $'{"acceptAllLanguages": ___, "customFields": ___, "externalReferenceCode": ___, "name": ___, "nestedField": ___, "relatedCompanyTestEntity": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BatchTestEntity.class)), description = "The Batch Test Entity to create. Supply the entity fields directly in the body; the server assigns the identifier.")
+	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
 			@io.swagger.v3.oas.annotations.tags.Tag(name = "BatchTestEntity")
@@ -276,7 +281,7 @@ public abstract class BaseBatchTestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/test/v1.0/batch-test-entities/batch'  -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/batch-test-entities/batch'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -322,7 +327,7 @@ public abstract class BaseBatchTestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'PUT' 'http://localhost:8080/o/test/v1.0/batch-test-entities/by-external-reference-code/{externalReferenceCode}' -d $'{"acceptAllLanguages": ___, "customFields": ___, "externalReferenceCode": ___, "name": ___, "nestedField": ___, "relatedCompanyTestEntity": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'PUT' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/batch-test-entities/by-external-reference-code/{externalReferenceCode}' -d $'{"acceptAllLanguages": ___, "customFields": ___, "externalReferenceCode": ___, "name": ___, "nestedField": ___, "relatedCompanyTestEntity": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -623,7 +628,7 @@ public abstract class BaseBatchTestEntityResourceImpl
 	}
 
 	protected String getApplicationPath() {
-		return "test";
+		return "portal-tools-rest-builder-test";
 	}
 
 	public void setVulcanBatchEngineExportTaskResource(
@@ -1090,4 +1095,4 @@ public abstract class BaseBatchTestEntityResourceImpl
 		LogFactoryUtil.getLog(BaseBatchTestEntityResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1318516220
+// LIFERAY-REST-BUILDER-HASH:557589322

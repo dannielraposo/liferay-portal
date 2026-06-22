@@ -6,16 +6,57 @@
 import ClayLayout from '@clayui/layout';
 import React from 'react';
 
-export default function DataSelectionStep() {
+import {
+	FormikFieldCheckbox,
+	FormikFieldContentSelector,
+} from '../../../components/forms/formik';
+import {ImportPreview} from '../../../types/exportImportPreview';
+import FileSummary from './FileSummary';
+
+export default function DataSelectionStep({
+	commentsAndRatingsEnabled = false,
+	importPreview,
+	lookAndFeelEnabled = false,
+}: {
+	commentsAndRatingsEnabled?: boolean;
+	importPreview?: ImportPreview;
+	lookAndFeelEnabled?: boolean;
+}) {
+	if (!importPreview) {
+		return null;
+	}
+
 	return (
 		<>
-			<ClayLayout.Sheet>
-				{Liferay.Language.get('file-summary')}
+			<FileSummary importPreview={importPreview} />
+
+			<ClayLayout.Sheet className="mt-4 option-group">
+				<FormikFieldCheckbox
+					description={Liferay.Language.get(
+						'export-import-permissions-help'
+					)}
+					label={Liferay.Language.get('import-permissions')}
+					name="permissions"
+				/>
+
+				{importPreview.deletionCount > 0 && (
+					<FormikFieldCheckbox
+						description={Liferay.Language.get('deletions-help')}
+						label={Liferay.Language.get(
+							'replicate-selected-deletions'
+						)}
+						name="deletions"
+					/>
+				)}
 			</ClayLayout.Sheet>
 
-			<ClayLayout.Sheet>
-				{Liferay.Language.get('Portlets')}
-			</ClayLayout.Sheet>
+			<FormikFieldContentSelector
+				commentsAndRatingsEnabled={commentsAndRatingsEnabled}
+				lookAndFeelEnabled={lookAndFeelEnabled}
+				name="contentSelection"
+				process="import"
+				sections={importPreview.previewPortletDataHandlerSections}
+			/>
 		</>
 	);
 }

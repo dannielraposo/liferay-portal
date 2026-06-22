@@ -86,20 +86,13 @@ public interface Sites {
 	public void copyPortletSetups(Layout sourceLayout, Layout targetLayout)
 		throws Exception;
 
-	public boolean isLayoutModifiedSinceLastMerge(Layout layout)
-		throws PortalException;
-
 	public boolean isLayoutSetMergeable(Group group, LayoutSet layoutSet)
 		throws PortalException;
 
-	public void mergeLayoutPrototypeLayout(Group group, Layout layout)
-		throws Exception;
+	public void mergeLayoutPrototypeLayout(Layout layout) throws Exception;
 
 	public void mergeLayoutSetPrototypeLayouts(Group group, LayoutSet layoutSet)
 		throws Exception;
-
-	public void removeMergeFailFriendlyURLLayouts(LayoutSet layoutSet)
-		throws PortalException;
 
 	public void updateLayoutSetPrototypesLinks(
 			Group group, long publicLayoutSetPrototypeId,

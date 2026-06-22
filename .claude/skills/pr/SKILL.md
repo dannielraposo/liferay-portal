@@ -1,23 +1,23 @@
 ---
 
-allowed-tools: [Bash, Glob, Grep, Read]
-argument-hint: "[optional target-org/repo or message hint]"
-description: Create a GitHub pull request for the current branch, transition the corresponding Jira ticket to review, and record the PR link on the ticket. Use when the user asks to create a PR, send a PR, or invokes /pr.
+allowed-tools: [Bash, Glob, Grep, Read, Skill]
+argument-hint: "[optional target-org/repo, message hint, or --skip-pr-check]"
+description: Create a GitHub PR for the current branch. Use when the user asks to create a PR, send a PR, or invokes /pr.
 name: pr
 
 ---
 
 # Create a Pull Request
 
-Create a GitHub pull request for the current branch, transition the linked Jira ticket to review, and record the pull request URL on that ticket. Drive every Jira interaction through the Jira Cloud REST API at `liferay.atlassian.net`, authenticated with `${JIRA_API_USER}` and `${JIRA_API_TOKEN}`.
+Create a GitHub PR for the current branch, transition the linked Jira tickets to review, and record the PR URL on those tickets.
 
 ## Preconditions
 
-- At least one commit adds tests. When none do, ask the user for a rationale and refuse to proceed without one. The only exceptions are pull requests with no code changes (e.g., language key updates or markdown changes).
+- At least one commit adds tests. When none do, ask the user for a rationale and refuse to proceed without one. The only exceptions are PRs with no code changes (e.g., language key updates or markdown changes).
 
 - The current branch is a development branch, not `master` or any other protected branch.
 
-- The working tree has no uncommitted changes. When dirty, abort and ask the user to commit first (suggest `/commit`); do not stash or discard their work.
+- The `pr-check` skill must pass. Skip only when `${ARGUMENTS}` contains `--skip-pr-check`. A skip requires a reason: take it from the text following the flag when present, otherwise prompt the user for one. The reason is recorded in the **PR Check** section, which is written for a skip rather than omitted.
 
 ## Input
 
@@ -25,19 +25,13 @@ Create a GitHub pull request for the current branch, transition the linked Jira 
 
 The current Git branch must contain the commits ready to ship.
 
-### Jira Ticket
+### Jira Tickets
 
-Resolve a ticket key in priority order:
-
-1. **User Argument** — when `${ARGUMENTS}` supplies a ticket key, prefer that value.
-
-1. **Branch Name** — extract the ticket from the current branch (e.g., branch `LPD-83847` yields ticket `LPD-83847`).
-
-1. **Recent Commits** — when neither produces a ticket, scan recent commit messages for a ticket prefix.
-
-1. **Fallback** — when nothing surfaces, prompt the user.
+A branch may span more than one ticket. Resolve the **ticket set** — every ticket the PR touches.
 
 The ticket key follows the pattern `LPD-12345`, `LCD-12345`, `LRCI-1234`, and similar forms (uppercase letters, hyphen, digits).
+
+Collect every distinct ticket key from the subjects of the branch's commits relative to `master`. Each subject is prefixed with its ticket (`LPD-12345 <subject>`); extract every distinct key, in commit order (oldest first). When no commit carries a ticket, prompt the user for one.
 
 ### Target Repository
 
@@ -62,7 +56,7 @@ The following short aliases resolve to a target repository:
 
 - `brian` → `brianchandotcom/liferay-portal`
 
-The pull request head is `<github-username>:<branch-name>` (the GitHub username is read from the user's `origin` remote URL — e.g., `git@github.com:brianchandotcom/liferay-portal.git` yields `brianchandotcom`), and the base is `master`.
+The PR head is `<github-username>:<branch-name>` (the GitHub username is read from the user's `origin` remote URL — e.g., `git@github.com:brianchandotcom/liferay-portal.git` yields `brianchandotcom`), and the base is `master`.
 
 ## Expected Output
 
@@ -72,39 +66,71 @@ Push the current branch to the user's remote when it has not been pushed yet or 
 
 ### Pull Request
 
-The title is concise (under 72 characters) and prefixed with the Jira ticket:
+The title is concise (under 72 characters) and prefixed with the key of the first ticket in the set:
 
 ```
 LPD-83847 Fix OutOfMemoryError during batch engine import
 ```
 
-The body follows this format:
+The body follows this format, with one `browse` link per ticket in the set:
 
 ```markdown
-https://liferay.atlassian.net/browse/TICKET-ID
+https://liferay.atlassian.net/browse/TICKET-ID-1
+https://liferay.atlassian.net/browse/TICKET-ID-2
 
-## What is being fixed
+## What Is Being Fixed
 
-Explain the problem or bug that motivated the change — what was going
-wrong or what was missing.
+Explain the problem or bug that motivated the change — what was going wrong or what was missing.
 
-## How it is being fixed
+## How It Is Being Fixed
 
-Explain the approach taken across all commits. Describe the key changes
-and the reasoning behind the approach. Write in plain prose rather than
-bullet points.
+Explain the approach taken across all commits. Describe the key changes and the reasoning behind the approach. Write in plain prose rather than bullet points.
 
-## Why are there no tests?
+## Why Are There No Tests?
 
-This optional section is only included when the commits do not add any
-tests. It should contain the rationale provided by the user.
+This optional section is only included when the commits do not add any tests. It should contain the rationale provided by the user.
+
+## PR Check
+
+<pr-check Results Summary>
+
+<!-- pr-check {"result": "<state>", "sha": "<tested-SHA>"} -->
 ```
+
+The **PR Check** section is the Results Summary block emitted by the `pr-check` skill that ran as the precondition — the overall state line, the tested SHA, and the per-validation table, pasted verbatim — followed by a hidden marker. The marker is an HTML comment, invisible in rendered Markdown, whose payload is a JSON object of the form `<!-- pr-check {"result": "<state>", "sha": "<tested-SHA>"} -->`, where `<state>` is `success` when the overall state is `PASS` and `failure` when it is `FAIL`, and `<tested-SHA>` is the full 40-character SHA from the Results Summary. The webhook reads the `result` and `sha` fields to apply the `pr-check` commit status to that SHA and the `pr-check - <state>` label to the PR, so this skill records no status or label itself.
+
+When pr-check was skipped via `--skip-pr-check`, still write the section, but as a skip rather than a run. Under the same `## PR Check` heading, the body is a single `**pr-check: SKIPPED** — <reason>` line with no table, and the marker payload adds a `reason` field alongside `result` (set to `skipped`) and the PR head SHA. The JSON object keys are alphabetical (`reason`, `result`, `sha`).
+
+```markdown
+**pr-check: SKIPPED** — <reason>
+
+<!-- pr-check {"reason": "<reason>", "result": "skipped", "sha": "<head-SHA>"} -->
+```
+
+The webhook applies the status and label when it processes the `pull_request` event for the newly opened PR, so no publish step is needed at creation. Use the `pr-check-publish` skill only to record a later pr-check run on an existing PR.
 
 Use a direct, to-the-point style. Avoid being verbose. Present the proposed title and body to the user before submitting, and proceed once they approve.
 
-### Transitioned Jira Ticket
+Create the pull request with `--body-file`, or with `--body` from a quoted-heredoc variable; either keeps the marker's literal `!` off the command line, where it could otherwise trigger history expansion and corrupt the marker. Use `mktemp` for the file so it stays out of the working tree, and remove it afterward.
 
-Fetch the input ticket (issue type, status, subtasks) and resolve the **target ticket** — the one whose status reflects active work and on which the pull request URL is recorded:
+```bash
+body_file=$(mktemp)
+
+gh pr create \
+	--base master \
+	--body-file "${body_file}" \
+	--head <github-username>:<branch-name> \
+	--repo <target-org/repo> \
+	--title "<title>"
+
+rm "${body_file}"
+```
+
+### Transitioned Jira Tickets
+
+Apply the steps below to **every ticket in the ticket set**, recording the outcome per ticket and continuing on failure.
+
+For each ticket, fetch it (issue type, status, subtasks) and resolve the **target ticket** — the one whose status reflects active work and on which the PR URL is recorded:
 
 | Ticket Type | Target |
 | --- | --- |
@@ -126,29 +152,31 @@ Then transition it to review:
 | Bug | In Review | `71` |
 | Technical Task | In Peer Review | `31` |
 
-When the review transition fails (for example, because the ticket is already in a later status), still proceed to record the pull request URL.
+When the review transition fails (for example, because the ticket is already in a later status), still proceed to record the PR URL.
 
-Set the **Git Pull Request** field (`customfield_10201`) on the target ticket to the new pull request URL.
+Set the **Git Pull Request** field (`customfield_10201`) on the target ticket to the new PR URL.
 
 ### Existing Pull Request
 
-When the **Git Pull Request** field already holds one or more pull request URLs, ask the user whether the new pull request **supersedes** the existing one or is **added** alongside it.
+This handling applies per target ticket, while recording the PR URL above.
+
+When the **Git Pull Request** field already holds one or more PR URLs, ask the user whether the new PR **supersedes** the existing one or is **added** alongside it.
 
 When the user chooses **supersede**:
 
-1. Overwrite **Git Pull Request** with the new pull request URL, dropping the previous value.
+1. Overwrite **Git Pull Request** with the new PR URL, dropping the previous value.
 
-1. Add a comment on the previous pull request, linking to the new one (for example, `Superseded by <new-pr-url>.`).
+1. Add a comment on the previous PR, linking to the new one (for example, `Superseded by <new-pr-url>.`).
 
-1. Close the previous pull request when possible. When the user lacks permission to close it directly, add a `ci:close` comment instead, so the CI bot closes it.
+1. Close the previous PR when possible. When the user lacks permission to close it directly, add a `ci:close` comment instead, so the CI bot closes it.
 
 When the user chooses **add**:
 
-1. Append the new pull request URL to the existing value, separating each URL with a comma and a space.
+1. Append the new PR URL to the existing value, separating each URL with a comma and a space.
 
 ### Summary
 
 Report back to the user with:
 
-- The Jira ticket status and link.
-- The pull request URL.
+- Each ticket in the set, with its resulting status and link.
+- The PR URL.

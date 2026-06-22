@@ -8,7 +8,6 @@ package com.liferay.portal.tools.service.builder.test.service.persistence.impl;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -66,66 +65,15 @@ public class EagerBlobEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<EagerBlobEntry>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the eager blob entries where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching eager blob entries
-	 */
-	@Override
-	public List<EagerBlobEntry> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the eager blob entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>EagerBlobEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of eager blob entries
-	 * @param end the upper bound of the range of eager blob entries (not inclusive)
-	 * @return the range of matching eager blob entries
-	 */
-	@Override
-	public List<EagerBlobEntry> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<EagerBlobEntry, NoSuchEagerBlobEntryException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the eager blob entries where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>EagerBlobEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of eager blob entries
-	 * @param end the upper bound of the range of eager blob entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching eager blob entries
-	 */
-	@Override
-	public List<EagerBlobEntry> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<EagerBlobEntry> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the eager blob entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>EagerBlobEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>EagerBlobEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -159,16 +107,8 @@ public class EagerBlobEntryPersistenceImpl
 			String uuid, OrderByComparator<EagerBlobEntry> orderByComparator)
 		throws NoSuchEagerBlobEntryException {
 
-		EagerBlobEntry eagerBlobEntry = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (eagerBlobEntry != null) {
-			return eagerBlobEntry;
-		}
-
-		throw new NoSuchEagerBlobEntryException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			dummyFinderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -209,9 +149,9 @@ public class EagerBlobEntryPersistenceImpl
 			dummyFinderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<EagerBlobEntry>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<EagerBlobEntry, NoSuchEagerBlobEntryException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the eager blob entry where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchEagerBlobEntryException</code> if it could not be found.
@@ -225,33 +165,8 @@ public class EagerBlobEntryPersistenceImpl
 	public EagerBlobEntry findByUUID_G(String uuid, long groupId)
 		throws NoSuchEagerBlobEntryException {
 
-		EagerBlobEntry eagerBlobEntry = fetchByUUID_G(uuid, groupId);
-
-		if (eagerBlobEntry == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchEagerBlobEntryException(message);
-		}
-
-		return eagerBlobEntry;
-	}
-
-	/**
-	 * Returns the eager blob entry where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching eager blob entry, or <code>null</code> if a matching eager blob entry could not be found
-	 */
-	@Override
-	public EagerBlobEntry fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			dummyFinderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -494,44 +409,41 @@ public class EagerBlobEntryPersistenceImpl
 	 * Initializes the eager blob entry persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_EAGERBLOBENTRY_WHERE, _SQL_COUNT_EAGERBLOBENTRY_WHERE,
-			EagerBlobEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			EagerBlobEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"eagerBlobEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, EagerBlobEntry::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, EagerBlobEntry::getUuid,
-			EagerBlobEntry::getGroupId);
+				"eagerBlobEntry.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, EagerBlobEntry::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_EAGERBLOBENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(EagerBlobEntry::getUuid),
+				EagerBlobEntry::getGroupId),
+			_SQL_SELECT_EAGERBLOBENTRY_WHERE, "",
 			new FinderColumn<>(
-				"eagerBlobEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, EagerBlobEntry::getUuid),
+				"eagerBlobEntry.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, EagerBlobEntry::getUuid),
 			new FinderColumn<>(
 				"eagerBlobEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, EagerBlobEntry::getGroupId));
@@ -572,4 +484,4 @@ public class EagerBlobEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1001407676
+// LIFERAY-SERVICE-BUILDER-HASH:1341938510

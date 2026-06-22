@@ -14,6 +14,7 @@ import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
+import com.liferay.jenkins.results.parser.Environment;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 
 import java.io.File;
@@ -85,7 +86,7 @@ public class ScanCodeCloudBucket {
 			return _hasGoogleApplicationCredentials;
 		}
 
-		String googleApplicationCredentials = System.getenv(
+		String googleApplicationCredentials = Environment.get(
 			"GOOGLE_APPLICATION_CREDENTIALS");
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(
@@ -367,21 +368,9 @@ public class ScanCodeCloudBucket {
 
 	private Storage _getStorage() {
 		try {
-			Storage storage = _getBucketStorage(
-				JenkinsResultsParserUtil.getBuildProperty(
-					"google.application.crendential.file[scancode]"));
-
-			if (storage != null) {
-				return storage;
-			}
-		}
-		catch (Exception exception) {
-		}
-
-		try {
 			return _getBucketStorage(
 				JenkinsResultsParserUtil.getBuildProperty(
-					"scancode.credentials.file"));
+					"google.application.crendential.file[scancode]"));
 		}
 		catch (Exception exception) {
 			exception.printStackTrace();

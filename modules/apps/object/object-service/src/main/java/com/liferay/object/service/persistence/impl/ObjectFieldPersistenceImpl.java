@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -89,66 +88,14 @@ public class ObjectFieldPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByUuid;
 
 	/**
-	 * Returns all the object fields where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -182,15 +129,8 @@ public class ObjectFieldPersistenceImpl
 			String uuid, OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByUuid_First(uuid, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -231,73 +171,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByUuid_C;
 
 	/**
-	 * Returns all the object fields where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -334,16 +215,8 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -388,69 +261,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByCompanyId;
 
 	/**
-	 * Returns all the object fields where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -484,16 +302,8 @@ public class ObjectFieldPersistenceImpl
 			long companyId, OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -534,73 +344,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByListTypeDefinitionId;
-	private FinderPath _finderPathWithoutPaginationFindByListTypeDefinitionId;
-	private FinderPath _finderPathCountByListTypeDefinitionId;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByListTypeDefinitionId;
 
 	/**
-	 * Returns all the object fields where listTypeDefinitionId = &#63;.
-	 *
-	 * @param listTypeDefinitionId the list type definition ID
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByListTypeDefinitionId(
-		long listTypeDefinitionId) {
-
-		return findByListTypeDefinitionId(
-			listTypeDefinitionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where listTypeDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeDefinitionId the list type definition ID
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByListTypeDefinitionId(
-		long listTypeDefinitionId, int start, int end) {
-
-		return findByListTypeDefinitionId(
-			listTypeDefinitionId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where listTypeDefinitionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeDefinitionId the list type definition ID
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByListTypeDefinitionId(
-		long listTypeDefinitionId, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByListTypeDefinitionId(
-			listTypeDefinitionId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where listTypeDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param listTypeDefinitionId the list type definition ID
@@ -635,18 +386,9 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByListTypeDefinitionId_First(
-			listTypeDefinitionId, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByListTypeDefinitionId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {listTypeDefinitionId}));
+		return _collectionPersistenceFinderByListTypeDefinitionId.findFirst(
+			finderCache, new Object[] {listTypeDefinitionId},
+			orderByComparator);
 	}
 
 	/**
@@ -689,70 +431,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {listTypeDefinitionId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByObjectDefinitionId;
-	private FinderPath _finderPathWithoutPaginationFindByObjectDefinitionId;
-	private FinderPath _finderPathCountByObjectDefinitionId;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByObjectDefinitionId;
 
 	/**
-	 * Returns all the object fields where objectDefinitionId = &#63;.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByObjectDefinitionId(long objectDefinitionId) {
-		return findByObjectDefinitionId(
-			objectDefinitionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where objectDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByObjectDefinitionId(
-		long objectDefinitionId, int start, int end) {
-
-		return findByObjectDefinitionId(objectDefinitionId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByObjectDefinitionId(
-		long objectDefinitionId, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByObjectDefinitionId(
-			objectDefinitionId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectDefinitionId the object definition ID
@@ -787,18 +473,8 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByObjectDefinitionId_First(
-			objectDefinitionId, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByObjectDefinitionId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {objectDefinitionId}));
+		return _collectionPersistenceFinderByObjectDefinitionId.findFirst(
+			finderCache, new Object[] {objectDefinitionId}, orderByComparator);
 	}
 
 	/**
@@ -840,73 +516,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {objectDefinitionId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_U;
-	private FinderPath _finderPathWithoutPaginationFindByC_U;
-	private FinderPath _finderPathCountByC_U;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByC_U;
 
 	/**
-	 * Returns all the object fields where companyId = &#63; and userId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByC_U(long companyId, long userId) {
-		return findByC_U(
-			companyId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where companyId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByC_U(
-		long companyId, long userId, int start, int end) {
-
-		return findByC_U(companyId, userId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where companyId = &#63; and userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByC_U(
-		long companyId, long userId, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByC_U(
-			companyId, userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where companyId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -943,16 +560,8 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByC_U_First(
-			companyId, userId, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByC_U.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, userId}));
+		return _collectionPersistenceFinderByC_U.findFirst(
+			finderCache, new Object[] {companyId, userId}, orderByComparator);
 	}
 
 	/**
@@ -997,74 +606,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {companyId, userId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_BT;
-	private FinderPath _finderPathWithoutPaginationFindByC_BT;
-	private FinderPath _finderPathCountByC_BT;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByC_BT;
 
 	/**
-	 * Returns all the object fields where companyId = &#63; and businessType = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param businessType the business type
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByC_BT(long companyId, String businessType) {
-		return findByC_BT(
-			companyId, businessType, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where companyId = &#63; and businessType = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param businessType the business type
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByC_BT(
-		long companyId, String businessType, int start, int end) {
-
-		return findByC_BT(companyId, businessType, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where companyId = &#63; and businessType = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param businessType the business type
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByC_BT(
-		long companyId, String businessType, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByC_BT(
-			companyId, businessType, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where companyId = &#63; and businessType = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1101,17 +650,9 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByC_BT_First(
-			companyId, businessType, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByC_BT.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, businessType}));
+		return _collectionPersistenceFinderByC_BT.findFirst(
+			finderCache, new Object[] {companyId, businessType},
+			orderByComparator);
 	}
 
 	/**
@@ -1157,76 +698,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {companyId, businessType});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByLTDI_S;
-	private FinderPath _finderPathWithoutPaginationFindByLTDI_S;
-	private FinderPath _finderPathCountByLTDI_S;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByLTDI_S;
 
 	/**
-	 * Returns all the object fields where listTypeDefinitionId = &#63; and state = &#63;.
-	 *
-	 * @param listTypeDefinitionId the list type definition ID
-	 * @param state the state
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByLTDI_S(
-		long listTypeDefinitionId, boolean state) {
-
-		return findByLTDI_S(
-			listTypeDefinitionId, state, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where listTypeDefinitionId = &#63; and state = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeDefinitionId the list type definition ID
-	 * @param state the state
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByLTDI_S(
-		long listTypeDefinitionId, boolean state, int start, int end) {
-
-		return findByLTDI_S(listTypeDefinitionId, state, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where listTypeDefinitionId = &#63; and state = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeDefinitionId the list type definition ID
-	 * @param state the state
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByLTDI_S(
-		long listTypeDefinitionId, boolean state, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByLTDI_S(
-			listTypeDefinitionId, state, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where listTypeDefinitionId = &#63; and state = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param listTypeDefinitionId the list type definition ID
@@ -1263,17 +742,9 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByLTDI_S_First(
-			listTypeDefinitionId, state, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByLTDI_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {listTypeDefinitionId, state}));
+		return _collectionPersistenceFinderByLTDI_S.findFirst(
+			finderCache, new Object[] {listTypeDefinitionId, state},
+			orderByComparator);
 	}
 
 	/**
@@ -1319,77 +790,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {listTypeDefinitionId, state});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByODI_BT;
-	private FinderPath _finderPathWithoutPaginationFindByODI_BT;
-	private FinderPath _finderPathCountByODI_BT;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByODI_BT;
 
 	/**
-	 * Returns all the object fields where objectDefinitionId = &#63; and businessType = &#63;.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param businessType the business type
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_BT(
-		long objectDefinitionId, String businessType) {
-
-		return findByODI_BT(
-			objectDefinitionId, businessType, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where objectDefinitionId = &#63; and businessType = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param businessType the business type
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_BT(
-		long objectDefinitionId, String businessType, int start, int end) {
-
-		return findByODI_BT(objectDefinitionId, businessType, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and businessType = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param businessType the business type
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_BT(
-		long objectDefinitionId, String businessType, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByODI_BT(
-			objectDefinitionId, businessType, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and businessType = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectDefinitionId the object definition ID
@@ -1426,17 +834,9 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByODI_BT_First(
-			objectDefinitionId, businessType, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByODI_BT.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {objectDefinitionId, businessType}));
+		return _collectionPersistenceFinderByODI_BT.findFirst(
+			finderCache, new Object[] {objectDefinitionId, businessType},
+			orderByComparator);
 	}
 
 	/**
@@ -1482,77 +882,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {objectDefinitionId, businessType});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByODI_DTN;
-	private FinderPath _finderPathWithoutPaginationFindByODI_DTN;
-	private FinderPath _finderPathCountByODI_DTN;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByODI_DTN;
 
 	/**
-	 * Returns all the object fields where objectDefinitionId = &#63; and dbTableName = &#63;.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param dbTableName the db table name
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_DTN(
-		long objectDefinitionId, String dbTableName) {
-
-		return findByODI_DTN(
-			objectDefinitionId, dbTableName, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where objectDefinitionId = &#63; and dbTableName = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param dbTableName the db table name
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_DTN(
-		long objectDefinitionId, String dbTableName, int start, int end) {
-
-		return findByODI_DTN(objectDefinitionId, dbTableName, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and dbTableName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param dbTableName the db table name
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_DTN(
-		long objectDefinitionId, String dbTableName, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByODI_DTN(
-			objectDefinitionId, dbTableName, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and dbTableName = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectDefinitionId the object definition ID
@@ -1589,17 +926,9 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByODI_DTN_First(
-			objectDefinitionId, dbTableName, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByODI_DTN.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {objectDefinitionId, dbTableName}));
+		return _collectionPersistenceFinderByODI_DTN.findFirst(
+			finderCache, new Object[] {objectDefinitionId, dbTableName},
+			orderByComparator);
 	}
 
 	/**
@@ -1645,76 +974,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {objectDefinitionId, dbTableName});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByODI_I;
-	private FinderPath _finderPathWithoutPaginationFindByODI_I;
-	private FinderPath _finderPathCountByODI_I;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByODI_I;
 
 	/**
-	 * Returns all the object fields where objectDefinitionId = &#63; and indexed = &#63;.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param indexed the indexed
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_I(
-		long objectDefinitionId, boolean indexed) {
-
-		return findByODI_I(
-			objectDefinitionId, indexed, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where objectDefinitionId = &#63; and indexed = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param indexed the indexed
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_I(
-		long objectDefinitionId, boolean indexed, int start, int end) {
-
-		return findByODI_I(objectDefinitionId, indexed, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and indexed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param indexed the indexed
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_I(
-		long objectDefinitionId, boolean indexed, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByODI_I(
-			objectDefinitionId, indexed, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and indexed = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectDefinitionId the object definition ID
@@ -1751,17 +1018,9 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByODI_I_First(
-			objectDefinitionId, indexed, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByODI_I.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {objectDefinitionId, indexed}));
+		return _collectionPersistenceFinderByODI_I.findFirst(
+			finderCache, new Object[] {objectDefinitionId, indexed},
+			orderByComparator);
 	}
 
 	/**
@@ -1807,76 +1066,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {objectDefinitionId, indexed});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByODI_L;
-	private FinderPath _finderPathWithoutPaginationFindByODI_L;
-	private FinderPath _finderPathCountByODI_L;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByODI_L;
 
 	/**
-	 * Returns all the object fields where objectDefinitionId = &#63; and localized = &#63;.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param localized the localized
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_L(
-		long objectDefinitionId, boolean localized) {
-
-		return findByODI_L(
-			objectDefinitionId, localized, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where objectDefinitionId = &#63; and localized = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param localized the localized
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_L(
-		long objectDefinitionId, boolean localized, int start, int end) {
-
-		return findByODI_L(objectDefinitionId, localized, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and localized = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param localized the localized
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_L(
-		long objectDefinitionId, boolean localized, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByODI_L(
-			objectDefinitionId, localized, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and localized = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectDefinitionId the object definition ID
@@ -1913,17 +1110,9 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByODI_L_First(
-			objectDefinitionId, localized, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByODI_L.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {objectDefinitionId, localized}));
+		return _collectionPersistenceFinderByODI_L.findFirst(
+			finderCache, new Object[] {objectDefinitionId, localized},
+			orderByComparator);
 	}
 
 	/**
@@ -1969,8 +1158,7 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {objectDefinitionId, localized});
 	}
 
-	private FinderPath _finderPathFetchByODI_N;
-	private UniquePersistenceFinder<ObjectField>
+	private UniquePersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_uniquePersistenceFinderByODI_N;
 
 	/**
@@ -1985,34 +1173,8 @@ public class ObjectFieldPersistenceImpl
 	public ObjectField findByODI_N(long objectDefinitionId, String name)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByODI_N(objectDefinitionId, name);
-
-		if (objectField == null) {
-			String message =
-				_uniquePersistenceFinderByODI_N.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {objectDefinitionId, name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectFieldException(message);
-		}
-
-		return objectField;
-	}
-
-	/**
-	 * Returns the object field where objectDefinitionId = &#63; and name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param name the name
-	 * @return the matching object field, or <code>null</code> if a matching object field could not be found
-	 */
-	@Override
-	public ObjectField fetchByODI_N(long objectDefinitionId, String name) {
-		return fetchByODI_N(objectDefinitionId, name, true);
+		return _uniquePersistenceFinderByODI_N.find(
+			finderCache, new Object[] {objectDefinitionId, name});
 	}
 
 	/**
@@ -2061,76 +1223,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {objectDefinitionId, name});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByODI_S;
-	private FinderPath _finderPathWithoutPaginationFindByODI_S;
-	private FinderPath _finderPathCountByODI_S;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByODI_S;
 
 	/**
-	 * Returns all the object fields where objectDefinitionId = &#63; and system = &#63;.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param system the system
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_S(
-		long objectDefinitionId, boolean system) {
-
-		return findByODI_S(
-			objectDefinitionId, system, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where objectDefinitionId = &#63; and system = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param system the system
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_S(
-		long objectDefinitionId, boolean system, int start, int end) {
-
-		return findByODI_S(objectDefinitionId, system, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and system = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param system the system
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_S(
-		long objectDefinitionId, boolean system, int start, int end,
-		OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByODI_S(
-			objectDefinitionId, system, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and system = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectDefinitionId the object definition ID
@@ -2167,17 +1267,9 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByODI_S_First(
-			objectDefinitionId, system, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByODI_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {objectDefinitionId, system}));
+		return _collectionPersistenceFinderByODI_S.findFirst(
+			finderCache, new Object[] {objectDefinitionId, system},
+			orderByComparator);
 	}
 
 	/**
@@ -2223,8 +1315,7 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {objectDefinitionId, system});
 	}
 
-	private FinderPath _finderPathFetchByERC_C_ODI;
-	private UniquePersistenceFinder<ObjectField>
+	private UniquePersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_uniquePersistenceFinderByERC_C_ODI;
 
 	/**
@@ -2242,41 +1333,11 @@ public class ObjectFieldPersistenceImpl
 			long objectDefinitionId)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByERC_C_ODI(
-			externalReferenceCode, companyId, objectDefinitionId);
-
-		if (objectField == null) {
-			String message =
-				_uniquePersistenceFinderByERC_C_ODI.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {
-						externalReferenceCode, companyId, objectDefinitionId
-					});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectFieldException(message);
-		}
-
-		return objectField;
-	}
-
-	/**
-	 * Returns the object field where externalReferenceCode = &#63; and companyId = &#63; and objectDefinitionId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param companyId the company ID
-	 * @param objectDefinitionId the object definition ID
-	 * @return the matching object field, or <code>null</code> if a matching object field could not be found
-	 */
-	@Override
-	public ObjectField fetchByERC_C_ODI(
-		String externalReferenceCode, long companyId, long objectDefinitionId) {
-
-		return fetchByERC_C_ODI(
-			externalReferenceCode, companyId, objectDefinitionId, true);
+		return _uniquePersistenceFinderByERC_C_ODI.find(
+			finderCache,
+			new Object[] {
+				externalReferenceCode, companyId, objectDefinitionId
+			});
 	}
 
 	/**
@@ -2338,82 +1399,14 @@ public class ObjectFieldPersistenceImpl
 			});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByODI_DBT_I;
-	private FinderPath _finderPathWithoutPaginationFindByODI_DBT_I;
-	private FinderPath _finderPathCountByODI_DBT_I;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByODI_DBT_I;
 
 	/**
-	 * Returns all the object fields where objectDefinitionId = &#63; and dbType = &#63; and indexed = &#63;.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param dbType the db type
-	 * @param indexed the indexed
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_DBT_I(
-		long objectDefinitionId, String dbType, boolean indexed) {
-
-		return findByODI_DBT_I(
-			objectDefinitionId, dbType, indexed, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where objectDefinitionId = &#63; and dbType = &#63; and indexed = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param dbType the db type
-	 * @param indexed the indexed
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_DBT_I(
-		long objectDefinitionId, String dbType, boolean indexed, int start,
-		int end) {
-
-		return findByODI_DBT_I(
-			objectDefinitionId, dbType, indexed, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and dbType = &#63; and indexed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param dbType the db type
-	 * @param indexed the indexed
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_DBT_I(
-		long objectDefinitionId, String dbType, boolean indexed, int start,
-		int end, OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByODI_DBT_I(
-			objectDefinitionId, dbType, indexed, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and dbType = &#63; and indexed = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectDefinitionId the object definition ID
@@ -2452,17 +1445,9 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByODI_DBT_I_First(
-			objectDefinitionId, dbType, indexed, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByODI_DBT_I.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {objectDefinitionId, dbType, indexed}));
+		return _collectionPersistenceFinderByODI_DBT_I.findFirst(
+			finderCache, new Object[] {objectDefinitionId, dbType, indexed},
+			orderByComparator);
 	}
 
 	/**
@@ -2515,82 +1500,14 @@ public class ObjectFieldPersistenceImpl
 			finderCache, new Object[] {objectDefinitionId, dbType, indexed});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByODI_L_S;
-	private FinderPath _finderPathWithoutPaginationFindByODI_L_S;
-	private FinderPath _finderPathCountByODI_L_S;
-	private CollectionPersistenceFinder<ObjectField>
+	private CollectionPersistenceFinder<ObjectField, NoSuchObjectFieldException>
 		_collectionPersistenceFinderByODI_L_S;
 
 	/**
-	 * Returns all the object fields where objectDefinitionId = &#63; and localized = &#63; and system = &#63;.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param localized the localized
-	 * @param system the system
-	 * @return the matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_L_S(
-		long objectDefinitionId, boolean localized, boolean system) {
-
-		return findByODI_L_S(
-			objectDefinitionId, localized, system, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object fields where objectDefinitionId = &#63; and localized = &#63; and system = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param localized the localized
-	 * @param system the system
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @return the range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_L_S(
-		long objectDefinitionId, boolean localized, boolean system, int start,
-		int end) {
-
-		return findByODI_L_S(
-			objectDefinitionId, localized, system, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and localized = &#63; and system = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param localized the localized
-	 * @param system the system
-	 * @param start the lower bound of the range of object fields
-	 * @param end the upper bound of the range of object fields (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object fields
-	 */
-	@Override
-	public List<ObjectField> findByODI_L_S(
-		long objectDefinitionId, boolean localized, boolean system, int start,
-		int end, OrderByComparator<ObjectField> orderByComparator) {
-
-		return findByODI_L_S(
-			objectDefinitionId, localized, system, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object fields where objectDefinitionId = &#63; and localized = &#63; and system = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectFieldModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectDefinitionId the object definition ID
@@ -2629,17 +1546,9 @@ public class ObjectFieldPersistenceImpl
 			OrderByComparator<ObjectField> orderByComparator)
 		throws NoSuchObjectFieldException {
 
-		ObjectField objectField = fetchByODI_L_S_First(
-			objectDefinitionId, localized, system, orderByComparator);
-
-		if (objectField != null) {
-			return objectField;
-		}
-
-		throw new NoSuchObjectFieldException(
-			_collectionPersistenceFinderByODI_L_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {objectDefinitionId, localized, system}));
+		return _collectionPersistenceFinderByODI_L_S.findFirst(
+			finderCache, new Object[] {objectDefinitionId, localized, system},
+			orderByComparator);
 	}
 
 	/**
@@ -2951,538 +1860,499 @@ public class ObjectFieldPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
-			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"objectField.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, ObjectField::getUuid));
-
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
+				"objectField.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, ObjectField::getUuid));
 
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_OBJECTFIELD_WHERE,
-				_SQL_COUNT_OBJECTFIELD_WHERE,
-				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
+				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"objectField.", "uuid", FinderColumn.Type.STRING, "=", true,
-					false, ObjectField::getUuid),
+					"objectField.", "uuid", "uuid_", FinderColumn.Type.STRING,
+					"=", true, true, ObjectField::getUuid),
 				new FinderColumn<>(
 					"objectField.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, ObjectField::getCompanyId));
-
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
 
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId, _SQL_SELECT_OBJECTFIELD_WHERE,
-				_SQL_COUNT_OBJECTFIELD_WHERE,
-				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
+				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"objectField.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, ObjectField::getCompanyId));
 
-		_finderPathWithPaginationFindByListTypeDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByListTypeDefinitionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"listTypeDefinitionId"}, true);
-
-		_finderPathWithoutPaginationFindByListTypeDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByListTypeDefinitionId", new String[] {Long.class.getName()},
-			new String[] {"listTypeDefinitionId"}, true);
-
-		_finderPathCountByListTypeDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByListTypeDefinitionId", new String[] {Long.class.getName()},
-			new String[] {"listTypeDefinitionId"}, false);
-
 		_collectionPersistenceFinderByListTypeDefinitionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByListTypeDefinitionId,
-				_finderPathWithoutPaginationFindByListTypeDefinitionId,
-				_finderPathCountByListTypeDefinitionId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByListTypeDefinitionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"listTypeDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByListTypeDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"listTypeDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByListTypeDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"listTypeDefinitionId"}, false),
 				_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
-				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"objectField.", "listTypeDefinitionId",
 					FinderColumn.Type.LONG, "=", true, true,
 					ObjectField::getListTypeDefinitionId));
 
-		_finderPathWithPaginationFindByObjectDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByObjectDefinitionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"objectDefinitionId"}, true);
-
-		_finderPathWithoutPaginationFindByObjectDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByObjectDefinitionId", new String[] {Long.class.getName()},
-			new String[] {"objectDefinitionId"}, true);
-
-		_finderPathCountByObjectDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByObjectDefinitionId", new String[] {Long.class.getName()},
-			new String[] {"objectDefinitionId"}, false);
-
 		_collectionPersistenceFinderByObjectDefinitionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByObjectDefinitionId,
-				_finderPathWithoutPaginationFindByObjectDefinitionId,
-				_finderPathCountByObjectDefinitionId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByObjectDefinitionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByObjectDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"objectDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByObjectDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"objectDefinitionId"}, false),
 				_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
-				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"objectField.", "objectDefinitionId",
 					FinderColumn.Type.LONG, "=", true, true,
 					ObjectField::getObjectDefinitionId));
 
-		_finderPathWithPaginationFindByC_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_U",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "userId"}, true);
-
-		_finderPathWithoutPaginationFindByC_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "userId"}, true);
-
-		_finderPathCountByC_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "userId"}, false);
-
 		_collectionPersistenceFinderByC_U = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_U,
-			_finderPathWithoutPaginationFindByC_U, _finderPathCountByC_U,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_U",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "userId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_U",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "userId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_U",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "userId"}, false),
 			_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
-			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"objectField.", "companyId", FinderColumn.Type.LONG, "=", true,
-				false, ObjectField::getCompanyId),
+				true, ObjectField::getCompanyId),
 			new FinderColumn<>(
 				"objectField.", "userId", FinderColumn.Type.LONG, "=", true,
 				true, ObjectField::getUserId));
 
-		_finderPathWithPaginationFindByC_BT = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_BT",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "businessType"}, true);
-
-		_finderPathWithoutPaginationFindByC_BT = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_BT",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "businessType"}, true);
-
-		_finderPathCountByC_BT = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_BT",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "businessType"}, false);
-
 		_collectionPersistenceFinderByC_BT = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_BT,
-			_finderPathWithoutPaginationFindByC_BT, _finderPathCountByC_BT,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_BT",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "businessType"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_BT",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "businessType"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_BT",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "businessType"}, 0, 2, false, null),
 			_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
-			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"objectField.", "companyId", FinderColumn.Type.LONG, "=", true,
-				false, ObjectField::getCompanyId),
+				true, ObjectField::getCompanyId),
 			new FinderColumn<>(
 				"objectField.", "businessType", FinderColumn.Type.STRING, "=",
 				true, true, ObjectField::getBusinessType));
 
-		_finderPathWithPaginationFindByLTDI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLTDI_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"listTypeDefinitionId", "state_"}, true);
-
-		_finderPathWithoutPaginationFindByLTDI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByLTDI_S",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"listTypeDefinitionId", "state_"}, true);
-
-		_finderPathCountByLTDI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByLTDI_S",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"listTypeDefinitionId", "state_"}, false);
-
 		_collectionPersistenceFinderByLTDI_S =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLTDI_S,
-				_finderPathWithoutPaginationFindByLTDI_S,
-				_finderPathCountByLTDI_S, _SQL_SELECT_OBJECTFIELD_WHERE,
-				_SQL_COUNT_OBJECTFIELD_WHERE,
-				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLTDI_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"listTypeDefinitionId", "state_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByLTDI_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {"listTypeDefinitionId", "state_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByLTDI_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {"listTypeDefinitionId", "state_"}, false),
+				_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
+				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"objectField.", "listTypeDefinitionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					ObjectField::getListTypeDefinitionId),
 				new FinderColumn<>(
-					"objectField.", "state", FinderColumn.Type.BOOLEAN, "=",
-					true, true, ObjectField::isState));
-
-		_finderPathWithPaginationFindByODI_BT = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_BT",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"objectDefinitionId", "businessType"}, true);
-
-		_finderPathWithoutPaginationFindByODI_BT = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_BT",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"objectDefinitionId", "businessType"}, true);
-
-		_finderPathCountByODI_BT = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_BT",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"objectDefinitionId", "businessType"}, false);
+					"objectField.", "state", "state_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					ObjectField::isState));
 
 		_collectionPersistenceFinderByODI_BT =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByODI_BT,
-				_finderPathWithoutPaginationFindByODI_BT,
-				_finderPathCountByODI_BT, _SQL_SELECT_OBJECTFIELD_WHERE,
-				_SQL_COUNT_OBJECTFIELD_WHERE,
-				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_BT",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectDefinitionId", "businessType"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_BT",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"objectDefinitionId", "businessType"}, 0, 2,
+					true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_BT",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"objectDefinitionId", "businessType"}, 0, 2,
+					false, null),
+				_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
+				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"objectField.", "objectDefinitionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					ObjectField::getObjectDefinitionId),
 				new FinderColumn<>(
 					"objectField.", "businessType", FinderColumn.Type.STRING,
 					"=", true, true, ObjectField::getBusinessType));
 
-		_finderPathWithPaginationFindByODI_DTN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_DTN",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"objectDefinitionId", "dbTableName"}, true);
-
-		_finderPathWithoutPaginationFindByODI_DTN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_DTN",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"objectDefinitionId", "dbTableName"}, true);
-
-		_finderPathCountByODI_DTN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_DTN",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"objectDefinitionId", "dbTableName"}, false);
-
 		_collectionPersistenceFinderByODI_DTN =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByODI_DTN,
-				_finderPathWithoutPaginationFindByODI_DTN,
-				_finderPathCountByODI_DTN, _SQL_SELECT_OBJECTFIELD_WHERE,
-				_SQL_COUNT_OBJECTFIELD_WHERE,
-				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_DTN",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectDefinitionId", "dbTableName"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_DTN",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"objectDefinitionId", "dbTableName"}, 0, 2,
+					true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_DTN",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"objectDefinitionId", "dbTableName"}, 0, 2,
+					false, null),
+				_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
+				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"objectField.", "objectDefinitionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					ObjectField::getObjectDefinitionId),
 				new FinderColumn<>(
 					"objectField.", "dbTableName", FinderColumn.Type.STRING,
 					"=", true, true, ObjectField::getDBTableName));
 
-		_finderPathWithPaginationFindByODI_I = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_I",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"objectDefinitionId", "indexed"}, true);
-
-		_finderPathWithoutPaginationFindByODI_I = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_I",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"objectDefinitionId", "indexed"}, true);
-
-		_finderPathCountByODI_I = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_I",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"objectDefinitionId", "indexed"}, false);
-
 		_collectionPersistenceFinderByODI_I = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByODI_I,
-			_finderPathWithoutPaginationFindByODI_I, _finderPathCountByODI_I,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_I",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"objectDefinitionId", "indexed"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_I",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"objectDefinitionId", "indexed"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_I",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"objectDefinitionId", "indexed"}, false),
 			_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
-			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"objectField.", "objectDefinitionId", FinderColumn.Type.LONG,
-				"=", true, false, ObjectField::getObjectDefinitionId),
+				"=", true, true, ObjectField::getObjectDefinitionId),
 			new FinderColumn<>(
 				"objectField.", "indexed", FinderColumn.Type.BOOLEAN, "=", true,
 				true, ObjectField::isIndexed));
 
-		_finderPathWithPaginationFindByODI_L = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_L",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"objectDefinitionId", "localized"}, true);
-
-		_finderPathWithoutPaginationFindByODI_L = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_L",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"objectDefinitionId", "localized"}, true);
-
-		_finderPathCountByODI_L = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_L",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"objectDefinitionId", "localized"}, false);
-
 		_collectionPersistenceFinderByODI_L = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByODI_L,
-			_finderPathWithoutPaginationFindByODI_L, _finderPathCountByODI_L,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_L",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"objectDefinitionId", "localized"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_L",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"objectDefinitionId", "localized"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_L",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"objectDefinitionId", "localized"}, false),
 			_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
-			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"objectField.", "objectDefinitionId", FinderColumn.Type.LONG,
-				"=", true, false, ObjectField::getObjectDefinitionId),
+				"=", true, true, ObjectField::getObjectDefinitionId),
 			new FinderColumn<>(
 				"objectField.", "localized", FinderColumn.Type.BOOLEAN, "=",
 				true, true, ObjectField::isLocalized));
 
-		_finderPathFetchByODI_N = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByODI_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"objectDefinitionId", "name"}, false,
-			ObjectField::getObjectDefinitionId, ObjectField::getName);
-
 		_uniquePersistenceFinderByODI_N = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByODI_N, _SQL_SELECT_OBJECTFIELD_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByODI_N",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"objectDefinitionId", "name"}, 0, 2, false,
+				ObjectField::getObjectDefinitionId,
+				convertNullFunction(ObjectField::getName)),
+			_SQL_SELECT_OBJECTFIELD_WHERE, "",
 			new FinderColumn<>(
 				"objectField.", "objectDefinitionId", FinderColumn.Type.LONG,
-				"=", true, false, ObjectField::getObjectDefinitionId),
+				"=", true, true, ObjectField::getObjectDefinitionId),
 			new FinderColumn<>(
 				"objectField.", "name", FinderColumn.Type.STRING, "=", true,
 				true, ObjectField::getName));
 
-		_finderPathWithPaginationFindByODI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"objectDefinitionId", "system_"}, true);
-
-		_finderPathWithoutPaginationFindByODI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_S",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"objectDefinitionId", "system_"}, true);
-
-		_finderPathCountByODI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_S",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"objectDefinitionId", "system_"}, false);
-
 		_collectionPersistenceFinderByODI_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByODI_S,
-			_finderPathWithoutPaginationFindByODI_S, _finderPathCountByODI_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_S",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"objectDefinitionId", "system_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_S",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"objectDefinitionId", "system_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_S",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"objectDefinitionId", "system_"}, false),
 			_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
-			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"objectField.", "objectDefinitionId", FinderColumn.Type.LONG,
-				"=", true, false, ObjectField::getObjectDefinitionId),
+				"=", true, true, ObjectField::getObjectDefinitionId),
 			new FinderColumn<>(
-				"objectField.", "system", FinderColumn.Type.BOOLEAN, "=", true,
-				true, ObjectField::isSystem));
-
-		_finderPathFetchByERC_C_ODI = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C_ODI",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Long.class.getName()
-			},
-			new String[] {
-				"externalReferenceCode", "companyId", "objectDefinitionId"
-			},
-			false, ObjectField::getExternalReferenceCode,
-			ObjectField::getCompanyId, ObjectField::getObjectDefinitionId);
+				"objectField.", "system", "system_", FinderColumn.Type.BOOLEAN,
+				"=", true, true, ObjectField::isSystem));
 
 		_uniquePersistenceFinderByERC_C_ODI = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_C_ODI, _SQL_SELECT_OBJECTFIELD_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_C_ODI",
+				new String[] {
+					String.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {
+					"externalReferenceCode", "companyId", "objectDefinitionId"
+				},
+				0, 1, false,
+				convertNullFunction(ObjectField::getExternalReferenceCode),
+				ObjectField::getCompanyId, ObjectField::getObjectDefinitionId),
+			_SQL_SELECT_OBJECTFIELD_WHERE, "",
 			new FinderColumn<>(
 				"objectField.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				ObjectField::getExternalReferenceCode),
 			new FinderColumn<>(
 				"objectField.", "companyId", FinderColumn.Type.LONG, "=", true,
-				false, ObjectField::getCompanyId),
+				true, ObjectField::getCompanyId),
 			new FinderColumn<>(
 				"objectField.", "objectDefinitionId", FinderColumn.Type.LONG,
 				"=", true, true, ObjectField::getObjectDefinitionId));
 
-		_finderPathWithPaginationFindByODI_DBT_I = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_DBT_I",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Boolean.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"objectDefinitionId", "dbType", "indexed"}, true);
-
-		_finderPathWithoutPaginationFindByODI_DBT_I = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_DBT_I",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Boolean.class.getName()
-			},
-			new String[] {"objectDefinitionId", "dbType", "indexed"}, true);
-
-		_finderPathCountByODI_DBT_I = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_DBT_I",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Boolean.class.getName()
-			},
-			new String[] {"objectDefinitionId", "dbType", "indexed"}, false);
-
 		_collectionPersistenceFinderByODI_DBT_I =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByODI_DBT_I,
-				_finderPathWithoutPaginationFindByODI_DBT_I,
-				_finderPathCountByODI_DBT_I, _SQL_SELECT_OBJECTFIELD_WHERE,
-				_SQL_COUNT_OBJECTFIELD_WHERE,
-				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_DBT_I",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Boolean.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectDefinitionId", "dbType", "indexed"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByODI_DBT_I",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Boolean.class.getName()
+					},
+					new String[] {"objectDefinitionId", "dbType", "indexed"}, 0,
+					2, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByODI_DBT_I",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Boolean.class.getName()
+					},
+					new String[] {"objectDefinitionId", "dbType", "indexed"}, 0,
+					2, false, null),
+				_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
+				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"objectField.", "objectDefinitionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					ObjectField::getObjectDefinitionId),
 				new FinderColumn<>(
 					"objectField.", "dbType", FinderColumn.Type.STRING, "=",
-					true, false, ObjectField::getDBType),
+					true, true, ObjectField::getDBType),
 				new FinderColumn<>(
 					"objectField.", "indexed", FinderColumn.Type.BOOLEAN, "=",
 					true, true, ObjectField::isIndexed));
 
-		_finderPathWithPaginationFindByODI_L_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_L_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Boolean.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"objectDefinitionId", "localized", "system_"}, true);
-
-		_finderPathWithoutPaginationFindByODI_L_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_L_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Boolean.class.getName()
-			},
-			new String[] {"objectDefinitionId", "localized", "system_"}, true);
-
-		_finderPathCountByODI_L_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_L_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Boolean.class.getName()
-			},
-			new String[] {"objectDefinitionId", "localized", "system_"}, false);
-
 		_collectionPersistenceFinderByODI_L_S =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByODI_L_S,
-				_finderPathWithoutPaginationFindByODI_L_S,
-				_finderPathCountByODI_L_S, _SQL_SELECT_OBJECTFIELD_WHERE,
-				_SQL_COUNT_OBJECTFIELD_WHERE,
-				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByODI_L_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Boolean.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectDefinitionId", "localized", "system_"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByODI_L_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Boolean.class.getName()
+					},
+					new String[] {"objectDefinitionId", "localized", "system_"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByODI_L_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Boolean.class.getName()
+					},
+					new String[] {"objectDefinitionId", "localized", "system_"},
+					false),
+				_SQL_SELECT_OBJECTFIELD_WHERE, _SQL_COUNT_OBJECTFIELD_WHERE,
+				ObjectFieldModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"objectField.", "objectDefinitionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					ObjectField::getObjectDefinitionId),
 				new FinderColumn<>(
 					"objectField.", "localized", FinderColumn.Type.BOOLEAN, "=",
-					true, false, ObjectField::isLocalized),
+					true, true, ObjectField::isLocalized),
 				new FinderColumn<>(
-					"objectField.", "system", FinderColumn.Type.BOOLEAN, "=",
-					true, true, ObjectField::isSystem));
+					"objectField.", "system", "system_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					ObjectField::isSystem));
 
 		ObjectFieldUtil.setPersistence(this);
 	}
@@ -3553,4 +2423,4 @@ public class ObjectFieldPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1688652029
+// LIFERAY-SERVICE-BUILDER-HASH:934895091

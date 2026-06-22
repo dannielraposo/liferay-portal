@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -103,7 +104,8 @@ public abstract class BaseProvisioningRequestResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -166,7 +168,8 @@ public abstract class BaseProvisioningRequestResourceTestCase {
 
 		ProvisioningRequest provisioningRequest = randomProvisioningRequest();
 
-		provisioningRequest.setCustomerName(regex);
+		provisioningRequest.setAccountEntryExternalReferenceCode(regex);
+		provisioningRequest.setAccountEntryName(regex);
 
 		String json = ProvisioningRequestSerDes.toJSON(provisioningRequest);
 
@@ -174,12 +177,30 @@ public abstract class BaseProvisioningRequestResourceTestCase {
 
 		provisioningRequest = ProvisioningRequestSerDes.toDTO(json);
 
-		Assert.assertEquals(regex, provisioningRequest.getCustomerName());
+		Assert.assertEquals(
+			regex, provisioningRequest.getAccountEntryExternalReferenceCode());
+		Assert.assertEquals(regex, provisioningRequest.getAccountEntryName());
 	}
 
 	@Test
 	public void testPostProvisioning() throws Exception {
-		Assert.assertTrue(false);
+		ProvisioningRequest randomProvisioningRequest =
+			randomProvisioningRequest();
+
+		ProvisioningRequest postProvisioningRequest =
+			testPostProvisioning_addProvisioningRequest(
+				randomProvisioningRequest);
+
+		assertEquals(randomProvisioningRequest, postProvisioningRequest);
+		assertValid(postProvisioningRequest);
+	}
+
+	protected ProvisioningRequest testPostProvisioning_addProvisioningRequest(
+			ProvisioningRequest provisioningRequest)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	protected void assertContains(
@@ -270,8 +291,37 @@ public abstract class BaseProvisioningRequestResourceTestCase {
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
 
-			if (Objects.equals("customerName", additionalAssertFieldName)) {
-				if (provisioningRequest.getCustomerName() == null) {
+			if (Objects.equals(
+					"accountEntryExternalReferenceCode",
+					additionalAssertFieldName)) {
+
+				if (provisioningRequest.
+						getAccountEntryExternalReferenceCode() == null) {
+
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("accountEntryId", additionalAssertFieldName)) {
+				if (provisioningRequest.getAccountEntryId() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("accountEntryName", additionalAssertFieldName)) {
+				if (provisioningRequest.getAccountEntryName() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("userAccounts", additionalAssertFieldName)) {
+				if (provisioningRequest.getUserAccounts() == null) {
 					valid = false;
 				}
 
@@ -399,10 +449,48 @@ public abstract class BaseProvisioningRequestResourceTestCase {
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
 
-			if (Objects.equals("customerName", additionalAssertFieldName)) {
+			if (Objects.equals(
+					"accountEntryExternalReferenceCode",
+					additionalAssertFieldName)) {
+
 				if (!Objects.deepEquals(
-						provisioningRequest1.getCustomerName(),
-						provisioningRequest2.getCustomerName())) {
+						provisioningRequest1.
+							getAccountEntryExternalReferenceCode(),
+						provisioningRequest2.
+							getAccountEntryExternalReferenceCode())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("accountEntryId", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						provisioningRequest1.getAccountEntryId(),
+						provisioningRequest2.getAccountEntryId())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("accountEntryName", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						provisioningRequest1.getAccountEntryName(),
+						provisioningRequest2.getAccountEntryName())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("userAccounts", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						provisioningRequest1.getUserAccounts(),
+						provisioningRequest2.getUserAccounts())) {
 
 					return false;
 				}
@@ -518,8 +606,9 @@ public abstract class BaseProvisioningRequestResourceTestCase {
 		sb.append(operator);
 		sb.append(" ");
 
-		if (entityFieldName.equals("customerName")) {
-			Object object = provisioningRequest.getCustomerName();
+		if (entityFieldName.equals("accountEntryExternalReferenceCode")) {
+			Object object =
+				provisioningRequest.getAccountEntryExternalReferenceCode();
 
 			String value = String.valueOf(object);
 
@@ -564,6 +653,62 @@ public abstract class BaseProvisioningRequestResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("accountEntryId")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("accountEntryName")) {
+			Object object = provisioningRequest.getAccountEntryName();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("userAccounts")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		throw new IllegalArgumentException(
 			"Invalid entity field " + entityFieldName);
 	}
@@ -577,7 +722,9 @@ public abstract class BaseProvisioningRequestResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -609,7 +756,10 @@ public abstract class BaseProvisioningRequestResourceTestCase {
 	protected ProvisioningRequest randomProvisioningRequest() throws Exception {
 		return new ProvisioningRequest() {
 			{
-				customerName = StringUtil.toLowerCase(
+				accountEntryExternalReferenceCode = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				accountEntryId = RandomTestUtil.randomLong();
+				accountEntryName = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 			}
 		};
@@ -840,4 +990,4 @@ public abstract class BaseProvisioningRequestResourceTestCase {
 		_provisioningRequestResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-415889700
+// LIFERAY-REST-BUILDER-HASH:-654804364

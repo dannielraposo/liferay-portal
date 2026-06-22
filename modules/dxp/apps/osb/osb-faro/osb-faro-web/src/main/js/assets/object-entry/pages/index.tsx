@@ -2,12 +2,10 @@ import * as breadcrumbs from 'shared/util/breadcrumbs';
 import BasePage from 'shared/components/base-page';
 import BundleRouter from 'route-middleware/BundleRouter';
 import DownloadPDFReport from 'shared/components/download-report/DownloadPDFReport';
-import Filter from '../hocs/Filter';
 import getCN from 'classnames';
 import Loading from 'shared/components/Loading';
 import React, {lazy, Suspense, useState} from 'react';
 import RouteNotFound from 'shared/components/RouteNotFound';
-import {ENABLE_GLOBAL_FILTER} from 'shared/util/constants';
 import {getMatchedRoute, Routes} from 'shared/util/router';
 import {getSafeDecodedURIComponent} from 'shared/util/util';
 import {pickBy} from 'lodash';
@@ -15,7 +13,7 @@ import {Router} from 'shared/types';
 import {sub} from 'shared/util/lang';
 import {Switch} from 'react-router-dom';
 import {useChannelContext} from 'shared/context/channel';
-import {useDataSource} from 'shared/hooks/useDataSource';
+import {useDataSources} from 'shared/context/dataSources';
 import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
 
 const Overview = lazy(
@@ -57,9 +55,9 @@ const ObjectEntry: React.FC<{
 		}
 	} = router;
 
-	const [filters, setFilters] = useState({});
+	const [filters] = useState({});
 
-	const dataSourceStates = useDataSource();
+	const dataSourceStates = useDataSources();
 
 	const decodedTitle = getSafeDecodedURIComponent(title);
 	const decodedType = getSafeDecodedURIComponent(type);
@@ -130,12 +128,6 @@ const ObjectEntry: React.FC<{
 					router
 				}}
 			>
-				{ENABLE_GLOBAL_FILTER && (
-					<BasePage.SubHeader>
-						<Filter onChange={setFilters} />
-					</BasePage.SubHeader>
-				)}
-
 				<BasePage.Body>
 					<Suspense fallback={<Loading center />}>
 						<Switch>

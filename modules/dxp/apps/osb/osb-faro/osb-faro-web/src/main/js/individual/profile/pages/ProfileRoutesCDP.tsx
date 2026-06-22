@@ -13,7 +13,8 @@ import {compose, withIndividual} from 'shared/hoc';
 import {CSVType} from 'shared/components/download-report/utils';
 import {getMatchedRoute, Routes} from 'shared/util/router';
 import {Switch, withRouter} from 'react-router-dom';
-import {useDataSource} from 'shared/hooks/useDataSource';
+import {useDataSources} from 'shared/context/dataSources';
+import {useLDPEnabled} from 'shared/hooks/useLDPEnabled';
 import {useRequest} from 'shared/hooks/useRequest';
 
 const AssociatedSegments = lazy(
@@ -90,7 +91,9 @@ export const IndividualProfileRoutesCDP = ({
 	id,
 	individual
 }: IIndividualProfileRoutesCDPProps) => {
-	const dataSourceStates = useDataSource();
+	const dataSourceStates = useDataSources();
+
+	const LDPEnabled = useLDPEnabled({groupId});
 
 	const {selectedChannel} = useContext(ChannelContext);
 
@@ -101,9 +104,7 @@ export const IndividualProfileRoutesCDP = ({
 	const entityName = individual.name || Liferay.Language.get('unknown');
 
 	const {data: dataSourceData} = useRequest({
-		dataSourceFn: API.dataSource.search as (params: {
-			[key: string]: any;
-		}) => Promise<any>,
+		dataSourceFn: API.dataSource.search,
 		variables: {
 			delta: 1,
 			groupId
@@ -128,7 +129,11 @@ export const IndividualProfileRoutesCDP = ({
 						groupId,
 						label: selectedChannel && selectedChannel.name
 					}),
-					breadcrumbs.getKnownIndividuals({channelId, groupId}),
+					breadcrumbs.getIndividuals({
+						channelId,
+						groupId,
+						LDPEnabled
+					}),
 					breadcrumbs.getEntityName({label: entityName})
 				]}
 				groupId={groupId}

@@ -37,7 +37,13 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName("CartComment")
+@GraphQLName(
+	description = "Note attached to a cart. Restricted comments are visible only to staff with the manage-comments permission on the parent cart; unrestricted comments are buyer-visible.",
+	value = "CartComment"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Note attached to a cart. Restricted comments are visible only to staff with the manage-comments permission on the parent cart; unrestricted comments are buyer-visible."
+)
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "CartComment")
 public class CartComment implements Serializable {
@@ -50,7 +56,10 @@ public class CartComment implements Serializable {
 		return ObjectMapperUtil.unsafeReadValue(CartComment.class, json);
 	}
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Display name of the user who authored the comment. Read-only.",
+		example = "Casey Buyer"
+	)
 	public String getAuthor() {
 		if (_authorSupplier != null) {
 			author = _authorSupplier.get();
@@ -84,14 +93,19 @@ public class CartComment implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Display name of the user who authored the comment. Read-only."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String author;
 
 	@JsonIgnore
 	private Supplier<String> _authorSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Reference to the user who authored the comment (FK identifier). Read-only.",
+		example = "20078"
+	)
 	public Long getAuthorId() {
 		if (_authorIdSupplier != null) {
 			authorId = _authorIdSupplier.get();
@@ -125,14 +139,19 @@ public class CartComment implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Reference to the user who authored the comment (FK identifier). Read-only."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long authorId;
 
 	@JsonIgnore
 	private Supplier<Long> _authorIdSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Avatar URL of the comment author. Read-only.",
+		example = "https://example.com/portrait.png"
+	)
 	public String getAuthorPortraitURL() {
 		if (_authorPortraitURLSupplier != null) {
 			authorPortraitURL = _authorPortraitURLSupplier.get();
@@ -166,14 +185,17 @@ public class CartComment implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "Avatar URL of the comment author. Read-only.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String authorPortraitURL;
 
 	@JsonIgnore
 	private Supplier<String> _authorPortraitURLSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Comment body text.",
+		example = "Please confirm receipt of the signed quote."
+	)
 	public String getContent() {
 		if (_contentSupplier != null) {
 			content = _contentSupplier.get();
@@ -207,14 +229,17 @@ public class CartComment implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "Comment body text.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String content;
 
 	@JsonIgnore
 	private Supplier<String> _contentSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema(example = "AB-34098-789-N")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Idempotency key for the comment; unique per comment within the cart scope. Read-only on the wire and set automatically when omitted.",
+		example = "AB-34098-789-N"
+	)
 	public String getExternalReferenceCode() {
 		if (_externalReferenceCodeSupplier != null) {
 			externalReferenceCode = _externalReferenceCodeSupplier.get();
@@ -248,14 +273,19 @@ public class CartComment implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Idempotency key for the comment; unique per comment within the cart scope. Read-only on the wire and set automatically when omitted."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String externalReferenceCode;
 
 	@JsonIgnore
 	private Supplier<String> _externalReferenceCodeSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Reference to the comment (FK identifier). Read-only.",
+		example = "30130"
+	)
 	public Long getId() {
 		if (_idSupplier != null) {
 			id = _idSupplier.get();
@@ -287,14 +317,19 @@ public class CartComment implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Reference to the comment (FK identifier). Read-only."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long id;
 
 	@JsonIgnore
 	private Supplier<Long> _idSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Last modification timestamp in ISO 8601. Read-only.",
+		example = "2017-07-21"
+	)
 	public Date getModifiedDate() {
 		if (_modifiedDateSupplier != null) {
 			modifiedDate = _modifiedDateSupplier.get();
@@ -328,14 +363,69 @@ public class CartComment implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Last modification timestamp in ISO 8601. Read-only."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Date modifiedDate;
 
 	@JsonIgnore
 	private Supplier<Date> _modifiedDateSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "External reference code of the parent cart. Read-only.",
+		example = "AB-34098-789-N"
+	)
+	public String getOrderExternalReferenceCode() {
+		if (_orderExternalReferenceCodeSupplier != null) {
+			orderExternalReferenceCode =
+				_orderExternalReferenceCodeSupplier.get();
+
+			_orderExternalReferenceCodeSupplier = null;
+		}
+
+		return orderExternalReferenceCode;
+	}
+
+	public void setOrderExternalReferenceCode(
+		String orderExternalReferenceCode) {
+
+		this.orderExternalReferenceCode = orderExternalReferenceCode;
+
+		_orderExternalReferenceCodeSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setOrderExternalReferenceCode(
+		UnsafeSupplier<String, Exception>
+			orderExternalReferenceCodeUnsafeSupplier) {
+
+		_orderExternalReferenceCodeSupplier = () -> {
+			try {
+				return orderExternalReferenceCodeUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(
+		description = "External reference code of the parent cart. Read-only."
+	)
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String orderExternalReferenceCode;
+
+	@JsonIgnore
+	private Supplier<String> _orderExternalReferenceCodeSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Reference to the parent cart (FK identifier). Read-only.",
+		example = "10130"
+	)
 	public Long getOrderId() {
 		if (_orderIdSupplier != null) {
 			orderId = _orderIdSupplier.get();
@@ -369,14 +459,19 @@ public class CartComment implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Reference to the parent cart (FK identifier). Read-only."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long orderId;
 
 	@JsonIgnore
 	private Supplier<Long> _orderIdSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "When true, the comment is visible only to staff with the manage-comments permission on the parent cart.",
+		example = "false"
+	)
 	public Boolean getRestricted() {
 		if (_restrictedSupplier != null) {
 			restricted = _restrictedSupplier.get();
@@ -410,7 +505,9 @@ public class CartComment implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "When true, the comment is visible only to staff with the manage-comments permission on the parent cart."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Boolean restricted;
 
@@ -551,6 +648,22 @@ public class CartComment implements Serializable {
 			sb.append("\"");
 		}
 
+		String orderExternalReferenceCode = getOrderExternalReferenceCode();
+
+		if (orderExternalReferenceCode != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"orderExternalReferenceCode\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(orderExternalReferenceCode));
+
+			sb.append("\"");
+		}
+
 		Long orderId = getOrderId();
 
 		if (orderId != null) {
@@ -676,4 +789,4 @@ public class CartComment implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-285076030
+// LIFERAY-REST-BUILDER-HASH:-1001572688

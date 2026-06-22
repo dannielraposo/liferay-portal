@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.document.DocumentBuilder;
 import com.liferay.portal.search.document.DocumentBuilderFactory;
@@ -34,6 +36,7 @@ import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.core.explain.Explanation;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.HitsMetadata;
+import org.opensearch.client.opensearch.core.search.InnerHitsResult;
 import org.opensearch.client.opensearch.core.search.TotalHits;
 
 /**
@@ -76,7 +79,7 @@ public class HitsMetadataTranslator {
 		SearchHitBuilder searchHitBuilder = new SearchHitBuilder();
 
 		return searchHitBuilder.addHighlightFields(
-			_translateHighlightFields(hit.highlight())
+			_translateHighlightFields(hit)
 		).addSources(
 			_translateSource(hit.source())
 		).document(
@@ -106,6 +109,44 @@ public class HitsMetadataTranslator {
 		return StringPool.BLANK;
 	}
 
+	private void _populateHighlightFields(
+		List<HighlightField> highlightFields, Hit<JsonData> hit) {
+
+		Map<String, List<String>> highlight = hit.highlight();
+
+		if (MapUtil.isNotEmpty(highlight)) {
+			for (Map.Entry<String, List<String>> entry : highlight.entrySet()) {
+				highlightFields.add(
+					new HighlightFieldBuilder(
+					).fragments(
+						entry.getValue()
+					).name(
+						entry.getKey()
+					).build());
+			}
+		}
+
+		Map<String, InnerHitsResult> innerHitsResults = hit.innerHits();
+
+		if (MapUtil.isEmpty(innerHitsResults)) {
+			return;
+		}
+
+		for (InnerHitsResult innerHitsResult : innerHitsResults.values()) {
+			HitsMetadata<JsonData> hitsMetadata = innerHitsResult.hits();
+
+			if ((hitsMetadata == null) ||
+				ListUtil.isEmpty(hitsMetadata.hits())) {
+
+				continue;
+			}
+
+			for (Hit<JsonData> innerHit : hitsMetadata.hits()) {
+				_populateHighlightFields(highlightFields, innerHit);
+			}
+		}
+	}
+
 	private Document _translateDocument(
 		String alternateUidFieldName, Hit<JsonData> hit) {
 
@@ -125,20 +166,10 @@ public class HitsMetadataTranslator {
 		return documentBuilder.build();
 	}
 
-	private List<HighlightField> _translateHighlightFields(
-		Map<String, List<String>> highlight) {
-
+	private List<HighlightField> _translateHighlightFields(Hit<JsonData> hit) {
 		List<HighlightField> highlightFields = new ArrayList<>();
 
-		for (Map.Entry<String, List<String>> entry : highlight.entrySet()) {
-			highlightFields.add(
-				new HighlightFieldBuilder(
-				).fragments(
-					entry.getValue()
-				).name(
-					entry.getKey()
-				).build());
-		}
+		_populateHighlightFields(highlightFields, hit);
 
 		return highlightFields;
 	}

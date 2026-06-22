@@ -74,11 +74,12 @@ public abstract class BasePaymentMethodResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-cart/v1.0/carts/by-externalReferenceCode/{externalReferenceCode}/payment-methods'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieve payment methods available for the Cart."
+		description = "Lists the payment method entries qualified for the cart addressed by external reference code -- filtered by billing address country, order type qualifiers, view permission, and subscription eligibility, sorted by the payment-method priority order."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -111,11 +112,12 @@ public abstract class BasePaymentMethodResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-cart/v1.0/carts/{cartId}/payment-methods'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieve payment methods available for the Cart."
+		description = "Lists the payment method entries qualified for the cart addressed by ID -- filtered by billing address country, order type qualifiers, view permission, and subscription eligibility, sorted by the payment-method priority order."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of a cart. Counterpart to the by-externalReferenceCode path variant; identifiers are server-assigned and stable across the cart's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "cartId"
 			)
@@ -148,6 +150,7 @@ public abstract class BasePaymentMethodResourceImpl
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of a cart. Counterpart to the by-externalReferenceCode path variant; identifiers are server-assigned and stable across the cart's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "cartId"
 			),
@@ -885,4 +888,4 @@ public abstract class BasePaymentMethodResourceImpl
 		LogFactoryUtil.getLog(BasePaymentMethodResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:597925050
+// LIFERAY-REST-BUILDER-HASH:-2098026169

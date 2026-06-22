@@ -69,6 +69,10 @@ public interface ExportImportVulcanBatchEngineTaskItemDelegate<T>
 
 		public Scope getScope();
 
+		public default String getSectionKey() {
+			return null;
+		}
+
 		public default String getTag(Locale locale) {
 			return null;
 		}
@@ -93,7 +97,7 @@ public interface ExportImportVulcanBatchEngineTaskItemDelegate<T>
 
 	public enum Scope {
 
-		COMPANY, DEPOT, SITE
+		COMPANY, DEPOT, PORTLET, SITE
 
 	}
 

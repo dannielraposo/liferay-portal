@@ -46,9 +46,13 @@ public abstract class BaseChannelResourceImpl implements ChannelResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/discount-channels/{discountChannelId}/channel'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the Channel nested in a DiscountChannel (via channel link) addressed by internal rel id."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target discount-channel binding. Server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "discountChannelId"
 			)
@@ -76,9 +80,13 @@ public abstract class BaseChannelResourceImpl implements ChannelResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-list-channels/{priceListChannelId}/channel'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the Channel nested in a PriceListChannel (via price list channel link) addressed by internal rel id."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target price-list-channel binding. Server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "priceListChannelId"
 			)
@@ -546,4 +554,4 @@ public abstract class BaseChannelResourceImpl implements ChannelResource {
 		LogFactoryUtil.getLog(BaseChannelResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1061424718
+// LIFERAY-REST-BUILDER-HASH:1074734352

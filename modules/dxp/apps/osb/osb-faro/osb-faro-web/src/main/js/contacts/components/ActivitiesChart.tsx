@@ -37,6 +37,7 @@ interface IChartProps<T> extends React.HTMLAttributes<HTMLElement> {
 	alwaysShowSelectedTooltip: boolean;
 	hasSelectedPoint?: boolean;
 	height?: number;
+	hideGrid?: boolean;
 	history: Array<T>;
 	interval: Interval;
 	LDPEnabled?: boolean;
@@ -44,15 +45,14 @@ interface IChartProps<T> extends React.HTMLAttributes<HTMLElement> {
 	onPointSelect: (index: number | null) => void;
 	rangeSelectors: RangeSelectors;
 	selectedPoint?: number;
-	tooltipRenderRows?: (data: T) => Array<{
-		label: string;
-		value: any;
-	}>;
+	tooltipRenderRows?: (data: T) => ChartTooltipRow[];
 }
 
 interface IActivitiesHistoryProps<initDateType = number> {
 	intervalInitDate: initDateType;
 	totalEvents: number;
+	totalSessions?: number;
+	uniqueVisitors?: number;
 }
 
 const ActivitiesChart: React.FC<
@@ -62,11 +62,13 @@ const ActivitiesChart: React.FC<
 	alwaysShowSelectedTooltip = false,
 	hasSelectedPoint,
 	height = 340,
+	hideGrid = false,
 	history,
 	interval,
 	onPointSelect,
 	rangeSelectors,
-	selectedPoint
+	selectedPoint,
+	tooltipRenderRows
 }) => {
 	const _tooltipRef = useRef<any>();
 
@@ -98,23 +100,25 @@ const ActivitiesChart: React.FC<
 
 			const {intervalInitDate, totalEvents, totalSessions} = data;
 
-			const rows: ChartTooltipRow[] = [
-				{
-					label: Liferay.Language.get('events'),
-					value: totalEvents.toLocaleString()
-				},
-				{
-					label: Liferay.Language.get('sessions'),
-					value: totalSessions.toLocaleString()
-				}
-			];
+			const rows: ChartTooltipRow[] = tooltipRenderRows
+				? tooltipRenderRows(data)
+				: [
+						{
+							label: Liferay.Language.get('events'),
+							value: totalEvents.toLocaleString()
+						},
+						{
+							label: Liferay.Language.get('sessions'),
+							value: totalSessions.toLocaleString()
+						}
+				  ];
 
 			if (moment.utc(intervalInitDate).isSame(moment(), 'day')) {
 				rows.push({
-					className: 'informative-text',
+					className: 'text-info text-uppercase mt-4',
 					label: Liferay.Language.get(
 						'data-for-todays-events-may-vary-or-be-incomplete'
-					).toUpperCase()
+					)
 				});
 			}
 
@@ -151,18 +155,15 @@ const ActivitiesChart: React.FC<
 				data={history}
 				onClick={pointData => {
 					if (alwaysShowSelectedTooltip && pointData) {
-						if (_tooltipRef) {
-							const {
-								getTranslate,
-								props: {viewBox},
-								state: {boxWidth}
-							} = _tooltipRef.current;
+						const tooltip = _tooltipRef.current;
 
+						if (tooltip?.state?.boxWidth && tooltip.getTranslate) {
 							setSelectedTooltipX(
-								getTranslate({
+								tooltip.getTranslate({
 									key: 'x',
-									tooltipDimension: boxWidth,
-									viewBoxDimension: viewBox.width
+									tooltipDimension: tooltip.state.boxWidth,
+									viewBoxDimension:
+										tooltip.props.viewBox.width
 								})
 							);
 						}
@@ -175,11 +176,13 @@ const ActivitiesChart: React.FC<
 				onMouseLeave={() => setMouseOutside(true)}
 				onMouseMove={() => setMouseOutside(false)}
 			>
-				<CartesianGrid
-					stroke={AXIS.gridStroke}
-					strokeDasharray='3 3'
-					vertical={false}
-				/>
+				{!hideGrid && (
+					<CartesianGrid
+						stroke={AXIS.gridStroke}
+						strokeDasharray='3 3'
+						vertical={false}
+					/>
+				)}
 
 				<XAxis
 					axisLine={{stroke: AXIS.borderStroke}}
@@ -244,26 +247,30 @@ const ActivitiesChart: React.FC<
 					yAxisId='right'
 				/>
 
-				<Tooltip
-					content={renderTooltip}
-					cursor={{stroke: CHART_BLUE}}
-					position={
-						showFixedTooltip &&
-						selectedTooltipX !== null &&
-						selectedTooltipX !== undefined
-							? {x: selectedTooltipX}
-							: undefined
-					}
-					ref={_tooltipRef}
-					wrapperStyle={
-						showFixedTooltip ? {visibility: 'visible'} : undefined
-					}
-				/>
+				{!hideGrid && (
+					<Tooltip
+						content={renderTooltip}
+						cursor={{stroke: CHART_BLUE}}
+						position={
+							showFixedTooltip &&
+							selectedTooltipX !== null &&
+							selectedTooltipX !== undefined
+								? {x: selectedTooltipX}
+								: undefined
+						}
+						ref={_tooltipRef}
+						wrapperStyle={
+							showFixedTooltip
+								? {visibility: 'visible'}
+								: undefined
+						}
+					/>
+				)}
 
 				<ReferenceLine
 					strokeWidth={1}
 					x={
-						showFixedTooltip && selectedPoint !== undefined
+						selectedPoint !== undefined
 							? history[selectedPoint].intervalInitDate
 							: undefined
 					}

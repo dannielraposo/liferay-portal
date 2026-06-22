@@ -7,6 +7,7 @@ export {default as AssetEntryListDropdownDefaultPropsTransformer} from './AssetE
 export {default as AssetListEntryVariationDefaultPropsTransformer} from './AssetListEntryVariationDefaultPropsTransformer';
 export {default as EditAssetListEntryManualDefaultPropsTransformer} from './EditAssetListEntryManualDefaultPropsTransformer';
 export {default as EmptyResultMessagePropsTransformer} from './EmptyResultMessagePropsTransformer';
+export {default as FilterVisibility} from './FilterVisibility';
 export {default as InfoCollectionProviderDropdownDefaultPropsTransformer} from './InfoCollectionProviderDropdownDefaultPropsTransformer';
 export {default as ListItemsDropdownPropsTransformer} from './ListItemsDropdownPropsTransformer';
 export {default as ManagementToolbarPropsTransformer} from './ManagementToolbarPropsTransformer';
@@ -16,5 +17,7 @@ export {default as SelectStructureField} from './SelectStructureField';
 export {default as Source} from './Source';
 export {default as TopLinkEventHandler} from './TopLinkEventHandler';
 export {default as AssetFilterBuilder} from './components/AssetFilterBuilder/index';
+export {default as CollectionFilterBuilder} from './components/CollectionFilterBuilder/index';
+export {default as CollectionOrdering} from './components/CollectionOrdering/index';
 export {default as VariationsNav} from './components/VariationsNav/index';
 export {default as openDeleteAssetEntryListModal} from './openDeleteAssetEntryListModal';

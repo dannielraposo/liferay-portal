@@ -167,8 +167,9 @@ public class CustomFDSSerializer
 			tokenResolutionsJSONObject
 		);
 
-		List<ObjectEntry> objectEntries = getSortedRelatedObjectEntries(
-			fdsName, httpServletRequest, (Predicate)null, "tableSectionsOrder",
+		List<ObjectEntry> objectEntries = getRelatedObjectEntries(
+			fdsName, httpServletRequest, (Predicate)null,
+			"dataSetToDataSetCardsSections", "dataSetToDataSetListSections",
 			"dataSetToDataSetTableSections");
 
 		if (objectEntries == null) {
@@ -877,7 +878,9 @@ public class CustomFDSSerializer
 	@Reference
 	protected FDSFilterRegistry fdsFilterRegistry;
 
-	private JSONObject _getDateJSONObject(Object object) {
+	private JSONObject _getDateOrDateTimeJSONObject(
+		boolean dateTime, Object object) {
+
 		if (object == null) {
 			return null;
 		}
@@ -886,13 +889,46 @@ public class CustomFDSSerializer
 
 		calendar.setTime(Date.from(Instant.parse(String.valueOf(object))));
 
-		return JSONUtil.put(
+		JSONObject jsonObject = JSONUtil.put(
 			"day", calendar.get(Calendar.DATE)
 		).put(
 			"month", calendar.get(Calendar.MONTH) + 1
 		).put(
 			"year", calendar.get(Calendar.YEAR)
 		);
+
+		if (dateTime) {
+			jsonObject.put(
+				"hour", calendar.get(Calendar.HOUR_OF_DAY)
+			).put(
+				"minute", calendar.get(Calendar.MINUTE)
+			).put(
+				"second", calendar.get(Calendar.SECOND)
+			);
+		}
+
+		return jsonObject;
+	}
+
+	private Object _getListTypeEntryKey(
+		String entityFieldType, ListTypeEntry listTypeEntry) {
+
+		String key = listTypeEntry.getKey();
+
+		if (Objects.equals(entityFieldType, FDSEntityFieldTypes.INTEGER)) {
+			try {
+				return Integer.valueOf(key);
+			}
+			catch (NumberFormatException numberFormatException) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Invalid list type entry key: " + key,
+						numberFormatException);
+				}
+			}
+		}
+
+		return key;
 	}
 
 	private ObjectDefinition _getObjectDefinition(
@@ -995,7 +1031,7 @@ public class CustomFDSSerializer
 		return GetterUtil.getString(properties.get("type"));
 	}
 
-	private boolean _isActive(ObjectEntry objectEntry) {
+	private Boolean _isActive(ObjectEntry objectEntry) {
 		Map<String, Object> properties = objectEntry.getProperties();
 
 		return (boolean)properties.get("active");
@@ -1033,7 +1069,9 @@ public class CustomFDSSerializer
 
 		String type = MapUtil.getString(properties, "type");
 
-		if (Objects.equals(type, "date") || Objects.equals(type, "date-time")) {
+		if (Objects.equals(type, "date") || Objects.equals(type, "date-time") ||
+			Objects.equals(type, "date_time")) {
+
 			return _serializeFilterDateOrDateTime(fieldName, properties, type);
 		}
 
@@ -1069,7 +1107,17 @@ public class CustomFDSSerializer
 		return JSONUtil.put(
 			"clientExtensionFilterURL", fdsFilterCET.getURL()
 		).put(
-			"entityFieldType", FDSEntityFieldTypes.STRING
+			"entityFieldType",
+			() -> {
+				String entityFieldType = String.valueOf(
+					properties.get("entityFieldType"));
+
+				if (Validator.isNotNull(entityFieldType)) {
+					return entityFieldType;
+				}
+
+				return FDSEntityFieldTypes.STRING;
+			}
 		).put(
 			"id", fieldName
 		).put(
@@ -1084,8 +1132,12 @@ public class CustomFDSSerializer
 			String fieldName, Map<String, Object> properties, String type)
 		throws Exception {
 
-		JSONObject fromJSONObject = _getDateJSONObject(properties.get("from"));
-		JSONObject toJSONObject = _getDateJSONObject(properties.get("to"));
+		boolean dateTime = !Objects.equals(type, FDSEntityFieldTypes.DATE);
+
+		JSONObject fromJSONObject = _getDateOrDateTimeJSONObject(
+			dateTime, properties.get("from"));
+		JSONObject toJSONObject = _getDateOrDateTimeJSONObject(
+			dateTime, properties.get("to"));
 
 		boolean active = (fromJSONObject != null) || (toJSONObject != null);
 
@@ -1093,8 +1145,7 @@ public class CustomFDSSerializer
 			"active", active
 		).put(
 			"entityFieldType",
-			Objects.equals(type, "date") ? FDSEntityFieldTypes.DATE :
-				FDSEntityFieldTypes.DATE_TIME
+			dateTime ? FDSEntityFieldTypes.DATE_TIME : FDSEntityFieldTypes.DATE
 		).put(
 			"id", fieldName
 		).put(
@@ -1114,7 +1165,7 @@ public class CustomFDSSerializer
 				);
 			}
 		).put(
-			"type", "dateRange"
+			"type", dateTime ? "dateTimeRange" : "dateRange"
 		);
 	}
 
@@ -1156,11 +1207,18 @@ public class CustomFDSSerializer
 			}
 		}
 
+		String entityFieldType = String.valueOf(
+			properties.get("entityFieldType"));
+
 		JSONObject jsonObject = JSONUtil.put(
 			"autocompleteEnabled", true
 		).put(
 			"entityFieldType",
 			() -> {
+				if (Validator.isNotNull(entityFieldType)) {
+					return entityFieldType;
+				}
+
 				if (_isCollection(
 						String.valueOf(properties.get("fieldName")),
 						sourceType)) {
@@ -1173,7 +1231,9 @@ public class CustomFDSSerializer
 		).put(
 			"id",
 			() -> {
-				if (!Objects.equals(sourceType, "OBJECT_PICKLIST")) {
+				if (!Objects.equals(sourceType, "OBJECT_PICKLIST") ||
+					Validator.isNotNull(entityFieldType)) {
+
 					return fieldName;
 				}
 
@@ -1249,7 +1309,8 @@ public class CustomFDSSerializer
 					listTypeEntry.getName(
 						PortalUtil.getLocale(httpServletRequest))
 				).put(
-					"value", listTypeEntry.getKey()
+					"value",
+					() -> _getListTypeEntryKey(entityFieldType, listTypeEntry)
 				))
 		).put(
 			"preloadedData",
@@ -1280,7 +1341,9 @@ public class CustomFDSSerializer
 								listTypeEntry.getName(
 									PortalUtil.getLocale(httpServletRequest))
 							).put(
-								"value", listTypeEntry.getKey()
+								"value",
+								() -> _getListTypeEntryKey(
+									entityFieldType, listTypeEntry)
 							));
 					}
 				}

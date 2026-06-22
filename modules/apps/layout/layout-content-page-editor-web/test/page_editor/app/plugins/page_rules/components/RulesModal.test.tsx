@@ -17,11 +17,34 @@ import addRule from '../../../../../../src/main/resources/META-INF/resources/pag
 import {
 	CACHE_KEYS,
 	disposeCache,
+	getCacheKey,
 	initializeCache,
 	setCacheItem,
 } from '../../../../../../src/main/resources/META-INF/resources/page_editor/app/utils/cache';
 import RulesModal from '../../../../../../src/main/resources/META-INF/resources/page_editor/plugins/page_rules/components/RulesModal';
 import {Rule} from '../../../../../../src/main/resources/META-INF/resources/page_editor/types/Rule';
+
+const mockSendMessage = jest.fn();
+
+jest.mock('@liferay/layout-js-components-web', () => {
+	const React = require('react');
+	const actual = jest.requireActual('@liferay/layout-js-components-web');
+
+	return {
+		...actual,
+		ScreenReaderAnnouncerContextProvider: ({
+			children,
+		}: {
+			children: React.ReactNode;
+		}) => (
+			<actual.ScreenReaderAnnouncerContext.Provider
+				value={{sendMessage: mockSendMessage}}
+			>
+				{children}
+			</actual.ScreenReaderAnnouncerContext.Provider>
+		),
+	};
+});
 
 jest.mock(
 	'../../../../../../src/main/resources/META-INF/resources/page_editor/app/services/serviceFetch',
@@ -49,6 +72,19 @@ jest.mock('frontend-js-components-web', () => ({
 	),
 	openToast: jest.fn(),
 }));
+
+jest.mock(
+	'../../../../../../src/main/resources/META-INF/resources/page_editor/app/config/index',
+	() => ({
+		config: {
+			layoutType: '1',
+			selectedMappingTypes: {
+				formEnabled: true,
+				type: {id: 'mapping-id', label: 'Article'},
+			},
+		},
+	})
+);
 
 const DEFAULT_RULE: Rule = {
 	actions: [{id: 'action-1', type: undefined}],
@@ -121,6 +157,7 @@ const renderComponent = ({
 						},
 						pageRules: rules,
 					},
+					mappingFields: {},
 				}) as unknown as State
 			}
 		>
@@ -149,7 +186,7 @@ const selectPickerOption = async (pickerLabel: string, optionValue: string) => {
 	await userEvent.click(option);
 };
 
-describe('RulesSidebar', () => {
+describe('RulesModal', () => {
 	afterEach(() => {
 		Liferay.FeatureFlags['LPS-169837'] = false;
 	});
@@ -217,6 +254,54 @@ describe('RulesSidebar', () => {
 		expect(
 			screen.getByText('user1', {selector: '[role="combobox"]'})
 		).toBeInTheDocument();
+	});
+
+	it('announces condition completion to screen readers', async () => {
+		mockSendMessage.mockClear();
+
+		renderComponent();
+
+		await selectPickerOption('select-item-for-the-condition', 'user');
+		await selectPickerOption('select-condition', 'is-the-user');
+		await selectPickerOption('select-user', 'user1');
+
+		expect(mockSendMessage).toHaveBeenCalledWith('condition-completed');
+	});
+
+	it('does not render a value input for is-empty', async () => {
+		setCacheItem({
+			data: [
+				{
+					key: 'title',
+					label: 'Title',
+					localizable: false,
+					name: 'title',
+					required: false,
+					type: 'text',
+				},
+			],
+			key: getCacheKey([CACHE_KEYS.mappingFields, 'mapping-id']) ?? '',
+			status: 'saved',
+		});
+
+		renderComponent({
+			editingRule: {
+				actions: [{id: 'action-1', type: undefined}],
+				conditionType: 'all',
+				conditions: [
+					{
+						field: 'title',
+						id: 'condition-1',
+						options: {type: 'is-empty'},
+						type: 'field',
+					},
+				],
+				id: '',
+				name: 'Rule',
+			},
+		});
+
+		expect(screen.queryByLabelText('value')).not.toBeInTheDocument();
 	});
 
 	it('does allow completing a action', async () => {
@@ -421,5 +506,44 @@ describe('RulesSidebar', () => {
 				name: 'select-fragment-for-the-action',
 			})
 		).toHaveTextContent('select');
+	});
+
+	it('preserves the fragment when the action changes for a readOnly action', async () => {
+		renderComponent({
+			editingRule: {
+				...DEFAULT_RULE,
+				actions: [
+					{
+						id: 'action-1',
+						itemId: 'item1',
+						readOnly: true,
+						type: 'show',
+					},
+				],
+				conditions: [
+					{
+						field: 'user',
+						id: 'condition-1',
+						options: {type: 'equal', value: 'userId1'},
+						type: 'user',
+					},
+				],
+			},
+		});
+
+		await selectPickerOption('select-action', 'hide');
+
+		await userEvent.click(screen.getByText('save'));
+
+		expect(addRule).toBeCalledWith(
+			expect.objectContaining({
+				actions: [
+					expect.objectContaining({
+						itemId: 'item1',
+						type: 'hide',
+					}),
+				],
+			})
+		);
 	});
 });

@@ -5,17 +5,13 @@
 
 package com.liferay.site.navigation.service.persistence.impl;
 
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -26,12 +22,13 @@ import com.liferay.portal.kernel.sanitizer.SanitizerException;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
+import com.liferay.portal.kernel.service.persistence.impl.ArrayableFinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -40,7 +37,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.site.navigation.exception.DuplicateSiteNavigationMenuExternalReferenceCodeException;
@@ -104,62 +100,8 @@ public class SiteNavigationMenuPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<SiteNavigationMenu>
+	private CollectionPersistenceFinder<SiteNavigationMenu, NoSuchMenuException>
 		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the site navigation menus where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site navigation menus where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @return the range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the site navigation menus where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<SiteNavigationMenu> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the site navigation menus where uuid = &#63;.
@@ -181,14 +123,9 @@ public class SiteNavigationMenuPersistenceImpl
 		OrderByComparator<SiteNavigationMenu> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -205,16 +142,8 @@ public class SiteNavigationMenuPersistenceImpl
 			OrderByComparator<SiteNavigationMenu> orderByComparator)
 		throws NoSuchMenuException {
 
-		SiteNavigationMenu siteNavigationMenu = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (siteNavigationMenu != null) {
-			return siteNavigationMenu;
-		}
-
-		throw new NoSuchMenuException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -251,17 +180,11 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<SiteNavigationMenu>
+	private UniquePersistenceFinder<SiteNavigationMenu, NoSuchMenuException>
 		_uniquePersistenceFinderByUUID_G;
 
 	/**
@@ -276,33 +199,8 @@ public class SiteNavigationMenuPersistenceImpl
 	public SiteNavigationMenu findByUUID_G(String uuid, long groupId)
 		throws NoSuchMenuException {
 
-		SiteNavigationMenu siteNavigationMenu = fetchByUUID_G(uuid, groupId);
-
-		if (siteNavigationMenu == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMenuException(message);
-		}
-
-		return siteNavigationMenu;
-	}
-
-	/**
-	 * Returns the site navigation menu where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching site navigation menu, or <code>null</code> if a matching site navigation menu could not be found
-	 */
-	@Override
-	public SiteNavigationMenu fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -317,13 +215,8 @@ public class SiteNavigationMenuPersistenceImpl
 	public SiteNavigationMenu fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -355,67 +248,8 @@ public class SiteNavigationMenuPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<SiteNavigationMenu>
+	private CollectionPersistenceFinder<SiteNavigationMenu, NoSuchMenuException>
 		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the site navigation menus where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site navigation menus where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @return the range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the site navigation menus where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<SiteNavigationMenu> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the site navigation menus where uuid = &#63; and companyId = &#63;.
@@ -438,14 +272,9 @@ public class SiteNavigationMenuPersistenceImpl
 		OrderByComparator<SiteNavigationMenu> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -463,16 +292,8 @@ public class SiteNavigationMenuPersistenceImpl
 			OrderByComparator<SiteNavigationMenu> orderByComparator)
 		throws NoSuchMenuException {
 
-		SiteNavigationMenu siteNavigationMenu = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (siteNavigationMenu != null) {
-			return siteNavigationMenu;
-		}
-
-		throw new NoSuchMenuException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -513,71 +334,13 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private FinderPath _finderPathWithPaginationCountByGroupId;
-
-	/**
-	 * Returns all the site navigation menus where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site navigation menus where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @return the range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the site navigation menus where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<SiteNavigationMenu> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder
+		<SiteNavigationMenu, NoSuchMenuException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the site navigation menus where groupId = &#63;.
@@ -599,100 +362,9 @@ public class SiteNavigationMenuPersistenceImpl
 		OrderByComparator<SiteNavigationMenu> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByGroupId;
-					finderArgs = new Object[] {groupId};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByGroupId;
-				finderArgs = new Object[] {
-					groupId, start, end, orderByComparator
-				};
-			}
-
-			List<SiteNavigationMenu> list = null;
-
-			if (useFinderCache) {
-				list = (List<SiteNavigationMenu>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (SiteNavigationMenu siteNavigationMenu : list) {
-						if (groupId != siteNavigationMenu.getGroupId()) {
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						3 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(3);
-				}
-
-				sb.append(_SQL_SELECT_SITENAVIGATIONMENU_WHERE);
-
-				sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(SiteNavigationMenuModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					list = (List<SiteNavigationMenu>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {new long[] {groupId}}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -739,45 +411,9 @@ public class SiteNavigationMenuPersistenceImpl
 	public SiteNavigationMenu fetchByGroupId_First(
 		long groupId, OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
-		List<SiteNavigationMenu> list = findByGroupId(
-			groupId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the site navigation menus that the user has permission to view where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching site navigation menus that the user has permission to view
-	 */
-	@Override
-	public List<SiteNavigationMenu> filterFindByGroupId(long groupId) {
-		return filterFindByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site navigation menus that the user has permission to view where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @return the range of matching site navigation menus that the user has permission to view
-	 */
-	@Override
-	public List<SiteNavigationMenu> filterFindByGroupId(
-		long groupId, int start, int end) {
-
-		return filterFindByGroupId(groupId, start, end, null);
+		return _collectionPersistenceFinderByGroupId.fetchFirst(
+			finderCache, new Object[] {new long[] {groupId}},
+			orderByComparator);
 	}
 
 	/**
@@ -798,129 +434,9 @@ public class SiteNavigationMenuPersistenceImpl
 		long groupId, int start, int end,
 		OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByGroupId(groupId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByGroupId(
-					groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_SITENAVIGATIONMENU_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					SiteNavigationMenuModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(SiteNavigationMenuModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, SiteNavigationMenuImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, SiteNavigationMenuImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			return (List<SiteNavigationMenu>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * Returns all the site navigation menus that the user has permission to view where groupId = any &#63;.
-	 *
-	 * @param groupIds the group IDs
-	 * @return the matching site navigation menus that the user has permission to view
-	 */
-	@Override
-	public List<SiteNavigationMenu> filterFindByGroupId(long[] groupIds) {
-		return filterFindByGroupId(
-			groupIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site navigation menus that the user has permission to view where groupId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @return the range of matching site navigation menus that the user has permission to view
-	 */
-	@Override
-	public List<SiteNavigationMenu> filterFindByGroupId(
-		long[] groupIds, int start, int end) {
-
-		return filterFindByGroupId(groupIds, start, end, null);
+		return _collectionPersistenceFinderByGroupId.filterFind(
+			finderCache, new Object[] {new long[] {groupId}}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -941,162 +457,11 @@ public class SiteNavigationMenuPersistenceImpl
 		long[] groupIds, int start, int end,
 		OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupIds)) {
-			return findByGroupId(groupIds, start, end, orderByComparator);
-		}
+		groupIds = ArrayUtil.sortedUnique(groupIds);
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByGroupId(
-					groupIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupIds);
-		}
-
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		StringBundler sb = new StringBundler();
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_SITENAVIGATIONMENU_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		if (groupIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_GROUPID_GROUPID_7);
-
-			sb.append(StringUtil.merge(groupIds));
-
-			sb.append(")");
-
-			sb.append(")");
-		}
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					SiteNavigationMenuModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(SiteNavigationMenuModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupIds);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, SiteNavigationMenuImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, SiteNavigationMenuImpl.class);
-			}
-
-			return (List<SiteNavigationMenu>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * Returns all the site navigation menus where groupId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @return the matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByGroupId(long[] groupIds) {
-		return findByGroupId(
-			groupIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site navigation menus where groupId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @return the range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByGroupId(
-		long[] groupIds, int start, int end) {
-
-		return findByGroupId(groupIds, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the site navigation menus where groupId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByGroupId(
-		long[] groupIds, int start, int end,
-		OrderByComparator<SiteNavigationMenu> orderByComparator) {
-
-		return findByGroupId(groupIds, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByGroupId.filterFind(
+			finderCache, new Object[] {groupIds}, start, end, orderByComparator,
+			groupIds);
 	}
 
 	/**
@@ -1119,114 +484,9 @@ public class SiteNavigationMenuPersistenceImpl
 		OrderByComparator<SiteNavigationMenu> orderByComparator,
 		boolean useFinderCache) {
 
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		if (groupIds.length == 1) {
-			return findByGroupId(groupIds[0], start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {StringUtil.merge(groupIds)};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					StringUtil.merge(groupIds), start, end, orderByComparator
-				};
-			}
-
-			List<SiteNavigationMenu> list = null;
-
-			if (useFinderCache) {
-				list = (List<SiteNavigationMenu>)finderCache.getResult(
-					_finderPathWithPaginationFindByGroupId, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (SiteNavigationMenu siteNavigationMenu : list) {
-						if (!ArrayUtil.contains(
-								groupIds, siteNavigationMenu.getGroupId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_SITENAVIGATIONMENU_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_GROUPID_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(SiteNavigationMenuModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					list = (List<SiteNavigationMenu>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByGroupId, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {ArrayUtil.sortedUnique(groupIds)}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1236,12 +496,8 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public void removeByGroupId(long groupId) {
-		for (SiteNavigationMenu siteNavigationMenu :
-				findByGroupId(
-					groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
-
-			remove(siteNavigationMenu);
-		}
+		_collectionPersistenceFinderByGroupId.remove(
+			finderCache, new Object[] {new long[] {groupId}});
 	}
 
 	/**
@@ -1252,51 +508,8 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			FinderPath finderPath = _finderPathCountByGroupId;
-
-			Object[] finderArgs = new Object[] {groupId};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(2);
-
-				sb.append(_SQL_COUNT_SITENAVIGATIONMENU_WHERE);
-
-				sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {new long[] {groupId}});
 	}
 
 	/**
@@ -1307,68 +520,8 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long[] groupIds) {
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			Object[] finderArgs = new Object[] {StringUtil.merge(groupIds)};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByGroupId, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_SITENAVIGATIONMENU_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_GROUPID_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByGroupId, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {ArrayUtil.sortedUnique(groupIds)});
 	}
 
 	/**
@@ -1379,54 +532,8 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int filterCountByGroupId(long groupId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByGroupId(groupId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<SiteNavigationMenu> siteNavigationMenus = findByGroupId(
-				groupId);
-
-			siteNavigationMenus = InlineSQLHelperUtil.filter(
-				siteNavigationMenus, groupId);
-
-			return siteNavigationMenus.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_SITENAVIGATIONMENU_WHERE);
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterCount(
+			finderCache, new Object[] {new long[] {groupId}}, groupId);
 	}
 
 	/**
@@ -1437,132 +544,14 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int filterCountByGroupId(long[] groupIds) {
-		if (!InlineSQLHelperUtil.isEnabled(groupIds)) {
-			return countByGroupId(groupIds);
-		}
+		groupIds = ArrayUtil.sortedUnique(groupIds);
 
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<SiteNavigationMenu> siteNavigationMenus =
-				InlineSQLHelperUtil.filter(findByGroupId(groupIds), groupIds);
-
-			return siteNavigationMenus.size();
-		}
-
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		StringBundler sb = new StringBundler();
-
-		sb.append(_FILTER_SQL_COUNT_SITENAVIGATIONMENU_WHERE);
-
-		if (groupIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_GROUPID_GROUPID_7);
-
-			sb.append(StringUtil.merge(groupIds));
-
-			sb.append(")");
-
-			sb.append(")");
-		}
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupIds);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterCount(
+			finderCache, new Object[] {groupIds}, groupIds);
 	}
 
-	private static final String _FINDER_COLUMN_GROUPID_GROUPID_2 =
-		"siteNavigationMenu.groupId = ?";
-
-	private static final String _FINDER_COLUMN_GROUPID_GROUPID_7 =
-		"siteNavigationMenu.groupId IN (";
-
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<SiteNavigationMenu>
+	private CollectionPersistenceFinder<SiteNavigationMenu, NoSuchMenuException>
 		_collectionPersistenceFinderByCompanyId;
-
-	/**
-	 * Returns all the site navigation menus where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site navigation menus where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @return the range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the site navigation menus where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<SiteNavigationMenu> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the site navigation menus where companyId = &#63;.
@@ -1584,14 +573,9 @@ public class SiteNavigationMenuPersistenceImpl
 		OrderByComparator<SiteNavigationMenu> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				finderCache, new Object[] {companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			finderCache, new Object[] {companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1608,16 +592,8 @@ public class SiteNavigationMenuPersistenceImpl
 			OrderByComparator<SiteNavigationMenu> orderByComparator)
 		throws NoSuchMenuException {
 
-		SiteNavigationMenu siteNavigationMenu = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (siteNavigationMenu != null) {
-			return siteNavigationMenu;
-		}
-
-		throw new NoSuchMenuException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -1655,17 +631,11 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				finderCache, new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			finderCache, new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathFetchByG_N;
-	private UniquePersistenceFinder<SiteNavigationMenu>
+	private UniquePersistenceFinder<SiteNavigationMenu, NoSuchMenuException>
 		_uniquePersistenceFinderByG_N;
 
 	/**
@@ -1680,33 +650,8 @@ public class SiteNavigationMenuPersistenceImpl
 	public SiteNavigationMenu findByG_N(long groupId, String name)
 		throws NoSuchMenuException {
 
-		SiteNavigationMenu siteNavigationMenu = fetchByG_N(groupId, name);
-
-		if (siteNavigationMenu == null) {
-			String message =
-				_uniquePersistenceFinderByG_N.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMenuException(message);
-		}
-
-		return siteNavigationMenu;
-	}
-
-	/**
-	 * Returns the site navigation menu where groupId = &#63; and name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param name the name
-	 * @return the matching site navigation menu, or <code>null</code> if a matching site navigation menu could not be found
-	 */
-	@Override
-	public SiteNavigationMenu fetchByG_N(long groupId, String name) {
-		return fetchByG_N(groupId, name, true);
+		return _uniquePersistenceFinderByG_N.find(
+			finderCache, new Object[] {groupId, name});
 	}
 
 	/**
@@ -1721,13 +666,8 @@ public class SiteNavigationMenuPersistenceImpl
 	public SiteNavigationMenu fetchByG_N(
 		long groupId, String name, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _uniquePersistenceFinderByG_N.fetch(
-				finderCache, new Object[] {groupId, name}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_N.fetch(
+			finderCache, new Object[] {groupId, name}, useFinderCache);
 	}
 
 	/**
@@ -1759,8 +699,9 @@ public class SiteNavigationMenuPersistenceImpl
 			finderCache, new Object[] {groupId, name});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_LikeN;
-	private FinderPath _finderPathWithPaginationCountByG_LikeN;
+	private FilterCollectionPersistenceFinder
+		<SiteNavigationMenu, NoSuchMenuException>
+			_collectionPersistenceFinderByG_LikeN;
 
 	/**
 	 * Returns all the site navigation menus where groupId = &#63; and name LIKE &#63;.
@@ -1839,111 +780,9 @@ public class SiteNavigationMenuPersistenceImpl
 		OrderByComparator<SiteNavigationMenu> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			name = Objects.toString(name, "");
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			finderPath = _finderPathWithPaginationFindByG_LikeN;
-			finderArgs = new Object[] {
-				groupId, name, start, end, orderByComparator
-			};
-
-			List<SiteNavigationMenu> list = null;
-
-			if (useFinderCache) {
-				list = (List<SiteNavigationMenu>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (SiteNavigationMenu siteNavigationMenu : list) {
-						if ((groupId != siteNavigationMenu.getGroupId()) ||
-							!StringUtil.wildcardMatches(
-								siteNavigationMenu.getName(), name, '_', '%',
-								'\\', true)) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						4 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(4);
-				}
-
-				sb.append(_SQL_SELECT_SITENAVIGATIONMENU_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_LIKEN_GROUPID_2);
-
-				boolean bindName = false;
-
-				if (name.isEmpty()) {
-					sb.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
-				}
-				else {
-					bindName = true;
-
-					sb.append(_FINDER_COLUMN_G_LIKEN_NAME_2);
-				}
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(SiteNavigationMenuModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					if (bindName) {
-						queryPos.add(name);
-					}
-
-					list = (List<SiteNavigationMenu>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_LikeN.find(
+			finderCache, new Object[] {new long[] {groupId}, name}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1996,14 +835,9 @@ public class SiteNavigationMenuPersistenceImpl
 		long groupId, String name,
 		OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
-		List<SiteNavigationMenu> list = findByG_LikeN(
-			groupId, name, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		return _collectionPersistenceFinderByG_LikeN.fetchFirst(
+			finderCache, new Object[] {new long[] {groupId}, name},
+			orderByComparator);
 	}
 
 	/**
@@ -2060,115 +894,9 @@ public class SiteNavigationMenuPersistenceImpl
 		long groupId, String name, int start, int end,
 		OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_LikeN(groupId, name, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_LikeN(
-					groupId, name, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		name = Objects.toString(name, "");
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_SITENAVIGATIONMENU_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_LIKEN_GROUPID_2);
-
-		boolean bindName = false;
-
-		if (name.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
-		}
-		else {
-			bindName = true;
-
-			sb.append(_FINDER_COLUMN_G_LIKEN_NAME_2);
-		}
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					SiteNavigationMenuModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(SiteNavigationMenuModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, SiteNavigationMenuImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, SiteNavigationMenuImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			if (bindName) {
-				queryPos.add(name);
-			}
-
-			return (List<SiteNavigationMenu>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_LikeN.filterFind(
+			finderCache, new Object[] {new long[] {groupId}, name}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -2225,127 +953,11 @@ public class SiteNavigationMenuPersistenceImpl
 		long[] groupIds, String name, int start, int end,
 		OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupIds)) {
-			return findByG_LikeN(groupIds, name, start, end, orderByComparator);
-		}
+		groupIds = ArrayUtil.sortedUnique(groupIds);
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_LikeN(
-					groupIds, name, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupIds);
-		}
-
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		name = Objects.toString(name, "");
-
-		StringBundler sb = new StringBundler();
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_SITENAVIGATIONMENU_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		if (groupIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_G_LIKEN_GROUPID_7);
-
-			sb.append(StringUtil.merge(groupIds));
-
-			sb.append(")");
-
-			sb.append(")");
-
-			sb.append(WHERE_AND);
-		}
-
-		boolean bindName = false;
-
-		if (name.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
-		}
-		else {
-			bindName = true;
-
-			sb.append(_FINDER_COLUMN_G_LIKEN_NAME_2);
-		}
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					SiteNavigationMenuModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(SiteNavigationMenuModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupIds);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, SiteNavigationMenuImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, SiteNavigationMenuImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			if (bindName) {
-				queryPos.add(name);
-			}
-
-			return (List<SiteNavigationMenu>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_LikeN.filterFind(
+			finderCache, new Object[] {groupIds, name}, start, end,
+			orderByComparator, groupIds);
 	}
 
 	/**
@@ -2431,142 +1043,9 @@ public class SiteNavigationMenuPersistenceImpl
 		OrderByComparator<SiteNavigationMenu> orderByComparator,
 		boolean useFinderCache) {
 
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		name = Objects.toString(name, "");
-
-		if (groupIds.length == 1) {
-			return findByG_LikeN(
-				groupIds[0], name, start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						StringUtil.merge(groupIds), name
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					StringUtil.merge(groupIds), name, start, end,
-					orderByComparator
-				};
-			}
-
-			List<SiteNavigationMenu> list = null;
-
-			if (useFinderCache) {
-				list = (List<SiteNavigationMenu>)finderCache.getResult(
-					_finderPathWithPaginationFindByG_LikeN, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (SiteNavigationMenu siteNavigationMenu : list) {
-						if (!ArrayUtil.contains(
-								groupIds, siteNavigationMenu.getGroupId()) ||
-							!StringUtil.wildcardMatches(
-								siteNavigationMenu.getName(), name, '_', '%',
-								'\\', true)) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_SITENAVIGATIONMENU_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_LIKEN_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				boolean bindName = false;
-
-				if (name.isEmpty()) {
-					sb.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
-				}
-				else {
-					bindName = true;
-
-					sb.append(_FINDER_COLUMN_G_LIKEN_NAME_2);
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(SiteNavigationMenuModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					if (bindName) {
-						queryPos.add(name);
-					}
-
-					list = (List<SiteNavigationMenu>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByG_LikeN, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_LikeN.find(
+			finderCache, new Object[] {ArrayUtil.sortedUnique(groupIds), name},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2577,13 +1056,8 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public void removeByG_LikeN(long groupId, String name) {
-		for (SiteNavigationMenu siteNavigationMenu :
-				findByG_LikeN(
-					groupId, name, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(siteNavigationMenu);
-		}
+		_collectionPersistenceFinderByG_LikeN.remove(
+			finderCache, new Object[] {new long[] {groupId}, name});
 	}
 
 	/**
@@ -2595,68 +1069,8 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int countByG_LikeN(long groupId, String name) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			name = Objects.toString(name, "");
-
-			FinderPath finderPath = _finderPathWithPaginationCountByG_LikeN;
-
-			Object[] finderArgs = new Object[] {groupId, name};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_SITENAVIGATIONMENU_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_LIKEN_GROUPID_2);
-
-				boolean bindName = false;
-
-				if (name.isEmpty()) {
-					sb.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
-				}
-				else {
-					bindName = true;
-
-					sb.append(_FINDER_COLUMN_G_LIKEN_NAME_2);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					if (bindName) {
-						queryPos.add(name);
-					}
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_LikeN.count(
+			finderCache, new Object[] {new long[] {groupId}, name});
 	}
 
 	/**
@@ -2668,91 +1082,8 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int countByG_LikeN(long[] groupIds, String name) {
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		name = Objects.toString(name, "");
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			Object[] finderArgs = new Object[] {
-				StringUtil.merge(groupIds), name
-			};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByG_LikeN, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_SITENAVIGATIONMENU_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_LIKEN_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				boolean bindName = false;
-
-				if (name.isEmpty()) {
-					sb.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
-				}
-				else {
-					bindName = true;
-
-					sb.append(_FINDER_COLUMN_G_LIKEN_NAME_2);
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					if (bindName) {
-						queryPos.add(name);
-					}
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByG_LikeN, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_LikeN.count(
+			finderCache, new Object[] {ArrayUtil.sortedUnique(groupIds), name});
 	}
 
 	/**
@@ -2764,71 +1095,8 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_LikeN(long groupId, String name) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_LikeN(groupId, name);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<SiteNavigationMenu> siteNavigationMenus = findByG_LikeN(
-				groupId, name);
-
-			siteNavigationMenus = InlineSQLHelperUtil.filter(
-				siteNavigationMenus, groupId);
-
-			return siteNavigationMenus.size();
-		}
-
-		name = Objects.toString(name, "");
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_SITENAVIGATIONMENU_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_LIKEN_GROUPID_2);
-
-		boolean bindName = false;
-
-		if (name.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
-		}
-		else {
-			bindName = true;
-
-			sb.append(_FINDER_COLUMN_G_LIKEN_NAME_2);
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			if (bindName) {
-				queryPos.add(name);
-			}
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_LikeN.filterCount(
+			finderCache, new Object[] {new long[] {groupId}, name}, groupId);
 	}
 
 	/**
@@ -2840,163 +1108,15 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_LikeN(long[] groupIds, String name) {
-		if (!InlineSQLHelperUtil.isEnabled(groupIds)) {
-			return countByG_LikeN(groupIds, name);
-		}
+		groupIds = ArrayUtil.sortedUnique(groupIds);
 
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<SiteNavigationMenu> siteNavigationMenus =
-				InlineSQLHelperUtil.filter(
-					findByG_LikeN(groupIds, name), groupIds);
-
-			return siteNavigationMenus.size();
-		}
-
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		name = Objects.toString(name, "");
-
-		StringBundler sb = new StringBundler();
-
-		sb.append(_FILTER_SQL_COUNT_SITENAVIGATIONMENU_WHERE);
-
-		if (groupIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_G_LIKEN_GROUPID_7);
-
-			sb.append(StringUtil.merge(groupIds));
-
-			sb.append(")");
-
-			sb.append(")");
-
-			sb.append(WHERE_AND);
-		}
-
-		boolean bindName = false;
-
-		if (name.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_LIKEN_NAME_3);
-		}
-		else {
-			bindName = true;
-
-			sb.append(_FINDER_COLUMN_G_LIKEN_NAME_2);
-		}
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupIds);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			if (bindName) {
-				queryPos.add(name);
-			}
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_LikeN.filterCount(
+			finderCache, new Object[] {groupIds, name}, groupIds);
 	}
 
-	private static final String _FINDER_COLUMN_G_LIKEN_GROUPID_2 =
-		"siteNavigationMenu.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_LIKEN_GROUPID_7 =
-		"siteNavigationMenu.groupId IN (";
-
-	private static final String _FINDER_COLUMN_G_LIKEN_NAME_2 =
-		"siteNavigationMenu.name LIKE ?";
-
-	private static final String _FINDER_COLUMN_G_LIKEN_NAME_3 =
-		"(siteNavigationMenu.name IS NULL OR siteNavigationMenu.name LIKE '')";
-
-	private FinderPath _finderPathWithPaginationFindByG_T;
-	private FinderPath _finderPathWithoutPaginationFindByG_T;
-	private FinderPath _finderPathCountByG_T;
-	private CollectionPersistenceFinder<SiteNavigationMenu>
-		_collectionPersistenceFinderByG_T;
-
-	/**
-	 * Returns all the site navigation menus where groupId = &#63; and type = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param type the type
-	 * @return the matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByG_T(long groupId, int type) {
-		return findByG_T(
-			groupId, type, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site navigation menus where groupId = &#63; and type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param type the type
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @return the range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByG_T(
-		long groupId, int type, int start, int end) {
-
-		return findByG_T(groupId, type, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the site navigation menus where groupId = &#63; and type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param type the type
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByG_T(
-		long groupId, int type, int start, int end,
-		OrderByComparator<SiteNavigationMenu> orderByComparator) {
-
-		return findByG_T(groupId, type, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder
+		<SiteNavigationMenu, NoSuchMenuException>
+			_collectionPersistenceFinderByG_T;
 
 	/**
 	 * Returns an ordered range of all the site navigation menus where groupId = &#63; and type = &#63;.
@@ -3019,14 +1139,9 @@ public class SiteNavigationMenuPersistenceImpl
 		OrderByComparator<SiteNavigationMenu> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _collectionPersistenceFinderByG_T.find(
-				finderCache, new Object[] {groupId, type}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_T.find(
+			finderCache, new Object[] {groupId, type}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3044,16 +1159,8 @@ public class SiteNavigationMenuPersistenceImpl
 			OrderByComparator<SiteNavigationMenu> orderByComparator)
 		throws NoSuchMenuException {
 
-		SiteNavigationMenu siteNavigationMenu = fetchByG_T_First(
-			groupId, type, orderByComparator);
-
-		if (siteNavigationMenu != null) {
-			return siteNavigationMenu;
-		}
-
-		throw new NoSuchMenuException(
-			_collectionPersistenceFinderByG_T.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, type}));
+		return _collectionPersistenceFinderByG_T.findFirst(
+			finderCache, new Object[] {groupId, type}, orderByComparator);
 	}
 
 	/**
@@ -3071,39 +1178,6 @@ public class SiteNavigationMenuPersistenceImpl
 
 		return _collectionPersistenceFinderByG_T.fetchFirst(
 			finderCache, new Object[] {groupId, type}, orderByComparator);
-	}
-
-	/**
-	 * Returns all the site navigation menus that the user has permission to view where groupId = &#63; and type = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param type the type
-	 * @return the matching site navigation menus that the user has permission to view
-	 */
-	@Override
-	public List<SiteNavigationMenu> filterFindByG_T(long groupId, int type) {
-		return filterFindByG_T(
-			groupId, type, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site navigation menus that the user has permission to view where groupId = &#63; and type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param type the type
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @return the range of matching site navigation menus that the user has permission to view
-	 */
-	@Override
-	public List<SiteNavigationMenu> filterFindByG_T(
-		long groupId, int type, int start, int end) {
-
-		return filterFindByG_T(groupId, type, start, end, null);
 	}
 
 	/**
@@ -3125,102 +1199,9 @@ public class SiteNavigationMenuPersistenceImpl
 		long groupId, int type, int start, int end,
 		OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_T(groupId, type, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_T(
-					groupId, type, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_SITENAVIGATIONMENU_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_T_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_T_TYPE_2_SQL);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					SiteNavigationMenuModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(SiteNavigationMenuModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, SiteNavigationMenuImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, SiteNavigationMenuImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(type);
-
-			return (List<SiteNavigationMenu>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_T.filterFind(
+			finderCache, new Object[] {groupId, type}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -3244,13 +1225,8 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int countByG_T(long groupId, int type) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _collectionPersistenceFinderByG_T.count(
-				finderCache, new Object[] {groupId, type});
-		}
+		return _collectionPersistenceFinderByG_T.count(
+			finderCache, new Object[] {groupId, type});
 	}
 
 	/**
@@ -3262,126 +1238,13 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_T(long groupId, int type) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_T(groupId, type);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<SiteNavigationMenu> siteNavigationMenus = findByG_T(
-				groupId, type);
-
-			siteNavigationMenus = InlineSQLHelperUtil.filter(
-				siteNavigationMenus, groupId);
-
-			return siteNavigationMenus.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_SITENAVIGATIONMENU_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_T_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_T_TYPE_2_SQL);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(type);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_T.filterCount(
+			finderCache, new Object[] {groupId, type}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_T_GROUPID_2 =
-		"siteNavigationMenu.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_T_TYPE_2_SQL =
-		"siteNavigationMenu.type_ = ?";
-
-	private FinderPath _finderPathWithPaginationFindByG_A;
-	private FinderPath _finderPathWithoutPaginationFindByG_A;
-	private FinderPath _finderPathCountByG_A;
-	private CollectionPersistenceFinder<SiteNavigationMenu>
-		_collectionPersistenceFinderByG_A;
-
-	/**
-	 * Returns all the site navigation menus where groupId = &#63; and auto = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param auto the auto
-	 * @return the matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByG_A(long groupId, boolean auto) {
-		return findByG_A(
-			groupId, auto, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site navigation menus where groupId = &#63; and auto = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param auto the auto
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @return the range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByG_A(
-		long groupId, boolean auto, int start, int end) {
-
-		return findByG_A(groupId, auto, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the site navigation menus where groupId = &#63; and auto = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param auto the auto
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching site navigation menus
-	 */
-	@Override
-	public List<SiteNavigationMenu> findByG_A(
-		long groupId, boolean auto, int start, int end,
-		OrderByComparator<SiteNavigationMenu> orderByComparator) {
-
-		return findByG_A(groupId, auto, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder
+		<SiteNavigationMenu, NoSuchMenuException>
+			_collectionPersistenceFinderByG_A;
 
 	/**
 	 * Returns an ordered range of all the site navigation menus where groupId = &#63; and auto = &#63;.
@@ -3404,14 +1267,9 @@ public class SiteNavigationMenuPersistenceImpl
 		OrderByComparator<SiteNavigationMenu> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _collectionPersistenceFinderByG_A.find(
-				finderCache, new Object[] {groupId, auto}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_A.find(
+			finderCache, new Object[] {groupId, auto}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3429,16 +1287,8 @@ public class SiteNavigationMenuPersistenceImpl
 			OrderByComparator<SiteNavigationMenu> orderByComparator)
 		throws NoSuchMenuException {
 
-		SiteNavigationMenu siteNavigationMenu = fetchByG_A_First(
-			groupId, auto, orderByComparator);
-
-		if (siteNavigationMenu != null) {
-			return siteNavigationMenu;
-		}
-
-		throw new NoSuchMenuException(
-			_collectionPersistenceFinderByG_A.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, auto}));
+		return _collectionPersistenceFinderByG_A.findFirst(
+			finderCache, new Object[] {groupId, auto}, orderByComparator);
 	}
 
 	/**
@@ -3456,41 +1306,6 @@ public class SiteNavigationMenuPersistenceImpl
 
 		return _collectionPersistenceFinderByG_A.fetchFirst(
 			finderCache, new Object[] {groupId, auto}, orderByComparator);
-	}
-
-	/**
-	 * Returns all the site navigation menus that the user has permission to view where groupId = &#63; and auto = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param auto the auto
-	 * @return the matching site navigation menus that the user has permission to view
-	 */
-	@Override
-	public List<SiteNavigationMenu> filterFindByG_A(
-		long groupId, boolean auto) {
-
-		return filterFindByG_A(
-			groupId, auto, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site navigation menus that the user has permission to view where groupId = &#63; and auto = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteNavigationMenuModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param auto the auto
-	 * @param start the lower bound of the range of site navigation menus
-	 * @param end the upper bound of the range of site navigation menus (not inclusive)
-	 * @return the range of matching site navigation menus that the user has permission to view
-	 */
-	@Override
-	public List<SiteNavigationMenu> filterFindByG_A(
-		long groupId, boolean auto, int start, int end) {
-
-		return filterFindByG_A(groupId, auto, start, end, null);
 	}
 
 	/**
@@ -3512,102 +1327,9 @@ public class SiteNavigationMenuPersistenceImpl
 		long groupId, boolean auto, int start, int end,
 		OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_A(groupId, auto, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_A(
-					groupId, auto, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_SITENAVIGATIONMENU_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_A_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_A_AUTO_2_SQL);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					SiteNavigationMenuModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(SiteNavigationMenuModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, SiteNavigationMenuImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, SiteNavigationMenuImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(auto);
-
-			return (List<SiteNavigationMenu>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_A.filterFind(
+			finderCache, new Object[] {groupId, auto}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -3631,13 +1353,8 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int countByG_A(long groupId, boolean auto) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _collectionPersistenceFinderByG_A.count(
-				finderCache, new Object[] {groupId, auto});
-		}
+		return _collectionPersistenceFinderByG_A.count(
+			finderCache, new Object[] {groupId, auto});
 	}
 
 	/**
@@ -3649,68 +1366,11 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_A(long groupId, boolean auto) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_A(groupId, auto);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<SiteNavigationMenu> siteNavigationMenus = findByG_A(
-				groupId, auto);
-
-			siteNavigationMenus = InlineSQLHelperUtil.filter(
-				siteNavigationMenus, groupId);
-
-			return siteNavigationMenus.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_SITENAVIGATIONMENU_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_A_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_A_AUTO_2_SQL);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SiteNavigationMenu.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(auto);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_A.filterCount(
+			finderCache, new Object[] {groupId, auto}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_A_GROUPID_2 =
-		"siteNavigationMenu.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_A_AUTO_2_SQL =
-		"siteNavigationMenu.auto_ = ?";
-
-	private FinderPath _finderPathFetchByERC_G;
-	private UniquePersistenceFinder<SiteNavigationMenu>
+	private UniquePersistenceFinder<SiteNavigationMenu, NoSuchMenuException>
 		_uniquePersistenceFinderByERC_G;
 
 	/**
@@ -3726,37 +1386,8 @@ public class SiteNavigationMenuPersistenceImpl
 			String externalReferenceCode, long groupId)
 		throws NoSuchMenuException {
 
-		SiteNavigationMenu siteNavigationMenu = fetchByERC_G(
-			externalReferenceCode, groupId);
-
-		if (siteNavigationMenu == null) {
-			String message =
-				_uniquePersistenceFinderByERC_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMenuException(message);
-		}
-
-		return siteNavigationMenu;
-	}
-
-	/**
-	 * Returns the site navigation menu where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param groupId the group ID
-	 * @return the matching site navigation menu, or <code>null</code> if a matching site navigation menu could not be found
-	 */
-	@Override
-	public SiteNavigationMenu fetchByERC_G(
-		String externalReferenceCode, long groupId) {
-
-		return fetchByERC_G(externalReferenceCode, groupId, true);
+		return _uniquePersistenceFinderByERC_G.find(
+			finderCache, new Object[] {externalReferenceCode, groupId});
 	}
 
 	/**
@@ -3771,14 +1402,9 @@ public class SiteNavigationMenuPersistenceImpl
 	public SiteNavigationMenu fetchByERC_G(
 		String externalReferenceCode, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SiteNavigationMenu.class)) {
-
-			return _uniquePersistenceFinderByERC_G.fetch(
-				finderCache, new Object[] {externalReferenceCode, groupId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByERC_G.fetch(
+			finderCache, new Object[] {externalReferenceCode, groupId},
+			useFinderCache);
 	}
 
 	/**
@@ -4191,241 +1817,259 @@ public class SiteNavigationMenuPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_SITENAVIGATIONMENU_WHERE,
 			_SQL_COUNT_SITENAVIGATIONMENU_WHERE,
-			SiteNavigationMenuModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			SiteNavigationMenuModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"siteNavigationMenu.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, SiteNavigationMenu::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			SiteNavigationMenu::getUuid, SiteNavigationMenu::getGroupId);
+				"siteNavigationMenu.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				SiteNavigationMenu::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_SITENAVIGATIONMENU_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(SiteNavigationMenu::getUuid),
+				SiteNavigationMenu::getGroupId),
+			_SQL_SELECT_SITENAVIGATIONMENU_WHERE, "",
 			new FinderColumn<>(
-				"siteNavigationMenu.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, SiteNavigationMenu::getUuid),
+				"siteNavigationMenu.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				SiteNavigationMenu::getUuid),
 			new FinderColumn<>(
 				"siteNavigationMenu.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, SiteNavigationMenu::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_SITENAVIGATIONMENU_WHERE,
-				_SQL_COUNT_SITENAVIGATIONMENU_WHERE,
-				SiteNavigationMenuModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-				new FinderColumn<>(
-					"siteNavigationMenu.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, SiteNavigationMenu::getUuid),
-				new FinderColumn<>(
-					"siteNavigationMenu.", "companyId", FinderColumn.Type.LONG,
-					"=", true, true, SiteNavigationMenu::getCompanyId));
-
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
-		_finderPathWithPaginationCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
-		_collectionPersistenceFinderByCompanyId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_SITENAVIGATIONMENU_WHERE,
 				_SQL_COUNT_SITENAVIGATIONMENU_WHERE,
 				SiteNavigationMenuModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"siteNavigationMenu.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					SiteNavigationMenu::getUuid),
 				new FinderColumn<>(
 					"siteNavigationMenu.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, SiteNavigationMenu::getCompanyId));
 
-		_finderPathFetchByG_N = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "name"}, false,
-			SiteNavigationMenu::getGroupId, SiteNavigationMenu::getName);
+		_collectionPersistenceFinderByGroupId =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_SITENAVIGATIONMENU_WHERE,
+				_SQL_COUNT_SITENAVIGATIONMENU_WHERE,
+				SiteNavigationMenuModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new ArrayableFinderColumn<>(
+					"siteNavigationMenu.", "groupId", FinderColumn.Type.LONG,
+					"=", false, true, true, SiteNavigationMenu::getGroupId));
+
+		_collectionPersistenceFinderByCompanyId =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_SITENAVIGATIONMENU_WHERE,
+				_SQL_COUNT_SITENAVIGATIONMENU_WHERE,
+				SiteNavigationMenuModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"siteNavigationMenu.", "companyId", FinderColumn.Type.LONG,
+					"=", true, true, SiteNavigationMenu::getCompanyId));
 
 		_uniquePersistenceFinderByG_N = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_N, _SQL_SELECT_SITENAVIGATIONMENU_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_N",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "name"}, 0, 2, false,
+				SiteNavigationMenu::getGroupId,
+				convertNullFunction(SiteNavigationMenu::getName)),
+			_SQL_SELECT_SITENAVIGATIONMENU_WHERE, "",
 			new FinderColumn<>(
 				"siteNavigationMenu.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, SiteNavigationMenu::getGroupId),
+				true, true, SiteNavigationMenu::getGroupId),
 			new FinderColumn<>(
 				"siteNavigationMenu.", "name", FinderColumn.Type.STRING, "=",
 				true, true, SiteNavigationMenu::getName));
 
-		_finderPathWithPaginationFindByG_LikeN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_LikeN",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "name"}, true);
+		_collectionPersistenceFinderByG_LikeN =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_LikeN",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "name"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_LikeN",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"groupId", "name"}, false),
+				_SQL_SELECT_SITENAVIGATIONMENU_WHERE,
+				_SQL_COUNT_SITENAVIGATIONMENU_WHERE,
+				SiteNavigationMenuModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new ArrayableFinderColumn<>(
+					"siteNavigationMenu.", "groupId", FinderColumn.Type.LONG,
+					"=", false, true, true, SiteNavigationMenu::getGroupId),
+				new FinderColumn<>(
+					"siteNavigationMenu.", "name", FinderColumn.Type.STRING,
+					"LIKE", true, true, SiteNavigationMenu::getName));
 
-		_finderPathWithPaginationCountByG_LikeN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_LikeN",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "name"}, false);
+		_collectionPersistenceFinderByG_T =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_T",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "type_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_T",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"groupId", "type_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_T",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"groupId", "type_"}, false),
+				_SQL_SELECT_SITENAVIGATIONMENU_WHERE,
+				_SQL_COUNT_SITENAVIGATIONMENU_WHERE,
+				SiteNavigationMenuModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"siteNavigationMenu.", "groupId", FinderColumn.Type.LONG,
+					"=", true, true, SiteNavigationMenu::getGroupId),
+				new FinderColumn<>(
+					"siteNavigationMenu.", "type", "type_",
+					FinderColumn.Type.INTEGER, "=", true, true,
+					SiteNavigationMenu::getType));
 
-		_finderPathWithPaginationFindByG_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_T",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "type_"}, true);
-
-		_finderPathWithoutPaginationFindByG_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_T",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"groupId", "type_"}, true);
-
-		_finderPathCountByG_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_T",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"groupId", "type_"}, false);
-
-		_collectionPersistenceFinderByG_T = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_T,
-			_finderPathWithoutPaginationFindByG_T, _finderPathCountByG_T,
-			_SQL_SELECT_SITENAVIGATIONMENU_WHERE,
-			_SQL_COUNT_SITENAVIGATIONMENU_WHERE,
-			SiteNavigationMenuModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"siteNavigationMenu.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, SiteNavigationMenu::getGroupId),
-			new FinderColumn<>(
-				"siteNavigationMenu.", "type", FinderColumn.Type.INTEGER, "=",
-				true, true, SiteNavigationMenu::getType));
-
-		_finderPathWithPaginationFindByG_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_A",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "auto_"}, true);
-
-		_finderPathWithoutPaginationFindByG_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"groupId", "auto_"}, true);
-
-		_finderPathCountByG_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"groupId", "auto_"}, false);
-
-		_collectionPersistenceFinderByG_A = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_A,
-			_finderPathWithoutPaginationFindByG_A, _finderPathCountByG_A,
-			_SQL_SELECT_SITENAVIGATIONMENU_WHERE,
-			_SQL_COUNT_SITENAVIGATIONMENU_WHERE,
-			SiteNavigationMenuModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"siteNavigationMenu.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, SiteNavigationMenu::getGroupId),
-			new FinderColumn<>(
-				"siteNavigationMenu.", "auto", FinderColumn.Type.BOOLEAN, "=",
-				true, true, SiteNavigationMenu::isAuto));
-
-		_finderPathFetchByERC_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "groupId"}, false,
-			SiteNavigationMenu::getExternalReferenceCode,
-			SiteNavigationMenu::getGroupId);
+		_collectionPersistenceFinderByG_A =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_A",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "auto_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_A",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {"groupId", "auto_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_A",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {"groupId", "auto_"}, false),
+				_SQL_SELECT_SITENAVIGATIONMENU_WHERE,
+				_SQL_COUNT_SITENAVIGATIONMENU_WHERE,
+				SiteNavigationMenuModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"siteNavigationMenu.", "groupId", FinderColumn.Type.LONG,
+					"=", true, true, SiteNavigationMenu::getGroupId),
+				new FinderColumn<>(
+					"siteNavigationMenu.", "auto", "auto_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					SiteNavigationMenu::isAuto));
 
 		_uniquePersistenceFinderByERC_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_G, _SQL_SELECT_SITENAVIGATIONMENU_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "groupId"}, 0, 1, false,
+				convertNullFunction(
+					SiteNavigationMenu::getExternalReferenceCode),
+				SiteNavigationMenu::getGroupId),
+			_SQL_SELECT_SITENAVIGATIONMENU_WHERE, "",
 			new FinderColumn<>(
 				"siteNavigationMenu.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				SiteNavigationMenu::getExternalReferenceCode),
 			new FinderColumn<>(
 				"siteNavigationMenu.", "groupId", FinderColumn.Type.LONG, "=",
@@ -4488,29 +2132,6 @@ public class SiteNavigationMenuPersistenceImpl
 	private static final String _SQL_COUNT_SITENAVIGATIONMENU_WHERE =
 		"SELECT COUNT(siteNavigationMenu) FROM SiteNavigationMenu siteNavigationMenu WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"siteNavigationMenu.siteNavigationMenuId";
-
-	private static final String _FILTER_SQL_SELECT_SITENAVIGATIONMENU_WHERE =
-		"SELECT DISTINCT {siteNavigationMenu.*} FROM SiteNavigationMenu siteNavigationMenu WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {SiteNavigationMenu.*} FROM (SELECT DISTINCT siteNavigationMenu.siteNavigationMenuId FROM SiteNavigationMenu siteNavigationMenu WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_SITENAVIGATIONMENU_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN SiteNavigationMenu ON TEMP_TABLE.siteNavigationMenuId = SiteNavigationMenu.siteNavigationMenuId";
-
-	private static final String _FILTER_SQL_COUNT_SITENAVIGATIONMENU_WHERE =
-		"SELECT COUNT(DISTINCT siteNavigationMenu.siteNavigationMenuId) AS COUNT_VALUE FROM SiteNavigationMenu siteNavigationMenu WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "siteNavigationMenu";
-
-	private static final String _FILTER_ENTITY_TABLE = "SiteNavigationMenu";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "SiteNavigationMenu.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No SiteNavigationMenu exists with the key {";
 
@@ -4526,4 +2147,4 @@ public class SiteNavigationMenuPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:252074724
+// LIFERAY-SERVICE-BUILDER-HASH:-1848746262

@@ -36,44 +36,21 @@ public class OAuth2AuthorizationLocalServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.oauth2.provider.service.impl.OAuth2AuthorizationLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-
-	/**
-	 * @deprecated As of Mueller (7.2.x), replaced by {@link
-	 #addOAuth2Authorization(long, long, String, long,long,
-	 String, Date, Date, String, String, String, Date, Date)}
-	 */
-	@Deprecated
 	public static OAuth2Authorization addOAuth2Authorization(
 		long companyId, long userId, String userName, long oAuth2ApplicationId,
 		long oAuth2ApplicationScopeAliasesId, String accessTokenContent,
 		java.util.Date accessTokenCreateDate,
-		java.util.Date accessTokenExpirationDate, String remoteIPInfo,
-		String refreshTokenContent, java.util.Date refreshTokenCreateDate,
-		java.util.Date refreshTokenExpirationDate) {
-
-		return getService().addOAuth2Authorization(
-			companyId, userId, userName, oAuth2ApplicationId,
-			oAuth2ApplicationScopeAliasesId, accessTokenContent,
-			accessTokenCreateDate, accessTokenExpirationDate, remoteIPInfo,
-			refreshTokenContent, refreshTokenCreateDate,
-			refreshTokenExpirationDate);
-	}
-
-	public static OAuth2Authorization addOAuth2Authorization(
-		long companyId, long userId, String userName, long oAuth2ApplicationId,
-		long oAuth2ApplicationScopeAliasesId, String accessTokenContent,
-		java.util.Date accessTokenCreateDate,
-		java.util.Date accessTokenExpirationDate, String remoteHostInfo,
-		String remoteIPInfo, String refreshTokenContent,
+		java.util.Date accessTokenExpirationDate, List<String> audiencesList,
+		String remoteHostInfo, String remoteIPInfo, String refreshTokenContent,
 		java.util.Date refreshTokenCreateDate,
 		java.util.Date refreshTokenExpirationDate) {
 
 		return getService().addOAuth2Authorization(
 			companyId, userId, userName, oAuth2ApplicationId,
 			oAuth2ApplicationScopeAliasesId, accessTokenContent,
-			accessTokenCreateDate, accessTokenExpirationDate, remoteHostInfo,
-			remoteIPInfo, refreshTokenContent, refreshTokenCreateDate,
-			refreshTokenExpirationDate);
+			accessTokenCreateDate, accessTokenExpirationDate, audiencesList,
+			remoteHostInfo, remoteIPInfo, refreshTokenContent,
+			refreshTokenCreateDate, refreshTokenExpirationDate);
 	}
 
 	/**
@@ -565,4 +542,4 @@ public class OAuth2AuthorizationLocalServiceUtil {
 			OAuth2AuthorizationLocalService.class);
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-730488698
+// LIFERAY-SERVICE-BUILDER-HASH:195126008

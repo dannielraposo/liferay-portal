@@ -640,6 +640,7 @@
 		<field name="mvccVersion" type="long" />
 		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
+		<field name="externalReferenceCode" type="String" />
 		<field name="defaultLanguageId" type="String" />
 		<field name="countryId" type="long" />
 		<field name="companyId" type="long" />
@@ -670,6 +671,7 @@
 		<field name="subjectToVAT" type="boolean" />
 		<field name="zipRequired" type="boolean" />
 		<field name="lastPublishDate" type="Date" />
+		<field name="status" type="int" />
 	</model>
 	<model name="com.liferay.portal.kernel.model.CountryLocalization">
 		<field name="mvccVersion" type="long" />
@@ -806,6 +808,7 @@
 		<field name="themeId" type="String" />
 		<field name="colorSchemeId" type="String" />
 		<field name="styleBookEntryERC" type="String" />
+		<field name="styleBookEntryScopeERC" type="String" />
 		<field name="css" type="String">
 			<hint-collection name="CLOB" />
 		</field>
@@ -1309,6 +1312,7 @@
 		<field name="mvccVersion" type="long" />
 		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
+		<field name="externalReferenceCode" type="String" />
 		<field name="defaultLanguageId" type="String" />
 		<field name="regionId" type="long" />
 		<field name="companyId" type="long" />
@@ -1328,6 +1332,7 @@
 			<validator name="required" />
 		</field>
 		<field name="lastPublishDate" type="Date" />
+		<field name="status" type="int" />
 	</model>
 	<model name="com.liferay.portal.kernel.model.RegionLocalization">
 		<field name="mvccVersion" type="long" />
@@ -1541,6 +1546,10 @@
 			<hint name="max-length">255</hint>
 		</field>
 		<field name="type" type="int" />
+		<field name="emailAddress" type="String">
+			<hint-collection name="EMAIL-ADDRESS" />
+			<validator name="email" />
+		</field>
 		<field name="extraInfo" type="String">
 			<hint-collection name="CLOB" />
 		</field>

@@ -47,6 +47,7 @@ import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -138,7 +139,8 @@ public abstract class BaseCartCommentResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -148,7 +150,8 @@ public abstract class BaseCartCommentResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -214,6 +217,7 @@ public abstract class BaseCartCommentResourceTestCase {
 		cartComment.setAuthorPortraitURL(regex);
 		cartComment.setContent(regex);
 		cartComment.setExternalReferenceCode(regex);
+		cartComment.setOrderExternalReferenceCode(regex);
 
 		String json = CartCommentSerDes.toJSON(cartComment);
 
@@ -225,6 +229,7 @@ public abstract class BaseCartCommentResourceTestCase {
 		Assert.assertEquals(regex, cartComment.getAuthorPortraitURL());
 		Assert.assertEquals(regex, cartComment.getContent());
 		Assert.assertEquals(regex, cartComment.getExternalReferenceCode());
+		Assert.assertEquals(regex, cartComment.getOrderExternalReferenceCode());
 	}
 
 	@Test
@@ -257,6 +262,7 @@ public abstract class BaseCartCommentResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		CartComment cartComment1 =
 			testGraphQLDeleteCartComment_addCartComment();
 
@@ -288,6 +294,7 @@ public abstract class BaseCartCommentResourceTestCase {
 
 		// Using the namespace headlessCommerceDeliveryCart_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		CartComment cartComment2 =
 			testGraphQLDeleteCartComment_addCartComment();
 
@@ -442,6 +449,7 @@ public abstract class BaseCartCommentResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		CartComment cartComment1 =
 			testGraphQLDeleteCartCommentByExternalReferenceCode_addCartComment();
 
@@ -481,6 +489,7 @@ public abstract class BaseCartCommentResourceTestCase {
 
 		// Using the namespace headlessCommerceDeliveryCart_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		CartComment cartComment2 =
 			testGraphQLDeleteCartCommentByExternalReferenceCode_addCartComment();
 
@@ -797,8 +806,9 @@ public abstract class BaseCartCommentResourceTestCase {
 			public StringBuffer getRequestURL() {
 				return new StringBuffer(
 					StringBundler.concat(
-						"http://localhost:8080/o/v1.0/",
-						RandomTestUtil.randomString(), "/",
+						"http://localhost:",
+						String.valueOf(PortalUtil.getPortalServerPort(false)),
+						"/o/v1.0/", RandomTestUtil.randomString(), "/",
 						RandomTestUtil.randomString()));
 			}
 
@@ -834,8 +844,10 @@ public abstract class BaseCartCommentResourceTestCase {
 			@Override
 			public URI getRequestUri() {
 				return URI.create(
-					"http://localhost:8080/o/" + applicationPath +
-						resourcePath);
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath, resourcePath));
 			}
 
 			@Override
@@ -855,7 +867,11 @@ public abstract class BaseCartCommentResourceTestCase {
 
 			@Override
 			public URI getBaseUri() {
-				return URI.create("http://localhost:8080/o/" + applicationPath);
+				return URI.create(
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath));
 			}
 
 			@Override
@@ -1562,7 +1578,8 @@ public abstract class BaseCartCommentResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).parameters(
 			parameters
 		).build();
@@ -1649,16 +1666,22 @@ public abstract class BaseCartCommentResourceTestCase {
 		else if (value instanceof Boolean || value instanceof Number) {
 			return value.toString();
 		}
-		else if (value instanceof Date date) {
+		else if (value instanceof Date) {
+			Date date = (Date)value;
+
 			return "\"" +
 				DateUtil.getDate(
 					date, "yyyy-MM-dd'T'HH:mm:ss'Z'", LocaleUtil.getDefault(),
 					TimeZone.getTimeZone("UTC")) + "\"";
 		}
-		else if (value instanceof Enum<?> enm) {
+		else if (value instanceof Enum) {
+			Enum<?> enm = (Enum<?>)value;
+
 			return enm.name();
 		}
-		else if (value instanceof Map<?, ?> map) {
+		else if (value instanceof Map) {
+			Map<?, ?> map = (Map<?, ?>)value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -1671,7 +1694,9 @@ public abstract class BaseCartCommentResourceTestCase {
 
 			return "{" + String.join(", ", entries) + "}";
 		}
-		else if (value instanceof Object[] array) {
+		else if (value instanceof Object[]) {
+			Object[] array = (Object[])value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Object entry : array) {
@@ -1832,6 +1857,16 @@ public abstract class BaseCartCommentResourceTestCase {
 
 			if (Objects.equals("modifiedDate", additionalAssertFieldName)) {
 				if (cartComment.getModifiedDate() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"orderExternalReferenceCode", additionalAssertFieldName)) {
+
+				if (cartComment.getOrderExternalReferenceCode() == null) {
 					valid = false;
 				}
 
@@ -2048,6 +2083,19 @@ public abstract class BaseCartCommentResourceTestCase {
 				if (!Objects.deepEquals(
 						cartComment1.getModifiedDate(),
 						cartComment2.getModifiedDate())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"orderExternalReferenceCode", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						cartComment1.getOrderExternalReferenceCode(),
+						cartComment2.getOrderExternalReferenceCode())) {
 
 					return false;
 				}
@@ -2406,6 +2454,52 @@ public abstract class BaseCartCommentResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("orderExternalReferenceCode")) {
+			Object object = cartComment.getOrderExternalReferenceCode();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("orderId")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -2429,7 +2523,9 @@ public abstract class BaseCartCommentResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -2470,6 +2566,8 @@ public abstract class BaseCartCommentResourceTestCase {
 					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
 				modifiedDate = RandomTestUtil.nextDate();
+				orderExternalReferenceCode = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				orderId = RandomTestUtil.randomLong();
 				restricted = RandomTestUtil.randomBoolean();
 			}
@@ -2741,4 +2839,4 @@ public abstract class BaseCartCommentResourceTestCase {
 		_vulcanCRUDItemDelegateBuilderRegistry;
 
 }
-// LIFERAY-REST-BUILDER-HASH:406533489
+// LIFERAY-REST-BUILDER-HASH:2134701644

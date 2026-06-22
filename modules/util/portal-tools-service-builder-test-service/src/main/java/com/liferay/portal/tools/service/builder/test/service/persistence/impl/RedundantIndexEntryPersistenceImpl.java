@@ -7,7 +7,6 @@ package com.liferay.portal.tools.service.builder.test.service.persistence.impl;
 
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -60,9 +59,9 @@ public class RedundantIndexEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByC_N;
-	private UniquePersistenceFinder<RedundantIndexEntry>
-		_uniquePersistenceFinderByC_N;
+	private UniquePersistenceFinder
+		<RedundantIndexEntry, NoSuchRedundantIndexEntryException>
+			_uniquePersistenceFinderByC_N;
 
 	/**
 	 * Returns the redundant index entry where companyId = &#63; and name = &#63; or throws a <code>NoSuchRedundantIndexEntryException</code> if it could not be found.
@@ -76,33 +75,8 @@ public class RedundantIndexEntryPersistenceImpl
 	public RedundantIndexEntry findByC_N(long companyId, String name)
 		throws NoSuchRedundantIndexEntryException {
 
-		RedundantIndexEntry redundantIndexEntry = fetchByC_N(companyId, name);
-
-		if (redundantIndexEntry == null) {
-			String message =
-				_uniquePersistenceFinderByC_N.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchRedundantIndexEntryException(message);
-		}
-
-		return redundantIndexEntry;
-	}
-
-	/**
-	 * Returns the redundant index entry where companyId = &#63; and name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param companyId the company ID
-	 * @param name the name
-	 * @return the matching redundant index entry, or <code>null</code> if a matching redundant index entry could not be found
-	 */
-	@Override
-	public RedundantIndexEntry fetchByC_N(long companyId, String name) {
-		return fetchByC_N(companyId, name, true);
+		return _uniquePersistenceFinderByC_N.find(
+			finderCache, new Object[] {companyId, name});
 	}
 
 	/**
@@ -330,17 +304,18 @@ public class RedundantIndexEntryPersistenceImpl
 	 * Initializes the redundant index entry persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathFetchByC_N = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "name"}, false,
-			RedundantIndexEntry::getCompanyId, RedundantIndexEntry::getName);
-
 		_uniquePersistenceFinderByC_N = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_N, _SQL_SELECT_REDUNDANTINDEXENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_N",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "name"}, 0, 2, false,
+				RedundantIndexEntry::getCompanyId,
+				convertNullFunction(RedundantIndexEntry::getName)),
+			_SQL_SELECT_REDUNDANTINDEXENTRY_WHERE, "",
 			new FinderColumn<>(
 				"redundantIndexEntry.", "companyId", FinderColumn.Type.LONG,
-				"=", true, false, RedundantIndexEntry::getCompanyId),
+				"=", true, true, RedundantIndexEntry::getCompanyId),
 			new FinderColumn<>(
 				"redundantIndexEntry.", "name", FinderColumn.Type.STRING, "=",
 				true, true, RedundantIndexEntry::getName));
@@ -360,9 +335,6 @@ public class RedundantIndexEntryPersistenceImpl
 	@ServiceReference(type = FinderCache.class)
 	protected FinderCache finderCache;
 
-	private static final String _ENTITY_ALIAS_PREFIX =
-		RedundantIndexEntryModelImpl.ENTITY_ALIAS + ".";
-
 	private static final String _SQL_SELECT_REDUNDANTINDEXENTRY =
 		"SELECT redundantIndexEntry FROM RedundantIndexEntry redundantIndexEntry";
 
@@ -381,4 +353,4 @@ public class RedundantIndexEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1273665394
+// LIFERAY-SERVICE-BUILDER-HASH:1903176882

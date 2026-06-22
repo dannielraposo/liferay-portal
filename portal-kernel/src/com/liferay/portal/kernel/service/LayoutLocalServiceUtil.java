@@ -1769,7 +1769,8 @@ public class LayoutLocalServiceUtil {
 			Map<java.util.Locale, String> robotsMap, String type,
 			boolean hidden, Map<java.util.Locale, String> friendlyURLMap,
 			boolean hasIconImage, byte[] iconBytes, String styleBookEntryERC,
-			String faviconFileEntryERC, String faviconFileEntryScopeERC,
+			String styleBookEntryScopeERC, String faviconFileEntryERC,
+			String faviconFileEntryScopeERC,
 			String masterLayoutPageTemplateEntryERC,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -1778,22 +1779,25 @@ public class LayoutLocalServiceUtil {
 			groupId, privateLayout, layoutId, parentLayoutId, nameMap, titleMap,
 			descriptionMap, keywordsMap, robotsMap, type, hidden,
 			friendlyURLMap, hasIconImage, iconBytes, styleBookEntryERC,
-			faviconFileEntryERC, faviconFileEntryScopeERC,
-			masterLayoutPageTemplateEntryERC, serviceContext);
+			styleBookEntryScopeERC, faviconFileEntryERC,
+			faviconFileEntryScopeERC, masterLayoutPageTemplateEntryERC,
+			serviceContext);
 	}
 
 	public static Layout updateLayout(
 			long groupId, boolean privateLayout, long layoutId,
 			String typeSettings, byte[] iconBytes, String themeId,
-			String colorSchemeId, String styleBookEntryERC, String css,
+			String colorSchemeId, String styleBookEntryERC,
+			String styleBookEntryScopeERC, String css,
 			String faviconFileEntryERC, String faviconFileEntryScopeERC,
 			String masterLayoutPageTemplateEntryERC)
 		throws PortalException {
 
 		return getService().updateLayout(
 			groupId, privateLayout, layoutId, typeSettings, iconBytes, themeId,
-			colorSchemeId, styleBookEntryERC, css, faviconFileEntryERC,
-			faviconFileEntryScopeERC, masterLayoutPageTemplateEntryERC);
+			colorSchemeId, styleBookEntryERC, styleBookEntryScopeERC, css,
+			faviconFileEntryERC, faviconFileEntryScopeERC,
+			masterLayoutPageTemplateEntryERC);
 	}
 
 	public static void updateLayoutContent(
@@ -2043,24 +2047,14 @@ public class LayoutLocalServiceUtil {
 		return getService().updateStatus(userId, plid, status, serviceContext);
 	}
 
-	/**
-	 * Updates the layout replacing its style book entry ID.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param privateLayout whether the layout is private to the group
-	 * @param layoutId the layout ID of the layout
-	 * @param styleBookEntryERC the external reference code of the style book
-	 entry
-	 * @return the updated layout
-	 * @throws PortalException if a portal exception occurred
-	 */
-	public static Layout updateStyleBookEntryERC(
+	public static Layout updateStyleBookEntry(
 			long groupId, boolean privateLayout, long layoutId,
-			String styleBookEntryERC)
+			String styleBookEntryERC, String styleBookEntryScopeERC)
 		throws PortalException {
 
-		return getService().updateStyleBookEntryERC(
-			groupId, privateLayout, layoutId, styleBookEntryERC);
+		return getService().updateStyleBookEntry(
+			groupId, privateLayout, layoutId, styleBookEntryERC,
+			styleBookEntryScopeERC);
 	}
 
 	public static Layout updateType(long plid, String type)
@@ -2115,4 +2109,4 @@ public class LayoutLocalServiceUtil {
 	private static volatile LayoutLocalService _service;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:513027707
+// LIFERAY-SERVICE-BUILDER-HASH:-374945548

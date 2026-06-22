@@ -2,6 +2,103 @@
 	@include clay-css(setter($cadmin-lexicon-icon, ()));
 }
 
+.lexicon-icon-arrows-all {
+	background-color: unquote('hsl(from #{$cadmin-white} h s l / 0.6)');
+	border: 1px solid $cadmin-border-color;
+	border-radius: 0.1413em; // 6.5/46
+	height: 0.73913em; // 34/46 aspect ratio
+	margin-top: 0;
+	width: 1em;
+
+	.lx-arrows-all-chevron {
+		fill: $cadmin-white;
+	}
+}
+
+.clay-keyboard-arrows-horizontal {
+	.lx-arrows-all-keycap-down,
+	.lx-arrows-all-keycap-up {
+		fill: $cadmin-gray-300;
+	}
+}
+
+.clay-keyboard-arrows-vertical {
+	.lx-arrows-all-keycap-left,
+	.lx-arrows-all-keycap-right {
+		fill: $cadmin-gray-300;
+	}
+}
+
+.clay-keyboard-arrows-indicator {
+	display: inline-flex;
+	font-size: 2.875rem; // 46px — natural design size
+
+	.lexicon-icon {
+		margin-top: 0;
+	}
+}
+
+.clay-keyboard-arrows-indicator-floating {
+	background-color: $cadmin-white;
+	border-radius: 0.1413em;
+	position: absolute;
+	transition:
+		bottom 0.3s ease-in-out,
+		left 0.3s ease-in-out,
+		right 0.3s ease-in-out,
+		top 0.3s ease-in-out;
+	z-index: $cadmin-zindex-tooltip;
+
+	&.clay-keyboard-arrows-indicator-floating-hidden {
+		opacity: 0;
+		pointer-events: none;
+		visibility: hidden;
+	}
+
+	&.clay-keyboard-arrows-indicator-floating-tooltip {
+		&::before,
+		&::after {
+			border-style: solid;
+			content: '';
+			height: 0;
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+			width: 0;
+		}
+
+		&::before {
+			border-color: transparent $cadmin-border-color transparent
+				transparent;
+			border-width: 7px 7px 7px 0;
+			left: -7px;
+		}
+
+		&::after {
+			border-color: transparent $cadmin-white transparent transparent;
+			border-width: 6px 6px 6px 0;
+			left: -6px;
+		}
+
+		&.clay-keyboard-arrows-indicator-floating-flipped {
+			&::before {
+				border-color: transparent transparent transparent
+					$cadmin-border-color;
+				border-width: 7px 0 7px 7px;
+				left: auto;
+				right: -7px;
+			}
+
+			&::after {
+				border-color: transparent transparent transparent $cadmin-white;
+				border-width: 6px 0 6px 6px;
+				left: auto;
+				right: -6px;
+			}
+		}
+	}
+}
+
 .order-arrow-down-active {
 	.order-arrow-arrow-down {
 		fill: $cadmin-order-arrow-down-active-color;

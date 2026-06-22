@@ -76,9 +76,7 @@ public class SamlSpMessagePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByLtExpirationDate;
-	private FinderPath _finderPathWithPaginationCountByLtExpirationDate;
-	private CollectionPersistenceFinder<SamlSpMessage>
+	private CollectionPersistenceFinder<SamlSpMessage, NoSuchSpMessageException>
 		_collectionPersistenceFinderByLtExpirationDate;
 
 	/**
@@ -173,17 +171,8 @@ public class SamlSpMessagePersistenceImpl
 			OrderByComparator<SamlSpMessage> orderByComparator)
 		throws NoSuchSpMessageException {
 
-		SamlSpMessage samlSpMessage = fetchByLtExpirationDate_First(
-			expirationDate, orderByComparator);
-
-		if (samlSpMessage != null) {
-			return samlSpMessage;
-		}
-
-		throw new NoSuchSpMessageException(
-			_collectionPersistenceFinderByLtExpirationDate.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {expirationDate}));
+		return _collectionPersistenceFinderByLtExpirationDate.findFirst(
+			finderCache, new Object[] {expirationDate}, orderByComparator);
 	}
 
 	/**
@@ -225,8 +214,7 @@ public class SamlSpMessagePersistenceImpl
 			finderCache, new Object[] {expirationDate});
 	}
 
-	private FinderPath _finderPathFetchBySIEI_SIRK;
-	private UniquePersistenceFinder<SamlSpMessage>
+	private UniquePersistenceFinder<SamlSpMessage, NoSuchSpMessageException>
 		_uniquePersistenceFinderBySIEI_SIRK;
 
 	/**
@@ -242,37 +230,8 @@ public class SamlSpMessagePersistenceImpl
 			String samlIdpEntityId, String samlIdpResponseKey)
 		throws NoSuchSpMessageException {
 
-		SamlSpMessage samlSpMessage = fetchBySIEI_SIRK(
-			samlIdpEntityId, samlIdpResponseKey);
-
-		if (samlSpMessage == null) {
-			String message =
-				_uniquePersistenceFinderBySIEI_SIRK.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {samlIdpEntityId, samlIdpResponseKey});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchSpMessageException(message);
-		}
-
-		return samlSpMessage;
-	}
-
-	/**
-	 * Returns the saml sp message where samlIdpEntityId = &#63; and samlIdpResponseKey = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param samlIdpEntityId the saml idp entity ID
-	 * @param samlIdpResponseKey the saml idp response key
-	 * @return the matching saml sp message, or <code>null</code> if a matching saml sp message could not be found
-	 */
-	@Override
-	public SamlSpMessage fetchBySIEI_SIRK(
-		String samlIdpEntityId, String samlIdpResponseKey) {
-
-		return fetchBySIEI_SIRK(samlIdpEntityId, samlIdpResponseKey, true);
+		return _uniquePersistenceFinderBySIEI_SIRK.find(
+			finderCache, new Object[] {samlIdpEntityId, samlIdpResponseKey});
 	}
 
 	/**
@@ -515,41 +474,42 @@ public class SamlSpMessagePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByLtExpirationDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtExpirationDate",
-			new String[] {
-				Date.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"expirationDate"}, true);
-
-		_finderPathWithPaginationCountByLtExpirationDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtExpirationDate",
-			new String[] {Date.class.getName()},
-			new String[] {"expirationDate"}, false);
-
 		_collectionPersistenceFinderByLtExpirationDate =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLtExpirationDate, null,
-				_finderPathWithPaginationCountByLtExpirationDate,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByLtExpirationDate",
+					new String[] {
+						Date.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"expirationDate"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByLtExpirationDate",
+					new String[] {Date.class.getName()},
+					new String[] {"expirationDate"}, false),
 				_SQL_SELECT_SAMLSPMESSAGE_WHERE, _SQL_COUNT_SAMLSPMESSAGE_WHERE,
-				SamlSpMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				SamlSpMessageModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"samlSpMessage.", "expirationDate", FinderColumn.Type.DATE,
 					"<", true, true, SamlSpMessage::getExpirationDate));
 
-		_finderPathFetchBySIEI_SIRK = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchBySIEI_SIRK",
-			new String[] {String.class.getName(), String.class.getName()},
-			new String[] {"samlIdpEntityId", "samlIdpResponseKey"}, false,
-			SamlSpMessage::getSamlIdpEntityId,
-			SamlSpMessage::getSamlIdpResponseKey);
-
 		_uniquePersistenceFinderBySIEI_SIRK = new UniquePersistenceFinder<>(
-			this, _finderPathFetchBySIEI_SIRK, _SQL_SELECT_SAMLSPMESSAGE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchBySIEI_SIRK",
+				new String[] {String.class.getName(), String.class.getName()},
+				new String[] {"samlIdpEntityId", "samlIdpResponseKey"}, 0, 3,
+				false, convertNullFunction(SamlSpMessage::getSamlIdpEntityId),
+				convertNullFunction(SamlSpMessage::getSamlIdpResponseKey)),
+			_SQL_SELECT_SAMLSPMESSAGE_WHERE, "",
 			new FinderColumn<>(
 				"samlSpMessage.", "samlIdpEntityId", FinderColumn.Type.STRING,
-				"=", true, false, SamlSpMessage::getSamlIdpEntityId),
+				"=", true, true, SamlSpMessage::getSamlIdpEntityId),
 			new FinderColumn<>(
 				"samlSpMessage.", "samlIdpResponseKey",
 				FinderColumn.Type.STRING, "=", true, true,
@@ -621,4 +581,4 @@ public class SamlSpMessagePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1135059415
+// LIFERAY-SERVICE-BUILDER-HASH:-233453633

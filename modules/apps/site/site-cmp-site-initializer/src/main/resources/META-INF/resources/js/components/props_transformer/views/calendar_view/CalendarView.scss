@@ -1,0 +1,119 @@
+@import 'atlas-variables';
+
+.lfr__calendar-view {
+	--fc-border-color: #{$border-color};
+	--fc-event-bg-color: transparent;
+	--fc-event-border-color: transparent;
+	--fc-today-bg-color: transparent;
+
+	margin-top: -1rem;
+
+	.fc-daygrid-event {
+		border: 0;
+		box-shadow: none;
+		margin-top: 4px;
+	}
+
+	// Override the global ".fds a" rule that underlines event links
+
+	.fc-daygrid-event:not(.btn):not(.component-action):not(.page-link) {
+		text-decoration: none;
+	}
+
+	.fc-daygrid-block-event .fc-event-main {
+		padding: 0;
+	}
+
+	.fc-daygrid-more-link.fc-more-link {
+		font-size: map-get($font-scale, 2);
+		line-height: 1.5;
+		margin: 4px;
+		padding: 0.125rem 0.5rem;
+
+		&:hover {
+			background-color: rgba($gray-900, 0.06);
+			color: $gray-900;
+		}
+	}
+
+	.fc-direction-ltr .fc-daygrid-event.fc-event-end,
+	.fc-direction-rtl .fc-daygrid-event.fc-event-start {
+		margin-right: 0.25rem;
+	}
+
+	.fc-direction-ltr .fc-daygrid-event.fc-event-start,
+	.fc-direction-rtl .fc-daygrid-event.fc-event-end {
+		margin-left: 0.25rem;
+	}
+
+	&-toolbar {
+		align-items: center;
+		display: flex;
+		gap: 0.5rem;
+		justify-content: center;
+		padding: 0.5rem;
+
+		&-date-picker {
+			position: relative;
+
+			.date-picker {
+				inset: 0;
+				opacity: 0;
+				pointer-events: none;
+				position: absolute;
+			}
+		}
+	}
+
+	.fc-col-header-cell {
+		background-color: $gray-100;
+		border-left-width: 0;
+		border-right-width: 0;
+		text-align: left;
+	}
+
+	.fc-col-header-cell-cushion {
+		color: $secondary;
+		display: inline-block;
+		font-size: 0.75rem;
+		font-weight: $font-weight-semi-bold;
+		padding: 0.5rem 0.75rem;
+		text-decoration: none !important;
+	}
+
+	.fc-day-today .fc-daygrid-day-number {
+		align-items: center;
+		background-color: $primary;
+		border-radius: 50%;
+		color: $white;
+		display: inline-flex;
+		height: 1.75rem;
+		justify-content: center;
+		line-height: 1;
+		margin: 0.25rem 0.5rem;
+		padding: 0;
+		width: 1.75rem;
+	}
+
+	.fc-daygrid-day.fc-day-sat,
+	.fc-daygrid-day.fc-day-sun {
+		background-color: $gray-100;
+	}
+
+	.fc-daygrid-day-number {
+		color: $secondary;
+		font-size: $font-size-sm;
+		font-weight: $font-weight-semi-bold;
+		padding: 0.5rem 0.75rem;
+		text-decoration: none !important;
+	}
+
+	.fc-daygrid-day-top {
+		flex-direction: row;
+	}
+
+	.fc-theme-standard .fc-scrollgrid {
+		border-left-width: 0;
+		border-right-width: 0;
+	}
+}

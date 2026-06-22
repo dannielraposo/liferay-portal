@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.liferay.headless.delivery.dto.v1_0.Comment;
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -47,6 +48,95 @@ public class SystemProperties implements Serializable {
 	public static SystemProperties unsafeToDTO(String json) {
 		return ObjectMapperUtil.unsafeReadValue(SystemProperties.class, json);
 	}
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	@Valid
+	public CollaboratorBrief getCollaboratorBrief() {
+		if (_collaboratorBriefSupplier != null) {
+			collaboratorBrief = _collaboratorBriefSupplier.get();
+
+			_collaboratorBriefSupplier = null;
+		}
+
+		return collaboratorBrief;
+	}
+
+	public void setCollaboratorBrief(CollaboratorBrief collaboratorBrief) {
+		this.collaboratorBrief = collaboratorBrief;
+
+		_collaboratorBriefSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setCollaboratorBrief(
+		UnsafeSupplier<CollaboratorBrief, Exception>
+			collaboratorBriefUnsafeSupplier) {
+
+		_collaboratorBriefSupplier = () -> {
+			try {
+				return collaboratorBriefUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected CollaboratorBrief collaboratorBrief;
+
+	@JsonIgnore
+	private Supplier<CollaboratorBrief> _collaboratorBriefSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Optional field with the comments associated with this object entry, can be embedded with nestedFields"
+	)
+	@Valid
+	public Comment[] getComments() {
+		if (_commentsSupplier != null) {
+			comments = _commentsSupplier.get();
+
+			_commentsSupplier = null;
+		}
+
+		return comments;
+	}
+
+	public void setComments(Comment[] comments) {
+		this.comments = comments;
+
+		_commentsSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setComments(
+		UnsafeSupplier<Comment[], Exception> commentsUnsafeSupplier) {
+
+		_commentsSupplier = () -> {
+			try {
+				return commentsUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(
+		description = "Optional field with the comments associated with this object entry, can be embedded with nestedFields"
+	)
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Comment[] comments;
+
+	@JsonIgnore
+	private Supplier<Comment[]> _commentsSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
@@ -205,6 +295,40 @@ public class SystemProperties implements Serializable {
 
 		sb.append("{");
 
+		CollaboratorBrief collaboratorBrief = getCollaboratorBrief();
+
+		if (collaboratorBrief != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"collaboratorBrief\": ");
+
+			sb.append(String.valueOf(collaboratorBrief));
+		}
+
+		Comment[] comments = getComments();
+
+		if (comments != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"comments\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < comments.length; i++) {
+				sb.append(comments[i]);
+
+				if ((i + 1) < comments.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
 		ObjectDefinitionBrief objectDefinitionBrief =
 			getObjectDefinitionBrief();
 
@@ -343,4 +467,4 @@ public class SystemProperties implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1565633521
+// LIFERAY-REST-BUILDER-HASH:-248717845

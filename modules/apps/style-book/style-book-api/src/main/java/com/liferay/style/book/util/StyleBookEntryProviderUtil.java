@@ -1,0 +1,105 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+package com.liferay.style.book.util;
+
+import com.liferay.depot.group.provider.SiteConnectedGroupGroupProvider;
+import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.module.service.Snapshot;
+import com.liferay.portal.kernel.util.ScopeUtil;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.style.book.model.StyleBookEntry;
+import com.liferay.style.book.service.StyleBookEntryLocalServiceUtil;
+
+import java.util.List;
+
+/**
+ * @author Gabriel Lima
+ */
+public class StyleBookEntryProviderUtil {
+
+	public static List<StyleBookEntry> getStyleBookEntries(
+			long companyId, long groupId)
+		throws PortalException {
+
+		return StyleBookEntryLocalServiceUtil.getStyleBookEntries(
+			_getGroupIds(companyId, groupId), QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
+	}
+
+	public static List<StyleBookEntry> getStyleBookEntries(
+			long companyId, long groupId, String themeId)
+		throws PortalException {
+
+		return StyleBookEntryLocalServiceUtil.getStyleBookEntries(
+			_getGroupIds(companyId, groupId), themeId);
+	}
+
+	public static StyleBookEntry getStyleBookEntry(Layout layout) {
+		if (Validator.isNull(layout.getStyleBookEntryERC())) {
+			return null;
+		}
+
+		StyleBookEntry styleBookEntry = null;
+
+		Long groupId = ScopeUtil.getItemGroupId(
+			layout.getCompanyId(), layout.getStyleBookEntryScopeERC(),
+			layout.getGroupId());
+
+		if (groupId != null) {
+			styleBookEntry =
+				StyleBookEntryLocalServiceUtil.
+					fetchStyleBookEntryByExternalReferenceCode(
+						layout.getStyleBookEntryERC(),
+						StagingUtil.getLiveGroupId(groupId));
+		}
+
+		if ((styleBookEntry == null) && _log.isWarnEnabled()) {
+			_log.warn(
+				StringBundler.concat(
+					"Unable to find style book entry with external reference ",
+					"code ", layout.getStyleBookEntryERC(),
+					" and scope external reference code ",
+					layout.getStyleBookEntryScopeERC(), " for layout ",
+					layout.getPlid()));
+		}
+
+		return styleBookEntry;
+	}
+
+	private static long[] _getGroupIds(long companyId, long groupId)
+		throws PortalException {
+
+		if (!FeatureFlagManagerUtil.isEnabled(companyId, "LPD-57283")) {
+			return new long[] {groupId};
+		}
+
+		SiteConnectedGroupGroupProvider siteConnectedGroupGroupProvider =
+			_siteConnectedGroupGroupProviderSnapshot.get();
+
+		if (siteConnectedGroupGroupProvider == null) {
+			return new long[] {groupId};
+		}
+
+		return siteConnectedGroupGroupProvider.
+			getCurrentAndAncestorSiteAndDepotGroupIds(groupId);
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		StyleBookEntryProviderUtil.class);
+
+	private static final Snapshot<SiteConnectedGroupGroupProvider>
+		_siteConnectedGroupGroupProviderSnapshot = new Snapshot<>(
+			StyleBookEntryProviderUtil.class,
+			SiteConnectedGroupGroupProvider.class);
+
+}

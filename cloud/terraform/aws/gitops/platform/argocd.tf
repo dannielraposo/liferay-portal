@@ -8,8 +8,8 @@ resource "helm_release" "argocd" {
 	name="argocd"
 	namespace=var.argocd_namespace
 	repository="https://argoproj.github.io/argo-helm"
-	values=[
-		yamlencode(
+	values=concat(
+		[yamlencode(
 			{
 				applicationSet={
 					resources={
@@ -24,6 +24,7 @@ resource "helm_release" "argocd" {
 				}
 				configs={
 					cm={
+						"admin.enabled"=var.argocd_sso_config.enable_admin_login
 						"application.resourceTrackingMethod"="annotation"
 						"controller.diff.timeout"="120s"
 						"kustomize.buildOptions"="--enable-helm"
@@ -89,6 +90,7 @@ resource "helm_release" "argocd" {
 					networkPolicy={
 						create=true
 					}
+					podAnnotations=local.karpenter_pod_annotations
 				}
 				installCRDs=true
 				notifications={
@@ -114,12 +116,21 @@ resource "helm_release" "argocd" {
 					}
 				}
 				repoServer={
+					livenessProbe={
+						failureThreshold=6
+						periodSeconds=15
+						timeoutSeconds=10
+					}
+					readinessProbe={
+						periodSeconds=15
+						timeoutSeconds=10
+					}
 					resources={
 						limits={
 							memory="1.5Gi"
 						}
 						requests={
-							cpu="15m"
+							cpu="250m"
 							memory="128Mi"
 						}
 					}
@@ -146,8 +157,48 @@ resource "helm_release" "argocd" {
 						type="ClusterIP"
 					}
 				}
-			}),
-	]
+			})],
+		var.argocd_sso_config.enable_saml_sso ? [
+			yamlencode({
+				configs={
+					cm={
+						"dex.config"=yamlencode({
+							connectors=[{
+								config={
+									caData="$customer-idp-saml:caData"
+									emailAttr="email"
+									entityIssuer="$customer-idp-saml:entityIssuer"
+									groupsAttr="groups"
+									redirectURI="$customer-idp-saml:redirectURI"
+									ssoURL="$customer-idp-saml:ssoURL"
+									usernameAttr="name"
+								}
+								id="customer-idp"
+								name="SAML"
+								type="saml"
+							}]
+						})
+					}
+					rbac={
+						"policy.csv"=join("\n", [
+							"g, customer-idp:liferay-argocd-role-admin, role:liferay-admin",
+							"g, customer-idp:liferay-argocd-role-guest, role:liferay-guest",
+							"p, role:liferay-admin, accounts, *, *, allow",
+							"p, role:liferay-admin, applications, *, */*, allow",
+							"p, role:liferay-admin, clusters, *, *, allow",
+							"p, role:liferay-admin, projects, *, *, allow",
+							"p, role:liferay-admin, repositories, *, *, allow",
+							"p, role:liferay-guest, applications, get, */*, allow",
+							"p, role:liferay-guest, clusters, get, *, allow",
+							"p, role:liferay-guest, projects, get, *, allow",
+							"p, role:liferay-guest, repositories, get, *, allow",
+						])
+						"policy.default"="role:liferay-guest"
+					}
+				}
+			})
+		] : [],
+	)
 	version=var.argocd_helm_chart_version
 	wait=true
 }

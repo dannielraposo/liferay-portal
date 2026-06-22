@@ -59,7 +59,7 @@ public class ElasticsearchConfigurationUpgradeProcessTest {
 			).put(
 				"embeddedHttpPort", 9202
 			).put(
-				"operationMode", "EMBEDDED"
+				"operationMode", "REMOTE"
 			).put(
 				"restClientLoggerLevel", "ERROR"
 			).put(
@@ -79,7 +79,7 @@ public class ElasticsearchConfigurationUpgradeProcessTest {
 			).put(
 				"embeddedHttpPort", 9202
 			).put(
-				"operationMode", "EMBEDDED"
+				"operationMode", "REMOTE"
 			).put(
 				"restClientLoggerLevel", "ERROR"
 			).put(
@@ -112,7 +112,7 @@ public class ElasticsearchConfigurationUpgradeProcessTest {
 		Assert.assertNull(properties.get("embeddedHttpPort"));
 		Assert.assertNull(properties.get("operationMode"));
 		Assert.assertEquals(
-			Boolean.FALSE,
+			Boolean.TRUE,
 			GetterUtil.getBoolean(properties.get("productionModeEnabled")));
 		Assert.assertNull(properties.get("restClientLoggerLevel"));
 		Assert.assertEquals(
@@ -154,14 +154,14 @@ public class ElasticsearchConfigurationUpgradeProcessTest {
 		"com.liferay.portal.search.elasticsearch8.internal.upgrade.v1_0_0." +
 			"ElasticsearchConfigurationUpgradeProcess";
 
-	@Inject(
-		filter = "component.name=com.liferay.portal.search.elasticsearch8.internal.upgrade.registry.ElasticsearchUpgradeStepRegistrator"
-	)
-	private static UpgradeStepRegistrator _upgradeStepRegistrator;
-
 	@Inject
 	private ConfigurationAdmin _configurationAdmin;
 
 	private Dictionary<String, Object> _originalProperties;
+
+	@Inject(
+		filter = "component.name=com.liferay.portal.search.elasticsearch8.internal.upgrade.registry.ElasticsearchUpgradeStepRegistrator"
+	)
+	private UpgradeStepRegistrator _upgradeStepRegistrator;
 
 }

@@ -77,9 +77,13 @@ public abstract class BaseOptionCategoryResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/optionCategories/{id}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes the option category identified by id. Calls CPOptionCategoryService.deleteCPOptionCategory. Validation -- Service-level NoSuchCPOptionCategoryException -> 404. Side effects -- Cascades through option category delete listeners; reindexes affected specifications."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -157,9 +161,13 @@ public abstract class BaseOptionCategoryResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/optionCategories/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes the option category identified by external reference code. Calls CPOptionCategoryService.getCPOptionCategoryByExternalReferenceCode + deleteCPOptionCategory. Validation -- NoSuchCPOptionCategoryException -> 404 when ERC not found. Side effects -- Cascades through option category delete listeners."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -189,21 +197,28 @@ public abstract class BaseOptionCategoryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/optionCategories'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns a page of option categories scoped to the current company. Calls SearchUtil.search over CPOptionCategory. List query support — filterable fields -- key, title; sortable fields -- key, title."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model (typically createDate, externalReferenceCode, modifiedDate, productExternalReferenceCode, productId, and similar). Example -- filter=productId eq 12345.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression of the form `field:asc` or `field:desc`, comma-separated for multi-field sorting. Supported sort fields depend on the endpoint and are sourced from the matching entity model (typically createDate, modifiedDate, and the resource's name or code field).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -234,9 +249,13 @@ public abstract class BaseOptionCategoryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/optionCategories/{id}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Fetches the option category identified by id. Calls CPOptionCategoryService.getCPOptionCategory (via DTO converter). Validation -- NoSuchCPOptionCategoryException -> 404 when id not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -266,9 +285,13 @@ public abstract class BaseOptionCategoryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/optionCategories/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Fetches the option category identified by external reference code. Calls CPOptionCategoryService.getCPOptionCategoryByExternalReferenceCode. Validation -- NoSuchCPOptionCategoryException -> 404 when ERC not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -300,9 +323,13 @@ public abstract class BaseOptionCategoryResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/optionCategories/{id}' -d $'{"description": ___, "externalReferenceCode": ___, "id": ___, "key": ___, "priority": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates the option category identified by id. Calls CPOptionCategoryService.getCPOptionCategory + updateCPOptionCategory. Validation -- NoSuchCPOptionCategoryException -> 404 when id not found. Side effects -- Reindexes the option category."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -336,9 +363,13 @@ public abstract class BaseOptionCategoryResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/optionCategories/by-externalReferenceCode/{externalReferenceCode}' -d $'{"description": ___, "externalReferenceCode": ___, "id": ___, "key": ___, "priority": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates the option category identified by external reference code. Calls CPOptionCategoryService.getCPOptionCategoryByExternalReferenceCode + updateCPOptionCategory. Validation -- NoSuchCPOptionCategoryException -> 404 when ERC not found. Side effects -- Reindexes the option category."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -403,10 +434,12 @@ public abstract class BaseOptionCategoryResourceImpl
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model (typically createDate, externalReferenceCode, modifiedDate, productExternalReferenceCode, productId, and similar). Example -- filter=productId eq 12345.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression of the form `field:asc` or `field:desc`, comma-separated for multi-field sorting. Supported sort fields depend on the endpoint and are sourced from the matching entity model (typically createDate, modifiedDate, and the resource's name or code field).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			),
@@ -475,6 +508,9 @@ public abstract class BaseOptionCategoryResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/optionCategories' -d $'{"description": ___, "externalReferenceCode": ___, "id": ___, "key": ___, "priority": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates or updates an option category using the supplied external reference code. Calls CPOptionCategoryService.addOrUpdateCPOptionCategory. POST is upsert by external reference code -- creates a new entity when the ERC is unknown, otherwise updates the existing one. Validation -- DuplicateCPOptionCategoryException -> 409 when key collides. Side effects -- Reindexes the option category."
+	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
 			@io.swagger.v3.oas.annotations.tags.Tag(name = "OptionCategory")
@@ -542,9 +578,13 @@ public abstract class BaseOptionCategoryResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/optionCategories/by-externalReferenceCode/{externalReferenceCode}' -d $'{"description": ___, "externalReferenceCode": ___, "id": ___, "key": ___, "priority": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates or replaces the option category identified by external reference code. Calls CPOptionCategoryService.addOrUpdateCPOptionCategory. POST is upsert by external reference code -- creates a new entity when the ERC is unknown, otherwise updates the existing one. Validation -- DuplicateCPOptionCategoryException -> 409 when key collides. Side effects -- Reindexes the option category."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -1379,4 +1419,4 @@ public abstract class BaseOptionCategoryResourceImpl
 		LogFactoryUtil.getLog(BaseOptionCategoryResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1508627363
+// LIFERAY-REST-BUILDER-HASH:-470153616

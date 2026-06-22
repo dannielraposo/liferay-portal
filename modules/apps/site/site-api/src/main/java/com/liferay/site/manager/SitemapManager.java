@@ -11,6 +11,8 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.xml.Element;
 
+import java.io.InputStream;
+
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
@@ -46,6 +48,10 @@ public interface SitemapManager {
 			String canonicalURL, ThemeDisplay themeDisplay, Layout layout)
 		throws PortalException;
 
+	public String getAssetTypeClassName(String assetTypeKey);
+
+	public Map<String, String> getAssetTypeKeys();
+
 	public String getSitemap(
 			long groupId, boolean privateLayout, ThemeDisplay themeDisplay)
 		throws PortalException;
@@ -53,6 +59,16 @@ public interface SitemapManager {
 	public String getSitemap(
 			String layoutUuid, long groupId, boolean privateLayout,
 			ThemeDisplay themeDisplay)
+		throws PortalException;
+
+	public String getSitemap(
+			String assetType, String layoutUuid, long groupId,
+			boolean privateLayout, ThemeDisplay themeDisplay)
+		throws PortalException;
+
+	public InputStream getSitemapInputStream(
+			String assetTypeKey, String layoutUuid, long groupId,
+			boolean privateLayout, ThemeDisplay themeDisplay, int page)
 		throws PortalException;
 
 }

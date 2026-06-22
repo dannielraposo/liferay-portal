@@ -5,7 +5,9 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
+import com.liferay.jenkins.results.parser.AntException;
 import com.liferay.jenkins.results.parser.AntUtil;
+import com.liferay.jenkins.results.parser.Environment;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.NotificationUtil;
 import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
@@ -51,7 +53,7 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 
 	public void addDefaultProjectJobProperty(String batchName) {
 		if (isRootCauseAnalysis()) {
-			String portalBatchTestSelector = System.getenv(
+			String portalBatchTestSelector = Environment.get(
 				"PORTAL_BATCH_TEST_SELECTOR");
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(
@@ -505,7 +507,8 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	private String _getDefaultProjectNames() {
-		String playwrightProjectName = System.getenv("PLAYWRIGHT_PROJECT_NAME");
+		String playwrightProjectName = Environment.get(
+			"PLAYWRIGHT_PROJECT_NAME");
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(playwrightProjectName)) {
 			return playwrightProjectName;
@@ -593,7 +596,7 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 		Map<String, Map<File, TestClass>> testClassesByProjectMap) {
 
 		if (isRootCauseAnalysis()) {
-			String portalBatchTestSelector = System.getenv(
+			String portalBatchTestSelector = Environment.get(
 				"PORTAL_BATCH_TEST_SELECTOR");
 
 			if (JenkinsResultsParserUtil.isNullOrEmpty(
@@ -685,8 +688,18 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 					portalGitWorkingDirectory.getWorkingDirectory(),
 					"build.xml", "setup-yarn");
 			}
-			catch (Exception exception) {
-				exception.printStackTrace();
+			catch (AntException antException) {
+				System.out.println(
+					"Skipping Playwright class group enumeration because the " +
+						"\"setup-yarn\" target failed");
+
+				antException.printStackTrace();
+
+				_playwrightJSONObject = new JSONObject();
+
+				_playwrightJSONObjectsLoaded.set(true);
+
+				return;
 			}
 
 			try {
@@ -716,6 +729,8 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 				_sendNotification("Unable to parse Playwright JSON object");
 
 				exception.printStackTrace();
+
+				_playwrightJSONObject = new JSONObject();
 			}
 
 			JSONArray errorsJSONArray = _playwrightJSONObject.optJSONArray(
@@ -905,7 +920,7 @@ public class PlaywrightBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	private void _sendNotification(String message) {
-		String topLevelBuildURL = System.getenv("TOP_LEVEL_BUILD_URL");
+		String topLevelBuildURL = Environment.get("TOP_LEVEL_BUILD_URL");
 
 		if (!topLevelBuildURL.contains("(release)") &&
 			!topLevelBuildURL.contains(

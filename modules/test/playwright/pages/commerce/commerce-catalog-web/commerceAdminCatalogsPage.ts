@@ -12,9 +12,13 @@ export class CommerceAdminCatalogsPage {
 	readonly globalMenuPage: GlobalMenuPage;
 	readonly catalogActionsButton: (catalogName: string) => Locator;
 	readonly catalogId: Locator;
+	readonly catalogLink: (name: string) => Locator;
 	readonly catalogSaveButton: Locator;
+	readonly deleteMenuItem: Locator;
 	readonly modalFieldName: Locator;
 	readonly modalFrameLocator: FrameLocator;
+	readonly modalLinkSupplierAutocomplete: Locator;
+	readonly modalLinkSupplierDropdownItem: (name: string) => Locator;
 	readonly modalSubmitButton: Locator;
 	readonly page: Page;
 	readonly permissionsFrame: FrameLocator;
@@ -31,13 +35,26 @@ export class CommerceAdminCatalogsPage {
 				name: `${catalogName} Actions`,
 			});
 		this.catalogId = page.locator('span:has-text("ID")+strong');
+		this.catalogLink = (name: string) =>
+			page.getByRole('link', {exact: true, name});
 		this.catalogSaveButton = page.getByRole('link', {
 			exact: true,
 			name: 'Save',
 		});
+		this.deleteMenuItem = page.getByRole('menuitem', {
+			exact: true,
+			name: 'Delete',
+		});
 		this.modalFrameLocator = page.frameLocator('.fds-modal-body iframe');
 		this.modalFieldName =
 			this.modalFrameLocator.getByLabel('Name Required');
+		this.modalLinkSupplierAutocomplete = this.modalFrameLocator
+			.locator('#link-account-entry-autocomplete-root input[type="text"]')
+			.first();
+		this.modalLinkSupplierDropdownItem = (name: string) =>
+			this.modalFrameLocator
+				.locator('.autocomplete-dropdown-menu')
+				.getByText(name, {exact: true});
 		this.modalSubmitButton = this.modalFrameLocator.getByRole('button', {
 			exact: true,
 			name: 'Submit',

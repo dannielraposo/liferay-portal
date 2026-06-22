@@ -1,15 +1,15 @@
 {
 	"dependencies": {
-		"@clayui/alert": "^3.161.0",
-		"@clayui/button": "^3.161.0",
-		"@clayui/data-provider": "^3.161.0",
-		"@clayui/form": "^3.161.0",
-		"@clayui/icon": "^3.161.0",
-		"@clayui/layout": "^3.161.0",
-		"@clayui/loading-indicator": "^3.161.0",
-		"@clayui/modal": "^3.161.0",
-		"@clayui/multi-select": "^3.161.0",
-		"@clayui/sticker": "^3.161.0",
+		"@clayui/alert": "^3.165.0",
+		"@clayui/button": "^3.165.0",
+		"@clayui/data-provider": "^3.165.0",
+		"@clayui/form": "^3.165.0",
+		"@clayui/icon": "^3.165.0",
+		"@clayui/layout": "^3.165.0",
+		"@clayui/loading-indicator": "^3.165.0",
+		"@clayui/modal": "^3.165.0",
+		"@clayui/multi-select": "^3.165.0",
+		"@clayui/sticker": "^3.165.0",
 		"@liferay/frontend-js-react-web": "*",
 		"classnames": "2.3.1",
 		"frontend-js-components-web": "*",
@@ -24,5 +24,5 @@
 		"checkFormat": "node-scripts format --check",
 		"format": "node-scripts format"
 	},
-	"version": "3.0.98"
+	"version": "3.0.100"
 }

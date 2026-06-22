@@ -988,6 +988,7 @@ test.describe('Manage object definitions through View Object Definitions', () =>
 
 	test('can delete an object definition by FDS action', async ({
 		apiHelpers,
+		page,
 		viewObjectDefinitionsPage,
 	}) => {
 		const objectDefinition1 =
@@ -1000,12 +1001,21 @@ test.describe('Manage object definitions through View Object Definitions', () =>
 				status: {code: 2},
 			});
 
+		const objectDefinition3 =
+			await apiHelpers.objectAdmin.postRandomObjectDefinition({
+				status: {code: 0},
+			});
+
 		apiHelpers.data.push({
 			id: objectDefinition1.id,
 			type: 'objectDefinition',
 		});
 		apiHelpers.data.push({
 			id: objectDefinition2.id,
+			type: 'objectDefinition',
+		});
+		apiHelpers.data.push({
+			id: objectDefinition3.id,
 			type: 'objectDefinition',
 		});
 
@@ -1026,6 +1036,27 @@ test.describe('Manage object definitions through View Object Definitions', () =>
 			1
 		);
 
+		await viewObjectDefinitionsPage.clickObjectDefinitionActionButton(
+			objectDefinition3.label!['en_US']
+		);
+
+		await viewObjectDefinitionsPage.deleteObjectDefinitionOption.click();
+
+		await page
+			.getByPlaceholder('Confirm Object Definition Name')
+			.fill(objectDefinition3.name!);
+
+		await page.getByRole('button', {exact: true, name: 'Delete'}).click();
+
+		apiHelpers.data.splice(
+			apiHelpers.data.findIndex(
+				(object) =>
+					object.id === objectDefinition3.id &&
+					object.type === 'objectDefinition'
+			),
+			1
+		);
+
 		await expect(
 			viewObjectDefinitionsPage.frontendDataSetEntries.filter({
 				hasText: objectDefinition1.label['en_US'],
@@ -1035,6 +1066,12 @@ test.describe('Manage object definitions through View Object Definitions', () =>
 		await expect(
 			viewObjectDefinitionsPage.frontendDataSetEntries.filter({
 				hasText: objectDefinition2.label['en_US'],
+			})
+		).toBeHidden();
+
+		await expect(
+			viewObjectDefinitionsPage.frontendDataSetEntries.filter({
+				hasText: objectDefinition3.label!['en_US'],
 			})
 		).toBeHidden();
 	});
@@ -1202,6 +1239,32 @@ test.describe('Manage object definitions through View Object Definitions', () =>
 			pluralLabel
 		);
 	});
+
+	test(
+		'can set Title Field for a system object',
+		{tag: '@LPS-145393'},
+		async ({apiHelpers: _apiHelpers, editObjectDetailsPage, page}) => {
+			await editObjectDetailsPage.goto('User');
+
+			await editObjectDetailsPage.goToDetailsTab();
+
+			await editObjectDetailsPage.entryTitleField.click();
+
+			await page
+				.getByRole('option', {exact: true, name: 'Screen Name'})
+				.click();
+
+			await editObjectDetailsPage.saveObjectDefinition();
+
+			await editObjectDetailsPage.goto('User');
+
+			await editObjectDetailsPage.goToDetailsTab();
+
+			await expect(editObjectDetailsPage.entryTitleField).toContainText(
+				'Screen Name'
+			);
+		}
+	);
 
 	test('can update editable fields and cannot update disabled fields after publishing', async ({
 		apiHelpers,
@@ -1506,6 +1569,91 @@ test.describe('Manage object definitions through View Object Definitions', () =>
 		}
 	});
 
+	test(
+		'delete modal shows the number of object entries that will be deleted',
+		{tag: '@LPS-150886'},
+		async ({apiHelpers, page, viewObjectDefinitionsPage}) => {
+			const objectFields = generateObjectFields({
+				objectFieldBusinessTypes: ['Text'],
+			});
+
+			const objectDefinition =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					objectFields,
+					status: {code: 0},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+
+			const applicationName =
+				'c/' + objectDefinition.name!.toLowerCase() + 's';
+			const fieldName = objectFields[0].name!;
+
+			await apiHelpers.objectEntry.postObjectEntry(
+				{[fieldName]: 'Entry A'},
+				applicationName
+			);
+
+			await apiHelpers.objectEntry.postObjectEntry(
+				{[fieldName]: 'Entry B'},
+				applicationName
+			);
+
+			await viewObjectDefinitionsPage.goto();
+
+			await viewObjectDefinitionsPage.clickObjectDefinitionActionButton(
+				objectDefinition.label!['en_US']
+			);
+
+			await viewObjectDefinitionsPage.deleteObjectDefinitionOption.click();
+
+			await expect(
+				page.getByText('Delete Object Definition')
+			).toBeVisible();
+
+			await expect(page.getByText('2 object entries')).toBeVisible();
+		}
+	);
+
+	test(
+		'cannot delete a published object definition with a mismatched confirmation name',
+		{tag: '@LPS-150886'},
+		async ({apiHelpers, page, viewObjectDefinitionsPage}) => {
+			const objectDefinition =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					status: {code: 0},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+
+			await viewObjectDefinitionsPage.goto();
+
+			await viewObjectDefinitionsPage.clickObjectDefinitionActionButton(
+				objectDefinition.label!['en_US']
+			);
+
+			await viewObjectDefinitionsPage.deleteObjectDefinitionOption.click();
+
+			await page
+				.getByPlaceholder('Confirm Object Definition Name', {
+					exact: false,
+				})
+				.fill('WrongValue');
+
+			await expect(page.getByText('Input does not match')).toBeVisible();
+
+			await expect(
+				page.getByRole('button', {exact: true, name: 'Delete'})
+			).toBeDisabled();
+		}
+	);
+
 	test('cannot publish an object without the publish permission', async ({
 		apiHelpers,
 		editObjectDetailsPage,
@@ -1659,6 +1807,208 @@ test.describe('Manage object definitions through View Object Definitions', () =>
 		await editObjectDetailsPage.saveButton.click();
 
 		await expect(page.getByText('Required')).toBeVisible();
+	});
+
+	const titleFieldTest = test.extend<{
+		restoreAccountEntryTitleFieldAndDefaultLanguage: void;
+	}>({
+		restoreAccountEntryTitleFieldAndDefaultLanguage: async (
+			{editObjectDetailsPage, localizationInstanceSettingsPage, page},
+			use
+		) => {
+			try {
+				await use();
+			}
+			finally {
+				await localizationInstanceSettingsPage.goto('Language', false);
+
+				await localizationInstanceSettingsPage.setDefaultLanguage(
+					'en_US'
+				);
+
+				await editObjectDetailsPage.goto('Account');
+
+				await editObjectDetailsPage.selectEntryTitleField('Name');
+
+				await editObjectDetailsPage.saveObjectDefinition();
+
+				await waitForAlert(page, 'The object was saved successfully.');
+			}
+		},
+	});
+
+	titleFieldTest(
+		'verify object entries display the new title field correctly when changing the localization on Instance Settings',
+		async ({
+			apiHelpers,
+			editObjectDetailsPage,
+			localizationInstanceSettingsPage,
+			page,
+			restoreAccountEntryTitleFieldAndDefaultLanguage:
+				_restoreAccountEntryTitleFieldAndDefaultLanguage,
+			viewObjectEntriesPage,
+		}) => {
+			let objectDefinition: ObjectDefinition;
+			let relationshipLabel: string;
+			let relationshipName: string;
+
+			await test.step('Create an Account and a Custom Object with a Relationship 1toM of Account to Custom Object', async () => {
+				await apiHelpers.headlessAdminUser.postAccount({
+					type: 'business',
+				});
+
+				const objectFields = generateObjectFields({
+					objectFieldBusinessTypes: ['Text'],
+				});
+
+				objectDefinition =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						objectFields,
+						status: {code: 0},
+					});
+
+				apiHelpers.data.push({
+					id: objectDefinition.id,
+					type: 'objectDefinition',
+				});
+
+				const objectRelationshipAPIClient =
+					await apiHelpers.buildRestClient(ObjectRelationshipAPI);
+
+				relationshipLabel = 'Relationship';
+				relationshipName = 'relationship' + getRandomInt();
+
+				await objectRelationshipAPIClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
+					'L_ACCOUNT',
+					{
+						label: {en_US: relationshipLabel},
+						name: relationshipName,
+						objectDefinitionExternalReferenceCode2:
+							objectDefinition.externalReferenceCode,
+						objectDefinitionId2: objectDefinition.id,
+						objectDefinitionName2: objectDefinition.name,
+						type: 'oneToMany',
+					}
+				);
+			});
+
+			await test.step('Change the default language to Portuguese', async () => {
+				await localizationInstanceSettingsPage.goto('Language');
+
+				await localizationInstanceSettingsPage.setDefaultLanguage(
+					'pt_BR'
+				);
+			});
+
+			await test.step('Change the title field in the "Account" system object', async () => {
+				await editObjectDetailsPage.goto('Account');
+
+				await editObjectDetailsPage.selectEntryTitleField('Type');
+
+				await editObjectDetailsPage.saveObjectDefinition();
+
+				await waitForAlert(page, 'The object was saved successfully.');
+			});
+
+			await test.step('Create an entry using the title field selected', async () => {
+				await viewObjectEntriesPage.goto(objectDefinition.className!);
+
+				await viewObjectEntriesPage.clickAddObjectEntry(
+					objectDefinition.label!['en_US']
+				);
+
+				await page
+					.locator('.form-group', {hasText: relationshipLabel})
+					.getByPlaceholder('Search')
+					.click();
+
+				await page
+					.getByRole('menuitem', {name: /business/i})
+					.first()
+					.click();
+
+				await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+				await waitForAlert(page);
+			});
+
+			await test.step('Verify the title field of System Object is present', async () => {
+				await viewObjectEntriesPage.backButton.click();
+
+				await expect(
+					page.getByRole('cell', {name: /business/i}).first()
+				).toBeVisible();
+
+				await page
+					.getByRole('cell', {name: /business/i})
+					.first()
+					.click();
+
+				await expect(page.getByText(/business/i).first()).toBeVisible();
+			});
+		}
+	);
+
+	test('verify it is possible to update Custom Object when changing the localization on Instance Settings', async ({
+		apiHelpers,
+		editObjectDetailsPage,
+		localizationInstanceSettingsPage,
+		page,
+		restoreInstanceDefaultLanguage: _restoreInstanceDefaultLanguage,
+	}) => {
+		const newLabel = 'Objeto Personalizado ' + getRandomInt();
+		const newPluralLabel = 'Objetos Personalizados ' + getRandomInt();
+
+		let objectDefinition: ObjectDefinition;
+
+		await test.step('Create a custom object', async () => {
+			const objectFields = generateObjectFields({
+				objectFieldBusinessTypes: ['Text'],
+			});
+
+			objectDefinition =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					objectFields,
+					status: {code: 0},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+		});
+
+		await test.step('Change default language to Portuguese', async () => {
+			await localizationInstanceSettingsPage.goto('Language');
+
+			await localizationInstanceSettingsPage.defaultLanguageSelect.selectOption(
+				'pt_BR'
+			);
+
+			await localizationInstanceSettingsPage.saveSettings();
+		});
+
+		await test.step('Navigate to Object Admin and update the object label', async () => {
+			await editObjectDetailsPage.goto(objectDefinition.label['en_US']);
+
+			await editObjectDetailsPage.goToDetailsTab();
+
+			await editObjectDetailsPage.labelInput.fill(newLabel);
+			await editObjectDetailsPage.pluralLabelInput.fill(newPluralLabel);
+
+			await editObjectDetailsPage.saveObjectDefinition();
+
+			await waitForAlert(page, 'The object was saved successfully.');
+		});
+
+		await test.step('Assert the object label and plural label were updated', async () => {
+			await expect(editObjectDetailsPage.labelInput).toHaveValue(
+				newLabel
+			);
+			await expect(editObjectDetailsPage.pluralLabelInput).toHaveValue(
+				newPluralLabel
+			);
+		});
 	});
 
 	test(

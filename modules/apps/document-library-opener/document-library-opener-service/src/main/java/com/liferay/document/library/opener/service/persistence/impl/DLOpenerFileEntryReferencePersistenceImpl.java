@@ -16,7 +16,6 @@ import com.liferay.document.library.opener.service.persistence.impl.constants.DL
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -76,9 +75,9 @@ public class DLOpenerFileEntryReferencePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByFileEntryId;
-	private UniquePersistenceFinder<DLOpenerFileEntryReference>
-		_uniquePersistenceFinderByFileEntryId;
+	private UniquePersistenceFinder
+		<DLOpenerFileEntryReference, NoSuchFileEntryReferenceException>
+			_uniquePersistenceFinderByFileEntryId;
 
 	/**
 	 * Returns the dl opener file entry reference where fileEntryId = &#63; or throws a <code>NoSuchFileEntryReferenceException</code> if it could not be found.
@@ -91,33 +90,8 @@ public class DLOpenerFileEntryReferencePersistenceImpl
 	public DLOpenerFileEntryReference findByFileEntryId(long fileEntryId)
 		throws NoSuchFileEntryReferenceException {
 
-		DLOpenerFileEntryReference dlOpenerFileEntryReference =
-			fetchByFileEntryId(fileEntryId);
-
-		if (dlOpenerFileEntryReference == null) {
-			String message =
-				_uniquePersistenceFinderByFileEntryId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {fileEntryId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFileEntryReferenceException(message);
-		}
-
-		return dlOpenerFileEntryReference;
-	}
-
-	/**
-	 * Returns the dl opener file entry reference where fileEntryId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param fileEntryId the file entry ID
-	 * @return the matching dl opener file entry reference, or <code>null</code> if a matching dl opener file entry reference could not be found
-	 */
-	@Override
-	public DLOpenerFileEntryReference fetchByFileEntryId(long fileEntryId) {
-		return fetchByFileEntryId(fileEntryId, true);
+		return _uniquePersistenceFinderByFileEntryId.find(
+			finderCache, new Object[] {fileEntryId});
 	}
 
 	/**
@@ -163,9 +137,9 @@ public class DLOpenerFileEntryReferencePersistenceImpl
 			finderCache, new Object[] {fileEntryId});
 	}
 
-	private FinderPath _finderPathFetchByR_F;
-	private UniquePersistenceFinder<DLOpenerFileEntryReference>
-		_uniquePersistenceFinderByR_F;
+	private UniquePersistenceFinder
+		<DLOpenerFileEntryReference, NoSuchFileEntryReferenceException>
+			_uniquePersistenceFinderByR_F;
 
 	/**
 	 * Returns the dl opener file entry reference where referenceType = &#63; and fileEntryId = &#63; or throws a <code>NoSuchFileEntryReferenceException</code> if it could not be found.
@@ -180,37 +154,8 @@ public class DLOpenerFileEntryReferencePersistenceImpl
 			String referenceType, long fileEntryId)
 		throws NoSuchFileEntryReferenceException {
 
-		DLOpenerFileEntryReference dlOpenerFileEntryReference = fetchByR_F(
-			referenceType, fileEntryId);
-
-		if (dlOpenerFileEntryReference == null) {
-			String message =
-				_uniquePersistenceFinderByR_F.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {referenceType, fileEntryId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFileEntryReferenceException(message);
-		}
-
-		return dlOpenerFileEntryReference;
-	}
-
-	/**
-	 * Returns the dl opener file entry reference where referenceType = &#63; and fileEntryId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param referenceType the reference type
-	 * @param fileEntryId the file entry ID
-	 * @return the matching dl opener file entry reference, or <code>null</code> if a matching dl opener file entry reference could not be found
-	 */
-	@Override
-	public DLOpenerFileEntryReference fetchByR_F(
-		String referenceType, long fileEntryId) {
-
-		return fetchByR_F(referenceType, fileEntryId, true);
+		return _uniquePersistenceFinderByR_F.find(
+			finderCache, new Object[] {referenceType, fileEntryId});
 	}
 
 	/**
@@ -490,32 +435,32 @@ public class DLOpenerFileEntryReferencePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByFileEntryId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByFileEntryId",
-			new String[] {Long.class.getName()}, new String[] {"fileEntryId"},
-			false, DLOpenerFileEntryReference::getFileEntryId);
-
 		_uniquePersistenceFinderByFileEntryId = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByFileEntryId,
-			_SQL_SELECT_DLOPENERFILEENTRYREFERENCE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByFileEntryId",
+				new String[] {Long.class.getName()},
+				new String[] {"fileEntryId"}, 0, 0, false,
+				DLOpenerFileEntryReference::getFileEntryId),
+			_SQL_SELECT_DLOPENERFILEENTRYREFERENCE_WHERE, "",
 			new FinderColumn<>(
 				"dlOpenerFileEntryReference.", "fileEntryId",
 				FinderColumn.Type.LONG, "=", true, true,
 				DLOpenerFileEntryReference::getFileEntryId));
 
-		_finderPathFetchByR_F = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByR_F",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"referenceType", "fileEntryId"}, false,
-			DLOpenerFileEntryReference::getReferenceType,
-			DLOpenerFileEntryReference::getFileEntryId);
-
 		_uniquePersistenceFinderByR_F = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByR_F,
-			_SQL_SELECT_DLOPENERFILEENTRYREFERENCE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByR_F",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"referenceType", "fileEntryId"}, 0, 1, false,
+				convertNullFunction(
+					DLOpenerFileEntryReference::getReferenceType),
+				DLOpenerFileEntryReference::getFileEntryId),
+			_SQL_SELECT_DLOPENERFILEENTRYREFERENCE_WHERE, "",
 			new FinderColumn<>(
 				"dlOpenerFileEntryReference.", "referenceType",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				DLOpenerFileEntryReference::getReferenceType),
 			new FinderColumn<>(
 				"dlOpenerFileEntryReference.", "fileEntryId",
@@ -564,9 +509,6 @@ public class DLOpenerFileEntryReferencePersistenceImpl
 	@Reference
 	protected FinderCache finderCache;
 
-	private static final String _ENTITY_ALIAS_PREFIX =
-		DLOpenerFileEntryReferenceModelImpl.ENTITY_ALIAS + ".";
-
 	private static final String _SQL_SELECT_DLOPENERFILEENTRYREFERENCE =
 		"SELECT dlOpenerFileEntryReference FROM DLOpenerFileEntryReference dlOpenerFileEntryReference";
 
@@ -588,4 +530,4 @@ public class DLOpenerFileEntryReferencePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-272543496
+// LIFERAY-SERVICE-BUILDER-HASH:-1454435667

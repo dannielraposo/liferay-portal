@@ -76,11 +76,12 @@ public abstract class BaseWishListResourceImpl
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/wishlists/{wishListId}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Deletes a wishlist by wishListId."
+		description = "Deletes the wish list at /wishlists/{wishListId} via CommerceWishListService.deleteCommerceWishList. Validation -- NoSuchWishListException -> 404 when the row is missing; PrincipalException -> 403 when the caller lacks DELETE permission."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CommerceWishList; raises 404 when missing or when the caller lacks VIEW permission.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "wishListId"
 			)
@@ -151,27 +152,32 @@ public abstract class BaseWishListResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/channels/by-externalReferenceCode/{externalReferenceCode}/wishlists'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves wishlists for a given channel."
+		description = "External-reference-code variant of getChannelWishListsPage. Resolves the CommerceChannel via CommerceChannelLocalService.getCommerceChannelByExternalReferenceCode and delegates to the numeric handler. Pagination behaves identically to the numeric variant; accountId and currencyCode are accepted for parity but not used in the query. Validation -- NoSuchChannelException -> 404 when the channel ERC is missing. List query support -- pagination only; filterable fields -- none."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code of the addressed CommerceChannel; raises 404 when no channel with this code exists in the company.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the AccountEntry the request is scoped to. When omitted, AccountUtil resolves the effective account from the authenticated user's commerce account assignments and channel eligibility; when the user has multiple accounts the explicit value is required (NoSuchEntryException otherwise).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "accountId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "ISO 4217 currency code applied to the request's CommerceContext for price resolution. When omitted, the channel's default currency is used; a non-active currency raises 422.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "currencyCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index for paginated results. Combine with pageSize to walk pages; when omitted the server returns page 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. When omitted the server applies the configured default page size; the maximum page size is bounded by the portal's PortalUtil.PROPS_REST_MAX_RETURN_SIZE.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			)
@@ -209,27 +215,32 @@ public abstract class BaseWishListResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/channels/{channelId}/wishlists'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves wishlists for a given channel."
+		description = "Lists CommerceWishList rows for /channels/{channelId}/wishlists. Loads the channel through fetchCommerceChannel and pages CommerceWishListService.getCommerceWishLists by the channel's site group. accountId and currencyCode are accepted on the request for parity with sibling endpoints but are not currently used in the query. Validation -- NoSuchChannelException -> 404 when the channelId does not resolve. List query support -- pagination only; filterable fields -- none."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CommerceChannel; raises 404 when no channel with this primary key exists.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the AccountEntry the request is scoped to. When omitted, AccountUtil resolves the effective account from the authenticated user's commerce account assignments and channel eligibility; when the user has multiple accounts the explicit value is required (NoSuchEntryException otherwise).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "accountId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "ISO 4217 currency code applied to the request's CommerceContext for price resolution. When omitted, the channel's default currency is used; a non-active currency raises 422.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "currencyCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index for paginated results. Combine with pageSize to walk pages; when omitted the server returns page 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. When omitted the server applies the configured default page size; the maximum page size is bounded by the portal's PortalUtil.PROPS_REST_MAX_RETURN_SIZE.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			)
@@ -265,11 +276,12 @@ public abstract class BaseWishListResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/wishlists/{wishListId}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves a wishlist by wishListId."
+		description = "Returns the wish list at /wishlists/{wishListId} via CommerceWishListService.getCommerceWishList. Validation -- NoSuchWishListException -> 404 when the row is missing; PrincipalException -> 403 when the caller lacks VIEW permission."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CommerceWishList; raises 404 when missing or when the caller lacks VIEW permission.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "wishListId"
 			)
@@ -297,13 +309,18 @@ public abstract class BaseWishListResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/wishlists/{wishListId}' -d $'{"defaultWishList": ___, "id": ___, "name": ___, "wishListItems": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Updates the wish list at /wishlists/<wishListId>. Not a JSON Merge Patch -- the handler performs a manual GetterUtil.getString/getBoolean fallback merge for name and defaultWishList before calling CommerceWishListService.updateCommerceWishList. Validation -- NoSuchWishListException -> 404 when the row is missing; PrincipalException -> 403 when the caller lacks UPDATE permission. Side effects -- When the body includes wishListItems, deletes the existing items via CommerceWishListItemService.deleteCommerceWishListItems and re-adds each entry through WishListItemResource.postWishlistWishListWishListItem (upsert by (accountId, wishListId, cpInstanceUuid, productId))."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CommerceWishList; raises 404 when missing or when the caller lacks VIEW permission.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "wishListId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the AccountEntry the request is scoped to. When omitted, AccountUtil resolves the effective account from the authenticated user's commerce account assignments and channel eligibility; when the user has multiple accounts the explicit value is required (NoSuchEntryException otherwise).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "accountId"
 			)
@@ -336,13 +353,18 @@ public abstract class BaseWishListResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/channels/by-externalReferenceCode/{externalReferenceCode}/wishlists' -d $'{"defaultWishList": ___, "id": ___, "name": ___, "wishListItems": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "External-reference-code variant of postChannelWishList. Resolves the CommerceChannel by ERC and delegates to the numeric handler. Not an upsert -- CommerceWishListService.addCommerceWishList is always invoked, so the channel and account can hold multiple wish lists by name. Validation -- NoSuchChannelException -> 404 when the channel ERC is missing. Side effects -- Persists a new CommerceWishList row scoped to the channel's site group and the resolved account."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code of the addressed CommerceChannel; raises 404 when no channel with this code exists in the company.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the AccountEntry the request is scoped to. When omitted, AccountUtil resolves the effective account from the authenticated user's commerce account assignments and channel eligibility; when the user has multiple accounts the explicit value is required (NoSuchEntryException otherwise).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "accountId"
 			)
@@ -377,13 +399,18 @@ public abstract class BaseWishListResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/channels/{channelId}/wishlists' -d $'{"defaultWishList": ___, "id": ___, "name": ___, "wishListItems": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates a new CommerceWishList under /channels/<channelId>/wishlists via CommerceWishListService.addCommerceWishList scoped to the channel's site group, using the body's name and defaultWishList flag. Not an upsert at the wish-list level -- addCommerceWishList is always invoked, so a duplicate name within the same channel and account produces a second row. Validation -- None at the wish-list level (request shape is enforced by the service). Side effects -- When the body contains wishListItems, each is forwarded to WishListItemResource.postWishlistWishListWishListItem (an upsert by (accountId, wishListId, cpInstanceUuid, productId)) so the wish list is populated atomically."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CommerceChannel; raises 404 when no channel with this primary key exists.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the AccountEntry the request is scoped to. When omitted, AccountUtil resolves the effective account from the authenticated user's commerce account assignments and channel eligibility; when the user has multiple accounts the explicit value is required (NoSuchEntryException otherwise).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "accountId"
 			)
@@ -1129,4 +1156,4 @@ public abstract class BaseWishListResourceImpl
 		LogFactoryUtil.getLog(BaseWishListResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:2145340346
+// LIFERAY-REST-BUILDER-HASH:-1743906659

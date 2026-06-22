@@ -16,21 +16,24 @@ import usePreviewState from './usePreviewState';
 
 type Props = {
 	getPreviewDataURL: string;
+	languageId: Liferay.Language.Locale;
 	onCloseModal: () => void;
 	title: string;
 };
 
 export default function PreviewModal({
 	getPreviewDataURL,
+	languageId,
 	onCloseModal,
 	title,
 }: Props) {
 	const {
 		displayPageTemplates,
+		isDisplayPageTemplatesListEmpty,
 		previewURL,
-		showDisplayPageTemplateAlert,
+		setExternalURL,
 		...selectorProps
-	} = usePreviewState(getPreviewDataURL);
+	} = usePreviewState(getPreviewDataURL, languageId);
 
 	const {observer, onClose} = useModal({
 		onClose: onCloseModal,
@@ -46,11 +49,12 @@ export default function PreviewModal({
 				<PreviewSelectors
 					{...selectorProps}
 					displayPageTemplates={displayPageTemplates}
+					onBlurExternalURLInput={setExternalURL}
 					previewURL={previewURL}
 					vertical
 				/>
 
-				{showDisplayPageTemplateAlert ? (
+				{isDisplayPageTemplatesListEmpty ? (
 					<ClayAlert
 						className="mb-0 mt-3"
 						displayType="info"

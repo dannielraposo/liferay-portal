@@ -14,20 +14,30 @@ import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManagerProvider;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
+import com.liferay.sharing.model.SharingEntry;
+import com.liferay.sharing.service.SharingEntryLocalService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.osgi.service.component.annotations.Reference;
 
@@ -54,11 +64,15 @@ public abstract class BaseFDSSerializer {
 		ObjectEntryThreadLocal.setSkipObjectEntryResourcePermission(true);
 
 		try {
+			List<ObjectEntry> ownedObjectEntries = new ArrayList<>();
+			List<ObjectEntry> sharedObjectEntries = new ArrayList<>();
+
+			long companyId = PortalUtil.getCompanyId(httpServletRequest);
+
 			ObjectDefinition objectDefinition =
 				objectDefinitionLocalService.
 					fetchObjectDefinitionByExternalReferenceCode(
-						"L_DATA_SET_SNAPSHOT",
-						PortalUtil.getCompanyId(httpServletRequest));
+						"L_DATA_SET_SNAPSHOT", companyId);
 
 			ObjectEntryManager objectEntryManager =
 				DefaultObjectEntryManagerProvider.provide(
@@ -66,33 +80,61 @@ public abstract class BaseFDSSerializer {
 						objectDefinition.getCompanyId(),
 						objectDefinition.getStorageType()));
 
+			long userId = PortalUtil.getUserId(httpServletRequest);
+
+			List<SharingEntry> sharingEntries =
+				sharingEntryLocalService.getToUserSharingEntries(
+					userId,
+					classNameLocalService.getClassNameId(
+						objectDefinition.getClassName()));
+
+			Set<Long> sharingEntriesClassPKs = SetUtil.fromCollection(
+				TransformUtil.transform(
+					sharingEntries, SharingEntry::getClassPK));
+
 			Page<ObjectEntry> page = objectEntryManager.getObjectEntries(
-				PortalUtil.getCompanyId(httpServletRequest), objectDefinition,
-				null, null,
+				companyId, objectDefinition, null, null,
 				new DefaultDTOConverterContext(
 					false, null, null, null, null,
 					LocaleUtil.getMostRelevantLocale(), null, null),
-				StringBundler.concat(
-					"(fdsName eq '", fdsName, "' and creatorId eq ",
-					PortalUtil.getUserId(httpServletRequest), ")"),
-				null, null, null);
+				_getFilterString(fdsName, sharingEntriesClassPKs, userId), null,
+				null, null);
 
-			Collection<ObjectEntry> objectEntries = page.getItems();
+			for (ObjectEntry objectEntry : page.getItems()) {
+				if (sharingEntriesClassPKs.contains(objectEntry.getId())) {
+					sharedObjectEntries.add(objectEntry);
+				}
+				else {
+					ownedObjectEntries.add(objectEntry);
+				}
+			}
 
-			return JSONUtil.toJSONArray(
-				objectEntries,
-				(ObjectEntry objectEntry) -> {
-					Map<String, Object> properties =
-						objectEntry.getProperties();
+			JSONArray jsonArray = JSONUtil.putAll(
+				JSONUtil.put(
+					"headerVisible", false
+				).put(
+					"items", _toJSONArray(ownedObjectEntries)
+				).put(
+					"label",
+					language.get(
+						PortalUtil.getLocale(httpServletRequest), "owned")
+				));
 
-					return JSONUtil.put(
-						"configuration", properties.get("viewConfig")
+			if (!sharedObjectEntries.isEmpty()) {
+				jsonArray.put(
+					JSONUtil.put(
+						"headerVisible", true
 					).put(
-						"erc", objectEntry.getExternalReferenceCode()
+						"items", _toJSONArray(sharedObjectEntries)
 					).put(
-						"label", String.valueOf(properties.get("label"))
-					);
-				});
+						"label",
+						language.get(
+							PortalUtil.getLocale(httpServletRequest),
+							"shared-with-me")
+					));
+			}
+
+			return jsonArray;
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -107,7 +149,63 @@ public abstract class BaseFDSSerializer {
 	}
 
 	@Reference
+	protected ClassNameLocalService classNameLocalService;
+
+	@Reference
 	protected FDSAPIURLResolverRegistry fdsAPIURLResolverRegistry;
+
+	@Reference
+	protected Language language;
+
+	@Reference
+	protected SharingEntryLocalService sharingEntryLocalService;
+
+	private String _getFilterString(
+		String fdsName, Set<Long> sharingEntriesClassPKs, long userId) {
+
+		StringBundler sb = new StringBundler(8);
+
+		sb.append("(fdsName eq '");
+		sb.append(fdsName);
+		sb.append("' and (creatorId eq ");
+		sb.append(userId);
+
+		if (!sharingEntriesClassPKs.isEmpty()) {
+			sb.append(" or id in ('");
+			sb.append(StringUtil.merge(sharingEntriesClassPKs, "','"));
+			sb.append("')");
+		}
+
+		sb.append("))");
+
+		return sb.toString();
+	}
+
+	private JSONArray _toJSONArray(List<ObjectEntry> objectEntries)
+		throws Exception {
+
+		return JSONUtil.toJSONArray(
+			objectEntries,
+			(ObjectEntry objectEntry) -> {
+				Map<String, Object> properties = objectEntry.getProperties();
+
+				Object viewConfig = properties.get("viewConfig");
+
+				if (Validator.isNull(viewConfig)) {
+					return null;
+				}
+
+				return JSONUtil.put(
+					"configuration", viewConfig
+				).put(
+					"erc", objectEntry.getExternalReferenceCode()
+				).put(
+					"id", objectEntry.getId()
+				).put(
+					"label", String.valueOf(properties.get("label"))
+				);
+			});
+	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		BaseFDSSerializer.class);

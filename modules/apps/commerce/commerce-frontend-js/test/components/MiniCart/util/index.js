@@ -10,6 +10,7 @@ import {
 	ORDER_UUID_PARAMETER,
 } from '../../../../src/main/resources/META-INF/resources/components/mini_cart/util/constants';
 import {
+	filterOptions,
 	hasErrors,
 	parseOptions,
 	summaryDataMapper,
@@ -21,6 +22,25 @@ jest.mock(
 );
 
 describe('MiniCart tests_utilities', () => {
+	describe('filterOptions', () => {
+		it('parses the options JSON string and keeps only options with a truthy value', () => {
+			const OPTIONS_JSON = JSON.stringify([
+				{key: 'size', value: ['L']},
+				{key: 'empty', value: []},
+				{key: 'blank', value: ['']},
+			]);
+
+			expect(filterOptions(OPTIONS_JSON)).toEqual([
+				{key: 'size', value: ['L']},
+			]);
+		});
+
+		it('returns an empty array when the input is not valid options JSON', () => {
+			expect(filterOptions('/fail]')).toEqual([]);
+			expect(filterOptions(null)).toEqual([]);
+		});
+	});
+
 	describe('hasErrors', () => {
 		it('returns true if at least one cart item contains error messages', () => {
 			const CART_ITEMS = [
@@ -39,25 +59,19 @@ describe('MiniCart tests_utilities', () => {
 		});
 	});
 
-	describe.skip('parseOptions', () => {
-		it('parses and formats a JSON string input to an options list string', () => {
-			const VALID_JSON_INPUT = `[
-				{
-					"key": "package-quantity", 
-					"value": "24"
-				},
-				{
-					"key": "size", 
-					"value": "L"
-				}
-			]`;
+	describe('parseOptions', () => {
+		it('parses and formats an array of {value} entries to a comma-separated options list string', () => {
+			const PARSED_OPTIONS = [
+				{key: 'package-quantity', value: '24'},
+				{key: 'size', value: 'L'},
+			];
 
-			expect(parseOptions(VALID_JSON_INPUT)).toEqual('24, L');
+			expect(parseOptions(PARSED_OPTIONS)).toEqual('24, L');
 		});
 
-		it('returns an empty string when input is neither valid JSON nor a JSON-parsed array', () => {
-			expect(parseOptions(null)).toEqual('');
-			expect(parseOptions('/fail]')).toEqual('');
+		it('passes a non-array input through unchanged (graceful fall-through)', () => {
+			expect(parseOptions(null)).toBeNull();
+			expect(parseOptions('/fail]')).toEqual('/fail]');
 		});
 	});
 
@@ -193,6 +207,44 @@ describe('MiniCart tests_utilities', () => {
 				{label: 'order-discount', value: '$ 0.00'},
 				{label: 'total', style: 'big', value: '$ 1,858.50'},
 			]);
+		});
+
+		describe('discount-to-subtotal and discount-to-total rows', () => {
+			it('surfaces the subtotal discount value in the subtotal-discount row', () => {
+				const rows = summaryDataMapper({
+					...SUMMARY_SAMPLE,
+					subtotalDiscountValue: 25.0,
+					subtotalDiscountValueFormatted: '$ 25.00',
+					total: 1833.5,
+					totalFormatted: '$ 1,833.50',
+				});
+
+				const subtotalDiscountRow = rows.find(
+					(row) => row.label === 'subtotal-discount'
+				);
+				const totalRow = rows.find((row) => row.label === 'total');
+
+				expect(subtotalDiscountRow.value).toBe('$ 25.00');
+				expect(totalRow.value).toBe('$ 1,833.50');
+			});
+
+			it('surfaces the order-level discount value in the order-discount row', () => {
+				const rows = summaryDataMapper({
+					...SUMMARY_SAMPLE,
+					total: 1758.5,
+					totalDiscountValue: 100.0,
+					totalDiscountValueFormatted: '$ 100.00',
+					totalFormatted: '$ 1,758.50',
+				});
+
+				const orderDiscountRow = rows.find(
+					(row) => row.label === 'order-discount'
+				);
+				const totalRow = rows.find((row) => row.label === 'total');
+
+				expect(orderDiscountRow.value).toBe('$ 100.00');
+				expect(totalRow.value).toBe('$ 1,758.50');
+			});
 		});
 	});
 });

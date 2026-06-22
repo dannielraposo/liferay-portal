@@ -1,6 +1,7 @@
 import * as Constants from 'shared/util/constants';
 import mockStore from 'test/mock-store';
 import React from 'react';
+import {ENABLE_BLOCKLIST_KEYWORDS} from 'shared/util/feature-flags';
 import {Overview} from '../Overview';
 import {Provider} from 'react-redux';
 import {render} from '@testing-library/react';
@@ -55,7 +56,7 @@ describe('Definitions Overview', () => {
 			container.querySelectorAll('.list-group-title a')[5]
 		).toHaveTextContent('Search');
 
-		if (Constants.ENABLE_BLOCKLIST_KEYWORDS) {
+		if (ENABLE_BLOCKLIST_KEYWORDS) {
 			expect(
 				container.querySelectorAll('.list-group-title a')[6]
 			).toHaveTextContent('Interests');

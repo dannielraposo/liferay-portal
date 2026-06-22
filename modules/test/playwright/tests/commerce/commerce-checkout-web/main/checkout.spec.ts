@@ -401,11 +401,9 @@ test(
 	}) => {
 		test.setTimeout(180000);
 
-		const site = await apiHelpers.headlessSite.createSite({
+		const site = await apiHelpers.headlessAdminSite.postSite({
 			name: getRandomString(),
 		});
-
-		apiHelpers.data.push({id: site.externalReferenceCode, type: 'site'});
 
 		const channel =
 			await apiHelpers.headlessCommerceAdminChannel.postChannel({
@@ -1058,7 +1056,7 @@ test(
 			await waitForAlert(page);
 
 			await commerceAdminWarehouseEligibilityPage.linkTab.click();
-			await commerceAdminWarehouseEligibilityPage.specificChannelRadio.click();
+			await commerceAdminWarehouseEligibilityPage.specificChannelsRadio.click();
 			await commerceAdminWarehouseEligibilityPage.addChannels.fill(
 				channel.name
 			);

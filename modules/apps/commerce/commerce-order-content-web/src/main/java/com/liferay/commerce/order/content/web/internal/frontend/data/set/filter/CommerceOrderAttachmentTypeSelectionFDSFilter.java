@@ -16,6 +16,7 @@ import com.liferay.list.type.service.ListTypeEntryLocalService;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +40,7 @@ public class CommerceOrderAttachmentTypeSelectionFDSFilter
 
 	@Override
 	public String getEntityFieldType() {
-		return FDSEntityFieldTypes.COLLECTION;
+		return FDSEntityFieldTypes.STRING;
 	}
 
 	@Override
@@ -71,7 +72,8 @@ public class CommerceOrderAttachmentTypeSelectionFDSFilter
 				listTypeDefinition.getListTypeDefinitionId(), QueryUtil.ALL_POS,
 				QueryUtil.ALL_POS),
 			listTypeEntry -> new SelectionFDSFilterItem(
-				listTypeEntry.getName(locale), listTypeEntry.getKey()));
+				listTypeEntry.getName(locale),
+				StringUtil.toLowerCase(listTypeEntry.getKey())));
 	}
 
 	@Override

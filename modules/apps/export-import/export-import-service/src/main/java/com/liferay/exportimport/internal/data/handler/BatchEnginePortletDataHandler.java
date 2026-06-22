@@ -63,6 +63,7 @@ import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.staging.StagingGroupHelper;
@@ -208,9 +209,11 @@ public class BatchEnginePortletDataHandler extends BasePortletDataHandler {
 		Set<String> classNames = new LinkedHashSet<>();
 
 		for (Registration registration : _registrations) {
-			classNames.add(
-				registration.getExportImportDescriptor(
-				).getModelClassName());
+			ExportImportVulcanBatchEngineTaskItemDelegate.ExportImportDescriptor
+				exportImportDescriptor =
+					registration.getExportImportDescriptor();
+
+			classNames.add(exportImportDescriptor.getModelClassName());
 		}
 
 		return classNames.toArray(new String[0]);
@@ -253,6 +256,28 @@ public class BatchEnginePortletDataHandler extends BasePortletDataHandler {
 	@Override
 	public String getSchemaVersion() {
 		return SCHEMA_VERSION;
+	}
+
+	@Override
+	public String getSectionKey() {
+		Set<String> sectionKeys = SetUtil.fromList(
+			TransformUtil.transform(
+				_registrations,
+				registration -> {
+					ExportImportVulcanBatchEngineTaskItemDelegate.
+						ExportImportDescriptor exportImportDescriptor =
+							registration.getExportImportDescriptor();
+
+					return exportImportDescriptor.getSectionKey();
+				}));
+
+		if (sectionKeys.isEmpty()) {
+			return super.getSectionKey();
+		}
+
+		Iterator<String> iterator = sectionKeys.iterator();
+
+		return iterator.next();
 	}
 
 	@Override

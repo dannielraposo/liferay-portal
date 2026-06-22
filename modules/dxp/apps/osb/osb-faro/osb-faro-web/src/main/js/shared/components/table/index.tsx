@@ -129,6 +129,18 @@ const Table: React.FC<ITableProps> = ({
 		);
 	};
 
+	const itemsSorted = internalSort ? sortItems(items) : items;
+
+	const rootClassName = getCN('flex-grow-1 mx-4 table-root', className);
+
+	if (loading) {
+		return (
+			<div className={rootClassName}>
+				<Loading spacer />
+			</div>
+		);
+	}
+
 	const classes = getCN(
 		'table',
 		'table-autofit',
@@ -143,10 +155,8 @@ const Table: React.FC<ITableProps> = ({
 		}
 	);
 
-	const itemsSorted = internalSort ? sortItems(items) : items;
-
 	return (
-		<div className={getCN('flex-grow-1 mx-4 table-root', className)}>
+		<div className={rootClassName}>
 			<div className='table-responsive'>
 				<table className={classes}>
 					<HeaderRow
@@ -216,8 +226,6 @@ const Table: React.FC<ITableProps> = ({
 						</tbody>
 					)}
 				</table>
-
-				{loading && <Loading overlay />}
 			</div>
 		</div>
 	);

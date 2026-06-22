@@ -261,6 +261,17 @@ public class SharingEntryLocalServiceWrapper
 				externalReferenceCode, groupId);
 	}
 
+	@Override
+	public void deleteToTicketSharingEntries(long toTicketId) {
+		_sharingEntryLocalService.deleteToTicketSharingEntries(toTicketId);
+	}
+
+	@Override
+	public void deleteToUserGroupSharingEntries(long toUserGroupId) {
+		_sharingEntryLocalService.deleteToUserGroupSharingEntries(
+			toUserGroupId);
+	}
+
 	/**
 	 * Deletes the sharing entries for resources shared with the user.
 	 *
@@ -737,6 +748,21 @@ public class SharingEntryLocalServiceWrapper
 			uuid, groupId);
 	}
 
+	@Override
+	public java.util.List<com.liferay.sharing.model.SharingEntry>
+		getToTicketSharingEntries(long toTicketId) {
+
+		return _sharingEntryLocalService.getToTicketSharingEntries(toTicketId);
+	}
+
+	@Override
+	public java.util.List<com.liferay.sharing.model.SharingEntry>
+		getToUserGroupSharingEntries(long toUserGroupId) {
+
+		return _sharingEntryLocalService.getToUserGroupSharingEntries(
+			toUserGroupId);
+	}
+
 	/**
 	 * Returns the list of sharing entries for resources shared with the user.
 	 *
@@ -981,4 +1007,4 @@ public class SharingEntryLocalServiceWrapper
 	private SharingEntryLocalService _sharingEntryLocalService;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1457849249
+// LIFERAY-SERVICE-BUILDER-HASH:-612691477

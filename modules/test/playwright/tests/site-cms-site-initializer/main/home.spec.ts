@@ -17,12 +17,13 @@ import performLogin, {
 	performLoginViaApi,
 	performLogout,
 	performUserSwitch,
+	performUserSwitchViaApi,
 	userData,
 } from '../../../utils/performLogin';
+import {SITE_CMS_SPACE_EXTERNAL_REFERENCE_CODE} from '../../setup/site-cms-site/constants/space';
 import {structureBuilderPagesTest} from '../structure-builder/fixtures/structureBuilderPagesTest';
 import {cmsPagesTest} from './fixtures/cmsPagesTest';
 import {DataSetPage} from './pages/DataSetPage';
-import {SpaceSummaryPage} from './pages/SpaceSummaryPage';
 
 const test = mergeTests(
 	cmsPagesTest,
@@ -72,18 +73,21 @@ test.beforeAll(async ({browser}) => {
 		surname: spaceUser.familyName,
 	};
 
-	const spaceSummaryPage = new SpaceSummaryPage(page);
-
-	await spaceSummaryPage.goto('Default');
-
-	await spaceSummaryPage.addUserOrUserGroup(spaceAdminUser.name, 'users');
-
-	await spaceSummaryPage.addRoleToSpaceMember(
-		'Space Administrator',
-		spaceAdminUser.name
+	await apiHelpers.headlessAssetLibrary.putAssetLibraryUserAccount(
+		SITE_CMS_SPACE_EXTERNAL_REFERENCE_CODE,
+		spaceAdminUser.externalReferenceCode
 	);
 
-	await spaceSummaryPage.addUserOrUserGroup(spaceUser.name, 'users');
+	await apiHelpers.headlessAssetLibrary.putAssetLibraryUserAccountRoles(
+		SITE_CMS_SPACE_EXTERNAL_REFERENCE_CODE,
+		spaceAdminUser.externalReferenceCode,
+		['Asset Library Administrator']
+	);
+
+	await apiHelpers.headlessAssetLibrary.putAssetLibraryUserAccount(
+		SITE_CMS_SPACE_EXTERNAL_REFERENCE_CODE,
+		spaceUser.externalReferenceCode
+	);
 
 	setupData = [...apiHelpers.data];
 
@@ -106,7 +110,7 @@ test.afterAll(async ({browser}) => {
 
 test(
 	'My Workflow Tasks full view preserves the back button when switching tabs',
-	{tag: '@LPD-78912'},
+	{tag: ['@LPD-78912', '@LPD-92859']},
 	async ({context, homePage, page}) => {
 		await homePage.goto();
 
@@ -121,8 +125,16 @@ test(
 
 		await fullViewPage.waitForLoadState();
 
-		const backButton = fullViewPage.getByRole('link', {
-			name: 'Return to Full Page',
+		const toolbar = fullViewPage.locator(
+			'.cms-control-menu.portlet-header'
+		);
+
+		await expect(
+			toolbar.getByRole('heading', {name: 'My Workflow Tasks'})
+		).toBeVisible();
+
+		const backButton = toolbar.getByRole('link', {
+			name: 'Back',
 		});
 
 		await expect(backButton).toBeVisible();
@@ -778,6 +790,61 @@ test(
 );
 
 test(
+	'Can view an asset from Recent Assets',
+	{tag: '@LPD-93228'},
+	async ({apiHelpers, homePage, page}) => {
+		const contentApplicationName = 'cms/basic-web-contents';
+		const contentTitle = `content ${getRandomString()}`;
+
+		let contentEntry;
+
+		try {
+			contentEntry = await apiHelpers.objectEntry.postObjectEntry(
+				{
+					objectEntryFolderExternalReferenceCode: 'L_CONTENTS',
+					title: contentTitle,
+				},
+				contentApplicationName,
+				'Default'
+			);
+
+			const dataSetFragmentPage: DataSetPage = new DataSetPage(page);
+
+			await homePage.goto();
+
+			await test.step('Can open the asset navigation modal with the View action', async () => {
+				await dataSetFragmentPage.execItemAction({
+					action: 'View',
+					filter: contentTitle,
+				});
+
+				await expect(page.getByTestId('modal-header-name')).toHaveText(
+					contentTitle
+				);
+			});
+
+			await test.step('Details panel shows the metadata with the location breadcrumb', async () => {
+				await page.getByRole('button', {name: 'Show Details'}).click();
+
+				const spaceBreadcrumb = page.locator(
+					'.asset-metadata .space-breadcrumb'
+				);
+
+				await expect(spaceBreadcrumb).toBeVisible();
+			});
+		}
+		finally {
+			if (contentEntry) {
+				await apiHelpers.objectEntry.deleteObjectEntry(
+					contentApplicationName,
+					String(contentEntry.id)
+				);
+			}
+		}
+	}
+);
+
+test(
 	'Can use Quick Actions to create new content',
 	{tag: '@LPD-58793'},
 	async ({apiHelpers, homePage, page}) => {
@@ -893,7 +960,7 @@ test(
 
 test(
 	'Can use Search Bar to search for content',
-	{tag: '@LPD-61220'},
+	{tag: ['@LPD-61220', '@LPD-89781']},
 	async ({apiHelpers, assetsPage, homePage, page}) => {
 		const applicationName = 'cms/basic-web-contents';
 		const spaceName = 'Default';
@@ -929,9 +996,15 @@ test(
 
 			await searchInput.press('Enter');
 
+			await test.step('Verify URL uses the FDS pretty format', async () => {
+				await expect(page).toHaveURL(/_fdsConfig=\(q:title\)(?:&|$)/);
+			});
+
 			const row = assetsPage.table.bodyRows.filter({hasText: file1Title});
 
-			await expect(row.getByText(file1Title)).toBeVisible();
+			await expect(
+				row.getByRole('link', {name: file1Title})
+			).toBeVisible();
 
 			await test.step('Verify search input contains the search value', async () => {
 				const searchInput = page.getByPlaceholder('Search');
@@ -993,5 +1066,120 @@ test(
 		await expect(
 			page.getByRole('heading', {name: `Welcome, ${user.givenName}!`})
 		).toBeVisible();
+	}
+);
+
+test(
+	'Recent Assets shows the editor as "Modified by" after another user moves the content',
+	{tag: '@LPD-89977'},
+	async ({apiHelpers, assetsPage, homePage, page}) => {
+		const applicationName = 'cms/basic-web-contents';
+		const contentTitle = `Content ${getRandomString()}`;
+		const destinationFolderName = `Folder ${getRandomString()}`;
+		const destinationSpaceName = `Destination ${getRandomString()}`;
+
+		const dataSetFragmentPage: DataSetPage = new DataSetPage(page);
+		const editorFullName = `${spaceAdminUser.givenName} ${spaceAdminUser.familyName}`;
+
+		const destinationSpace =
+			await apiHelpers.headlessAssetLibrary.createAssetLibrary({
+				name: destinationSpaceName,
+				settings: {},
+				type: 'Space',
+			});
+
+		await apiHelpers.headlessAssetLibrary.putAssetLibraryUserAccount(
+			destinationSpace.externalReferenceCode,
+			spaceAdminUser.externalReferenceCode
+		);
+
+		await apiHelpers.headlessAssetLibrary.putAssetLibraryUserAccountRoles(
+			destinationSpace.externalReferenceCode,
+			spaceAdminUser.externalReferenceCode,
+			['Asset Library Administrator']
+		);
+
+		await apiHelpers.objectFolder.createObjectEntryFolder({
+			parentObjectEntryFolderExternalReferenceCode: 'L_CONTENTS',
+			scopeKey: destinationSpaceName,
+			title: destinationFolderName,
+		});
+
+		await apiHelpers.objectEntry.postObjectEntry(
+			{
+				objectEntryFolderExternalReferenceCode: 'L_CONTENTS',
+				title: contentTitle,
+			},
+			applicationName,
+			'Default'
+		);
+
+		await test.step('Sign in as the Space Administrator and move the content to the destination Space', async () => {
+			await performUserSwitchViaApi(page, spaceAdminUser.alternateName);
+
+			await assetsPage.gotoAll();
+
+			await assetsPage.moveTo({
+				destinationFolder: destinationFolderName,
+				destinationSpace: destinationSpaceName,
+				itemTitle: contentTitle,
+			});
+		});
+
+		await test.step('Recent Assets attributes the modification to the Space Administrator', async () => {
+			await homePage.goto();
+
+			const row = dataSetFragmentPage.getRow(contentTitle);
+
+			await expect(
+				row.getByText(new RegExp(`by ${editorFullName}$`))
+			).toBeVisible();
+		});
+
+		await performUserSwitchViaApi(page, 'test');
+	}
+);
+
+test(
+	'Recent Assets shows the editor as "Modified by" after another user edits the content',
+	{tag: '@LPD-89977'},
+	async ({apiHelpers, homePage, page}) => {
+		const applicationName = 'cms/basic-web-contents';
+		const contentTitle = `Content ${getRandomString()}`;
+		const updatedTitle = `Updated ${getRandomString()}`;
+
+		const dataSetFragmentPage: DataSetPage = new DataSetPage(page);
+		const editorFullName = `${spaceAdminUser.givenName} ${spaceAdminUser.familyName}`;
+
+		const contentEntry = await apiHelpers.objectEntry.postObjectEntry(
+			{
+				objectEntryFolderExternalReferenceCode: 'L_CONTENTS',
+				title: contentTitle,
+			},
+			applicationName,
+			'Default'
+		);
+
+		await performUserSwitchViaApi(page, spaceAdminUser.alternateName);
+
+		await apiHelpers.objectEntry.patchObjectEntry(
+			{
+				title_i18n: {
+					en_US: updatedTitle,
+				},
+			},
+			applicationName,
+			contentEntry.id
+		);
+
+		await homePage.goto();
+
+		const row = dataSetFragmentPage.getRow(updatedTitle);
+
+		await expect(
+			row.getByText(new RegExp(`by ${editorFullName}$`))
+		).toBeVisible();
+
+		await performUserSwitchViaApi(page, 'test');
 	}
 );

@@ -16,7 +16,6 @@ import com.liferay.multi.factor.authentication.timebased.otp.service.persistence
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -72,8 +71,7 @@ public class MFATimeBasedOTPEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByUserId;
-	private UniquePersistenceFinder<MFATimeBasedOTPEntry>
+	private UniquePersistenceFinder<MFATimeBasedOTPEntry, NoSuchEntryException>
 		_uniquePersistenceFinderByUserId;
 
 	/**
@@ -87,32 +85,8 @@ public class MFATimeBasedOTPEntryPersistenceImpl
 	public MFATimeBasedOTPEntry findByUserId(long userId)
 		throws NoSuchEntryException {
 
-		MFATimeBasedOTPEntry mfaTimeBasedOTPEntry = fetchByUserId(userId);
-
-		if (mfaTimeBasedOTPEntry == null) {
-			String message =
-				_uniquePersistenceFinderByUserId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchEntryException(message);
-		}
-
-		return mfaTimeBasedOTPEntry;
-	}
-
-	/**
-	 * Returns the mfa time based otp entry where userId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param userId the user ID
-	 * @return the matching mfa time based otp entry, or <code>null</code> if a matching mfa time based otp entry could not be found
-	 */
-	@Override
-	public MFATimeBasedOTPEntry fetchByUserId(long userId) {
-		return fetchByUserId(userId, true);
+		return _uniquePersistenceFinderByUserId.find(
+			finderCache, new Object[] {userId});
 	}
 
 	/**
@@ -364,14 +338,13 @@ public class MFATimeBasedOTPEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByUserId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, false,
-			MFATimeBasedOTPEntry::getUserId);
-
 		_uniquePersistenceFinderByUserId = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUserId,
-			_SQL_SELECT_MFATIMEBASEDOTPENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUserId",
+				new String[] {Long.class.getName()}, new String[] {"userId"}, 0,
+				0, false, MFATimeBasedOTPEntry::getUserId),
+			_SQL_SELECT_MFATIMEBASEDOTPENTRY_WHERE, "",
 			new FinderColumn<>(
 				"mfaTimeBasedOTPEntry.", "userId", FinderColumn.Type.LONG, "=",
 				true, true, MFATimeBasedOTPEntry::getUserId));
@@ -418,9 +391,6 @@ public class MFATimeBasedOTPEntryPersistenceImpl
 	@Reference
 	protected FinderCache finderCache;
 
-	private static final String _ENTITY_ALIAS_PREFIX =
-		MFATimeBasedOTPEntryModelImpl.ENTITY_ALIAS + ".";
-
 	private static final String _SQL_SELECT_MFATIMEBASEDOTPENTRY =
 		"SELECT mfaTimeBasedOTPEntry FROM MFATimeBasedOTPEntry mfaTimeBasedOTPEntry";
 
@@ -439,4 +409,4 @@ public class MFATimeBasedOTPEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-332937411
+// LIFERAY-SERVICE-BUILDER-HASH:-2079737425

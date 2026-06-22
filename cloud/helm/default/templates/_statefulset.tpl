@@ -17,7 +17,10 @@ metadata:
     name: {{ include "liferay.name" .root }}{{ $suffix }}
     namespace: {{ include "liferay.namespace" .root }}
 spec:
+    {{- $statefulset := merge (dict "liferayname" (include "liferay.name" .root)) .statefulset }}
+    {{- if not .statefulset.autoscaling.enabled }}
     replicas: {{ .statefulset.replicaCount }}
+    {{- end }}
     selector:
         matchLabels:
             app: {{ include "liferay.name" .root }}{{ $suffix }}
@@ -28,6 +31,7 @@ spec:
             annotations:
                 checksum/config: {{ include (print .root.Template.BasePath "/configmap.yaml") .root | sha256sum }}
                 checksum/init-scripts: {{ include (print .root.Template.BasePath "/liferay-init-scripts-cm.yaml") .root | sha256sum }}
+                checksum/network: {{ include (print .root.Template.BasePath "/liferay-network-cm.yaml") .root | sha256sum }}
                 {{- with .statefulset.annotations }}
                 {{- toYaml . | nindent 16 }}
                 {{- end }}
@@ -52,8 +56,12 @@ spec:
                         {{- end }}
                         {{- end }}
                     {{- end }}
-                    {{- if or .statefulset.envFrom .statefulset.customEnvFrom }}
+                    {{- $networkEnvFrom := and (eq .name "") .statefulset.network .statefulset.network.enabled .statefulset.network.hostnames }}
+                    {{- if or .statefulset.envFrom .statefulset.customEnvFrom $networkEnvFrom }}
                     envFrom:
+                        {{- if $networkEnvFrom }}
+                        {{- list (dict "configMapRef" (dict "name" (printf "%s-network" (include "liferay.name" .root)))) | toYaml | nindent 22 }}
+                        {{- end }}
                         {{- with .statefulset.envFrom }}
                         {{- toYaml . | nindent 22 }}
                         {{- end }}
@@ -116,11 +124,13 @@ spec:
                 {{- end }}
             {{- end }}
             {{- if or .statefulset.initContainers .statefulset.customInitContainers }}
-            {{- $statefulset := merge .statefulset (dict "liferayname" (include "liferay.name" .root)) }}
             initContainers:
                 {{- range .statefulset.initContainers }}
                 {{- if .containerTemplate }}
-                {{- tpl .containerTemplate $statefulset | nindent 16 }}
+                {{- $rendered := tpl .containerTemplate $statefulset | trim }}
+                {{- if $rendered }}
+                {{- $rendered | nindent 16 }}
+                {{- end }}
                 {{- else }}
                 -   #
                     {{- toYaml . | nindent 18 }}
@@ -129,7 +139,10 @@ spec:
                 {{- range $k, $v := .statefulset.customInitContainers }}
                 {{- range $entry := $v }}
                 {{- if $entry.containerTemplate }}
-                {{- tpl $entry.containerTemplate $statefulset | nindent 16 }}
+                {{- $rendered := tpl $entry.containerTemplate $statefulset | trim }}
+                {{- if $rendered }}
+                {{- $rendered | nindent 16 }}
+                {{- end }}
                 {{- else }}
                 -   #
                     {{- toYaml $entry | nindent 18 }}

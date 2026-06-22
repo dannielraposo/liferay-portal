@@ -76,9 +76,13 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/category-display-pages/{id}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes the category display page mapping by its internal ID. Idempotent. A follow-up call on an entity that has already been deleted returns 404. Calls CPDisplayLayoutService.deleteCPDisplayLayout. Validation -- NoSuchCPDisplayLayoutException -> 404 when display layout id not found. List query support — page and pageSize paginate the related entries."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -156,9 +160,13 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/category-display-pages/{id}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Retrieves the category display page mapping by its internal ID. Calls CPDisplayLayoutService.getCPDisplayLayout. Validation -- NoSuchCPDisplayLayoutException -> 404 when display layout id not found. List query support — page and pageSize paginate the related entries."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -190,29 +198,38 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/channels/by-externalReferenceCode/{externalReferenceCode}/category-display-pages'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists the CategoryDisplayPage entries belonging to the parent Channel, addressed by external reference code (ERC). Calls CommerceChannelLocalService.getCommerceChannelByExternalReferenceCode + SearchUtil.search (index CPDisplayLayout). Validation -- NoSuchChannelException -> 404 when channel erc not found. List query support — full-text search over the indexed display-page entries via search; page and pageSize paginate."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; it is assigned by the client rather than the server.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model; see the per-resource list operation description for specifics. For example, filter=externalReferenceCode eq 'AB-34098-789-N'.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "1-based page number for paginated responses. Defaults to 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Free-text search applied to the resource's full-text indexed fields. Multiple terms are AND-combined.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression of the form `field:asc` or `field:desc`, comma-separated for multi-field sorting (for example, name:asc,createDate:desc). Supported sort fields depend on the endpoint and are sourced from the matching entity model; see the per-resource list operation description for specifics.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -255,29 +272,38 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/channels/{id}/category-display-pages'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists the CategoryDisplayPage entries belonging to the parent Channel, addressed by internal ID. Calls CommerceChannelLocalService.getCommerceChannel + SearchUtil.search (index CPDisplayLayout). Validation -- NoSuchChannelException -> 404 when channel id not found. List query support — full-text search over the indexed display-page entries via search; page and pageSize paginate."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model; see the per-resource list operation description for specifics. For example, filter=externalReferenceCode eq 'AB-34098-789-N'.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "1-based page number for paginated responses. Defaults to 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Free-text search applied to the resource's full-text indexed fields. Multiple terms are AND-combined.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression of the form `field:asc` or `field:desc`, comma-separated for multi-field sorting (for example, name:asc,createDate:desc). Supported sort fields depend on the endpoint and are sourced from the matching entity model; see the per-resource list operation description for specifics.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -317,9 +343,13 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/category-display-pages/{id}' -d $'{"categoryExternalReferenceCode": ___, "categoryId": ___, "groupExternalReferenceCode": ___, "pageUuid": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates the category display page mapping addressed by its internal ID. Calls CPDisplayLayoutService.getCPDisplayLayout + GroupService.fetchGroupByExternalReferenceCode + AssetCategoryService.fetchCategoryByExternalReferenceCode + CPDisplayLayoutService.updateCPDisplayLayout. Validation -- NoSuchCPDisplayLayoutException -> 404 when display layout id not found; NoSuchGroupException -> 404 when group erc not found when category erc supplied; CPDisplayLayoutEntryException -> 400 when invalid layout entry. Side effects -- updates category-to-display-page layout mapping. List query support — page and pageSize paginate the related entries."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -353,9 +383,13 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/channels/by-externalReferenceCode/{externalReferenceCode}/category-display-pages' -d $'{"categoryExternalReferenceCode": ___, "categoryId": ___, "groupExternalReferenceCode": ___, "pageUuid": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates a new category display page mapping under the parent Channel, addressed by external reference code (ERC). Calls CommerceChannelLocalService.getCommerceChannelByExternalReferenceCode + GroupService.fetchGroupByExternalReferenceCode + AssetCategoryService.fetchCategoryByExternalReferenceCode + CPDisplayLayoutService.addCPDisplayLayout. Validation -- NoSuchChannelException -> 404 when channel erc not found; NoSuchGroupException -> 404 when group erc not found; NoSuchCategoryException -> 404 when category erc not found; CPDisplayLayoutEntryException -> 400 when invalid layout entry. Side effects -- creates category-to-display-page layout mapping on the channel site group. List query support — page and pageSize paginate the related entries."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; it is assigned by the client rather than the server.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -392,9 +426,13 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/channels/{id}/category-display-pages' -d $'{"categoryExternalReferenceCode": ___, "categoryId": ___, "groupExternalReferenceCode": ___, "pageUuid": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates a new category display page mapping under the parent Channel, addressed by internal ID. Calls GroupService.fetchGroupByExternalReferenceCode + AssetCategoryService.fetchCategoryByExternalReferenceCode + CommerceChannelLocalService.getCommerceChannel + CPDisplayLayoutService.addCPDisplayLayout. Validation -- NoSuchGroupException -> 404 when group erc not found when categoryId absent; NoSuchCategoryException -> 404 when category erc not found; NoSuchChannelException -> 404 when channel id not found; CPDisplayLayoutEntryException -> 400 when invalid layout entry. Side effects -- creates category-to-display-page layout mapping on the channel site group. List query support — page and pageSize paginate the related entries."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -1179,4 +1217,4 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 		LogFactoryUtil.getLog(BaseCategoryDisplayPageResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1806717989
+// LIFERAY-REST-BUILDER-HASH:1228053280

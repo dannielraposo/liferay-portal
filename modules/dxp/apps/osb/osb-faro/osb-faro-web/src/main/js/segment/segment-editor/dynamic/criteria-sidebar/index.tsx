@@ -1,130 +1,255 @@
-import autobind from 'autobind-decorator';
-import ClayButton from '@clayui/button';
-import ClayDropdown from '@clayui/drop-down';
-import ClayIcon from '@clayui/icon';
+import ClayDropDown from '@clayui/drop-down';
 import CriteriaSidebarCollapse from './CriteriaSidebarCollapse';
 import CriteriaSidebarSearchBar from './CriteriaSidebarSearchBar';
-import getCN from 'classnames';
-import React from 'react';
+import Loading from 'shared/components/Loading';
+import React, {useContext, useEffect, useMemo, useState} from 'react';
+import {ClayPaginationWithBasicItems} from '@clayui/pagination';
+import {extractRemoteCriterionEntries} from '../criterion-types/extract';
+import {getRemoteCriterionTypeByPropertyKey} from '../criterion-types/registry';
 import {List} from 'immutable';
-import {Property, PropertyGroup} from 'shared/util/records';
+import {Option, Picker} from '@clayui/core';
+import {PaginationBar} from '@clayui/pagination-bar';
+import {Property, PropertyGroup, PropertySubgroup} from 'shared/util/records';
+import {ReferencedObjectsContext} from '../context/referencedObjects';
+import {SegmentTypes} from 'shared/util/constants';
+import {translateQueryToCriteria} from '../utils/odata';
+
+const REMOTE_PAGE_SIZE = 12;
+
+const PROPERTY_KEY_TO_GROUP: Record<string, string> = {
+	account: 'attributes',
+	individual: 'attributes',
+	interest: 'page-topics',
+	organization: 'attributes',
+	session: 'attributes',
+	tag: 'asset-categorization',
+	vocabulary: 'asset-categorization',
+	web: 'behavioral'
+};
+
+const GROUP_ORDER = [
+	'behavioral',
+	'attributes',
+	'asset-categorization',
+	'page-topics'
+];
+
+const GROUP_LABELS: Record<string, string> = {
+	'asset-categorization': Liferay.Language.get('asset-categorization'),
+	attributes: Liferay.Language.get('attributes'),
+	behavioral: Liferay.Language.get('behavioral'),
+	'page-topics': Liferay.Language.get('page-topics')
+};
+
+interface IPickerGroup {
+	items: Array<{label: string; value: string}>;
+	label: string;
+}
 
 interface ICriteriaSidebarProps {
+	channelId: string;
+	criteriaString?: string;
+	groupId: string;
 	propertyGroupsIList: List<PropertyGroup>;
+	type: string;
 }
 
-interface ICriteriaSidebarState {
-	searchValue: string;
-	selectedPropertyKey: string | null;
-}
+export default function CriteriaSidebar({
+	channelId,
+	criteriaString,
+	groupId,
+	propertyGroupsIList,
+	type
+}: ICriteriaSidebarProps) {
+	const [searchValue, setSearchValue] = useState('');
+	const [selectedPropertyKey, setSelectedPropertyKey] = useState<
+		string | null
+	>(() => propertyGroupsIList.first()?.propertyKey ?? null);
 
-export default class CriteriaSidebar extends React.Component<
-	ICriteriaSidebarProps,
-	ICriteriaSidebarState
-> {
-	state: ICriteriaSidebarState = {
-		searchValue: '',
-		selectedPropertyKey: null
-	};
+	const [remoteQuery, setRemoteQuery] = useState<{
+		keywords: string;
+		page: number;
+	}>({keywords: '', page: 1});
+	const [remoteItems, setRemoteItems] = useState<List<Property>>(List());
+	const [remoteLoading, setRemoteLoading] = useState(false);
 
-	constructor(props: ICriteriaSidebarProps) {
-		super(props);
+	const [remoteTotalCount, setRemoteTotalCount] = useState(0);
 
-		const {propertyGroupsIList = List<Property>()} = props;
+	const {addProperty} = useContext(ReferencedObjectsContext);
 
-		this.state = {
-			...this.state,
-			selectedPropertyKey: propertyGroupsIList.getIn([0, 'propertyKey'])
-		};
-	}
+	const selectedRemoteCriterionType =
+		getRemoteCriterionTypeByPropertyKey(selectedPropertyKey);
+	const isRemoteSection = !!selectedRemoteCriterionType;
+	const remoteKeywords = isRemoteSection ? searchValue : '';
 
-	@autobind
-	handlePropertyGroupSelect(selectedPropertyKey: string) {
-		this.setState({
-			selectedPropertyKey
+	useEffect(() => {
+		if (type !== SegmentTypes.Batch || !criteriaString || !addProperty) {
+			return;
+		}
+
+		extractRemoteCriterionEntries(
+			translateQueryToCriteria(criteriaString)
+		).forEach(({criterionType, id, name}) => {
+			addProperty(criterionType.createProperty({id, name}));
 		});
-	}
+	}, []);
 
-	@autobind
-	handleOnSearchChange(value: string) {
-		this.setState({searchValue: value});
-	}
-
-	render() {
-		const {
-			props: {propertyGroupsIList},
-			state: {searchValue, selectedPropertyKey}
-		} = this;
-
-		const activePropertyGroup = propertyGroupsIList.find(
-			(pg: PropertyGroup | undefined) =>
-				pg?.propertyKey === selectedPropertyKey
+	useEffect(() => {
+		setRemoteQuery(q =>
+			q.keywords === remoteKeywords
+				? q
+				: {keywords: remoteKeywords, page: 1}
 		);
+	}, [remoteKeywords]);
 
-		return (
-			<div className='criteria-sidebar-root'>
-				<div className='sidebar-header'>
-					{activePropertyGroup ? (
-						<ClayDropdown
-							closeOnClick
-							trigger={
-								<ClayButton
-									block
-									borderless
-									className={getCN(
-										'd-flex',
-										'justify-content-between',
-										' align-items-center'
-									)}
-									displayType='secondary'
-									outline
-								>
-									<span className='text-truncate'>
-										{activePropertyGroup.label}
-									</span>
+	useEffect(() => {
+		setRemoteItems(List());
+		setRemoteTotalCount(0);
+		setRemoteQuery(q => (q.page === 1 ? q : {...q, page: 1}));
+	}, [selectedPropertyKey]);
 
-									<ClayIcon symbol='caret-bottom' />
-								</ClayButton>
-							}
-						>
-							{propertyGroupsIList
-								.toArray()
-								.map(({label, propertyKey}) => (
-									<ClayDropdown.Item
-										active={
-											propertyKey === selectedPropertyKey
-										}
-										key={propertyKey}
-										onClick={() =>
-											this.handlePropertyGroupSelect(
-												propertyKey
-											)
-										}
-									>
-										{label}
-									</ClayDropdown.Item>
-								))}
-						</ClayDropdown>
-					) : (
-						Liferay.Language.get('properties')
-					)}
-				</div>
+	useEffect(() => {
+		if (type !== SegmentTypes.Batch || !selectedRemoteCriterionType) {
+			return;
+		}
 
-				<div className='sidebar-search'>
-					<CriteriaSidebarSearchBar
-						onChange={this.handleOnSearchChange}
-						searchValue={searchValue}
-					/>
-				</div>
+		setRemoteLoading(true);
 
-				<div className='sidebar-collapse'>
-					<CriteriaSidebarCollapse
-						propertyGroupsIList={propertyGroupsIList}
-						propertyKey={selectedPropertyKey ?? ''}
-						searchValue={searchValue}
-					/>
-				</div>
+		selectedRemoteCriterionType
+			.api({
+				channelId,
+				groupId,
+				keywords: remoteQuery.keywords,
+				page: remoteQuery.page,
+				pageSize: REMOTE_PAGE_SIZE
+			})
+			.then(result => {
+				const properties: List<Property> = List(
+					(result.items ?? []).map(
+						selectedRemoteCriterionType.createProperty
+					)
+				);
+
+				setRemoteItems(properties);
+				setRemoteTotalCount(result.totalCount ?? 0);
+
+				if (addProperty) {
+					properties.forEach(
+						property => property && addProperty(property)
+					);
+				}
+			})
+			.finally(() => setRemoteLoading(false));
+	}, [channelId, groupId, type, selectedRemoteCriterionType, remoteQuery]);
+
+	const effectivePropertyGroupsIList = useMemo(
+		() =>
+			propertyGroupsIList
+				.map(group => {
+					if (
+						!group ||
+						!getRemoteCriterionTypeByPropertyKey(group.propertyKey)
+					) {
+						return group as PropertyGroup;
+					}
+
+					return group.set(
+						'propertySubgroups',
+						List([new PropertySubgroup({properties: remoteItems})])
+					) as PropertyGroup;
+				})
+				.toList(),
+		[propertyGroupsIList, remoteItems]
+	);
+
+	const groupedBySection = propertyGroupsIList
+		.toArray()
+		.reduce<Record<string, PropertyGroup[]>>((acc, pg) => {
+			const groupKey =
+				PROPERTY_KEY_TO_GROUP[pg.propertyKey] ?? 'attributes';
+
+			if (!acc[groupKey]) {
+				acc[groupKey] = [];
+			}
+
+			acc[groupKey].push(pg);
+
+			return acc;
+		}, {});
+
+	const pickerItems: IPickerGroup[] = GROUP_ORDER.filter(
+		groupKey => groupedBySection[groupKey]?.length > 0
+	).map(groupKey => ({
+		items: groupedBySection[groupKey].map(({label, propertyKey}) => ({
+			label,
+			value: propertyKey
+		})),
+		label: GROUP_LABELS[groupKey] ?? groupKey
+	}));
+
+	return (
+		<div className='criteria-sidebar-root'>
+			<div className='sidebar-title'>
+				{Liferay.Language.get('segment-criteria')}
 			</div>
-		);
-	}
+
+			{type !== SegmentTypes.RealTime && (
+				<div className='sidebar-header'>
+					<Picker
+						items={pickerItems}
+						onSelectionChange={key => {
+							setSelectedPropertyKey(key as string);
+						}}
+						selectedKey={selectedPropertyKey ?? undefined}
+					>
+						{(group: IPickerGroup) => (
+							<ClayDropDown.Group
+								header={group.label}
+								items={group.items}
+							>
+								{(item: {label: string; value: string}) => (
+									<Option key={item.value}>
+										{item.label}
+									</Option>
+								)}
+							</ClayDropDown.Group>
+						)}
+					</Picker>
+				</div>
+			)}
+
+			<div className='sidebar-search'>
+				<CriteriaSidebarSearchBar
+					onChange={setSearchValue}
+					searchValue={searchValue}
+				/>
+			</div>
+
+			<div className='sidebar-collapse'>
+				{isRemoteSection && remoteLoading ? (
+					<Loading overlay />
+				) : (
+					<CriteriaSidebarCollapse
+						propertyGroupsIList={effectivePropertyGroupsIList}
+						propertyKey={selectedPropertyKey ?? ''}
+						searchValue={isRemoteSection ? '' : searchValue}
+					/>
+				)}
+			</div>
+
+			{isRemoteSection && remoteTotalCount > 0 && (
+				<PaginationBar className='justify-content-center sidebar-pagination'>
+					<ClayPaginationWithBasicItems
+						active={remoteQuery.page}
+						onActiveChange={page =>
+							setRemoteQuery(q => ({...q, page}))
+						}
+						totalPages={Math.ceil(
+							remoteTotalCount / REMOTE_PAGE_SIZE
+						)}
+					/>
+				</PaginationBar>
+			)}
+		</div>
+	);
 }

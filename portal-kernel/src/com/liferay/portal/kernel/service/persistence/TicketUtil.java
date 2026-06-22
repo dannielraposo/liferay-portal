@@ -134,16 +134,6 @@ public class TicketUtil {
 	}
 
 	/**
-	 * Returns the ticket where key = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param key the key
-	 * @return the matching ticket, or <code>null</code> if a matching ticket could not be found
-	 */
-	public static Ticket fetchByKey(String key) {
-		return getPersistence().fetchByKey(key);
-	}
-
-	/**
 	 * Returns the ticket where key = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
 	 * @param key the key
@@ -174,64 +164,6 @@ public class TicketUtil {
 	 */
 	public static int countByKey(String key) {
 		return getPersistence().countByKey(key);
-	}
-
-	/**
-	 * Returns all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching tickets
-	 */
-	public static List<Ticket> findByC_C_C(
-		long companyId, long classNameId, long classPK) {
-
-		return getPersistence().findByC_C_C(companyId, classNameId, classPK);
-	}
-
-	/**
-	 * Returns a range of all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of tickets
-	 * @param end the upper bound of the range of tickets (not inclusive)
-	 * @return the range of matching tickets
-	 */
-	public static List<Ticket> findByC_C_C(
-		long companyId, long classNameId, long classPK, int start, int end) {
-
-		return getPersistence().findByC_C_C(
-			companyId, classNameId, classPK, start, end);
-	}
-
-	/**
-	 * Returns an ordered range of all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of tickets
-	 * @param end the upper bound of the range of tickets (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching tickets
-	 */
-	public static List<Ticket> findByC_C_C(
-		long companyId, long classNameId, long classPK, int start, int end,
-		OrderByComparator<Ticket> orderByComparator) {
-
-		return getPersistence().findByC_C_C(
-			companyId, classNameId, classPK, start, end, orderByComparator);
 	}
 
 	/**
@@ -323,61 +255,91 @@ public class TicketUtil {
 	}
 
 	/**
-	 * Returns all the tickets where classNameId = &#63; and classPK = &#63; and type = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param type the type
-	 * @return the matching tickets
-	 */
-	public static List<Ticket> findByC_C_T(
-		long classNameId, long classPK, int type) {
-
-		return getPersistence().findByC_C_T(classNameId, classPK, type);
-	}
-
-	/**
-	 * Returns a range of all the tickets where classNameId = &#63; and classPK = &#63; and type = &#63;.
+	 * Returns an ordered range of all the tickets where companyId = &#63; and type = &#63; and emailAddress = &#63;.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
 	 * </p>
 	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
+	 * @param companyId the company ID
 	 * @param type the type
-	 * @param start the lower bound of the range of tickets
-	 * @param end the upper bound of the range of tickets (not inclusive)
-	 * @return the range of matching tickets
-	 */
-	public static List<Ticket> findByC_C_T(
-		long classNameId, long classPK, int type, int start, int end) {
-
-		return getPersistence().findByC_C_T(
-			classNameId, classPK, type, start, end);
-	}
-
-	/**
-	 * Returns an ordered range of all the tickets where classNameId = &#63; and classPK = &#63; and type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param type the type
+	 * @param emailAddress the email address
 	 * @param start the lower bound of the range of tickets
 	 * @param end the upper bound of the range of tickets (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching tickets
 	 */
-	public static List<Ticket> findByC_C_T(
-		long classNameId, long classPK, int type, int start, int end,
+	public static List<Ticket> findByC_T_EA(
+		long companyId, int type, String emailAddress, int start, int end,
+		OrderByComparator<Ticket> orderByComparator, boolean useFinderCache) {
+
+		return getPersistence().findByC_T_EA(
+			companyId, type, emailAddress, start, end, orderByComparator,
+			useFinderCache);
+	}
+
+	/**
+	 * Returns the first ticket in the ordered set where companyId = &#63; and type = &#63; and emailAddress = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param type the type
+	 * @param emailAddress the email address
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching ticket
+	 * @throws NoSuchTicketException if a matching ticket could not be found
+	 */
+	public static Ticket findByC_T_EA_First(
+			long companyId, int type, String emailAddress,
+			OrderByComparator<Ticket> orderByComparator)
+		throws com.liferay.portal.kernel.exception.NoSuchTicketException {
+
+		return getPersistence().findByC_T_EA_First(
+			companyId, type, emailAddress, orderByComparator);
+	}
+
+	/**
+	 * Returns the first ticket in the ordered set where companyId = &#63; and type = &#63; and emailAddress = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param type the type
+	 * @param emailAddress the email address
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching ticket, or <code>null</code> if a matching ticket could not be found
+	 */
+	public static Ticket fetchByC_T_EA_First(
+		long companyId, int type, String emailAddress,
 		OrderByComparator<Ticket> orderByComparator) {
 
-		return getPersistence().findByC_C_T(
-			classNameId, classPK, type, start, end, orderByComparator);
+		return getPersistence().fetchByC_T_EA_First(
+			companyId, type, emailAddress, orderByComparator);
+	}
+
+	/**
+	 * Removes all the tickets where companyId = &#63; and type = &#63; and emailAddress = &#63; from the database.
+	 *
+	 * @param companyId the company ID
+	 * @param type the type
+	 * @param emailAddress the email address
+	 */
+	public static void removeByC_T_EA(
+		long companyId, int type, String emailAddress) {
+
+		getPersistence().removeByC_T_EA(companyId, type, emailAddress);
+	}
+
+	/**
+	 * Returns the number of tickets where companyId = &#63; and type = &#63; and emailAddress = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param type the type
+	 * @param emailAddress the email address
+	 * @return the number of matching tickets
+	 */
+	public static int countByC_T_EA(
+		long companyId, int type, String emailAddress) {
+
+		return getPersistence().countByC_T_EA(companyId, type, emailAddress);
 	}
 
 	/**
@@ -462,70 +424,6 @@ public class TicketUtil {
 	 */
 	public static int countByC_C_T(long classNameId, long classPK, int type) {
 		return getPersistence().countByC_C_T(classNameId, classPK, type);
-	}
-
-	/**
-	 * Returns all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63; and type = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param type the type
-	 * @return the matching tickets
-	 */
-	public static List<Ticket> findByC_C_C_T(
-		long companyId, long classNameId, long classPK, int type) {
-
-		return getPersistence().findByC_C_C_T(
-			companyId, classNameId, classPK, type);
-	}
-
-	/**
-	 * Returns a range of all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63; and type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param type the type
-	 * @param start the lower bound of the range of tickets
-	 * @param end the upper bound of the range of tickets (not inclusive)
-	 * @return the range of matching tickets
-	 */
-	public static List<Ticket> findByC_C_C_T(
-		long companyId, long classNameId, long classPK, int type, int start,
-		int end) {
-
-		return getPersistence().findByC_C_C_T(
-			companyId, classNameId, classPK, type, start, end);
-	}
-
-	/**
-	 * Returns an ordered range of all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63; and type = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param type the type
-	 * @param start the lower bound of the range of tickets
-	 * @param end the upper bound of the range of tickets (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching tickets
-	 */
-	public static List<Ticket> findByC_C_C_T(
-		long companyId, long classNameId, long classPK, int type, int start,
-		int end, OrderByComparator<Ticket> orderByComparator) {
-
-		return getPersistence().findByC_C_C_T(
-			companyId, classNameId, classPK, type, start, end,
-			orderByComparator);
 	}
 
 	/**
@@ -673,6 +571,254 @@ public class TicketUtil {
 		return getPersistence().fetchByPrimaryKey(ticketId);
 	}
 
+	/**
+	 * Returns the ticket where key = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 *
+	 * @param key the key
+	 * @return the matching ticket, or <code>null</code> if a matching ticket could not be found
+	 */
+	public static Ticket fetchByKey(String key) {
+		return getPersistence().fetchByKey(key);
+	}
+
+	/**
+	 * Returns all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @return the matching tickets
+	 */
+	public static List<Ticket> findByC_C_C(
+		long companyId, long classNameId, long classPK) {
+
+		return getPersistence().findByC_C_C(companyId, classNameId, classPK);
+	}
+
+	/**
+	 * Returns a range of all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param start the lower bound of the range of tickets
+	 * @param end the upper bound of the range of tickets (not inclusive)
+	 * @return the range of matching tickets
+	 */
+	public static List<Ticket> findByC_C_C(
+		long companyId, long classNameId, long classPK, int start, int end) {
+
+		return getPersistence().findByC_C_C(
+			companyId, classNameId, classPK, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param start the lower bound of the range of tickets
+	 * @param end the upper bound of the range of tickets (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching tickets
+	 */
+	public static List<Ticket> findByC_C_C(
+		long companyId, long classNameId, long classPK, int start, int end,
+		OrderByComparator<Ticket> orderByComparator) {
+
+		return getPersistence().findByC_C_C(
+			companyId, classNameId, classPK, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns all the tickets where companyId = &#63; and type = &#63; and emailAddress = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param type the type
+	 * @param emailAddress the email address
+	 * @return the matching tickets
+	 */
+	public static List<Ticket> findByC_T_EA(
+		long companyId, int type, String emailAddress) {
+
+		return getPersistence().findByC_T_EA(companyId, type, emailAddress);
+	}
+
+	/**
+	 * Returns a range of all the tickets where companyId = &#63; and type = &#63; and emailAddress = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param type the type
+	 * @param emailAddress the email address
+	 * @param start the lower bound of the range of tickets
+	 * @param end the upper bound of the range of tickets (not inclusive)
+	 * @return the range of matching tickets
+	 */
+	public static List<Ticket> findByC_T_EA(
+		long companyId, int type, String emailAddress, int start, int end) {
+
+		return getPersistence().findByC_T_EA(
+			companyId, type, emailAddress, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the tickets where companyId = &#63; and type = &#63; and emailAddress = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param type the type
+	 * @param emailAddress the email address
+	 * @param start the lower bound of the range of tickets
+	 * @param end the upper bound of the range of tickets (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching tickets
+	 */
+	public static List<Ticket> findByC_T_EA(
+		long companyId, int type, String emailAddress, int start, int end,
+		OrderByComparator<Ticket> orderByComparator) {
+
+		return getPersistence().findByC_T_EA(
+			companyId, type, emailAddress, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns all the tickets where classNameId = &#63; and classPK = &#63; and type = &#63;.
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param type the type
+	 * @return the matching tickets
+	 */
+	public static List<Ticket> findByC_C_T(
+		long classNameId, long classPK, int type) {
+
+		return getPersistence().findByC_C_T(classNameId, classPK, type);
+	}
+
+	/**
+	 * Returns a range of all the tickets where classNameId = &#63; and classPK = &#63; and type = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
+	 * </p>
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param type the type
+	 * @param start the lower bound of the range of tickets
+	 * @param end the upper bound of the range of tickets (not inclusive)
+	 * @return the range of matching tickets
+	 */
+	public static List<Ticket> findByC_C_T(
+		long classNameId, long classPK, int type, int start, int end) {
+
+		return getPersistence().findByC_C_T(
+			classNameId, classPK, type, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the tickets where classNameId = &#63; and classPK = &#63; and type = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
+	 * </p>
+	 *
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param type the type
+	 * @param start the lower bound of the range of tickets
+	 * @param end the upper bound of the range of tickets (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching tickets
+	 */
+	public static List<Ticket> findByC_C_T(
+		long classNameId, long classPK, int type, int start, int end,
+		OrderByComparator<Ticket> orderByComparator) {
+
+		return getPersistence().findByC_C_T(
+			classNameId, classPK, type, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63; and type = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param type the type
+	 * @return the matching tickets
+	 */
+	public static List<Ticket> findByC_C_C_T(
+		long companyId, long classNameId, long classPK, int type) {
+
+		return getPersistence().findByC_C_C_T(
+			companyId, classNameId, classPK, type);
+	}
+
+	/**
+	 * Returns a range of all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63; and type = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param type the type
+	 * @param start the lower bound of the range of tickets
+	 * @param end the upper bound of the range of tickets (not inclusive)
+	 * @return the range of matching tickets
+	 */
+	public static List<Ticket> findByC_C_C_T(
+		long companyId, long classNameId, long classPK, int type, int start,
+		int end) {
+
+		return getPersistence().findByC_C_C_T(
+			companyId, classNameId, classPK, type, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the tickets where companyId = &#63; and classNameId = &#63; and classPK = &#63; and type = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param classNameId the class name ID
+	 * @param classPK the class pk
+	 * @param type the type
+	 * @param start the lower bound of the range of tickets
+	 * @param end the upper bound of the range of tickets (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching tickets
+	 */
+	public static List<Ticket> findByC_C_C_T(
+		long companyId, long classNameId, long classPK, int type, int start,
+		int end, OrderByComparator<Ticket> orderByComparator) {
+
+		return getPersistence().findByC_C_C_T(
+			companyId, classNameId, classPK, type, start, end,
+			orderByComparator);
+	}
+
 	public static TicketPersistence getPersistence() {
 		return _persistence;
 	}
@@ -684,4 +830,4 @@ public class TicketUtil {
 	private static volatile TicketPersistence _persistence;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:709452262
+// LIFERAY-SERVICE-BUILDER-HASH:-1323902993

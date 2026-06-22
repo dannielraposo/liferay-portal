@@ -9,7 +9,7 @@ import React from 'react';
 
 import {IInlineNotificationComponent} from '../inline_notification/InlineNotification';
 import {EEntityFieldType} from '../management_bar/controls/filters/utils/types';
-import {ISnapshot} from '../views/ViewsContext';
+import {ISnapshots} from '../views/ViewsContext';
 
 export declare function FrontendDataSet({
 	actionParameterName,
@@ -108,25 +108,25 @@ export interface IBaseActions {
 	itemId: number | string;
 }
 
+export interface IBulkActionCallbackContext {
+	activeFilters?: Array<IBaseFilterState>;
+	activeSearch?: ISearch;
+	allItemsSelectedActive?: boolean;
+	selectedItems?: Array<any>;
+}
+
 export interface IBulkActionItem {
+	className?: string;
 	data?: {
+		disabled?: boolean;
 		highlighted?: boolean;
 		id?: string;
 		size?: string;
 	};
 	href?: string;
 	icon?: string;
-	isVisible?: ({
-		activeFilters,
-		activeSearch,
-		allItemsSelectedActive,
-		selectedItems,
-	}: {
-		activeFilters?: Array<IBaseFilterState>;
-		activeSearch?: ISearch;
-		allItemsSelectedActive?: boolean;
-		selectedItems?: Array<any>;
-	}) => boolean;
+	isDisabled?: (context: IBulkActionCallbackContext) => boolean;
+	isVisible?: (context: IBulkActionCallbackContext) => boolean;
 	label?: string;
 	method?: string;
 	slug?: string;
@@ -390,7 +390,7 @@ export interface IFrontendDataSetProps {
 	showSearch?: boolean;
 	showSelectAll?: boolean;
 	sidePanelId?: string;
-	snapshots?: Array<ISnapshot>;
+	snapshots?: Array<ISnapshots>;
 	snapshotsEnabled?: boolean;
 	sorts?: TSort[];
 	style?: 'default' | 'fluid' | 'stacked';
@@ -542,7 +542,7 @@ export interface IBaseFilterState {
 	preloadedData: Record<string, unknown>;
 	selectedData?: Record<string, unknown>;
 	selectedItemsLabel: string;
-	type: 'clientExtension' | 'dateRange' | 'selection';
+	type: 'clientExtension' | 'dateRange' | 'dateTimeRange' | 'selection';
 }
 
 export interface IClientExtensionFilterState extends IBaseFilterState {

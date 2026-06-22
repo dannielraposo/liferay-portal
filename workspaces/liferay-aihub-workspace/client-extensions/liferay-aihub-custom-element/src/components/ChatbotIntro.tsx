@@ -5,17 +5,28 @@
 
 import React from 'react';
 
+import ChatbotAvatar from './ChatbotAvatar';
 import Logo from './Logo';
 
 interface ChatbotIntroProps {
+	avatar?: string;
 	introMessage: string;
 	title: string;
 }
 
-export default function ChatbotIntro({introMessage, title}: ChatbotIntroProps) {
+export default function ChatbotIntro({
+	avatar,
+	introMessage,
+	title,
+}: ChatbotIntroProps) {
 	return (
 		<div className="aihub-intro">
-			<Logo className="aihub-intro-logo" />
+			<ChatbotAvatar
+				avatar={avatar}
+				className="aihub-intro-logo"
+				fallback={<Logo className="aihub-intro-logo" />}
+				title={title}
+			/>
 
 			<div className="aihub-intro-name">{title}</div>
 

@@ -47,7 +47,7 @@ export class NavigationMenusPage {
 	readonly sidebarBody: Locator;
 	readonly sidebarSaveButton: Locator;
 	readonly urlModal: FrameLocator;
-	readonly vocabulariesModal: FrameLocator;
+	readonly vocabulariesModal: Locator;
 
 	readonly globalMenuPage: GlobalMenuPage;
 	readonly productMenuPage: ProductMenuPage;
@@ -136,9 +136,11 @@ export class NavigationMenusPage {
 			name: 'Save',
 		});
 		this.urlModal = page.frameLocator('iframe[title="Add URL"]');
-		this.vocabulariesModal = page.frameLocator(
-			'iframe[title="Select Vocabularies"]'
-		);
+		this.vocabulariesModal = page
+			.getByRole('dialog', {
+				name: 'Select Vocabulary',
+			})
+			.or(page.getByRole('dialog', {name: 'Select Vocabularies'}));
 
 		this.globalMenuPage = new GlobalMenuPage(this.page);
 		this.productMenuPage = new ProductMenuPage(this.page);
@@ -170,11 +172,11 @@ export class NavigationMenusPage {
 			.getByRole('button', {name: 'View ' + parentPage + ' Options'})
 			.click();
 
-		await this.page.getByRole('menuitem', {name: 'Add Child'}).hover();
-
-		await this.page.waitForTimeout(500);
-
-		await this.page.getByRole('menuitem', {name: 'Page'}).click();
+		await clickAndExpectToBeVisible({
+			autoClick: true,
+			target: this.page.getByRole('menuitem', {name: 'Page'}),
+			trigger: this.page.getByRole('menuitem', {name: 'Add Child'}),
+		});
 
 		await this.pagesModal.getByText(childPage, {exact: true}).click();
 
@@ -522,7 +524,7 @@ export class NavigationMenusPage {
 			trigger: this.addMenuItemButton,
 		});
 
-		await this.vocabulariesModal.getByPlaceholder('Search').waitFor();
+		await this.vocabulariesModal.waitFor();
 	}
 
 	async translateName(itemName: string, useCustomName = false) {

@@ -19,6 +19,9 @@ import com.liferay.jenkins.results.parser.job.property.JobPropertyFactory;
 import com.liferay.jenkins.results.parser.test.clazz.TestClass;
 import com.liferay.jenkins.results.parser.test.clazz.TestClassMethod;
 import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
+import com.liferay.jenkins.results.parser.test.clazz.group.FunctionalAxisTestClassGroup;
+import com.liferay.jenkins.results.parser.test.clazz.group.JUnitAxisTestClassGroup;
+import com.liferay.jenkins.results.parser.test.clazz.group.PlaywrightAxisTestClassGroup;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,8 +34,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang.WordUtils;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -226,9 +227,8 @@ public class BatchBuildTestrayCaseResult
 
 			for (String teamComponentName : teamComponentNames.split(",")) {
 				if (teamComponentName.equals(componentName)) {
-					teamName = teamName.replace("-", " ");
-
-					return WordUtils.capitalize(teamName);
+					return _upperCaseFirstLetterOfEachWord(
+						teamName.replace("-", " "));
 				}
 			}
 		}
@@ -253,16 +253,54 @@ public class BatchBuildTestrayCaseResult
 
 		testrayAttachments.add(_getGradlePluginsAttachment());
 		testrayAttachments.add(_getJenkinsConsoleTestrayAttachment());
-		testrayAttachments.add(getTopLevelBuildDatabaseTestrayAttachment());
-		testrayAttachments.add(getTopLevelBuildReportTestrayAttachment());
-		testrayAttachments.add(getTopLevelJenkinsConsoleTestrayAttachment());
-		testrayAttachments.add(getTopLevelJenkinsReportTestrayAttachment());
-		testrayAttachments.add(getTopLevelJobSummaryTestrayAttachment());
-		testrayAttachments.add(_getWarningsTestrayAttachment());
+		testrayAttachments.add(getParentTestrayCaseResultTestrayAttachment());
+		testrayAttachments.add(getWarningsTestrayAttachment());
+
+		AxisTestClassGroup axisTestClassGroup = getAxisTestClassGroup();
+
+		if (axisTestClassGroup instanceof FunctionalAxisTestClassGroup ||
+			axisTestClassGroup instanceof JUnitAxisTestClassGroup) {
+
+			testrayAttachments.addAll(getLiferayLogTestrayAttachments());
+			testrayAttachments.addAll(getLiferayOSGiLogTestrayAttachments());
+		}
+		else if (axisTestClassGroup instanceof PlaywrightAxisTestClassGroup) {
+			testrayAttachments.addAll(getLiferayLogTestrayAttachments());
+		}
 
 		testrayAttachments.removeAll(Collections.singleton(null));
 
 		return testrayAttachments;
+	}
+
+	@Override
+	public TestrayComponent getTestrayComponent() {
+		TestrayComponent testrayComponent = super.getTestrayComponent();
+
+		if (testrayComponent != null) {
+			return testrayComponent;
+		}
+
+		String componentName = getComponentName();
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(componentName)) {
+			return null;
+		}
+
+		TestrayBuild testrayBuild = getTestrayBuild();
+
+		if (testrayBuild == null) {
+			return null;
+		}
+
+		TestrayProject testrayProject = testrayBuild.getTestrayProject();
+
+		testrayComponent = testrayProject.getTestrayComponentByName(
+			componentName);
+
+		setTestrayComponent(testrayComponent);
+
+		return testrayComponent;
 	}
 
 	@Override
@@ -279,7 +317,7 @@ public class BatchBuildTestrayCaseResult
 
 	@Override
 	public String[] getWarnings() {
-		TestrayAttachment testrayAttachment = _getWarningsTestrayAttachment();
+		TestrayAttachment testrayAttachment = getWarningsTestrayAttachment();
 
 		if (testrayAttachment == null) {
 			return null;
@@ -576,6 +614,11 @@ public class BatchBuildTestrayCaseResult
 		return _topLevelStandaloneBuildTestrayCaseResult;
 	}
 
+	protected TestrayAttachment getWarningsTestrayAttachment() {
+		return getTestrayAttachment(
+			getBuildReport(), "Warnings", getAxisName() + "/warnings.html.gz");
+	}
+
 	@Override
 	protected void initBuildReport() {
 		TopLevelBuildReport topLevelBuildReport = getTopLevelBuildReport();
@@ -765,9 +808,16 @@ public class BatchBuildTestrayCaseResult
 		return testrayAttachments;
 	}
 
-	private TestrayAttachment _getWarningsTestrayAttachment() {
-		return getTestrayAttachment(
-			getBuildReport(), "Warnings", getAxisName() + "/warnings.html.gz");
+	private String _upperCaseFirstLetterOfEachWord(String string) {
+		StringBuilder sb = new StringBuilder(string);
+
+		for (int i = 0; i < sb.length(); i++) {
+			if ((i == 0) || (sb.charAt(i - 1) == ' ')) {
+				sb.setCharAt(i, Character.toUpperCase(sb.charAt(i)));
+			}
+		}
+
+		return sb.toString();
 	}
 
 	private static final Pattern _dockerLogsURLPattern = Pattern.compile(

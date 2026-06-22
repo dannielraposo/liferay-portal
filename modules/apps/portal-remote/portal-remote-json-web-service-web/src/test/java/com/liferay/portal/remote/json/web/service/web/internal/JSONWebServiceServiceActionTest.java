@@ -7,6 +7,7 @@ package com.liferay.portal.remote.json.web.service.web.internal;
 
 import com.liferay.petra.memory.DeleteFileFinalizeAction;
 import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.test.FinalizeManagerUtil;
 import com.liferay.portal.kernel.test.GCUtil;
@@ -19,6 +20,7 @@ import com.liferay.portal.remote.json.web.service.JSONWebServiceAction;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.File;
 
@@ -181,6 +183,13 @@ public class JSONWebServiceServiceActionTest
 			"/somectx.foo/hello-world/user-id/173/world-name/Jupiter");
 	}
 
+	@Test
+	public void testStatusNotFound() throws Exception {
+		_testStatusNotFound("/foo/no-such-model-exception");
+		_testStatusNotFound("/foo/principal-exception");
+		_testStatusNotFound("/foo/security-exception");
+	}
+
 	protected MockHttpServletRequest createInvokerHttpServletRequest(
 		String content) {
 
@@ -312,6 +321,29 @@ public class JSONWebServiceServiceActionTest
 
 				return method.invoke(httpServletRequest, args);
 			});
+	}
+
+	private void _testStatusNotFound(String path) throws Exception {
+		registerActionClass(FooService.class);
+
+		MockHttpServletRequest mockHttpServletRequest =
+			createInvokerHttpServletRequest(
+				toJSON(
+					LinkedHashMapBuilder.<String, Object>put(
+						path, new LinkedHashMap<>()
+					).build()));
+
+		MockHttpServletResponse mockHttpServletResponse =
+			new MockHttpServletResponse();
+
+		String json = _jsonWebServiceServiceAction.getJSON(
+			mockHttpServletRequest, mockHttpServletResponse);
+
+		Assert.assertEquals(
+			HttpServletResponse.SC_NOT_FOUND,
+			mockHttpServletResponse.getStatus());
+
+		Assert.assertEquals(JSONFactoryUtil.getNullJSON(), json);
 	}
 
 	private static JSONWebServiceServiceAction _jsonWebServiceServiceAction;

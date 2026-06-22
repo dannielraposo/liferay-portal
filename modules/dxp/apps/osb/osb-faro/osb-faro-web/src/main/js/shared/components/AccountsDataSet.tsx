@@ -1,57 +1,34 @@
+import * as API from 'shared/api';
 import Card from 'shared/components/Card';
 import React from 'react';
-import {columns, pagination, useSnapshots} from 'shared/util/frontend-data-set';
-import {LifecycleStages} from 'contacts/pages/account/utils/constants';
+import {
+	columns,
+	FrontendDataSet,
+	pagination,
+	rangeSelectors
+} from 'shared/components/FrontendDataSet';
+import {
+	LifecycleStages,
+	lifecycleStagesLabelMap
+} from 'contacts/pages/account/utils/constants';
+import {RangeKeyTimeRanges} from 'shared/util/constants';
 import {Routes} from 'shared/util/router';
 import {toThousands} from 'shared/util/numbers';
-import {useFrontendDataSet} from 'shared/hooks/useFrontendDataSet';
-
-type DisplayType = 'danger' | 'info' | 'secondary' | 'success' | 'warning';
-
-const lifecycleStagesLabelMap: Record<
-	LifecycleStages,
-	{displayType: DisplayType; label: string}
-> = {
-	[LifecycleStages.AT_RISK]: {
-		displayType: 'danger',
-		label: Liferay.Language.get('at-risk')
-	},
-	[LifecycleStages.AWARE]: {
-		displayType: 'secondary',
-		label: Liferay.Language.get('aware')
-	},
-	[LifecycleStages.ENGAGED]: {
-		displayType: 'warning',
-		label: Liferay.Language.get('engaged')
-	},
-	[LifecycleStages.ESTABLISHED]: {
-		displayType: 'success',
-		label: Liferay.Language.get('established')
-	},
-	[LifecycleStages.ONBOARDING]: {
-		displayType: 'secondary',
-		label: Liferay.Language.get('onboarding')
-	},
-	[LifecycleStages.PIPELINE]: {
-		displayType: 'info',
-		label: Liferay.Language.get('pipeline')
-	}
-};
-
-const lifecycleStageItems = Object.entries(lifecycleStagesLabelMap).map(
-	([stage]) => ({
-		label: lifecycleStagesLabelMap[stage as LifecycleStages].label,
-		value: stage
-	})
-);
+import {useRequest} from 'shared/hooks/useRequest';
 
 interface IAccountsDataSetProps {
+	accountLifecycleId?: string;
+	apiURL: string;
 	channelId: string;
 	countryFilter?: string;
 	groupId: string;
 	industryFilter?: string;
 	lifecycleStageFilter?: LifecycleStages;
-	loading?: boolean;
+}
+
+interface ILifecycleStageFieldValue {
+	id: string;
+	stageType: LifecycleStages;
 }
 
 const buildSelectionPreloadedData = (value?: string, label?: string) =>
@@ -63,26 +40,42 @@ const buildSelectionPreloadedData = (value?: string, label?: string) =>
 		: undefined;
 
 const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
+	accountLifecycleId,
+	apiURL,
 	channelId,
 	countryFilter,
 	groupId,
 	industryFilter,
-	lifecycleStageFilter,
-	loading
+	lifecycleStageFilter
 }) => {
-	const FrontendDataSet = useFrontendDataSet();
+	const {data: lifecycleStageFieldValues} = useRequest({
+		dataSourceFn: API.accounts.fetchLifecycleStageFieldValues,
+		skipRequest: !accountLifecycleId,
+		variables: {
+			accountLifecycleId,
+			channelId,
+			groupId
+		}
+	});
 
-	const snapshots = useSnapshots('accounts-list-dataset');
+	const lifecycleStages: ILifecycleStageFieldValue[] =
+		lifecycleStageFieldValues?.items ?? [];
 
-	if (!FrontendDataSet) {
-		return null;
-	}
+	const lifecycleStageItems = lifecycleStages.map(({id, stageType}) => ({
+		label: lifecycleStagesLabelMap[stageType].label,
+		value: id
+	}));
+
+	const preloadedLifecycleStage = lifecycleStageFilter
+		? lifecycleStages.find(
+				({stageType}) => stageType === lifecycleStageFilter
+		  )
+		: undefined;
 
 	return (
-		<Card>
+		<Card minHeight={300}>
 			<FrontendDataSet
-				apiURL={`/o/faro/contacts/${groupId}/account/search`}
-				configInURLBehavior='off'
+				apiURL={apiURL}
 				customDataRenderers={{
 					accountLifecycleStageRenderer: ({
 						value
@@ -103,6 +96,7 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 						value: string;
 					}) =>
 						columns.nameAndLinkRenderer({
+							channelId,
 							groupId,
 							itemData,
 							route: Routes.CONTACTS_ACCOUNT,
@@ -123,19 +117,35 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 				}}
 				filters={[
 					{
-						id: 'lifecycleStatus',
-						items: lifecycleStageItems,
-						label: Liferay.Language.get('status'),
-						name: 'status',
+						id: 'rangeKey',
+						items: rangeSelectors,
+						label: Liferay.Language.get('active-individuals'),
+						name: 'rangeKey',
 						preloadedData: buildSelectionPreloadedData(
-							lifecycleStageFilter,
-							lifecycleStageFilter
-								? lifecycleStagesLabelMap[lifecycleStageFilter]
-										.label
-								: undefined
+							RangeKeyTimeRanges.Last30Days,
+							Liferay.Language.get('last-30-days')
 						),
 						type: 'selection'
 					},
+					...(accountLifecycleId
+						? [
+								{
+									id: 'lifecycleStatus',
+									items: lifecycleStageItems,
+									label: Liferay.Language.get('status'),
+									name: 'status',
+									preloadedData: buildSelectionPreloadedData(
+										preloadedLifecycleStage?.id,
+										lifecycleStageFilter
+											? lifecycleStagesLabelMap[
+													lifecycleStageFilter
+											  ].label
+											: undefined
+									),
+									type: 'selection' as const
+								}
+						  ]
+						: []),
 					{
 						apiURL: `/o/faro/contacts/${groupId}/account/fds_field_values?channelId=${channelId}&fieldMappingFieldName=industry`,
 						entityFieldType: 'string',
@@ -162,15 +172,16 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 					}
 				]}
 				id='accounts-list-dataset'
-				key={`${countryFilter ?? ''}|${industryFilter ?? ''}|${
-					lifecycleStageFilter ?? ''
-				}`}
-				loading={loading}
+				key={[
+					countryFilter,
+					industryFilter,
+					lifecycleStageFilter,
+					lifecycleStages.length
+				].join()}
 				pagination={pagination}
 				showPagination
-				snapshots={snapshots}
 				snapshotsEnabled
-				sort={[
+				sorts={[
 					{
 						active: true,
 						direction: 'asc',
@@ -187,7 +198,6 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 						schema: {
 							fields: [
 								{
-									_key: 'accountName',
 									contentRenderer: 'accountNameRenderer',
 									fieldName: 'accountName',
 									label: Liferay.Language.get('account'),
@@ -195,13 +205,11 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 									truncate: true
 								},
 								{
-									_key: 'industry',
 									fieldName: 'industry',
 									label: Liferay.Language.get('industry'),
 									sortable: true
 								},
 								{
-									_key: 'lifecycleStage',
 									contentRenderer:
 										'accountLifecycleStageRenderer',
 									fieldName: 'lifecycleStage',
@@ -211,7 +219,6 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 									sortable: true
 								},
 								{
-									_key: 'annualRevenue',
 									contentRenderer: 'annualRevenueRenderer',
 									fieldName: 'annualRevenue',
 									label: Liferay.Language.get(
@@ -220,27 +227,23 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 									sortable: true
 								},
 								{
-									_key: 'country',
 									fieldName: 'country',
 									label: Liferay.Language.get('country'),
 									sortable: true
 								},
 								{
-									_key: 'lastActive',
 									contentRenderer: 'dateRenderer',
 									fieldName: 'lastActive',
 									label: Liferay.Language.get('last-active'),
 									sortable: true
 								},
 								{
-									_key: 'lastEnriched',
 									contentRenderer: 'dateRenderer',
 									fieldName: 'lastEnriched',
 									label: Liferay.Language.get(
 										'last-enriched'
 									),
-									sortable: true,
-									visible: false
+									sortable: true
 								}
 							]
 						},

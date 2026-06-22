@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -177,11 +178,10 @@ public class PlaywrightBatchBuildTestrayCaseResult
 
 	@Override
 	public List<TestrayAttachment> getTestrayAttachments() {
-		List<TestrayAttachment> testrayAttachments =
-			super.getTestrayAttachments();
+		List<TestrayAttachment> testrayAttachments = new ArrayList<>();
 
 		testrayAttachments.addAll(getLiferayLogTestrayAttachments());
-
+		testrayAttachments.add(getParentTestrayCaseResultTestrayAttachment());
 		testrayAttachments.add(getPlaywrightReportTestrayAttachment());
 		testrayAttachments.add(getPlaywrightTraceViewerTestrayAttachment());
 
@@ -266,24 +266,12 @@ public class PlaywrightBatchBuildTestrayCaseResult
 			return null;
 		}
 
-		String traceZipFilePath = matcher.group("traceZipFilePath");
-
-		URL traceZipURL = null;
-
 		BuildReport buildReport = getBuildReport();
 
-		for (URL testrayAttachmentURL :
-				buildReport.getTestrayAttachmentURLs()) {
+		String traceZipFilePath = matcher.group("traceZipFilePath");
 
-			String testrayAttachmentURLString = String.valueOf(
-				testrayAttachmentURL);
-
-			if (testrayAttachmentURLString.endsWith(traceZipFilePath)) {
-				traceZipURL = testrayAttachmentURL;
-
-				break;
-			}
-		}
+		URL traceZipURL = buildReport.getTestrayAttachmentURLBySuffix(
+			traceZipFilePath);
 
 		if (traceZipURL == null) {
 			return null;

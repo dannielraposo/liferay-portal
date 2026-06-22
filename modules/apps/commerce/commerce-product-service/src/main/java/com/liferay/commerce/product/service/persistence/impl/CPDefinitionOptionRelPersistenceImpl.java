@@ -13,13 +13,11 @@ import com.liferay.commerce.product.model.impl.CPDefinitionOptionRelModelImpl;
 import com.liferay.commerce.product.service.persistence.CPDefinitionOptionRelPersistence;
 import com.liferay.commerce.product.service.persistence.CPDefinitionOptionRelUtil;
 import com.liferay.commerce.product.service.persistence.impl.constants.CommercePersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -89,68 +87,15 @@ public class CPDefinitionOptionRelPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CPDefinitionOptionRel>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the cp definition option rels where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp definition option rels where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @return the range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDefinitionOptionRel, NoSuchCPDefinitionOptionRelException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the cp definition option rels where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CPDefinitionOptionRel> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp definition option rels where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -166,14 +111,9 @@ public class CPDefinitionOptionRelPersistenceImpl
 		OrderByComparator<CPDefinitionOptionRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -190,16 +130,8 @@ public class CPDefinitionOptionRelPersistenceImpl
 			OrderByComparator<CPDefinitionOptionRel> orderByComparator)
 		throws NoSuchCPDefinitionOptionRelException {
 
-		CPDefinitionOptionRel cpDefinitionOptionRel = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (cpDefinitionOptionRel != null) {
-			return cpDefinitionOptionRel;
-		}
-
-		throw new NoSuchCPDefinitionOptionRelException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -237,18 +169,13 @@ public class CPDefinitionOptionRelPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<CPDefinitionOptionRel>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<CPDefinitionOptionRel, NoSuchCPDefinitionOptionRelException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the cp definition option rel where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchCPDefinitionOptionRelException</code> if it could not be found.
@@ -262,34 +189,8 @@ public class CPDefinitionOptionRelPersistenceImpl
 	public CPDefinitionOptionRel findByUUID_G(String uuid, long groupId)
 		throws NoSuchCPDefinitionOptionRelException {
 
-		CPDefinitionOptionRel cpDefinitionOptionRel = fetchByUUID_G(
-			uuid, groupId);
-
-		if (cpDefinitionOptionRel == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPDefinitionOptionRelException(message);
-		}
-
-		return cpDefinitionOptionRel;
-	}
-
-	/**
-	 * Returns the cp definition option rel where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching cp definition option rel, or <code>null</code> if a matching cp definition option rel could not be found
-	 */
-	@Override
-	public CPDefinitionOptionRel fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -304,13 +205,8 @@ public class CPDefinitionOptionRelPersistenceImpl
 	public CPDefinitionOptionRel fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -343,75 +239,15 @@ public class CPDefinitionOptionRelPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CPDefinitionOptionRel>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the cp definition option rels where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp definition option rels where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @return the range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDefinitionOptionRel, NoSuchCPDefinitionOptionRelException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the cp definition option rels where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CPDefinitionOptionRel> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp definition option rels where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -428,14 +264,9 @@ public class CPDefinitionOptionRelPersistenceImpl
 		OrderByComparator<CPDefinitionOptionRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -453,16 +284,8 @@ public class CPDefinitionOptionRelPersistenceImpl
 			OrderByComparator<CPDefinitionOptionRel> orderByComparator)
 		throws NoSuchCPDefinitionOptionRelException {
 
-		CPDefinitionOptionRel cpDefinitionOptionRel = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (cpDefinitionOptionRel != null) {
-			return cpDefinitionOptionRel;
-		}
-
-		throw new NoSuchCPDefinitionOptionRelException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -503,78 +326,19 @@ public class CPDefinitionOptionRelPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<CPDefinitionOptionRel>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the cp definition option rels where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp definition option rels where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @return the range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDefinitionOptionRel, NoSuchCPDefinitionOptionRelException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the cp definition option rels where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<CPDefinitionOptionRel> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp definition option rels where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -590,14 +354,9 @@ public class CPDefinitionOptionRelPersistenceImpl
 		OrderByComparator<CPDefinitionOptionRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				finderCache, new Object[] {groupId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -614,16 +373,8 @@ public class CPDefinitionOptionRelPersistenceImpl
 			OrderByComparator<CPDefinitionOptionRel> orderByComparator)
 		throws NoSuchCPDefinitionOptionRelException {
 
-		CPDefinitionOptionRel cpDefinitionOptionRel = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (cpDefinitionOptionRel != null) {
-			return cpDefinitionOptionRel;
-		}
-
-		throw new NoSuchCPDefinitionOptionRelException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -661,78 +412,19 @@ public class CPDefinitionOptionRelPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				finderCache, new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<CPDefinitionOptionRel>
-		_collectionPersistenceFinderByCompanyId;
-
-	/**
-	 * Returns all the cp definition option rels where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp definition option rels where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @return the range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDefinitionOptionRel, NoSuchCPDefinitionOptionRelException>
+			_collectionPersistenceFinderByCompanyId;
 
 	/**
 	 * Returns an ordered range of all the cp definition option rels where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<CPDefinitionOptionRel> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp definition option rels where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -748,14 +440,9 @@ public class CPDefinitionOptionRelPersistenceImpl
 		OrderByComparator<CPDefinitionOptionRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				finderCache, new Object[] {companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			finderCache, new Object[] {companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -772,16 +459,8 @@ public class CPDefinitionOptionRelPersistenceImpl
 			OrderByComparator<CPDefinitionOptionRel> orderByComparator)
 		throws NoSuchCPDefinitionOptionRelException {
 
-		CPDefinitionOptionRel cpDefinitionOptionRel = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (cpDefinitionOptionRel != null) {
-			return cpDefinitionOptionRel;
-		}
-
-		throw new NoSuchCPDefinitionOptionRelException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -819,81 +498,19 @@ public class CPDefinitionOptionRelPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				finderCache, new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			finderCache, new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCPDefinitionId;
-	private FinderPath _finderPathWithoutPaginationFindByCPDefinitionId;
-	private FinderPath _finderPathCountByCPDefinitionId;
-	private CollectionPersistenceFinder<CPDefinitionOptionRel>
-		_collectionPersistenceFinderByCPDefinitionId;
-
-	/**
-	 * Returns all the cp definition option rels where CPDefinitionId = &#63;.
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @return the matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCPDefinitionId(
-		long CPDefinitionId) {
-
-		return findByCPDefinitionId(
-			CPDefinitionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp definition option rels where CPDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @return the range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCPDefinitionId(
-		long CPDefinitionId, int start, int end) {
-
-		return findByCPDefinitionId(CPDefinitionId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDefinitionOptionRel, NoSuchCPDefinitionOptionRelException>
+			_collectionPersistenceFinderByCPDefinitionId;
 
 	/**
 	 * Returns an ordered range of all the cp definition option rels where CPDefinitionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCPDefinitionId(
-		long CPDefinitionId, int start, int end,
-		OrderByComparator<CPDefinitionOptionRel> orderByComparator) {
-
-		return findByCPDefinitionId(
-			CPDefinitionId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp definition option rels where CPDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CPDefinitionId the cp definition ID
@@ -909,14 +526,9 @@ public class CPDefinitionOptionRelPersistenceImpl
 		OrderByComparator<CPDefinitionOptionRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByCPDefinitionId.find(
-				finderCache, new Object[] {CPDefinitionId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCPDefinitionId.find(
+			finderCache, new Object[] {CPDefinitionId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -933,16 +545,8 @@ public class CPDefinitionOptionRelPersistenceImpl
 			OrderByComparator<CPDefinitionOptionRel> orderByComparator)
 		throws NoSuchCPDefinitionOptionRelException {
 
-		CPDefinitionOptionRel cpDefinitionOptionRel =
-			fetchByCPDefinitionId_First(CPDefinitionId, orderByComparator);
-
-		if (cpDefinitionOptionRel != null) {
-			return cpDefinitionOptionRel;
-		}
-
-		throw new NoSuchCPDefinitionOptionRelException(
-			_collectionPersistenceFinderByCPDefinitionId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {CPDefinitionId}));
+		return _collectionPersistenceFinderByCPDefinitionId.findFirst(
+			finderCache, new Object[] {CPDefinitionId}, orderByComparator);
 	}
 
 	/**
@@ -980,79 +584,19 @@ public class CPDefinitionOptionRelPersistenceImpl
 	 */
 	@Override
 	public int countByCPDefinitionId(long CPDefinitionId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByCPDefinitionId.count(
-				finderCache, new Object[] {CPDefinitionId});
-		}
+		return _collectionPersistenceFinderByCPDefinitionId.count(
+			finderCache, new Object[] {CPDefinitionId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCPOptionId;
-	private FinderPath _finderPathWithoutPaginationFindByCPOptionId;
-	private FinderPath _finderPathCountByCPOptionId;
-	private CollectionPersistenceFinder<CPDefinitionOptionRel>
-		_collectionPersistenceFinderByCPOptionId;
-
-	/**
-	 * Returns all the cp definition option rels where CPOptionId = &#63;.
-	 *
-	 * @param CPOptionId the cp option ID
-	 * @return the matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCPOptionId(long CPOptionId) {
-		return findByCPOptionId(
-			CPOptionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp definition option rels where CPOptionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPOptionId the cp option ID
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @return the range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCPOptionId(
-		long CPOptionId, int start, int end) {
-
-		return findByCPOptionId(CPOptionId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDefinitionOptionRel, NoSuchCPDefinitionOptionRelException>
+			_collectionPersistenceFinderByCPOptionId;
 
 	/**
 	 * Returns an ordered range of all the cp definition option rels where CPOptionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPOptionId the cp option ID
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCPOptionId(
-		long CPOptionId, int start, int end,
-		OrderByComparator<CPDefinitionOptionRel> orderByComparator) {
-
-		return findByCPOptionId(
-			CPOptionId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp definition option rels where CPOptionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CPOptionId the cp option ID
@@ -1068,14 +612,9 @@ public class CPDefinitionOptionRelPersistenceImpl
 		OrderByComparator<CPDefinitionOptionRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByCPOptionId.find(
-				finderCache, new Object[] {CPOptionId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCPOptionId.find(
+			finderCache, new Object[] {CPOptionId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1092,16 +631,8 @@ public class CPDefinitionOptionRelPersistenceImpl
 			OrderByComparator<CPDefinitionOptionRel> orderByComparator)
 		throws NoSuchCPDefinitionOptionRelException {
 
-		CPDefinitionOptionRel cpDefinitionOptionRel = fetchByCPOptionId_First(
-			CPOptionId, orderByComparator);
-
-		if (cpDefinitionOptionRel != null) {
-			return cpDefinitionOptionRel;
-		}
-
-		throw new NoSuchCPDefinitionOptionRelException(
-			_collectionPersistenceFinderByCPOptionId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {CPOptionId}));
+		return _collectionPersistenceFinderByCPOptionId.findFirst(
+			finderCache, new Object[] {CPOptionId}, orderByComparator);
 	}
 
 	/**
@@ -1139,18 +670,13 @@ public class CPDefinitionOptionRelPersistenceImpl
 	 */
 	@Override
 	public int countByCPOptionId(long CPOptionId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByCPOptionId.count(
-				finderCache, new Object[] {CPOptionId});
-		}
+		return _collectionPersistenceFinderByCPOptionId.count(
+			finderCache, new Object[] {CPOptionId});
 	}
 
-	private FinderPath _finderPathFetchByC_C;
-	private UniquePersistenceFinder<CPDefinitionOptionRel>
-		_uniquePersistenceFinderByC_C;
+	private UniquePersistenceFinder
+		<CPDefinitionOptionRel, NoSuchCPDefinitionOptionRelException>
+			_uniquePersistenceFinderByC_C;
 
 	/**
 	 * Returns the cp definition option rel where CPDefinitionId = &#63; and CPOptionId = &#63; or throws a <code>NoSuchCPDefinitionOptionRelException</code> if it could not be found.
@@ -1164,37 +690,8 @@ public class CPDefinitionOptionRelPersistenceImpl
 	public CPDefinitionOptionRel findByC_C(long CPDefinitionId, long CPOptionId)
 		throws NoSuchCPDefinitionOptionRelException {
 
-		CPDefinitionOptionRel cpDefinitionOptionRel = fetchByC_C(
-			CPDefinitionId, CPOptionId);
-
-		if (cpDefinitionOptionRel == null) {
-			String message =
-				_uniquePersistenceFinderByC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {CPDefinitionId, CPOptionId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPDefinitionOptionRelException(message);
-		}
-
-		return cpDefinitionOptionRel;
-	}
-
-	/**
-	 * Returns the cp definition option rel where CPDefinitionId = &#63; and CPOptionId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param CPOptionId the cp option ID
-	 * @return the matching cp definition option rel, or <code>null</code> if a matching cp definition option rel could not be found
-	 */
-	@Override
-	public CPDefinitionOptionRel fetchByC_C(
-		long CPDefinitionId, long CPOptionId) {
-
-		return fetchByC_C(CPDefinitionId, CPOptionId, true);
+		return _uniquePersistenceFinderByC_C.find(
+			finderCache, new Object[] {CPDefinitionId, CPOptionId});
 	}
 
 	/**
@@ -1209,14 +706,9 @@ public class CPDefinitionOptionRelPersistenceImpl
 	public CPDefinitionOptionRel fetchByC_C(
 		long CPDefinitionId, long CPOptionId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _uniquePersistenceFinderByC_C.fetch(
-				finderCache, new Object[] {CPDefinitionId, CPOptionId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByC_C.fetch(
+			finderCache, new Object[] {CPDefinitionId, CPOptionId},
+			useFinderCache);
 	}
 
 	/**
@@ -1250,76 +742,15 @@ public class CPDefinitionOptionRelPersistenceImpl
 			finderCache, new Object[] {CPDefinitionId, CPOptionId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCPDI_R;
-	private FinderPath _finderPathWithoutPaginationFindByCPDI_R;
-	private FinderPath _finderPathCountByCPDI_R;
-	private CollectionPersistenceFinder<CPDefinitionOptionRel>
-		_collectionPersistenceFinderByCPDI_R;
-
-	/**
-	 * Returns all the cp definition option rels where CPDefinitionId = &#63; and required = &#63;.
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param required the required
-	 * @return the matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCPDI_R(
-		long CPDefinitionId, boolean required) {
-
-		return findByCPDI_R(
-			CPDefinitionId, required, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the cp definition option rels where CPDefinitionId = &#63; and required = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param required the required
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @return the range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCPDI_R(
-		long CPDefinitionId, boolean required, int start, int end) {
-
-		return findByCPDI_R(CPDefinitionId, required, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDefinitionOptionRel, NoSuchCPDefinitionOptionRelException>
+			_collectionPersistenceFinderByCPDI_R;
 
 	/**
 	 * Returns an ordered range of all the cp definition option rels where CPDefinitionId = &#63; and required = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param required the required
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByCPDI_R(
-		long CPDefinitionId, boolean required, int start, int end,
-		OrderByComparator<CPDefinitionOptionRel> orderByComparator) {
-
-		return findByCPDI_R(
-			CPDefinitionId, required, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp definition option rels where CPDefinitionId = &#63; and required = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CPDefinitionId the cp definition ID
@@ -1336,14 +767,9 @@ public class CPDefinitionOptionRelPersistenceImpl
 		OrderByComparator<CPDefinitionOptionRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByCPDI_R.find(
-				finderCache, new Object[] {CPDefinitionId, required}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCPDI_R.find(
+			finderCache, new Object[] {CPDefinitionId, required}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1361,17 +787,9 @@ public class CPDefinitionOptionRelPersistenceImpl
 			OrderByComparator<CPDefinitionOptionRel> orderByComparator)
 		throws NoSuchCPDefinitionOptionRelException {
 
-		CPDefinitionOptionRel cpDefinitionOptionRel = fetchByCPDI_R_First(
-			CPDefinitionId, required, orderByComparator);
-
-		if (cpDefinitionOptionRel != null) {
-			return cpDefinitionOptionRel;
-		}
-
-		throw new NoSuchCPDefinitionOptionRelException(
-			_collectionPersistenceFinderByCPDI_R.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {CPDefinitionId, required}));
+		return _collectionPersistenceFinderByCPDI_R.findFirst(
+			finderCache, new Object[] {CPDefinitionId, required},
+			orderByComparator);
 	}
 
 	/**
@@ -1413,86 +831,19 @@ public class CPDefinitionOptionRelPersistenceImpl
 	 */
 	@Override
 	public int countByCPDI_R(long CPDefinitionId, boolean required) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByCPDI_R.count(
-				finderCache, new Object[] {CPDefinitionId, required});
-		}
+		return _collectionPersistenceFinderByCPDI_R.count(
+			finderCache, new Object[] {CPDefinitionId, required});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_SC;
-	private FinderPath _finderPathWithoutPaginationFindByC_SC;
-	private FinderPath _finderPathCountByC_SC;
-	private CollectionPersistenceFinder<CPDefinitionOptionRel>
-		_collectionPersistenceFinderByC_SC;
-
-	/**
-	 * Returns all the cp definition option rels where CPDefinitionId = &#63; and skuContributor = &#63;.
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param skuContributor the sku contributor
-	 * @return the matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByC_SC(
-		long CPDefinitionId, boolean skuContributor) {
-
-		return findByC_SC(
-			CPDefinitionId, skuContributor, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp definition option rels where CPDefinitionId = &#63; and skuContributor = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param skuContributor the sku contributor
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @return the range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByC_SC(
-		long CPDefinitionId, boolean skuContributor, int start, int end) {
-
-		return findByC_SC(CPDefinitionId, skuContributor, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDefinitionOptionRel, NoSuchCPDefinitionOptionRelException>
+			_collectionPersistenceFinderByC_SC;
 
 	/**
 	 * Returns an ordered range of all the cp definition option rels where CPDefinitionId = &#63; and skuContributor = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param skuContributor the sku contributor
-	 * @param start the lower bound of the range of cp definition option rels
-	 * @param end the upper bound of the range of cp definition option rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp definition option rels
-	 */
-	@Override
-	public List<CPDefinitionOptionRel> findByC_SC(
-		long CPDefinitionId, boolean skuContributor, int start, int end,
-		OrderByComparator<CPDefinitionOptionRel> orderByComparator) {
-
-		return findByC_SC(
-			CPDefinitionId, skuContributor, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp definition option rels where CPDefinitionId = &#63; and skuContributor = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDefinitionOptionRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CPDefinitionId the cp definition ID
@@ -1509,14 +860,9 @@ public class CPDefinitionOptionRelPersistenceImpl
 		OrderByComparator<CPDefinitionOptionRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByC_SC.find(
-				finderCache, new Object[] {CPDefinitionId, skuContributor},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_SC.find(
+			finderCache, new Object[] {CPDefinitionId, skuContributor}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1534,17 +880,9 @@ public class CPDefinitionOptionRelPersistenceImpl
 			OrderByComparator<CPDefinitionOptionRel> orderByComparator)
 		throws NoSuchCPDefinitionOptionRelException {
 
-		CPDefinitionOptionRel cpDefinitionOptionRel = fetchByC_SC_First(
-			CPDefinitionId, skuContributor, orderByComparator);
-
-		if (cpDefinitionOptionRel != null) {
-			return cpDefinitionOptionRel;
-		}
-
-		throw new NoSuchCPDefinitionOptionRelException(
-			_collectionPersistenceFinderByC_SC.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {CPDefinitionId, skuContributor}));
+		return _collectionPersistenceFinderByC_SC.findFirst(
+			finderCache, new Object[] {CPDefinitionId, skuContributor},
+			orderByComparator);
 	}
 
 	/**
@@ -1586,18 +924,13 @@ public class CPDefinitionOptionRelPersistenceImpl
 	 */
 	@Override
 	public int countByC_SC(long CPDefinitionId, boolean skuContributor) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _collectionPersistenceFinderByC_SC.count(
-				finderCache, new Object[] {CPDefinitionId, skuContributor});
-		}
+		return _collectionPersistenceFinderByC_SC.count(
+			finderCache, new Object[] {CPDefinitionId, skuContributor});
 	}
 
-	private FinderPath _finderPathFetchByC_K;
-	private UniquePersistenceFinder<CPDefinitionOptionRel>
-		_uniquePersistenceFinderByC_K;
+	private UniquePersistenceFinder
+		<CPDefinitionOptionRel, NoSuchCPDefinitionOptionRelException>
+			_uniquePersistenceFinderByC_K;
 
 	/**
 	 * Returns the cp definition option rel where CPDefinitionId = &#63; and key = &#63; or throws a <code>NoSuchCPDefinitionOptionRelException</code> if it could not be found.
@@ -1611,35 +944,8 @@ public class CPDefinitionOptionRelPersistenceImpl
 	public CPDefinitionOptionRel findByC_K(long CPDefinitionId, String key)
 		throws NoSuchCPDefinitionOptionRelException {
 
-		CPDefinitionOptionRel cpDefinitionOptionRel = fetchByC_K(
-			CPDefinitionId, key);
-
-		if (cpDefinitionOptionRel == null) {
-			String message =
-				_uniquePersistenceFinderByC_K.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {CPDefinitionId, key});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPDefinitionOptionRelException(message);
-		}
-
-		return cpDefinitionOptionRel;
-	}
-
-	/**
-	 * Returns the cp definition option rel where CPDefinitionId = &#63; and key = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param CPDefinitionId the cp definition ID
-	 * @param key the key
-	 * @return the matching cp definition option rel, or <code>null</code> if a matching cp definition option rel could not be found
-	 */
-	@Override
-	public CPDefinitionOptionRel fetchByC_K(long CPDefinitionId, String key) {
-		return fetchByC_K(CPDefinitionId, key, true);
+		return _uniquePersistenceFinderByC_K.find(
+			finderCache, new Object[] {CPDefinitionId, key});
 	}
 
 	/**
@@ -1654,14 +960,8 @@ public class CPDefinitionOptionRelPersistenceImpl
 	public CPDefinitionOptionRel fetchByC_K(
 		long CPDefinitionId, String key, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDefinitionOptionRel.class)) {
-
-			return _uniquePersistenceFinderByC_K.fetch(
-				finderCache, new Object[] {CPDefinitionId, key},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByC_K.fetch(
+			finderCache, new Object[] {CPDefinitionId, key}, useFinderCache);
 	}
 
 	/**
@@ -2020,319 +1320,295 @@ public class CPDefinitionOptionRelPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE,
 			_SQL_COUNT_CPDEFINITIONOPTIONREL_WHERE,
 			CPDefinitionOptionRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
-				"cpDefinitionOptionRel.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, CPDefinitionOptionRel::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			CPDefinitionOptionRel::getUuid, CPDefinitionOptionRel::getGroupId);
+				"cpDefinitionOptionRel.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPDefinitionOptionRel::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(CPDefinitionOptionRel::getUuid),
+				CPDefinitionOptionRel::getGroupId),
+			_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE, "",
 			new FinderColumn<>(
-				"cpDefinitionOptionRel.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, CPDefinitionOptionRel::getUuid),
+				"cpDefinitionOptionRel.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPDefinitionOptionRel::getUuid),
 			new FinderColumn<>(
 				"cpDefinitionOptionRel.", "groupId", FinderColumn.Type.LONG,
 				"=", true, true, CPDefinitionOptionRel::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE,
 				_SQL_COUNT_CPDEFINITIONOPTIONREL_WHERE,
 				CPDefinitionOptionRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"cpDefinitionOptionRel.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, CPDefinitionOptionRel::getUuid),
+					"cpDefinitionOptionRel.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					CPDefinitionOptionRel::getUuid),
 				new FinderColumn<>(
 					"cpDefinitionOptionRel.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CPDefinitionOptionRel::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
 				_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE,
 				_SQL_COUNT_CPDEFINITIONOPTIONREL_WHERE,
 				CPDefinitionOptionRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpDefinitionOptionRel.", "groupId", FinderColumn.Type.LONG,
 					"=", true, true, CPDefinitionOptionRel::getGroupId));
 
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
 				_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE,
 				_SQL_COUNT_CPDEFINITIONOPTIONREL_WHERE,
 				CPDefinitionOptionRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpDefinitionOptionRel.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CPDefinitionOptionRel::getCompanyId));
 
-		_finderPathWithPaginationFindByCPDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPDefinitionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"CPDefinitionId"}, true);
-
-		_finderPathWithoutPaginationFindByCPDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCPDefinitionId",
-			new String[] {Long.class.getName()},
-			new String[] {"CPDefinitionId"}, true);
-
-		_finderPathCountByCPDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCPDefinitionId",
-			new String[] {Long.class.getName()},
-			new String[] {"CPDefinitionId"}, false);
-
 		_collectionPersistenceFinderByCPDefinitionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCPDefinitionId,
-				_finderPathWithoutPaginationFindByCPDefinitionId,
-				_finderPathCountByCPDefinitionId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCPDefinitionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CPDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCPDefinitionId", new String[] {Long.class.getName()},
+					new String[] {"CPDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCPDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"CPDefinitionId"}, false),
 				_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE,
 				_SQL_COUNT_CPDEFINITIONOPTIONREL_WHERE,
 				CPDefinitionOptionRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpDefinitionOptionRel.", "CPDefinitionId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CPDefinitionOptionRel::getCPDefinitionId));
 
-		_finderPathWithPaginationFindByCPOptionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPOptionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"CPOptionId"}, true);
-
-		_finderPathWithoutPaginationFindByCPOptionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCPOptionId",
-			new String[] {Long.class.getName()}, new String[] {"CPOptionId"},
-			true);
-
-		_finderPathCountByCPOptionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCPOptionId",
-			new String[] {Long.class.getName()}, new String[] {"CPOptionId"},
-			false);
-
 		_collectionPersistenceFinderByCPOptionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCPOptionId,
-				_finderPathWithoutPaginationFindByCPOptionId,
-				_finderPathCountByCPOptionId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPOptionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CPOptionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCPOptionId", new String[] {Long.class.getName()},
+					new String[] {"CPOptionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCPOptionId", new String[] {Long.class.getName()},
+					new String[] {"CPOptionId"}, false),
 				_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE,
 				_SQL_COUNT_CPDEFINITIONOPTIONREL_WHERE,
 				CPDefinitionOptionRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpDefinitionOptionRel.", "CPOptionId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CPDefinitionOptionRel::getCPOptionId));
 
-		_finderPathFetchByC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"CPDefinitionId", "CPOptionId"}, false,
-			CPDefinitionOptionRel::getCPDefinitionId,
-			CPDefinitionOptionRel::getCPOptionId);
-
 		_uniquePersistenceFinderByC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_C,
-			_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"CPDefinitionId", "CPOptionId"}, 0, 0, false,
+				CPDefinitionOptionRel::getCPDefinitionId,
+				CPDefinitionOptionRel::getCPOptionId),
+			_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE, "",
 			new FinderColumn<>(
 				"cpDefinitionOptionRel.", "CPDefinitionId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CPDefinitionOptionRel::getCPDefinitionId),
 			new FinderColumn<>(
 				"cpDefinitionOptionRel.", "CPOptionId", FinderColumn.Type.LONG,
 				"=", true, true, CPDefinitionOptionRel::getCPOptionId));
 
-		_finderPathWithPaginationFindByCPDI_R = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPDI_R",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"CPDefinitionId", "required"}, true);
-
-		_finderPathWithoutPaginationFindByCPDI_R = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCPDI_R",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"CPDefinitionId", "required"}, true);
-
-		_finderPathCountByCPDI_R = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCPDI_R",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"CPDefinitionId", "required"}, false);
-
 		_collectionPersistenceFinderByCPDI_R =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCPDI_R,
-				_finderPathWithoutPaginationFindByCPDI_R,
-				_finderPathCountByCPDI_R,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPDI_R",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CPDefinitionId", "required"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCPDI_R",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {"CPDefinitionId", "required"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCPDI_R",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {"CPDefinitionId", "required"}, false),
 				_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE,
 				_SQL_COUNT_CPDEFINITIONOPTIONREL_WHERE,
 				CPDefinitionOptionRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpDefinitionOptionRel.", "CPDefinitionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					CPDefinitionOptionRel::getCPDefinitionId),
 				new FinderColumn<>(
 					"cpDefinitionOptionRel.", "required",
 					FinderColumn.Type.BOOLEAN, "=", true, true,
 					CPDefinitionOptionRel::isRequired));
 
-		_finderPathWithPaginationFindByC_SC = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_SC",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"CPDefinitionId", "skuContributor"}, true);
-
-		_finderPathWithoutPaginationFindByC_SC = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_SC",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"CPDefinitionId", "skuContributor"}, true);
-
-		_finderPathCountByC_SC = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_SC",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"CPDefinitionId", "skuContributor"}, false);
-
 		_collectionPersistenceFinderByC_SC = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_SC,
-			_finderPathWithoutPaginationFindByC_SC, _finderPathCountByC_SC,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_SC",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"CPDefinitionId", "skuContributor"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_SC",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"CPDefinitionId", "skuContributor"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_SC",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"CPDefinitionId", "skuContributor"}, false),
 			_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE,
 			_SQL_COUNT_CPDEFINITIONOPTIONREL_WHERE,
 			CPDefinitionOptionRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"cpDefinitionOptionRel.", "CPDefinitionId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CPDefinitionOptionRel::getCPDefinitionId),
 			new FinderColumn<>(
 				"cpDefinitionOptionRel.", "skuContributor",
 				FinderColumn.Type.BOOLEAN, "=", true, true,
 				CPDefinitionOptionRel::isSkuContributor));
 
-		_finderPathFetchByC_K = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_K",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"CPDefinitionId", "key_"}, false,
-			CPDefinitionOptionRel::getCPDefinitionId,
-			CPDefinitionOptionRel::getKey);
-
 		_uniquePersistenceFinderByC_K = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_K,
-			_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_K",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"CPDefinitionId", "key_"}, 0, 2, false,
+				CPDefinitionOptionRel::getCPDefinitionId,
+				convertNullFunction(CPDefinitionOptionRel::getKey)),
+			_SQL_SELECT_CPDEFINITIONOPTIONREL_WHERE, "",
 			new FinderColumn<>(
 				"cpDefinitionOptionRel.", "CPDefinitionId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CPDefinitionOptionRel::getCPDefinitionId),
 			new FinderColumn<>(
-				"cpDefinitionOptionRel.", "key", FinderColumn.Type.STRING, "=",
-				true, true, CPDefinitionOptionRel::getKey));
+				"cpDefinitionOptionRel.", "key", "key_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPDefinitionOptionRel::getKey));
 
 		CPDefinitionOptionRelUtil.setPersistence(this);
 	}
@@ -2406,4 +1682,4 @@ public class CPDefinitionOptionRelPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1600103635
+// LIFERAY-SERVICE-BUILDER-HASH:1010888905

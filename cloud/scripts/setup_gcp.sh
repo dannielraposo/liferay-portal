@@ -18,9 +18,19 @@ function main {
 	if [ "${#}" -ne 2 ]
 	then
 		echo "Usage: ${0} <configuration-json-file> <versions-tfvars-file>" >&2
+		echo "" >&2
+		echo "See cloud/scripts/config.json.example_gcp for a sample." >&2
 
 		exit 1
 	fi
+
+	_check_utils gcloud jq kubectl terraform
+
+	_check_terraform_version "1.10.0"
+
+	_validate_config_json "${1}"
+
+	_validate_versions_tfvars "${2}"
 
 	_generate_tfvars "${1}" "${_SCRIPTS_DIR}/global_terraform.tfvars"
 
@@ -31,32 +41,170 @@ function main {
 
 	gcloud auth application-default login
 
-	local terraform_args
+	local bucket_name=""
+	local region=""
 
-	readarray -t terraform_args < <(_get_terraform_apply_args "${1}" "${2}")
+	local terraform_args=()
 
-	_set_up_gcp_gke "${terraform_args[@]}"
+	while IFS= read -r terraform_arg
+	do
+		terraform_args+=("${terraform_arg}")
+	done < <(_get_terraform_apply_args "${1}" "${2}")
 
-	_set_up_gcp_gitops "${terraform_args[@]}"
+	if jq --exit-status '.variables.tfstate_bucket_name' "${1}" &> /dev/null
+	then
+		bucket_name="$(jq --raw-output '.variables.tfstate_bucket_name' "${1}")"
+		region="$(jq --raw-output '.variables.region' "${1}")"
+
+		_create_tfstate_bucket "${bucket_name}" "${region}" "${_GCP_PROJECT_ID}"
+	fi
+
+	_set_up_gcp_gke "${bucket_name}" "${_GCP_DEPLOYMENT_NAME}" "${region}" "${terraform_args[@]}"
+
+	_set_up_gcp_gitops "${bucket_name}" "${_GCP_DEPLOYMENT_NAME}" "${region}" "${terraform_args[@]}"
+}
+
+function _check_terraform_version {
+	local found_version
+
+	found_version=$(terraform --version | awk '/^Terraform v/ {print $2; exit}')
+	found_version="${found_version#v}"
+
+	local required_version="${1}"
+
+	local lowest_version
+
+	lowest_version=$(printf "%s\n%s\n" "${required_version}" "${found_version}" | sort --version-sort | head -n 1)
+
+	if [ "${lowest_version}" != "${required_version}" ]
+	then
+		echo "The installed Terraform version ${found_version} is older than ${required_version}." >&2
+
+		exit 1
+	fi
+}
+
+function _check_utils {
+	for util in "${@}"
+	do
+		if (! command -v "${util}" &> /dev/null)
+		then
+			echo "The utility ${util} is not installed."
+
+			exit 1
+		fi
+	done
+}
+
+function _configure_gcs_bucket {
+	local bucket_name="${1}"
+	local key_name="tfstate-${bucket_name}"
+	local project_id="${3}"
+	local region="${2}"
+
+	if ! gcloud kms keyrings describe \
+		"${key_name}" \
+		--location "${region}" \
+		--project "${project_id}" \
+		&> /dev/null
+	then
+		_log "Creating KMS keyring ${key_name}."
+
+		gcloud kms keyrings create \
+			"${key_name}" \
+			--location "${region}" \
+			--project "${project_id}"
+
+		_log "KMS keyring ${key_name} was created successfully."
+	else
+		_log "KMS keyring ${key_name} already exists. Skipping creation process."
+	fi
+
+	if ! gcloud kms keys describe \
+		"${key_name}" \
+		--keyring "${key_name}" \
+		--location "${region}" \
+		--project "${project_id}" \
+		&> /dev/null
+	then
+		_log "Creating KMS key ${key_name}."
+
+		gcloud kms keys create \
+			"${key_name}" \
+			--keyring "${key_name}" \
+			--location "${region}" \
+			--project "${project_id}" \
+			--purpose "encryption"
+
+		_log "KMS key ${key_name} was created successfully."
+	else
+		_log "KMS key ${key_name} already exists. Skipping creation process."
+	fi
+
+	local service_agent
+
+	service_agent="$(gcloud storage service-agent --project "${project_id}")"
+
+	gcloud kms keys add-iam-policy-binding \
+		"${key_name}" \
+		--keyring "${key_name}" \
+		--location "${region}" \
+		--member "serviceAccount:${service_agent}" \
+		--project "${project_id}" \
+		--role "roles/cloudkms.cryptoKeyEncrypterDecrypter" \
+		> /dev/null
+
+	gcloud storage buckets update \
+		"gs://${bucket_name}" \
+		--default-encryption-key "projects/${project_id}/locations/${region}/keyRings/${key_name}/cryptoKeys/${key_name}" \
+		--project "${project_id}" \
+		--retention-period "90d"
+}
+
+function _create_tfstate_bucket {
+	local bucket_name="${1}"
+	local project_id="${3}"
+	local region="${2}"
+
+	if ! gcloud storage buckets describe "gs://${bucket_name}" --project "${project_id}" &> /dev/null
+	then
+		_log "Creating bucket ${bucket_name}."
+
+		_create_gcs_bucket "${bucket_name}" "${region}" "${project_id}"
+
+		_log "Bucket ${bucket_name} was created successfully."
+	else
+		_log "Bucket ${bucket_name} already exists. Skipping creation process."
+	fi
+
+	_log "Configuring bucket ${bucket_name}."
+
+	_configure_gcs_bucket "${bucket_name}" "${region}" "${project_id}"
+
+	_log "Bucket ${bucket_name} was configured successfully."
+}
+
+function _create_gcs_bucket {
+	local bucket_name="${1}"
+	local project_id="${3}"
+	local region="${2}"
+
+	gcloud storage buckets create \
+		"gs://${bucket_name}" \
+		--location "${region}" \
+		--project "${project_id}" \
+		--public-access-prevention \
+		--uniform-bucket-level-access \
+		1> /dev/null
+
+	gcloud storage buckets update \
+		"gs://${bucket_name}" \
+		--project "${project_id}" \
+		--versioning
 }
 
 function _generate_tfvars {
 	local configuration_json_file="${1}"
-
-	if [ ! -f "${configuration_json_file}" ]
-	then
-		echo "Configuration JSON file ${configuration_json_file} does not exist." >&2
-
-		exit 1
-	fi
-
-	if ! jq --exit-status '.variables | objects' "${configuration_json_file}" > /dev/null
-	then
-		echo "The configuration JSON file must contain a root object named \"variables\"."
-
-		exit 1
-	fi
-
 	local tfvars_file="${2}"
 
 	echo "Generating ${tfvars_file} from ${configuration_json_file}."
@@ -100,16 +248,9 @@ function _get_terraform_apply_args {
 
 	local versions_tfvars_file="${2}"
 
-	if [ ! -f "${versions_tfvars_file}" ]
-	then
-		echo "${versions_tfvars_file} does not exist." >&2
-
-		exit 1
-	fi
-
 	local versions_tfvars_file_path
 
-	versions_tfvars_file_path=$(realpath "${versions_tfvars_file}")
+	versions_tfvars_file_path=$(_resolve_path "${versions_tfvars_file}")
 
 	local apply_args=(
 		"-var-file=${versions_tfvars_file_path}"
@@ -130,6 +271,10 @@ function _get_terraform_apply_args {
 	fi
 
 	printf '%s\n' "${apply_args[@]}"
+}
+
+function _log {
+	echo "[Tfstate bucket configuration] ${1}"
 }
 
 function _popd {
@@ -182,12 +327,56 @@ function _recover_kubectl_context {
 	exit "${exit_code}"
 }
 
+function _resolve_path {
+	local file_path="${1}"
+
+	if [ ! -e "${file_path}" ]
+	then
+		echo "Path ${file_path} does not exist." >&2
+
+		exit 1
+	fi
+
+	local dir_path
+
+	if ! dir_path=$(cd "$(dirname "${file_path}")" && pwd)
+	then
+		echo "Failed to resolve directory for ${file_path}." >&2
+
+		exit 1
+	fi
+
+	printf '%s/%s\n' "${dir_path}" "$(basename "${file_path}")"
+}
+
+function _set_up_gcp_gitops {
+	local bucket_name="${1}"
+	local deployment_name="${2}"
+	local region="${3}"
+
+	_pushd "${_ROOT_CLOUD_DIR}/terraform/gcp/gitops"
+
+	echo "Setting up the Google GCP GitOps infrastructure."
+
+	_terraform_init_and_apply "./platform" "gitops/platform" "${bucket_name}" "${deployment_name}" "${region}" "${@:4}"
+
+	_terraform_init_and_apply "./resources" "gitops/resources" "${bucket_name}" "${deployment_name}" "${region}" "${@:4}"
+
+	echo "Google GCP GitOps infrastructure setup complete."
+
+	_popd
+}
+
 function _set_up_gcp_gke {
+	local bucket_name="${1}"
+	local deployment_name="${2}"
+	local region="${3}"
+
 	_pushd "${_ROOT_CLOUD_DIR}/terraform/gcp/gke"
 
 	echo "Setting up the Google GKE cluster."
 
-	_terraform_init_and_apply "." "$@"
+	_terraform_init_and_apply "." "gke" "${bucket_name}" "${deployment_name}" "${region}" "${@:4}"
 
 	gcloud auth login
 
@@ -204,28 +393,68 @@ function _set_up_gcp_gke {
 	_popd
 }
 
-function _set_up_gcp_gitops {
-	_pushd "${_ROOT_CLOUD_DIR}/terraform/gcp/gitops"
+function _terraform_init_and_apply {
+	local bucket_name="${3}"
+	local deployment_name="${4}"
+	local folder_separator="${2}"
+	local region="${5}"
 
-	echo "Setting up the Google GCP GitOps infrastructure."
+	_pushd "${1}"
 
-	_terraform_init_and_apply "./platform" "$@"
+	if [ -n "${bucket_name}" ]
+	then
+		terraform init \
+			-backend-config="bucket=${bucket_name}" \
+			-backend-config="prefix=${deployment_name}/${region}/${folder_separator}" \
+			-upgrade
+	else
+		cat > backend_override.tf <<EOF
+terraform {
+	backend "local" {}
+}
+EOF
+		terraform init -upgrade
+	fi
 
-	_terraform_init_and_apply "./resources" "$@"
-
-	echo "Google GCP GitOps infrastructure setup complete."
+	terraform apply "${@:6}"
 
 	_popd
 }
 
-function _terraform_init_and_apply {
-	_pushd "${1}"
+function _validate_config_json {
+	local configuration_json_file="${1}"
 
-	terraform init -upgrade
+	if [ ! -f "${configuration_json_file}" ]
+	then
+		echo "Configuration JSON file ${configuration_json_file} does not exist." >&2
 
-	terraform apply "${@:2}"
+		exit 1
+	fi
 
-	_popd
+	if ! jq empty "${configuration_json_file}" &> /dev/null
+	then
+		echo "Configuration JSON file ${configuration_json_file} is not valid JSON." >&2
+
+		exit 1
+	fi
+
+	if ! jq --exit-status '.variables | objects' "${configuration_json_file}" > /dev/null
+	then
+		echo "The configuration JSON file must contain a root object named \"variables\"." >&2
+
+		exit 1
+	fi
+}
+
+function _validate_versions_tfvars {
+	local versions_tfvars_file="${1}"
+
+	if [ ! -f "${versions_tfvars_file}" ]
+	then
+		echo "Versions tfvars file ${versions_tfvars_file} does not exist." >&2
+
+		exit 1
+	fi
 }
 
 main "${@}"

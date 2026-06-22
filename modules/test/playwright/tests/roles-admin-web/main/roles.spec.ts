@@ -1672,11 +1672,9 @@ test(
 			site1
 		);
 
-		const site2 = await apiHelpers.headlessSite.createSite({
+		const site2 = await apiHelpers.headlessAdminSite.postSite({
 			name: getRandomString(),
 		});
-
-		apiHelpers.data.push({id: site2.externalReferenceCode, type: 'site'});
 
 		const bookmarkName2 = getRandomString();
 
@@ -2290,5 +2288,34 @@ test(
 				timeout: 100,
 			});
 		}).toPass();
+	}
+);
+
+test(
+	'Cannot edit the key of the CMS Administrator role',
+	{tag: ['@LPD-83058']},
+	async ({apiHelpers, rolePage, rolesPage}) => {
+		const roleName = 'CMS Administrator';
+
+		const existingRole =
+			await apiHelpers.headlessAdminUser.getRoleByName(roleName);
+
+		if (!existingRole) {
+			await apiHelpers.headlessAdminUser.postRole({
+				name: roleName,
+				roleType: 'regular',
+			});
+		}
+
+		await rolesPage.goto();
+
+		await rolesPage.rolesTable.search(roleName);
+		await (await rolesPage.rolesTable.cellLink(roleName)).click();
+
+		await expect(rolePage.disabledKeyInput).toBeVisible();
+		await expect(rolePage.disabledKeyInput).toBeDisabled();
+		await expect(rolePage.disabledKeyInput).toHaveValue(roleName);
+		await expect(rolePage.keyInput).toBeHidden();
+		await expect(rolePage.keyInput).toHaveValue(roleName);
 	}
 );

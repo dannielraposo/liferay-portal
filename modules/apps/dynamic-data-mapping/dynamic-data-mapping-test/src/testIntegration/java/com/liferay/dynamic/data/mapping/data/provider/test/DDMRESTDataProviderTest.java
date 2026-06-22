@@ -45,6 +45,7 @@ import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.log.LogCapture;
@@ -286,7 +287,9 @@ public class DDMRESTDataProviderTest {
 				false, false, null, null, outputParameterId, "$.fullName",
 				"text", null, null,
 				String.format(
-					"http://localhost:8080/o/ddm/get-full-name?name=%s&name=%s",
+					"http://localhost:" +
+						PortalUtil.getPortalServerPort(false) +
+							"/o/ddm/get-full-name?name=%s&name=%s",
 					firstName, lastName)),
 			false);
 
@@ -706,10 +709,12 @@ public class DDMRESTDataProviderTest {
 	}
 
 	private static final String _GET_COUNTRIES_URL =
-		"http://localhost:8080/api/jsonws/country/get-countries";
+		"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+			"/api/jsonws/country/get-countries";
 
 	private static final String _GET_COUNTRY_BY_NAME_URL =
-		"http://localhost:8080/api/jsonws/country/get-country-by-name";
+		"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+			"/api/jsonws/country/get-country-by-name";
 
 	private static ServiceRegistration<Application> _serviceRegistration;
 

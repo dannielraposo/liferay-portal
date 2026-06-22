@@ -5,13 +5,11 @@
 
 package com.liferay.segments.service.persistence.impl;
 
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -84,70 +82,15 @@ public class SegmentsEntryRolePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindBySegmentsEntryId;
-	private FinderPath _finderPathWithoutPaginationFindBySegmentsEntryId;
-	private FinderPath _finderPathCountBySegmentsEntryId;
-	private CollectionPersistenceFinder<SegmentsEntryRole>
-		_collectionPersistenceFinderBySegmentsEntryId;
-
-	/**
-	 * Returns all the segments entry roles where segmentsEntryId = &#63;.
-	 *
-	 * @param segmentsEntryId the segments entry ID
-	 * @return the matching segments entry roles
-	 */
-	@Override
-	public List<SegmentsEntryRole> findBySegmentsEntryId(long segmentsEntryId) {
-		return findBySegmentsEntryId(
-			segmentsEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the segments entry roles where segmentsEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsEntryRoleModelImpl</code>.
-	 * </p>
-	 *
-	 * @param segmentsEntryId the segments entry ID
-	 * @param start the lower bound of the range of segments entry roles
-	 * @param end the upper bound of the range of segments entry roles (not inclusive)
-	 * @return the range of matching segments entry roles
-	 */
-	@Override
-	public List<SegmentsEntryRole> findBySegmentsEntryId(
-		long segmentsEntryId, int start, int end) {
-
-		return findBySegmentsEntryId(segmentsEntryId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<SegmentsEntryRole, NoSuchEntryRoleException>
+			_collectionPersistenceFinderBySegmentsEntryId;
 
 	/**
 	 * Returns an ordered range of all the segments entry roles where segmentsEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsEntryRoleModelImpl</code>.
-	 * </p>
-	 *
-	 * @param segmentsEntryId the segments entry ID
-	 * @param start the lower bound of the range of segments entry roles
-	 * @param end the upper bound of the range of segments entry roles (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching segments entry roles
-	 */
-	@Override
-	public List<SegmentsEntryRole> findBySegmentsEntryId(
-		long segmentsEntryId, int start, int end,
-		OrderByComparator<SegmentsEntryRole> orderByComparator) {
-
-		return findBySegmentsEntryId(
-			segmentsEntryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the segments entry roles where segmentsEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsEntryRoleModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsEntryRoleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param segmentsEntryId the segments entry ID
@@ -163,14 +106,9 @@ public class SegmentsEntryRolePersistenceImpl
 		OrderByComparator<SegmentsEntryRole> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsEntryRole.class)) {
-
-			return _collectionPersistenceFinderBySegmentsEntryId.find(
-				finderCache, new Object[] {segmentsEntryId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderBySegmentsEntryId.find(
+			finderCache, new Object[] {segmentsEntryId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -187,16 +125,8 @@ public class SegmentsEntryRolePersistenceImpl
 			OrderByComparator<SegmentsEntryRole> orderByComparator)
 		throws NoSuchEntryRoleException {
 
-		SegmentsEntryRole segmentsEntryRole = fetchBySegmentsEntryId_First(
-			segmentsEntryId, orderByComparator);
-
-		if (segmentsEntryRole != null) {
-			return segmentsEntryRole;
-		}
-
-		throw new NoSuchEntryRoleException(
-			_collectionPersistenceFinderBySegmentsEntryId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {segmentsEntryId}));
+		return _collectionPersistenceFinderBySegmentsEntryId.findFirst(
+			finderCache, new Object[] {segmentsEntryId}, orderByComparator);
 	}
 
 	/**
@@ -234,77 +164,19 @@ public class SegmentsEntryRolePersistenceImpl
 	 */
 	@Override
 	public int countBySegmentsEntryId(long segmentsEntryId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsEntryRole.class)) {
-
-			return _collectionPersistenceFinderBySegmentsEntryId.count(
-				finderCache, new Object[] {segmentsEntryId});
-		}
+		return _collectionPersistenceFinderBySegmentsEntryId.count(
+			finderCache, new Object[] {segmentsEntryId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByRoleId;
-	private FinderPath _finderPathWithoutPaginationFindByRoleId;
-	private FinderPath _finderPathCountByRoleId;
-	private CollectionPersistenceFinder<SegmentsEntryRole>
-		_collectionPersistenceFinderByRoleId;
-
-	/**
-	 * Returns all the segments entry roles where roleId = &#63;.
-	 *
-	 * @param roleId the role ID
-	 * @return the matching segments entry roles
-	 */
-	@Override
-	public List<SegmentsEntryRole> findByRoleId(long roleId) {
-		return findByRoleId(roleId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the segments entry roles where roleId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsEntryRoleModelImpl</code>.
-	 * </p>
-	 *
-	 * @param roleId the role ID
-	 * @param start the lower bound of the range of segments entry roles
-	 * @param end the upper bound of the range of segments entry roles (not inclusive)
-	 * @return the range of matching segments entry roles
-	 */
-	@Override
-	public List<SegmentsEntryRole> findByRoleId(
-		long roleId, int start, int end) {
-
-		return findByRoleId(roleId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<SegmentsEntryRole, NoSuchEntryRoleException>
+			_collectionPersistenceFinderByRoleId;
 
 	/**
 	 * Returns an ordered range of all the segments entry roles where roleId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsEntryRoleModelImpl</code>.
-	 * </p>
-	 *
-	 * @param roleId the role ID
-	 * @param start the lower bound of the range of segments entry roles
-	 * @param end the upper bound of the range of segments entry roles (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching segments entry roles
-	 */
-	@Override
-	public List<SegmentsEntryRole> findByRoleId(
-		long roleId, int start, int end,
-		OrderByComparator<SegmentsEntryRole> orderByComparator) {
-
-		return findByRoleId(roleId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the segments entry roles where roleId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsEntryRoleModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsEntryRoleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param roleId the role ID
@@ -320,14 +192,9 @@ public class SegmentsEntryRolePersistenceImpl
 		OrderByComparator<SegmentsEntryRole> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsEntryRole.class)) {
-
-			return _collectionPersistenceFinderByRoleId.find(
-				finderCache, new Object[] {roleId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByRoleId.find(
+			finderCache, new Object[] {roleId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -343,16 +210,8 @@ public class SegmentsEntryRolePersistenceImpl
 			long roleId, OrderByComparator<SegmentsEntryRole> orderByComparator)
 		throws NoSuchEntryRoleException {
 
-		SegmentsEntryRole segmentsEntryRole = fetchByRoleId_First(
-			roleId, orderByComparator);
-
-		if (segmentsEntryRole != null) {
-			return segmentsEntryRole;
-		}
-
-		throw new NoSuchEntryRoleException(
-			_collectionPersistenceFinderByRoleId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {roleId}));
+		return _collectionPersistenceFinderByRoleId.findFirst(
+			finderCache, new Object[] {roleId}, orderByComparator);
 	}
 
 	/**
@@ -389,17 +248,11 @@ public class SegmentsEntryRolePersistenceImpl
 	 */
 	@Override
 	public int countByRoleId(long roleId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsEntryRole.class)) {
-
-			return _collectionPersistenceFinderByRoleId.count(
-				finderCache, new Object[] {roleId});
-		}
+		return _collectionPersistenceFinderByRoleId.count(
+			finderCache, new Object[] {roleId});
 	}
 
-	private FinderPath _finderPathFetchByS_R;
-	private UniquePersistenceFinder<SegmentsEntryRole>
+	private UniquePersistenceFinder<SegmentsEntryRole, NoSuchEntryRoleException>
 		_uniquePersistenceFinderByS_R;
 
 	/**
@@ -414,35 +267,8 @@ public class SegmentsEntryRolePersistenceImpl
 	public SegmentsEntryRole findByS_R(long segmentsEntryId, long roleId)
 		throws NoSuchEntryRoleException {
 
-		SegmentsEntryRole segmentsEntryRole = fetchByS_R(
-			segmentsEntryId, roleId);
-
-		if (segmentsEntryRole == null) {
-			String message =
-				_uniquePersistenceFinderByS_R.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {segmentsEntryId, roleId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchEntryRoleException(message);
-		}
-
-		return segmentsEntryRole;
-	}
-
-	/**
-	 * Returns the segments entry role where segmentsEntryId = &#63; and roleId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param segmentsEntryId the segments entry ID
-	 * @param roleId the role ID
-	 * @return the matching segments entry role, or <code>null</code> if a matching segments entry role could not be found
-	 */
-	@Override
-	public SegmentsEntryRole fetchByS_R(long segmentsEntryId, long roleId) {
-		return fetchByS_R(segmentsEntryId, roleId, true);
+		return _uniquePersistenceFinderByS_R.find(
+			finderCache, new Object[] {segmentsEntryId, roleId});
 	}
 
 	/**
@@ -457,14 +283,9 @@ public class SegmentsEntryRolePersistenceImpl
 	public SegmentsEntryRole fetchByS_R(
 		long segmentsEntryId, long roleId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsEntryRole.class)) {
-
-			return _uniquePersistenceFinderByS_R.fetch(
-				finderCache, new Object[] {segmentsEntryId, roleId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByS_R.fetch(
+			finderCache, new Object[] {segmentsEntryId, roleId},
+			useFinderCache);
 	}
 
 	/**
@@ -775,77 +596,76 @@ public class SegmentsEntryRolePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindBySegmentsEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findBySegmentsEntryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"segmentsEntryId"}, true);
-
-		_finderPathWithoutPaginationFindBySegmentsEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findBySegmentsEntryId",
-			new String[] {Long.class.getName()},
-			new String[] {"segmentsEntryId"}, true);
-
-		_finderPathCountBySegmentsEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countBySegmentsEntryId",
-			new String[] {Long.class.getName()},
-			new String[] {"segmentsEntryId"}, false);
-
 		_collectionPersistenceFinderBySegmentsEntryId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindBySegmentsEntryId,
-				_finderPathWithoutPaginationFindBySegmentsEntryId,
-				_finderPathCountBySegmentsEntryId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findBySegmentsEntryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"segmentsEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findBySegmentsEntryId",
+					new String[] {Long.class.getName()},
+					new String[] {"segmentsEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countBySegmentsEntryId",
+					new String[] {Long.class.getName()},
+					new String[] {"segmentsEntryId"}, false),
 				_SQL_SELECT_SEGMENTSENTRYROLE_WHERE,
 				_SQL_COUNT_SEGMENTSENTRYROLE_WHERE,
 				SegmentsEntryRoleModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"segmentsEntryRole.", "segmentsEntryId",
 					FinderColumn.Type.LONG, "=", true, true,
 					SegmentsEntryRole::getSegmentsEntryId));
 
-		_finderPathWithPaginationFindByRoleId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByRoleId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"roleId"}, true);
-
-		_finderPathWithoutPaginationFindByRoleId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByRoleId",
-			new String[] {Long.class.getName()}, new String[] {"roleId"}, true);
-
-		_finderPathCountByRoleId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByRoleId",
-			new String[] {Long.class.getName()}, new String[] {"roleId"},
-			false);
-
 		_collectionPersistenceFinderByRoleId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByRoleId,
-				_finderPathWithoutPaginationFindByRoleId,
-				_finderPathCountByRoleId, _SQL_SELECT_SEGMENTSENTRYROLE_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByRoleId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"roleId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByRoleId",
+					new String[] {Long.class.getName()},
+					new String[] {"roleId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByRoleId",
+					new String[] {Long.class.getName()},
+					new String[] {"roleId"}, false),
+				_SQL_SELECT_SEGMENTSENTRYROLE_WHERE,
 				_SQL_COUNT_SEGMENTSENTRYROLE_WHERE,
 				SegmentsEntryRoleModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"segmentsEntryRole.", "roleId", FinderColumn.Type.LONG, "=",
 					true, true, SegmentsEntryRole::getRoleId));
 
-		_finderPathFetchByS_R = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByS_R",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"segmentsEntryId", "roleId"}, false,
-			SegmentsEntryRole::getSegmentsEntryId,
-			SegmentsEntryRole::getRoleId);
-
 		_uniquePersistenceFinderByS_R = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByS_R, _SQL_SELECT_SEGMENTSENTRYROLE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByS_R",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"segmentsEntryId", "roleId"}, 0, 0, false,
+				SegmentsEntryRole::getSegmentsEntryId,
+				SegmentsEntryRole::getRoleId),
+			_SQL_SELECT_SEGMENTSENTRYROLE_WHERE, "",
 			new FinderColumn<>(
 				"segmentsEntryRole.", "segmentsEntryId", FinderColumn.Type.LONG,
-				"=", true, false, SegmentsEntryRole::getSegmentsEntryId),
+				"=", true, true, SegmentsEntryRole::getSegmentsEntryId),
 			new FinderColumn<>(
 				"segmentsEntryRole.", "roleId", FinderColumn.Type.LONG, "=",
 				true, true, SegmentsEntryRole::getRoleId));
@@ -919,4 +739,4 @@ public class SegmentsEntryRolePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-43810024
+// LIFERAY-SERVICE-BUILDER-HASH:1693244190

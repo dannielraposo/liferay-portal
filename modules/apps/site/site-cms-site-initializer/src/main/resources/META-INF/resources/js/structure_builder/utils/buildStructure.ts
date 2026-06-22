@@ -120,7 +120,7 @@ export function buildChildren({
 
 			children.set(repeatableGroup.uuid, repeatableGroup);
 		}
-		else if (objectRelationship.deletionType === 'cascade') {
+		else if (objectRelationship.edge) {
 			const referencedStructure = buildReferencedStructure({
 				ancestors: [
 					...ancestors,
@@ -348,6 +348,17 @@ function getFieldSettings(objectField: ObjectField): Field['settings'] {
 			settings.uniqueValues = objectFieldSettings.uniqueValues;
 		}
 	}
+	else if (objectField.businessType === 'PhoneNumber') {
+		settings.countrySource = objectFieldSettings.countrySource;
+
+		if (objectFieldSettings.country) {
+			settings.country = objectFieldSettings.country;
+		}
+
+		if (objectFieldSettings.uniqueValues) {
+			settings.uniqueValues = objectFieldSettings.uniqueValues;
+		}
+	}
 
 	return settings as Field['settings'];
 }
@@ -368,6 +379,7 @@ function getFieldType(objectField: ObjectField): FieldType {
 		Decimal: 'decimal',
 		Integer: 'integer',
 		LongText: 'long-text',
+		PhoneNumber: 'phone-number',
 		RichText: 'rich-text',
 		Text: 'text',
 	} as const;
@@ -455,7 +467,7 @@ function getRelatedContentObjectRelationships(
 				objectRelationship.objectDefinitionExternalReferenceCode2 ===
 					mainObjectDefinition.externalReferenceCode &&
 				objectRelationship.type === 'oneToMany' &&
-				objectRelationship.deletionType === 'disassociate'
+				!objectRelationship.edge
 			) {
 				relationships.push(objectRelationship);
 			}

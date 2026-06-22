@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -82,68 +81,15 @@ public class ObjectEntryVersionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<ObjectEntryVersion>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the object entry versions where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object entry versions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @return the range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectEntryVersion, NoSuchObjectEntryVersionException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the object entry versions where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<ObjectEntryVersion> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object entry versions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -178,16 +124,8 @@ public class ObjectEntryVersionPersistenceImpl
 			OrderByComparator<ObjectEntryVersion> orderByComparator)
 		throws NoSuchObjectEntryVersionException {
 
-		ObjectEntryVersion objectEntryVersion = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (objectEntryVersion != null) {
-			return objectEntryVersion;
-		}
-
-		throw new NoSuchObjectEntryVersionException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -228,73 +166,15 @@ public class ObjectEntryVersionPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<ObjectEntryVersion>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the object entry versions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object entry versions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @return the range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectEntryVersion, NoSuchObjectEntryVersionException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the object entry versions where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<ObjectEntryVersion> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object entry versions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -331,16 +211,8 @@ public class ObjectEntryVersionPersistenceImpl
 			OrderByComparator<ObjectEntryVersion> orderByComparator)
 		throws NoSuchObjectEntryVersionException {
 
-		ObjectEntryVersion objectEntryVersion = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (objectEntryVersion != null) {
-			return objectEntryVersion;
-		}
-
-		throw new NoSuchObjectEntryVersionException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -385,72 +257,15 @@ public class ObjectEntryVersionPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByObjectDefinitionId;
-	private FinderPath _finderPathWithoutPaginationFindByObjectDefinitionId;
-	private FinderPath _finderPathCountByObjectDefinitionId;
-	private CollectionPersistenceFinder<ObjectEntryVersion>
-		_collectionPersistenceFinderByObjectDefinitionId;
-
-	/**
-	 * Returns all the object entry versions where objectDefinitionId = &#63;.
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @return the matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByObjectDefinitionId(
-		long objectDefinitionId) {
-
-		return findByObjectDefinitionId(
-			objectDefinitionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object entry versions where objectDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @return the range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByObjectDefinitionId(
-		long objectDefinitionId, int start, int end) {
-
-		return findByObjectDefinitionId(objectDefinitionId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectEntryVersion, NoSuchObjectEntryVersionException>
+			_collectionPersistenceFinderByObjectDefinitionId;
 
 	/**
 	 * Returns an ordered range of all the object entry versions where objectDefinitionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectDefinitionId the object definition ID
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByObjectDefinitionId(
-		long objectDefinitionId, int start, int end,
-		OrderByComparator<ObjectEntryVersion> orderByComparator) {
-
-		return findByObjectDefinitionId(
-			objectDefinitionId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object entry versions where objectDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectDefinitionId the object definition ID
@@ -485,18 +300,8 @@ public class ObjectEntryVersionPersistenceImpl
 			OrderByComparator<ObjectEntryVersion> orderByComparator)
 		throws NoSuchObjectEntryVersionException {
 
-		ObjectEntryVersion objectEntryVersion = fetchByObjectDefinitionId_First(
-			objectDefinitionId, orderByComparator);
-
-		if (objectEntryVersion != null) {
-			return objectEntryVersion;
-		}
-
-		throw new NoSuchObjectEntryVersionException(
-			_collectionPersistenceFinderByObjectDefinitionId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {objectDefinitionId}));
+		return _collectionPersistenceFinderByObjectDefinitionId.findFirst(
+			finderCache, new Object[] {objectDefinitionId}, orderByComparator);
 	}
 
 	/**
@@ -538,70 +343,15 @@ public class ObjectEntryVersionPersistenceImpl
 			finderCache, new Object[] {objectDefinitionId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByObjectEntryId;
-	private FinderPath _finderPathWithoutPaginationFindByObjectEntryId;
-	private FinderPath _finderPathCountByObjectEntryId;
-	private CollectionPersistenceFinder<ObjectEntryVersion>
-		_collectionPersistenceFinderByObjectEntryId;
-
-	/**
-	 * Returns all the object entry versions where objectEntryId = &#63;.
-	 *
-	 * @param objectEntryId the object entry ID
-	 * @return the matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByObjectEntryId(long objectEntryId) {
-		return findByObjectEntryId(
-			objectEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object entry versions where objectEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectEntryId the object entry ID
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @return the range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByObjectEntryId(
-		long objectEntryId, int start, int end) {
-
-		return findByObjectEntryId(objectEntryId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectEntryVersion, NoSuchObjectEntryVersionException>
+			_collectionPersistenceFinderByObjectEntryId;
 
 	/**
 	 * Returns an ordered range of all the object entry versions where objectEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectEntryId the object entry ID
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByObjectEntryId(
-		long objectEntryId, int start, int end,
-		OrderByComparator<ObjectEntryVersion> orderByComparator) {
-
-		return findByObjectEntryId(
-			objectEntryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object entry versions where objectEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectEntryId the object entry ID
@@ -636,16 +386,8 @@ public class ObjectEntryVersionPersistenceImpl
 			OrderByComparator<ObjectEntryVersion> orderByComparator)
 		throws NoSuchObjectEntryVersionException {
 
-		ObjectEntryVersion objectEntryVersion = fetchByObjectEntryId_First(
-			objectEntryId, orderByComparator);
-
-		if (objectEntryVersion != null) {
-			return objectEntryVersion;
-		}
-
-		throw new NoSuchObjectEntryVersionException(
-			_collectionPersistenceFinderByObjectEntryId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {objectEntryId}));
+		return _collectionPersistenceFinderByObjectEntryId.findFirst(
+			finderCache, new Object[] {objectEntryId}, orderByComparator);
 	}
 
 	/**
@@ -687,75 +429,15 @@ public class ObjectEntryVersionPersistenceImpl
 			finderCache, new Object[] {objectEntryId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_CD;
-	private FinderPath _finderPathWithoutPaginationFindByC_CD;
-	private FinderPath _finderPathCountByC_CD;
-	private CollectionPersistenceFinder<ObjectEntryVersion>
-		_collectionPersistenceFinderByC_CD;
-
-	/**
-	 * Returns all the object entry versions where companyId = &#63; and createDate = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param createDate the create date
-	 * @return the matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByC_CD(
-		long companyId, Date createDate) {
-
-		return findByC_CD(
-			companyId, createDate, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object entry versions where companyId = &#63; and createDate = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param createDate the create date
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @return the range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByC_CD(
-		long companyId, Date createDate, int start, int end) {
-
-		return findByC_CD(companyId, createDate, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectEntryVersion, NoSuchObjectEntryVersionException>
+			_collectionPersistenceFinderByC_CD;
 
 	/**
 	 * Returns an ordered range of all the object entry versions where companyId = &#63; and createDate = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param createDate the create date
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByC_CD(
-		long companyId, Date createDate, int start, int end,
-		OrderByComparator<ObjectEntryVersion> orderByComparator) {
-
-		return findByC_CD(
-			companyId, createDate, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object entry versions where companyId = &#63; and createDate = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -792,17 +474,9 @@ public class ObjectEntryVersionPersistenceImpl
 			OrderByComparator<ObjectEntryVersion> orderByComparator)
 		throws NoSuchObjectEntryVersionException {
 
-		ObjectEntryVersion objectEntryVersion = fetchByC_CD_First(
-			companyId, createDate, orderByComparator);
-
-		if (objectEntryVersion != null) {
-			return objectEntryVersion;
-		}
-
-		throw new NoSuchObjectEntryVersionException(
-			_collectionPersistenceFinderByC_CD.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, createDate}));
+		return _collectionPersistenceFinderByC_CD.findFirst(
+			finderCache, new Object[] {companyId, createDate},
+			orderByComparator);
 	}
 
 	/**
@@ -848,9 +522,9 @@ public class ObjectEntryVersionPersistenceImpl
 			finderCache, new Object[] {companyId, createDate});
 	}
 
-	private FinderPath _finderPathFetchByOEI_V;
-	private UniquePersistenceFinder<ObjectEntryVersion>
-		_uniquePersistenceFinderByOEI_V;
+	private UniquePersistenceFinder
+		<ObjectEntryVersion, NoSuchObjectEntryVersionException>
+			_uniquePersistenceFinderByOEI_V;
 
 	/**
 	 * Returns the object entry version where objectEntryId = &#63; and version = &#63; or throws a <code>NoSuchObjectEntryVersionException</code> if it could not be found.
@@ -864,35 +538,8 @@ public class ObjectEntryVersionPersistenceImpl
 	public ObjectEntryVersion findByOEI_V(long objectEntryId, int version)
 		throws NoSuchObjectEntryVersionException {
 
-		ObjectEntryVersion objectEntryVersion = fetchByOEI_V(
-			objectEntryId, version);
-
-		if (objectEntryVersion == null) {
-			String message =
-				_uniquePersistenceFinderByOEI_V.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {objectEntryId, version});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectEntryVersionException(message);
-		}
-
-		return objectEntryVersion;
-	}
-
-	/**
-	 * Returns the object entry version where objectEntryId = &#63; and version = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param objectEntryId the object entry ID
-	 * @param version the version
-	 * @return the matching object entry version, or <code>null</code> if a matching object entry version could not be found
-	 */
-	@Override
-	public ObjectEntryVersion fetchByOEI_V(long objectEntryId, int version) {
-		return fetchByOEI_V(objectEntryId, version, true);
+		return _uniquePersistenceFinderByOEI_V.find(
+			finderCache, new Object[] {objectEntryId, version});
 	}
 
 	/**
@@ -941,75 +588,15 @@ public class ObjectEntryVersionPersistenceImpl
 			finderCache, new Object[] {objectEntryId, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByOEI_S;
-	private FinderPath _finderPathWithoutPaginationFindByOEI_S;
-	private FinderPath _finderPathCountByOEI_S;
-	private CollectionPersistenceFinder<ObjectEntryVersion>
-		_collectionPersistenceFinderByOEI_S;
-
-	/**
-	 * Returns all the object entry versions where objectEntryId = &#63; and status = &#63;.
-	 *
-	 * @param objectEntryId the object entry ID
-	 * @param status the status
-	 * @return the matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByOEI_S(
-		long objectEntryId, int status) {
-
-		return findByOEI_S(
-			objectEntryId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object entry versions where objectEntryId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectEntryId the object entry ID
-	 * @param status the status
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @return the range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByOEI_S(
-		long objectEntryId, int status, int start, int end) {
-
-		return findByOEI_S(objectEntryId, status, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectEntryVersion, NoSuchObjectEntryVersionException>
+			_collectionPersistenceFinderByOEI_S;
 
 	/**
 	 * Returns an ordered range of all the object entry versions where objectEntryId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectEntryId the object entry ID
-	 * @param status the status
-	 * @param start the lower bound of the range of object entry versions
-	 * @param end the upper bound of the range of object entry versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object entry versions
-	 */
-	@Override
-	public List<ObjectEntryVersion> findByOEI_S(
-		long objectEntryId, int status, int start, int end,
-		OrderByComparator<ObjectEntryVersion> orderByComparator) {
-
-		return findByOEI_S(
-			objectEntryId, status, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object entry versions where objectEntryId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectEntryId the object entry ID
@@ -1046,17 +633,9 @@ public class ObjectEntryVersionPersistenceImpl
 			OrderByComparator<ObjectEntryVersion> orderByComparator)
 		throws NoSuchObjectEntryVersionException {
 
-		ObjectEntryVersion objectEntryVersion = fetchByOEI_S_First(
-			objectEntryId, status, orderByComparator);
-
-		if (objectEntryVersion != null) {
-			return objectEntryVersion;
-		}
-
-		throw new NoSuchObjectEntryVersionException(
-			_collectionPersistenceFinderByOEI_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {objectEntryId, status}));
+		return _collectionPersistenceFinderByOEI_S.findFirst(
+			finderCache, new Object[] {objectEntryId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -1329,205 +908,190 @@ public class ObjectEntryVersionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_OBJECTENTRYVERSION_WHERE,
 			_SQL_COUNT_OBJECTENTRYVERSION_WHERE,
-			ObjectEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ObjectEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"objectEntryVersion.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, ObjectEntryVersion::getUuid));
-
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
+				"objectEntryVersion.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				ObjectEntryVersion::getUuid));
 
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_OBJECTENTRYVERSION_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_OBJECTENTRYVERSION_WHERE,
 				_SQL_COUNT_OBJECTENTRYVERSION_WHERE,
 				ObjectEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"objectEntryVersion.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, ObjectEntryVersion::getUuid),
+					"objectEntryVersion.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					ObjectEntryVersion::getUuid),
 				new FinderColumn<>(
 					"objectEntryVersion.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, ObjectEntryVersion::getCompanyId));
 
-		_finderPathWithPaginationFindByObjectDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByObjectDefinitionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"objectDefinitionId"}, true);
-
-		_finderPathWithoutPaginationFindByObjectDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByObjectDefinitionId", new String[] {Long.class.getName()},
-			new String[] {"objectDefinitionId"}, true);
-
-		_finderPathCountByObjectDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByObjectDefinitionId", new String[] {Long.class.getName()},
-			new String[] {"objectDefinitionId"}, false);
-
 		_collectionPersistenceFinderByObjectDefinitionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByObjectDefinitionId,
-				_finderPathWithoutPaginationFindByObjectDefinitionId,
-				_finderPathCountByObjectDefinitionId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByObjectDefinitionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByObjectDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"objectDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByObjectDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"objectDefinitionId"}, false),
 				_SQL_SELECT_OBJECTENTRYVERSION_WHERE,
 				_SQL_COUNT_OBJECTENTRYVERSION_WHERE,
 				ObjectEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"objectEntryVersion.", "objectDefinitionId",
 					FinderColumn.Type.LONG, "=", true, true,
 					ObjectEntryVersion::getObjectDefinitionId));
 
-		_finderPathWithPaginationFindByObjectEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByObjectEntryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"objectEntryId"}, true);
-
-		_finderPathWithoutPaginationFindByObjectEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByObjectEntryId",
-			new String[] {Long.class.getName()}, new String[] {"objectEntryId"},
-			true);
-
-		_finderPathCountByObjectEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByObjectEntryId",
-			new String[] {Long.class.getName()}, new String[] {"objectEntryId"},
-			false);
-
 		_collectionPersistenceFinderByObjectEntryId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByObjectEntryId,
-				_finderPathWithoutPaginationFindByObjectEntryId,
-				_finderPathCountByObjectEntryId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByObjectEntryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByObjectEntryId", new String[] {Long.class.getName()},
+					new String[] {"objectEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByObjectEntryId", new String[] {Long.class.getName()},
+					new String[] {"objectEntryId"}, false),
 				_SQL_SELECT_OBJECTENTRYVERSION_WHERE,
 				_SQL_COUNT_OBJECTENTRYVERSION_WHERE,
 				ObjectEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"objectEntryVersion.", "objectEntryId",
 					FinderColumn.Type.LONG, "=", true, true,
 					ObjectEntryVersion::getObjectEntryId));
 
-		_finderPathWithPaginationFindByC_CD = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_CD",
-			new String[] {
-				Long.class.getName(), Date.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "createDate"}, true);
-
-		_finderPathWithoutPaginationFindByC_CD = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_CD",
-			new String[] {Long.class.getName(), Date.class.getName()},
-			new String[] {"companyId", "createDate"}, true);
-
-		_finderPathCountByC_CD = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_CD",
-			new String[] {Long.class.getName(), Date.class.getName()},
-			new String[] {"companyId", "createDate"}, false);
-
 		_collectionPersistenceFinderByC_CD = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_CD,
-			_finderPathWithoutPaginationFindByC_CD, _finderPathCountByC_CD,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_CD",
+				new String[] {
+					Long.class.getName(), Date.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "createDate"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_CD",
+				new String[] {Long.class.getName(), Date.class.getName()},
+				new String[] {"companyId", "createDate"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_CD",
+				new String[] {Long.class.getName(), Date.class.getName()},
+				new String[] {"companyId", "createDate"}, false),
 			_SQL_SELECT_OBJECTENTRYVERSION_WHERE,
 			_SQL_COUNT_OBJECTENTRYVERSION_WHERE,
-			ObjectEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ObjectEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"objectEntryVersion.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, ObjectEntryVersion::getCompanyId),
+				true, true, ObjectEntryVersion::getCompanyId),
 			new FinderColumn<>(
 				"objectEntryVersion.", "createDate", FinderColumn.Type.DATE,
 				"=", true, true, ObjectEntryVersion::getCreateDate));
 
-		_finderPathFetchByOEI_V = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByOEI_V",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"objectEntryId", "version"}, false,
-			ObjectEntryVersion::getObjectEntryId,
-			ObjectEntryVersion::getVersion);
-
 		_uniquePersistenceFinderByOEI_V = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByOEI_V, _SQL_SELECT_OBJECTENTRYVERSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByOEI_V",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"objectEntryId", "version"}, 0, 0, false,
+				ObjectEntryVersion::getObjectEntryId,
+				ObjectEntryVersion::getVersion),
+			_SQL_SELECT_OBJECTENTRYVERSION_WHERE, "",
 			new FinderColumn<>(
 				"objectEntryVersion.", "objectEntryId", FinderColumn.Type.LONG,
-				"=", true, false, ObjectEntryVersion::getObjectEntryId),
+				"=", true, true, ObjectEntryVersion::getObjectEntryId),
 			new FinderColumn<>(
 				"objectEntryVersion.", "version", FinderColumn.Type.INTEGER,
 				"=", true, true, ObjectEntryVersion::getVersion));
 
-		_finderPathWithPaginationFindByOEI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByOEI_S",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"objectEntryId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByOEI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByOEI_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"objectEntryId", "status"}, true);
-
-		_finderPathCountByOEI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByOEI_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"objectEntryId", "status"}, false);
-
 		_collectionPersistenceFinderByOEI_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByOEI_S,
-			_finderPathWithoutPaginationFindByOEI_S, _finderPathCountByOEI_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByOEI_S",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"objectEntryId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByOEI_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"objectEntryId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByOEI_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"objectEntryId", "status"}, false),
 			_SQL_SELECT_OBJECTENTRYVERSION_WHERE,
 			_SQL_COUNT_OBJECTENTRYVERSION_WHERE,
-			ObjectEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ObjectEntryVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"objectEntryVersion.", "objectEntryId", FinderColumn.Type.LONG,
-				"=", true, false, ObjectEntryVersion::getObjectEntryId),
+				"=", true, true, ObjectEntryVersion::getObjectEntryId),
 			new FinderColumn<>(
 				"objectEntryVersion.", "status", FinderColumn.Type.INTEGER, "=",
 				true, true, ObjectEntryVersion::getStatus));
@@ -1601,4 +1165,4 @@ public class ObjectEntryVersionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:726193742
+// LIFERAY-SERVICE-BUILDER-HASH:-292716498

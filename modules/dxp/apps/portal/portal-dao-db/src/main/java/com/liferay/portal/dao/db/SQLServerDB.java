@@ -213,7 +213,7 @@ public class SQLServerDB extends BaseDB {
 
 		try (PreparedStatement preparedStatement = connection.prepareStatement(
 				"select name from sys.key_constraints where type = 'PK' and " +
-					"OBJECT_NAME(parent_object_id) = ?")) {
+					"parent_object_id = OBJECT_ID(?)")) {
 
 			preparedStatement.setString(1, normalizedTableName);
 
@@ -460,6 +460,24 @@ public class SQLServerDB extends BaseDB {
 			"sys.dm_exec_requests.session_id >= 50 and ",
 			"sys.dm_exec_requests.total_elapsed_time >= ? and ",
 			"sys.dm_exec_requests.wait_type like 'LCK\\_%' escape '\\'");
+	}
+
+	@Override
+	protected String getLongRunningQueryInfosSQL() {
+		return StringBundler.concat(
+			"select sys.dm_exec_requests.total_elapsed_time as duration, ",
+			"sys.dm_exec_requests.session_id as id, substring(",
+			"input_buffer.event_info, 1, 4000) as query, db_name(",
+			"sys.dm_exec_requests.database_id) as schema_, ",
+			"sys.dm_exec_requests.wait_type as state from ",
+			"sys.dm_exec_requests cross apply sys.dm_exec_input_buffer(",
+			"sys.dm_exec_requests.session_id, ",
+			"sys.dm_exec_requests.request_id) as input_buffer where ",
+			"sys.dm_exec_requests.session_id != @@spid and ",
+			"sys.dm_exec_requests.session_id >= 50 and ",
+			"sys.dm_exec_requests.total_elapsed_time >= ? and (",
+			"sys.dm_exec_requests.wait_type is null or ",
+			"sys.dm_exec_requests.wait_type not like 'LCK\\_%' escape '\\')");
 	}
 
 	@Override

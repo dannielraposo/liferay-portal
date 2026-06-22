@@ -81,60 +81,8 @@ public class LockPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<Lock>
+	private CollectionPersistenceFinder<Lock, NoSuchLockException>
 		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the locks where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching locks
-	 */
-	@Override
-	public List<Lock> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the locks where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LockModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of locks
-	 * @param end the upper bound of the range of locks (not inclusive)
-	 * @return the range of matching locks
-	 */
-	@Override
-	public List<Lock> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the locks where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LockModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of locks
-	 * @param end the upper bound of the range of locks (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching locks
-	 */
-	@Override
-	public List<Lock> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<Lock> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the locks where uuid = &#63;.
@@ -173,15 +121,8 @@ public class LockPersistenceImpl
 			String uuid, OrderByComparator<Lock> orderByComparator)
 		throws NoSuchLockException {
 
-		Lock lock = fetchByUuid_First(uuid, orderByComparator);
-
-		if (lock != null) {
-			return lock;
-		}
-
-		throw new NoSuchLockException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -222,67 +163,8 @@ public class LockPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<Lock>
+	private CollectionPersistenceFinder<Lock, NoSuchLockException>
 		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the locks where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching locks
-	 */
-	@Override
-	public List<Lock> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the locks where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LockModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of locks
-	 * @param end the upper bound of the range of locks (not inclusive)
-	 * @return the range of matching locks
-	 */
-	@Override
-	public List<Lock> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the locks where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LockModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of locks
-	 * @param end the upper bound of the range of locks (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching locks
-	 */
-	@Override
-	public List<Lock> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<Lock> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the locks where uuid = &#63; and companyId = &#63;.
@@ -324,15 +206,8 @@ public class LockPersistenceImpl
 			OrderByComparator<Lock> orderByComparator)
 		throws NoSuchLockException {
 
-		Lock lock = fetchByUuid_C_First(uuid, companyId, orderByComparator);
-
-		if (lock != null) {
-			return lock;
-		}
-
-		throw new NoSuchLockException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -377,61 +252,8 @@ public class LockPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByClassName;
-	private FinderPath _finderPathWithoutPaginationFindByClassName;
-	private FinderPath _finderPathCountByClassName;
-	private CollectionPersistenceFinder<Lock>
+	private CollectionPersistenceFinder<Lock, NoSuchLockException>
 		_collectionPersistenceFinderByClassName;
-
-	/**
-	 * Returns all the locks where className = &#63;.
-	 *
-	 * @param className the class name
-	 * @return the matching locks
-	 */
-	@Override
-	public List<Lock> findByClassName(String className) {
-		return findByClassName(
-			className, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the locks where className = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LockModelImpl</code>.
-	 * </p>
-	 *
-	 * @param className the class name
-	 * @param start the lower bound of the range of locks
-	 * @param end the upper bound of the range of locks (not inclusive)
-	 * @return the range of matching locks
-	 */
-	@Override
-	public List<Lock> findByClassName(String className, int start, int end) {
-		return findByClassName(className, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the locks where className = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LockModelImpl</code>.
-	 * </p>
-	 *
-	 * @param className the class name
-	 * @param start the lower bound of the range of locks
-	 * @param end the upper bound of the range of locks (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching locks
-	 */
-	@Override
-	public List<Lock> findByClassName(
-		String className, int start, int end,
-		OrderByComparator<Lock> orderByComparator) {
-
-		return findByClassName(className, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the locks where className = &#63;.
@@ -470,15 +292,8 @@ public class LockPersistenceImpl
 			String className, OrderByComparator<Lock> orderByComparator)
 		throws NoSuchLockException {
 
-		Lock lock = fetchByClassName_First(className, orderByComparator);
-
-		if (lock != null) {
-			return lock;
-		}
-
-		throw new NoSuchLockException(
-			_collectionPersistenceFinderByClassName.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {className}));
+		return _collectionPersistenceFinderByClassName.findFirst(
+			finderCache, new Object[] {className}, orderByComparator);
 	}
 
 	/**
@@ -519,9 +334,7 @@ public class LockPersistenceImpl
 			finderCache, new Object[] {className});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByLtExpirationDate;
-	private FinderPath _finderPathWithPaginationCountByLtExpirationDate;
-	private CollectionPersistenceFinder<Lock>
+	private CollectionPersistenceFinder<Lock, NoSuchLockException>
 		_collectionPersistenceFinderByLtExpirationDate;
 
 	/**
@@ -614,17 +427,8 @@ public class LockPersistenceImpl
 			Date expirationDate, OrderByComparator<Lock> orderByComparator)
 		throws NoSuchLockException {
 
-		Lock lock = fetchByLtExpirationDate_First(
-			expirationDate, orderByComparator);
-
-		if (lock != null) {
-			return lock;
-		}
-
-		throw new NoSuchLockException(
-			_collectionPersistenceFinderByLtExpirationDate.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {expirationDate}));
+		return _collectionPersistenceFinderByLtExpirationDate.findFirst(
+			finderCache, new Object[] {expirationDate}, orderByComparator);
 	}
 
 	/**
@@ -665,66 +469,8 @@ public class LockPersistenceImpl
 			finderCache, new Object[] {expirationDate});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<Lock> _collectionPersistenceFinderByC_C;
-
-	/**
-	 * Returns all the locks where companyId = &#63; and className = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param className the class name
-	 * @return the matching locks
-	 */
-	@Override
-	public List<Lock> findByC_C(long companyId, String className) {
-		return findByC_C(
-			companyId, className, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the locks where companyId = &#63; and className = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LockModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param className the class name
-	 * @param start the lower bound of the range of locks
-	 * @param end the upper bound of the range of locks (not inclusive)
-	 * @return the range of matching locks
-	 */
-	@Override
-	public List<Lock> findByC_C(
-		long companyId, String className, int start, int end) {
-
-		return findByC_C(companyId, className, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the locks where companyId = &#63; and className = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LockModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param className the class name
-	 * @param start the lower bound of the range of locks
-	 * @param end the upper bound of the range of locks (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching locks
-	 */
-	@Override
-	public List<Lock> findByC_C(
-		long companyId, String className, int start, int end,
-		OrderByComparator<Lock> orderByComparator) {
-
-		return findByC_C(
-			companyId, className, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder<Lock, NoSuchLockException>
+		_collectionPersistenceFinderByC_C;
 
 	/**
 	 * Returns an ordered range of all the locks where companyId = &#63; and className = &#63;.
@@ -766,15 +512,9 @@ public class LockPersistenceImpl
 			OrderByComparator<Lock> orderByComparator)
 		throws NoSuchLockException {
 
-		Lock lock = fetchByC_C_First(companyId, className, orderByComparator);
-
-		if (lock != null) {
-			return lock;
-		}
-
-		throw new NoSuchLockException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, className}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			finderCache, new Object[] {companyId, className},
+			orderByComparator);
 	}
 
 	/**
@@ -820,8 +560,8 @@ public class LockPersistenceImpl
 			finderCache, new Object[] {companyId, className});
 	}
 
-	private FinderPath _finderPathFetchByC_K;
-	private UniquePersistenceFinder<Lock> _uniquePersistenceFinderByC_K;
+	private UniquePersistenceFinder<Lock, NoSuchLockException>
+		_uniquePersistenceFinderByC_K;
 
 	/**
 	 * Returns the lock where className = &#63; and key = &#63; or throws a <code>NoSuchLockException</code> if it could not be found.
@@ -835,33 +575,8 @@ public class LockPersistenceImpl
 	public Lock findByC_K(String className, String key)
 		throws NoSuchLockException {
 
-		Lock lock = fetchByC_K(className, key);
-
-		if (lock == null) {
-			String message =
-				_uniquePersistenceFinderByC_K.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {className, key});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchLockException(message);
-		}
-
-		return lock;
-	}
-
-	/**
-	 * Returns the lock where className = &#63; and key = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param className the class name
-	 * @param key the key
-	 * @return the matching lock, or <code>null</code> if a matching lock could not be found
-	 */
-	@Override
-	public Lock fetchByC_K(String className, String key) {
-		return fetchByC_K(className, key, true);
+		return _uniquePersistenceFinderByC_K.find(
+			finderCache, new Object[] {className, key});
 	}
 
 	/**
@@ -909,73 +624,8 @@ public class LockPersistenceImpl
 			finderCache, new Object[] {className, key});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_U_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_U_C;
-	private FinderPath _finderPathCountByC_U_C;
-	private CollectionPersistenceFinder<Lock>
+	private CollectionPersistenceFinder<Lock, NoSuchLockException>
 		_collectionPersistenceFinderByC_U_C;
-
-	/**
-	 * Returns all the locks where companyId = &#63; and userId = &#63; and className = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param className the class name
-	 * @return the matching locks
-	 */
-	@Override
-	public List<Lock> findByC_U_C(
-		long companyId, long userId, String className) {
-
-		return findByC_U_C(
-			companyId, userId, className, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the locks where companyId = &#63; and userId = &#63; and className = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LockModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param className the class name
-	 * @param start the lower bound of the range of locks
-	 * @param end the upper bound of the range of locks (not inclusive)
-	 * @return the range of matching locks
-	 */
-	@Override
-	public List<Lock> findByC_U_C(
-		long companyId, long userId, String className, int start, int end) {
-
-		return findByC_U_C(companyId, userId, className, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the locks where companyId = &#63; and userId = &#63; and className = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LockModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param className the class name
-	 * @param start the lower bound of the range of locks
-	 * @param end the upper bound of the range of locks (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching locks
-	 */
-	@Override
-	public List<Lock> findByC_U_C(
-		long companyId, long userId, String className, int start, int end,
-		OrderByComparator<Lock> orderByComparator) {
-
-		return findByC_U_C(
-			companyId, userId, className, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the locks where companyId = &#63; and userId = &#63; and className = &#63;.
@@ -1019,17 +669,9 @@ public class LockPersistenceImpl
 			OrderByComparator<Lock> orderByComparator)
 		throws NoSuchLockException {
 
-		Lock lock = fetchByC_U_C_First(
-			companyId, userId, className, orderByComparator);
-
-		if (lock != null) {
-			return lock;
-		}
-
-		throw new NoSuchLockException(
-			_collectionPersistenceFinderByC_U_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, userId, className}));
+		return _collectionPersistenceFinderByC_U_C.findFirst(
+			finderCache, new Object[] {companyId, userId, className},
+			orderByComparator);
 	}
 
 	/**
@@ -1283,199 +925,182 @@ public class LockPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_LOCK__WHERE, _SQL_COUNT_LOCK__WHERE,
-			LockModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			LockModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"lock_.", "uuid", FinderColumn.Type.STRING, "=", true, true,
-				Lock::getUuid));
-
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
+				"lock_.", "uuid", "uuid_", FinderColumn.Type.STRING, "=", true,
+				true, Lock::getUuid));
 
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_LOCK__WHERE,
-				_SQL_COUNT_LOCK__WHERE, LockModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_LOCK__WHERE, _SQL_COUNT_LOCK__WHERE,
+				LockModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"lock_.", "uuid", FinderColumn.Type.STRING, "=", true,
-					false, Lock::getUuid),
+					"lock_.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+					true, true, Lock::getUuid),
 				new FinderColumn<>(
 					"lock_.", "companyId", FinderColumn.Type.LONG, "=", true,
 					true, Lock::getCompanyId));
 
-		_finderPathWithPaginationFindByClassName = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByClassName",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"className"}, true);
-
-		_finderPathWithoutPaginationFindByClassName = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByClassName",
-			new String[] {String.class.getName()}, new String[] {"className"},
-			true);
-
-		_finderPathCountByClassName = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByClassName",
-			new String[] {String.class.getName()}, new String[] {"className"},
-			false);
-
 		_collectionPersistenceFinderByClassName =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByClassName,
-				_finderPathWithoutPaginationFindByClassName,
-				_finderPathCountByClassName, _SQL_SELECT_LOCK__WHERE,
-				_SQL_COUNT_LOCK__WHERE, LockModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByClassName",
+					new String[] {
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"className"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByClassName", new String[] {String.class.getName()},
+					new String[] {"className"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByClassName", new String[] {String.class.getName()},
+					new String[] {"className"}, 0, 1, false, null),
+				_SQL_SELECT_LOCK__WHERE, _SQL_COUNT_LOCK__WHERE,
+				LockModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"lock_.", "className", FinderColumn.Type.STRING, "=", true,
 					true, Lock::getClassName));
 
-		_finderPathWithPaginationFindByLtExpirationDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtExpirationDate",
-			new String[] {
-				Date.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"expirationDate"}, true);
-
-		_finderPathWithPaginationCountByLtExpirationDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtExpirationDate",
-			new String[] {Date.class.getName()},
-			new String[] {"expirationDate"}, false);
-
 		_collectionPersistenceFinderByLtExpirationDate =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLtExpirationDate, null,
-				_finderPathWithPaginationCountByLtExpirationDate,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByLtExpirationDate",
+					new String[] {
+						Date.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"expirationDate"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByLtExpirationDate",
+					new String[] {Date.class.getName()},
+					new String[] {"expirationDate"}, false),
 				_SQL_SELECT_LOCK__WHERE, _SQL_COUNT_LOCK__WHERE,
-				LockModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				LockModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"lock_.", "expirationDate", FinderColumn.Type.DATE, "<",
 					true, true, Lock::getExpirationDate));
 
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "className"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "className"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "className"}, false);
-
 		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "className"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "className"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "className"}, 0, 2, false, null),
 			_SQL_SELECT_LOCK__WHERE, _SQL_COUNT_LOCK__WHERE,
-			LockModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			LockModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"lock_.", "companyId", FinderColumn.Type.LONG, "=", true, false,
+				"lock_.", "companyId", FinderColumn.Type.LONG, "=", true, true,
 				Lock::getCompanyId),
 			new FinderColumn<>(
 				"lock_.", "className", FinderColumn.Type.STRING, "=", true,
 				true, Lock::getClassName));
 
-		_finderPathFetchByC_K = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_K",
-			new String[] {String.class.getName(), String.class.getName()},
-			new String[] {"className", "key_"}, false, Lock::getClassName,
-			Lock::getKey);
-
 		_uniquePersistenceFinderByC_K = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_K, _SQL_SELECT_LOCK__WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_K",
+				new String[] {String.class.getName(), String.class.getName()},
+				new String[] {"className", "key_"}, 0, 3, false,
+				convertNullFunction(Lock::getClassName),
+				convertNullFunction(Lock::getKey)),
+			_SQL_SELECT_LOCK__WHERE, "",
 			new FinderColumn<>(
 				"lock_.", "className", FinderColumn.Type.STRING, "=", true,
-				false, Lock::getClassName),
+				true, Lock::getClassName),
 			new FinderColumn<>(
-				"lock_.", "key", FinderColumn.Type.STRING, "=", true, true,
-				Lock::getKey));
-
-		_finderPathWithPaginationFindByC_U_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_U_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "userId", "className"}, true);
-
-		_finderPathWithoutPaginationFindByC_U_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_U_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"companyId", "userId", "className"}, true);
-
-		_finderPathCountByC_U_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_U_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"companyId", "userId", "className"}, false);
+				"lock_.", "key", "key_", FinderColumn.Type.STRING, "=", true,
+				true, Lock::getKey));
 
 		_collectionPersistenceFinderByC_U_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_U_C,
-			_finderPathWithoutPaginationFindByC_U_C, _finderPathCountByC_U_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_U_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "userId", "className"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_U_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"companyId", "userId", "className"}, 0, 4, true,
+				null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_U_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"companyId", "userId", "className"}, 0, 4, false,
+				null),
 			_SQL_SELECT_LOCK__WHERE, _SQL_COUNT_LOCK__WHERE,
-			LockModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			LockModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"lock_.", "companyId", FinderColumn.Type.LONG, "=", true, false,
+				"lock_.", "companyId", FinderColumn.Type.LONG, "=", true, true,
 				Lock::getCompanyId),
 			new FinderColumn<>(
-				"lock_.", "userId", FinderColumn.Type.LONG, "=", true, false,
+				"lock_.", "userId", FinderColumn.Type.LONG, "=", true, true,
 				Lock::getUserId),
 			new FinderColumn<>(
 				"lock_.", "className", FinderColumn.Type.STRING, "=", true,
@@ -1550,4 +1175,4 @@ public class LockPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-783711251
+// LIFERAY-SERVICE-BUILDER-HASH:-1035685303

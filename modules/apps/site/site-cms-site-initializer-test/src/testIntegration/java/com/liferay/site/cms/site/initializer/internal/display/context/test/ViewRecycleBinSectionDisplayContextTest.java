@@ -101,6 +101,8 @@ public class ViewRecycleBinSectionDisplayContextTest
 					))
 			).put(
 				"hideSpace", true
+			).put(
+				"showEmptyRecycleBinAction", false
 			).build(),
 			_getBreadcrumbProps(displayContext));
 	}
@@ -140,7 +142,7 @@ public class ViewRecycleBinSectionDisplayContextTest
 
 		_assertTrashEnabled(depotEntry3, true);
 
-		User cmsAdministratorUser = UserTestUtil.addUser(
+		User cmsAdministratorUser = UserTestUtil.addCompanyUser(
 			companyLocalService.getCompany(TestPropsValues.getCompanyId()),
 			RoleConstants.CMS_ADMINISTRATOR);
 

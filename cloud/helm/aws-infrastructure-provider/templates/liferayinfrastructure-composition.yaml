@@ -1,0 +1,1711 @@
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+    annotations:
+        argocd.argoproj.io/sync-options: ServerSideApply=true
+        argocd.argoproj.io/sync-wave: "-60"
+    name: liferayinfrastructures.aws.liferay.com
+spec:
+    group: aws.liferay.com
+    names:
+        kind: LiferayInfrastructure
+        plural: liferayinfrastructures
+        shortNames:
+            -   lfrinfra
+            -   lri
+        singular: liferayinfrastructure
+    versions:
+        -   name: v1alpha1
+            referenceable: true
+            schema:
+                openAPIV3Schema:
+                    properties:
+                        spec:
+                            properties:
+                                backup:
+                                    properties:
+                                        enabled:
+                                            default: false
+                                            type: boolean
+                                        region:
+                                            type: string
+                                        rules:
+                                            items:
+                                                properties:
+                                                    retentionDays:
+                                                        type: integer
+                                                    ruleName:
+                                                        type: string
+                                                    schedule:
+                                                        type: string
+                                                    startWindow:
+                                                        type: integer
+                                                required:
+                                                    -   retentionDays
+                                                    -   ruleName
+                                                    -   schedule
+                                                    -   startWindow
+                                                type: object
+                                            minItems: 1
+                                            type: array
+                                    required:
+                                        -   rules
+                                    type: object
+                                cmk:
+                                    default:
+                                        enabled: false
+                                    properties:
+                                        enabled:
+                                            default: false
+                                            type: boolean
+                                    type: object
+                                commonTags:
+                                    additionalProperties:
+                                        type: string
+                                    default: {}
+                                    type: object
+                                database:
+                                    properties:
+                                        autoMinorVersionUpgrade:
+                                            type: boolean
+                                        databaseInsightsMode:
+                                            type: string
+                                        deletionProtection:
+                                            type: boolean
+                                        engine:
+                                            type: string
+                                        engineVersion:
+                                            type: string
+                                        instanceClass:
+                                            type: string
+                                        iops:
+                                            type: integer
+                                        multiAz:
+                                            type: boolean
+                                        region:
+                                            type: string
+                                        snapshotIdentifier:
+                                            nullable: true
+                                            type: string
+                                        storageGB:
+                                            type: integer
+                                        storageThroughput:
+                                            type: integer
+                                        username:
+                                            type: string
+                                    type: object
+                                environmentId:
+                                    type: string
+                                forceDestroy:
+                                    default: false
+                                    type: boolean
+                                orphanOnDelete:
+                                    type: boolean
+                                projectId:
+                                    type: string
+                                region:
+                                    type: string
+                                restorePhase:
+                                    enum:
+                                        -   none
+                                        -   promoting
+                                        -   provisioning
+                                    type: string
+                                search:
+                                    properties:
+                                        elasticsearch:
+                                            properties:
+                                                enabled:
+                                                    type: boolean
+                                            type: object
+                                        opensearch:
+                                            properties:
+                                                autoSoftwareUpdateEnabled:
+                                                    type: boolean
+                                                enabled:
+                                                    type: boolean
+                                                engineVersion:
+                                                    type: string
+                                                instanceCount:
+                                                    type: integer
+                                                instanceType:
+                                                    type: string
+                                                region:
+                                                    type: string
+                                                username:
+                                                    type: string
+                                                volumeSizeGB:
+                                                    type: integer
+                                            type: object
+                                    type: object
+                                storage:
+                                    properties:
+                                        region:
+                                            type: string
+                                    type: object
+                                targetActiveDataPlane:
+                                    enum:
+                                        -   blue
+                                        -   green
+                                    type: string
+                            required:
+                                -   database
+                                -   environmentId
+                                -   orphanOnDelete
+                                -   projectId
+                                -   region
+                                -   search
+                                -   storage
+                            type: object
+                        status:
+                            properties:
+                                managedServiceDetailsReady:
+                                    default: false
+                                    type: boolean
+                            type: object
+                    type: object
+            served: true
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+    annotations:
+        argocd.argoproj.io/sync-wave: "-50"
+    name: liferay-aws-infrastructure-provider.aws.liferay.com
+spec:
+    compositeTypeRef:
+        apiVersion: aws.liferay.com/v1alpha1
+        kind: LiferayInfrastructure
+    mode: Pipeline
+    pipeline:
+        -   functionRef:
+                name: function-go-templating
+            input:
+                apiVersion: template.fn.crossplane.io/v1beta1
+                inline:
+                    template: |
+                        {{`
+                        {{- $accountId := `}}{{ .Values.aws.accountId | quote }}{{` -}}
+                        {{- $deploymentName := `}}{{ .Values.deploymentName | quote }}{{` -}}
+                        {{- $liferayServiceAccountRoleName := `}}{{ .Values.liferayServiceAccountRoleName | quote }}{{` -}}
+                        {{- $nodesSecurityGroupId := `}}{{ .Values.aws.nodesSecurityGroupId | quote }}{{` -}}
+                        {{- $privateSubnetIds := `}}{{ .Values.aws.privateSubnetIds | quote }}{{` -}}
+                        {{- $vpcId := `}}{{ .Values.aws.vpcId | quote }}{{` -}}
+
+                        {{- $xr := .observed.composite.resource -}}
+
+                        {{- $baseRegion := $xr.spec.region -}}
+                        {{- $cmkEnabled := $xr.spec.cmk.enabled -}}
+                        {{- $forceDestroy := $xr.spec.forceDestroy -}}
+
+                        {{- $environmentId := $xr.spec.environmentId -}}
+                        {{- $projectId := $xr.spec.projectId -}}
+                        {{- $projectIdFull := printf "%s-%s" $projectId $environmentId -}}
+                        {{- $uidHash := printf "%s-%s-%s" $accountId $deploymentName $projectIdFull | sha256sum | trunc 6 -}}
+                        {{- $baseName := printf "%.18s-%s" $projectIdFull $uidHash -}}
+
+                        {{- $managementPolicies := $xr.spec.orphanOnDelete | ternary (list "Create" "Observe" "Update") (list "*") | toJson -}}
+                        {{- $managementPoliciesNoUpdate := $xr.spec.orphanOnDelete | ternary (list "Create" "Observe") (list "Create" "Delete" "Observe") | toJson -}}
+                        {{- $namespace := $xr.metadata.namespace -}}
+                        {{- $oidcProvider := `}}{{ .Values.aws.oidcProvider | quote }}{{` -}}
+                        {{- $storageName := printf "%s-%s-storage" $accountId $baseName -}}
+                        {{- $privateSubnetIdsList := $privateSubnetIds | fromJson -}}
+                        {{- $subnetCount := len $privateSubnetIdsList -}}
+
+                        {{- $backupSpec := $xr.spec.backup -}}
+                        {{- $backupRegion := $backupSpec.region | default $baseRegion -}}
+
+                        {{- if $backupSpec.enabled }}
+                        {{- if $cmkEnabled }}
+                        ---
+                        apiVersion: kms.aws.m.upbound.io/v1beta1
+                        kind: Alias
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: alias/{{ $baseName }}-backup-vault
+                                gotemplating.fn.crossplane.io/composition-resource-name: backup-vault-kms-alias
+                            labels:
+                                app: liferay
+                                component: backup-vault
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-backup-vault-kms-alias
+                        spec:
+                            forProvider:
+                                region: {{ $backupRegion }}
+                                targetKeyIdSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: backup-vault
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: kms.aws.m.upbound.io/v1beta1
+                        kind: Key
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: backup-vault-kms-key
+                            labels:
+                                app: liferay
+                                component: backup-vault
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-backup-vault-kms-key
+                        spec:
+                            forProvider:
+                                deletionWindowInDays: 7
+                                enableKeyRotation: true
+                                policy: |
+                                    {
+                                        "Statement": [
+                                            {
+                                                "Action": "kms:*",
+                                                "Effect": "Allow",
+                                                "Principal": {
+                                                    "AWS": "arn:aws:iam::{{ $accountId }}:root"
+                                                },
+                                                "Resource": "*"
+                                            },
+                                            {
+                                                "Action": [
+                                                    "kms:CreateGrant",
+                                                    "kms:Decrypt",
+                                                    "kms:DescribeKey",
+                                                    "kms:Encrypt",
+                                                    "kms:GenerateDataKey*",
+                                                    "kms:ReEncrypt*"
+                                                ],
+                                                "Effect": "Allow",
+                                                "Principal": {
+                                                    "AWS": "arn:aws:iam::{{ $accountId }}:role/{{ $baseName }}-backup-service-role"
+                                                },
+                                                "Resource": "*"
+                                            }
+                                        ],
+                                        "Version": "2012-10-17"
+                                    }
+                                region: {{ $backupRegion }}
+                            managementPolicies: {{ $managementPolicies }}
+                        {{- end }}
+                        ---
+                        apiVersion: kubernetes.m.crossplane.io/v1alpha1
+                        kind: Object
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: backup-restore-role-binding
+                            labels:
+                                app: liferay
+                                component: backup-restore-role
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-backup-restore-role-binding
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                manifest:
+                                    apiVersion: rbac.authorization.k8s.io/v1
+                                    kind: RoleBinding
+                                    metadata:
+                                        labels:
+                                            app: liferay
+                                            component: backup-restore-role
+                                            environmentId: {{ $environmentId }}
+                                            projectId: {{ $projectId }}
+                                        name: backup-restore-role-binding
+                                        namespace: {{ $namespace }}
+                                    roleRef:
+                                        apiGroup: rbac.authorization.k8s.io
+                                        kind: ClusterRole
+                                        name: backup-restore-cluster-role
+                                    subjects:
+                                        -   kind: ServiceAccount
+                                            name: backup-restore-service-account
+                                            namespace: {{ $namespace }}
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        {{- $backupRestoreRole := dict -}}
+
+                        {{- if .observed.resources -}}
+                            {{- $backupRestoreRole = index .observed.resources "backup-restore-role" -}}
+                        {{- end -}}
+
+                        {{- $backupRestoreRoleArn := "" -}}
+
+                        {{- if kindIs "map" $backupRestoreRole -}}
+                            {{- with $backupRestoreRole -}}
+                                {{- with .resource -}}
+                                    {{- with .status -}}
+                                        {{- with .atProvider -}}
+                                            {{- $backupRestoreRoleArn = .arn -}}
+                                        {{- end -}}
+                                    {{- end -}}
+                                {{- end -}}
+                            {{- end -}}
+                        {{- end }}
+                        apiVersion: kubernetes.m.crossplane.io/v1alpha1
+                        kind: Object
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: backup-restore-service-account
+                            labels:
+                                app: liferay
+                                component: backup-restore-role
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-backup-restore-service-account
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                manifest:
+                                    apiVersion: v1
+                                    kind: ServiceAccount
+                                    metadata:
+                                        annotations:
+                                            eks.amazonaws.com/role-arn: {{ $backupRestoreRoleArn }}
+                                        labels:
+                                            app: liferay
+                                            component: backup-restore-role
+                                            environmentId: {{ $environmentId }}
+                                            projectId: {{ $projectId }}
+                                        name: backup-restore-service-account
+                                        namespace: {{ $namespace }}
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: backup.aws.m.upbound.io/v1beta1
+                        kind: Plan
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: backup-plan
+                            labels:
+                                app: liferay
+                                component: backup-plan
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-backup-plan
+                        spec:
+                            forProvider:
+                                name: {{ $baseName }}-backup-plan
+                                region: {{ $backupRegion }}
+                                rule:
+                                    {{- range $rule := $backupSpec.rules }}
+                                    -   lifecycle:
+                                            deleteAfter: {{ .retentionDays }}
+                                        ruleName: {{ .ruleName }}
+                                        schedule: {{ .schedule | quote }}
+                                        startWindow: {{ .startWindow }}
+                                        targetVaultNameSelector:
+                                            matchLabels:
+                                                app: liferay
+                                                component: backup-vault
+                                                environmentId: {{ $environmentId }}
+                                                projectId: {{ $projectId }}
+                                    {{- end }}
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: iam.aws.m.upbound.io/v1beta1
+                        kind: Policy
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-backup-restore-policy
+                                gotemplating.fn.crossplane.io/composition-resource-name: backup-restore-policy
+                            labels:
+                                app: liferay
+                                component: backup-restore-role
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-backup-restore-policy
+                        spec:
+                            forProvider:
+                                policy: |
+                                    {
+                                        "Statement": [
+                                            {
+                                                "Action": [
+                                                    "s3:DeleteObject",
+                                                    "s3:GetBucketLocation",
+                                                    "s3:ListBucket"
+                                                ],
+                                                "Effect": "Allow",
+                                                "Resource": [
+                                                    "arn:aws:s3:::{{ $storageName }}-blue",
+                                                    "arn:aws:s3:::{{ $storageName }}-blue/*",
+                                                    "arn:aws:s3:::{{ $storageName }}-green",
+                                                    "arn:aws:s3:::{{ $storageName }}-green/*"
+                                                ]
+                                            },
+                                            {
+                                                "Action": "iam:PassRole",
+                                                "Effect": "Allow",
+                                                "Resource": "arn:aws:iam::{{ $accountId }}:role/{{ $baseName }}-backup-service-role"
+                                            },
+                                            {
+                                                "Action": [
+                                                    "backup:DescribeRecoveryPoint",
+                                                    "backup:DescribeRestoreJob",
+                                                    "backup:GetRecoveryPointRestoreMetadata",
+                                                    "backup:ListRecoveryPointsByBackupVault",
+                                                    "backup:StartRestoreJob"
+                                                ],
+                                                "Effect": "Allow",
+                                                "Resource": "*"
+                                            }
+                                        ],
+                                        "Version": "2012-10-17"
+                                    }
+                        ---
+                        apiVersion: iam.aws.m.upbound.io/v1beta1
+                        kind: Role
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-backup-restore-role
+                                gotemplating.fn.crossplane.io/composition-resource-name: backup-restore-role
+                            labels:
+                                app: liferay
+                                component: backup-restore-role
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-backup-restore-role
+                        spec:
+                            forProvider:
+                                assumeRolePolicy: |
+                                    {
+                                        "Statement": [
+                                            {
+                                                "Action": "sts:AssumeRoleWithWebIdentity",
+                                                "Condition": {
+                                                    "StringEquals": {
+                                                        "{{ $oidcProvider }}:aud": "sts.amazonaws.com",
+                                                        "{{ $oidcProvider }}:sub": "system:serviceaccount:{{ $namespace }}:backup-restore-service-account"
+                                                    }
+                                                },
+                                                "Effect": "Allow",
+                                                "Principal": {
+                                                    "Federated": "arn:aws:iam::{{ $accountId }}:oidc-provider/{{ $oidcProvider }}"
+                                                }
+                                            }
+                                        ],
+                                        "Version": "2012-10-17"
+                                    }
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: iam.aws.m.upbound.io/v1beta1
+                        kind: Role
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-backup-service-role
+                                gotemplating.fn.crossplane.io/composition-resource-name: backup-service-role
+                            labels:
+                                app: liferay
+                                component: backup-service-role
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-backup-service-role
+                        spec:
+                            forProvider:
+                                assumeRolePolicy: |
+                                    {
+                                        "Statement": [
+                                            {
+                                                "Action": "sts:AssumeRole",
+                                                "Effect": "Allow",
+                                                "Principal": {
+                                                    "Service": "backup.amazonaws.com"
+                                                }
+                                            }
+                                        ],
+                                        "Version": "2012-10-17"
+                                    }
+                                managedPolicyArns:
+                                    -   arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup
+                                    -   arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForRestores
+                                    -   arn:aws:iam::aws:policy/AWSBackupServiceRolePolicyForS3Backup
+                                    -   arn:aws:iam::aws:policy/AWSBackupServiceRolePolicyForS3Restore
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: iam.aws.m.upbound.io/v1beta1
+                        kind: RolePolicyAttachment
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: backup-restore-role-policy-attachment
+                            labels:
+                                app: liferay
+                                component: backup-restore-role
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-backup-restore-role-policy-attachment
+                        spec:
+                            forProvider:
+                                policyArnSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: backup-restore-role
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                roleSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: backup-restore-role
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: backup.aws.m.upbound.io/v1beta1
+                        kind: Selection
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-by-tags-selection
+                                gotemplating.fn.crossplane.io/composition-resource-name: by-tags-selection
+                            labels:
+                                app: liferay
+                                component: backup-selection
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-by-tags-selection
+                        spec:
+                            forProvider:
+                                condition:
+                                    -   stringEquals:
+                                        -   key: aws:ResourceTag/Active
+                                            value: "true"
+                                        -   key: aws:ResourceTag/Backup
+                                            value: "true"
+                                        -   key: aws:ResourceTag/DeploymentName
+                                            value: {{ $deploymentName }}
+                                        -   key: aws:ResourceTag/EnvironmentId
+                                            value: {{ $environmentId }}
+                                        -   key: aws:ResourceTag/ProjectId
+                                            value: {{ $projectId }}
+                                iamRoleArnSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: backup-service-role
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                name: {{ $baseName }}-by-tags-selection
+                                planIdSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: backup-plan
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                region: {{ $backupRegion }}
+                                resources: ["*"]
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: backup.aws.m.upbound.io/v1beta1
+                        kind: Vault
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-backup-vault
+                                gotemplating.fn.crossplane.io/composition-resource-name: backup-vault
+                            labels:
+                                app: liferay
+                                component: backup-vault
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-backup-vault
+                        spec:
+                            forProvider:
+                                forceDestroy: {{ $forceDestroy }}
+                                {{- if $cmkEnabled }}
+                                kmsKeyArnSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: backup-vault
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                {{- end }}
+                                region: {{ $backupRegion }}
+                            managementPolicies: {{ $managementPolicies }}
+                        {{- end }}
+
+                        {{- $databaseInstanceManagementPolicies := $backupSpec.enabled | ternary ((list "*") | toJson) $managementPolicies -}}
+                        {{- $restorePhase := $xr.spec.restorePhase | default "none" -}}
+
+                        {{- $databaseSpec := $xr.spec.database -}}
+
+                        {{- $databaseRegion := $databaseSpec.region | default $baseRegion }}
+                        {{- $isAboveAllocatedStorageThreshold := ge (int $databaseSpec.storageGB) 400 -}}
+
+                        {{- $targetActiveDataPlane := $xr.spec.targetActiveDataPlane | default "blue" -}}
+
+                        {{- $activeDataPlane := $targetActiveDataPlane -}}
+                        {{- $dataPlanes := list $targetActiveDataPlane -}}
+                        {{- $targetInactiveDataPlane := (eq $targetActiveDataPlane "blue") | ternary "green" "blue" -}}
+
+                        {{- if (eq $restorePhase "promoting") -}}
+                            {{- $dataPlanes = list "blue" "green" -}}
+                        {{- else if (eq $restorePhase "provisioning") -}}
+                            {{- $activeDataPlane = $targetInactiveDataPlane -}}
+                            {{- $dataPlanes = list "blue" "green" -}}
+                        {{- end -}}
+
+                        {{- range $dataPlane := $dataPlanes }}
+                        ---
+                        apiVersion: rds.aws.m.upbound.io/v1beta1
+                        kind: Instance
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-database-{{ $dataPlane }}
+                                gotemplating.fn.crossplane.io/composition-resource-name: database-{{ $dataPlane }}
+                            labels:
+                                app: liferay
+                                component: database
+                                dataPlane: {{ $dataPlane }}
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-database-{{ $dataPlane }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                allocatedStorage: {{ $databaseSpec.storageGB }}
+                                applyImmediately: {{ and (eq $dataPlane $targetActiveDataPlane) (ne $restorePhase "none") }}
+                                autoMinorVersionUpgrade: {{ $databaseSpec.autoMinorVersionUpgrade }}
+                                autoGeneratePassword: true
+                                backupRetentionPeriod: 7
+                                copyTagsToSnapshot: true
+                                databaseInsightsMode: {{ $databaseSpec.databaseInsightsMode | quote }}
+                                dbName: lportal
+                                dbSubnetGroupNameSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: database-subnet-group
+                                        dataPlane: {{ $dataPlane }}
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                deletionProtection: {{ $databaseSpec.deletionProtection }}
+                                engine: {{ $databaseSpec.engine | quote }}
+                                engineVersion: {{ $databaseSpec.engineVersion | quote }}
+                                iamDatabaseAuthenticationEnabled: true
+                                identifier: {{ $baseName }}-database-{{ $dataPlane }}
+                                instanceClass: {{ $databaseSpec.instanceClass }}
+                                {{- if $isAboveAllocatedStorageThreshold }}
+                                iops: {{ int $databaseSpec.iops }}
+                                {{- end }}
+                                multiAz: {{ $databaseSpec.multiAz }}
+                                passwordSecretRef:
+                                    key: password
+                                    name: liferay-database-{{ $dataPlane }}-password
+                                region: {{ $databaseRegion }}
+                                skipFinalSnapshot: true
+                                {{- if and (eq $restorePhase "provisioning") (eq $dataPlane $targetActiveDataPlane) }}
+                                snapshotIdentifier: {{ $databaseSpec.snapshotIdentifier }}
+                                {{- end }}
+                                storageEncrypted: true
+                                {{- if $isAboveAllocatedStorageThreshold }}
+                                storageThroughput: {{ int $databaseSpec.storageThroughput }}
+                                {{- end }}
+                                storageType: gp3
+                                username: {{ $databaseSpec.username }}
+                                vpcSecurityGroupIdSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: database-security-group
+                                        dataPlane: {{ $dataPlane }}
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                tags:
+                                    Active: {{ printf "%t" (eq $dataPlane $activeDataPlane) | quote }}
+                                    Backup: "true"
+                                    Name: {{ $baseName }}-database-{{ $dataPlane }}
+                            managementPolicies: {{ $databaseInstanceManagementPolicies }}
+                            writeConnectionSecretToRef:
+                                name: liferay-database-{{ $dataPlane }}-credentials
+                        ---
+                        apiVersion: ec2.aws.m.upbound.io/v1beta1
+                        kind: SecurityGroup
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: database-security-group-{{ $dataPlane }}
+                            labels:
+                                app: liferay
+                                component: database-security-group
+                                dataPlane: {{ $dataPlane }}
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                region: {{ $databaseRegion }}
+                                tags:
+                                    Name: {{ $baseName }}-database-security-group-{{ $dataPlane }}
+                                vpcId: {{ $vpcId }}
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: ec2.aws.m.upbound.io/v1beta1
+                        kind: SecurityGroupIngressRule
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: database-security-group-ingress-{{ $dataPlane }}
+                            labels:
+                                app: liferay
+                                component: database-security-group-ingress
+                                dataPlane: {{ $dataPlane }}
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                fromPort: 5432
+                                ipProtocol: tcp
+                                referencedSecurityGroupId: {{ $nodesSecurityGroupId }}
+                                region: {{ $databaseRegion }}
+                                securityGroupIdSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: database-security-group
+                                        dataPlane: {{ $dataPlane }}
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                toPort: 5432
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: rds.aws.m.upbound.io/v1beta1
+                        kind: SubnetGroup
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-database-subnet-group-{{ $dataPlane }}
+                                gotemplating.fn.crossplane.io/composition-resource-name: database-subnet-group-{{ $dataPlane }}
+                            labels:
+                                app: liferay
+                                component: database-subnet-group
+                                dataPlane: {{ $dataPlane }}
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-database-subnet-group-{{ $dataPlane }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                region: {{ $databaseRegion }}
+                                subnetIds: {{ $privateSubnetIdsList | toJson }}
+                                tags:
+                                    Name: {{ $baseName }}-database-{{ $dataPlane }}-subnets
+                            managementPolicies: {{ $managementPolicies }}
+                        {{- end -}}
+
+                        {{- $storageSpec := $xr.spec.storage }}
+                        {{- $storageRegion := $storageSpec.region | default $baseRegion }}
+
+                        {{- range $dataPlane := list "blue" "green" }}
+                        ---
+                        apiVersion: s3.aws.m.upbound.io/v1beta1
+                        kind: Bucket
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $storageName }}-{{ $dataPlane }}
+                                gotemplating.fn.crossplane.io/composition-resource-name: storage-{{ $dataPlane }}
+                            labels:
+                                app: liferay
+                                component: storage
+                                dataPlane: {{ $dataPlane }}
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $storageName }}-{{ $dataPlane }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                forceDestroy: {{ $forceDestroy }}
+                                region: {{ $storageRegion }}
+                                tags:
+                                    Active: {{ printf "%t" (eq $dataPlane $activeDataPlane) | quote }}
+                                    Backup: "true"
+                                    Name: {{ $storageName }}-{{ $dataPlane }}
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: s3.aws.m.upbound.io/v1beta1
+                        kind: BucketLifecycleConfiguration
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $storageName }}-lifecycle-{{ $dataPlane }}
+                                gotemplating.fn.crossplane.io/composition-resource-name: storage-lifecycle-{{ $dataPlane }}
+                            labels:
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $storageName }}-lifecycle-{{ $dataPlane }}
+                        spec:
+                            forProvider:
+                                bucketSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: storage
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                        dataPlane: {{ $dataPlane }}
+                                region: {{ $storageRegion }}
+                                rule:
+                                    -   abortIncompleteMultipartUpload:
+                                            -   daysAfterInitiation: 7
+                                        expiration:
+                                            -   expiredObjectDeleteMarker: true
+                                        id: bucket-scoped-rule
+                                        noncurrentVersionExpiration:
+                                            -   noncurrentDays: 7
+                                        status: Enabled
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: s3.aws.m.upbound.io/v1beta1
+                        kind: BucketOwnershipControls
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $storageName }}-ownership-controls-{{ $dataPlane }}
+                                gotemplating.fn.crossplane.io/composition-resource-name: storage-ownership-controls-{{ $dataPlane }}
+                            labels:
+                                app: liferay
+                                component: storage
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $storageName }}-ownership-controls-{{ $dataPlane }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                bucketSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: storage
+                                        dataPlane: {{ $dataPlane }}
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                region: {{ $storageRegion }}
+                                rule:
+                                    objectOwnership: BucketOwnerPreferred
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: s3.aws.m.upbound.io/v1beta1
+                        kind: BucketPublicAccessBlock
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $storageName }}-public-access-block-{{ $dataPlane }}
+                                gotemplating.fn.crossplane.io/composition-resource-name: storage-public-access-block-{{ $dataPlane }}
+                            labels:
+                                app: liferay
+                                component: storage
+                                dataPlane: {{ $dataPlane }}
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $storageName }}-public-access-block-{{ $dataPlane }}
+                        spec:
+                            forProvider:
+                                blockPublicAcls: true
+                                blockPublicPolicy: true
+                                bucketSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: storage
+                                        dataPlane: {{ $dataPlane }}
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                ignorePublicAcls: true
+                                region: {{ $storageRegion }}
+                                restrictPublicBuckets: true
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: s3.aws.m.upbound.io/v1beta1
+                        kind: BucketVersioning
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $storageName }}-versioning-{{ $dataPlane }}
+                                gotemplating.fn.crossplane.io/composition-resource-name: storage-versioning-{{ $dataPlane }}
+                            labels:
+                                app: liferay
+                                component: storage
+                                dataPlane: {{ $dataPlane }}
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $storageName }}-versioning-{{ $dataPlane }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                bucketSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: storage
+                                        dataPlane: {{ $dataPlane }}
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                    namespace: {{ $namespace }}
+                                region: {{ $storageRegion }}
+                                versioningConfiguration:
+                                    status: Enabled
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: iam.aws.m.upbound.io/v1beta1
+                        kind: Policy
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $storageName }}-policy-{{ $dataPlane }}
+                                gotemplating.fn.crossplane.io/composition-resource-name: storage-policy-{{ $dataPlane }}
+                            labels:
+                                app: liferay
+                                component: storage-policy
+                                dataPlane: {{ $dataPlane }}
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $storageName }}-policy-{{ $dataPlane }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                policy: |
+                                    {
+                                        "Statement": [
+                                            {
+                                                "Action": [
+                                                    "s3:DeleteObject",
+                                                    "s3:GetObject",
+                                                    "s3:ListBucket",
+                                                    "s3:PutObject"
+                                                ],
+                                                "Effect": "Allow",
+                                                "Resource": [
+                                                    "arn:aws:s3:::{{ $storageName }}-{{ $dataPlane }}",
+                                                    "arn:aws:s3:::{{ $storageName }}-{{ $dataPlane }}/*"
+                                                ]
+                                            }
+                                        ],
+                                        "Version": "2012-10-17"
+                                    }
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: iam.aws.m.upbound.io/v1beta1
+                        kind: RolePolicyAttachment
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $storageName }}-policy-attachment-{{ $dataPlane }}
+                                gotemplating.fn.crossplane.io/composition-resource-name: storage-policy-attachment-{{ $dataPlane }}
+                            labels:
+                                app: liferay
+                                component: storage-policy-attachment
+                                dataPlane: {{ $dataPlane }}
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $storageName }}-policy-attachment-{{ $dataPlane }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                policyArnSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: storage-policy
+                                        dataPlane: {{ $dataPlane }}
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                role: {{ $liferayServiceAccountRoleName }}
+                            managementPolicies: {{ $managementPolicies }}
+                        {{- end -}}
+
+                        {{- $searchName := printf "%.21s-search" $baseName -}}
+                        {{- $searchSpec := $xr.spec.search.opensearch }}
+                        {{- $searchRegion := $searchSpec.region | default $baseRegion }}
+
+                        {{- if $searchSpec.enabled }}
+                        ---
+                        apiVersion: opensearch.aws.m.upbound.io/v1beta1
+                        kind: Domain
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: arn:aws:es:{{ $searchRegion }}:{{ $accountId }}:domain/{{ $searchName }}
+                                gotemplating.fn.crossplane.io/composition-resource-name: search
+                            labels:
+                                app: liferay
+                                component: search
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $searchName }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                advancedSecurityOptions:
+                                    enabled: true
+                                    internalUserDatabaseEnabled: true
+                                    masterUserOptions:
+                                        masterUserName: {{ $searchSpec.username }}
+                                        masterUserPasswordSecretRef:
+                                            key: password
+                                            name: liferay-search-password
+                                clusterConfig:
+                                    instanceCount: {{ $searchSpec.instanceCount }}
+                                    instanceType: {{ $searchSpec.instanceType }}
+                                    zoneAwarenessConfig:
+                                        availabilityZoneCount: {{ $subnetCount }}
+                                    zoneAwarenessEnabled: {{ gt $subnetCount 1 }}
+                                domainEndpointOptions:
+                                    enforceHttps: true
+                                    tlsSecurityPolicy: Policy-Min-TLS-1-2-2019-07
+                                domainName: {{ $searchName }}
+                                ebsOptions:
+                                    ebsEnabled: true
+                                    volumeSize: {{ $searchSpec.volumeSizeGB }}
+                                    volumeType: gp3
+                                encryptAtRest:
+                                    enabled: true
+                                    {{- if $cmkEnabled }}
+                                    kmsKeyIdSelector:
+                                        matchLabels:
+                                            app: liferay
+                                            component: search
+                                            environmentId: {{ $environmentId }}
+                                            projectId: {{ $projectId }}
+                                    {{- end }}
+                                engineVersion: {{ $searchSpec.engineVersion | quote }}
+                                logPublishingOptions:
+                                    -   cloudwatchLogGroupArn: arn:aws:logs:{{ $searchRegion }}:{{ $accountId }}:log-group:{{ $searchName }}-audit-logs
+                                        enabled: true
+                                        logType: AUDIT_LOGS
+                                    -   cloudwatchLogGroupArn: arn:aws:logs:{{ $searchRegion }}:{{ $accountId }}:log-group:{{ $searchName }}-index-logs
+                                        enabled: true
+                                        logType: INDEX_SLOW_LOGS
+                                nodeToNodeEncryption:
+                                    enabled: true
+                                region: {{ $searchRegion }}
+                                softwareUpdateOptions:
+                                    autoSoftwareUpdateEnabled: {{ $searchSpec.autoSoftwareUpdateEnabled }}
+                                tags:
+                                    Name: {{ $searchName }}
+                                vpcOptions:
+                                    securityGroupIdSelector:
+                                        matchLabels:
+                                            app: liferay
+                                            component: search-security-group
+                                            environmentId: {{ $environmentId }}
+                                            projectId: {{ $projectId }}
+                                    subnetIds: {{ $privateSubnetIdsList | toJson }}
+                            managementPolicies: {{ $managementPolicies }}
+                            writeConnectionSecretToRef:
+                                name: liferay-search-credentials
+                        ---
+                        apiVersion: opensearch.aws.m.upbound.io/v1beta1
+                        kind: DomainPolicy
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: search-policy
+                            labels:
+                                app: liferay
+                                component: search-policy
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $searchName }}-policy
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                accessPolicies: |
+                                    {
+                                        "Statement": [
+                                            {
+                                                "Action": "es:*",
+                                                "Effect": "Allow",
+                                                "Principal": {
+                                                    "AWS": "*"
+                                                },
+                                                "Resource": [
+                                                    "arn:aws:es:{{ $searchRegion }}:{{ $accountId }}:domain/{{ $searchName }}/*"
+                                                ]
+                                            }
+                                        ],
+                                        "Version": "2012-10-17"
+                                    }
+                                domainNameSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: search
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                region: {{ $searchRegion }}
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: cloudwatchlogs.aws.m.upbound.io/v1beta1
+                        kind: Group
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: {{ $searchName }}-audit-logs
+                            name: {{ $searchName }}-audit-logs
+                        spec:
+                            forProvider:
+                                region: {{ $searchRegion }}
+                                retentionInDays: 7
+                        ---
+                        apiVersion: cloudwatchlogs.aws.m.upbound.io/v1beta1
+                        kind: Group
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: {{ $searchName }}-index-logs
+                            name: {{ $searchName }}-index-logs
+                        spec:
+                            forProvider:
+                                region: {{ $searchRegion }}
+                                retentionInDays: 7
+                        {{- if $cmkEnabled }}
+                        ---
+                        apiVersion: kms.aws.m.upbound.io/v1beta1
+                        kind: Alias
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: alias/{{ $searchName }}
+                                gotemplating.fn.crossplane.io/composition-resource-name: search-kms-alias
+                            labels:
+                                app: liferay
+                                component: search
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $searchName }}-kms-alias
+                        spec:
+                            forProvider:
+                                region: {{ $searchRegion }}
+                                targetKeyIdSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: search
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: kms.aws.m.upbound.io/v1beta1
+                        kind: Key
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: search-kms-key
+                            labels:
+                                app: liferay
+                                component: search
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $searchName }}-kms-key
+                        spec:
+                            forProvider:
+                                deletionWindowInDays: 7
+                                enableKeyRotation: true
+                                policy: |
+                                    {
+                                        "Statement": [
+                                            {
+                                                "Action": "kms:*",
+                                                "Effect": "Allow",
+                                                "Principal": {
+                                                    "AWS": "arn:aws:iam::{{ $accountId }}:root"
+                                                },
+                                                "Resource": "*"
+                                            },
+                                            {
+                                                "Action": [
+                                                    "kms:CreateGrant",
+                                                    "kms:Decrypt",
+                                                    "kms:DescribeKey",
+                                                    "kms:Encrypt",
+                                                    "kms:GenerateDataKey*",
+                                                    "kms:ReEncrypt*"
+                                                ],
+                                                "Effect": "Allow",
+                                                "Principal": {
+                                                    "Service": "es.amazonaws.com"
+                                                },
+                                                "Resource": "*"
+                                            }
+                                        ],
+                                        "Version": "2012-10-17"
+                                    }
+                                region: {{ $searchRegion }}
+                            managementPolicies: {{ $managementPolicies }}
+                        {{- end }}
+                        ---
+                        apiVersion: cloudwatchlogs.aws.m.upbound.io/v1beta1
+                        kind: ResourcePolicy
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: {{ $searchName }}-log-publishing-policy
+                            name: {{ $searchName }}-log-publishing-policy
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                policyDocument: |
+                                    {
+                                        "Statement": [
+                                            {
+                                                "Action": [
+                                                    "logs:CreateLogStream",
+                                                    "logs:PutLogEvents"
+                                                ],
+                                                "Effect": "Allow",
+                                                "Principal": {
+                                                    "Service": "es.amazonaws.com"
+                                                },
+                                                "Resource": "arn:aws:logs:{{ $searchRegion }}:{{ $accountId }}:log-group:{{ $searchName }}-*"
+                                            }
+                                        ],
+                                        "Version": "2012-10-17"
+                                    }
+                                region: {{ $searchRegion }}
+                        ---
+                        apiVersion: kubernetes.m.crossplane.io/v1alpha1
+                        kind: Object
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-search-password-secret
+                                gotemplating.fn.crossplane.io/composition-resource-name: search-password-secret
+                            labels:
+                                app: liferay
+                                component: search-password-secret
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $searchName }}-password-secret
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                manifest:
+                                    apiVersion: v1
+                                    kind: Secret
+                                    metadata:
+                                        labels:
+                                            app: liferay
+                                            component: search-password-secret
+                                            environmentId: {{ $environmentId }}
+                                            projectId: {{ $projectId }}
+                                        name: liferay-search-password
+                                        namespace: {{ $namespace }}
+                                    stringData:
+                                        password: {{ print (randAlphaNum 16) "!#%+7QZ_b" | shuffle | quote }}
+                                    type: Opaque
+                            managementPolicies: {{ $managementPoliciesNoUpdate }}
+                        ---
+                        apiVersion: ec2.aws.m.upbound.io/v1beta1
+                        kind: SecurityGroup
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: search-security-group
+                            labels:
+                                app: liferay
+                                component: search-security-group
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                region: {{ $searchRegion }}
+                                tags:
+                                    Name: {{ $searchName }}-security-group
+                                vpcId: {{ $vpcId }}
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        apiVersion: ec2.aws.m.upbound.io/v1beta1
+                        kind: SecurityGroupIngressRule
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: search-security-group-ingress
+                            labels:
+                                app: liferay
+                                component: search-security-group-ingress
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                fromPort: 443
+                                ipProtocol: tcp
+                                referencedSecurityGroupId: {{ $nodesSecurityGroupId }}
+                                region: {{ $searchRegion }}
+                                securityGroupIdSelector:
+                                    matchLabels:
+                                        app: liferay
+                                        component: search-security-group
+                                        environmentId: {{ $environmentId }}
+                                        projectId: {{ $projectId }}
+                                toPort: 443
+                            managementPolicies: {{ $managementPolicies }}
+                        {{- end }}
+                        `}}
+                kind: GoTemplate
+                source: Inline
+            step: liferay-infrastructure
+        -   functionRef:
+                name: function-go-templating
+            input:
+                apiVersion: template.fn.crossplane.io/v1beta1
+                inline:
+                    template: |
+                        {{`
+                        {{- $accountId := `}}{{ .Values.aws.accountId | quote }}{{` -}}
+                        {{- $deploymentName := `}}{{ .Values.deploymentName | quote }}{{` -}}
+
+                        {{- $xr := .observed.composite.resource -}}
+
+                        {{- $environmentId := $xr.spec.environmentId -}}
+                        {{- $managementPolicies := $xr.spec.orphanOnDelete | ternary (list "Create" "Observe" "Update") (list "*") | toJson -}}
+                        {{- $namespace := $xr.metadata.namespace -}}
+                        {{- $projectId := $xr.spec.projectId -}}
+                        {{- $restorePhase := $xr.spec.restorePhase | default "none" -}}
+
+                        {{- $projectIdFull := printf "%s-%s" $projectId $environmentId -}}
+                        {{- $uidHash := printf "%s-%s-%s" $accountId $deploymentName $projectIdFull | sha256sum | trunc 6 -}}
+                        {{- $baseName := printf "%.18s-%s" $projectIdFull $uidHash -}}
+
+                        `}}
+                        {{- include "aws-infrastructure-provider.overlayBucketName" . | nindent 24 }}
+                        {{`
+
+                        {{- $targetActiveDataPlane := $xr.spec.targetActiveDataPlane | default "blue" -}}
+                        {{- $targetInactiveDataPlane := (eq $targetActiveDataPlane "blue") | ternary "green" "blue" -}}
+                        {{- $activeDataPlane := $targetActiveDataPlane -}}
+
+                        {{- if (eq $restorePhase "provisioning") -}}
+                            {{- $activeDataPlane = $targetInactiveDataPlane -}}
+                        {{- end -}}
+
+                        {{- $databaseResourceName := printf "database-%s" $activeDataPlane -}}
+                        {{- $searchResourceName := "search" -}}
+                        {{- $storageResourceName := printf "storage-%s" $activeDataPlane -}}
+
+                        {{- $database := dict -}}
+                        {{- $search := dict -}}
+                        {{- $storage := dict -}}
+
+                        {{- if .observed.resources -}}
+                            {{- $database = index .observed.resources $databaseResourceName -}}
+                            {{- $search = index .observed.resources $searchResourceName -}}
+                            {{- $storage = index .observed.resources $storageResourceName -}}
+                        {{- end -}}
+
+                        {{- $databaseAddress := "" -}}
+                        {{- $databasePassword := "" -}}
+                        {{- $databasePort := "" -}}
+                        {{- if kindIs "map" $database -}}
+                            {{- with $database }}
+                                {{- with .connectionDetails }}
+                                    {{- $databasePassword = .password | toString | b64dec -}}
+                                {{- end -}}
+                                {{- with .resource }}
+                                    {{- with .status }}
+                                        {{- with .atProvider }}
+                                            {{- $databaseAddress = .address | toString -}}
+                                            {{- $databasePort = .port | toString -}}
+                                        {{- end -}}
+                                    {{- end -}}
+                                {{- end -}}
+                            {{- end -}}
+                        {{- end -}}
+
+                        {{- if and $databaseAddress $databasePort }}
+                        ---
+                        apiVersion: kubernetes.m.crossplane.io/v1alpha1
+                        kind: Object
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-database-connection-details-secret
+                                gotemplating.fn.crossplane.io/composition-resource-name: database-connection-details-secret
+                            labels:
+                                app: liferay
+                                component: database-connection-details-secret
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-database-connection-details-secret
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                manifest:
+                                    apiVersion: v1
+                                    data:
+                                        DATABASE_ENDPOINT: {{ $databaseAddress | b64enc | quote }}
+                                        DATABASE_PASSWORD: {{ $databasePassword | b64enc | quote }}
+                                        DATABASE_PORT: {{ $databasePort | default 5432 | b64enc | quote }}
+                                        DATABASE_USERNAME: {{ $database.resource.spec.forProvider.username | b64enc | quote }}
+                                    kind: Secret
+                                    metadata:
+                                        labels:
+                                            app: liferay
+                                            component: database-connection-details-secret
+                                            environmentId: {{ $environmentId }}
+                                            projectId: {{ $projectId }}
+                                        name: database-connection-details
+                                        namespace: {{ $namespace }}
+                                        ownerReferences:
+                                            -   apiVersion: aws.liferay.com/v1alpha1
+                                                blockOwnerDeletion: true
+                                                controller: true
+                                                kind: LiferayInfrastructure
+                                                name: {{ .observed.composite.resource.metadata.name }}
+                                                uid: {{ .observed.composite.resource.metadata.uid }}
+                                    type: Opaque
+                            managementPolicies: {{ $managementPolicies }}
+                        {{- end -}}
+
+                        {{- $searchEndpoint := "" -}}
+                        {{- $searchPassword := "" -}}
+
+                        {{- $searchSpec := $xr.spec.search.opensearch }}
+                        {{- if $searchSpec.enabled }}
+                            {{- if kindIs "map" $search -}}
+                                {{- with $search }}
+                                    {{- with .connectionDetails }}
+                                        {{- $searchPassword = index . "attribute.advanced_security_options.0.master_user_options.0.master_user_password" | toString | b64dec -}}
+                                    {{- end -}}
+                                    {{- with .resource }}
+                                        {{- with .status }}
+                                            {{- with .atProvider }}
+                                                {{- $searchEndpoint = .endpoint | toString -}}
+                                            {{- end -}}
+                                        {{- end -}}
+                                    {{- end -}}
+                                {{- end -}}
+                            {{- end -}}
+                        {{- end -}}
+
+                        {{- if and $searchEndpoint $searchPassword $searchSpec.enabled }}
+                        ---
+                        apiVersion: kubernetes.m.crossplane.io/v1alpha1
+                        kind: Object
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-search-connection-details-secret
+                                gotemplating.fn.crossplane.io/composition-resource-name: search-connection-details-secret
+                            labels:
+                                app: liferay
+                                component: search-connection-details-secret
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-search-connection-details-secret
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                manifest:
+                                    apiVersion: v1
+                                    data:
+                                        SEARCH_PASSWORD: {{ $searchPassword | b64enc | quote }}
+                                        SEARCH_URL: {{ printf "https://%s:443" $searchEndpoint | b64enc | quote }}
+                                        SEARCH_USERNAME: {{ $search.resource.spec.forProvider.advancedSecurityOptions.masterUserOptions.masterUserName | b64enc | quote }}
+                                    kind: Secret
+                                    metadata:
+                                        labels:
+                                            app: liferay
+                                            component: search-connection-details-secret
+                                            environmentId: {{ $environmentId }}
+                                            projectId: {{ $projectId }}
+                                        name: search-connection-details
+                                        namespace: {{ $namespace }}
+                                        ownerReferences:
+                                            -   apiVersion: aws.liferay.com/v1alpha1
+                                                blockOwnerDeletion: true
+                                                controller: true
+                                                kind: LiferayInfrastructure
+                                                name: {{ .observed.composite.resource.metadata.name }}
+                                                uid: {{ .observed.composite.resource.metadata.uid }}
+                                    type: Opaque
+                            managementPolicies: {{ $managementPolicies }}
+                        {{- end -}}
+
+                        {{- $elasticsearchSpec := $xr.spec.search.elasticsearch -}}
+                        {{- if $elasticsearchSpec.enabled }}
+                        {{- $elasticsearchName := printf "%s-es" $xr.metadata.name -}}
+                        {{- $elasticsearchSecretName := printf "%s-es-elastic-user" $elasticsearchName }}
+                        ---
+                        apiVersion: kubernetes.m.crossplane.io/v1alpha1
+                        kind: Object
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: elasticsearch-observer
+                            name: {{ $elasticsearchName }}-observer
+                        spec:
+                            forProvider:
+                                manifest:
+                                    apiVersion: elasticsearch.k8s.elastic.co/v1
+                                    kind: Elasticsearch
+                                    metadata:
+                                        name: {{ $elasticsearchName }}
+                                        namespace: {{ $namespace }}
+                            managementPolicies: ["Observe"]
+                        ---
+                        apiVersion: kubernetes.m.crossplane.io/v1alpha1
+                        kind: Object
+                        metadata:
+                            annotations:
+                                gotemplating.fn.crossplane.io/composition-resource-name: elasticsearch-secret-observer
+                            name: {{ $elasticsearchSecretName }}-observer
+                        spec:
+                            forProvider:
+                                manifest:
+                                    apiVersion: v1
+                                    kind: Secret
+                                    metadata:
+                                        name: {{ $elasticsearchSecretName }}
+                                        namespace: {{ $namespace }}
+                            managementPolicies: ["Observe"]
+                        {{- if .observed.resources -}}
+                        {{- $elasticsearchObserver := default dict (index .observed.resources "elasticsearch-observer") -}}
+                        {{- $elasticsearchSecretObserver := default dict (index .observed.resources "elasticsearch-secret-observer") -}}
+                        {{- $elasticsearchHealth := dig "resource" "status" "atProvider" "manifest" "status" "health" "" $elasticsearchObserver -}}
+                        {{- $isElasticsearchReady := or (eq $elasticsearchHealth "green") (eq $elasticsearchHealth "yellow") -}}
+                        {{- $elasticsearchPassword := dig "resource" "status" "atProvider" "manifest" "data" "elastic" "" $elasticsearchSecretObserver -}}
+
+                        {{- if and $isElasticsearchReady $elasticsearchPassword }}
+                        ---
+                        apiVersion: kubernetes.m.crossplane.io/v1alpha1
+                        kind: Object
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-search-connection-details-secret
+                                gotemplating.fn.crossplane.io/composition-resource-name: search-connection-details-secret
+                            labels:
+                                app: liferay
+                                component: search-connection-details-secret
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-search-connection-details-secret
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                manifest:
+                                    apiVersion: v1
+                                    data:
+                                        SEARCH_PASSWORD: {{ $elasticsearchPassword }}
+                                    kind: Secret
+                                    metadata:
+                                        labels:
+                                            app: liferay
+                                            component: search-connection-details-secret
+                                            environmentId: {{ $environmentId }}
+                                            projectId: {{ $projectId }}
+                                        name: search-connection-details
+                                        namespace: {{ $namespace }}
+                                        ownerReferences:
+                                            -   apiVersion: aws.liferay.com/v1alpha1
+                                                blockOwnerDeletion: true
+                                                controller: true
+                                                kind: LiferayInfrastructure
+                                                name: {{ .observed.composite.resource.metadata.name }}
+                                                uid: {{ .observed.composite.resource.metadata.uid }}
+                                    stringData:
+                                        SEARCH_URL: http://{{ $elasticsearchName }}-es-http.{{ $namespace }}.svc:9200
+                                        SEARCH_USERNAME: elastic
+                                    type: Opaque
+                            managementPolicies: {{ $managementPolicies }}
+                        {{- end }}
+                        {{- end }}
+                        {{- end }}
+
+                        {{- $storageName := "" -}}
+                        {{- if kindIs "map" $storage -}}
+                            {{- with $storage }}
+                                {{- with .resource }}
+                                    {{- with .metadata }}
+                                        {{- with .annotations }}
+                                            {{- $storageName = index . "crossplane.io/external-name" | toString -}}
+                                        {{- end -}}
+                                    {{- end -}}
+                                {{- end -}}
+                            {{- end -}}
+                        {{- end -}}
+
+                        {{- if $storageName }}
+                        ---
+                        apiVersion: kubernetes.m.crossplane.io/v1alpha1
+                        kind: Object
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-doclib-connection-details-secret
+                                gotemplating.fn.crossplane.io/composition-resource-name: doclib-connection-details-secret
+                            labels:
+                                app: liferay
+                                component: doclib-connection-details-secret
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-doclib-connection-details-secret
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                manifest:
+                                    apiVersion: v1
+                                    data:
+                                        S3_BUCKET_ID: {{ $storageName | b64enc | quote }}
+                                        S3_BUCKET_REGION: {{ $storage.resource.spec.forProvider.region | b64enc | quote }}
+                                    kind: Secret
+                                    metadata:
+                                        labels:
+                                            app: liferay
+                                            component: doclib-connection-details-secret
+                                            environmentId: {{ $environmentId }}
+                                            projectId: {{ $projectId }}
+                                        name: doclib-connection-details
+                                        namespace: {{ $namespace }}
+                                        ownerReferences:
+                                            -   apiVersion: aws.liferay.com/v1alpha1
+                                                blockOwnerDeletion: true
+                                                controller: true
+                                                kind: LiferayInfrastructure
+                                                name: {{ .observed.composite.resource.metadata.name }}
+                                                uid: {{ .observed.composite.resource.metadata.uid }}
+                                    type: Opaque
+                            managementPolicies: {{ $managementPolicies }}
+                        {{- end }}
+                        ---
+                        apiVersion: kubernetes.m.crossplane.io/v1alpha1
+                        kind: Object
+                        metadata:
+                            annotations:
+                                crossplane.io/external-name: {{ $baseName }}-overlay-bucket-details-secret
+                                gotemplating.fn.crossplane.io/composition-resource-name: overlay-bucket-details-secret
+                            labels:
+                                app: liferay
+                                component: overlay-bucket-details-secret
+                                environmentId: {{ $environmentId }}
+                                projectId: {{ $projectId }}
+                            name: {{ $baseName }}-overlay-bucket-details-secret
+                            namespace: {{ $namespace }}
+                        spec:
+                            forProvider:
+                                manifest:
+                                    apiVersion: v1
+                                    data:
+                                        LIFERAY_OVERLAY_BUCKET_NAME: {{ $overlayBucketName | b64enc | quote }}
+                                    kind: Secret
+                                    metadata:
+                                        labels:
+                                            app: liferay
+                                            component: overlay-bucket-details-secret
+                                            environmentId: {{ $environmentId }}
+                                            projectId: {{ $projectId }}
+                                        name: overlay-bucket-details
+                                        namespace: {{ $namespace }}
+                                        ownerReferences:
+                                            -   apiVersion: aws.liferay.com/v1alpha1
+                                                blockOwnerDeletion: true
+                                                controller: true
+                                                kind: LiferayInfrastructure
+                                                name: {{ .observed.composite.resource.metadata.name }}
+                                                uid: {{ .observed.composite.resource.metadata.uid }}
+                                    type: Opaque
+                            managementPolicies: {{ $managementPolicies }}
+                        ---
+                        {{ $isDatabaseReady := false -}}
+                        {{- if and $databaseAddress $databasePassword $databasePort -}}
+                            {{- $isDatabaseReady = true -}}
+                        {{- end -}}
+
+                        {{- $isSearchReady := false -}}
+                        {{- if or (not $searchSpec.enabled) (and $searchEndpoint $searchPassword) -}}
+                            {{- $isSearchReady = true -}}
+                        {{- end -}}
+
+                        {{- $isStorageReady := false -}}
+                        {{- if $storageName -}}
+                            {{- $isStorageReady = true -}}
+                        {{- end }}
+
+                        apiVersion: aws.liferay.com/v1alpha1
+                        kind: LiferayInfrastructure
+                        status:
+                            managedServiceDetailsReady: {{ and $isDatabaseReady $isSearchReady $isStorageReady }}
+                        `}}
+                kind: GoTemplate
+                source: Inline
+            step: managed-service-details-secret
+        -   functionRef:
+                name: function-tag-manager
+            input:
+                addTags:
+                    -   fromFieldPath: spec.commonTags
+                        type: FromCompositeFieldPath
+                    -   tags:
+                            DeploymentName: {{ .Values.deploymentName | quote }}
+                        type: FromValue
+                apiVersion: tag-manager.fn.crossplane.io/v1beta1
+                kind: ManagedTags
+            step: apply-default-tags
+        -   functionRef:
+                name: function-auto-ready
+            step: auto-detect-ready-composed-resources

@@ -14,14 +14,10 @@ import com.liferay.commerce.inventory.model.impl.CommerceInventoryWarehouseModel
 import com.liferay.commerce.inventory.service.persistence.CommerceInventoryWarehousePersistence;
 import com.liferay.commerce.inventory.service.persistence.CommerceInventoryWarehouseUtil;
 import com.liferay.commerce.inventory.service.persistence.impl.constants.CommercePersistenceConstants;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -32,11 +28,10 @@ import com.liferay.portal.kernel.sanitizer.SanitizerException;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -95,68 +90,15 @@ public class CommerceInventoryWarehousePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CommerceInventoryWarehouse>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the commerce inventory warehouses where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<CommerceInventoryWarehouse, NoSuchInventoryWarehouseException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the commerce inventory warehouses where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce inventory warehouses where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -191,16 +133,8 @@ public class CommerceInventoryWarehousePersistenceImpl
 			OrderByComparator<CommerceInventoryWarehouse> orderByComparator)
 		throws NoSuchInventoryWarehouseException {
 
-		CommerceInventoryWarehouse commerceInventoryWarehouse =
-			fetchByUuid_First(uuid, orderByComparator);
-
-		if (commerceInventoryWarehouse != null) {
-			return commerceInventoryWarehouse;
-		}
-
-		throw new NoSuchInventoryWarehouseException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -220,41 +154,10 @@ public class CommerceInventoryWarehousePersistenceImpl
 	}
 
 	/**
-	 * Returns all the commerce inventory warehouses that the user has permission to view where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByUuid(String uuid) {
-		return filterFindByUuid(
-			uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses that the user has permission to view where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByUuid(
-		String uuid, int start, int end) {
-
-		return filterFindByUuid(uuid, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the commerce inventory warehouses that the user has permissions to view where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -268,111 +171,8 @@ public class CommerceInventoryWarehousePersistenceImpl
 		String uuid, int start, int end,
 		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return findByUuid(uuid, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByUuid(
-					uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		uuid = Objects.toString(uuid, "");
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		boolean bindUuid = false;
-
-		if (uuid.isEmpty()) {
-			sb.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
-		}
-		else {
-			bindUuid = true;
-
-			sb.append(_FINDER_COLUMN_UUID_UUID_2_SQL);
-		}
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					CommerceInventoryWarehouseModelImpl.
-						ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(CommerceInventoryWarehouseModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, CommerceInventoryWarehouseImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, CommerceInventoryWarehouseImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			if (bindUuid) {
-				queryPos.add(uuid);
-			}
-
-			return (List<CommerceInventoryWarehouse>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByUuid.filterFind(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator);
 	}
 
 	/**
@@ -406,144 +206,19 @@ public class CommerceInventoryWarehousePersistenceImpl
 	 */
 	@Override
 	public int filterCountByUuid(String uuid) {
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return countByUuid(uuid);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<CommerceInventoryWarehouse> commerceInventoryWarehouses =
-				findByUuid(uuid);
-
-			commerceInventoryWarehouses = InlineSQLHelperUtil.filter(
-				commerceInventoryWarehouses);
-
-			return commerceInventoryWarehouses.size();
-		}
-
-		uuid = Objects.toString(uuid, "");
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-
-		boolean bindUuid = false;
-
-		if (uuid.isEmpty()) {
-			sb.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
-		}
-		else {
-			bindUuid = true;
-
-			sb.append(_FINDER_COLUMN_UUID_UUID_2_SQL);
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			if (bindUuid) {
-				queryPos.add(uuid);
-			}
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByUuid.filterCount(
+			finderCache, new Object[] {uuid});
 	}
 
-	private static final String _FINDER_COLUMN_UUID_UUID_2_SQL =
-		"commerceInventoryWarehouse.uuid_ = ?";
-
-	private static final String _FINDER_COLUMN_UUID_UUID_3_SQL =
-		"(commerceInventoryWarehouse.uuid_ IS NULL OR commerceInventoryWarehouse.uuid_ = '')";
-
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CommerceInventoryWarehouse>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the commerce inventory warehouses where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<CommerceInventoryWarehouse, NoSuchInventoryWarehouseException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the commerce inventory warehouses where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce inventory warehouses where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -580,16 +255,8 @@ public class CommerceInventoryWarehousePersistenceImpl
 			OrderByComparator<CommerceInventoryWarehouse> orderByComparator)
 		throws NoSuchInventoryWarehouseException {
 
-		CommerceInventoryWarehouse commerceInventoryWarehouse =
-			fetchByUuid_C_First(uuid, companyId, orderByComparator);
-
-		if (commerceInventoryWarehouse != null) {
-			return commerceInventoryWarehouse;
-		}
-
-		throw new NoSuchInventoryWarehouseException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -610,45 +277,10 @@ public class CommerceInventoryWarehousePersistenceImpl
 	}
 
 	/**
-	 * Returns all the commerce inventory warehouses that the user has permission to view where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByUuid_C(
-		String uuid, long companyId) {
-
-		return filterFindByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses that the user has permission to view where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return filterFindByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the commerce inventory warehouses that the user has permissions to view where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -663,115 +295,9 @@ public class CommerceInventoryWarehousePersistenceImpl
 		String uuid, long companyId, int start, int end,
 		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByUuid_C(uuid, companyId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByUuid_C(
-					uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		uuid = Objects.toString(uuid, "");
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		boolean bindUuid = false;
-
-		if (uuid.isEmpty()) {
-			sb.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
-		}
-		else {
-			bindUuid = true;
-
-			sb.append(_FINDER_COLUMN_UUID_C_UUID_2_SQL);
-		}
-
-		sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					CommerceInventoryWarehouseModelImpl.
-						ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(CommerceInventoryWarehouseModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, CommerceInventoryWarehouseImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, CommerceInventoryWarehouseImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			if (bindUuid) {
-				queryPos.add(uuid);
-			}
-
-			queryPos.add(companyId);
-
-			return (List<CommerceInventoryWarehouse>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByUuid_C.filterFind(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -808,145 +334,19 @@ public class CommerceInventoryWarehousePersistenceImpl
 	 */
 	@Override
 	public int filterCountByUuid_C(String uuid, long companyId) {
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByUuid_C(uuid, companyId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<CommerceInventoryWarehouse> commerceInventoryWarehouses =
-				findByUuid_C(uuid, companyId);
-
-			commerceInventoryWarehouses = InlineSQLHelperUtil.filter(
-				commerceInventoryWarehouses);
-
-			return commerceInventoryWarehouses.size();
-		}
-
-		uuid = Objects.toString(uuid, "");
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-
-		boolean bindUuid = false;
-
-		if (uuid.isEmpty()) {
-			sb.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
-		}
-		else {
-			bindUuid = true;
-
-			sb.append(_FINDER_COLUMN_UUID_C_UUID_2_SQL);
-		}
-
-		sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			if (bindUuid) {
-				queryPos.add(uuid);
-			}
-
-			queryPos.add(companyId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByUuid_C.filterCount(
+			finderCache, new Object[] {uuid, companyId}, companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_UUID_C_UUID_2_SQL =
-		"commerceInventoryWarehouse.uuid_ = ? AND ";
-
-	private static final String _FINDER_COLUMN_UUID_C_UUID_3_SQL =
-		"(commerceInventoryWarehouse.uuid_ IS NULL OR commerceInventoryWarehouse.uuid_ = '') AND ";
-
-	private static final String _FINDER_COLUMN_UUID_C_COMPANYID_2 =
-		"commerceInventoryWarehouse.companyId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<CommerceInventoryWarehouse>
-		_collectionPersistenceFinderByCompanyId;
-
-	/**
-	 * Returns all the commerce inventory warehouses where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<CommerceInventoryWarehouse, NoSuchInventoryWarehouseException>
+			_collectionPersistenceFinderByCompanyId;
 
 	/**
 	 * Returns an ordered range of all the commerce inventory warehouses where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce inventory warehouses where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -981,16 +381,8 @@ public class CommerceInventoryWarehousePersistenceImpl
 			OrderByComparator<CommerceInventoryWarehouse> orderByComparator)
 		throws NoSuchInventoryWarehouseException {
 
-		CommerceInventoryWarehouse commerceInventoryWarehouse =
-			fetchByCompanyId_First(companyId, orderByComparator);
-
-		if (commerceInventoryWarehouse != null) {
-			return commerceInventoryWarehouse;
-		}
-
-		throw new NoSuchInventoryWarehouseException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -1010,43 +402,10 @@ public class CommerceInventoryWarehousePersistenceImpl
 	}
 
 	/**
-	 * Returns all the commerce inventory warehouses that the user has permission to view where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByCompanyId(
-		long companyId) {
-
-		return filterFindByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses that the user has permission to view where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByCompanyId(
-		long companyId, int start, int end) {
-
-		return filterFindByCompanyId(companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the commerce inventory warehouses that the user has permissions to view where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1060,98 +419,9 @@ public class CommerceInventoryWarehousePersistenceImpl
 		long companyId, int start, int end,
 		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByCompanyId(companyId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByCompanyId(
-					companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					CommerceInventoryWarehouseModelImpl.
-						ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(CommerceInventoryWarehouseModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, CommerceInventoryWarehouseImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, CommerceInventoryWarehouseImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			return (List<CommerceInventoryWarehouse>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByCompanyId.filterFind(
+			finderCache, new Object[] {companyId}, start, end,
+			orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -1185,128 +455,19 @@ public class CommerceInventoryWarehousePersistenceImpl
 	 */
 	@Override
 	public int filterCountByCompanyId(long companyId) {
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByCompanyId(companyId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<CommerceInventoryWarehouse> commerceInventoryWarehouses =
-				findByCompanyId(companyId);
-
-			commerceInventoryWarehouses = InlineSQLHelperUtil.filter(
-				commerceInventoryWarehouses);
-
-			return commerceInventoryWarehouses.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-
-		sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByCompanyId.filterCount(
+			finderCache, new Object[] {companyId}, companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_COMPANYID_COMPANYID_2 =
-		"commerceInventoryWarehouse.companyId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByC_A;
-	private FinderPath _finderPathWithoutPaginationFindByC_A;
-	private FinderPath _finderPathCountByC_A;
-	private CollectionPersistenceFinder<CommerceInventoryWarehouse>
-		_collectionPersistenceFinderByC_A;
-
-	/**
-	 * Returns all the commerce inventory warehouses where companyId = &#63; and active = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @return the matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByC_A(
-		long companyId, boolean active) {
-
-		return findByC_A(
-			companyId, active, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses where companyId = &#63; and active = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByC_A(
-		long companyId, boolean active, int start, int end) {
-
-		return findByC_A(companyId, active, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<CommerceInventoryWarehouse, NoSuchInventoryWarehouseException>
+			_collectionPersistenceFinderByC_A;
 
 	/**
 	 * Returns an ordered range of all the commerce inventory warehouses where companyId = &#63; and active = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByC_A(
-		long companyId, boolean active, int start, int end,
-		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
-
-		return findByC_A(
-			companyId, active, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce inventory warehouses where companyId = &#63; and active = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1343,16 +504,8 @@ public class CommerceInventoryWarehousePersistenceImpl
 			OrderByComparator<CommerceInventoryWarehouse> orderByComparator)
 		throws NoSuchInventoryWarehouseException {
 
-		CommerceInventoryWarehouse commerceInventoryWarehouse =
-			fetchByC_A_First(companyId, active, orderByComparator);
-
-		if (commerceInventoryWarehouse != null) {
-			return commerceInventoryWarehouse;
-		}
-
-		throw new NoSuchInventoryWarehouseException(
-			_collectionPersistenceFinderByC_A.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, active}));
+		return _collectionPersistenceFinderByC_A.findFirst(
+			finderCache, new Object[] {companyId, active}, orderByComparator);
 	}
 
 	/**
@@ -1373,45 +526,10 @@ public class CommerceInventoryWarehousePersistenceImpl
 	}
 
 	/**
-	 * Returns all the commerce inventory warehouses that the user has permission to view where companyId = &#63; and active = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @return the matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByC_A(
-		long companyId, boolean active) {
-
-		return filterFindByC_A(
-			companyId, active, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses that the user has permission to view where companyId = &#63; and active = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByC_A(
-		long companyId, boolean active, int start, int end) {
-
-		return filterFindByC_A(companyId, active, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the commerce inventory warehouses that the user has permissions to view where companyId = &#63; and active = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1426,102 +544,9 @@ public class CommerceInventoryWarehousePersistenceImpl
 		long companyId, boolean active, int start, int end,
 		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByC_A(companyId, active, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByC_A(
-					companyId, active, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_C_A_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_A_ACTIVE_2_SQL);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					CommerceInventoryWarehouseModelImpl.
-						ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(CommerceInventoryWarehouseModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, CommerceInventoryWarehouseImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, CommerceInventoryWarehouseImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(active);
-
-			return (List<CommerceInventoryWarehouse>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_A.filterFind(
+			finderCache, new Object[] {companyId, active}, start, end,
+			orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -1558,137 +583,19 @@ public class CommerceInventoryWarehousePersistenceImpl
 	 */
 	@Override
 	public int filterCountByC_A(long companyId, boolean active) {
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByC_A(companyId, active);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<CommerceInventoryWarehouse> commerceInventoryWarehouses =
-				findByC_A(companyId, active);
-
-			commerceInventoryWarehouses = InlineSQLHelperUtil.filter(
-				commerceInventoryWarehouses);
-
-			return commerceInventoryWarehouses.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-
-		sb.append(_FINDER_COLUMN_C_A_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_A_ACTIVE_2_SQL);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(active);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_A.filterCount(
+			finderCache, new Object[] {companyId, active}, companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_C_A_COMPANYID_2 =
-		"commerceInventoryWarehouse.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_A_ACTIVE_2_SQL =
-		"commerceInventoryWarehouse.active_ = ?";
-
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<CommerceInventoryWarehouse>
-		_collectionPersistenceFinderByC_C;
-
-	/**
-	 * Returns all the commerce inventory warehouses where companyId = &#63; and countryTwoLettersISOCode = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param countryTwoLettersISOCode the country two letters iso code
-	 * @return the matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByC_C(
-		long companyId, String countryTwoLettersISOCode) {
-
-		return findByC_C(
-			companyId, countryTwoLettersISOCode, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses where companyId = &#63; and countryTwoLettersISOCode = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param countryTwoLettersISOCode the country two letters iso code
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByC_C(
-		long companyId, String countryTwoLettersISOCode, int start, int end) {
-
-		return findByC_C(companyId, countryTwoLettersISOCode, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<CommerceInventoryWarehouse, NoSuchInventoryWarehouseException>
+			_collectionPersistenceFinderByC_C;
 
 	/**
 	 * Returns an ordered range of all the commerce inventory warehouses where companyId = &#63; and countryTwoLettersISOCode = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param countryTwoLettersISOCode the country two letters iso code
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByC_C(
-		long companyId, String countryTwoLettersISOCode, int start, int end,
-		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
-
-		return findByC_C(
-			companyId, countryTwoLettersISOCode, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce inventory warehouses where companyId = &#63; and countryTwoLettersISOCode = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1725,18 +632,9 @@ public class CommerceInventoryWarehousePersistenceImpl
 			OrderByComparator<CommerceInventoryWarehouse> orderByComparator)
 		throws NoSuchInventoryWarehouseException {
 
-		CommerceInventoryWarehouse commerceInventoryWarehouse =
-			fetchByC_C_First(
-				companyId, countryTwoLettersISOCode, orderByComparator);
-
-		if (commerceInventoryWarehouse != null) {
-			return commerceInventoryWarehouse;
-		}
-
-		throw new NoSuchInventoryWarehouseException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, countryTwoLettersISOCode}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			finderCache, new Object[] {companyId, countryTwoLettersISOCode},
+			orderByComparator);
 	}
 
 	/**
@@ -1758,47 +656,10 @@ public class CommerceInventoryWarehousePersistenceImpl
 	}
 
 	/**
-	 * Returns all the commerce inventory warehouses that the user has permission to view where companyId = &#63; and countryTwoLettersISOCode = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param countryTwoLettersISOCode the country two letters iso code
-	 * @return the matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByC_C(
-		long companyId, String countryTwoLettersISOCode) {
-
-		return filterFindByC_C(
-			companyId, countryTwoLettersISOCode, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses that the user has permission to view where companyId = &#63; and countryTwoLettersISOCode = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param countryTwoLettersISOCode the country two letters iso code
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByC_C(
-		long companyId, String countryTwoLettersISOCode, int start, int end) {
-
-		return filterFindByC_C(
-			companyId, countryTwoLettersISOCode, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the commerce inventory warehouses that the user has permissions to view where companyId = &#63; and countryTwoLettersISOCode = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1813,118 +674,9 @@ public class CommerceInventoryWarehousePersistenceImpl
 		long companyId, String countryTwoLettersISOCode, int start, int end,
 		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByC_C(
-				companyId, countryTwoLettersISOCode, start, end,
-				orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByC_C(
-					companyId, countryTwoLettersISOCode, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator));
-		}
-
-		countryTwoLettersISOCode = Objects.toString(
-			countryTwoLettersISOCode, "");
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_C_C_COMPANYID_2);
-
-		boolean bindCountryTwoLettersISOCode = false;
-
-		if (countryTwoLettersISOCode.isEmpty()) {
-			sb.append(_FINDER_COLUMN_C_C_COUNTRYTWOLETTERSISOCODE_3);
-		}
-		else {
-			bindCountryTwoLettersISOCode = true;
-
-			sb.append(_FINDER_COLUMN_C_C_COUNTRYTWOLETTERSISOCODE_2);
-		}
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					CommerceInventoryWarehouseModelImpl.
-						ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(CommerceInventoryWarehouseModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, CommerceInventoryWarehouseImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, CommerceInventoryWarehouseImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			if (bindCountryTwoLettersISOCode) {
-				queryPos.add(countryTwoLettersISOCode);
-			}
-
-			return (List<CommerceInventoryWarehouse>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_C.filterFind(
+			finderCache, new Object[] {companyId, countryTwoLettersISOCode},
+			start, end, orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -1963,160 +715,20 @@ public class CommerceInventoryWarehousePersistenceImpl
 	public int filterCountByC_C(
 		long companyId, String countryTwoLettersISOCode) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByC_C(companyId, countryTwoLettersISOCode);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<CommerceInventoryWarehouse> commerceInventoryWarehouses =
-				findByC_C(companyId, countryTwoLettersISOCode);
-
-			commerceInventoryWarehouses = InlineSQLHelperUtil.filter(
-				commerceInventoryWarehouses);
-
-			return commerceInventoryWarehouses.size();
-		}
-
-		countryTwoLettersISOCode = Objects.toString(
-			countryTwoLettersISOCode, "");
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-
-		sb.append(_FINDER_COLUMN_C_C_COMPANYID_2);
-
-		boolean bindCountryTwoLettersISOCode = false;
-
-		if (countryTwoLettersISOCode.isEmpty()) {
-			sb.append(_FINDER_COLUMN_C_C_COUNTRYTWOLETTERSISOCODE_3);
-		}
-		else {
-			bindCountryTwoLettersISOCode = true;
-
-			sb.append(_FINDER_COLUMN_C_C_COUNTRYTWOLETTERSISOCODE_2);
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			if (bindCountryTwoLettersISOCode) {
-				queryPos.add(countryTwoLettersISOCode);
-			}
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_C.filterCount(
+			finderCache, new Object[] {companyId, countryTwoLettersISOCode},
+			companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_C_C_COMPANYID_2 =
-		"commerceInventoryWarehouse.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_C_COUNTRYTWOLETTERSISOCODE_2 =
-		"commerceInventoryWarehouse.countryTwoLettersISOCode = ?";
-
-	private static final String _FINDER_COLUMN_C_C_COUNTRYTWOLETTERSISOCODE_3 =
-		"(commerceInventoryWarehouse.countryTwoLettersISOCode IS NULL OR commerceInventoryWarehouse.countryTwoLettersISOCode = '')";
-
-	private FinderPath _finderPathWithPaginationFindByC_A_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_A_C;
-	private FinderPath _finderPathCountByC_A_C;
-	private CollectionPersistenceFinder<CommerceInventoryWarehouse>
-		_collectionPersistenceFinderByC_A_C;
-
-	/**
-	 * Returns all the commerce inventory warehouses where companyId = &#63; and active = &#63; and countryTwoLettersISOCode = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param countryTwoLettersISOCode the country two letters iso code
-	 * @return the matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByC_A_C(
-		long companyId, boolean active, String countryTwoLettersISOCode) {
-
-		return findByC_A_C(
-			companyId, active, countryTwoLettersISOCode, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses where companyId = &#63; and active = &#63; and countryTwoLettersISOCode = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param countryTwoLettersISOCode the country two letters iso code
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByC_A_C(
-		long companyId, boolean active, String countryTwoLettersISOCode,
-		int start, int end) {
-
-		return findByC_A_C(
-			companyId, active, countryTwoLettersISOCode, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<CommerceInventoryWarehouse, NoSuchInventoryWarehouseException>
+			_collectionPersistenceFinderByC_A_C;
 
 	/**
 	 * Returns an ordered range of all the commerce inventory warehouses where companyId = &#63; and active = &#63; and countryTwoLettersISOCode = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param countryTwoLettersISOCode the country two letters iso code
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce inventory warehouses
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> findByC_A_C(
-		long companyId, boolean active, String countryTwoLettersISOCode,
-		int start, int end,
-		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
-
-		return findByC_A_C(
-			companyId, active, countryTwoLettersISOCode, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce inventory warehouses where companyId = &#63; and active = &#63; and countryTwoLettersISOCode = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -2157,18 +769,10 @@ public class CommerceInventoryWarehousePersistenceImpl
 			OrderByComparator<CommerceInventoryWarehouse> orderByComparator)
 		throws NoSuchInventoryWarehouseException {
 
-		CommerceInventoryWarehouse commerceInventoryWarehouse =
-			fetchByC_A_C_First(
-				companyId, active, countryTwoLettersISOCode, orderByComparator);
-
-		if (commerceInventoryWarehouse != null) {
-			return commerceInventoryWarehouse;
-		}
-
-		throw new NoSuchInventoryWarehouseException(
-			_collectionPersistenceFinderByC_A_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, active, countryTwoLettersISOCode}));
+		return _collectionPersistenceFinderByC_A_C.findFirst(
+			finderCache,
+			new Object[] {companyId, active, countryTwoLettersISOCode},
+			orderByComparator);
 	}
 
 	/**
@@ -2192,50 +796,10 @@ public class CommerceInventoryWarehousePersistenceImpl
 	}
 
 	/**
-	 * Returns all the commerce inventory warehouses that the user has permission to view where companyId = &#63; and active = &#63; and countryTwoLettersISOCode = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param countryTwoLettersISOCode the country two letters iso code
-	 * @return the matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByC_A_C(
-		long companyId, boolean active, String countryTwoLettersISOCode) {
-
-		return filterFindByC_A_C(
-			companyId, active, countryTwoLettersISOCode, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouses that the user has permission to view where companyId = &#63; and active = &#63; and countryTwoLettersISOCode = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param countryTwoLettersISOCode the country two letters iso code
-	 * @param start the lower bound of the range of commerce inventory warehouses
-	 * @param end the upper bound of the range of commerce inventory warehouses (not inclusive)
-	 * @return the range of matching commerce inventory warehouses that the user has permission to view
-	 */
-	@Override
-	public List<CommerceInventoryWarehouse> filterFindByC_A_C(
-		long companyId, boolean active, String countryTwoLettersISOCode,
-		int start, int end) {
-
-		return filterFindByC_A_C(
-			companyId, active, countryTwoLettersISOCode, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the commerce inventory warehouses that the user has permissions to view where companyId = &#63; and active = &#63; and countryTwoLettersISOCode = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -2252,122 +816,10 @@ public class CommerceInventoryWarehousePersistenceImpl
 		int start, int end,
 		OrderByComparator<CommerceInventoryWarehouse> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByC_A_C(
-				companyId, active, countryTwoLettersISOCode, start, end,
-				orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByC_A_C(
-					companyId, active, countryTwoLettersISOCode,
-					QueryUtil.ALL_POS, QueryUtil.ALL_POS, orderByComparator));
-		}
-
-		countryTwoLettersISOCode = Objects.toString(
-			countryTwoLettersISOCode, "");
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_C_A_C_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_A_C_ACTIVE_2_SQL);
-
-		boolean bindCountryTwoLettersISOCode = false;
-
-		if (countryTwoLettersISOCode.isEmpty()) {
-			sb.append(_FINDER_COLUMN_C_A_C_COUNTRYTWOLETTERSISOCODE_3);
-		}
-		else {
-			bindCountryTwoLettersISOCode = true;
-
-			sb.append(_FINDER_COLUMN_C_A_C_COUNTRYTWOLETTERSISOCODE_2);
-		}
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					CommerceInventoryWarehouseModelImpl.
-						ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(CommerceInventoryWarehouseModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, CommerceInventoryWarehouseImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, CommerceInventoryWarehouseImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(active);
-
-			if (bindCountryTwoLettersISOCode) {
-				queryPos.add(countryTwoLettersISOCode);
-			}
-
-			return (List<CommerceInventoryWarehouse>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_A_C.filterFind(
+			finderCache,
+			new Object[] {companyId, active, countryTwoLettersISOCode}, start,
+			end, orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -2415,95 +867,15 @@ public class CommerceInventoryWarehousePersistenceImpl
 	public int filterCountByC_A_C(
 		long companyId, boolean active, String countryTwoLettersISOCode) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByC_A_C(companyId, active, countryTwoLettersISOCode);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<CommerceInventoryWarehouse> commerceInventoryWarehouses =
-				findByC_A_C(companyId, active, countryTwoLettersISOCode);
-
-			commerceInventoryWarehouses = InlineSQLHelperUtil.filter(
-				commerceInventoryWarehouses);
-
-			return commerceInventoryWarehouses.size();
-		}
-
-		countryTwoLettersISOCode = Objects.toString(
-			countryTwoLettersISOCode, "");
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE);
-
-		sb.append(_FINDER_COLUMN_C_A_C_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_A_C_ACTIVE_2_SQL);
-
-		boolean bindCountryTwoLettersISOCode = false;
-
-		if (countryTwoLettersISOCode.isEmpty()) {
-			sb.append(_FINDER_COLUMN_C_A_C_COUNTRYTWOLETTERSISOCODE_3);
-		}
-		else {
-			bindCountryTwoLettersISOCode = true;
-
-			sb.append(_FINDER_COLUMN_C_A_C_COUNTRYTWOLETTERSISOCODE_2);
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommerceInventoryWarehouse.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(active);
-
-			if (bindCountryTwoLettersISOCode) {
-				queryPos.add(countryTwoLettersISOCode);
-			}
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_A_C.filterCount(
+			finderCache,
+			new Object[] {companyId, active, countryTwoLettersISOCode},
+			companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_C_A_C_COMPANYID_2 =
-		"commerceInventoryWarehouse.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_A_C_ACTIVE_2_SQL =
-		"commerceInventoryWarehouse.active_ = ? AND ";
-
-	private static final String
-		_FINDER_COLUMN_C_A_C_COUNTRYTWOLETTERSISOCODE_2 =
-			"commerceInventoryWarehouse.countryTwoLettersISOCode = ?";
-
-	private static final String
-		_FINDER_COLUMN_C_A_C_COUNTRYTWOLETTERSISOCODE_3 =
-			"(commerceInventoryWarehouse.countryTwoLettersISOCode IS NULL OR commerceInventoryWarehouse.countryTwoLettersISOCode = '')";
-
-	private FinderPath _finderPathFetchByERC_C;
-	private UniquePersistenceFinder<CommerceInventoryWarehouse>
-		_uniquePersistenceFinderByERC_C;
+	private UniquePersistenceFinder
+		<CommerceInventoryWarehouse, NoSuchInventoryWarehouseException>
+			_uniquePersistenceFinderByERC_C;
 
 	/**
 	 * Returns the commerce inventory warehouse where externalReferenceCode = &#63; and companyId = &#63; or throws a <code>NoSuchInventoryWarehouseException</code> if it could not be found.
@@ -2518,37 +890,8 @@ public class CommerceInventoryWarehousePersistenceImpl
 			String externalReferenceCode, long companyId)
 		throws NoSuchInventoryWarehouseException {
 
-		CommerceInventoryWarehouse commerceInventoryWarehouse = fetchByERC_C(
-			externalReferenceCode, companyId);
-
-		if (commerceInventoryWarehouse == null) {
-			String message =
-				_uniquePersistenceFinderByERC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, companyId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchInventoryWarehouseException(message);
-		}
-
-		return commerceInventoryWarehouse;
-	}
-
-	/**
-	 * Returns the commerce inventory warehouse where externalReferenceCode = &#63; and companyId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param companyId the company ID
-	 * @return the matching commerce inventory warehouse, or <code>null</code> if a matching commerce inventory warehouse could not be found
-	 */
-	@Override
-	public CommerceInventoryWarehouse fetchByERC_C(
-		String externalReferenceCode, long companyId) {
-
-		return fetchByERC_C(externalReferenceCode, companyId, true);
+		return _uniquePersistenceFinderByERC_C.find(
+			finderCache, new Object[] {externalReferenceCode, companyId});
 	}
 
 	/**
@@ -2914,235 +1257,231 @@ public class CommerceInventoryWarehousePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
-		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
-			_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE,
-			_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE,
-			CommerceInventoryWarehouseModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"commerceInventoryWarehouse.", "uuid", FinderColumn.Type.STRING,
-				"=", true, true, CommerceInventoryWarehouse::getUuid));
-
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
-		_collectionPersistenceFinderByUuid_C =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+		_collectionPersistenceFinderByUuid =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+					new String[] {
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+					new String[] {String.class.getName()},
+					new String[] {"uuid_"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+					new String[] {String.class.getName()},
+					new String[] {"uuid_"}, 0, 1, false, null),
 				_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE,
 				_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE,
 				CommerceInventoryWarehouseModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"commerceInventoryWarehouse.", "uuid",
-					FinderColumn.Type.STRING, "=", true, false,
+					"commerceInventoryWarehouse.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					CommerceInventoryWarehouse::getUuid));
+
+		_collectionPersistenceFinderByUuid_C =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE,
+				_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE,
+				CommerceInventoryWarehouseModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"commerceInventoryWarehouse.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
 					CommerceInventoryWarehouse::getUuid),
 				new FinderColumn<>(
 					"commerceInventoryWarehouse.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceInventoryWarehouse::getCompanyId));
 
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
 		_collectionPersistenceFinderByCompanyId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
 				_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE,
 				_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE,
 				CommerceInventoryWarehouseModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commerceInventoryWarehouse.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceInventoryWarehouse::getCompanyId));
 
-		_finderPathWithPaginationFindByC_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "active_"}, true);
+		_collectionPersistenceFinderByC_A =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId", "active_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {"companyId", "active_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {"companyId", "active_"}, false),
+				_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE,
+				_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE,
+				CommerceInventoryWarehouseModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"commerceInventoryWarehouse.", "companyId",
+					FinderColumn.Type.LONG, "=", true, true,
+					CommerceInventoryWarehouse::getCompanyId),
+				new FinderColumn<>(
+					"commerceInventoryWarehouse.", "active", "active_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					CommerceInventoryWarehouse::isActive));
 
-		_finderPathWithoutPaginationFindByC_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"companyId", "active_"}, true);
+		_collectionPersistenceFinderByC_C =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId", "countryTwoLettersISOCode"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"companyId", "countryTwoLettersISOCode"}, 0,
+					2, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"companyId", "countryTwoLettersISOCode"}, 0,
+					2, false, null),
+				_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE,
+				_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE,
+				CommerceInventoryWarehouseModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"commerceInventoryWarehouse.", "companyId",
+					FinderColumn.Type.LONG, "=", true, true,
+					CommerceInventoryWarehouse::getCompanyId),
+				new FinderColumn<>(
+					"commerceInventoryWarehouse.", "countryTwoLettersISOCode",
+					FinderColumn.Type.STRING, "=", true, true,
+					CommerceInventoryWarehouse::getCountryTwoLettersISOCode));
 
-		_finderPathCountByC_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"companyId", "active_"}, false);
-
-		_collectionPersistenceFinderByC_A = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_A,
-			_finderPathWithoutPaginationFindByC_A, _finderPathCountByC_A,
-			_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE,
-			_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE,
-			CommerceInventoryWarehouseModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"commerceInventoryWarehouse.", "companyId",
-				FinderColumn.Type.LONG, "=", true, false,
-				CommerceInventoryWarehouse::getCompanyId),
-			new FinderColumn<>(
-				"commerceInventoryWarehouse.", "active",
-				FinderColumn.Type.BOOLEAN, "=", true, true,
-				CommerceInventoryWarehouse::isActive));
-
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "countryTwoLettersISOCode"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "countryTwoLettersISOCode"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "countryTwoLettersISOCode"}, false);
-
-		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
-			_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE,
-			_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE,
-			CommerceInventoryWarehouseModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"commerceInventoryWarehouse.", "companyId",
-				FinderColumn.Type.LONG, "=", true, false,
-				CommerceInventoryWarehouse::getCompanyId),
-			new FinderColumn<>(
-				"commerceInventoryWarehouse.", "countryTwoLettersISOCode",
-				FinderColumn.Type.STRING, "=", true, true,
-				CommerceInventoryWarehouse::getCountryTwoLettersISOCode));
-
-		_finderPathWithPaginationFindByC_A_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A_C",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "active_", "countryTwoLettersISOCode"},
-			true);
-
-		_finderPathWithoutPaginationFindByC_A_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A_C",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"companyId", "active_", "countryTwoLettersISOCode"},
-			true);
-
-		_finderPathCountByC_A_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A_C",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"companyId", "active_", "countryTwoLettersISOCode"},
-			false);
-
-		_collectionPersistenceFinderByC_A_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_A_C,
-			_finderPathWithoutPaginationFindByC_A_C, _finderPathCountByC_A_C,
-			_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE,
-			_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE,
-			CommerceInventoryWarehouseModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"commerceInventoryWarehouse.", "companyId",
-				FinderColumn.Type.LONG, "=", true, false,
-				CommerceInventoryWarehouse::getCompanyId),
-			new FinderColumn<>(
-				"commerceInventoryWarehouse.", "active",
-				FinderColumn.Type.BOOLEAN, "=", true, false,
-				CommerceInventoryWarehouse::isActive),
-			new FinderColumn<>(
-				"commerceInventoryWarehouse.", "countryTwoLettersISOCode",
-				FinderColumn.Type.STRING, "=", true, true,
-				CommerceInventoryWarehouse::getCountryTwoLettersISOCode));
-
-		_finderPathFetchByERC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "companyId"}, false,
-			CommerceInventoryWarehouse::getExternalReferenceCode,
-			CommerceInventoryWarehouse::getCompanyId);
+		_collectionPersistenceFinderByC_A_C =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A_C",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"companyId", "active_", "countryTwoLettersISOCode"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A_C",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						String.class.getName()
+					},
+					new String[] {
+						"companyId", "active_", "countryTwoLettersISOCode"
+					},
+					0, 4, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A_C",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						String.class.getName()
+					},
+					new String[] {
+						"companyId", "active_", "countryTwoLettersISOCode"
+					},
+					0, 4, false, null),
+				_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE,
+				_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE,
+				CommerceInventoryWarehouseModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"commerceInventoryWarehouse.", "companyId",
+					FinderColumn.Type.LONG, "=", true, true,
+					CommerceInventoryWarehouse::getCompanyId),
+				new FinderColumn<>(
+					"commerceInventoryWarehouse.", "active", "active_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					CommerceInventoryWarehouse::isActive),
+				new FinderColumn<>(
+					"commerceInventoryWarehouse.", "countryTwoLettersISOCode",
+					FinderColumn.Type.STRING, "=", true, true,
+					CommerceInventoryWarehouse::getCountryTwoLettersISOCode));
 
 		_uniquePersistenceFinderByERC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_C,
-			_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "companyId"}, 0, 1,
+				false,
+				convertNullFunction(
+					CommerceInventoryWarehouse::getExternalReferenceCode),
+				CommerceInventoryWarehouse::getCompanyId),
+			_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE, "",
 			new FinderColumn<>(
 				"commerceInventoryWarehouse.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				CommerceInventoryWarehouse::getExternalReferenceCode),
 			new FinderColumn<>(
 				"commerceInventoryWarehouse.", "companyId",
@@ -3203,32 +1542,6 @@ public class CommerceInventoryWarehousePersistenceImpl
 	private static final String _SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE =
 		"SELECT COUNT(commerceInventoryWarehouse) FROM CommerceInventoryWarehouse commerceInventoryWarehouse WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"commerceInventoryWarehouse.CIWarehouseId";
-
-	private static final String
-		_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_WHERE =
-			"SELECT DISTINCT {commerceInventoryWarehouse.*} FROM CIWarehouse commerceInventoryWarehouse WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {CIWarehouse.*} FROM (SELECT DISTINCT commerceInventoryWarehouse.CIWarehouseId FROM CIWarehouse commerceInventoryWarehouse WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_COMMERCEINVENTORYWAREHOUSE_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN CIWarehouse ON TEMP_TABLE.CIWarehouseId = CIWarehouse.CIWarehouseId";
-
-	private static final String
-		_FILTER_SQL_COUNT_COMMERCEINVENTORYWAREHOUSE_WHERE =
-			"SELECT COUNT(DISTINCT commerceInventoryWarehouse.CIWarehouseId) AS COUNT_VALUE FROM CIWarehouse commerceInventoryWarehouse WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS =
-		"commerceInventoryWarehouse";
-
-	private static final String _FILTER_ENTITY_TABLE = "CIWarehouse";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "CIWarehouse.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No CommerceInventoryWarehouse exists with the key {";
 
@@ -3246,4 +1559,4 @@ public class CommerceInventoryWarehousePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1932256613
+// LIFERAY-SERVICE-BUILDER-HASH:-506697825

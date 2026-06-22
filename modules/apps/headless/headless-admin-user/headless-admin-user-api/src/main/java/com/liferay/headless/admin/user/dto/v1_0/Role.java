@@ -43,6 +43,9 @@ import java.util.function.Supplier;
 	description = "Represents a relationship between a user and a company or site. This follows the [`Role`](https://www.schema.org/Role) specification.",
 	value = "Role"
 )
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Represents a relationship between a user and a company or site. This follows the [`Role`](https://www.schema.org/Role) specification."
+)
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "Role")
 public class Role implements Serializable {
@@ -664,6 +667,49 @@ public class Role implements Serializable {
 	@JsonIgnore
 	private Supplier<String> _roleTypeSupplier;
 
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The role's subtype."
+	)
+	public String getSubtype() {
+		if (_subtypeSupplier != null) {
+			subtype = _subtypeSupplier.get();
+
+			_subtypeSupplier = null;
+		}
+
+		return subtype;
+	}
+
+	public void setSubtype(String subtype) {
+		this.subtype = subtype;
+
+		_subtypeSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setSubtype(
+		UnsafeSupplier<String, Exception> subtypeUnsafeSupplier) {
+
+		_subtypeSupplier = () -> {
+			try {
+				return subtypeUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(description = "The role's subtype.")
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected String subtype;
+
+	@JsonIgnore
+	private Supplier<String> _subtypeSupplier;
+
 	@Override
 	public boolean equals(Object object) {
 		if (this == object) {
@@ -921,6 +967,22 @@ public class Role implements Serializable {
 			sb.append("\"");
 		}
 
+		String subtype = getSubtype();
+
+		if (subtype != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"subtype\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(subtype));
+
+			sb.append("\"");
+		}
+
 		sb.append("}");
 
 		return sb.toString();
@@ -1022,4 +1084,4 @@ public class Role implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-818631952
+// LIFERAY-REST-BUILDER-HASH:-2131804476

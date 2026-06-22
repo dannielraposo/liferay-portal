@@ -186,17 +186,10 @@ public class NavigationMenuItemDTOConverter
 							},
 							NavigationMenuItem.class);
 					});
+				setNavigationMenuItemSettings(
+					() -> _getNavigationMenuItemSettings(
+						siteNavigationMenuItem.getType(), unicodeProperties));
 				setType(siteNavigationMenuItem::getType);
-
-				Object navigationMenuItemSettings =
-					_getNavigationMenuItemSettings(
-						siteNavigationMenuItem.getType(), unicodeProperties);
-
-				if (navigationMenuItemSettings != null) {
-					setNavigationMenuItemSettings(
-						() -> navigationMenuItemSettings);
-				}
-
 				setUseCustomName(
 					() -> Boolean.valueOf(
 						unicodeProperties.getProperty("useCustomName")));

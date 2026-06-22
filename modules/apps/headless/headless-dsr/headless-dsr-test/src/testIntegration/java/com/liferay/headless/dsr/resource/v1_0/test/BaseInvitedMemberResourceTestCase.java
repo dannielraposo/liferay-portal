@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -103,7 +104,8 @@ public abstract class BaseInvitedMemberResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -278,6 +280,11 @@ public abstract class BaseInvitedMemberResourceTestCase {
 		return null;
 	}
 
+	@Test
+	public void testPatchRoomInvitedMember() throws Exception {
+		Assert.assertTrue(false);
+	}
+
 	protected void assertContains(
 		InvitedMember invitedMember, List<InvitedMember> invitedMembers) {
 
@@ -360,6 +367,14 @@ public abstract class BaseInvitedMemberResourceTestCase {
 
 			if (Objects.equals("emailAddress", additionalAssertFieldName)) {
 				if (invitedMember.getEmailAddress() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("ownerId", additionalAssertFieldName)) {
+				if (invitedMember.getOwnerId() == null) {
 					valid = false;
 				}
 
@@ -508,6 +523,17 @@ public abstract class BaseInvitedMemberResourceTestCase {
 			if (Objects.equals("id", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						invitedMember1.getId(), invitedMember2.getId())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("ownerId", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						invitedMember1.getOwnerId(),
+						invitedMember2.getOwnerId())) {
 
 					return false;
 				}
@@ -684,6 +710,11 @@ public abstract class BaseInvitedMemberResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("ownerId")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("roleKey")) {
 			Object object = invitedMember.getRoleKey();
 
@@ -743,7 +774,9 @@ public abstract class BaseInvitedMemberResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -779,6 +812,7 @@ public abstract class BaseInvitedMemberResourceTestCase {
 					StringUtil.toLowerCase(RandomTestUtil.randomString()) +
 						"@liferay.com";
 				id = RandomTestUtil.randomLong();
+				ownerId = RandomTestUtil.randomLong();
 				roleKey = StringUtil.toLowerCase(RandomTestUtil.randomString());
 			}
 		};
@@ -1004,4 +1038,4 @@ public abstract class BaseInvitedMemberResourceTestCase {
 		_invitedMemberResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1001936869
+// LIFERAY-REST-BUILDER-HASH:-1389357218

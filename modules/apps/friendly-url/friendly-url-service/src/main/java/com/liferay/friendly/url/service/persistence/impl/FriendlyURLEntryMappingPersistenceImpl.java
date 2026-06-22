@@ -13,12 +13,10 @@ import com.liferay.friendly.url.model.impl.FriendlyURLEntryMappingModelImpl;
 import com.liferay.friendly.url.service.persistence.FriendlyURLEntryMappingPersistence;
 import com.liferay.friendly.url.service.persistence.FriendlyURLEntryMappingUtil;
 import com.liferay.friendly.url.service.persistence.impl.constants.FURLPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -79,9 +77,9 @@ public class FriendlyURLEntryMappingPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByC_C;
-	private UniquePersistenceFinder<FriendlyURLEntryMapping>
-		_uniquePersistenceFinderByC_C;
+	private UniquePersistenceFinder
+		<FriendlyURLEntryMapping, NoSuchFriendlyURLEntryMappingException>
+			_uniquePersistenceFinderByC_C;
 
 	/**
 	 * Returns the friendly url entry mapping where classNameId = &#63; and classPK = &#63; or throws a <code>NoSuchFriendlyURLEntryMappingException</code> if it could not be found.
@@ -95,35 +93,8 @@ public class FriendlyURLEntryMappingPersistenceImpl
 	public FriendlyURLEntryMapping findByC_C(long classNameId, long classPK)
 		throws NoSuchFriendlyURLEntryMappingException {
 
-		FriendlyURLEntryMapping friendlyURLEntryMapping = fetchByC_C(
-			classNameId, classPK);
-
-		if (friendlyURLEntryMapping == null) {
-			String message =
-				_uniquePersistenceFinderByC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {classNameId, classPK});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFriendlyURLEntryMappingException(message);
-		}
-
-		return friendlyURLEntryMapping;
-	}
-
-	/**
-	 * Returns the friendly url entry mapping where classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching friendly url entry mapping, or <code>null</code> if a matching friendly url entry mapping could not be found
-	 */
-	@Override
-	public FriendlyURLEntryMapping fetchByC_C(long classNameId, long classPK) {
-		return fetchByC_C(classNameId, classPK, true);
+		return _uniquePersistenceFinderByC_C.find(
+			finderCache, new Object[] {classNameId, classPK});
 	}
 
 	/**
@@ -138,14 +109,8 @@ public class FriendlyURLEntryMappingPersistenceImpl
 	public FriendlyURLEntryMapping fetchByC_C(
 		long classNameId, long classPK, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FriendlyURLEntryMapping.class)) {
-
-			return _uniquePersistenceFinderByC_C.fetch(
-				finderCache, new Object[] {classNameId, classPK},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByC_C.fetch(
+			finderCache, new Object[] {classNameId, classPK}, useFinderCache);
 	}
 
 	/**
@@ -434,19 +399,18 @@ public class FriendlyURLEntryMappingPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, false,
-			FriendlyURLEntryMapping::getClassNameId,
-			FriendlyURLEntryMapping::getClassPK);
-
 		_uniquePersistenceFinderByC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_C,
-			_SQL_SELECT_FRIENDLYURLENTRYMAPPING_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "classPK"}, 0, 0, false,
+				FriendlyURLEntryMapping::getClassNameId,
+				FriendlyURLEntryMapping::getClassPK),
+			_SQL_SELECT_FRIENDLYURLENTRYMAPPING_WHERE, "",
 			new FinderColumn<>(
 				"friendlyURLEntryMapping.", "classNameId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				FriendlyURLEntryMapping::getClassNameId),
 			new FinderColumn<>(
 				"friendlyURLEntryMapping.", "classPK", FinderColumn.Type.LONG,
@@ -497,9 +461,6 @@ public class FriendlyURLEntryMappingPersistenceImpl
 	@Reference
 	protected FinderCache finderCache;
 
-	private static final String _ENTITY_ALIAS_PREFIX =
-		FriendlyURLEntryMappingModelImpl.ENTITY_ALIAS + ".";
-
 	private static final String _SQL_SELECT_FRIENDLYURLENTRYMAPPING =
 		"SELECT friendlyURLEntryMapping FROM FriendlyURLEntryMapping friendlyURLEntryMapping";
 
@@ -518,4 +479,4 @@ public class FriendlyURLEntryMappingPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:844636442
+// LIFERAY-SERVICE-BUILDER-HASH:-87056382

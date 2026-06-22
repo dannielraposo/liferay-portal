@@ -6,9 +6,23 @@
 package com.liferay.asset.categories.internal.layout.display.page;
 
 import com.liferay.asset.kernel.model.AssetCategory;
+import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
+import com.liferay.friendly.url.model.FriendlyURLEntry;
+import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -18,9 +32,14 @@ public class AssetCategoryLayoutDisplayPageObjectProvider
 	implements LayoutDisplayPageObjectProvider<AssetCategory> {
 
 	public AssetCategoryLayoutDisplayPageObjectProvider(
-		AssetCategory assetCategory, Portal portal) {
+		AssetCategory assetCategory,
+		AssetVocabularyLocalService assetVocabularyLocalService,
+		FriendlyURLEntryLocalService friendlyURLEntryLocalService,
+		Portal portal) {
 
 		_assetCategory = assetCategory;
+		_assetVocabularyLocalService = assetVocabularyLocalService;
+		_friendlyURLEntryLocalService = friendlyURLEntryLocalService;
 		_portal = portal;
 	}
 
@@ -71,10 +90,74 @@ public class AssetCategoryLayoutDisplayPageObjectProvider
 
 	@Override
 	public String getURLTitle(Locale locale) {
+		try {
+			if (FeatureFlagManagerUtil.isEnabled(
+					_assetCategory.getCompanyId(), "LPD-70396")) {
+
+				return _getUrlTitle(locale);
+			}
+		}
+		catch (PortalException portalException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(portalException);
+			}
+		}
+
 		return String.valueOf(_assetCategory.getCategoryId());
 	}
 
+	private String _getUrlTitle(Locale locale) throws PortalException {
+		List<AssetCategory> ancestorAssetCategories =
+			_assetCategory.getAncestors();
+
+		StringBundler sb = new StringBundler(
+			(ancestorAssetCategories.size() * 2) + 3);
+
+		AssetVocabulary assetVocabulary =
+			_assetVocabularyLocalService.fetchAssetVocabulary(
+				_assetCategory.getVocabularyId());
+
+		sb.append(assetVocabulary.getName());
+
+		Collections.reverse(ancestorAssetCategories);
+
+		long classNameId = _portal.getClassNameId(AssetCategory.class);
+
+		for (AssetCategory ancestorAssetCategory : ancestorAssetCategories) {
+			sb.append(StringPool.SLASH);
+			sb.append(
+				_getUrlTitle(
+					classNameId, ancestorAssetCategory.getCategoryId(),
+					locale));
+		}
+
+		sb.append(StringPool.SLASH);
+		sb.append(
+			_getUrlTitle(classNameId, _assetCategory.getCategoryId(), locale));
+
+		return sb.toString();
+	}
+
+	private String _getUrlTitle(long classNameId, long classPK, Locale locale) {
+		FriendlyURLEntry friendlyURLEntry =
+			_friendlyURLEntryLocalService.fetchMainFriendlyURLEntry(
+				classNameId, classPK);
+
+		if (friendlyURLEntry == null) {
+			return String.valueOf(classPK);
+		}
+
+		return GetterUtil.getObject(
+			friendlyURLEntry.getUrlTitle(LocaleUtil.toLanguageId(locale)),
+			friendlyURLEntry::getUrlTitle);
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		AssetCategoryLayoutDisplayPageObjectProvider.class);
+
 	private final AssetCategory _assetCategory;
+	private final AssetVocabularyLocalService _assetVocabularyLocalService;
+	private final FriendlyURLEntryLocalService _friendlyURLEntryLocalService;
 	private final Portal _portal;
 
 }

@@ -8,6 +8,7 @@ package com.liferay.jenkins.results.parser.persistent.resource;
 import com.liferay.jenkins.results.parser.Build;
 import com.liferay.jenkins.results.parser.BuildDatabase;
 import com.liferay.jenkins.results.parser.BuildFactory;
+import com.liferay.jenkins.results.parser.Environment;
 import com.liferay.jenkins.results.parser.JenkinsAPIUtil;
 import com.liferay.jenkins.results.parser.JenkinsMaster;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
@@ -26,6 +27,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -168,54 +170,17 @@ public abstract class BaseBundlePersistentResource
 		return _workspace;
 	}
 
+	@Override
+	protected void populateDataJSONObject(JSONObject dataJSONObject) {
+		dataJSONObject.put(
+			"redispatch_attempts", _redispatchAttempts
+		).put(
+			"redispatch_history", _redispatchHistoryJSONArray
+		);
+	}
+
 	protected void start() {
-		StringBuilder sb = new StringBuilder();
-
-		sb.append(_JOB_VARIANT);
-		sb.append("/start.properties");
-
-		String key = sb.toString();
-
-		Properties startProperties = getStartProperties();
-
-		BuildDatabase buildDatabase = getBuildDatabase();
-
-		buildDatabase.putProperties(key, startProperties, true);
-
-		buildDatabase.uploadBuildDatabaseFileToCloudBucket();
-
-		Map<String, String> buildParameters = new HashMap<>();
-
-		for (String startPropertyName : startProperties.stringPropertyNames()) {
-			String startPropertyValue = JenkinsResultsParserUtil.getProperty(
-				startProperties, startPropertyName);
-
-			if (JenkinsResultsParserUtil.isNullOrEmpty(startPropertyValue)) {
-				continue;
-			}
-
-			buildParameters.put(startPropertyName, startPropertyValue);
-		}
-
-		buildParameters.put("AXIS_VARIABLE", _getAxisVariable());
-		buildParameters.put("BUILD_PRIORITY", _BUILD_PRIORITY);
-		buildParameters.put("JOB_VARIANT", _JOB_VARIANT);
-		buildParameters.put("SLAVE_LABEL", _SLAVE_LABEL);
-
-		JenkinsMaster producerJenkinsMaster =
-			JenkinsResultsParserUtil.getMostAvailableJenkinsMaster(
-				_getBaseInvocationURL(), 1, _SLAVE_LABEL);
-
-		long producerQueueId = JenkinsResultsParserUtil.invokeJenkinsBuild(
-			producerJenkinsMaster, _JOB_NAME, buildParameters);
-
-		setControllerBuildURL(getCurrentTopLevelBuildURL());
-		setProducerJenkinsMaster(producerJenkinsMaster);
-		setProducerQueueId(producerQueueId);
-
-		setStatus(Status.IN_QUEUE);
-
-		save();
+		_invokeBuild();
 
 		print("Start building bundles at " + _getProducerJobURL());
 	}
@@ -257,6 +222,30 @@ public abstract class BaseBundlePersistentResource
 
 			setProducerQueueId(dataJSONObject.optLong("producer_queue_id"));
 			setStatus(Status.valueOf(dataJSONObject.getString("status")));
+
+			_redispatchAttempts = dataJSONObject.optInt(
+				"redispatch_attempts", 0);
+
+			JSONArray redispatchHistoryJSONArray = dataJSONObject.optJSONArray(
+				"redispatch_history");
+
+			if (redispatchHistoryJSONArray != null) {
+				_redispatchHistoryJSONArray = redispatchHistoryJSONArray;
+			}
+			else {
+				_redispatchHistoryJSONArray = new JSONArray();
+			}
+
+			if (getStatus() == Status.FAILED) {
+				if (_redispatchAttempts < _MAX_REDISPATCH_ATTEMPTS) {
+					_redispatchBuild(dataJSONObject);
+				}
+				else {
+					print("No redispatch attempts remaining");
+				}
+
+				return;
+			}
 
 			if (isMissing()) {
 				_missingCount++;
@@ -338,8 +327,10 @@ public abstract class BaseBundlePersistentResource
 
 				if (_failCount <= _MAX_FAIL_COUNT) {
 					print(
-						"Retry " + _failCount + " of " + _MAX_FAIL_COUNT +
-							" due to FAILURE in " + getProducerBuildURL());
+						JenkinsResultsParserUtil.combine(
+							"Retry ", String.valueOf(_failCount), " of ",
+							String.valueOf(_MAX_FAIL_COUNT),
+							" due to FAILURE in ", getProducerBuildURL()));
 
 					start();
 
@@ -385,6 +376,138 @@ public abstract class BaseBundlePersistentResource
 		return producerJenkinsMaster.getRemoteURL() + "job/" + _JOB_NAME;
 	}
 
+	private void _invokeBuild() {
+		setControllerBuildURL(getCurrentTopLevelBuildURL());
+
+		JenkinsMaster producerJenkinsMaster =
+			JenkinsResultsParserUtil.getMostAvailableJenkinsMaster(
+				_getBaseInvocationURL(), 1);
+
+		setProducerJenkinsMaster(producerJenkinsMaster);
+
+		Map<String, String> buildParameters = new HashMap<>();
+
+		BuildDatabase buildDatabase = getBuildDatabase();
+
+		Properties startProperties = getStartProperties();
+
+		buildDatabase.putProperties(
+			_JOB_VARIANT + "/start.properties", startProperties, true);
+
+		buildDatabase.uploadBuildDatabaseFileToCloudBucket();
+
+		for (String startPropertyName : startProperties.stringPropertyNames()) {
+			String startPropertyValue = JenkinsResultsParserUtil.getProperty(
+				startProperties, startPropertyName);
+
+			if (JenkinsResultsParserUtil.isNullOrEmpty(startPropertyValue)) {
+				continue;
+			}
+
+			buildParameters.put(startPropertyName, startPropertyValue);
+		}
+
+		buildParameters.put("AXIS_VARIABLE", _getAxisVariable());
+		buildParameters.put("BUILD_PRIORITY", _BUILD_PRIORITY);
+		buildParameters.put("JOB_VARIANT", _JOB_VARIANT);
+		buildParameters.put("SLAVE_LABEL", "slave-bundle-builder");
+
+		setProducerQueueId(
+			JenkinsResultsParserUtil.invokeJenkinsBuild(
+				producerJenkinsMaster, _JOB_NAME, buildParameters));
+
+		setStatus(Status.IN_QUEUE);
+
+		save();
+	}
+
+	private void _redispatchBuild(JSONObject cachedDataJSONObject) {
+		_redispatchHistoryJSONArray.put(
+			new JSONObject(
+			).put(
+				"controller_build_url",
+				cachedDataJSONObject.optString("controller_build_url")
+			).put(
+				"producer_build_url",
+				cachedDataJSONObject.optString("producer_build_url")
+			).put(
+				"status", cachedDataJSONObject.optString("status")
+			));
+
+		while (_redispatchHistoryJSONArray.length() >
+					_MAX_REDISPATCH_ATTEMPTS) {
+
+			_redispatchHistoryJSONArray.remove(0);
+		}
+
+		_redispatchAttempts++;
+
+		String currentTopLevelBuildURL = getCurrentTopLevelBuildURL();
+
+		setControllerBuildURL(currentTopLevelBuildURL);
+
+		setProducerBuildURL(null);
+		setProducerJenkinsMaster(null);
+		setProducerQueueId(0);
+		setStatus(Status.IN_QUEUE);
+
+		save();
+
+		JenkinsResultsParserUtil.sleep(_REDISPATCH_VERIFY_TIME);
+
+		JSONObject dataJSONObject = getDataJSONObject();
+
+		if (dataJSONObject != null) {
+			String controllerBuildURL = dataJSONObject.optString(
+				"controller_build_url");
+
+			if (!Objects.equals(currentTopLevelBuildURL, controllerBuildURL)) {
+				print(
+					"Following redispatched bundles at " + controllerBuildURL);
+
+				setControllerBuildURL(controllerBuildURL);
+				setProducerBuildURL(
+					dataJSONObject.optString("producer_build_url"));
+
+				String producerJenkinsMasterName = dataJSONObject.optString(
+					"producer_jenkins_master");
+
+				if (!JenkinsResultsParserUtil.isNullOrEmpty(
+						producerJenkinsMasterName)) {
+
+					setProducerJenkinsMaster(
+						JenkinsMaster.getInstance(producerJenkinsMasterName));
+				}
+				else {
+					setProducerJenkinsMaster(null);
+				}
+
+				setProducerQueueId(dataJSONObject.optLong("producer_queue_id"));
+				setStatus(Status.valueOf(dataJSONObject.getString("status")));
+
+				_redispatchAttempts = dataJSONObject.optInt(
+					"redispatch_attempts", _redispatchAttempts);
+
+				JSONArray redispatchHistoryJSONArray =
+					dataJSONObject.optJSONArray("redispatch_history");
+
+				if (redispatchHistoryJSONArray != null) {
+					_redispatchHistoryJSONArray = redispatchHistoryJSONArray;
+				}
+
+				return;
+			}
+		}
+
+		_invokeBuild();
+
+		print(
+			JenkinsResultsParserUtil.combine(
+				"Redispatching bundles (", String.valueOf(_redispatchAttempts),
+				" of ", String.valueOf(_MAX_REDISPATCH_ATTEMPTS), ") at ",
+				_getProducerJobURL()));
+	}
+
 	private void _updateBuild(String producerBuildURL) {
 		if (!JenkinsResultsParserUtil.isURL(producerBuildURL) ||
 			(_topLevelBuild == null)) {
@@ -413,7 +536,7 @@ public abstract class BaseBundlePersistentResource
 
 		buildDatabase.rsyncBuildDatabaseFileToJenkinsMaster(
 			JenkinsResultsParserUtil.combine(
-				System.getenv("JENKINS_HOME"), "/userContent/jobs/",
+				Environment.get("JENKINS_HOME"), "/userContent/jobs/",
 				getStartProperty("TOP_LEVEL_JOB_NAME"), "/builds/",
 				getStartProperty("TOP_LEVEL_BUILD_NUMBER")),
 			JenkinsMaster.getInstance(
@@ -433,11 +556,15 @@ public abstract class BaseBundlePersistentResource
 
 	private static final int _MAX_MISSING_COUNT = 2;
 
-	private static final String _SLAVE_LABEL = "slave-bundle-builder";
+	private static final int _MAX_REDISPATCH_ATTEMPTS = 1;
+
+	private static final long _REDISPATCH_VERIFY_TIME = 1000 * 10;
 
 	private Build _build;
 	private int _failCount;
 	private int _missingCount;
+	private int _redispatchAttempts;
+	private JSONArray _redispatchHistoryJSONArray = new JSONArray();
 	private final TopLevelBuild _topLevelBuild;
 	private Workspace _workspace;
 

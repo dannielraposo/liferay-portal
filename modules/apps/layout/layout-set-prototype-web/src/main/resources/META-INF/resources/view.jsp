@@ -9,6 +9,31 @@
 
 <liferay-ui:error exception="<%= RequiredLayoutSetPrototypeException.class %>" message="you-cannot-delete-site-templates-that-are-used-by-a-site" />
 
+<%
+String executeLayoutSetPrototypeSyncErrorMessage = (String)SessionMessages.get(renderRequest, "executeLayoutSetPrototypeSyncErrorMessage");
+String executeLayoutSetPrototypeSyncInfoMessage = (String)SessionMessages.get(renderRequest, "executeLayoutSetPrototypeSyncInfoMessage");
+%>
+
+<c:if test="<%= executeLayoutSetPrototypeSyncErrorMessage != null %>">
+	<aui:script>
+		Liferay.Util.openToast({
+			message:
+				'<%= UnicodeFormatter.toString(executeLayoutSetPrototypeSyncErrorMessage) %>',
+			type: 'danger',
+		});
+	</aui:script>
+</c:if>
+
+<c:if test="<%= executeLayoutSetPrototypeSyncInfoMessage != null %>">
+	<aui:script>
+		Liferay.Util.openToast({
+			message:
+				'<%= UnicodeFormatter.toString(executeLayoutSetPrototypeSyncInfoMessage) %>',
+			type: 'info',
+		});
+	</aui:script>
+</c:if>
+
 <clay:management-toolbar
 	managementToolbarDisplayContext="<%= new LayoutSetPrototypeManagementToolbarDisplayContext(request, layoutSetPrototypeDisplayContext, liferayPortletRequest, liferayPortletResponse, layoutSetPrototypeDisplayContext.getSearchContainer()) %>"
 	propsTransformer="{LayoutSetPrototypeManagementToolbarPropsTransformer} from layout-set-prototype-web"
@@ -102,14 +127,6 @@
 							label="<%= layoutSetPrototype.getName(locale) %>"
 							target="_blank"
 						/>
-
-						<%
-						int mergeFailCount = layoutSetPrototype.getMergeFailCount();
-						%>
-
-						<c:if test="<%= mergeFailCount > PropsValues.LAYOUT_SET_PROTOTYPE_MERGE_FAIL_THRESHOLD %>">
-							<liferay-ui:message arguments='<%= new Object[] {mergeFailCount, LanguageUtil.get(request, "site-template")} %>' key="the-propagation-of-changes-from-the-x-has-been-disabled-temporarily-after-x-errors" translateArguments="<%= false %>" />
-						</c:if>
 					</liferay-ui:search-container-column-text>
 
 					<liferay-ui:search-container-column-text

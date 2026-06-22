@@ -35,6 +35,7 @@ components:
                     DeleteObjectBulkSelectionAction: "#/components/schemas/DeleteObjectBulkSelectionAction"
                     DeleteObjectEntryBulkSelectionAction: "#/components/schemas/DeleteObjectEntryBulkSelectionAction"
                     DueDateObjectBulkSelectionAction: "#/components/schemas/DueDateObjectBulkSelectionAction"
+                    DuplicateObjectBulkSelectionAction: "#/components/schemas/DuplicateObjectBulkSelectionAction"
                     EditObjectCategoriesBulkSelectionAction: "#/components/schemas/EditObjectCategoriesBulkSelectionAction"
                     EditObjectTagsBulkSelectionAction: "#/components/schemas/EditObjectTagsBulkSelectionAction"
                     ExpireObjectBulkSelectionAction: "#/components/schemas/ExpireObjectBulkSelectionAction"
@@ -62,6 +63,7 @@ components:
                         -   DeleteObjectBulkSelectionAction
                         -   DeleteObjectEntryBulkSelectionAction
                         -   DueDateObjectBulkSelectionAction
+                        -   DuplicateObjectBulkSelectionAction
                         -   ExpireObjectBulkSelectionAction
                         -   EditObjectTagsBulkSelectionAction
                         -   MoveObjectBulkSelectionAction
@@ -169,6 +171,9 @@ components:
                         dueDate:
                             format: date-time
                             type: string
+        DuplicateObjectBulkSelectionAction:
+            allOf:
+                -   $ref: "#/components/schemas/BulkAction"
         EditObjectCategoriesBulkSelectionAction:
             allOf:
                 -   $ref: "#/components/schemas/BulkAction"
@@ -327,8 +332,7 @@ components:
                             type: object
 info:
     description:
-        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.bulk.rest.client', and version '3.0.41'."
+        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.bulk.rest.client', and version '3.0.42'."
     license:
         name: Apache 2.0
         url: http://www.apache.org/licenses/LICENSE-2.0.html

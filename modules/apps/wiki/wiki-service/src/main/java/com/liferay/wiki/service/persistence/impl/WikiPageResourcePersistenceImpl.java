@@ -5,13 +5,11 @@
 
 package com.liferay.wiki.service.persistence.impl;
 
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -85,66 +83,15 @@ public class WikiPageResourcePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<WikiPageResource>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the wiki page resources where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching wiki page resources
-	 */
-	@Override
-	public List<WikiPageResource> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the wiki page resources where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WikiPageResourceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of wiki page resources
-	 * @param end the upper bound of the range of wiki page resources (not inclusive)
-	 * @return the range of matching wiki page resources
-	 */
-	@Override
-	public List<WikiPageResource> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<WikiPageResource, NoSuchPageResourceException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the wiki page resources where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WikiPageResourceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of wiki page resources
-	 * @param end the upper bound of the range of wiki page resources (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching wiki page resources
-	 */
-	@Override
-	public List<WikiPageResource> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<WikiPageResource> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the wiki page resources where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WikiPageResourceModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WikiPageResourceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -160,14 +107,9 @@ public class WikiPageResourcePersistenceImpl
 		OrderByComparator<WikiPageResource> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					WikiPageResource.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -183,16 +125,8 @@ public class WikiPageResourcePersistenceImpl
 			String uuid, OrderByComparator<WikiPageResource> orderByComparator)
 		throws NoSuchPageResourceException {
 
-		WikiPageResource wikiPageResource = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (wikiPageResource != null) {
-			return wikiPageResource;
-		}
-
-		throw new NoSuchPageResourceException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -229,18 +163,13 @@ public class WikiPageResourcePersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					WikiPageResource.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<WikiPageResource>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<WikiPageResource, NoSuchPageResourceException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the wiki page resource where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchPageResourceException</code> if it could not be found.
@@ -254,33 +183,8 @@ public class WikiPageResourcePersistenceImpl
 	public WikiPageResource findByUUID_G(String uuid, long groupId)
 		throws NoSuchPageResourceException {
 
-		WikiPageResource wikiPageResource = fetchByUUID_G(uuid, groupId);
-
-		if (wikiPageResource == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchPageResourceException(message);
-		}
-
-		return wikiPageResource;
-	}
-
-	/**
-	 * Returns the wiki page resource where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching wiki page resource, or <code>null</code> if a matching wiki page resource could not be found
-	 */
-	@Override
-	public WikiPageResource fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -295,13 +199,8 @@ public class WikiPageResourcePersistenceImpl
 	public WikiPageResource fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					WikiPageResource.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -333,73 +232,15 @@ public class WikiPageResourcePersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<WikiPageResource>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the wiki page resources where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching wiki page resources
-	 */
-	@Override
-	public List<WikiPageResource> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the wiki page resources where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WikiPageResourceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of wiki page resources
-	 * @param end the upper bound of the range of wiki page resources (not inclusive)
-	 * @return the range of matching wiki page resources
-	 */
-	@Override
-	public List<WikiPageResource> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<WikiPageResource, NoSuchPageResourceException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the wiki page resources where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WikiPageResourceModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of wiki page resources
-	 * @param end the upper bound of the range of wiki page resources (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching wiki page resources
-	 */
-	@Override
-	public List<WikiPageResource> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<WikiPageResource> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the wiki page resources where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WikiPageResourceModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WikiPageResourceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -416,14 +257,9 @@ public class WikiPageResourcePersistenceImpl
 		OrderByComparator<WikiPageResource> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					WikiPageResource.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -441,16 +277,8 @@ public class WikiPageResourcePersistenceImpl
 			OrderByComparator<WikiPageResource> orderByComparator)
 		throws NoSuchPageResourceException {
 
-		WikiPageResource wikiPageResource = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (wikiPageResource != null) {
-			return wikiPageResource;
-		}
-
-		throw new NoSuchPageResourceException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -491,18 +319,13 @@ public class WikiPageResourcePersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					WikiPageResource.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathFetchByN_T;
-	private UniquePersistenceFinder<WikiPageResource>
-		_uniquePersistenceFinderByN_T;
+	private UniquePersistenceFinder
+		<WikiPageResource, NoSuchPageResourceException>
+			_uniquePersistenceFinderByN_T;
 
 	/**
 	 * Returns the wiki page resource where nodeId = &#63; and title = &#63; or throws a <code>NoSuchPageResourceException</code> if it could not be found.
@@ -516,33 +339,8 @@ public class WikiPageResourcePersistenceImpl
 	public WikiPageResource findByN_T(long nodeId, String title)
 		throws NoSuchPageResourceException {
 
-		WikiPageResource wikiPageResource = fetchByN_T(nodeId, title);
-
-		if (wikiPageResource == null) {
-			String message =
-				_uniquePersistenceFinderByN_T.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {nodeId, title});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchPageResourceException(message);
-		}
-
-		return wikiPageResource;
-	}
-
-	/**
-	 * Returns the wiki page resource where nodeId = &#63; and title = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param nodeId the node ID
-	 * @param title the title
-	 * @return the matching wiki page resource, or <code>null</code> if a matching wiki page resource could not be found
-	 */
-	@Override
-	public WikiPageResource fetchByN_T(long nodeId, String title) {
-		return fetchByN_T(nodeId, title, true);
+		return _uniquePersistenceFinderByN_T.find(
+			finderCache, new Object[] {nodeId, title});
 	}
 
 	/**
@@ -557,13 +355,8 @@ public class WikiPageResourcePersistenceImpl
 	public WikiPageResource fetchByN_T(
 		long nodeId, String title, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					WikiPageResource.class)) {
-
-			return _uniquePersistenceFinderByN_T.fetch(
-				finderCache, new Object[] {nodeId, title}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByN_T.fetch(
+			finderCache, new Object[] {nodeId, title}, useFinderCache);
 	}
 
 	/**
@@ -864,93 +657,89 @@ public class WikiPageResourcePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_WIKIPAGERESOURCE_WHERE,
 			_SQL_COUNT_WIKIPAGERESOURCE_WHERE,
-			WikiPageResourceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			WikiPageResourceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"wikiPageResource.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, WikiPageResource::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, WikiPageResource::getUuid,
-			WikiPageResource::getGroupId);
+				"wikiPageResource.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, WikiPageResource::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_WIKIPAGERESOURCE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(WikiPageResource::getUuid),
+				WikiPageResource::getGroupId),
+			_SQL_SELECT_WIKIPAGERESOURCE_WHERE, "",
 			new FinderColumn<>(
-				"wikiPageResource.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, WikiPageResource::getUuid),
+				"wikiPageResource.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, WikiPageResource::getUuid),
 			new FinderColumn<>(
 				"wikiPageResource.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, WikiPageResource::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_WIKIPAGERESOURCE_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_WIKIPAGERESOURCE_WHERE,
 				_SQL_COUNT_WIKIPAGERESOURCE_WHERE,
 				WikiPageResourceModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"wikiPageResource.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, WikiPageResource::getUuid),
+					"wikiPageResource.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					WikiPageResource::getUuid),
 				new FinderColumn<>(
 					"wikiPageResource.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, WikiPageResource::getCompanyId));
 
-		_finderPathFetchByN_T = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByN_T",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"nodeId", "title"}, false,
-			WikiPageResource::getNodeId, WikiPageResource::getTitle);
-
 		_uniquePersistenceFinderByN_T = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByN_T, _SQL_SELECT_WIKIPAGERESOURCE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByN_T",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"nodeId", "title"}, 0, 2, false,
+				WikiPageResource::getNodeId,
+				convertNullFunction(WikiPageResource::getTitle)),
+			_SQL_SELECT_WIKIPAGERESOURCE_WHERE, "",
 			new FinderColumn<>(
 				"wikiPageResource.", "nodeId", FinderColumn.Type.LONG, "=",
-				true, false, WikiPageResource::getNodeId),
+				true, true, WikiPageResource::getNodeId),
 			new FinderColumn<>(
 				"wikiPageResource.", "title", FinderColumn.Type.STRING, "=",
 				true, true, WikiPageResource::getTitle));
@@ -1027,4 +816,4 @@ public class WikiPageResourcePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-871823646
+// LIFERAY-SERVICE-BUILDER-HASH:99493679

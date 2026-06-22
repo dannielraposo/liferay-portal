@@ -1,0 +1,27 @@
+.phone-number-input-prefix-picker {
+	position: relative;
+}
+
+.phone-number-input-prefix-picker > .form-control-select-secondary {
+	position: relative;
+	z-index: 2;
+}
+
+.phone-number-input-prefix-flag:empty {
+	display: none;
+}
+
+.phone-number-input-prefix-menu {
+	max-height: 18rem;
+	min-width: 16rem;
+	overflow-y: auto;
+	position: fixed;
+}
+
+.phone-number-input-prefix-menu.show {
+	display: block;
+}
+
+.phone-number-input-prefix-menu-item-code {
+	min-width: 45px;
+}

@@ -808,6 +808,10 @@
 			<category name="Javadoc" />
 			<description name="Checks if the `@deprecated` javadoc is pointing to the correct version." />
 		</check>
+		<check name="JavaExpandoBridgeAttributesCallOrderCheck">
+			<category name="Bug Prevention" />
+			<description name="Ensure `setExpandoBridgeAttributes` is the final setter called on a model before model persistence." />
+		</check>
 		<check name="JavaFeatureFlagManagerUtilCheck">
 			<category name="Bug Prevention" />
 			<description name="Finds cases where `FeatureFlagManagerUtil.isEnabled` should be used and incorrect use of it." />
@@ -1185,6 +1189,10 @@
 			<category name="Bug Prevention" />
 			<description name="Finds incorrect use of deprecated packages in `package.json` files." />
 			<property name="deprecatedPackageNames" value="@clayui/checkbox,liferay-module-config-generator,metal-cli" />
+		</check>
+		<check name="JSONObjectDefinitionFileCheck">
+			<category name="Styling" />
+			<description name="Enforces consistent ordering of `objectFields` in `*-object-definition.json` and `*object-definition.batch-engine-data.json` files (non-relationship fields first, followed by relationship fields, both sorted alphabetically by `name`)." />
 		</check>
 		<check name="JSONPackageJSONBNDVersionCheck">
 			<category name="Bug Prevention" />
@@ -2339,11 +2347,6 @@
 			<category name="Styling" />
 			<description name="Finds incorrect indentation in YAML files." />
 		</check>
-		<check name="YMLLongLinesCheck">
-			<category name="Styling" />
-			<description name="Finds lines that are longer than the specified maximum line length." />
-			<property name="maxLineLength" value="120" />
-		</check>
 		<check name="YMLRESTConfigFileBreakingChangeCommitMessageCheck">
 			<category name="Bug Prevention" />
 			<description name="Checks that commit message should contain the schematized breaking changes." />
@@ -2352,6 +2355,7 @@
 		<check name="YMLStylingCheck">
 			<category name="Styling" />
 			<description name="Applies rules to enforce consistency in code style." />
+			<property name="maxLineLength" value="120" />
 		</check>
 		<check name="YMLWhitespaceCheck">
 			<category name="Styling" />

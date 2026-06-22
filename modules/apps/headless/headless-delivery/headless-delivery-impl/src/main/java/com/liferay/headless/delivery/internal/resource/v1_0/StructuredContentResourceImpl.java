@@ -64,6 +64,7 @@ import com.liferay.journal.util.JournalContent;
 import com.liferay.journal.util.JournalConverter;
 import com.liferay.layout.display.page.LayoutDisplayPageProviderRegistry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
+import com.liferay.layout.util.LayoutServiceContextHelper;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -464,13 +465,18 @@ public class StructuredContentResourceImpl
 
 		DDMStructure ddmStructure = journalArticle.getDDMStructure();
 
-		return DisplayPageRendererUtil.toHTML(
-			JournalArticle.class.getName(), ddmStructure.getStructureId(),
-			displayPageKey, journalArticle.getGroupId(),
-			contextHttpServletRequest, contextHttpServletResponse,
-			journalArticle, _infoItemServiceRegistry,
-			_layoutDisplayPageProviderRegistry, _layoutService,
-			_layoutPageTemplateEntryService);
+		try (AutoCloseable autoCloseable =
+				_layoutServiceContextHelper.getServiceContextAutoCloseable(
+					contextCompany, contextUser)) {
+
+			return DisplayPageRendererUtil.toHTML(
+				JournalArticle.class.getName(), ddmStructure.getStructureId(),
+				displayPageKey, journalArticle.getGroupId(),
+				contextHttpServletRequest, contextHttpServletResponse,
+				journalArticle, _infoItemServiceRegistry,
+				_layoutDisplayPageProviderRegistry, _layoutService,
+				_layoutPageTemplateEntryService);
+		}
 	}
 
 	@Override
@@ -1245,16 +1251,20 @@ public class StructuredContentResourceImpl
 		for (Map.Entry<String, List<ContentField>> entry :
 				contentFieldsMap.entrySet()) {
 
-			Field field = fields.get(entry.getKey());
+			DDMFormField ddmFormField = DDMFormFieldUtil.getDDMFormField(
+				_ddmStructureService, ddmStructure, entry.getKey());
+
+			if (ddmFormField == null) {
+				continue;
+			}
+
+			Field field = fields.get(ddmFormField.getName());
 
 			if (field == null) {
 				continue;
 			}
 
 			List<Serializable> fieldValues = new ArrayList<>();
-
-			DDMFormField ddmFormField = DDMFormFieldUtil.getDDMFormField(
-				_ddmStructureService, ddmStructure, entry.getKey());
 
 			for (ContentField contentField : entry.getValue()) {
 				Value value = DDMValueUtil.toDDMValue(
@@ -1308,26 +1318,40 @@ public class StructuredContentResourceImpl
 			}
 		}
 
-		for (ContentField contentField : contentFields) {
-			Field field = fields.get(contentField.getName());
+		Map<String, List<ContentField>> contentFieldsMap = new HashMap<>();
 
-			Value value = DDMValueUtil.toDDMValue(
-				contentField.toString(),
-				DDMFormFieldUtil.getDDMFormField(
-					_ddmStructureService, ddmStructure, contentField.getName()),
-				_dlAppService, journalArticle.getGroupId(),
-				_journalArticleService, _layoutLocalService,
-				contextAcceptLanguage.getPreferredLocale());
+		_populateContentFieldsMap(contentFields, contentFieldsMap);
 
-			for (Locale locale : value.getAvailableLocales()) {
-				field.setValue(locale, value.getString(locale));
+		for (Map.Entry<String, List<ContentField>> entry :
+				contentFieldsMap.entrySet()) {
+
+			DDMFormField ddmFormField = DDMFormFieldUtil.getDDMFormField(
+				_ddmStructureService, ddmStructure, entry.getKey());
+
+			if (ddmFormField == null) {
+				continue;
 			}
 
-			ContentField[] nestedContentFields =
-				contentField.getNestedContentFields();
+			Field field = fields.get(ddmFormField.getName());
 
-			if (nestedContentFields != null) {
-				_toPatchedFields(nestedContentFields, journalArticle);
+			if (field == null) {
+				continue;
+			}
+
+			for (ContentField contentField : entry.getValue()) {
+				Value value = DDMValueUtil.toDDMValue(
+					contentField.toString(), ddmFormField, _dlAppService,
+					journalArticle.getGroupId(), _journalArticleService,
+					_layoutLocalService,
+					contextAcceptLanguage.getPreferredLocale());
+
+				if (value == null) {
+					continue;
+				}
+
+				for (Locale locale : value.getAvailableLocales()) {
+					field.setValue(locale, value.getString(locale));
+				}
 			}
 		}
 
@@ -1654,6 +1678,9 @@ public class StructuredContentResourceImpl
 
 	@Reference
 	private LayoutService _layoutService;
+
+	@Reference
+	private LayoutServiceContextHelper _layoutServiceContextHelper;
 
 	@Reference
 	private Portal _portal;

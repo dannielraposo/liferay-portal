@@ -989,8 +989,7 @@ public class CommerceOrderLocalServiceImpl
 			long commerceOrderId, CommerceContext commerceContext)
 		throws PortalException {
 
-		CommerceOrder commerceOrder = commerceOrderPersistence.findByPrimaryKey(
-			commerceOrderId);
+		CommerceOrder commerceOrder = getCommerceOrder(commerceOrderId);
 
 		if ((commerceOrder.getOrderStatus() !=
 				CommerceOrderConstants.ORDER_STATUS_OPEN) ||
@@ -1006,12 +1005,13 @@ public class CommerceOrderLocalServiceImpl
 				commerceOrderItem.getCommerceOrderItemId(), commerceContext);
 		}
 
-		commerceOrder = commerceOrderPersistence.findByPrimaryKey(
-			commerceOrderId);
+		commerceOrder = getCommerceOrder(commerceOrderId);
 
 		CommerceOrderPrice commerceOrderPrice =
 			_commerceOrderPriceCalculation.getCommerceOrderPrice(
 				commerceOrder, false, commerceContext);
+
+		commerceOrder = getCommerceOrder(commerceOrderId);
 
 		CommerceMoney subtotalCommerceMoney = commerceOrderPrice.getSubtotal();
 		CommerceMoney shippingValueCommerceMoney =
@@ -1063,7 +1063,7 @@ public class CommerceOrderLocalServiceImpl
 			commerceOrder,
 			commerceOrderPrice.getTotalDiscountValueWithTaxAmount(), true);
 
-		return commerceOrderPersistence.update(commerceOrder);
+		return commerceOrderLocalService.updateCommerceOrder(commerceOrder);
 	}
 
 	@Override

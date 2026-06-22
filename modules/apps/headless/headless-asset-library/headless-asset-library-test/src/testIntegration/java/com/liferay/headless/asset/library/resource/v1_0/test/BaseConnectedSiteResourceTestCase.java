@@ -42,6 +42,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -136,7 +137,8 @@ public abstract class BaseConnectedSiteResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -146,7 +148,8 @@ public abstract class BaseConnectedSiteResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -559,7 +562,8 @@ public abstract class BaseConnectedSiteResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).parameters(
 			parameters
 		).build();
@@ -722,6 +726,22 @@ public abstract class BaseConnectedSiteResourceTestCase {
 
 			if (Objects.equals("searchable", additionalAssertFieldName)) {
 				if (connectedSite.getSearchable() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("stagingType", additionalAssertFieldName)) {
+				if (connectedSite.getStagingType() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("type", additionalAssertFieldName)) {
+				if (connectedSite.getType() == null) {
 					valid = false;
 				}
 
@@ -933,6 +953,27 @@ public abstract class BaseConnectedSiteResourceTestCase {
 				if (!Objects.deepEquals(
 						connectedSite1.getSearchable(),
 						connectedSite2.getSearchable())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("stagingType", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						connectedSite1.getStagingType(),
+						connectedSite2.getStagingType())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("type", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						connectedSite1.getType(), connectedSite2.getType())) {
 
 					return false;
 				}
@@ -1251,6 +1292,16 @@ public abstract class BaseConnectedSiteResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("stagingType")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("type")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		throw new IllegalArgumentException(
 			"Invalid entity field " + entityFieldName);
 	}
@@ -1264,7 +1315,9 @@ public abstract class BaseConnectedSiteResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -1556,4 +1609,4 @@ public abstract class BaseConnectedSiteResourceTestCase {
 			_connectedSiteResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-178987419
+// LIFERAY-REST-BUILDER-HASH:1439985572

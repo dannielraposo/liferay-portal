@@ -10,17 +10,16 @@ import {useMemo} from 'react';
 import ProductPurchase from '../../components/ProductPurchase';
 import {MarketplaceDeliveryProduct} from '../../entity/MarketplaceDeliveryProduct';
 import {ProductPriceModel} from '../../enums/Product';
-import useProductPurchaseCart from '../../hooks/useProductPurchaseCart';
-import i18n from '../../i18n';
 import {cartStore} from './store';
 
 type ProductPurchasePriceProps = {
 	product: DeliveryProduct;
-	productPurchaseCart: ReturnType<typeof useProductPurchaseCart>;
+	skuRef?: null | string;
 };
 
 const ProductPurchasePrice: React.FC<ProductPurchasePriceProps> = ({
 	product,
+	skuRef,
 }) => {
 	const cart = useSelector(cartStore, ({context}) => context.cart);
 
@@ -31,20 +30,21 @@ const ProductPurchasePrice: React.FC<ProductPurchasePriceProps> = ({
 	const getFormattedPrice = () => {
 		const productPrice =
 			cart?.summary?.totalFormatted ||
-			marketplaceDeliveryProduct.getPrice();
+			marketplaceDeliveryProduct.getPrice(skuRef);
 
-		const vatText =
+		if (
 			marketplaceDeliveryProduct.getPriceModel() ===
 			ProductPriceModel.PAID
-				? `(${i18n.translate('excluding-vat')})`
-				: '';
+		) {
+			return productPrice ?? '';
+		}
 
-		return `${productPrice} ${vatText}`;
+		return 'Free';
 	};
 
 	return (
 		<ProductPurchase.Price
-			className={classNames('mr-1 pr--2 py-2 text-nowrap')}
+			className={classNames('mr-1 pr--2 py-2')}
 			price={getFormattedPrice()}
 		>
 			<div className="license-tag px-2">

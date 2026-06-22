@@ -14,8 +14,10 @@ liferay-marketplace-etc-spring-boot-oahs:
         -   Liferay.Headless.Commerce.Delivery.Catalog.everything
         -   Liferay.Headless.Delivery.everything
         -   Liferay.Notification.REST.everything
+        -   c_aihubapplication.everything
         -   c_publisherassetattachment.everything
         -   c_publisherassets.everything
+        -   c_salesforceproject.everything
         -   c_trialextensionrequest.everything
     type: oAuthApplicationHeadlessServer
 liferay-marketplace-etc-spring-boot-oaua:
@@ -25,6 +27,11 @@ liferay-marketplace-etc-spring-boot-oaua:
     scopes:
         -   Liferay.Headless.Admin.User.everything
     type: oAuthApplicationUserAgent
+liferay-marketplace-etc-spring-boot-object-action-ai-hub-tokens:
+    name: Liferay Marketplace Etc Spring Boot Object Action AI Hub Tokens
+    oAuth2ApplicationExternalReferenceCode: liferay-marketplace-etc-spring-boot-oaua
+    resourcePath: /object/action/ai/hub/tokens
+    type: objectAction
 liferay-marketplace-etc-spring-boot-object-action-email-dispatch:
     name: Liferay Marketplace Etc Spring Boot Object Action Email Dispatch
     oAuth2ApplicationExternalReferenceCode: liferay-marketplace-etc-spring-boot-oaua

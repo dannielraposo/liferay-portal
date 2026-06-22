@@ -19,7 +19,11 @@ import com.liferay.portal.security.permission.ResourceActionsImpl;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * @author Luis Ortiz
@@ -36,6 +40,8 @@ public class ResourcePermissionDataCleanupPreupgradeProcess
 
 			return;
 		}
+
+		Map<String, List<String>> namesMap = new TreeMap<>();
 
 		Set<String> liferayTableNames = DBResourceUtil.getLiferayTableNames(
 			connection);
@@ -102,38 +108,45 @@ public class ResourcePermissionDataCleanupPreupgradeProcess
 						continue;
 					}
 
-					String primaryKeyColumnName = "resourcePrimKey";
+					List<String> names = namesMap.computeIfAbsent(
+						tableName, key -> new ArrayList<>());
 
-					if (!dbInspector.hasColumn(
-							tableName, primaryKeyColumnName)) {
-
-						primaryKeyColumnName =
-							DataCleanupPreupgradeProcessUtil.
-								getPrimaryKeyColumnName(
-									connection, dbInspector, tableName);
-					}
-
-					if (primaryKeyColumnName == null) {
-						if (_log.isWarnEnabled()) {
-							_log.warn(
-								"Skipping table " + tableName +
-									" because it does not have a primary key");
-						}
-
-						continue;
-					}
-
-					upgrade(
-						new TableOrphanReferencesDataCleanupPreupgradeProcess(
-							null,
-							StringBundler.concat(
-								"[$SOURCE_TABLE_ALIAS$].scope = ",
-								ResourceConstants.SCOPE_INDIVIDUAL, " and ",
-								"[$SOURCE_TABLE_ALIAS$].name = '", name, "'"),
-							"primKeyId", "ResourcePermission",
-							primaryKeyColumnName, tableName));
+					names.add(name);
 				}
 			}
+		}
+
+		for (Map.Entry<String, List<String>> entry : namesMap.entrySet()) {
+			String tableName = entry.getKey();
+
+			String primaryKeyColumnName = "resourcePrimKey";
+
+			if (!dbInspector.hasColumn(tableName, primaryKeyColumnName)) {
+				primaryKeyColumnName =
+					DataCleanupPreupgradeProcessUtil.getPrimaryKeyColumnName(
+						connection, dbInspector, tableName);
+			}
+
+			if (primaryKeyColumnName == null) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Skipping table " + tableName +
+							" because it does not have a primary key");
+				}
+
+				continue;
+			}
+
+			upgrade(
+				new TableOrphanReferencesDataCleanupPreupgradeProcess(
+					null,
+					StringBundler.concat(
+						"[$SOURCE_TABLE_ALIAS$].scope = ",
+						ResourceConstants.SCOPE_INDIVIDUAL,
+						" and [$SOURCE_TABLE_ALIAS$].name in ('",
+						StringUtil.merge(entry.getValue(), "', '"), "')"),
+					"primKeyId", "ResourcePermission", primaryKeyColumnName,
+					tableName));
 		}
 	}
 

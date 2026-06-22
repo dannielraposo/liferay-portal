@@ -13,6 +13,7 @@ import {loginTest} from '../../../fixtures/loginTest';
 import {pageEditorPagesTest} from '../../../fixtures/pageEditorPagesTest';
 import {productMenuPageTest} from '../../../fixtures/productMenuPageTest';
 import {virtualInstancesPagesTest} from '../../../fixtures/virtualInstancesPagesTest';
+import {liferayConfig} from '../../../liferay.config';
 import getRandomString from '../../../utils/getRandomString';
 import {openProductMenu} from '../../../utils/productMenu';
 import {pageViewModePagesTest} from './../../../fixtures/pageViewModePagesTest';
@@ -76,6 +77,35 @@ test('User can add and delete site and child site', async ({
 
 	await expect(page.getByText(parentSiteName)).not.toBeVisible();
 });
+
+test(
+	'Site name exceeding character limit shows inline field validation',
+	{tag: '@LPD-77251'},
+	async ({page, sitesAdminPage}) => {
+		await sitesAdminPage.goto();
+
+		await page.getByRole('link', {name: 'Add Site'}).click();
+
+		await page
+			.getByRole('button', {name: 'Select Template: Blank Site'})
+			.click();
+
+		const addSiteIFrame = page.frameLocator('iframe[title="Add Site"]');
+
+		await addSiteIFrame.getByLabel('Name').fill('a'.repeat(151));
+
+		await addSiteIFrame.getByRole('button', {name: 'Add'}).click();
+
+		await expect(
+			addSiteIFrame.getByText('Please enter no more than 150 characters.')
+		).toBeVisible();
+
+		await expect(addSiteIFrame.getByLabel('Name')).toHaveAttribute(
+			'aria-invalid',
+			'true'
+		);
+	}
+);
 
 test('Site is still created even if modal window is closed', async ({
 	page,
@@ -377,7 +407,7 @@ test('View public page via virtual host URL', async ({
 	// Access the site's page using the Virtual Host
 
 	await page.goto(
-		`http://${VIRTUAL_HOST_NAME}:8080/web${site.friendlyUrlPath}${layout.friendlyURL}`
+		`http://${VIRTUAL_HOST_NAME}:${liferayConfig.environment.port}/web${site.friendlyUrlPath}${layout.friendlyURL}`
 	);
 
 	await expect(

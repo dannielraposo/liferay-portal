@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author João Victor Alves
@@ -41,6 +42,22 @@ public class VariablesUtil {
 		}
 
 		return value;
+	}
+
+	public static void applyOutputVariable(
+		Map<String, String> kaleoNodeSettingValues, String value,
+		Map<String, Serializable> workflowContext) {
+
+		JSONArray jsonArray = getVariablesJSONArray(
+			"outputVariables", kaleoNodeSettingValues);
+
+		if ((jsonArray == null) || (jsonArray.length() == 0)) {
+			return;
+		}
+
+		JSONObject jsonObject = jsonArray.getJSONObject(0);
+
+		workflowContext.put(jsonObject.getString("name"), value);
 	}
 
 	public static JSONArray getVariablesJSONArray(
@@ -82,10 +99,16 @@ public class VariablesUtil {
 
 		iterator.forEachRemaining(
 			jsonObject -> {
-				String name = jsonObject.getString("name");
+				String value = GetterUtil.getString(
+					workflowContext.get(jsonObject.getString("name")));
 
-				inputVariables.put(
-					name, GetterUtil.getString(workflowContext.get(name)));
+				if (Objects.equals(jsonObject.getString("type"), "json")) {
+					value = StringUtil.replace(
+						value, new String[] {"\\", "\"", "\n", "\r", "\t"},
+						new String[] {"\\\\", "\\\"", "\\n", "\\r", "\\t"});
+				}
+
+				inputVariables.put(jsonObject.getString("name"), value);
 			});
 
 		return inputVariables;

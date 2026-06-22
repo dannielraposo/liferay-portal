@@ -46,7 +46,9 @@ export default {
 	'ai-hub': 'AI Hub',
 	'ai-hub-account-details': 'AI Hub Account Details',
 	'ai-hub-account-name': 'AI Hub Account Name',
+	'ai-hub-details': 'AI Hub Details',
 	'ai-hub-information': 'AI Hub Information',
+	'ai-hub-url': 'AI Hub URL',
 	'all-orders': 'All Orders',
 	'all-progress-and-information-related-to-the-creation-of-the-app-will-be-lost-do-you-still-want-to-exit':
 		'All progress and information related to the creation of the app will be lost. Do you still want to exit?',
@@ -117,6 +119,7 @@ export default {
 	'billing-address': 'Billing Address',
 	'billing-email': 'Billing Email',
 	'browse-catalog': 'Browse Catalog',
+	'browse-products': 'Browse Products',
 	'build': 'Build',
 	'bundle-name': 'Bundle Name',
 	'bundles': 'Bundles',
@@ -124,6 +127,7 @@ export default {
 	'business-account': 'Business Account',
 	'business-address': 'Business Address',
 	'business-email-address': 'Business Email Address',
+	'buy-liferay-tokens': 'Buy Liferay Tokens',
 	'by-requesting-a-publisher-account-you-agree-to-the':
 		'By requesting a Publisher account, you agree to the',
 	'cancel': 'Cancel',
@@ -166,6 +170,7 @@ export default {
 	'confirm-uninstall-terms': 'Confirm Uninstall Terms',
 	'congratulations': 'Congratulations',
 	'connect-anyway': 'Connect Anyway',
+	'connect-your-liferay-dsr': 'Connect Your Liferay DSR',
 	'contact': 'Contact',
 	'contact-publisher': 'Contact Publisher',
 	'contact-sales': 'Contact Sales',
@@ -180,6 +185,9 @@ export default {
 	'continue-to-download': 'Continue to Download',
 	'continue-to-install': 'Continue to Install',
 	'copied-x-to-the-clipboard': 'Copied {0} to the clipboard.',
+	'copy': 'Copy',
+	'copy-this-token-to-your-liferay-dxp-instance':
+		'Copy this token to your Liferay DXP Instance',
 	'could-not-find-ssa-account': 'Could not find SSA account',
 	'could-not-upload-the-file-a-package-with-this-filename-already-exists':
 		'Could not upload the file. A package with this filename already exists.',
@@ -211,6 +219,7 @@ export default {
 		'Customize Storefront Solution Details',
 	'dashboard': 'Dashboard',
 	'data-center-location': 'Data Center Location',
+	'date': 'Date',
 	'date-created': 'Date Created',
 	'deactivate': 'Deactivate',
 	'deactivated': 'Deactivated',
@@ -245,7 +254,10 @@ export default {
 	'done': 'Done',
 	'download': 'Download',
 	'download-app': 'Download App',
+	'download-invoice': 'Download Invoice',
 	'download-key': 'Download Key',
+	'download-your-activation-key-file-below-and-upload-it-to-the-dedicated-portal-within-your-dxp-environment-to-get-started':
+		'Download your activation key file below and upload it to the dedicated portal within your DXP environment to get started.',
 	'draft': 'Draft',
 	'drag-and-drop-to-upload-or': 'Drag and drop to upload or',
 	'duration-days': 'Duration (days)',
@@ -303,7 +315,10 @@ export default {
 	'explore-over-800-apps-available-in-the-liferay-marketplace-from-a-variety-of-publishers-apps-allow-you-to-accelerate-your-liferay-development-get-to-market-faster':
 		'Explore over 800 apps available in the Liferay Marketplace from a variety of publishers. Apps allow you to accelerate your Liferay development get to market faster.',
 	'export': 'Export',
+	'export-complete': 'Export complete.',
 	'export-csv': 'Export CSV',
+	'exporting-orders-this-may-take-a-while':
+		'Exporting orders. This may take a while...',
 	'extend-trial': 'Extend Trial',
 	'extension': 'Extension',
 	'extension-optional': 'Extension (optional)',
@@ -343,6 +358,7 @@ export default {
 	'go-to-dashboard': 'Go to Dashboard',
 	'go-to-download': 'Go to Download',
 	'go-to-dxp': 'Go to DXP',
+	'go-to-liferay-data-platform': 'Go to Liferay Data Platform',
 	'go-to-marketplace': 'Go to Marketplace',
 	'go-to-my-apps': 'Go to My Apps',
 	'go-to-ssa-trial-listing': 'Go to SSA Trial Listing',
@@ -366,7 +382,7 @@ export default {
 	'i-have-read-and-agree-to-the-liferay-end-user-agreement':
 		'I have read and agree to the Liferay End User Agreement',
 	'i-have-read-and-agree-to-the-terms-and-conditions-above':
-		'I have read and agree to the terms and conditions above:',
+		'I have read and agree to the terms and conditions above',
 	'id': 'ID',
 	'if-the-app-is-compatible-with-different-updates-of-74-please-upload-multiple-packages-for-each-update-or-update-the-compatibility-range':
 		'If the app is compatible with different updates of 7.4, please upload multiple packages for each update or update the compatibility range.',
@@ -422,6 +438,10 @@ export default {
 	'license-type': 'License Type',
 	'licenses': 'Licenses',
 	'licensing': 'Licensing',
+	'liferay-dsr-eula-disclaimer-prefix':
+		'This release of the Digital Sales Room (DSR) is a Beta. You acknowledge that Liferay is not obligated to provide support services while in Beta. For clarity, the Subscription benefits of any active Subscriptions you may have for Liferay Software shall not extend to cover the Beta release of the DSR and participation in the Beta does not grant access to any future GA version of the product. Use of DSR is subject to the Liferay Enterprise Services Agreement (ESA), applicable Appendix, and the Liferay Data Processing Addendum, each as available at',
+	'liferay-dsr-eula-disclaimer-suffix':
+		'provided that in the event the parties hereto have previously executed or otherwise entered into separate written agreements governing the subject matter thereof, respectively, the terms of such executed documents shall apply.',
 	'liferay-dxp-eula-disclaimer-prefix':
 		'Your use of Liferay DXP is subject to these terms and the Liferay End User License Agreement set forth at',
 	'liferay-dxp-eula-disclaimer-suffix':
@@ -435,6 +455,8 @@ export default {
 	'liferay-s-privacy-policy': 'Liferay’s Privacy Policy',
 	'liferay-saas': 'Liferay SaaS',
 	'liferay-self-hosted': 'Liferay Self-Hosted',
+	'liferay-tokens-was-purchased-successfully':
+		'Liferay Tokens was purchased successfully',
 	'liferay-version': 'Liferay Version',
 	'limit-reached': 'Limit Reached',
 	'list-with-latest-published-apps': 'List with latest published apps',
@@ -473,6 +495,7 @@ export default {
 	'module-based-apps-delivered-as-lpkg-files-that-the-user-can-install-to-modify-native-liferay-behavior':
 		'Module-based apps delivered as .lpkg files that the user can install to modify native Liferay behavior.',
 	'monetize-your-apps-and-solutions': 'Monetize Your Apps and Solutions',
+	'monthly': 'Monthly',
 	'monthly-increase': 'Monthly Increase',
 	'more-actions': 'More Actions',
 	'more-info': 'More Info',
@@ -536,7 +559,9 @@ export default {
 	'order-info': 'Order Info',
 	'order-marked-as-paid': 'Order marked as paid.',
 	'order-received': 'Order Received',
+	'order-received-awaiting-signature': 'Order Received: Awaiting Signature',
 	'order-status': 'Order Status',
+	'order-summary': 'Order Summary',
 	'orders': 'Orders',
 	'other': 'Other',
 	'overall-experience': 'Overall Experience',
@@ -546,6 +571,7 @@ export default {
 	'paid-date': 'Paid Date',
 	'pay-with-bank-transfer': 'Pay with Bank Transfer',
 	'pay-with-card': 'Pay with Card',
+	'pay-with-invoice': 'Pay with Invoice',
 	'payment': 'Payment',
 	'payment-method': 'Payment Method',
 	'payment-status': 'Payment Status',
@@ -559,6 +585,8 @@ export default {
 	'personal-information-purpose': 'Personal Information & Purpose',
 	'phone': 'Phone',
 	'phone-number': 'Phone Number',
+	'pick-one-of-the-following-three-options-to-immediately-obtain-extra-tokens-to-foster-your-ai-hub-capabilities':
+		'Pick one of the following three options to immediately obtain extra tokens to foster your AI Hub capabilities.',
 	'please-be-aware-that-since-you-are-adding-a-new-version-of-the-app-the-only-section-visible-is-the-build':
 		'Please be aware that since you are adding a new version of the app, the only section visible is the "Build".',
 	'please-be-sure-to-specify-liferay-compatibility-through-the-appropriate-properties-or-xml-files-in-your-plugin':
@@ -617,6 +645,7 @@ export default {
 	'publisher-website': 'Publisher Website',
 	'publisher-website-url': 'Publisher Website URL',
 	'publishers': 'Publishers',
+	'purchase': 'Purchase',
 	'purchase-and-install-new-apps-and-they-will-show-up-here':
 		'Purchase and install new apps and they will show up here.',
 	'purchase-app': 'Purchase App',
@@ -685,6 +714,7 @@ export default {
 	'select-categories': 'Select Categories',
 	'select-category': 'Select Category',
 	'select-compatible-versions': 'Select Compatible Versions',
+	'select-desired-amount-of-tokens': 'Select Desired Amount of Tokens',
 	'select-licensing-terms': 'Select Licensing Terms',
 	'select-purpose': 'Select Purpose',
 	'select-tags': 'Select Tags',
@@ -760,6 +790,7 @@ export default {
 	'thank-you-for-trying-the-beta-version-of-this-product-your-feedback-is-essential-to-improve-the-final-release-this-survey-takes-3–5-minutes':
 		'Thank you for trying the beta version of this product! Your feedback is essential to improve the final release. This survey takes ~3–5 minutes.',
 	'thank-you-for-your': 'Thank you for your',
+	'thank-you-for-your-purchase': 'Thank You for Your Purchase!',
 	'thank-you-for-your-request': 'Thank You for Your Request!',
 	'the-app-and-all-its-client-extensions-services-will-be-deleted-and-uninstalled-from-liferay-dxp':
 		'The app and all its client extensions (services) will be deleted and uninstalled from Liferay DXP.',
@@ -808,6 +839,8 @@ export default {
 		'This order must be completed before downloading this app.',
 	'this-product-is-no-longer-available':
 		'This product is no longer available.',
+	'this-purchase-will-be-billed-under-your-existing-payment-agreement-the-payment-method-cannot-be-changed-and-no-online-payment-is-required':
+		'This purchase will be billed under your existing payment agreement. The payment method cannot be changed, and no online payment is required.',
 	'this-submission-is-currently-under-review-by-liferay-once-the-process-is-complete-it-will-be-published-on-the-marketplace-in-the-meantime-no-information-or-data-from-this-app-submission-can-be-updated':
 		'This submission is currently under review by Liferay. Once the process is complete, it will be published on the Marketplace. In the meantime, no information or data from this app submission can be updated.',
 	'times-already-extended': 'Times Already Extended',
@@ -820,6 +853,11 @@ export default {
 		'To generate your unique activation key file, please provide the technical specifications required below. These details are used exclusively to configure the software for your environment and ensure hardware compatibility.',
 	'to-join-an-existing-business-account-pleasecontact-your-administrator-who-can-add-you-once-added-you-will-automatically-become-part-of-that-account-and-will-be-able-to-manage-it-and-make-purchases-on-markeplace':
 		'To join an existing business account, please contact your administrator, who can add you. Once added, you will automatically become part of that account and will be able to manage it and make purchases on Markeplace.',
+	'token-monthly-allowance': 'Token Monthly Allowance',
+	'token-past-purchases': 'Token Past Purchases',
+	'token-unavailable': 'Token Unavailable',
+	'tokens': 'Tokens',
+	'tokens-amount': 'Tokens Amount',
 	'total': 'Total',
 	'transaction-details': 'Transaction Details',
 	'transaction-id': 'Transaction ID',
@@ -899,6 +937,7 @@ export default {
 	'when-adding-app-versions-you-can-use-your-own-numbering-system-but-be-sure-it-is-consistent-and-understandable-by-the-customer':
 		'When adding app versions, you can use your own numbering system, but be sure it is consistent and understandable by the customer.',
 	'workflow-action': 'Workflow Action',
+	'workspace': 'Workspace',
 	'workspace-friendly-url': 'Workspace Friendly URL',
 	'workspace-info': 'Workspace Info',
 	'workspace-name': 'Workspace Name',
@@ -938,6 +977,8 @@ export default {
 		"You'll be redirected to PayPal to complete your purchase securely. After your payment you are able to activate the license on customer dashboard right away",
 	'you-will-receive-an-invoice-via-email-with-all-the-details-needed-to-complete-your-payment-after-you-complete-the-payment-you-can-activate-your-license-from-the-customer-dashboard':
 		'You will receive an invoice via email with all the details needed to complete your payment. After you complete the payment, you can activate your license from the customer dashboard.',
+	'your-free-activation-key-has-been-generated':
+		'Your free activation key has been generated!',
 	'your-request-completed-successfully':
 		'Your request completed successfully',
 	'zip-files-must-be-in-universal-file-format-archive-luffa-the-specially-structured-zip-encoded-archive-used-to-package-client-extension-project-outputs-this-format-must-support-the-following-use-cases-deliver-batch-engine-data-files-compatible-with-all-deployment-targets-deliver-dxp-configuration-resource-compatible-with-all-deployment-targets-deliver-static-resources-compatible-with-all-deployment-targets-deliver-the-infrastructure-metadata-necessary-to-deploy-to-lxc-sm-for-more-information-see':

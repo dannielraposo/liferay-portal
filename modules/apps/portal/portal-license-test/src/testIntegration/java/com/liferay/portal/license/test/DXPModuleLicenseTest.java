@@ -6,12 +6,10 @@
 package com.liferay.portal.license.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.module.util.SystemBundleUtil;
-import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.AssumeTestRule;
 import com.liferay.portal.kernel.util.Time;
-import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.io.File;
 
@@ -20,11 +18,8 @@ import java.util.Objects;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,16 +32,6 @@ import org.osgi.framework.BundleContext;
  */
 @RunWith(Arquillian.class)
 public class DXPModuleLicenseTest extends BaseLicenseTestCase {
-
-	@ClassRule
-	@Rule
-	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			new AssumeTestRule("assume"), new LiferayIntegrationTestRule());
-
-	public static void assume() {
-		Assume.assumeTrue(isReleaseBundle());
-	}
 
 	@BeforeClass
 	public static void setUpClass() {
@@ -71,42 +56,17 @@ public class DXPModuleLicenseTest extends BaseLicenseTestCase {
 	}
 
 	@Test
-	public void testFreeTierLicense() throws Exception {
-		assertLicensePropertiesNotExisted(getPortalProductId());
-
-		assertBundlesExisted(
-			_getDxpOnlyModuleSymbolicName(), _getEnterpriseAppSymbolicName());
-
-		assertPortalLicenseNotRegistered();
-
-		assertBundlesExisted(
-			_getDxpOnlyModuleSymbolicName(), _getEnterpriseAppSymbolicName());
-
-		File binaryFile = deployFreeTierPortalLicense(Time.HOUR);
-
-		assertLicensePropertiesExisted(getPortalProductId());
-
-		assertPortalLicenseRegistered();
-
-		assertBundlesNotExisted(
-			_getDxpOnlyModuleSymbolicName(), _getEnterpriseAppSymbolicName());
-
-		binaryFile.delete();
-
-		checkLicense(getPortalProductId());
-
-		assertLicensePropertiesNotExisted(getPortalProductId());
-
-		resetLifecycleAction();
-
-		assertBundlesExisted(
-			_getDxpOnlyModuleSymbolicName(), _getEnterpriseAppSymbolicName());
-
-		assertPortalLicenseNotRegistered();
+	public void testLicenseEnterprise() throws Exception {
+		_testLicense(() -> deployEnterprisePortalLicense(Time.HOUR), true);
 	}
 
 	@Test
-	public void testFreeTierLicenseManualDeploy() throws Exception {
+	public void testLicenseFreeTier() throws Exception {
+		_testLicense(() -> deployFreeTierPortalLicense(Time.HOUR), false);
+	}
+
+	@Test
+	public void testLicenseFreeTierWithManualDeploy() throws Exception {
 		assertLicensePropertiesNotExisted(getPortalProductId());
 
 		BundleContext bundleContext = SystemBundleUtil.getBundleContext();
@@ -194,6 +154,52 @@ public class DXPModuleLicenseTest extends BaseLicenseTestCase {
 
 	private String _getEnterpriseAppSymbolicName() {
 		return getProperty("enterprise.app.symbolic.name");
+	}
+
+	private void _testLicense(
+			UnsafeSupplier<File, Exception> deployPortalLicenseUnsafeSupplier,
+			boolean dxpModulesAllowed)
+		throws Exception {
+
+		assertLicensePropertiesNotExisted(getPortalProductId());
+
+		assertBundlesExisted(
+			_getDxpOnlyModuleSymbolicName(), _getEnterpriseAppSymbolicName());
+
+		assertPortalLicenseNotRegistered();
+
+		assertBundlesExisted(
+			_getDxpOnlyModuleSymbolicName(), _getEnterpriseAppSymbolicName());
+
+		File binaryFile = deployPortalLicenseUnsafeSupplier.get();
+
+		assertLicensePropertiesExisted(getPortalProductId());
+
+		assertPortalLicenseRegistered();
+
+		if (dxpModulesAllowed) {
+			assertBundlesExisted(
+				_getDxpOnlyModuleSymbolicName(),
+				_getEnterpriseAppSymbolicName());
+		}
+		else {
+			assertBundlesNotExisted(
+				_getDxpOnlyModuleSymbolicName(),
+				_getEnterpriseAppSymbolicName());
+		}
+
+		binaryFile.delete();
+
+		checkLicense(getPortalProductId());
+
+		assertLicensePropertiesNotExisted(getPortalProductId());
+
+		resetLifecycleAction();
+
+		assertBundlesExisted(
+			_getDxpOnlyModuleSymbolicName(), _getEnterpriseAppSymbolicName());
+
+		assertPortalLicenseNotRegistered();
 	}
 
 	private static SafeCloseable _disableKeyValidatorSafeCloseable;

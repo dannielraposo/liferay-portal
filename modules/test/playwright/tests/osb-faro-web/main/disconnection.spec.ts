@@ -6,19 +6,18 @@
 import {expect, mergeTests} from '@playwright/test';
 
 import {apiHelpersTest} from '../../../fixtures/apiHelpersTest';
-import {dataApiHelpersTest} from '../../../fixtures/dataApiHelpersTest';
+import {isolatedChannelTest} from '../../../fixtures/isolatedChannelTest';
 import {loginAnalyticsCloudTest} from '../../../fixtures/loginAnalyticsCloudTest';
 import {loginTest} from '../../../fixtures/loginTest';
-import getRandomString from '../../../utils/getRandomString';
 import {
 	connectToAnalyticsCloud,
 	disconnectFromAnalyticsCloud,
 	goPreviousStep,
 	goToAnalyticsCloudInstanceSettings,
 } from '../../analytics-settings-web/main/utils/analytics-settings';
-import {createChannel} from './utils/channel';
 import {
 	checkDataSourceStatus,
+	createDataSource,
 	findDataSource,
 	renameDataSource,
 } from './utils/data-source';
@@ -27,7 +26,7 @@ import {ACPage, navigateToACSettingsViaURL} from './utils/navigation';
 
 export const test = mergeTests(
 	apiHelpersTest,
-	dataApiHelpersTest,
+	isolatedChannelTest,
 	loginAnalyticsCloudTest(),
 	loginTest()
 );
@@ -38,38 +37,8 @@ test(
 	{
 		tag: '@LPD-44493',
 	},
-
-	async ({apiHelpers, page}) => {
-		const channelName = 'My Property - ' + getRandomString();
-
-		const {channel, project} = await createChannel({
-			apiHelpers,
-			channelName,
-		});
-
-		let token;
-
-		await test.step('Go to Analytics Cloud settings and add a Data Source', async () => {
-			await navigateToACSettingsViaURL({
-				acPage: ACPage.dataSourcePage,
-				page,
-				projectID: project.groupId,
-			});
-
-			await page.getByRole('button', {name: 'Add Data Source'}).click();
-
-			await page
-				.getByRole('menuitem', {name: 'Liferay DXP Site'})
-				.click();
-
-			await page.waitForTimeout(1000);
-
-			token = await page
-				.locator('.onboarding-modal-root input')
-				.getAttribute('value');
-
-			await page.getByRole('link', {name: 'Done'}).click();
-		});
+	async ({page, project}) => {
+		const {token} = await createDataSource(page);
 
 		await test.step('Go to DXP --> Instance Settings --> Analytics Cloud and disconnect the workspace', async () => {
 			await goToAnalyticsCloudInstanceSettings(page);
@@ -135,13 +104,6 @@ test(
 				dataSourceStatus: 'Disconnected',
 				page,
 			});
-		});
-
-		await test.step('delete channel', async () => {
-			await apiHelpers.jsonWebServicesOSBFaro.deleteChannel(
-				`[${channel.id}]`,
-				project.groupId
-			);
 		});
 	}
 );

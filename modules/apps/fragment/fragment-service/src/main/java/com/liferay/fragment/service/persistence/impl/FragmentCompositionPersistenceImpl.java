@@ -14,7 +14,6 @@ import com.liferay.fragment.model.impl.FragmentCompositionModelImpl;
 import com.liferay.fragment.service.persistence.FragmentCompositionPersistence;
 import com.liferay.fragment.service.persistence.FragmentCompositionUtil;
 import com.liferay.fragment.service.persistence.impl.constants.FragmentPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
@@ -97,62 +96,9 @@ public class FragmentCompositionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<FragmentComposition>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the fragment compositions where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment compositions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @return the range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment compositions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<FragmentComposition> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<FragmentComposition, NoSuchCompositionException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the fragment compositions where uuid = &#63;.
@@ -174,14 +120,9 @@ public class FragmentCompositionPersistenceImpl
 		OrderByComparator<FragmentComposition> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -198,16 +139,8 @@ public class FragmentCompositionPersistenceImpl
 			OrderByComparator<FragmentComposition> orderByComparator)
 		throws NoSuchCompositionException {
 
-		FragmentComposition fragmentComposition = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (fragmentComposition != null) {
-			return fragmentComposition;
-		}
-
-		throw new NoSuchCompositionException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -244,18 +177,13 @@ public class FragmentCompositionPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<FragmentComposition>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<FragmentComposition, NoSuchCompositionException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the fragment composition where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchCompositionException</code> if it could not be found.
@@ -269,33 +197,8 @@ public class FragmentCompositionPersistenceImpl
 	public FragmentComposition findByUUID_G(String uuid, long groupId)
 		throws NoSuchCompositionException {
 
-		FragmentComposition fragmentComposition = fetchByUUID_G(uuid, groupId);
-
-		if (fragmentComposition == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCompositionException(message);
-		}
-
-		return fragmentComposition;
-	}
-
-	/**
-	 * Returns the fragment composition where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching fragment composition, or <code>null</code> if a matching fragment composition could not be found
-	 */
-	@Override
-	public FragmentComposition fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -310,13 +213,8 @@ public class FragmentCompositionPersistenceImpl
 	public FragmentComposition fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -348,67 +246,9 @@ public class FragmentCompositionPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<FragmentComposition>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the fragment compositions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment compositions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @return the range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment compositions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<FragmentComposition> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<FragmentComposition, NoSuchCompositionException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the fragment compositions where uuid = &#63; and companyId = &#63;.
@@ -431,14 +271,9 @@ public class FragmentCompositionPersistenceImpl
 		OrderByComparator<FragmentComposition> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -456,16 +291,8 @@ public class FragmentCompositionPersistenceImpl
 			OrderByComparator<FragmentComposition> orderByComparator)
 		throws NoSuchCompositionException {
 
-		FragmentComposition fragmentComposition = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (fragmentComposition != null) {
-			return fragmentComposition;
-		}
-
-		throw new NoSuchCompositionException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -506,72 +333,13 @@ public class FragmentCompositionPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<FragmentComposition>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the fragment compositions where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment compositions where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @return the range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment compositions where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<FragmentComposition> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<FragmentComposition, NoSuchCompositionException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the fragment compositions where groupId = &#63;.
@@ -593,14 +361,9 @@ public class FragmentCompositionPersistenceImpl
 		OrderByComparator<FragmentComposition> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				finderCache, new Object[] {groupId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -617,16 +380,8 @@ public class FragmentCompositionPersistenceImpl
 			OrderByComparator<FragmentComposition> orderByComparator)
 		throws NoSuchCompositionException {
 
-		FragmentComposition fragmentComposition = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (fragmentComposition != null) {
-			return fragmentComposition;
-		}
-
-		throw new NoSuchCompositionException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -664,76 +419,13 @@ public class FragmentCompositionPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				finderCache, new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByFragmentCollectionId;
-	private FinderPath _finderPathWithoutPaginationFindByFragmentCollectionId;
-	private FinderPath _finderPathCountByFragmentCollectionId;
-	private CollectionPersistenceFinder<FragmentComposition>
-		_collectionPersistenceFinderByFragmentCollectionId;
-
-	/**
-	 * Returns all the fragment compositions where fragmentCollectionId = &#63;.
-	 *
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @return the matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByFragmentCollectionId(
-		long fragmentCollectionId) {
-
-		return findByFragmentCollectionId(
-			fragmentCollectionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment compositions where fragmentCollectionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @return the range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByFragmentCollectionId(
-		long fragmentCollectionId, int start, int end) {
-
-		return findByFragmentCollectionId(
-			fragmentCollectionId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment compositions where fragmentCollectionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByFragmentCollectionId(
-		long fragmentCollectionId, int start, int end,
-		OrderByComparator<FragmentComposition> orderByComparator) {
-
-		return findByFragmentCollectionId(
-			fragmentCollectionId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<FragmentComposition, NoSuchCompositionException>
+			_collectionPersistenceFinderByFragmentCollectionId;
 
 	/**
 	 * Returns an ordered range of all the fragment compositions where fragmentCollectionId = &#63;.
@@ -755,14 +447,9 @@ public class FragmentCompositionPersistenceImpl
 		OrderByComparator<FragmentComposition> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByFragmentCollectionId.find(
-				finderCache, new Object[] {fragmentCollectionId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByFragmentCollectionId.find(
+			finderCache, new Object[] {fragmentCollectionId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -779,19 +466,9 @@ public class FragmentCompositionPersistenceImpl
 			OrderByComparator<FragmentComposition> orderByComparator)
 		throws NoSuchCompositionException {
 
-		FragmentComposition fragmentComposition =
-			fetchByFragmentCollectionId_First(
-				fragmentCollectionId, orderByComparator);
-
-		if (fragmentComposition != null) {
-			return fragmentComposition;
-		}
-
-		throw new NoSuchCompositionException(
-			_collectionPersistenceFinderByFragmentCollectionId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {fragmentCollectionId}));
+		return _collectionPersistenceFinderByFragmentCollectionId.findFirst(
+			finderCache, new Object[] {fragmentCollectionId},
+			orderByComparator);
 	}
 
 	/**
@@ -830,79 +507,13 @@ public class FragmentCompositionPersistenceImpl
 	 */
 	@Override
 	public int countByFragmentCollectionId(long fragmentCollectionId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByFragmentCollectionId.count(
-				finderCache, new Object[] {fragmentCollectionId});
-		}
+		return _collectionPersistenceFinderByFragmentCollectionId.count(
+			finderCache, new Object[] {fragmentCollectionId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI;
-	private FinderPath _finderPathCountByG_FCI;
-	private CollectionPersistenceFinder<FragmentComposition>
-		_collectionPersistenceFinderByG_FCI;
-
-	/**
-	 * Returns all the fragment compositions where groupId = &#63; and fragmentCollectionId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @return the matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByG_FCI(
-		long groupId, long fragmentCollectionId) {
-
-		return findByG_FCI(
-			groupId, fragmentCollectionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the fragment compositions where groupId = &#63; and fragmentCollectionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @return the range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByG_FCI(
-		long groupId, long fragmentCollectionId, int start, int end) {
-
-		return findByG_FCI(groupId, fragmentCollectionId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment compositions where groupId = &#63; and fragmentCollectionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByG_FCI(
-		long groupId, long fragmentCollectionId, int start, int end,
-		OrderByComparator<FragmentComposition> orderByComparator) {
-
-		return findByG_FCI(
-			groupId, fragmentCollectionId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<FragmentComposition, NoSuchCompositionException>
+			_collectionPersistenceFinderByG_FCI;
 
 	/**
 	 * Returns an ordered range of all the fragment compositions where groupId = &#63; and fragmentCollectionId = &#63;.
@@ -925,14 +536,9 @@ public class FragmentCompositionPersistenceImpl
 		OrderByComparator<FragmentComposition> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByG_FCI.find(
-				finderCache, new Object[] {groupId, fragmentCollectionId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI.find(
+			finderCache, new Object[] {groupId, fragmentCollectionId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -950,17 +556,9 @@ public class FragmentCompositionPersistenceImpl
 			OrderByComparator<FragmentComposition> orderByComparator)
 		throws NoSuchCompositionException {
 
-		FragmentComposition fragmentComposition = fetchByG_FCI_First(
-			groupId, fragmentCollectionId, orderByComparator);
-
-		if (fragmentComposition != null) {
-			return fragmentComposition;
-		}
-
-		throw new NoSuchCompositionException(
-			_collectionPersistenceFinderByG_FCI.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId}));
+		return _collectionPersistenceFinderByG_FCI.findFirst(
+			finderCache, new Object[] {groupId, fragmentCollectionId},
+			orderByComparator);
 	}
 
 	/**
@@ -1002,18 +600,13 @@ public class FragmentCompositionPersistenceImpl
 	 */
 	@Override
 	public int countByG_FCI(long groupId, long fragmentCollectionId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByG_FCI.count(
-				finderCache, new Object[] {groupId, fragmentCollectionId});
-		}
+		return _collectionPersistenceFinderByG_FCI.count(
+			finderCache, new Object[] {groupId, fragmentCollectionId});
 	}
 
-	private FinderPath _finderPathFetchByG_FCK;
-	private UniquePersistenceFinder<FragmentComposition>
-		_uniquePersistenceFinderByG_FCK;
+	private UniquePersistenceFinder
+		<FragmentComposition, NoSuchCompositionException>
+			_uniquePersistenceFinderByG_FCK;
 
 	/**
 	 * Returns the fragment composition where groupId = &#63; and fragmentCompositionKey = &#63; or throws a <code>NoSuchCompositionException</code> if it could not be found.
@@ -1028,37 +621,8 @@ public class FragmentCompositionPersistenceImpl
 			long groupId, String fragmentCompositionKey)
 		throws NoSuchCompositionException {
 
-		FragmentComposition fragmentComposition = fetchByG_FCK(
-			groupId, fragmentCompositionKey);
-
-		if (fragmentComposition == null) {
-			String message =
-				_uniquePersistenceFinderByG_FCK.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, fragmentCompositionKey});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCompositionException(message);
-		}
-
-		return fragmentComposition;
-	}
-
-	/**
-	 * Returns the fragment composition where groupId = &#63; and fragmentCompositionKey = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCompositionKey the fragment composition key
-	 * @return the matching fragment composition, or <code>null</code> if a matching fragment composition could not be found
-	 */
-	@Override
-	public FragmentComposition fetchByG_FCK(
-		long groupId, String fragmentCompositionKey) {
-
-		return fetchByG_FCK(groupId, fragmentCompositionKey, true);
+		return _uniquePersistenceFinderByG_FCK.find(
+			finderCache, new Object[] {groupId, fragmentCompositionKey});
 	}
 
 	/**
@@ -1073,14 +637,9 @@ public class FragmentCompositionPersistenceImpl
 	public FragmentComposition fetchByG_FCK(
 		long groupId, String fragmentCompositionKey, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _uniquePersistenceFinderByG_FCK.fetch(
-				finderCache, new Object[] {groupId, fragmentCompositionKey},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_FCK.fetch(
+			finderCache, new Object[] {groupId, fragmentCompositionKey},
+			useFinderCache);
 	}
 
 	/**
@@ -1114,10 +673,9 @@ public class FragmentCompositionPersistenceImpl
 			finderCache, new Object[] {groupId, fragmentCompositionKey});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_LikeN;
-	private FinderPath _finderPathWithPaginationCountByG_FCI_LikeN;
-	private CollectionPersistenceFinder<FragmentComposition>
-		_collectionPersistenceFinderByG_FCI_LikeN;
+	private CollectionPersistenceFinder
+		<FragmentComposition, NoSuchCompositionException>
+			_collectionPersistenceFinderByG_FCI_LikeN;
 
 	/**
 	 * Returns all the fragment compositions where groupId = &#63; and fragmentCollectionId = &#63; and name LIKE &#63;.
@@ -1206,14 +764,9 @@ public class FragmentCompositionPersistenceImpl
 		int end, OrderByComparator<FragmentComposition> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN.find(
-				finderCache, new Object[] {groupId, fragmentCollectionId, name},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN.find(
+			finderCache, new Object[] {groupId, fragmentCollectionId, name},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1232,17 +785,9 @@ public class FragmentCompositionPersistenceImpl
 			OrderByComparator<FragmentComposition> orderByComparator)
 		throws NoSuchCompositionException {
 
-		FragmentComposition fragmentComposition = fetchByG_FCI_LikeN_First(
-			groupId, fragmentCollectionId, name, orderByComparator);
-
-		if (fragmentComposition != null) {
-			return fragmentComposition;
-		}
-
-		throw new NoSuchCompositionException(
-			_collectionPersistenceFinderByG_FCI_LikeN.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId, name}));
+		return _collectionPersistenceFinderByG_FCI_LikeN.findFirst(
+			finderCache, new Object[] {groupId, fragmentCollectionId, name},
+			orderByComparator);
 	}
 
 	/**
@@ -1291,86 +836,13 @@ public class FragmentCompositionPersistenceImpl
 	public int countByG_FCI_LikeN(
 		long groupId, long fragmentCollectionId, String name) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, name});
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN.count(
+			finderCache, new Object[] {groupId, fragmentCollectionId, name});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_FCI_S;
-	private FinderPath _finderPathCountByG_FCI_S;
-	private CollectionPersistenceFinder<FragmentComposition>
-		_collectionPersistenceFinderByG_FCI_S;
-
-	/**
-	 * Returns all the fragment compositions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param status the status
-	 * @return the matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByG_FCI_S(
-		long groupId, long fragmentCollectionId, int status) {
-
-		return findByG_FCI_S(
-			groupId, fragmentCollectionId, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the fragment compositions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param status the status
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @return the range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByG_FCI_S(
-		long groupId, long fragmentCollectionId, int status, int start,
-		int end) {
-
-		return findByG_FCI_S(
-			groupId, fragmentCollectionId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the fragment compositions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FragmentCompositionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param fragmentCollectionId the fragment collection ID
-	 * @param status the status
-	 * @param start the lower bound of the range of fragment compositions
-	 * @param end the upper bound of the range of fragment compositions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching fragment compositions
-	 */
-	@Override
-	public List<FragmentComposition> findByG_FCI_S(
-		long groupId, long fragmentCollectionId, int status, int start, int end,
-		OrderByComparator<FragmentComposition> orderByComparator) {
-
-		return findByG_FCI_S(
-			groupId, fragmentCollectionId, status, start, end,
-			orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<FragmentComposition, NoSuchCompositionException>
+			_collectionPersistenceFinderByG_FCI_S;
 
 	/**
 	 * Returns an ordered range of all the fragment compositions where groupId = &#63; and fragmentCollectionId = &#63; and status = &#63;.
@@ -1394,15 +866,9 @@ public class FragmentCompositionPersistenceImpl
 		OrderByComparator<FragmentComposition> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_S.find(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, status}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_S.find(
+			finderCache, new Object[] {groupId, fragmentCollectionId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1421,17 +887,9 @@ public class FragmentCompositionPersistenceImpl
 			OrderByComparator<FragmentComposition> orderByComparator)
 		throws NoSuchCompositionException {
 
-		FragmentComposition fragmentComposition = fetchByG_FCI_S_First(
-			groupId, fragmentCollectionId, status, orderByComparator);
-
-		if (fragmentComposition != null) {
-			return fragmentComposition;
-		}
-
-		throw new NoSuchCompositionException(
-			_collectionPersistenceFinderByG_FCI_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId, status}));
+		return _collectionPersistenceFinderByG_FCI_S.findFirst(
+			finderCache, new Object[] {groupId, fragmentCollectionId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -1480,20 +938,13 @@ public class FragmentCompositionPersistenceImpl
 	public int countByG_FCI_S(
 		long groupId, long fragmentCollectionId, int status) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_S.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, status});
-		}
+		return _collectionPersistenceFinderByG_FCI_S.count(
+			finderCache, new Object[] {groupId, fragmentCollectionId, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_FCI_LikeN_S;
-	private FinderPath _finderPathWithPaginationCountByG_FCI_LikeN_S;
-	private CollectionPersistenceFinder<FragmentComposition>
-		_collectionPersistenceFinderByG_FCI_LikeN_S;
+	private CollectionPersistenceFinder
+		<FragmentComposition, NoSuchCompositionException>
+			_collectionPersistenceFinderByG_FCI_LikeN_S;
 
 	/**
 	 * Returns all the fragment compositions where groupId = &#63; and fragmentCollectionId = &#63; and name LIKE &#63; and status = &#63;.
@@ -1588,15 +1039,10 @@ public class FragmentCompositionPersistenceImpl
 		OrderByComparator<FragmentComposition> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN_S.find(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, name, status},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN_S.find(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, name, status}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1616,17 +1062,10 @@ public class FragmentCompositionPersistenceImpl
 			OrderByComparator<FragmentComposition> orderByComparator)
 		throws NoSuchCompositionException {
 
-		FragmentComposition fragmentComposition = fetchByG_FCI_LikeN_S_First(
-			groupId, fragmentCollectionId, name, status, orderByComparator);
-
-		if (fragmentComposition != null) {
-			return fragmentComposition;
-		}
-
-		throw new NoSuchCompositionException(
-			_collectionPersistenceFinderByG_FCI_LikeN_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, fragmentCollectionId, name, status}));
+		return _collectionPersistenceFinderByG_FCI_LikeN_S.findFirst(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, name, status},
+			orderByComparator);
 	}
 
 	/**
@@ -1680,19 +1119,14 @@ public class FragmentCompositionPersistenceImpl
 	public int countByG_FCI_LikeN_S(
 		long groupId, long fragmentCollectionId, String name, int status) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _collectionPersistenceFinderByG_FCI_LikeN_S.count(
-				finderCache,
-				new Object[] {groupId, fragmentCollectionId, name, status});
-		}
+		return _collectionPersistenceFinderByG_FCI_LikeN_S.count(
+			finderCache,
+			new Object[] {groupId, fragmentCollectionId, name, status});
 	}
 
-	private FinderPath _finderPathFetchByERC_G;
-	private UniquePersistenceFinder<FragmentComposition>
-		_uniquePersistenceFinderByERC_G;
+	private UniquePersistenceFinder
+		<FragmentComposition, NoSuchCompositionException>
+			_uniquePersistenceFinderByERC_G;
 
 	/**
 	 * Returns the fragment composition where externalReferenceCode = &#63; and groupId = &#63; or throws a <code>NoSuchCompositionException</code> if it could not be found.
@@ -1707,37 +1141,8 @@ public class FragmentCompositionPersistenceImpl
 			String externalReferenceCode, long groupId)
 		throws NoSuchCompositionException {
 
-		FragmentComposition fragmentComposition = fetchByERC_G(
-			externalReferenceCode, groupId);
-
-		if (fragmentComposition == null) {
-			String message =
-				_uniquePersistenceFinderByERC_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCompositionException(message);
-		}
-
-		return fragmentComposition;
-	}
-
-	/**
-	 * Returns the fragment composition where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param groupId the group ID
-	 * @return the matching fragment composition, or <code>null</code> if a matching fragment composition could not be found
-	 */
-	@Override
-	public FragmentComposition fetchByERC_G(
-		String externalReferenceCode, long groupId) {
-
-		return fetchByERC_G(externalReferenceCode, groupId, true);
+		return _uniquePersistenceFinderByERC_G.find(
+			finderCache, new Object[] {externalReferenceCode, groupId});
 	}
 
 	/**
@@ -1752,14 +1157,9 @@ public class FragmentCompositionPersistenceImpl
 	public FragmentComposition fetchByERC_G(
 		String externalReferenceCode, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					FragmentComposition.class)) {
-
-			return _uniquePersistenceFinderByERC_G.fetch(
-				finderCache, new Object[] {externalReferenceCode, groupId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByERC_G.fetch(
+			finderCache, new Object[] {externalReferenceCode, groupId},
+			useFinderCache);
 	}
 
 	/**
@@ -2180,335 +1580,327 @@ public class FragmentCompositionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
 			_SQL_COUNT_FRAGMENTCOMPOSITION_WHERE,
 			FragmentCompositionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
-				"fragmentComposition.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, FragmentComposition::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			FragmentComposition::getUuid, FragmentComposition::getGroupId);
+				"fragmentComposition.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				FragmentComposition::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(FragmentComposition::getUuid),
+				FragmentComposition::getGroupId),
+			_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE, "",
 			new FinderColumn<>(
-				"fragmentComposition.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, FragmentComposition::getUuid),
+				"fragmentComposition.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				FragmentComposition::getUuid),
 			new FinderColumn<>(
 				"fragmentComposition.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, FragmentComposition::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
 				_SQL_COUNT_FRAGMENTCOMPOSITION_WHERE,
 				FragmentCompositionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"fragmentComposition.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, FragmentComposition::getUuid),
+					"fragmentComposition.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					FragmentComposition::getUuid),
 				new FinderColumn<>(
 					"fragmentComposition.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, FragmentComposition::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
 				_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
 				_SQL_COUNT_FRAGMENTCOMPOSITION_WHERE,
 				FragmentCompositionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentComposition.", "groupId", FinderColumn.Type.LONG,
 					"=", true, true, FragmentComposition::getGroupId));
 
-		_finderPathWithPaginationFindByFragmentCollectionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByFragmentCollectionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"fragmentCollectionId"}, true);
-
-		_finderPathWithoutPaginationFindByFragmentCollectionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByFragmentCollectionId", new String[] {Long.class.getName()},
-			new String[] {"fragmentCollectionId"}, true);
-
-		_finderPathCountByFragmentCollectionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByFragmentCollectionId", new String[] {Long.class.getName()},
-			new String[] {"fragmentCollectionId"}, false);
-
 		_collectionPersistenceFinderByFragmentCollectionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByFragmentCollectionId,
-				_finderPathWithoutPaginationFindByFragmentCollectionId,
-				_finderPathCountByFragmentCollectionId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByFragmentCollectionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"fragmentCollectionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByFragmentCollectionId",
+					new String[] {Long.class.getName()},
+					new String[] {"fragmentCollectionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByFragmentCollectionId",
+					new String[] {Long.class.getName()},
+					new String[] {"fragmentCollectionId"}, false),
 				_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
 				_SQL_COUNT_FRAGMENTCOMPOSITION_WHERE,
 				FragmentCompositionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentComposition.", "fragmentCollectionId",
 					FinderColumn.Type.LONG, "=", true, true,
 					FragmentComposition::getFragmentCollectionId));
 
-		_finderPathWithPaginationFindByG_FCI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId"}, true);
-
-		_finderPathWithoutPaginationFindByG_FCI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "fragmentCollectionId"}, true);
-
-		_finderPathCountByG_FCI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "fragmentCollectionId"}, false);
-
 		_collectionPersistenceFinderByG_FCI = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_FCI,
-			_finderPathWithoutPaginationFindByG_FCI, _finderPathCountByG_FCI,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "fragmentCollectionId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "fragmentCollectionId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "fragmentCollectionId"}, false),
 			_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
 			_SQL_COUNT_FRAGMENTCOMPOSITION_WHERE,
 			FragmentCompositionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"fragmentComposition.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, FragmentComposition::getGroupId),
+				true, true, FragmentComposition::getGroupId),
 			new FinderColumn<>(
 				"fragmentComposition.", "fragmentCollectionId",
 				FinderColumn.Type.LONG, "=", true, true,
 				FragmentComposition::getFragmentCollectionId));
 
-		_finderPathFetchByG_FCK = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_FCK",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "fragmentCompositionKey"}, false,
-			FragmentComposition::getGroupId,
-			FragmentComposition::getFragmentCompositionKey);
-
 		_uniquePersistenceFinderByG_FCK = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_FCK,
-			_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_FCK",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "fragmentCompositionKey"}, 0, 2, false,
+				FragmentComposition::getGroupId,
+				convertNullFunction(
+					FragmentComposition::getFragmentCompositionKey)),
+			_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE, "",
 			new FinderColumn<>(
 				"fragmentComposition.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, FragmentComposition::getGroupId),
+				true, true, FragmentComposition::getGroupId),
 			new FinderColumn<>(
 				"fragmentComposition.", "fragmentCompositionKey",
 				FinderColumn.Type.STRING, "=", true, true,
 				FragmentComposition::getFragmentCompositionKey));
 
-		_finderPathWithPaginationFindByG_FCI_LikeN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_LikeN",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name"}, true);
-
-		_finderPathWithPaginationCountByG_FCI_LikeN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_FCI_LikeN",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name"}, false);
-
 		_collectionPersistenceFinderByG_FCI_LikeN =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_LikeN, null,
-				_finderPathWithPaginationCountByG_FCI_LikeN,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_LikeN",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "name"},
+					true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByG_FCI_LikeN",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "name"},
+					false),
 				_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
 				_SQL_COUNT_FRAGMENTCOMPOSITION_WHERE,
 				FragmentCompositionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentComposition.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentComposition::getGroupId),
+					"=", true, true, FragmentComposition::getGroupId),
 				new FinderColumn<>(
 					"fragmentComposition.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentComposition::getFragmentCollectionId),
 				new FinderColumn<>(
 					"fragmentComposition.", "name", FinderColumn.Type.STRING,
 					"LIKE", true, true, FragmentComposition::getName));
 
-		_finderPathWithPaginationFindByG_FCI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByG_FCI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "status"}, true);
-
-		_finderPathCountByG_FCI_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "status"}, false);
-
 		_collectionPersistenceFinderByG_FCI_S =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_S,
-				_finderPathWithoutPaginationFindByG_FCI_S,
-				_finderPathCountByG_FCI_S,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "status"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_FCI_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "status"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_FCI_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "fragmentCollectionId", "status"},
+					false),
 				_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
 				_SQL_COUNT_FRAGMENTCOMPOSITION_WHERE,
 				FragmentCompositionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentComposition.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentComposition::getGroupId),
+					"=", true, true, FragmentComposition::getGroupId),
 				new FinderColumn<>(
 					"fragmentComposition.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentComposition::getFragmentCollectionId),
 				new FinderColumn<>(
 					"fragmentComposition.", "status", FinderColumn.Type.INTEGER,
 					"=", true, true, FragmentComposition::getStatus));
-
-		_finderPathWithPaginationFindByG_FCI_LikeN_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_FCI_LikeN_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name", "status"},
-			true);
-
-		_finderPathWithPaginationCountByG_FCI_LikeN_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_FCI_LikeN_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName()
-			},
-			new String[] {"groupId", "fragmentCollectionId", "name", "status"},
-			false);
 
 		_collectionPersistenceFinderByG_FCI_LikeN_S =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_FCI_LikeN_S, null,
-				_finderPathWithPaginationCountByG_FCI_LikeN_S,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByG_FCI_LikeN_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "name", "status"
+					},
+					true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByG_FCI_LikeN_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "fragmentCollectionId", "name", "status"
+					},
+					false),
 				_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
 				_SQL_COUNT_FRAGMENTCOMPOSITION_WHERE,
 				FragmentCompositionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"fragmentComposition.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, FragmentComposition::getGroupId),
+					"=", true, true, FragmentComposition::getGroupId),
 				new FinderColumn<>(
 					"fragmentComposition.", "fragmentCollectionId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					FragmentComposition::getFragmentCollectionId),
 				new FinderColumn<>(
 					"fragmentComposition.", "name", FinderColumn.Type.STRING,
-					"LIKE", true, false, FragmentComposition::getName),
+					"LIKE", true, true, FragmentComposition::getName),
 				new FinderColumn<>(
 					"fragmentComposition.", "status", FinderColumn.Type.INTEGER,
 					"=", true, true, FragmentComposition::getStatus));
 
-		_finderPathFetchByERC_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "groupId"}, false,
-			FragmentComposition::getExternalReferenceCode,
-			FragmentComposition::getGroupId);
-
 		_uniquePersistenceFinderByERC_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_G,
-			_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "groupId"}, 0, 1, false,
+				convertNullFunction(
+					FragmentComposition::getExternalReferenceCode),
+				FragmentComposition::getGroupId),
+			_SQL_SELECT_FRAGMENTCOMPOSITION_WHERE, "",
 			new FinderColumn<>(
 				"fragmentComposition.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				FragmentComposition::getExternalReferenceCode),
 			new FinderColumn<>(
 				"fragmentComposition.", "groupId", FinderColumn.Type.LONG, "=",
@@ -2586,4 +1978,4 @@ public class FragmentCompositionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1465745527
+// LIFERAY-SERVICE-BUILDER-HASH:1646108615

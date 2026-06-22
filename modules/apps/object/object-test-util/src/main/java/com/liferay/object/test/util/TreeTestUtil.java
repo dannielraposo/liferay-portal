@@ -200,7 +200,7 @@ public class TreeTestUtil {
 	}
 
 	public static Tree createObjectEntryTree(
-			String externalReferenceCodeSuffix,
+			Long accountEntryId, String externalReferenceCodeSuffix,
 			ObjectDefinitionLocalService objectDefinitionLocalService,
 			ObjectEntryLocalService objectEntryLocalService,
 			ObjectFieldLocalService objectFieldLocalService,
@@ -222,14 +222,20 @@ public class TreeTestUtil {
 		Queue<String> externalReferenceCodes = new ArrayDeque<>(
 			Arrays.asList("A", "AA", "AB", "AAA", "AAB"));
 
+		HashMapBuilder.HashMapWrapper<String, Serializable>
+			rootValuesHashMapBuilder = HashMapBuilder.<String, Serializable>put(
+				"externalReferenceCode",
+				externalReferenceCodes.poll() + externalReferenceCodeSuffix);
+
+		_putAccountEntryRestrictedValue(
+			accountEntryId, objectDefinitionLocalService,
+			objectFieldLocalService, rootNode.getPrimaryKey(),
+			rootValuesHashMapBuilder);
+
 		ObjectEntry rootObjectEntry = objectEntryLocalService.addObjectEntry(
 			0, TestPropsValues.getUserId(), rootNode.getPrimaryKey(),
 			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
-			null,
-			HashMapBuilder.<String, Serializable>put(
-				"externalReferenceCode",
-				externalReferenceCodes.poll() + externalReferenceCodeSuffix
-			).build(),
+			null, rootValuesHashMapBuilder.build(),
 			ServiceContextTestUtil.getServiceContext());
 
 		Map<Long, Long> objectEntryIds = HashMapBuilder.put(
@@ -239,12 +245,8 @@ public class TreeTestUtil {
 		while (iterator.hasNext()) {
 			Node node = iterator.next();
 
-			ObjectEntry objectEntry = objectEntryLocalService.addObjectEntry(
-				0, TestPropsValues.getUserId(), node.getPrimaryKey(),
-				ObjectEntryFolderConstants.
-					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
-				null,
-				HashMapBuilder.<String, Serializable>put(
+			HashMapBuilder.HashMapWrapper<String, Serializable>
+				valuesHashMapBuilder = HashMapBuilder.<String, Serializable>put(
 					"externalReferenceCode",
 					externalReferenceCodes.poll() + externalReferenceCodeSuffix
 				).put(
@@ -267,7 +269,18 @@ public class TreeTestUtil {
 
 						return objectEntryIds.get(parentNode.getPrimaryKey());
 					}
-				).build(),
+				);
+
+			_putAccountEntryRestrictedValue(
+				accountEntryId, objectDefinitionLocalService,
+				objectFieldLocalService, node.getPrimaryKey(),
+				valuesHashMapBuilder);
+
+			ObjectEntry objectEntry = objectEntryLocalService.addObjectEntry(
+				0, TestPropsValues.getUserId(), node.getPrimaryKey(),
+				ObjectEntryFolderConstants.
+					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+				null, valuesHashMapBuilder.build(),
 				ServiceContextTestUtil.getServiceContext());
 
 			objectEntryIds.put(
@@ -280,6 +293,21 @@ public class TreeTestUtil {
 
 		return objectEntryTreeFactory.create(
 			rootObjectEntry.getObjectEntryId());
+	}
+
+	public static Tree createObjectEntryTree(
+			String externalReferenceCodeSuffix,
+			ObjectDefinitionLocalService objectDefinitionLocalService,
+			ObjectEntryLocalService objectEntryLocalService,
+			ObjectFieldLocalService objectFieldLocalService,
+			ObjectRelationshipLocalService objectRelationshipLocalService,
+			long rootObjectDefinitionId)
+		throws PortalException {
+
+		return createObjectEntryTree(
+			null, externalReferenceCodeSuffix, objectDefinitionLocalService,
+			objectEntryLocalService, objectFieldLocalService,
+			objectRelationshipLocalService, rootObjectDefinitionId);
 	}
 
 	public static void deleteObjectDefinitionHierarchy(
@@ -452,6 +480,36 @@ public class TreeTestUtil {
 				node.getPrimaryKey());
 
 		return objectDefinition.getShortName();
+	}
+
+	private static void _putAccountEntryRestrictedValue(
+			Long accountEntryId,
+			ObjectDefinitionLocalService objectDefinitionLocalService,
+			ObjectFieldLocalService objectFieldLocalService,
+			long objectDefinitionId,
+			HashMapBuilder.HashMapWrapper<String, Serializable>
+				valuesHashMapBuilder)
+		throws PortalException {
+
+		if (accountEntryId == null) {
+			return;
+		}
+
+		ObjectDefinition objectDefinition =
+			objectDefinitionLocalService.getObjectDefinition(
+				objectDefinitionId);
+
+		long accountEntryRestrictedObjectFieldId =
+			objectDefinition.getAccountEntryRestrictedObjectFieldId();
+
+		if (accountEntryRestrictedObjectFieldId <= 0) {
+			return;
+		}
+
+		ObjectField objectField = objectFieldLocalService.getObjectField(
+			accountEntryRestrictedObjectFieldId);
+
+		valuesHashMapBuilder.put(objectField.getName(), accountEntryId);
 	}
 
 }

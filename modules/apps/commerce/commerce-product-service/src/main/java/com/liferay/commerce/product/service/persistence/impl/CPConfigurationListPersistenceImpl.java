@@ -14,15 +14,12 @@ import com.liferay.commerce.product.model.impl.CPConfigurationListModelImpl;
 import com.liferay.commerce.product.service.persistence.CPConfigurationListPersistence;
 import com.liferay.commerce.product.service.persistence.CPConfigurationListUtil;
 import com.liferay.commerce.product.service.persistence.impl.constants.CommercePersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
@@ -37,6 +34,7 @@ import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
+import com.liferay.portal.kernel.service.persistence.impl.ArrayableFinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
@@ -47,7 +45,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
@@ -103,62 +100,9 @@ public class CPConfigurationListPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CPConfigurationList>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the cp configuration lists where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp configuration lists where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @return the range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp configuration lists where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CPConfigurationList> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CPConfigurationList, NoSuchCPConfigurationListException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the cp configuration lists where uuid = &#63;.
@@ -180,14 +124,9 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -204,16 +143,8 @@ public class CPConfigurationListPersistenceImpl
 			OrderByComparator<CPConfigurationList> orderByComparator)
 		throws NoSuchCPConfigurationListException {
 
-		CPConfigurationList cpConfigurationList = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (cpConfigurationList != null) {
-			return cpConfigurationList;
-		}
-
-		throw new NoSuchCPConfigurationListException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -250,18 +181,13 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<CPConfigurationList>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<CPConfigurationList, NoSuchCPConfigurationListException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the cp configuration list where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchCPConfigurationListException</code> if it could not be found.
@@ -275,33 +201,8 @@ public class CPConfigurationListPersistenceImpl
 	public CPConfigurationList findByUUID_G(String uuid, long groupId)
 		throws NoSuchCPConfigurationListException {
 
-		CPConfigurationList cpConfigurationList = fetchByUUID_G(uuid, groupId);
-
-		if (cpConfigurationList == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPConfigurationListException(message);
-		}
-
-		return cpConfigurationList;
-	}
-
-	/**
-	 * Returns the cp configuration list where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching cp configuration list, or <code>null</code> if a matching cp configuration list could not be found
-	 */
-	@Override
-	public CPConfigurationList fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -316,13 +217,8 @@ public class CPConfigurationListPersistenceImpl
 	public CPConfigurationList fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -354,67 +250,9 @@ public class CPConfigurationListPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CPConfigurationList>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the cp configuration lists where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp configuration lists where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @return the range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp configuration lists where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CPConfigurationList> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CPConfigurationList, NoSuchCPConfigurationListException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the cp configuration lists where uuid = &#63; and companyId = &#63;.
@@ -437,14 +275,9 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -462,16 +295,8 @@ public class CPConfigurationListPersistenceImpl
 			OrderByComparator<CPConfigurationList> orderByComparator)
 		throws NoSuchCPConfigurationListException {
 
-		CPConfigurationList cpConfigurationList = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (cpConfigurationList != null) {
-			return cpConfigurationList;
-		}
-
-		throw new NoSuchCPConfigurationListException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -512,72 +337,13 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<CPConfigurationList>
-		_collectionPersistenceFinderByCompanyId;
-
-	/**
-	 * Returns all the cp configuration lists where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp configuration lists where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @return the range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp configuration lists where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<CPConfigurationList> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CPConfigurationList, NoSuchCPConfigurationListException>
+			_collectionPersistenceFinderByCompanyId;
 
 	/**
 	 * Returns an ordered range of all the cp configuration lists where companyId = &#63;.
@@ -599,14 +365,9 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				finderCache, new Object[] {companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			finderCache, new Object[] {companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -623,16 +384,8 @@ public class CPConfigurationListPersistenceImpl
 			OrderByComparator<CPConfigurationList> orderByComparator)
 		throws NoSuchCPConfigurationListException {
 
-		CPConfigurationList cpConfigurationList = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (cpConfigurationList != null) {
-			return cpConfigurationList;
-		}
-
-		throw new NoSuchCPConfigurationListException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -670,79 +423,13 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				finderCache, new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			finderCache, new Object[] {companyId});
 	}
 
-	private FinderPath
-		_finderPathWithPaginationFindByParentCPConfigurationListId;
-	private FinderPath
-		_finderPathWithoutPaginationFindByParentCPConfigurationListId;
-	private FinderPath _finderPathCountByParentCPConfigurationListId;
-	private CollectionPersistenceFinder<CPConfigurationList>
-		_collectionPersistenceFinderByParentCPConfigurationListId;
-
-	/**
-	 * Returns all the cp configuration lists where parentCPConfigurationListId = &#63;.
-	 *
-	 * @param parentCPConfigurationListId the parent cp configuration list ID
-	 * @return the matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByParentCPConfigurationListId(
-		long parentCPConfigurationListId) {
-
-		return findByParentCPConfigurationListId(
-			parentCPConfigurationListId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the cp configuration lists where parentCPConfigurationListId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param parentCPConfigurationListId the parent cp configuration list ID
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @return the range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByParentCPConfigurationListId(
-		long parentCPConfigurationListId, int start, int end) {
-
-		return findByParentCPConfigurationListId(
-			parentCPConfigurationListId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp configuration lists where parentCPConfigurationListId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param parentCPConfigurationListId the parent cp configuration list ID
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByParentCPConfigurationListId(
-		long parentCPConfigurationListId, int start, int end,
-		OrderByComparator<CPConfigurationList> orderByComparator) {
-
-		return findByParentCPConfigurationListId(
-			parentCPConfigurationListId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CPConfigurationList, NoSuchCPConfigurationListException>
+			_collectionPersistenceFinderByParentCPConfigurationListId;
 
 	/**
 	 * Returns an ordered range of all the cp configuration lists where parentCPConfigurationListId = &#63;.
@@ -764,15 +451,9 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByParentCPConfigurationListId.
-				find(
-					finderCache, new Object[] {parentCPConfigurationListId},
-					start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByParentCPConfigurationListId.find(
+			finderCache, new Object[] {parentCPConfigurationListId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -789,19 +470,10 @@ public class CPConfigurationListPersistenceImpl
 			OrderByComparator<CPConfigurationList> orderByComparator)
 		throws NoSuchCPConfigurationListException {
 
-		CPConfigurationList cpConfigurationList =
-			fetchByParentCPConfigurationListId_First(
-				parentCPConfigurationListId, orderByComparator);
-
-		if (cpConfigurationList != null) {
-			return cpConfigurationList;
-		}
-
-		throw new NoSuchCPConfigurationListException(
-			_collectionPersistenceFinderByParentCPConfigurationListId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {parentCPConfigurationListId}));
+		return _collectionPersistenceFinderByParentCPConfigurationListId.
+			findFirst(
+				finderCache, new Object[] {parentCPConfigurationListId},
+				orderByComparator);
 	}
 
 	/**
@@ -845,75 +517,13 @@ public class CPConfigurationListPersistenceImpl
 	public int countByParentCPConfigurationListId(
 		long parentCPConfigurationListId) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByParentCPConfigurationListId.
-				count(finderCache, new Object[] {parentCPConfigurationListId});
-		}
+		return _collectionPersistenceFinderByParentCPConfigurationListId.count(
+			finderCache, new Object[] {parentCPConfigurationListId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_C;
-	private FinderPath _finderPathWithoutPaginationFindByG_C;
-	private FinderPath _finderPathCountByG_C;
-	private FinderPath _finderPathWithPaginationCountByG_C;
-
-	/**
-	 * Returns all the cp configuration lists where groupId = &#63; and companyId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @return the matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C(long groupId, long companyId) {
-		return findByG_C(
-			groupId, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp configuration lists where groupId = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @return the range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C(
-		long groupId, long companyId, int start, int end) {
-
-		return findByG_C(groupId, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp configuration lists where groupId = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C(
-		long groupId, long companyId, int start, int end,
-		OrderByComparator<CPConfigurationList> orderByComparator) {
-
-		return findByG_C(
-			groupId, companyId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CPConfigurationList, NoSuchCPConfigurationListException>
+			_collectionPersistenceFinderByG_C;
 
 	/**
 	 * Returns an ordered range of all the cp configuration lists where groupId = &#63; and companyId = &#63;.
@@ -936,106 +546,9 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByG_C;
-					finderArgs = new Object[] {groupId, companyId};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByG_C;
-				finderArgs = new Object[] {
-					groupId, companyId, start, end, orderByComparator
-				};
-			}
-
-			List<CPConfigurationList> list = null;
-
-			if (useFinderCache) {
-				list = (List<CPConfigurationList>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CPConfigurationList cpConfigurationList : list) {
-						if ((groupId != cpConfigurationList.getGroupId()) ||
-							(companyId != cpConfigurationList.getCompanyId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						4 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(4);
-				}
-
-				sb.append(_SQL_SELECT_CPCONFIGURATIONLIST_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_C_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_COMPANYID_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CPConfigurationListModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(companyId);
-
-					list = (List<CPConfigurationList>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_C.find(
+			finderCache, new Object[] {new long[] {groupId}, companyId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1088,76 +601,9 @@ public class CPConfigurationListPersistenceImpl
 		long groupId, long companyId,
 		OrderByComparator<CPConfigurationList> orderByComparator) {
 
-		List<CPConfigurationList> list = findByG_C(
-			groupId, companyId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the cp configuration lists where groupId = any &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param companyId the company ID
-	 * @return the matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C(
-		long[] groupIds, long companyId) {
-
-		return findByG_C(
-			groupIds, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp configuration lists where groupId = any &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @return the range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C(
-		long[] groupIds, long companyId, int start, int end) {
-
-		return findByG_C(groupIds, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp configuration lists where groupId = any &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C(
-		long[] groupIds, long companyId, int start, int end,
-		OrderByComparator<CPConfigurationList> orderByComparator) {
-
-		return findByG_C(
-			groupIds, companyId, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByG_C.fetchFirst(
+			finderCache, new Object[] {new long[] {groupId}, companyId},
+			orderByComparator);
 	}
 
 	/**
@@ -1181,127 +627,10 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		if (groupIds.length == 1) {
-			return findByG_C(
-				groupIds[0], companyId, start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						StringUtil.merge(groupIds), companyId
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					StringUtil.merge(groupIds), companyId, start, end,
-					orderByComparator
-				};
-			}
-
-			List<CPConfigurationList> list = null;
-
-			if (useFinderCache) {
-				list = (List<CPConfigurationList>)finderCache.getResult(
-					_finderPathWithPaginationFindByG_C, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CPConfigurationList cpConfigurationList : list) {
-						if (!ArrayUtil.contains(
-								groupIds, cpConfigurationList.getGroupId()) ||
-							(companyId != cpConfigurationList.getCompanyId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_CPCONFIGURATIONLIST_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_C_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_C_COMPANYID_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CPConfigurationListModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					list = (List<CPConfigurationList>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByG_C, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_C.find(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(groupIds), companyId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1312,13 +641,8 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public void removeByG_C(long groupId, long companyId) {
-		for (CPConfigurationList cpConfigurationList :
-				findByG_C(
-					groupId, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(cpConfigurationList);
-		}
+		_collectionPersistenceFinderByG_C.remove(
+			finderCache, new Object[] {new long[] {groupId}, companyId});
 	}
 
 	/**
@@ -1330,55 +654,8 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public int countByG_C(long groupId, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			FinderPath finderPath = _finderPathCountByG_C;
-
-			Object[] finderArgs = new Object[] {groupId, companyId};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_CPCONFIGURATIONLIST_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_C_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_COMPANYID_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(companyId);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_C.count(
+			finderCache, new Object[] {new long[] {groupId}, companyId});
 	}
 
 	/**
@@ -1390,148 +667,14 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public int countByG_C(long[] groupIds, long companyId) {
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			Object[] finderArgs = new Object[] {
-				StringUtil.merge(groupIds), companyId
-			};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByG_C, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_CPCONFIGURATIONLIST_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_C_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_C_COMPANYID_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByG_C, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_C.count(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(groupIds), companyId});
 	}
 
-	private static final String _FINDER_COLUMN_G_C_GROUPID_2 =
-		"cpConfigurationList.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_GROUPID_7 =
-		"cpConfigurationList.groupId IN (";
-
-	private static final String _FINDER_COLUMN_G_C_COMPANYID_2 =
-		"cpConfigurationList.companyId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByG_M;
-	private FinderPath _finderPathWithoutPaginationFindByG_M;
-	private FinderPath _finderPathCountByG_M;
-	private CollectionPersistenceFinder<CPConfigurationList>
-		_collectionPersistenceFinderByG_M;
-
-	/**
-	 * Returns all the cp configuration lists where groupId = &#63; and master = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param master the master
-	 * @return the matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_M(long groupId, boolean master) {
-		return findByG_M(
-			groupId, master, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp configuration lists where groupId = &#63; and master = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param master the master
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @return the range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_M(
-		long groupId, boolean master, int start, int end) {
-
-		return findByG_M(groupId, master, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp configuration lists where groupId = &#63; and master = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param master the master
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_M(
-		long groupId, boolean master, int start, int end,
-		OrderByComparator<CPConfigurationList> orderByComparator) {
-
-		return findByG_M(groupId, master, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CPConfigurationList, NoSuchCPConfigurationListException>
+			_collectionPersistenceFinderByG_M;
 
 	/**
 	 * Returns an ordered range of all the cp configuration lists where groupId = &#63; and master = &#63;.
@@ -1554,14 +697,9 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByG_M.find(
-				finderCache, new Object[] {groupId, master}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_M.find(
+			finderCache, new Object[] {groupId, master}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1579,16 +717,8 @@ public class CPConfigurationListPersistenceImpl
 			OrderByComparator<CPConfigurationList> orderByComparator)
 		throws NoSuchCPConfigurationListException {
 
-		CPConfigurationList cpConfigurationList = fetchByG_M_First(
-			groupId, master, orderByComparator);
-
-		if (cpConfigurationList != null) {
-			return cpConfigurationList;
-		}
-
-		throw new NoSuchCPConfigurationListException(
-			_collectionPersistenceFinderByG_M.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, master}));
+		return _collectionPersistenceFinderByG_M.findFirst(
+			finderCache, new Object[] {groupId, master}, orderByComparator);
 	}
 
 	/**
@@ -1629,19 +759,13 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public int countByG_M(long groupId, boolean master) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByG_M.count(
-				finderCache, new Object[] {groupId, master});
-		}
+		return _collectionPersistenceFinderByG_M.count(
+			finderCache, new Object[] {groupId, master});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByLtD_S;
-	private FinderPath _finderPathWithPaginationCountByLtD_S;
-	private CollectionPersistenceFinder<CPConfigurationList>
-		_collectionPersistenceFinderByLtD_S;
+	private CollectionPersistenceFinder
+		<CPConfigurationList, NoSuchCPConfigurationListException>
+			_collectionPersistenceFinderByLtD_S;
 
 	/**
 	 * Returns all the cp configuration lists where displayDate &lt; &#63; and status = &#63;.
@@ -1720,14 +844,9 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByLtD_S.find(
-				finderCache, new Object[] {displayDate, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByLtD_S.find(
+			finderCache, new Object[] {displayDate, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1745,16 +864,8 @@ public class CPConfigurationListPersistenceImpl
 			OrderByComparator<CPConfigurationList> orderByComparator)
 		throws NoSuchCPConfigurationListException {
 
-		CPConfigurationList cpConfigurationList = fetchByLtD_S_First(
-			displayDate, status, orderByComparator);
-
-		if (cpConfigurationList != null) {
-			return cpConfigurationList;
-		}
-
-		throw new NoSuchCPConfigurationListException(
-			_collectionPersistenceFinderByLtD_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {displayDate, status}));
+		return _collectionPersistenceFinderByLtD_S.findFirst(
+			finderCache, new Object[] {displayDate, status}, orderByComparator);
 	}
 
 	/**
@@ -1795,81 +906,13 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public int countByLtD_S(Date displayDate, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _collectionPersistenceFinderByLtD_S.count(
-				finderCache, new Object[] {displayDate, status});
-		}
+		return _collectionPersistenceFinderByLtD_S.count(
+			finderCache, new Object[] {displayDate, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_C_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_C_S;
-	private FinderPath _finderPathCountByG_C_S;
-	private FinderPath _finderPathWithPaginationCountByG_C_S;
-
-	/**
-	 * Returns all the cp configuration lists where groupId = &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @return the matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C_S(
-		long groupId, long companyId, int status) {
-
-		return findByG_C_S(
-			groupId, companyId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the cp configuration lists where groupId = &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @return the range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C_S(
-		long groupId, long companyId, int status, int start, int end) {
-
-		return findByG_C_S(groupId, companyId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp configuration lists where groupId = &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C_S(
-		long groupId, long companyId, int status, int start, int end,
-		OrderByComparator<CPConfigurationList> orderByComparator) {
-
-		return findByG_C_S(
-			groupId, companyId, status, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CPConfigurationList, NoSuchCPConfigurationListException>
+			_collectionPersistenceFinderByG_C_S;
 
 	/**
 	 * Returns an ordered range of all the cp configuration lists where groupId = &#63; and companyId = &#63; and status = &#63;.
@@ -1893,111 +936,9 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByG_C_S;
-					finderArgs = new Object[] {groupId, companyId, status};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByG_C_S;
-				finderArgs = new Object[] {
-					groupId, companyId, status, start, end, orderByComparator
-				};
-			}
-
-			List<CPConfigurationList> list = null;
-
-			if (useFinderCache) {
-				list = (List<CPConfigurationList>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CPConfigurationList cpConfigurationList : list) {
-						if ((groupId != cpConfigurationList.getGroupId()) ||
-							(companyId != cpConfigurationList.getCompanyId()) ||
-							(status != cpConfigurationList.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						5 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(5);
-				}
-
-				sb.append(_SQL_SELECT_CPCONFIGURATIONLIST_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_C_S_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_STATUS_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CPConfigurationListModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					list = (List<CPConfigurationList>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_C_S.find(
+			finderCache, new Object[] {new long[] {groupId}, companyId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2055,80 +996,9 @@ public class CPConfigurationListPersistenceImpl
 		long groupId, long companyId, int status,
 		OrderByComparator<CPConfigurationList> orderByComparator) {
 
-		List<CPConfigurationList> list = findByG_C_S(
-			groupId, companyId, status, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the cp configuration lists where groupId = any &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @return the matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C_S(
-		long[] groupIds, long companyId, int status) {
-
-		return findByG_C_S(
-			groupIds, companyId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the cp configuration lists where groupId = any &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @return the range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C_S(
-		long[] groupIds, long companyId, int status, int start, int end) {
-
-		return findByG_C_S(groupIds, companyId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp configuration lists where groupId = any &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of cp configuration lists
-	 * @param end the upper bound of the range of cp configuration lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp configuration lists
-	 */
-	@Override
-	public List<CPConfigurationList> findByG_C_S(
-		long[] groupIds, long companyId, int status, int start, int end,
-		OrderByComparator<CPConfigurationList> orderByComparator) {
-
-		return findByG_C_S(
-			groupIds, companyId, status, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByG_C_S.fetchFirst(
+			finderCache, new Object[] {new long[] {groupId}, companyId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -2153,132 +1023,10 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		if (groupIds.length == 1) {
-			return findByG_C_S(
-				groupIds[0], companyId, status, start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						StringUtil.merge(groupIds), companyId, status
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					StringUtil.merge(groupIds), companyId, status, start, end,
-					orderByComparator
-				};
-			}
-
-			List<CPConfigurationList> list = null;
-
-			if (useFinderCache) {
-				list = (List<CPConfigurationList>)finderCache.getResult(
-					_finderPathWithPaginationFindByG_C_S, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CPConfigurationList cpConfigurationList : list) {
-						if (!ArrayUtil.contains(
-								groupIds, cpConfigurationList.getGroupId()) ||
-							(companyId != cpConfigurationList.getCompanyId()) ||
-							(status != cpConfigurationList.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_CPCONFIGURATIONLIST_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_C_S_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_C_S_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_STATUS_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CPConfigurationListModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					list = (List<CPConfigurationList>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByG_C_S, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_C_S.find(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(groupIds), companyId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2290,13 +1038,9 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public void removeByG_C_S(long groupId, long companyId, int status) {
-		for (CPConfigurationList cpConfigurationList :
-				findByG_C_S(
-					groupId, companyId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, null)) {
-
-			remove(cpConfigurationList);
-		}
+		_collectionPersistenceFinderByG_C_S.remove(
+			finderCache,
+			new Object[] {new long[] {groupId}, companyId, status});
 	}
 
 	/**
@@ -2309,59 +1053,9 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public int countByG_C_S(long groupId, long companyId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			FinderPath finderPath = _finderPathCountByG_C_S;
-
-			Object[] finderArgs = new Object[] {groupId, companyId, status};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(4);
-
-				sb.append(_SQL_COUNT_CPCONFIGURATIONLIST_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_C_S_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_STATUS_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_C_S.count(
+			finderCache,
+			new Object[] {new long[] {groupId}, companyId, status});
 	}
 
 	/**
@@ -2374,98 +1068,14 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public int countByG_C_S(long[] groupIds, long companyId, int status) {
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			Object[] finderArgs = new Object[] {
-				StringUtil.merge(groupIds), companyId, status
-			};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByG_C_S, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_CPCONFIGURATIONLIST_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_C_S_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_C_S_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_STATUS_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByG_C_S, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_C_S.count(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(groupIds), companyId, status});
 	}
 
-	private static final String _FINDER_COLUMN_G_C_S_GROUPID_2 =
-		"cpConfigurationList.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_S_GROUPID_7 =
-		"cpConfigurationList.groupId IN (";
-
-	private static final String _FINDER_COLUMN_G_C_S_COMPANYID_2 =
-		"cpConfigurationList.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_S_STATUS_2 =
-		"cpConfigurationList.status = ?";
-
-	private FinderPath _finderPathWithPaginationFindByG_C_NotS;
-	private FinderPath _finderPathWithPaginationCountByG_C_NotS;
+	private CollectionPersistenceFinder
+		<CPConfigurationList, NoSuchCPConfigurationListException>
+			_collectionPersistenceFinderByG_C_NotS;
 
 	/**
 	 * Returns all the cp configuration lists where groupId = &#63; and companyId = &#63; and status &ne; &#63;.
@@ -2551,101 +1161,9 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			finderPath = _finderPathWithPaginationFindByG_C_NotS;
-			finderArgs = new Object[] {
-				groupId, companyId, status, start, end, orderByComparator
-			};
-
-			List<CPConfigurationList> list = null;
-
-			if (useFinderCache) {
-				list = (List<CPConfigurationList>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CPConfigurationList cpConfigurationList : list) {
-						if ((groupId != cpConfigurationList.getGroupId()) ||
-							(companyId != cpConfigurationList.getCompanyId()) ||
-							(status == cpConfigurationList.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						5 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(5);
-				}
-
-				sb.append(_SQL_SELECT_CPCONFIGURATIONLIST_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_STATUS_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CPConfigurationListModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					list = (List<CPConfigurationList>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_C_NotS.find(
+			finderCache, new Object[] {new long[] {groupId}, companyId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2703,14 +1221,9 @@ public class CPConfigurationListPersistenceImpl
 		long groupId, long companyId, int status,
 		OrderByComparator<CPConfigurationList> orderByComparator) {
 
-		List<CPConfigurationList> list = findByG_C_NotS(
-			groupId, companyId, status, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		return _collectionPersistenceFinderByG_C_NotS.fetchFirst(
+			finderCache, new Object[] {new long[] {groupId}, companyId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -2801,132 +1314,10 @@ public class CPConfigurationListPersistenceImpl
 		OrderByComparator<CPConfigurationList> orderByComparator,
 		boolean useFinderCache) {
 
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		if (groupIds.length == 1) {
-			return findByG_C_NotS(
-				groupIds[0], companyId, status, start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						StringUtil.merge(groupIds), companyId, status
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					StringUtil.merge(groupIds), companyId, status, start, end,
-					orderByComparator
-				};
-			}
-
-			List<CPConfigurationList> list = null;
-
-			if (useFinderCache) {
-				list = (List<CPConfigurationList>)finderCache.getResult(
-					_finderPathWithPaginationFindByG_C_NotS, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CPConfigurationList cpConfigurationList : list) {
-						if (!ArrayUtil.contains(
-								groupIds, cpConfigurationList.getGroupId()) ||
-							(companyId != cpConfigurationList.getCompanyId()) ||
-							(status == cpConfigurationList.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_CPCONFIGURATIONLIST_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_C_NOTS_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_STATUS_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CPConfigurationListModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					list = (List<CPConfigurationList>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByG_C_NotS, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_C_NotS.find(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(groupIds), companyId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2938,13 +1329,9 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public void removeByG_C_NotS(long groupId, long companyId, int status) {
-		for (CPConfigurationList cpConfigurationList :
-				findByG_C_NotS(
-					groupId, companyId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, null)) {
-
-			remove(cpConfigurationList);
-		}
+		_collectionPersistenceFinderByG_C_NotS.remove(
+			finderCache,
+			new Object[] {new long[] {groupId}, companyId, status});
 	}
 
 	/**
@@ -2957,59 +1344,9 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public int countByG_C_NotS(long groupId, long companyId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			FinderPath finderPath = _finderPathWithPaginationCountByG_C_NotS;
-
-			Object[] finderArgs = new Object[] {groupId, companyId, status};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(4);
-
-				sb.append(_SQL_COUNT_CPCONFIGURATIONLIST_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_STATUS_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_C_NotS.count(
+			finderCache,
+			new Object[] {new long[] {groupId}, companyId, status});
 	}
 
 	/**
@@ -3022,99 +1359,14 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Override
 	public int countByG_C_NotS(long[] groupIds, long companyId, int status) {
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			Object[] finderArgs = new Object[] {
-				StringUtil.merge(groupIds), companyId, status
-			};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByG_C_NotS, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_CPCONFIGURATIONLIST_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_C_NOTS_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_STATUS_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByG_C_NotS, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_C_NotS.count(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(groupIds), companyId, status});
 	}
 
-	private static final String _FINDER_COLUMN_G_C_NOTS_GROUPID_2 =
-		"cpConfigurationList.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_NOTS_GROUPID_7 =
-		"cpConfigurationList.groupId IN (";
-
-	private static final String _FINDER_COLUMN_G_C_NOTS_COMPANYID_2 =
-		"cpConfigurationList.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_NOTS_STATUS_2 =
-		"cpConfigurationList.status != ?";
-
-	private FinderPath _finderPathFetchByERC_C;
-	private UniquePersistenceFinder<CPConfigurationList>
-		_uniquePersistenceFinderByERC_C;
+	private UniquePersistenceFinder
+		<CPConfigurationList, NoSuchCPConfigurationListException>
+			_uniquePersistenceFinderByERC_C;
 
 	/**
 	 * Returns the cp configuration list where externalReferenceCode = &#63; and companyId = &#63; or throws a <code>NoSuchCPConfigurationListException</code> if it could not be found.
@@ -3129,37 +1381,8 @@ public class CPConfigurationListPersistenceImpl
 			String externalReferenceCode, long companyId)
 		throws NoSuchCPConfigurationListException {
 
-		CPConfigurationList cpConfigurationList = fetchByERC_C(
-			externalReferenceCode, companyId);
-
-		if (cpConfigurationList == null) {
-			String message =
-				_uniquePersistenceFinderByERC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, companyId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPConfigurationListException(message);
-		}
-
-		return cpConfigurationList;
-	}
-
-	/**
-	 * Returns the cp configuration list where externalReferenceCode = &#63; and companyId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param companyId the company ID
-	 * @return the matching cp configuration list, or <code>null</code> if a matching cp configuration list could not be found
-	 */
-	@Override
-	public CPConfigurationList fetchByERC_C(
-		String externalReferenceCode, long companyId) {
-
-		return fetchByERC_C(externalReferenceCode, companyId, true);
+		return _uniquePersistenceFinderByERC_C.find(
+			finderCache, new Object[] {externalReferenceCode, companyId});
 	}
 
 	/**
@@ -3174,14 +1397,9 @@ public class CPConfigurationListPersistenceImpl
 	public CPConfigurationList fetchByERC_C(
 		String externalReferenceCode, long companyId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationList.class)) {
-
-			return _uniquePersistenceFinderByERC_C.fetch(
-				finderCache, new Object[] {externalReferenceCode, companyId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByERC_C.fetch(
+			finderCache, new Object[] {externalReferenceCode, companyId},
+			useFinderCache);
 	}
 
 	/**
@@ -3597,299 +1815,308 @@ public class CPConfigurationListPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
 			_SQL_COUNT_CPCONFIGURATIONLIST_WHERE,
 			CPConfigurationListModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
-				"cpConfigurationList.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, CPConfigurationList::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			CPConfigurationList::getUuid, CPConfigurationList::getGroupId);
+				"cpConfigurationList.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPConfigurationList::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(CPConfigurationList::getUuid),
+				CPConfigurationList::getGroupId),
+			_SQL_SELECT_CPCONFIGURATIONLIST_WHERE, "",
 			new FinderColumn<>(
-				"cpConfigurationList.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, CPConfigurationList::getUuid),
+				"cpConfigurationList.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPConfigurationList::getUuid),
 			new FinderColumn<>(
 				"cpConfigurationList.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, CPConfigurationList::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
-				_SQL_COUNT_CPCONFIGURATIONLIST_WHERE,
-				CPConfigurationListModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
-				new FinderColumn<>(
-					"cpConfigurationList.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, CPConfigurationList::getUuid),
-				new FinderColumn<>(
-					"cpConfigurationList.", "companyId", FinderColumn.Type.LONG,
-					"=", true, true, CPConfigurationList::getCompanyId));
-
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
-		_collectionPersistenceFinderByCompanyId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
 				_SQL_COUNT_CPCONFIGURATIONLIST_WHERE,
 				CPConfigurationListModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"cpConfigurationList.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					CPConfigurationList::getUuid),
 				new FinderColumn<>(
 					"cpConfigurationList.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, CPConfigurationList::getCompanyId));
 
-		_finderPathWithPaginationFindByParentCPConfigurationListId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-				"findByParentCPConfigurationListId",
-				new String[] {
-					Long.class.getName(), Integer.class.getName(),
-					Integer.class.getName(), OrderByComparator.class.getName()
-				},
-				new String[] {"parentCPConfigurationListId"}, true);
-
-		_finderPathWithoutPaginationFindByParentCPConfigurationListId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByParentCPConfigurationListId",
-				new String[] {Long.class.getName()},
-				new String[] {"parentCPConfigurationListId"}, true);
-
-		_finderPathCountByParentCPConfigurationListId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByParentCPConfigurationListId",
-			new String[] {Long.class.getName()},
-			new String[] {"parentCPConfigurationListId"}, false);
+		_collectionPersistenceFinderByCompanyId =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
+				_SQL_COUNT_CPCONFIGURATIONLIST_WHERE,
+				CPConfigurationListModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"cpConfigurationList.", "companyId", FinderColumn.Type.LONG,
+					"=", true, true, CPConfigurationList::getCompanyId));
 
 		_collectionPersistenceFinderByParentCPConfigurationListId =
 			new CollectionPersistenceFinder<>(
 				this,
-				_finderPathWithPaginationFindByParentCPConfigurationListId,
-				_finderPathWithoutPaginationFindByParentCPConfigurationListId,
-				_finderPathCountByParentCPConfigurationListId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByParentCPConfigurationListId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"parentCPConfigurationListId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByParentCPConfigurationListId",
+					new String[] {Long.class.getName()},
+					new String[] {"parentCPConfigurationListId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByParentCPConfigurationListId",
+					new String[] {Long.class.getName()},
+					new String[] {"parentCPConfigurationListId"}, false),
 				_SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
 				_SQL_COUNT_CPCONFIGURATIONLIST_WHERE,
 				CPConfigurationListModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpConfigurationList.", "parentCPConfigurationListId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CPConfigurationList::getParentCPConfigurationListId));
 
-		_finderPathWithPaginationFindByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "companyId"}, true);
-
-		_finderPathCountByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "companyId"}, false);
-
-		_finderPathWithPaginationCountByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "companyId"}, false);
-
-		_finderPathWithPaginationFindByG_M = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_M",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "master"}, true);
-
-		_finderPathWithoutPaginationFindByG_M = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_M",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"groupId", "master"}, true);
-
-		_finderPathCountByG_M = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_M",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"groupId", "master"}, false);
-
-		_collectionPersistenceFinderByG_M = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_M,
-			_finderPathWithoutPaginationFindByG_M, _finderPathCountByG_M,
+		_collectionPersistenceFinderByG_C = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "companyId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "companyId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "companyId"}, false),
 			_SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
 			_SQL_COUNT_CPCONFIGURATIONLIST_WHERE,
 			CPConfigurationListModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
+			new ArrayableFinderColumn<>(
+				"cpConfigurationList.", "groupId", FinderColumn.Type.LONG, "=",
+				false, true, true, CPConfigurationList::getGroupId),
+			new FinderColumn<>(
+				"cpConfigurationList.", "companyId", FinderColumn.Type.LONG,
+				"=", true, true, CPConfigurationList::getCompanyId));
+
+		_collectionPersistenceFinderByG_M = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_M",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "master"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_M",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"groupId", "master"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_M",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"groupId", "master"}, false),
+			_SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
+			_SQL_COUNT_CPCONFIGURATIONLIST_WHERE,
+			CPConfigurationListModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"cpConfigurationList.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, CPConfigurationList::getGroupId),
+				true, true, CPConfigurationList::getGroupId),
 			new FinderColumn<>(
 				"cpConfigurationList.", "master", FinderColumn.Type.BOOLEAN,
 				"=", true, true, CPConfigurationList::isMaster));
 
-		_finderPathWithPaginationFindByLtD_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtD_S",
-			new String[] {
-				Date.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"displayDate", "status"}, true);
-
-		_finderPathWithPaginationCountByLtD_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtD_S",
-			new String[] {Date.class.getName(), Integer.class.getName()},
-			new String[] {"displayDate", "status"}, false);
-
 		_collectionPersistenceFinderByLtD_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByLtD_S, null,
-			_finderPathWithPaginationCountByLtD_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtD_S",
+				new String[] {
+					Date.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"displayDate", "status"}, true),
+			null,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtD_S",
+				new String[] {Date.class.getName(), Integer.class.getName()},
+				new String[] {"displayDate", "status"}, false),
 			_SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
 			_SQL_COUNT_CPCONFIGURATIONLIST_WHERE,
 			CPConfigurationListModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"cpConfigurationList.", "displayDate", FinderColumn.Type.DATE,
-				"<", true, false, CPConfigurationList::getDisplayDate),
+				"<", true, true, CPConfigurationList::getDisplayDate),
 			new FinderColumn<>(
 				"cpConfigurationList.", "status", FinderColumn.Type.INTEGER,
 				"=", true, true, CPConfigurationList::getStatus));
 
-		_finderPathWithPaginationFindByG_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, true);
+		_collectionPersistenceFinderByG_C_S = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "companyId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {"groupId", "companyId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {"groupId", "companyId", "status"}, false),
+			_SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
+			_SQL_COUNT_CPCONFIGURATIONLIST_WHERE,
+			CPConfigurationListModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
+			new ArrayableFinderColumn<>(
+				"cpConfigurationList.", "groupId", FinderColumn.Type.LONG, "=",
+				false, true, true, CPConfigurationList::getGroupId),
+			new FinderColumn<>(
+				"cpConfigurationList.", "companyId", FinderColumn.Type.LONG,
+				"=", true, true, CPConfigurationList::getCompanyId),
+			new FinderColumn<>(
+				"cpConfigurationList.", "status", FinderColumn.Type.INTEGER,
+				"=", true, true, CPConfigurationList::getStatus));
 
-		_finderPathWithoutPaginationFindByG_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, true);
-
-		_finderPathCountByG_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, false);
-
-		_finderPathWithPaginationCountByG_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, false);
-
-		_finderPathWithPaginationFindByG_C_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_NotS",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, true);
-
-		_finderPathWithPaginationCountByG_C_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C_NotS",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, false);
-
-		_finderPathFetchByERC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "companyId"}, false,
-			CPConfigurationList::getExternalReferenceCode,
-			CPConfigurationList::getCompanyId);
+		_collectionPersistenceFinderByG_C_NotS =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_NotS",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "companyId", "status"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C_NotS",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "companyId", "status"}, false),
+				_SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
+				_SQL_COUNT_CPCONFIGURATIONLIST_WHERE,
+				CPConfigurationListModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX, "",
+				new ArrayableFinderColumn<>(
+					"cpConfigurationList.", "groupId", FinderColumn.Type.LONG,
+					"=", false, true, true, CPConfigurationList::getGroupId),
+				new FinderColumn<>(
+					"cpConfigurationList.", "companyId", FinderColumn.Type.LONG,
+					"=", true, true, CPConfigurationList::getCompanyId),
+				new FinderColumn<>(
+					"cpConfigurationList.", "status", FinderColumn.Type.INTEGER,
+					"!=", true, true, CPConfigurationList::getStatus));
 
 		_uniquePersistenceFinderByERC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_C,
-			_SQL_SELECT_CPCONFIGURATIONLIST_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "companyId"}, 0, 1,
+				false,
+				convertNullFunction(
+					CPConfigurationList::getExternalReferenceCode),
+				CPConfigurationList::getCompanyId),
+			_SQL_SELECT_CPCONFIGURATIONLIST_WHERE, "",
 			new FinderColumn<>(
 				"cpConfigurationList.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				CPConfigurationList::getExternalReferenceCode),
 			new FinderColumn<>(
 				"cpConfigurationList.", "companyId", FinderColumn.Type.LONG,
@@ -3967,4 +2194,4 @@ public class CPConfigurationListPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:342174131
+// LIFERAY-SERVICE-BUILDER-HASH:700019901

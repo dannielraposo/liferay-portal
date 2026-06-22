@@ -1,5 +1,3 @@
-@import 'cadmin-variables';
-
 @keyframes inlineConfirmShow {
 	to {
 		opacity: 1;
@@ -13,7 +11,7 @@ html#{$cadmin-selector} {
 			align-items: center;
 			animation: inlineConfirmShow ease 0.3s;
 			animation-fill-mode: forwards;
-			background: fade_out($cadmin-white, 0.1);
+			background: unquote('hsl(from #{$cadmin-white} h s l / 0.9)');
 			bottom: 0;
 			display: flex;
 			flex-direction: column;

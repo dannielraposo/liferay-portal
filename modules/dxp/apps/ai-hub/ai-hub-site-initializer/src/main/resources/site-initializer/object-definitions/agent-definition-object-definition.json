@@ -4,10 +4,11 @@
 	"className": "com.liferay.object.model.ObjectDefinition#P8M2",
 	"enableFormContainer": false,
 	"enableIndexSearch": true,
+	"enableObjectEntryHistory": true,
 	"externalReferenceCode": "L_AI_HUB_AGENT_DEFINITION",
 	"friendlyURLSeparator": "l",
 	"label": {
-		"en_US": "Agent Definition"
+		"en_US": "AI Hub Agent Definition"
 	},
 	"modifiable": true,
 	"name": "AIHubAgentDefinition",
@@ -36,7 +37,7 @@
 				"en_US": "Description"
 			},
 			"name": "description",
-			"readOnly": "false",
+			"readOnly": false,
 			"readOnlyConditionExpression": "",
 			"system": true,
 			"type": "Clob"
@@ -52,7 +53,7 @@
 				"en_US": "Input Variables"
 			},
 			"name": "inputVariables",
-			"readOnly": "false",
+			"readOnly": false,
 			"required": true,
 			"system": true,
 			"type": "String"
@@ -68,10 +69,23 @@
 				"en_US": "Output Variable"
 			},
 			"name": "outputVariable",
-			"readOnly": "false",
+			"readOnly": false,
 			"required": true,
 			"system": true,
 			"type": "String"
+		},
+		{
+			"DBType": "Boolean",
+			"businessType": "Boolean",
+			"defaultValue": false,
+			"externalReferenceCode": "SYSTEM",
+			"indexed": true,
+			"label": {
+				"en_US": "System"
+			},
+			"name": "system",
+			"system": true,
+			"type": "Boolean"
 		},
 		{
 			"DBType": "String",
@@ -85,7 +99,7 @@
 			},
 			"localized": true,
 			"name": "title",
-			"readOnly": "false",
+			"readOnly": false,
 			"system": true,
 			"type": "String"
 		},
@@ -100,7 +114,7 @@
 				"en_US": "Workflow Definition Name"
 			},
 			"name": "workflowDefinitionName",
-			"readOnly": "false",
+			"readOnly": false,
 			"required": true,
 			"system": true,
 			"type": "String"
@@ -113,7 +127,7 @@
 			"indexed": true,
 			"indexedLanguageId": "en_US",
 			"label": {
-				"en_US": "Account to Agent Definitions"
+				"en_US": "Account to AI Hub Agent Definitions"
 			},
 			"name": "r_accountToAIHubAgentDefinitions_accountEntryId",
 			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
@@ -128,7 +142,7 @@
 				}
 			],
 			"objectRelationshipExternalReferenceCode": "L_ACCOUNT_TO_L_AI_HUB_AGENT_DEFINITIONS",
-			"readOnly": "false",
+			"readOnly": false,
 			"relationshipType": "oneToMany",
 			"required": true,
 			"system": true,
@@ -138,7 +152,7 @@
 	"objectFolderExternalReferenceCode": "default",
 	"panelCategoryKey": "control_panel.object",
 	"pluralLabel": {
-		"en_US": "Agent Definitions"
+		"en_US": "AI Hub Agent Definitions"
 	},
 	"portlet": true,
 	"scope": "company",

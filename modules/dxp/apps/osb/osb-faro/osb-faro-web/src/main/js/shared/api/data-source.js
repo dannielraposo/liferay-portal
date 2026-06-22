@@ -29,7 +29,7 @@ export function search({
 	delta,
 	groupId,
 	orderIOMap = createOrderIOMap(NAME),
-	page,
+	page = 1,
 	query = '',
 	...otherParams
 }) {
@@ -368,20 +368,6 @@ export function updateSalesforce({
 		},
 		method: 'PATCH',
 		path: `contacts/${groupId}/data_source/${id}/salesforce`
-	});
-}
-
-export function fetchAccountsCount({groupId, id}) {
-	return sendRequest({
-		method: 'GET',
-		path: `contacts/${groupId}/salesforce/accounts_count?dataSourceId=${id}`
-	});
-}
-
-export function fetchUserCount({groupId, id}) {
-	return sendRequest({
-		method: 'GET',
-		path: `contacts/${groupId}/salesforce/users_count?dataSourceId=${id}`
 	});
 }
 

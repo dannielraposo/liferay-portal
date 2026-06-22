@@ -221,15 +221,13 @@ export class ChangeTrackingPage {
 			).toBeVisible();
 		}
 
-		const checkBox = this.page.getByRole('checkbox', {
-			name: 'Enable Publications',
-		});
+		const checkBox = this.page.getByTitle('Enable Publications');
 
 		if (check) {
 			await checkBox.setChecked(true);
 
 			await expect(
-				this.page.getByText('Allow Unapproved Changes')
+				this.page.getByText('Allow Publishing Unapproved Changes')
 			).toBeVisible();
 
 			await this.goto();
@@ -238,7 +236,7 @@ export class ChangeTrackingPage {
 			await checkBox.setChecked(false);
 
 			await expect(
-				this.page.getByText('Allow Unapproved Changes')
+				this.page.getByText('Allow Publishing Unapproved Changes')
 			).not.toBeVisible();
 		}
 	}
@@ -289,12 +287,7 @@ export class ChangeTrackingPage {
 	}
 
 	async goToPublicationsViaApplicationMenu() {
-		await this.globalMenuPage.goToApplications();
-
-		await this.page
-			.locator('.nav-link[href]')
-			.getByText('Publications')
-			.click();
+		await this.globalMenuPage.goToApplications('Publications');
 
 		const enablePublications = this.page.getByText('Enable Publications');
 
@@ -456,7 +449,19 @@ export class ChangeTrackingPage {
 
 		await renderViewDropdown.click();
 
-		await this.page.getByRole('menuitem', {name}).click();
+		const menuItem = this.page.getByRole('menuitem', {name});
+
+		const isActive = await menuItem.evaluate((element) =>
+			element.classList.contains('active')
+		);
+
+		if (isActive) {
+			await renderViewDropdown.click();
+
+			return;
+		}
+
+		await menuItem.click();
 	}
 
 	async selectTab(tabLabel: string) {

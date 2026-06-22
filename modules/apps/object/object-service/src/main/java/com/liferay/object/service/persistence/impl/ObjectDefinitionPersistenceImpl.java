@@ -19,10 +19,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -33,11 +29,11 @@ import com.liferay.portal.kernel.sanitizer.SanitizerException;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.service.persistence.impl.ArrayableFinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -46,7 +42,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
@@ -98,66 +93,15 @@ public class ObjectDefinitionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the object definitions where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the object definitions where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -191,16 +135,8 @@ public class ObjectDefinitionPersistenceImpl
 			String uuid, OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -219,41 +155,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByUuid(String uuid) {
-		return filterFindByUuid(
-			uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByUuid(
-		String uuid, int start, int end) {
-
-		return filterFindByUuid(uuid, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -267,110 +172,8 @@ public class ObjectDefinitionPersistenceImpl
 		String uuid, int start, int end,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return findByUuid(uuid, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByUuid(
-					uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		uuid = Objects.toString(uuid, "");
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		boolean bindUuid = false;
-
-		if (uuid.isEmpty()) {
-			sb.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
-		}
-		else {
-			bindUuid = true;
-
-			sb.append(_FINDER_COLUMN_UUID_UUID_2_SQL);
-		}
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			if (bindUuid) {
-				queryPos.add(uuid);
-			}
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByUuid.filterFind(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator);
 	}
 
 	/**
@@ -404,140 +207,19 @@ public class ObjectDefinitionPersistenceImpl
 	 */
 	@Override
 	public int filterCountByUuid(String uuid) {
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return countByUuid(uuid);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findByUuid(uuid);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		uuid = Objects.toString(uuid, "");
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		boolean bindUuid = false;
-
-		if (uuid.isEmpty()) {
-			sb.append(_FINDER_COLUMN_UUID_UUID_3_SQL);
-		}
-		else {
-			bindUuid = true;
-
-			sb.append(_FINDER_COLUMN_UUID_UUID_2_SQL);
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			if (bindUuid) {
-				queryPos.add(uuid);
-			}
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByUuid.filterCount(
+			finderCache, new Object[] {uuid});
 	}
 
-	private static final String _FINDER_COLUMN_UUID_UUID_2_SQL =
-		"objectDefinition.uuid_ = ?";
-
-	private static final String _FINDER_COLUMN_UUID_UUID_3_SQL =
-		"(objectDefinition.uuid_ IS NULL OR objectDefinition.uuid_ = '')";
-
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the object definitions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the object definitions where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -574,16 +256,8 @@ public class ObjectDefinitionPersistenceImpl
 			OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -604,45 +278,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByUuid_C(
-		String uuid, long companyId) {
-
-		return filterFindByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return filterFindByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -657,114 +296,9 @@ public class ObjectDefinitionPersistenceImpl
 		String uuid, long companyId, int start, int end,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByUuid_C(uuid, companyId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByUuid_C(
-					uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		uuid = Objects.toString(uuid, "");
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		boolean bindUuid = false;
-
-		if (uuid.isEmpty()) {
-			sb.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
-		}
-		else {
-			bindUuid = true;
-
-			sb.append(_FINDER_COLUMN_UUID_C_UUID_2_SQL);
-		}
-
-		sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			if (bindUuid) {
-				queryPos.add(uuid);
-			}
-
-			queryPos.add(companyId);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByUuid_C.filterFind(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -801,144 +335,19 @@ public class ObjectDefinitionPersistenceImpl
 	 */
 	@Override
 	public int filterCountByUuid_C(String uuid, long companyId) {
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByUuid_C(uuid, companyId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findByUuid_C(
-				uuid, companyId);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		uuid = Objects.toString(uuid, "");
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		boolean bindUuid = false;
-
-		if (uuid.isEmpty()) {
-			sb.append(_FINDER_COLUMN_UUID_C_UUID_3_SQL);
-		}
-		else {
-			bindUuid = true;
-
-			sb.append(_FINDER_COLUMN_UUID_C_UUID_2_SQL);
-		}
-
-		sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			if (bindUuid) {
-				queryPos.add(uuid);
-			}
-
-			queryPos.add(companyId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByUuid_C.filterCount(
+			finderCache, new Object[] {uuid, companyId}, companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_UUID_C_UUID_2_SQL =
-		"objectDefinition.uuid_ = ? AND ";
-
-	private static final String _FINDER_COLUMN_UUID_C_UUID_3_SQL =
-		"(objectDefinition.uuid_ IS NULL OR objectDefinition.uuid_ = '') AND ";
-
-	private static final String _FINDER_COLUMN_UUID_C_COMPANYID_2 =
-		"objectDefinition.companyId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderByCompanyId;
-
-	/**
-	 * Returns all the object definitions where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByCompanyId;
 
 	/**
 	 * Returns an ordered range of all the object definitions where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -973,16 +382,8 @@ public class ObjectDefinitionPersistenceImpl
 			OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -1001,41 +402,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByCompanyId(long companyId) {
-		return filterFindByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByCompanyId(
-		long companyId, int start, int end) {
-
-		return filterFindByCompanyId(companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1049,97 +419,9 @@ public class ObjectDefinitionPersistenceImpl
 		long companyId, int start, int end,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByCompanyId(companyId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByCompanyId(
-					companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByCompanyId.filterFind(
+			finderCache, new Object[] {companyId}, start, end,
+			orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -1173,122 +455,19 @@ public class ObjectDefinitionPersistenceImpl
 	 */
 	@Override
 	public int filterCountByCompanyId(long companyId) {
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByCompanyId(companyId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findByCompanyId(
-				companyId);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByCompanyId.filterCount(
+			finderCache, new Object[] {companyId}, companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_COMPANYID_COMPANYID_2 =
-		"objectDefinition.companyId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByObjectFolderId;
-	private FinderPath _finderPathWithoutPaginationFindByObjectFolderId;
-	private FinderPath _finderPathCountByObjectFolderId;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderByObjectFolderId;
-
-	/**
-	 * Returns all the object definitions where objectFolderId = &#63;.
-	 *
-	 * @param objectFolderId the object folder ID
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByObjectFolderId(long objectFolderId) {
-		return findByObjectFolderId(
-			objectFolderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where objectFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectFolderId the object folder ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByObjectFolderId(
-		long objectFolderId, int start, int end) {
-
-		return findByObjectFolderId(objectFolderId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByObjectFolderId;
 
 	/**
 	 * Returns an ordered range of all the object definitions where objectFolderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectFolderId the object folder ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByObjectFolderId(
-		long objectFolderId, int start, int end,
-		OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByObjectFolderId(
-			objectFolderId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where objectFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectFolderId the object folder ID
@@ -1323,16 +502,8 @@ public class ObjectDefinitionPersistenceImpl
 			OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByObjectFolderId_First(
-			objectFolderId, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderByObjectFolderId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {objectFolderId}));
+		return _collectionPersistenceFinderByObjectFolderId.findFirst(
+			finderCache, new Object[] {objectFolderId}, orderByComparator);
 	}
 
 	/**
@@ -1352,43 +523,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where objectFolderId = &#63;.
-	 *
-	 * @param objectFolderId the object folder ID
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByObjectFolderId(
-		long objectFolderId) {
-
-		return filterFindByObjectFolderId(
-			objectFolderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where objectFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectFolderId the object folder ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByObjectFolderId(
-		long objectFolderId, int start, int end) {
-
-		return filterFindByObjectFolderId(objectFolderId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where objectFolderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectFolderId the object folder ID
@@ -1402,98 +540,9 @@ public class ObjectDefinitionPersistenceImpl
 		long objectFolderId, int start, int end,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return findByObjectFolderId(
-				objectFolderId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByObjectFolderId(
-					objectFolderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_OBJECTFOLDERID_OBJECTFOLDERID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(objectFolderId);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByObjectFolderId.filterFind(
+			finderCache, new Object[] {objectFolderId}, start, end,
+			orderByComparator);
 	}
 
 	/**
@@ -1527,125 +576,19 @@ public class ObjectDefinitionPersistenceImpl
 	 */
 	@Override
 	public int filterCountByObjectFolderId(long objectFolderId) {
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return countByObjectFolderId(objectFolderId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findByObjectFolderId(
-				objectFolderId);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(_FINDER_COLUMN_OBJECTFOLDERID_OBJECTFOLDERID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(objectFolderId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByObjectFolderId.filterCount(
+			finderCache, new Object[] {objectFolderId});
 	}
 
-	private static final String _FINDER_COLUMN_OBJECTFOLDERID_OBJECTFOLDERID_2 =
-		"objectDefinition.objectFolderId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByAccountEntryRestricted;
-	private FinderPath _finderPathWithoutPaginationFindByAccountEntryRestricted;
-	private FinderPath _finderPathCountByAccountEntryRestricted;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderByAccountEntryRestricted;
-
-	/**
-	 * Returns all the object definitions where accountEntryRestricted = &#63;.
-	 *
-	 * @param accountEntryRestricted the account entry restricted
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByAccountEntryRestricted(
-		boolean accountEntryRestricted) {
-
-		return findByAccountEntryRestricted(
-			accountEntryRestricted, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where accountEntryRestricted = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param accountEntryRestricted the account entry restricted
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByAccountEntryRestricted(
-		boolean accountEntryRestricted, int start, int end) {
-
-		return findByAccountEntryRestricted(
-			accountEntryRestricted, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByAccountEntryRestricted;
 
 	/**
 	 * Returns an ordered range of all the object definitions where accountEntryRestricted = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param accountEntryRestricted the account entry restricted
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByAccountEntryRestricted(
-		boolean accountEntryRestricted, int start, int end,
-		OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByAccountEntryRestricted(
-			accountEntryRestricted, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where accountEntryRestricted = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param accountEntryRestricted the account entry restricted
@@ -1680,18 +623,9 @@ public class ObjectDefinitionPersistenceImpl
 			OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByAccountEntryRestricted_First(
-			accountEntryRestricted, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderByAccountEntryRestricted.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {accountEntryRestricted}));
+		return _collectionPersistenceFinderByAccountEntryRestricted.findFirst(
+			finderCache, new Object[] {accountEntryRestricted},
+			orderByComparator);
 	}
 
 	/**
@@ -1712,44 +646,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where accountEntryRestricted = &#63;.
-	 *
-	 * @param accountEntryRestricted the account entry restricted
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByAccountEntryRestricted(
-		boolean accountEntryRestricted) {
-
-		return filterFindByAccountEntryRestricted(
-			accountEntryRestricted, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where accountEntryRestricted = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param accountEntryRestricted the account entry restricted
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByAccountEntryRestricted(
-		boolean accountEntryRestricted, int start, int end) {
-
-		return filterFindByAccountEntryRestricted(
-			accountEntryRestricted, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where accountEntryRestricted = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param accountEntryRestricted the account entry restricted
@@ -1763,99 +663,9 @@ public class ObjectDefinitionPersistenceImpl
 		boolean accountEntryRestricted, int start, int end,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return findByAccountEntryRestricted(
-				accountEntryRestricted, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByAccountEntryRestricted(
-					accountEntryRestricted, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(
-			_FINDER_COLUMN_ACCOUNTENTRYRESTRICTED_ACCOUNTENTRYRESTRICTED_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(accountEntryRestricted);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByAccountEntryRestricted.filterFind(
+			finderCache, new Object[] {accountEntryRestricted}, start, end,
+			orderByComparator);
 	}
 
 	/**
@@ -1891,63 +701,13 @@ public class ObjectDefinitionPersistenceImpl
 	public int filterCountByAccountEntryRestricted(
 		boolean accountEntryRestricted) {
 
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return countByAccountEntryRestricted(accountEntryRestricted);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions =
-				findByAccountEntryRestricted(accountEntryRestricted);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(
-			_FINDER_COLUMN_ACCOUNTENTRYRESTRICTED_ACCOUNTENTRYRESTRICTED_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(accountEntryRestricted);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByAccountEntryRestricted.filterCount(
+			finderCache, new Object[] {accountEntryRestricted});
 	}
 
-	private static final String
-		_FINDER_COLUMN_ACCOUNTENTRYRESTRICTED_ACCOUNTENTRYRESTRICTED_2 =
-			"objectDefinition.accountEntryRestricted = ?";
-
-	private FinderPath _finderPathFetchByClassName;
-	private UniquePersistenceFinder<ObjectDefinition>
-		_uniquePersistenceFinderByClassName;
+	private UniquePersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_uniquePersistenceFinderByClassName;
 
 	/**
 	 * Returns the object definition where className = &#63; or throws a <code>NoSuchObjectDefinitionException</code> if it could not be found.
@@ -1960,32 +720,8 @@ public class ObjectDefinitionPersistenceImpl
 	public ObjectDefinition findByClassName(String className)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByClassName(className);
-
-		if (objectDefinition == null) {
-			String message =
-				_uniquePersistenceFinderByClassName.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {className});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectDefinitionException(message);
-		}
-
-		return objectDefinition;
-	}
-
-	/**
-	 * Returns the object definition where className = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param className the class name
-	 * @return the matching object definition, or <code>null</code> if a matching object definition could not be found
-	 */
-	@Override
-	public ObjectDefinition fetchByClassName(String className) {
-		return fetchByClassName(className, true);
+		return _uniquePersistenceFinderByClassName.find(
+			finderCache, new Object[] {className});
 	}
 
 	/**
@@ -2030,68 +766,15 @@ public class ObjectDefinitionPersistenceImpl
 			finderCache, new Object[] {className});
 	}
 
-	private FinderPath _finderPathWithPaginationFindBySystem;
-	private FinderPath _finderPathWithoutPaginationFindBySystem;
-	private FinderPath _finderPathCountBySystem;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderBySystem;
-
-	/**
-	 * Returns all the object definitions where system = &#63;.
-	 *
-	 * @param system the system
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findBySystem(boolean system) {
-		return findBySystem(system, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where system = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param system the system
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findBySystem(
-		boolean system, int start, int end) {
-
-		return findBySystem(system, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderBySystem;
 
 	/**
 	 * Returns an ordered range of all the object definitions where system = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param system the system
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findBySystem(
-		boolean system, int start, int end,
-		OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findBySystem(system, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where system = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param system the system
@@ -2126,16 +809,8 @@ public class ObjectDefinitionPersistenceImpl
 			OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchBySystem_First(
-			system, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderBySystem.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {system}));
+		return _collectionPersistenceFinderBySystem.findFirst(
+			finderCache, new Object[] {system}, orderByComparator);
 	}
 
 	/**
@@ -2154,41 +829,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where system = &#63;.
-	 *
-	 * @param system the system
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindBySystem(boolean system) {
-		return filterFindBySystem(
-			system, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where system = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param system the system
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindBySystem(
-		boolean system, int start, int end) {
-
-		return filterFindBySystem(system, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where system = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param system the system
@@ -2202,97 +846,8 @@ public class ObjectDefinitionPersistenceImpl
 		boolean system, int start, int end,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return findBySystem(system, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findBySystem(
-					system, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_SYSTEM_SYSTEM_2_SQL);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(system);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderBySystem.filterFind(
+			finderCache, new Object[] {system}, start, end, orderByComparator);
 	}
 
 	/**
@@ -2326,124 +881,19 @@ public class ObjectDefinitionPersistenceImpl
 	 */
 	@Override
 	public int filterCountBySystem(boolean system) {
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return countBySystem(system);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findBySystem(system);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(_FINDER_COLUMN_SYSTEM_SYSTEM_2_SQL);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(system);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderBySystem.filterCount(
+			finderCache, new Object[] {system});
 	}
 
-	private static final String _FINDER_COLUMN_SYSTEM_SYSTEM_2_SQL =
-		"objectDefinition.system_ = ?";
-
-	private FinderPath _finderPathWithPaginationFindByC_U;
-	private FinderPath _finderPathWithoutPaginationFindByC_U;
-	private FinderPath _finderPathCountByC_U;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderByC_U;
-
-	/**
-	 * Returns all the object definitions where companyId = &#63; and userId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_U(long companyId, long userId) {
-		return findByC_U(
-			companyId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where companyId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_U(
-		long companyId, long userId, int start, int end) {
-
-		return findByC_U(companyId, userId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByC_U;
 
 	/**
 	 * Returns an ordered range of all the object definitions where companyId = &#63; and userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_U(
-		long companyId, long userId, int start, int end,
-		OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByC_U(
-			companyId, userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where companyId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -2480,16 +930,8 @@ public class ObjectDefinitionPersistenceImpl
 			OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByC_U_First(
-			companyId, userId, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderByC_U.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, userId}));
+		return _collectionPersistenceFinderByC_U.findFirst(
+			finderCache, new Object[] {companyId, userId}, orderByComparator);
 	}
 
 	/**
@@ -2510,43 +952,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where companyId = &#63; and userId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_U(long companyId, long userId) {
-		return filterFindByC_U(
-			companyId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where companyId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_U(
-		long companyId, long userId, int start, int end) {
-
-		return filterFindByC_U(companyId, userId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where companyId = &#63; and userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -2561,101 +970,9 @@ public class ObjectDefinitionPersistenceImpl
 		long companyId, long userId, int start, int end,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByC_U(companyId, userId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByC_U(
-					companyId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_C_U_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_U_USERID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(userId);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_U.filterFind(
+			finderCache, new Object[] {companyId, userId}, start, end,
+			orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -2692,68 +1009,13 @@ public class ObjectDefinitionPersistenceImpl
 	 */
 	@Override
 	public int filterCountByC_U(long companyId, long userId) {
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByC_U(companyId, userId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findByC_U(
-				companyId, userId);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(_FINDER_COLUMN_C_U_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_U_USERID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(userId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_U.filterCount(
+			finderCache, new Object[] {companyId, userId}, companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_C_U_COMPANYID_2 =
-		"objectDefinition.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_U_USERID_2 =
-		"objectDefinition.userId = ?";
-
-	private FinderPath _finderPathFetchByC_C;
-	private UniquePersistenceFinder<ObjectDefinition>
-		_uniquePersistenceFinderByC_C;
+	private UniquePersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_uniquePersistenceFinderByC_C;
 
 	/**
 	 * Returns the object definition where companyId = &#63; and className = &#63; or throws a <code>NoSuchObjectDefinitionException</code> if it could not be found.
@@ -2767,34 +1029,8 @@ public class ObjectDefinitionPersistenceImpl
 	public ObjectDefinition findByC_C(long companyId, String className)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByC_C(companyId, className);
-
-		if (objectDefinition == null) {
-			String message =
-				_uniquePersistenceFinderByC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {companyId, className});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectDefinitionException(message);
-		}
-
-		return objectDefinition;
-	}
-
-	/**
-	 * Returns the object definition where companyId = &#63; and className = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param companyId the company ID
-	 * @param className the class name
-	 * @return the matching object definition, or <code>null</code> if a matching object definition could not be found
-	 */
-	@Override
-	public ObjectDefinition fetchByC_C(long companyId, String className) {
-		return fetchByC_C(companyId, className, true);
+		return _uniquePersistenceFinderByC_C.find(
+			finderCache, new Object[] {companyId, className});
 	}
 
 	/**
@@ -2842,9 +1078,9 @@ public class ObjectDefinitionPersistenceImpl
 			finderCache, new Object[] {companyId, className});
 	}
 
-	private FinderPath _finderPathFetchByC_N;
-	private UniquePersistenceFinder<ObjectDefinition>
-		_uniquePersistenceFinderByC_N;
+	private UniquePersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_uniquePersistenceFinderByC_N;
 
 	/**
 	 * Returns the object definition where companyId = &#63; and name = &#63; or throws a <code>NoSuchObjectDefinitionException</code> if it could not be found.
@@ -2858,33 +1094,8 @@ public class ObjectDefinitionPersistenceImpl
 	public ObjectDefinition findByC_N(long companyId, String name)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByC_N(companyId, name);
-
-		if (objectDefinition == null) {
-			String message =
-				_uniquePersistenceFinderByC_N.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectDefinitionException(message);
-		}
-
-		return objectDefinition;
-	}
-
-	/**
-	 * Returns the object definition where companyId = &#63; and name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param companyId the company ID
-	 * @param name the name
-	 * @return the matching object definition, or <code>null</code> if a matching object definition could not be found
-	 */
-	@Override
-	public ObjectDefinition fetchByC_N(long companyId, String name) {
-		return fetchByC_N(companyId, name, true);
+		return _uniquePersistenceFinderByC_N.find(
+			finderCache, new Object[] {companyId, name});
 	}
 
 	/**
@@ -2932,73 +1143,15 @@ public class ObjectDefinitionPersistenceImpl
 			finderCache, new Object[] {companyId, name});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_S;
-	private FinderPath _finderPathWithoutPaginationFindByC_S;
-	private FinderPath _finderPathCountByC_S;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderByC_S;
-
-	/**
-	 * Returns all the object definitions where companyId = &#63; and status = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_S(long companyId, int status) {
-		return findByC_S(
-			companyId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_S(
-		long companyId, int status, int start, int end) {
-
-		return findByC_S(companyId, status, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByC_S;
 
 	/**
 	 * Returns an ordered range of all the object definitions where companyId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_S(
-		long companyId, int status, int start, int end,
-		OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByC_S(
-			companyId, status, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -3035,16 +1188,8 @@ public class ObjectDefinitionPersistenceImpl
 			OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByC_S_First(
-			companyId, status, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderByC_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, status}));
+		return _collectionPersistenceFinderByC_S.findFirst(
+			finderCache, new Object[] {companyId, status}, orderByComparator);
 	}
 
 	/**
@@ -3065,43 +1210,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where companyId = &#63; and status = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_S(long companyId, int status) {
-		return filterFindByC_S(
-			companyId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_S(
-		long companyId, int status, int start, int end) {
-
-		return filterFindByC_S(companyId, status, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where companyId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -3116,101 +1228,9 @@ public class ObjectDefinitionPersistenceImpl
 		long companyId, int status, int start, int end,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByC_S(companyId, status, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByC_S(
-					companyId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_C_S_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_S_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(status);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_S.filterFind(
+			finderCache, new Object[] {companyId, status}, start, end,
+			orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -3247,131 +1267,19 @@ public class ObjectDefinitionPersistenceImpl
 	 */
 	@Override
 	public int filterCountByC_S(long companyId, int status) {
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByC_S(companyId, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findByC_S(
-				companyId, status);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(_FINDER_COLUMN_C_S_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_S_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_S.filterCount(
+			finderCache, new Object[] {companyId, status}, companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_C_S_COMPANYID_2 =
-		"objectDefinition.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_S_STATUS_2 =
-		"objectDefinition.status = ?";
-
-	private FinderPath _finderPathWithPaginationFindByS_S;
-	private FinderPath _finderPathWithoutPaginationFindByS_S;
-	private FinderPath _finderPathCountByS_S;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderByS_S;
-
-	/**
-	 * Returns all the object definitions where system = &#63; and status = &#63;.
-	 *
-	 * @param system the system
-	 * @param status the status
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByS_S(boolean system, int status) {
-		return findByS_S(
-			system, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where system = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param system the system
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByS_S(
-		boolean system, int status, int start, int end) {
-
-		return findByS_S(system, status, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByS_S;
 
 	/**
 	 * Returns an ordered range of all the object definitions where system = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param system the system
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByS_S(
-		boolean system, int status, int start, int end,
-		OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByS_S(system, status, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where system = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param system the system
@@ -3408,16 +1316,8 @@ public class ObjectDefinitionPersistenceImpl
 			OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByS_S_First(
-			system, status, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderByS_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {system, status}));
+		return _collectionPersistenceFinderByS_S.findFirst(
+			finderCache, new Object[] {system, status}, orderByComparator);
 	}
 
 	/**
@@ -3438,43 +1338,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where system = &#63; and status = &#63;.
-	 *
-	 * @param system the system
-	 * @param status the status
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByS_S(boolean system, int status) {
-		return filterFindByS_S(
-			system, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where system = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param system the system
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByS_S(
-		boolean system, int status, int start, int end) {
-
-		return filterFindByS_S(system, status, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where system = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param system the system
@@ -3489,101 +1356,9 @@ public class ObjectDefinitionPersistenceImpl
 		boolean system, int status, int start, int end,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return findByS_S(system, status, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByS_S(
-					system, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_S_S_SYSTEM_2_SQL);
-
-		sb.append(_FINDER_COLUMN_S_S_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(system);
-
-			queryPos.add(status);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByS_S.filterFind(
+			finderCache, new Object[] {system, status}, start, end,
+			orderByComparator);
 	}
 
 	/**
@@ -3620,138 +1395,19 @@ public class ObjectDefinitionPersistenceImpl
 	 */
 	@Override
 	public int filterCountByS_S(boolean system, int status) {
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return countByS_S(system, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findByS_S(
-				system, status);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(_FINDER_COLUMN_S_S_SYSTEM_2_SQL);
-
-		sb.append(_FINDER_COLUMN_S_S_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(system);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByS_S.filterCount(
+			finderCache, new Object[] {system, status});
 	}
 
-	private static final String _FINDER_COLUMN_S_S_SYSTEM_2_SQL =
-		"objectDefinition.system_ = ? AND ";
-
-	private static final String _FINDER_COLUMN_S_S_STATUS_2 =
-		"objectDefinition.status = ?";
-
-	private FinderPath _finderPathWithPaginationFindByC_A_S;
-	private FinderPath _finderPathWithoutPaginationFindByC_A_S;
-	private FinderPath _finderPathCountByC_A_S;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderByC_A_S;
-
-	/**
-	 * Returns all the object definitions where companyId = &#63; and active = &#63; and status = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param status the status
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_A_S(
-		long companyId, boolean active, int status) {
-
-		return findByC_A_S(
-			companyId, active, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where companyId = &#63; and active = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_A_S(
-		long companyId, boolean active, int status, int start, int end) {
-
-		return findByC_A_S(companyId, active, status, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByC_A_S;
 
 	/**
 	 * Returns an ordered range of all the object definitions where companyId = &#63; and active = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_A_S(
-		long companyId, boolean active, int status, int start, int end,
-		OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByC_A_S(
-			companyId, active, status, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where companyId = &#63; and active = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -3790,17 +1446,9 @@ public class ObjectDefinitionPersistenceImpl
 			OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByC_A_S_First(
-			companyId, active, status, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderByC_A_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, active, status}));
+		return _collectionPersistenceFinderByC_A_S.findFirst(
+			finderCache, new Object[] {companyId, active, status},
+			orderByComparator);
 	}
 
 	/**
@@ -3823,48 +1471,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where companyId = &#63; and active = &#63; and status = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param status the status
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_A_S(
-		long companyId, boolean active, int status) {
-
-		return filterFindByC_A_S(
-			companyId, active, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where companyId = &#63; and active = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_A_S(
-		long companyId, boolean active, int status, int start, int end) {
-
-		return filterFindByC_A_S(companyId, active, status, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where companyId = &#63; and active = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -3880,106 +1490,9 @@ public class ObjectDefinitionPersistenceImpl
 		long companyId, boolean active, int status, int start, int end,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByC_A_S(
-				companyId, active, status, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByC_A_S(
-					companyId, active, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_C_A_S_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_A_S_ACTIVE_2_SQL);
-
-		sb.append(_FINDER_COLUMN_C_A_S_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(active);
-
-			queryPos.add(status);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_A_S.filterFind(
+			finderCache, new Object[] {companyId, active, status}, start, end,
+			orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -4019,146 +1532,20 @@ public class ObjectDefinitionPersistenceImpl
 	 */
 	@Override
 	public int filterCountByC_A_S(long companyId, boolean active, int status) {
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByC_A_S(companyId, active, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findByC_A_S(
-				companyId, active, status);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(_FINDER_COLUMN_C_A_S_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_A_S_ACTIVE_2_SQL);
-
-		sb.append(_FINDER_COLUMN_C_A_S_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(active);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_A_S.filterCount(
+			finderCache, new Object[] {companyId, active, status}, companyId,
+			0);
 	}
 
-	private static final String _FINDER_COLUMN_C_A_S_COMPANYID_2 =
-		"objectDefinition.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_A_S_ACTIVE_2_SQL =
-		"objectDefinition.active_ = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_A_S_STATUS_2 =
-		"objectDefinition.status = ?";
-
-	private FinderPath _finderPathWithPaginationFindByC_M_S;
-	private FinderPath _finderPathWithoutPaginationFindByC_M_S;
-	private FinderPath _finderPathCountByC_M_S;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderByC_M_S;
-
-	/**
-	 * Returns all the object definitions where companyId = &#63; and modifiable = &#63; and system = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param modifiable the modifiable
-	 * @param system the system
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_M_S(
-		long companyId, boolean modifiable, boolean system) {
-
-		return findByC_M_S(
-			companyId, modifiable, system, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where companyId = &#63; and modifiable = &#63; and system = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param modifiable the modifiable
-	 * @param system the system
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_M_S(
-		long companyId, boolean modifiable, boolean system, int start,
-		int end) {
-
-		return findByC_M_S(companyId, modifiable, system, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByC_M_S;
 
 	/**
 	 * Returns an ordered range of all the object definitions where companyId = &#63; and modifiable = &#63; and system = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param modifiable the modifiable
-	 * @param system the system
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_M_S(
-		long companyId, boolean modifiable, boolean system, int start, int end,
-		OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByC_M_S(
-			companyId, modifiable, system, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where companyId = &#63; and modifiable = &#63; and system = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -4197,17 +1584,9 @@ public class ObjectDefinitionPersistenceImpl
 			OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByC_M_S_First(
-			companyId, modifiable, system, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderByC_M_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, modifiable, system}));
+		return _collectionPersistenceFinderByC_M_S.findFirst(
+			finderCache, new Object[] {companyId, modifiable, system},
+			orderByComparator);
 	}
 
 	/**
@@ -4230,50 +1609,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where companyId = &#63; and modifiable = &#63; and system = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param modifiable the modifiable
-	 * @param system the system
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_M_S(
-		long companyId, boolean modifiable, boolean system) {
-
-		return filterFindByC_M_S(
-			companyId, modifiable, system, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where companyId = &#63; and modifiable = &#63; and system = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param modifiable the modifiable
-	 * @param system the system
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_M_S(
-		long companyId, boolean modifiable, boolean system, int start,
-		int end) {
-
-		return filterFindByC_M_S(
-			companyId, modifiable, system, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where companyId = &#63; and modifiable = &#63; and system = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -4289,106 +1628,9 @@ public class ObjectDefinitionPersistenceImpl
 		long companyId, boolean modifiable, boolean system, int start, int end,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByC_M_S(
-				companyId, modifiable, system, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByC_M_S(
-					companyId, modifiable, system, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_C_M_S_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_M_S_MODIFIABLE_2);
-
-		sb.append(_FINDER_COLUMN_C_M_S_SYSTEM_2_SQL);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(modifiable);
-
-			queryPos.add(system);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_M_S.filterFind(
+			finderCache, new Object[] {companyId, modifiable, system}, start,
+			end, orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -4434,151 +1676,20 @@ public class ObjectDefinitionPersistenceImpl
 	public int filterCountByC_M_S(
 		long companyId, boolean modifiable, boolean system) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByC_M_S(companyId, modifiable, system);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findByC_M_S(
-				companyId, modifiable, system);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(_FINDER_COLUMN_C_M_S_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_M_S_MODIFIABLE_2);
-
-		sb.append(_FINDER_COLUMN_C_M_S_SYSTEM_2_SQL);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(modifiable);
-
-			queryPos.add(system);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_M_S.filterCount(
+			finderCache, new Object[] {companyId, modifiable, system},
+			companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_C_M_S_COMPANYID_2 =
-		"objectDefinition.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_M_S_MODIFIABLE_2 =
-		"objectDefinition.modifiable = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_M_S_SYSTEM_2_SQL =
-		"objectDefinition.system_ = ?";
-
-	private FinderPath _finderPathWithPaginationFindByC_A_S_S;
-	private FinderPath _finderPathWithoutPaginationFindByC_A_S_S;
-	private FinderPath _finderPathCountByC_A_S_S;
-	private CollectionPersistenceFinder<ObjectDefinition>
-		_collectionPersistenceFinderByC_A_S_S;
-
-	/**
-	 * Returns all the object definitions where companyId = &#63; and active = &#63; and system = &#63; and status = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param system the system
-	 * @param status the status
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_A_S_S(
-		long companyId, boolean active, boolean system, int status) {
-
-		return findByC_A_S_S(
-			companyId, active, system, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where companyId = &#63; and active = &#63; and system = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param system the system
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_A_S_S(
-		long companyId, boolean active, boolean system, int status, int start,
-		int end) {
-
-		return findByC_A_S_S(
-			companyId, active, system, status, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByC_A_S_S;
 
 	/**
 	 * Returns an ordered range of all the object definitions where companyId = &#63; and active = &#63; and system = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param system the system
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_A_S_S(
-		long companyId, boolean active, boolean system, int status, int start,
-		int end, OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByC_A_S_S(
-			companyId, active, system, status, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where companyId = &#63; and active = &#63; and system = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -4619,17 +1730,9 @@ public class ObjectDefinitionPersistenceImpl
 			OrderByComparator<ObjectDefinition> orderByComparator)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByC_A_S_S_First(
-			companyId, active, system, status, orderByComparator);
-
-		if (objectDefinition != null) {
-			return objectDefinition;
-		}
-
-		throw new NoSuchObjectDefinitionException(
-			_collectionPersistenceFinderByC_A_S_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, active, system, status}));
+		return _collectionPersistenceFinderByC_A_S_S.findFirst(
+			finderCache, new Object[] {companyId, active, system, status},
+			orderByComparator);
 	}
 
 	/**
@@ -4653,52 +1756,10 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object definitions that the user has permission to view where companyId = &#63; and active = &#63; and system = &#63; and status = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param system the system
-	 * @param status the status
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_A_S_S(
-		long companyId, boolean active, boolean system, int status) {
-
-		return filterFindByC_A_S_S(
-			companyId, active, system, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where companyId = &#63; and active = &#63; and system = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param active the active
-	 * @param system the system
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_A_S_S(
-		long companyId, boolean active, boolean system, int status, int start,
-		int end) {
-
-		return filterFindByC_A_S_S(
-			companyId, active, system, status, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where companyId = &#63; and active = &#63; and system = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -4715,111 +1776,9 @@ public class ObjectDefinitionPersistenceImpl
 		long companyId, boolean active, boolean system, int status, int start,
 		int end, OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByC_A_S_S(
-				companyId, active, system, status, start, end,
-				orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByC_A_S_S(
-					companyId, active, system, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				6 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(7);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_C_A_S_S_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_A_S_S_ACTIVE_2_SQL);
-
-		sb.append(_FINDER_COLUMN_C_A_S_S_SYSTEM_2_SQL);
-
-		sb.append(_FINDER_COLUMN_C_A_S_S_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(active);
-
-			queryPos.add(system);
-
-			queryPos.add(status);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_A_S_S.filterFind(
+			finderCache, new Object[] {companyId, active, system, status},
+			start, end, orderByComparator, companyId, 0);
 	}
 
 	/**
@@ -4868,167 +1827,20 @@ public class ObjectDefinitionPersistenceImpl
 	public int filterCountByC_A_S_S(
 		long companyId, boolean active, boolean system, int status) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByC_A_S_S(companyId, active, system, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findByC_A_S_S(
-				companyId, active, system, status);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		StringBundler sb = new StringBundler(5);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(_FINDER_COLUMN_C_A_S_S_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_A_S_S_ACTIVE_2_SQL);
-
-		sb.append(_FINDER_COLUMN_C_A_S_S_SYSTEM_2_SQL);
-
-		sb.append(_FINDER_COLUMN_C_A_S_S_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(active);
-
-			queryPos.add(system);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_A_S_S.filterCount(
+			finderCache, new Object[] {companyId, active, system, status},
+			companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_C_A_S_S_COMPANYID_2 =
-		"objectDefinition.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_A_S_S_ACTIVE_2_SQL =
-		"objectDefinition.active_ = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_A_S_S_SYSTEM_2_SQL =
-		"objectDefinition.system_ = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_A_S_S_STATUS_2 =
-		"objectDefinition.status = ?";
-
-	private FinderPath _finderPathWithPaginationFindByC_OFI_A_E_S_S;
-	private FinderPath _finderPathWithoutPaginationFindByC_OFI_A_E_S_S;
-	private FinderPath _finderPathCountByC_OFI_A_E_S_S;
-	private FinderPath _finderPathWithPaginationCountByC_OFI_A_E_S_S;
-
-	/**
-	 * Returns all the object definitions where companyId = &#63; and objectFolderId = &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param objectFolderId the object folder ID
-	 * @param active the active
-	 * @param enableObjectEntryDraft the enable object entry draft
-	 * @param scope the scope
-	 * @param status the status
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_OFI_A_E_S_S(
-		long companyId, long objectFolderId, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status) {
-
-		return findByC_OFI_A_E_S_S(
-			companyId, objectFolderId, active, enableObjectEntryDraft, scope,
-			status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where companyId = &#63; and objectFolderId = &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param objectFolderId the object folder ID
-	 * @param active the active
-	 * @param enableObjectEntryDraft the enable object entry draft
-	 * @param scope the scope
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_OFI_A_E_S_S(
-		long companyId, long objectFolderId, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status, int start,
-		int end) {
-
-		return findByC_OFI_A_E_S_S(
-			companyId, objectFolderId, active, enableObjectEntryDraft, scope,
-			status, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_collectionPersistenceFinderByC_OFI_A_E_S_S;
 
 	/**
 	 * Returns an ordered range of all the object definitions where companyId = &#63; and objectFolderId = &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param objectFolderId the object folder ID
-	 * @param active the active
-	 * @param enableObjectEntryDraft the enable object entry draft
-	 * @param scope the scope
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_OFI_A_E_S_S(
-		long companyId, long objectFolderId, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status, int start,
-		int end, OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByC_OFI_A_E_S_S(
-			companyId, objectFolderId, active, enableObjectEntryDraft, scope,
-			status, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where companyId = &#63; and objectFolderId = &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -5050,140 +1862,13 @@ public class ObjectDefinitionPersistenceImpl
 		int end, OrderByComparator<ObjectDefinition> orderByComparator,
 		boolean useFinderCache) {
 
-		scope = Objects.toString(scope, "");
-
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
-
-			if (useFinderCache) {
-				finderPath = _finderPathWithoutPaginationFindByC_OFI_A_E_S_S;
-				finderArgs = new Object[] {
-					companyId, objectFolderId, active, enableObjectEntryDraft,
-					scope, status
-				};
-			}
-		}
-		else if (useFinderCache) {
-			finderPath = _finderPathWithPaginationFindByC_OFI_A_E_S_S;
-			finderArgs = new Object[] {
-				companyId, objectFolderId, active, enableObjectEntryDraft,
-				scope, status, start, end, orderByComparator
-			};
-		}
-
-		List<ObjectDefinition> list = null;
-
-		if (useFinderCache) {
-			list = (List<ObjectDefinition>)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if ((list != null) && !list.isEmpty()) {
-				for (ObjectDefinition objectDefinition : list) {
-					if ((companyId != objectDefinition.getCompanyId()) ||
-						(objectFolderId !=
-							objectDefinition.getObjectFolderId()) ||
-						(active != objectDefinition.isActive()) ||
-						(enableObjectEntryDraft !=
-							objectDefinition.isEnableObjectEntryDraft()) ||
-						!scope.equals(objectDefinition.getScope()) ||
-						(status != objectDefinition.getStatus())) {
-
-						list = null;
-
-						break;
-					}
-				}
-			}
-		}
-
-		if (list == null) {
-			StringBundler sb = null;
-
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					8 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(8);
-			}
-
-			sb.append(_SQL_SELECT_OBJECTDEFINITION_WHERE);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_COMPANYID_2);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_OBJECTFOLDERID_2);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ACTIVE_2);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ENABLEOBJECTENTRYDRAFT_2);
-
-			boolean bindScope = false;
-
-			if (scope.isEmpty()) {
-				sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_3);
-			}
-			else {
-				bindScope = true;
-
-				sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_2);
-			}
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_STATUS_2);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(companyId);
-
-				queryPos.add(objectFolderId);
-
-				queryPos.add(active);
-
-				queryPos.add(enableObjectEntryDraft);
-
-				if (bindScope) {
-					queryPos.add(scope);
-				}
-
-				queryPos.add(status);
-
-				list = (List<ObjectDefinition>)QueryUtil.list(
-					query, getDialect(), start, end);
-
-				cacheResult(list);
-
-				if (useFinderCache) {
-					finderCache.putResult(finderPath, finderArgs, list);
-				}
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return list;
+		return _collectionPersistenceFinderByC_OFI_A_E_S_S.find(
+			finderCache,
+			new Object[] {
+				companyId, new long[] {objectFolderId}, active,
+				enableObjectEntryDraft, scope, status
+			},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -5259,71 +1944,20 @@ public class ObjectDefinitionPersistenceImpl
 		boolean enableObjectEntryDraft, String scope, int status,
 		OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		List<ObjectDefinition> list = findByC_OFI_A_E_S_S(
-			companyId, objectFolderId, active, enableObjectEntryDraft, scope,
-			status, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the object definitions that the user has permission to view where companyId = &#63; and objectFolderId = &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param objectFolderId the object folder ID
-	 * @param active the active
-	 * @param enableObjectEntryDraft the enable object entry draft
-	 * @param scope the scope
-	 * @param status the status
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_OFI_A_E_S_S(
-		long companyId, long objectFolderId, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status) {
-
-		return filterFindByC_OFI_A_E_S_S(
-			companyId, objectFolderId, active, enableObjectEntryDraft, scope,
-			status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where companyId = &#63; and objectFolderId = &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param objectFolderId the object folder ID
-	 * @param active the active
-	 * @param enableObjectEntryDraft the enable object entry draft
-	 * @param scope the scope
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_OFI_A_E_S_S(
-		long companyId, long objectFolderId, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status, int start,
-		int end) {
-
-		return filterFindByC_OFI_A_E_S_S(
-			companyId, objectFolderId, active, enableObjectEntryDraft, scope,
-			status, start, end, null);
+		return _collectionPersistenceFinderByC_OFI_A_E_S_S.fetchFirst(
+			finderCache,
+			new Object[] {
+				companyId, new long[] {objectFolderId}, active,
+				enableObjectEntryDraft, scope, status
+			},
+			orderByComparator);
 	}
 
 	/**
 	 * Returns an ordered range of all the object definitions that the user has permissions to view where companyId = &#63; and objectFolderId = &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -5343,189 +1977,20 @@ public class ObjectDefinitionPersistenceImpl
 		boolean enableObjectEntryDraft, String scope, int status, int start,
 		int end, OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByC_OFI_A_E_S_S(
-				companyId, objectFolderId, active, enableObjectEntryDraft,
-				scope, status, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByC_OFI_A_E_S_S(
-					companyId, objectFolderId, active, enableObjectEntryDraft,
-					scope, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		scope = Objects.toString(scope, "");
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				8 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(9);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_OBJECTFOLDERID_2);
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ACTIVE_2_SQL);
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ENABLEOBJECTENTRYDRAFT_2);
-
-		boolean bindScope = false;
-
-		if (scope.isEmpty()) {
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_3);
-		}
-		else {
-			bindScope = true;
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_2);
-		}
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(objectFolderId);
-
-			queryPos.add(active);
-
-			queryPos.add(enableObjectEntryDraft);
-
-			if (bindScope) {
-				queryPos.add(scope);
-			}
-
-			queryPos.add(status);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * Returns all the object definitions that the user has permission to view where companyId = &#63; and objectFolderId = any &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param objectFolderIds the object folder IDs
-	 * @param active the active
-	 * @param enableObjectEntryDraft the enable object entry draft
-	 * @param scope the scope
-	 * @param status the status
-	 * @return the matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_OFI_A_E_S_S(
-		long companyId, long[] objectFolderIds, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status) {
-
-		return filterFindByC_OFI_A_E_S_S(
-			companyId, objectFolderIds, active, enableObjectEntryDraft, scope,
-			status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions that the user has permission to view where companyId = &#63; and objectFolderId = any &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param objectFolderIds the object folder IDs
-	 * @param active the active
-	 * @param enableObjectEntryDraft the enable object entry draft
-	 * @param scope the scope
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions that the user has permission to view
-	 */
-	@Override
-	public List<ObjectDefinition> filterFindByC_OFI_A_E_S_S(
-		long companyId, long[] objectFolderIds, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status, int start,
-		int end) {
-
-		return filterFindByC_OFI_A_E_S_S(
-			companyId, objectFolderIds, active, enableObjectEntryDraft, scope,
-			status, start, end, null);
+		return _collectionPersistenceFinderByC_OFI_A_E_S_S.filterFind(
+			finderCache,
+			new Object[] {
+				companyId, new long[] {objectFolderId}, active,
+				enableObjectEntryDraft, scope, status
+			},
+			start, end, orderByComparator, companyId, 0);
 	}
 
 	/**
 	 * Returns an ordered range of all the object definitions that the user has permission to view where companyId = &#63; and objectFolderId = any &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -5545,234 +2010,20 @@ public class ObjectDefinitionPersistenceImpl
 		boolean enableObjectEntryDraft, String scope, int status, int start,
 		int end, OrderByComparator<ObjectDefinition> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return findByC_OFI_A_E_S_S(
-				companyId, objectFolderIds, active, enableObjectEntryDraft,
-				scope, status, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByC_OFI_A_E_S_S(
-					companyId, objectFolderIds, active, enableObjectEntryDraft,
-					scope, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		if (objectFolderIds == null) {
-			objectFolderIds = new long[0];
-		}
-		else if (objectFolderIds.length > 1) {
-			objectFolderIds = ArrayUtil.sortedUnique(objectFolderIds);
-		}
-
-		scope = Objects.toString(scope, "");
-
-		StringBundler sb = new StringBundler();
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_COMPANYID_2);
-
-		if (objectFolderIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_OBJECTFOLDERID_7);
-
-			sb.append(StringUtil.merge(objectFolderIds));
-
-			sb.append(")");
-
-			sb.append(")");
-
-			sb.append(WHERE_AND);
-		}
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ACTIVE_2_SQL);
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ENABLEOBJECTENTRYDRAFT_2);
-
-		boolean bindScope = false;
-
-		if (scope.isEmpty()) {
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_3);
-		}
-		else {
-			bindScope = true;
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_2);
-		}
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_STATUS_2);
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectDefinitionModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectDefinitionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectDefinitionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(active);
-
-			queryPos.add(enableObjectEntryDraft);
-
-			if (bindScope) {
-				queryPos.add(scope);
-			}
-
-			queryPos.add(status);
-
-			return (List<ObjectDefinition>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * Returns all the object definitions where companyId = &#63; and objectFolderId = any &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param objectFolderIds the object folder IDs
-	 * @param active the active
-	 * @param enableObjectEntryDraft the enable object entry draft
-	 * @param scope the scope
-	 * @param status the status
-	 * @return the matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_OFI_A_E_S_S(
-		long companyId, long[] objectFolderIds, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status) {
-
-		return findByC_OFI_A_E_S_S(
-			companyId, objectFolderIds, active, enableObjectEntryDraft, scope,
-			status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object definitions where companyId = &#63; and objectFolderId = any &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param objectFolderIds the object folder IDs
-	 * @param active the active
-	 * @param enableObjectEntryDraft the enable object entry draft
-	 * @param scope the scope
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @return the range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_OFI_A_E_S_S(
-		long companyId, long[] objectFolderIds, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status, int start,
-		int end) {
-
-		return findByC_OFI_A_E_S_S(
-			companyId, objectFolderIds, active, enableObjectEntryDraft, scope,
-			status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the object definitions where companyId = &#63; and objectFolderId = any &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param objectFolderIds the object folder IDs
-	 * @param active the active
-	 * @param enableObjectEntryDraft the enable object entry draft
-	 * @param scope the scope
-	 * @param status the status
-	 * @param start the lower bound of the range of object definitions
-	 * @param end the upper bound of the range of object definitions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object definitions
-	 */
-	@Override
-	public List<ObjectDefinition> findByC_OFI_A_E_S_S(
-		long companyId, long[] objectFolderIds, boolean active,
-		boolean enableObjectEntryDraft, String scope, int status, int start,
-		int end, OrderByComparator<ObjectDefinition> orderByComparator) {
-
-		return findByC_OFI_A_E_S_S(
-			companyId, objectFolderIds, active, enableObjectEntryDraft, scope,
-			status, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByC_OFI_A_E_S_S.filterFind(
+			finderCache,
+			new Object[] {
+				companyId, ArrayUtil.sortedUnique(objectFolderIds), active,
+				enableObjectEntryDraft, scope, status
+			},
+			start, end, orderByComparator, companyId, 0);
 	}
 
 	/**
 	 * Returns an ordered range of all the object definitions where companyId = &#63; and objectFolderId = &#63; and active = &#63; and enableObjectEntryDraft = &#63; and scope = &#63; and status = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectDefinitionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -5794,159 +2045,13 @@ public class ObjectDefinitionPersistenceImpl
 		int end, OrderByComparator<ObjectDefinition> orderByComparator,
 		boolean useFinderCache) {
 
-		if (objectFolderIds == null) {
-			objectFolderIds = new long[0];
-		}
-		else if (objectFolderIds.length > 1) {
-			objectFolderIds = ArrayUtil.sortedUnique(objectFolderIds);
-		}
-
-		scope = Objects.toString(scope, "");
-
-		if (objectFolderIds.length == 1) {
-			return findByC_OFI_A_E_S_S(
-				companyId, objectFolderIds[0], active, enableObjectEntryDraft,
-				scope, status, start, end, orderByComparator);
-		}
-
-		Object[] finderArgs = null;
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
-
-			if (useFinderCache) {
-				finderArgs = new Object[] {
-					companyId, StringUtil.merge(objectFolderIds), active,
-					enableObjectEntryDraft, scope, status
-				};
-			}
-		}
-		else if (useFinderCache) {
-			finderArgs = new Object[] {
-				companyId, StringUtil.merge(objectFolderIds), active,
-				enableObjectEntryDraft, scope, status, start, end,
-				orderByComparator
-			};
-		}
-
-		List<ObjectDefinition> list = null;
-
-		if (useFinderCache) {
-			list = (List<ObjectDefinition>)finderCache.getResult(
-				_finderPathWithPaginationFindByC_OFI_A_E_S_S, finderArgs, this);
-
-			if ((list != null) && !list.isEmpty()) {
-				for (ObjectDefinition objectDefinition : list) {
-					if ((companyId != objectDefinition.getCompanyId()) ||
-						!ArrayUtil.contains(
-							objectFolderIds,
-							objectDefinition.getObjectFolderId()) ||
-						(active != objectDefinition.isActive()) ||
-						(enableObjectEntryDraft !=
-							objectDefinition.isEnableObjectEntryDraft()) ||
-						!scope.equals(objectDefinition.getScope()) ||
-						(status != objectDefinition.getStatus())) {
-
-						list = null;
-
-						break;
-					}
-				}
-			}
-		}
-
-		if (list == null) {
-			StringBundler sb = new StringBundler();
-
-			sb.append(_SQL_SELECT_OBJECTDEFINITION_WHERE);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_COMPANYID_2);
-
-			if (objectFolderIds.length > 0) {
-				sb.append("(");
-
-				sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_OBJECTFOLDERID_7);
-
-				sb.append(StringUtil.merge(objectFolderIds));
-
-				sb.append(")");
-
-				sb.append(")");
-
-				sb.append(WHERE_AND);
-			}
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ACTIVE_2);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ENABLEOBJECTENTRYDRAFT_2);
-
-			boolean bindScope = false;
-
-			if (scope.isEmpty()) {
-				sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_3);
-			}
-			else {
-				bindScope = true;
-
-				sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_2);
-			}
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_STATUS_2);
-
-			sb.setStringAt(
-				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-			}
-			else {
-				sb.append(ObjectDefinitionModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(companyId);
-
-				queryPos.add(active);
-
-				queryPos.add(enableObjectEntryDraft);
-
-				if (bindScope) {
-					queryPos.add(scope);
-				}
-
-				queryPos.add(status);
-
-				list = (List<ObjectDefinition>)QueryUtil.list(
-					query, getDialect(), start, end);
-
-				cacheResult(list);
-
-				if (useFinderCache) {
-					finderCache.putResult(
-						_finderPathWithPaginationFindByC_OFI_A_E_S_S,
-						finderArgs, list);
-				}
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return list;
+		return _collectionPersistenceFinderByC_OFI_A_E_S_S.find(
+			finderCache,
+			new Object[] {
+				companyId, ArrayUtil.sortedUnique(objectFolderIds), active,
+				enableObjectEntryDraft, scope, status
+			},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -5964,14 +2069,12 @@ public class ObjectDefinitionPersistenceImpl
 		long companyId, long objectFolderId, boolean active,
 		boolean enableObjectEntryDraft, String scope, int status) {
 
-		for (ObjectDefinition objectDefinition :
-				findByC_OFI_A_E_S_S(
-					companyId, objectFolderId, active, enableObjectEntryDraft,
-					scope, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(objectDefinition);
-		}
+		_collectionPersistenceFinderByC_OFI_A_E_S_S.remove(
+			finderCache,
+			new Object[] {
+				companyId, new long[] {objectFolderId}, active,
+				enableObjectEntryDraft, scope, status
+			});
 	}
 
 	/**
@@ -5990,81 +2093,12 @@ public class ObjectDefinitionPersistenceImpl
 		long companyId, long objectFolderId, boolean active,
 		boolean enableObjectEntryDraft, String scope, int status) {
 
-		scope = Objects.toString(scope, "");
-
-		FinderPath finderPath = _finderPathCountByC_OFI_A_E_S_S;
-
-		Object[] finderArgs = new Object[] {
-			companyId, objectFolderId, active, enableObjectEntryDraft, scope,
-			status
-		};
-
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-
-		if (count == null) {
-			StringBundler sb = new StringBundler(7);
-
-			sb.append(_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_COMPANYID_2);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_OBJECTFOLDERID_2);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ACTIVE_2);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ENABLEOBJECTENTRYDRAFT_2);
-
-			boolean bindScope = false;
-
-			if (scope.isEmpty()) {
-				sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_3);
-			}
-			else {
-				bindScope = true;
-
-				sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_2);
-			}
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_STATUS_2);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(companyId);
-
-				queryPos.add(objectFolderId);
-
-				queryPos.add(active);
-
-				queryPos.add(enableObjectEntryDraft);
-
-				if (bindScope) {
-					queryPos.add(scope);
-				}
-
-				queryPos.add(status);
-
-				count = (Long)query.uniqueResult();
-
-				finderCache.putResult(finderPath, finderArgs, count);
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return count.intValue();
+		return _collectionPersistenceFinderByC_OFI_A_E_S_S.count(
+			finderCache,
+			new Object[] {
+				companyId, new long[] {objectFolderId}, active,
+				enableObjectEntryDraft, scope, status
+			});
 	}
 
 	/**
@@ -6083,102 +2117,12 @@ public class ObjectDefinitionPersistenceImpl
 		long companyId, long[] objectFolderIds, boolean active,
 		boolean enableObjectEntryDraft, String scope, int status) {
 
-		if (objectFolderIds == null) {
-			objectFolderIds = new long[0];
-		}
-		else if (objectFolderIds.length > 1) {
-			objectFolderIds = ArrayUtil.sortedUnique(objectFolderIds);
-		}
-
-		scope = Objects.toString(scope, "");
-
-		Object[] finderArgs = new Object[] {
-			companyId, StringUtil.merge(objectFolderIds), active,
-			enableObjectEntryDraft, scope, status
-		};
-
-		Long count = (Long)finderCache.getResult(
-			_finderPathWithPaginationCountByC_OFI_A_E_S_S, finderArgs, this);
-
-		if (count == null) {
-			StringBundler sb = new StringBundler();
-
-			sb.append(_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_COMPANYID_2);
-
-			if (objectFolderIds.length > 0) {
-				sb.append("(");
-
-				sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_OBJECTFOLDERID_7);
-
-				sb.append(StringUtil.merge(objectFolderIds));
-
-				sb.append(")");
-
-				sb.append(")");
-
-				sb.append(WHERE_AND);
-			}
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ACTIVE_2);
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ENABLEOBJECTENTRYDRAFT_2);
-
-			boolean bindScope = false;
-
-			if (scope.isEmpty()) {
-				sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_3);
-			}
-			else {
-				bindScope = true;
-
-				sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_2);
-			}
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_STATUS_2);
-
-			sb.setStringAt(
-				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(companyId);
-
-				queryPos.add(active);
-
-				queryPos.add(enableObjectEntryDraft);
-
-				if (bindScope) {
-					queryPos.add(scope);
-				}
-
-				queryPos.add(status);
-
-				count = (Long)query.uniqueResult();
-
-				finderCache.putResult(
-					_finderPathWithPaginationCountByC_OFI_A_E_S_S, finderArgs,
-					count);
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return count.intValue();
+		return _collectionPersistenceFinderByC_OFI_A_E_S_S.count(
+			finderCache,
+			new Object[] {
+				companyId, ArrayUtil.sortedUnique(objectFolderIds), active,
+				enableObjectEntryDraft, scope, status
+			});
 	}
 
 	/**
@@ -6197,89 +2141,13 @@ public class ObjectDefinitionPersistenceImpl
 		long companyId, long objectFolderId, boolean active,
 		boolean enableObjectEntryDraft, String scope, int status) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByC_OFI_A_E_S_S(
-				companyId, objectFolderId, active, enableObjectEntryDraft,
-				scope, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions = findByC_OFI_A_E_S_S(
-				companyId, objectFolderId, active, enableObjectEntryDraft,
-				scope, status);
-
-			objectDefinitions = InlineSQLHelperUtil.filter(objectDefinitions);
-
-			return objectDefinitions.size();
-		}
-
-		scope = Objects.toString(scope, "");
-
-		StringBundler sb = new StringBundler(7);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_OBJECTFOLDERID_2);
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ACTIVE_2_SQL);
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ENABLEOBJECTENTRYDRAFT_2);
-
-		boolean bindScope = false;
-
-		if (scope.isEmpty()) {
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_3);
-		}
-		else {
-			bindScope = true;
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_2);
-		}
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(objectFolderId);
-
-			queryPos.add(active);
-
-			queryPos.add(enableObjectEntryDraft);
-
-			if (bindScope) {
-				queryPos.add(scope);
-			}
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_OFI_A_E_S_S.filterCount(
+			finderCache,
+			new Object[] {
+				companyId, new long[] {objectFolderId}, active,
+				enableObjectEntryDraft, scope, status
+			},
+			companyId, 0);
 	}
 
 	/**
@@ -6298,142 +2166,18 @@ public class ObjectDefinitionPersistenceImpl
 		long companyId, long[] objectFolderIds, boolean active,
 		boolean enableObjectEntryDraft, String scope, int status) {
 
-		if (!InlineSQLHelperUtil.isEnabled(companyId, 0)) {
-			return countByC_OFI_A_E_S_S(
-				companyId, objectFolderIds, active, enableObjectEntryDraft,
-				scope, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectDefinition> objectDefinitions =
-				InlineSQLHelperUtil.filter(
-					findByC_OFI_A_E_S_S(
-						companyId, objectFolderIds, active,
-						enableObjectEntryDraft, scope, status));
-
-			return objectDefinitions.size();
-		}
-
-		if (objectFolderIds == null) {
-			objectFolderIds = new long[0];
-		}
-		else if (objectFolderIds.length > 1) {
-			objectFolderIds = ArrayUtil.sortedUnique(objectFolderIds);
-		}
-
-		scope = Objects.toString(scope, "");
-
-		StringBundler sb = new StringBundler();
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE);
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_COMPANYID_2);
-
-		if (objectFolderIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_OBJECTFOLDERID_7);
-
-			sb.append(StringUtil.merge(objectFolderIds));
-
-			sb.append(")");
-
-			sb.append(")");
-
-			sb.append(WHERE_AND);
-		}
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ACTIVE_2_SQL);
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_ENABLEOBJECTENTRYDRAFT_2);
-
-		boolean bindScope = false;
-
-		if (scope.isEmpty()) {
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_3);
-		}
-		else {
-			bindScope = true;
-
-			sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_2);
-		}
-
-		sb.append(_FINDER_COLUMN_C_OFI_A_E_S_S_STATUS_2);
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectDefinition.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(companyId);
-
-			queryPos.add(active);
-
-			queryPos.add(enableObjectEntryDraft);
-
-			if (bindScope) {
-				queryPos.add(scope);
-			}
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByC_OFI_A_E_S_S.filterCount(
+			finderCache,
+			new Object[] {
+				companyId, ArrayUtil.sortedUnique(objectFolderIds), active,
+				enableObjectEntryDraft, scope, status
+			},
+			companyId, 0);
 	}
 
-	private static final String _FINDER_COLUMN_C_OFI_A_E_S_S_COMPANYID_2 =
-		"objectDefinition.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_OFI_A_E_S_S_OBJECTFOLDERID_2 =
-		"objectDefinition.objectFolderId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_OFI_A_E_S_S_OBJECTFOLDERID_7 =
-		"objectDefinition.objectFolderId IN (";
-
-	private static final String _FINDER_COLUMN_C_OFI_A_E_S_S_ACTIVE_2 =
-		"objectDefinition.active = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_OFI_A_E_S_S_ACTIVE_2_SQL =
-		"objectDefinition.active_ = ? AND ";
-
-	private static final String
-		_FINDER_COLUMN_C_OFI_A_E_S_S_ENABLEOBJECTENTRYDRAFT_2 =
-			"objectDefinition.enableObjectEntryDraft = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_2 =
-		"objectDefinition.scope = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_OFI_A_E_S_S_SCOPE_3 =
-		"(objectDefinition.scope IS NULL OR objectDefinition.scope = '') AND ";
-
-	private static final String _FINDER_COLUMN_C_OFI_A_E_S_S_STATUS_2 =
-		"objectDefinition.status = ?";
-
-	private FinderPath _finderPathFetchByERC_C;
-	private UniquePersistenceFinder<ObjectDefinition>
-		_uniquePersistenceFinderByERC_C;
+	private UniquePersistenceFinder
+		<ObjectDefinition, NoSuchObjectDefinitionException>
+			_uniquePersistenceFinderByERC_C;
 
 	/**
 	 * Returns the object definition where externalReferenceCode = &#63; and companyId = &#63; or throws a <code>NoSuchObjectDefinitionException</code> if it could not be found.
@@ -6448,37 +2192,8 @@ public class ObjectDefinitionPersistenceImpl
 			String externalReferenceCode, long companyId)
 		throws NoSuchObjectDefinitionException {
 
-		ObjectDefinition objectDefinition = fetchByERC_C(
-			externalReferenceCode, companyId);
-
-		if (objectDefinition == null) {
-			String message =
-				_uniquePersistenceFinderByERC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, companyId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectDefinitionException(message);
-		}
-
-		return objectDefinition;
-	}
-
-	/**
-	 * Returns the object definition where externalReferenceCode = &#63; and companyId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param companyId the company ID
-	 * @return the matching object definition, or <code>null</code> if a matching object definition could not be found
-	 */
-	@Override
-	public ObjectDefinition fetchByERC_C(
-		String externalReferenceCode, long companyId) {
-
-		return fetchByERC_C(externalReferenceCode, companyId, true);
+		return _uniquePersistenceFinderByERC_C.find(
+			finderCache, new Object[] {externalReferenceCode, companyId});
 	}
 
 	/**
@@ -6822,523 +2537,538 @@ public class ObjectDefinitionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
-		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
-			_SQL_SELECT_OBJECTDEFINITION_WHERE,
-			_SQL_COUNT_OBJECTDEFINITION_WHERE,
-			ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"objectDefinition.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, ObjectDefinition::getUuid));
-
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
-		_collectionPersistenceFinderByUuid_C =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_OBJECTDEFINITION_WHERE,
-				_SQL_COUNT_OBJECTDEFINITION_WHERE,
-				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-				new FinderColumn<>(
-					"objectDefinition.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, ObjectDefinition::getUuid),
-				new FinderColumn<>(
-					"objectDefinition.", "companyId", FinderColumn.Type.LONG,
-					"=", true, true, ObjectDefinition::getCompanyId));
-
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
-		_collectionPersistenceFinderByCompanyId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId, _SQL_SELECT_OBJECTDEFINITION_WHERE,
-				_SQL_COUNT_OBJECTDEFINITION_WHERE,
-				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-				new FinderColumn<>(
-					"objectDefinition.", "companyId", FinderColumn.Type.LONG,
-					"=", true, true, ObjectDefinition::getCompanyId));
-
-		_finderPathWithPaginationFindByObjectFolderId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByObjectFolderId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"objectFolderId"}, true);
-
-		_finderPathWithoutPaginationFindByObjectFolderId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByObjectFolderId",
-			new String[] {Long.class.getName()},
-			new String[] {"objectFolderId"}, true);
-
-		_finderPathCountByObjectFolderId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByObjectFolderId",
-			new String[] {Long.class.getName()},
-			new String[] {"objectFolderId"}, false);
-
-		_collectionPersistenceFinderByObjectFolderId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByObjectFolderId,
-				_finderPathWithoutPaginationFindByObjectFolderId,
-				_finderPathCountByObjectFolderId,
+		_collectionPersistenceFinderByUuid =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+					new String[] {
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+					new String[] {String.class.getName()},
+					new String[] {"uuid_"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+					new String[] {String.class.getName()},
+					new String[] {"uuid_"}, 0, 1, false, null),
 				_SQL_SELECT_OBJECTDEFINITION_WHERE,
 				_SQL_COUNT_OBJECTDEFINITION_WHERE,
 				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"objectDefinition.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					ObjectDefinition::getUuid));
+
+		_collectionPersistenceFinderByUuid_C =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_OBJECTDEFINITION_WHERE,
+				_SQL_COUNT_OBJECTDEFINITION_WHERE,
+				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"objectDefinition.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					ObjectDefinition::getUuid),
+				new FinderColumn<>(
+					"objectDefinition.", "companyId", FinderColumn.Type.LONG,
+					"=", true, true, ObjectDefinition::getCompanyId));
+
+		_collectionPersistenceFinderByCompanyId =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_OBJECTDEFINITION_WHERE,
+				_SQL_COUNT_OBJECTDEFINITION_WHERE,
+				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"objectDefinition.", "companyId", FinderColumn.Type.LONG,
+					"=", true, true, ObjectDefinition::getCompanyId));
+
+		_collectionPersistenceFinderByObjectFolderId =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByObjectFolderId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectFolderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByObjectFolderId", new String[] {Long.class.getName()},
+					new String[] {"objectFolderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByObjectFolderId",
+					new String[] {Long.class.getName()},
+					new String[] {"objectFolderId"}, false),
+				_SQL_SELECT_OBJECTDEFINITION_WHERE,
+				_SQL_COUNT_OBJECTDEFINITION_WHERE,
+				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"objectDefinition.", "objectFolderId",
 					FinderColumn.Type.LONG, "=", true, true,
 					ObjectDefinition::getObjectFolderId));
 
-		_finderPathWithPaginationFindByAccountEntryRestricted = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByAccountEntryRestricted",
-			new String[] {
-				Boolean.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"accountEntryRestricted"}, true);
-
-		_finderPathWithoutPaginationFindByAccountEntryRestricted =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByAccountEntryRestricted",
-				new String[] {Boolean.class.getName()},
-				new String[] {"accountEntryRestricted"}, true);
-
-		_finderPathCountByAccountEntryRestricted = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByAccountEntryRestricted",
-			new String[] {Boolean.class.getName()},
-			new String[] {"accountEntryRestricted"}, false);
-
 		_collectionPersistenceFinderByAccountEntryRestricted =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByAccountEntryRestricted,
-				_finderPathWithoutPaginationFindByAccountEntryRestricted,
-				_finderPathCountByAccountEntryRestricted,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByAccountEntryRestricted",
+					new String[] {
+						Boolean.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"accountEntryRestricted"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByAccountEntryRestricted",
+					new String[] {Boolean.class.getName()},
+					new String[] {"accountEntryRestricted"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByAccountEntryRestricted",
+					new String[] {Boolean.class.getName()},
+					new String[] {"accountEntryRestricted"}, false),
 				_SQL_SELECT_OBJECTDEFINITION_WHERE,
 				_SQL_COUNT_OBJECTDEFINITION_WHERE,
 				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"objectDefinition.", "accountEntryRestricted",
 					FinderColumn.Type.BOOLEAN, "=", true, true,
 					ObjectDefinition::isAccountEntryRestricted));
 
-		_finderPathFetchByClassName = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByClassName",
-			new String[] {String.class.getName()}, new String[] {"className"},
-			false, ObjectDefinition::getClassName);
-
 		_uniquePersistenceFinderByClassName = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByClassName,
-			_SQL_SELECT_OBJECTDEFINITION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByClassName",
+				new String[] {String.class.getName()},
+				new String[] {"className"}, 0, 1, false,
+				convertNullFunction(ObjectDefinition::getClassName)),
+			_SQL_SELECT_OBJECTDEFINITION_WHERE, "",
 			new FinderColumn<>(
 				"objectDefinition.", "className", FinderColumn.Type.STRING, "=",
 				true, true, ObjectDefinition::getClassName));
-
-		_finderPathWithPaginationFindBySystem = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findBySystem",
-			new String[] {
-				Boolean.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"system_"}, true);
-
-		_finderPathWithoutPaginationFindBySystem = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findBySystem",
-			new String[] {Boolean.class.getName()}, new String[] {"system_"},
-			true);
-
-		_finderPathCountBySystem = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countBySystem",
-			new String[] {Boolean.class.getName()}, new String[] {"system_"},
-			false);
 
 		_collectionPersistenceFinderBySystem =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindBySystem,
-				_finderPathWithoutPaginationFindBySystem,
-				_finderPathCountBySystem, _SQL_SELECT_OBJECTDEFINITION_WHERE,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findBySystem",
+					new String[] {
+						Boolean.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"system_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findBySystem",
+					new String[] {Boolean.class.getName()},
+					new String[] {"system_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countBySystem",
+					new String[] {Boolean.class.getName()},
+					new String[] {"system_"}, false),
+				_SQL_SELECT_OBJECTDEFINITION_WHERE,
 				_SQL_COUNT_OBJECTDEFINITION_WHERE,
 				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"objectDefinition.", "system", FinderColumn.Type.BOOLEAN,
-					"=", true, true, ObjectDefinition::isSystem));
+					"objectDefinition.", "system", "system_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					ObjectDefinition::isSystem));
 
-		_finderPathWithPaginationFindByC_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_U",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "userId"}, true);
-
-		_finderPathWithoutPaginationFindByC_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "userId"}, true);
-
-		_finderPathCountByC_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "userId"}, false);
-
-		_collectionPersistenceFinderByC_U = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_U,
-			_finderPathWithoutPaginationFindByC_U, _finderPathCountByC_U,
-			_SQL_SELECT_OBJECTDEFINITION_WHERE,
-			_SQL_COUNT_OBJECTDEFINITION_WHERE,
-			ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"objectDefinition.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, ObjectDefinition::getCompanyId),
-			new FinderColumn<>(
-				"objectDefinition.", "userId", FinderColumn.Type.LONG, "=",
-				true, true, ObjectDefinition::getUserId));
-
-		_finderPathFetchByC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "className"}, false,
-			ObjectDefinition::getCompanyId, ObjectDefinition::getClassName);
+		_collectionPersistenceFinderByC_U =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_U",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId", "userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_U",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"companyId", "userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_U",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"companyId", "userId"}, false),
+				_SQL_SELECT_OBJECTDEFINITION_WHERE,
+				_SQL_COUNT_OBJECTDEFINITION_WHERE,
+				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"objectDefinition.", "companyId", FinderColumn.Type.LONG,
+					"=", true, true, ObjectDefinition::getCompanyId),
+				new FinderColumn<>(
+					"objectDefinition.", "userId", FinderColumn.Type.LONG, "=",
+					true, true, ObjectDefinition::getUserId));
 
 		_uniquePersistenceFinderByC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_C, _SQL_SELECT_OBJECTDEFINITION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "className"}, 0, 2, false,
+				ObjectDefinition::getCompanyId,
+				convertNullFunction(ObjectDefinition::getClassName)),
+			_SQL_SELECT_OBJECTDEFINITION_WHERE, "",
 			new FinderColumn<>(
 				"objectDefinition.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, ObjectDefinition::getCompanyId),
+				true, true, ObjectDefinition::getCompanyId),
 			new FinderColumn<>(
 				"objectDefinition.", "className", FinderColumn.Type.STRING, "=",
 				true, true, ObjectDefinition::getClassName));
 
-		_finderPathFetchByC_N = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "name"}, true,
-			ObjectDefinition::getCompanyId, ObjectDefinition::getName);
-
 		_uniquePersistenceFinderByC_N = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_N, _SQL_SELECT_OBJECTDEFINITION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_N",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "name"}, 0, 2, true,
+				ObjectDefinition::getCompanyId,
+				convertNullFunction(ObjectDefinition::getName)),
+			_SQL_SELECT_OBJECTDEFINITION_WHERE, "",
 			new FinderColumn<>(
 				"objectDefinition.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, ObjectDefinition::getCompanyId),
+				true, true, ObjectDefinition::getCompanyId),
 			new FinderColumn<>(
 				"objectDefinition.", "name", FinderColumn.Type.STRING, "=",
 				true, true, ObjectDefinition::getName));
 
-		_finderPathWithPaginationFindByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"companyId", "status"}, true);
-
-		_finderPathCountByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"companyId", "status"}, false);
-
-		_collectionPersistenceFinderByC_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_S,
-			_finderPathWithoutPaginationFindByC_S, _finderPathCountByC_S,
-			_SQL_SELECT_OBJECTDEFINITION_WHERE,
-			_SQL_COUNT_OBJECTDEFINITION_WHERE,
-			ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"objectDefinition.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, ObjectDefinition::getCompanyId),
-			new FinderColumn<>(
-				"objectDefinition.", "status", FinderColumn.Type.INTEGER, "=",
-				true, true, ObjectDefinition::getStatus));
-
-		_finderPathWithPaginationFindByS_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByS_S",
-			new String[] {
-				Boolean.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"system_", "status"}, true);
-
-		_finderPathWithoutPaginationFindByS_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByS_S",
-			new String[] {Boolean.class.getName(), Integer.class.getName()},
-			new String[] {"system_", "status"}, true);
-
-		_finderPathCountByS_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByS_S",
-			new String[] {Boolean.class.getName(), Integer.class.getName()},
-			new String[] {"system_", "status"}, false);
-
-		_collectionPersistenceFinderByS_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByS_S,
-			_finderPathWithoutPaginationFindByS_S, _finderPathCountByS_S,
-			_SQL_SELECT_OBJECTDEFINITION_WHERE,
-			_SQL_COUNT_OBJECTDEFINITION_WHERE,
-			ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"objectDefinition.", "system", FinderColumn.Type.BOOLEAN, "=",
-				true, false, ObjectDefinition::isSystem),
-			new FinderColumn<>(
-				"objectDefinition.", "status", FinderColumn.Type.INTEGER, "=",
-				true, true, ObjectDefinition::getStatus));
-
-		_finderPathWithPaginationFindByC_A_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "active_", "status"}, true);
-
-		_finderPathWithoutPaginationFindByC_A_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"companyId", "active_", "status"}, true);
-
-		_finderPathCountByC_A_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"companyId", "active_", "status"}, false);
-
-		_collectionPersistenceFinderByC_A_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_A_S,
-			_finderPathWithoutPaginationFindByC_A_S, _finderPathCountByC_A_S,
-			_SQL_SELECT_OBJECTDEFINITION_WHERE,
-			_SQL_COUNT_OBJECTDEFINITION_WHERE,
-			ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"objectDefinition.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, ObjectDefinition::getCompanyId),
-			new FinderColumn<>(
-				"objectDefinition.", "active", FinderColumn.Type.BOOLEAN, "=",
-				true, false, ObjectDefinition::isActive),
-			new FinderColumn<>(
-				"objectDefinition.", "status", FinderColumn.Type.INTEGER, "=",
-				true, true, ObjectDefinition::getStatus));
-
-		_finderPathWithPaginationFindByC_M_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_M_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Boolean.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "modifiable", "system_"}, true);
-
-		_finderPathWithoutPaginationFindByC_M_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_M_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Boolean.class.getName()
-			},
-			new String[] {"companyId", "modifiable", "system_"}, true);
-
-		_finderPathCountByC_M_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_M_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Boolean.class.getName()
-			},
-			new String[] {"companyId", "modifiable", "system_"}, false);
-
-		_collectionPersistenceFinderByC_M_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_M_S,
-			_finderPathWithoutPaginationFindByC_M_S, _finderPathCountByC_M_S,
-			_SQL_SELECT_OBJECTDEFINITION_WHERE,
-			_SQL_COUNT_OBJECTDEFINITION_WHERE,
-			ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"objectDefinition.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, ObjectDefinition::getCompanyId),
-			new FinderColumn<>(
-				"objectDefinition.", "modifiable", FinderColumn.Type.BOOLEAN,
-				"=", true, false, ObjectDefinition::isModifiable),
-			new FinderColumn<>(
-				"objectDefinition.", "system", FinderColumn.Type.BOOLEAN, "=",
-				true, true, ObjectDefinition::isSystem));
-
-		_finderPathWithPaginationFindByC_A_S_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A_S_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Boolean.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "active_", "system_", "status"}, true);
-
-		_finderPathWithoutPaginationFindByC_A_S_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A_S_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Boolean.class.getName(), Integer.class.getName()
-			},
-			new String[] {"companyId", "active_", "system_", "status"}, true);
-
-		_finderPathCountByC_A_S_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A_S_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Boolean.class.getName(), Integer.class.getName()
-			},
-			new String[] {"companyId", "active_", "system_", "status"}, false);
-
-		_collectionPersistenceFinderByC_A_S_S =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByC_A_S_S,
-				_finderPathWithoutPaginationFindByC_A_S_S,
-				_finderPathCountByC_A_S_S, _SQL_SELECT_OBJECTDEFINITION_WHERE,
+		_collectionPersistenceFinderByC_S =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"companyId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"companyId", "status"}, false),
+				_SQL_SELECT_OBJECTDEFINITION_WHERE,
 				_SQL_COUNT_OBJECTDEFINITION_WHERE,
 				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"objectDefinition.", "companyId", FinderColumn.Type.LONG,
-					"=", true, false, ObjectDefinition::getCompanyId),
-				new FinderColumn<>(
-					"objectDefinition.", "active", FinderColumn.Type.BOOLEAN,
-					"=", true, false, ObjectDefinition::isActive),
-				new FinderColumn<>(
-					"objectDefinition.", "system", FinderColumn.Type.BOOLEAN,
-					"=", true, false, ObjectDefinition::isSystem),
+					"=", true, true, ObjectDefinition::getCompanyId),
 				new FinderColumn<>(
 					"objectDefinition.", "status", FinderColumn.Type.INTEGER,
 					"=", true, true, ObjectDefinition::getStatus));
 
-		_finderPathWithPaginationFindByC_OFI_A_E_S_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_OFI_A_E_S_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Boolean.class.getName(), Boolean.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {
-				"companyId", "objectFolderId", "active_",
-				"enableObjectEntryDraft", "scope", "status"
-			},
-			true);
+		_collectionPersistenceFinderByS_S =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByS_S",
+					new String[] {
+						Boolean.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"system_", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByS_S",
+					new String[] {
+						Boolean.class.getName(), Integer.class.getName()
+					},
+					new String[] {"system_", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByS_S",
+					new String[] {
+						Boolean.class.getName(), Integer.class.getName()
+					},
+					new String[] {"system_", "status"}, false),
+				_SQL_SELECT_OBJECTDEFINITION_WHERE,
+				_SQL_COUNT_OBJECTDEFINITION_WHERE,
+				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"objectDefinition.", "system", "system_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					ObjectDefinition::isSystem),
+				new FinderColumn<>(
+					"objectDefinition.", "status", FinderColumn.Type.INTEGER,
+					"=", true, true, ObjectDefinition::getStatus));
 
-		_finderPathWithoutPaginationFindByC_OFI_A_E_S_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_OFI_A_E_S_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Boolean.class.getName(), Boolean.class.getName(),
-				String.class.getName(), Integer.class.getName()
-			},
-			new String[] {
-				"companyId", "objectFolderId", "active_",
-				"enableObjectEntryDraft", "scope", "status"
-			},
-			true);
+		_collectionPersistenceFinderByC_A_S =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId", "active_", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"companyId", "active_", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"companyId", "active_", "status"}, false),
+				_SQL_SELECT_OBJECTDEFINITION_WHERE,
+				_SQL_COUNT_OBJECTDEFINITION_WHERE,
+				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"objectDefinition.", "companyId", FinderColumn.Type.LONG,
+					"=", true, true, ObjectDefinition::getCompanyId),
+				new FinderColumn<>(
+					"objectDefinition.", "active", "active_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					ObjectDefinition::isActive),
+				new FinderColumn<>(
+					"objectDefinition.", "status", FinderColumn.Type.INTEGER,
+					"=", true, true, ObjectDefinition::getStatus));
 
-		_finderPathCountByC_OFI_A_E_S_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_OFI_A_E_S_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Boolean.class.getName(), Boolean.class.getName(),
-				String.class.getName(), Integer.class.getName()
-			},
-			new String[] {
-				"companyId", "objectFolderId", "active_",
-				"enableObjectEntryDraft", "scope", "status"
-			},
-			false);
+		_collectionPersistenceFinderByC_M_S =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_M_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Boolean.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId", "modifiable", "system_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_M_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Boolean.class.getName()
+					},
+					new String[] {"companyId", "modifiable", "system_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_M_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Boolean.class.getName()
+					},
+					new String[] {"companyId", "modifiable", "system_"}, false),
+				_SQL_SELECT_OBJECTDEFINITION_WHERE,
+				_SQL_COUNT_OBJECTDEFINITION_WHERE,
+				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"objectDefinition.", "companyId", FinderColumn.Type.LONG,
+					"=", true, true, ObjectDefinition::getCompanyId),
+				new FinderColumn<>(
+					"objectDefinition.", "modifiable",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					ObjectDefinition::isModifiable),
+				new FinderColumn<>(
+					"objectDefinition.", "system", "system_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					ObjectDefinition::isSystem));
 
-		_finderPathWithPaginationCountByC_OFI_A_E_S_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_OFI_A_E_S_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Boolean.class.getName(), Boolean.class.getName(),
-				String.class.getName(), Integer.class.getName()
-			},
-			new String[] {
-				"companyId", "objectFolderId", "active_",
-				"enableObjectEntryDraft", "scope", "status"
-			},
-			false);
+		_collectionPersistenceFinderByC_A_S_S =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A_S_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Boolean.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId", "active_", "system_", "status"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A_S_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Boolean.class.getName(), Integer.class.getName()
+					},
+					new String[] {"companyId", "active_", "system_", "status"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A_S_S",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Boolean.class.getName(), Integer.class.getName()
+					},
+					new String[] {"companyId", "active_", "system_", "status"},
+					false),
+				_SQL_SELECT_OBJECTDEFINITION_WHERE,
+				_SQL_COUNT_OBJECTDEFINITION_WHERE,
+				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"objectDefinition.", "companyId", FinderColumn.Type.LONG,
+					"=", true, true, ObjectDefinition::getCompanyId),
+				new FinderColumn<>(
+					"objectDefinition.", "active", "active_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					ObjectDefinition::isActive),
+				new FinderColumn<>(
+					"objectDefinition.", "system", "system_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					ObjectDefinition::isSystem),
+				new FinderColumn<>(
+					"objectDefinition.", "status", FinderColumn.Type.INTEGER,
+					"=", true, true, ObjectDefinition::getStatus));
 
-		_finderPathFetchByERC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "companyId"}, false,
-			ObjectDefinition::getExternalReferenceCode,
-			ObjectDefinition::getCompanyId);
+		_collectionPersistenceFinderByC_OFI_A_E_S_S =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByC_OFI_A_E_S_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Boolean.class.getName(), Boolean.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"companyId", "objectFolderId", "active_",
+						"enableObjectEntryDraft", "scope", "status"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByC_OFI_A_E_S_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Boolean.class.getName(), Boolean.class.getName(),
+						String.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"companyId", "objectFolderId", "active_",
+						"enableObjectEntryDraft", "scope", "status"
+					},
+					0, 16, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByC_OFI_A_E_S_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Boolean.class.getName(), Boolean.class.getName(),
+						String.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"companyId", "objectFolderId", "active_",
+						"enableObjectEntryDraft", "scope", "status"
+					},
+					0, 16, false, null),
+				_SQL_SELECT_OBJECTDEFINITION_WHERE,
+				_SQL_COUNT_OBJECTDEFINITION_WHERE,
+				ObjectDefinitionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"objectDefinition.", "companyId", FinderColumn.Type.LONG,
+					"=", true, true, ObjectDefinition::getCompanyId),
+				new ArrayableFinderColumn<>(
+					"objectDefinition.", "objectFolderId",
+					FinderColumn.Type.LONG, "=", false, true, true,
+					ObjectDefinition::getObjectFolderId),
+				new FinderColumn<>(
+					"objectDefinition.", "active", "active_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					ObjectDefinition::isActive),
+				new FinderColumn<>(
+					"objectDefinition.", "enableObjectEntryDraft",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					ObjectDefinition::isEnableObjectEntryDraft),
+				new FinderColumn<>(
+					"objectDefinition.", "scope", FinderColumn.Type.STRING, "=",
+					true, true, ObjectDefinition::getScope),
+				new FinderColumn<>(
+					"objectDefinition.", "status", FinderColumn.Type.INTEGER,
+					"=", true, true, ObjectDefinition::getStatus));
 
 		_uniquePersistenceFinderByERC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_C, _SQL_SELECT_OBJECTDEFINITION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "companyId"}, 0, 1,
+				false,
+				convertNullFunction(ObjectDefinition::getExternalReferenceCode),
+				ObjectDefinition::getCompanyId),
+			_SQL_SELECT_OBJECTDEFINITION_WHERE, "",
 			new FinderColumn<>(
 				"objectDefinition.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				ObjectDefinition::getExternalReferenceCode),
 			new FinderColumn<>(
 				"objectDefinition.", "companyId", FinderColumn.Type.LONG, "=",
@@ -7398,29 +3128,6 @@ public class ObjectDefinitionPersistenceImpl
 	private static final String _SQL_COUNT_OBJECTDEFINITION_WHERE =
 		"SELECT COUNT(objectDefinition) FROM ObjectDefinition objectDefinition WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"objectDefinition.objectDefinitionId";
-
-	private static final String _FILTER_SQL_SELECT_OBJECTDEFINITION_WHERE =
-		"SELECT DISTINCT {objectDefinition.*} FROM ObjectDefinition objectDefinition WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {ObjectDefinition.*} FROM (SELECT DISTINCT objectDefinition.objectDefinitionId FROM ObjectDefinition objectDefinition WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_OBJECTDEFINITION_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN ObjectDefinition ON TEMP_TABLE.objectDefinitionId = ObjectDefinition.objectDefinitionId";
-
-	private static final String _FILTER_SQL_COUNT_OBJECTDEFINITION_WHERE =
-		"SELECT COUNT(DISTINCT objectDefinition.objectDefinitionId) AS COUNT_VALUE FROM ObjectDefinition objectDefinition WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "objectDefinition";
-
-	private static final String _FILTER_ENTITY_TABLE = "ObjectDefinition";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "ObjectDefinition.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No ObjectDefinition exists with the key {";
 
@@ -7438,4 +3145,4 @@ public class ObjectDefinitionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:990381970
+// LIFERAY-SERVICE-BUILDER-HASH:-25326354

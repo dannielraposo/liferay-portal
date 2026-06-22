@@ -27,6 +27,7 @@ import com.liferay.portal.workflow.kaleo.definition.Definition;
 import com.liferay.portal.workflow.kaleo.definition.DelayDuration;
 import com.liferay.portal.workflow.kaleo.definition.DurationScale;
 import com.liferay.portal.workflow.kaleo.definition.Fork;
+import com.liferay.portal.workflow.kaleo.definition.HTTPRequestNode;
 import com.liferay.portal.workflow.kaleo.definition.Join;
 import com.liferay.portal.workflow.kaleo.definition.JoinXor;
 import com.liferay.portal.workflow.kaleo.definition.LLM;
@@ -139,6 +140,13 @@ public class XMLWorkflowModelParser implements WorkflowModelParser {
 			definition.addNode(_parseFork(forkElement));
 		}
 
+		List<Element> httpRequestElements = rootElement.elements(
+			"http-request");
+
+		for (Element httpRequestElement : httpRequestElements) {
+			definition.addNode(_parseHTTPRequestNode(httpRequestElement));
+		}
+
 		List<Element> joinElements = rootElement.elements("join");
 
 		for (Element joinElement : joinElements) {
@@ -171,8 +179,8 @@ public class XMLWorkflowModelParser implements WorkflowModelParser {
 
 		_parseTransitions(
 			definition, aiDecisionElements, conditionElements, forkElements,
-			joinElements, joinXorElements, llmElements, stateElements,
-			taskElements);
+			httpRequestElements, joinElements, joinXorElements, llmElements,
+			stateElements, taskElements);
 
 		return definition;
 	}
@@ -451,6 +459,59 @@ public class XMLWorkflowModelParser implements WorkflowModelParser {
 		_parseTimerElements(timersElement, fork);
 
 		return fork;
+	}
+
+	private HTTPRequestNode _parseHTTPRequestNode(Element httpRequestElement) {
+		HTTPRequestNode httpRequestNode = new HTTPRequestNode(
+			StringUtil.trim(httpRequestElement.elementText("description")),
+			httpRequestElement.elementTextTrim("name"));
+
+		httpRequestNode.setLabelMap(
+			_parseLabels(httpRequestElement.element("labels")));
+		httpRequestNode.setMetadata(
+			httpRequestElement.elementTextTrim("metadata"));
+
+		Set<Setting> settings = new HashSet<>();
+
+		String httpMethod = httpRequestElement.elementTextTrim("http-method");
+
+		if (httpMethod != null) {
+			settings.add(new Setting("httpMethod", httpMethod));
+		}
+
+		String inputVariables = httpRequestElement.elementTextTrim(
+			"input-variables");
+
+		if (inputVariables != null) {
+			settings.add(new Setting("inputVariables", inputVariables));
+		}
+
+		String outputVariables = httpRequestElement.elementTextTrim(
+			"output-variables");
+
+		if (outputVariables != null) {
+			settings.add(new Setting("outputVariables", outputVariables));
+		}
+
+		String requestBody = httpRequestElement.elementText("request-body");
+
+		if (requestBody != null) {
+			settings.add(
+				new Setting("requestBody", StringUtil.trim(requestBody)));
+		}
+
+		String timeout = httpRequestElement.elementTextTrim("timeout");
+
+		if (timeout != null) {
+			settings.add(new Setting("timeout", timeout));
+		}
+
+		settings.add(
+			new Setting("url", httpRequestElement.elementTextTrim("url")));
+
+		httpRequestNode.setSettings(settings);
+
+		return httpRequestNode;
 	}
 
 	private Join _parseJoin(Element joinElement) throws Exception {
@@ -994,9 +1055,9 @@ public class XMLWorkflowModelParser implements WorkflowModelParser {
 	private void _parseTransitions(
 			Definition definition, List<Element> aiDecisionElements,
 			List<Element> conditionElements, List<Element> forkElements,
-			List<Element> joinElements, List<Element> joinXorElements,
-			List<Element> llmElements, List<Element> stateElements,
-			List<Element> taskElements)
+			List<Element> httpRequestElements, List<Element> joinElements,
+			List<Element> joinXorElements, List<Element> llmElements,
+			List<Element> stateElements, List<Element> taskElements)
 		throws Exception {
 
 		for (Element aiDecisionElement : aiDecisionElements) {
@@ -1009,6 +1070,10 @@ public class XMLWorkflowModelParser implements WorkflowModelParser {
 
 		for (Element forkElement : forkElements) {
 			_parseTransition(definition, forkElement);
+		}
+
+		for (Element httpRequestElement : httpRequestElements) {
+			_parseTransition(definition, httpRequestElement);
 		}
 
 		for (Element joinElement : joinElements) {

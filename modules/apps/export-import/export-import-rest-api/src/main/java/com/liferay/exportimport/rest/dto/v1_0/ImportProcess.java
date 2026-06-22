@@ -95,6 +95,47 @@ public class ImportProcess implements Serializable {
 	@JsonIgnore
 	private Supplier<Creator> _creatorSupplier;
 
+	@io.swagger.v3.oas.annotations.media.Schema
+	public Date getDateCompleted() {
+		if (_dateCompletedSupplier != null) {
+			dateCompleted = _dateCompletedSupplier.get();
+
+			_dateCompletedSupplier = null;
+		}
+
+		return dateCompleted;
+	}
+
+	public void setDateCompleted(Date dateCompleted) {
+		this.dateCompleted = dateCompleted;
+
+		_dateCompletedSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setDateCompleted(
+		UnsafeSupplier<Date, Exception> dateCompletedUnsafeSupplier) {
+
+		_dateCompletedSupplier = () -> {
+			try {
+				return dateCompletedUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Date dateCompleted;
+
+	@JsonIgnore
+	private Supplier<Date> _dateCompletedSupplier;
+
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The import process's creation date."
 	)
@@ -181,6 +222,47 @@ public class ImportProcess implements Serializable {
 	@JsonIgnore
 	private Supplier<Date> _dateModifiedSupplier;
 
+	@io.swagger.v3.oas.annotations.media.Schema
+	public String getErrorMessage() {
+		if (_errorMessageSupplier != null) {
+			errorMessage = _errorMessageSupplier.get();
+
+			_errorMessageSupplier = null;
+		}
+
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+
+		_errorMessageSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setErrorMessage(
+		UnsafeSupplier<String, Exception> errorMessageUnsafeSupplier) {
+
+		_errorMessageSupplier = () -> {
+			try {
+				return errorMessageUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String errorMessage;
+
+	@JsonIgnore
+	private Supplier<String> _errorMessageSupplier;
+
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The import process's ID."
 	)
@@ -221,6 +303,47 @@ public class ImportProcess implements Serializable {
 
 	@JsonIgnore
 	private Supplier<Long> _idSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The import process's name."
+	)
+	public String getName() {
+		if (_nameSupplier != null) {
+			name = _nameSupplier.get();
+
+			_nameSupplier = null;
+		}
+
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+
+		_nameSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setName(UnsafeSupplier<String, Exception> nameUnsafeSupplier) {
+		_nameSupplier = () -> {
+			try {
+				return nameUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(description = "The import process's name.")
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String name;
+
+	@JsonIgnore
+	private Supplier<String> _nameSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The import process's end status."
@@ -266,49 +389,6 @@ public class ImportProcess implements Serializable {
 	@JsonIgnore
 	private Supplier<Status> _statusSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The import process's title."
-	)
-	public String getTitle() {
-		if (_titleSupplier != null) {
-			title = _titleSupplier.get();
-
-			_titleSupplier = null;
-		}
-
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-
-		_titleSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setTitle(
-		UnsafeSupplier<String, Exception> titleUnsafeSupplier) {
-
-		_titleSupplier = () -> {
-			try {
-				return titleUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField(description = "The import process's title.")
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected String title;
-
-	@JsonIgnore
-	private Supplier<String> _titleSupplier;
-
 	@Override
 	public boolean equals(Object object) {
 		if (this == object) {
@@ -351,6 +431,22 @@ public class ImportProcess implements Serializable {
 			sb.append(creator);
 		}
 
+		Date dateCompleted = getDateCompleted();
+
+		if (dateCompleted != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"dateCompleted\": ");
+
+			sb.append("\"");
+
+			sb.append(liferayToJSONDateFormat.format(dateCompleted));
+
+			sb.append("\"");
+		}
+
 		Date dateCreated = getDateCreated();
 
 		if (dateCreated != null) {
@@ -383,6 +479,22 @@ public class ImportProcess implements Serializable {
 			sb.append("\"");
 		}
 
+		String errorMessage = getErrorMessage();
+
+		if (errorMessage != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"errorMessage\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(errorMessage));
+
+			sb.append("\"");
+		}
+
 		Long id = getId();
 
 		if (id != null) {
@@ -395,6 +507,22 @@ public class ImportProcess implements Serializable {
 			sb.append(id);
 		}
 
+		String name = getName();
+
+		if (name != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"name\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(name));
+
+			sb.append("\"");
+		}
+
 		Status status = getStatus();
 
 		if (status != null) {
@@ -405,22 +533,6 @@ public class ImportProcess implements Serializable {
 			sb.append("\"status\": ");
 
 			sb.append(String.valueOf(status));
-		}
-
-		String title = getTitle();
-
-		if (title != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"title\": ");
-
-			sb.append("\"");
-
-			sb.append(_escape(title));
-
-			sb.append("\"");
 		}
 
 		sb.append("}");
@@ -524,4 +636,4 @@ public class ImportProcess implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:239659491
+// LIFERAY-REST-BUILDER-HASH:-59513128

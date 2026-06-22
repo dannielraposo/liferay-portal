@@ -5,14 +5,12 @@
 
 package com.liferay.portal.service.persistence.impl;
 
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchRegionLocalizationException;
 import com.liferay.portal.kernel.log.Log;
@@ -74,69 +72,15 @@ public class RegionLocalizationPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByRegionId;
-	private FinderPath _finderPathWithoutPaginationFindByRegionId;
-	private FinderPath _finderPathCountByRegionId;
-	private CollectionPersistenceFinder<RegionLocalization>
-		_collectionPersistenceFinderByRegionId;
-
-	/**
-	 * Returns all the region localizations where regionId = &#63;.
-	 *
-	 * @param regionId the region ID
-	 * @return the matching region localizations
-	 */
-	@Override
-	public List<RegionLocalization> findByRegionId(long regionId) {
-		return findByRegionId(
-			regionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the region localizations where regionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RegionLocalizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param regionId the region ID
-	 * @param start the lower bound of the range of region localizations
-	 * @param end the upper bound of the range of region localizations (not inclusive)
-	 * @return the range of matching region localizations
-	 */
-	@Override
-	public List<RegionLocalization> findByRegionId(
-		long regionId, int start, int end) {
-
-		return findByRegionId(regionId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<RegionLocalization, NoSuchRegionLocalizationException>
+			_collectionPersistenceFinderByRegionId;
 
 	/**
 	 * Returns an ordered range of all the region localizations where regionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RegionLocalizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param regionId the region ID
-	 * @param start the lower bound of the range of region localizations
-	 * @param end the upper bound of the range of region localizations (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching region localizations
-	 */
-	@Override
-	public List<RegionLocalization> findByRegionId(
-		long regionId, int start, int end,
-		OrderByComparator<RegionLocalization> orderByComparator) {
-
-		return findByRegionId(regionId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the region localizations where regionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RegionLocalizationModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RegionLocalizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param regionId the region ID
@@ -152,14 +96,9 @@ public class RegionLocalizationPersistenceImpl
 		OrderByComparator<RegionLocalization> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					RegionLocalization.class)) {
-
-			return _collectionPersistenceFinderByRegionId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {regionId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByRegionId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {regionId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -176,16 +115,9 @@ public class RegionLocalizationPersistenceImpl
 			OrderByComparator<RegionLocalization> orderByComparator)
 		throws NoSuchRegionLocalizationException {
 
-		RegionLocalization regionLocalization = fetchByRegionId_First(
-			regionId, orderByComparator);
-
-		if (regionLocalization != null) {
-			return regionLocalization;
-		}
-
-		throw new NoSuchRegionLocalizationException(
-			_collectionPersistenceFinderByRegionId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {regionId}));
+		return _collectionPersistenceFinderByRegionId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {regionId},
+			orderByComparator);
 	}
 
 	/**
@@ -224,18 +156,13 @@ public class RegionLocalizationPersistenceImpl
 	 */
 	@Override
 	public int countByRegionId(long regionId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					RegionLocalization.class)) {
-
-			return _collectionPersistenceFinderByRegionId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {regionId});
-		}
+		return _collectionPersistenceFinderByRegionId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {regionId});
 	}
 
-	private FinderPath _finderPathFetchByRegionId_LanguageId;
-	private UniquePersistenceFinder<RegionLocalization>
-		_uniquePersistenceFinderByRegionId_LanguageId;
+	private UniquePersistenceFinder
+		<RegionLocalization, NoSuchRegionLocalizationException>
+			_uniquePersistenceFinderByRegionId_LanguageId;
 
 	/**
 	 * Returns the region localization where regionId = &#63; and languageId = &#63; or throws a <code>NoSuchRegionLocalizationException</code> if it could not be found.
@@ -250,38 +177,9 @@ public class RegionLocalizationPersistenceImpl
 			long regionId, String languageId)
 		throws NoSuchRegionLocalizationException {
 
-		RegionLocalization regionLocalization = fetchByRegionId_LanguageId(
-			regionId, languageId);
-
-		if (regionLocalization == null) {
-			String message =
-				_uniquePersistenceFinderByRegionId_LanguageId.
-					buildNoSuchKeyMessage(
-						_NO_SUCH_ENTITY_WITH_KEY,
-						new Object[] {regionId, languageId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchRegionLocalizationException(message);
-		}
-
-		return regionLocalization;
-	}
-
-	/**
-	 * Returns the region localization where regionId = &#63; and languageId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param regionId the region ID
-	 * @param languageId the language ID
-	 * @return the matching region localization, or <code>null</code> if a matching region localization could not be found
-	 */
-	@Override
-	public RegionLocalization fetchByRegionId_LanguageId(
-		long regionId, String languageId) {
-
-		return fetchByRegionId_LanguageId(regionId, languageId, true);
+		return _uniquePersistenceFinderByRegionId_LanguageId.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {regionId, languageId});
 	}
 
 	/**
@@ -296,14 +194,9 @@ public class RegionLocalizationPersistenceImpl
 	public RegionLocalization fetchByRegionId_LanguageId(
 		long regionId, String languageId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					RegionLocalization.class)) {
-
-			return _uniquePersistenceFinderByRegionId_LanguageId.fetch(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {regionId, languageId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByRegionId_LanguageId.fetch(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {regionId, languageId}, useFinderCache);
 	}
 
 	/**
@@ -586,49 +479,46 @@ public class RegionLocalizationPersistenceImpl
 	 * Initializes the region localization persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByRegionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByRegionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"regionId"}, true);
-
-		_finderPathWithoutPaginationFindByRegionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByRegionId",
-			new String[] {Long.class.getName()}, new String[] {"regionId"},
-			true);
-
-		_finderPathCountByRegionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByRegionId",
-			new String[] {Long.class.getName()}, new String[] {"regionId"},
-			false);
-
 		_collectionPersistenceFinderByRegionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByRegionId,
-				_finderPathWithoutPaginationFindByRegionId,
-				_finderPathCountByRegionId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByRegionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"regionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByRegionId",
+					new String[] {Long.class.getName()},
+					new String[] {"regionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByRegionId", new String[] {Long.class.getName()},
+					new String[] {"regionId"}, false),
 				_SQL_SELECT_REGIONLOCALIZATION_WHERE,
 				_SQL_COUNT_REGIONLOCALIZATION_WHERE,
 				RegionLocalizationModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"regionLocalization.", "regionId", FinderColumn.Type.LONG,
 					"=", true, true, RegionLocalization::getRegionId));
 
-		_finderPathFetchByRegionId_LanguageId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByRegionId_LanguageId",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"regionId", "languageId"}, false,
-			RegionLocalization::getRegionId, RegionLocalization::getLanguageId);
-
 		_uniquePersistenceFinderByRegionId_LanguageId =
 			new UniquePersistenceFinder<>(
-				this, _finderPathFetchByRegionId_LanguageId,
-				_SQL_SELECT_REGIONLOCALIZATION_WHERE,
+				this,
+				createUniqueFinderPath(
+					FINDER_CLASS_NAME_ENTITY, "fetchByRegionId_LanguageId",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"regionId", "languageId"}, 0, 2, false,
+					RegionLocalization::getRegionId,
+					convertNullFunction(RegionLocalization::getLanguageId)),
+				_SQL_SELECT_REGIONLOCALIZATION_WHERE, "",
 				new FinderColumn<>(
 					"regionLocalization.", "regionId", FinderColumn.Type.LONG,
-					"=", true, false, RegionLocalization::getRegionId),
+					"=", true, true, RegionLocalization::getRegionId),
 				new FinderColumn<>(
 					"regionLocalization.", "languageId",
 					FinderColumn.Type.STRING, "=", true, true,
@@ -667,4 +557,4 @@ public class RegionLocalizationPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1759523085
+// LIFERAY-SERVICE-BUILDER-HASH:-1961156800

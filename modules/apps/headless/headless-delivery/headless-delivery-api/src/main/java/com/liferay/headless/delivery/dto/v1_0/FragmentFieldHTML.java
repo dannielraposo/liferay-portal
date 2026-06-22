@@ -25,6 +25,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +41,9 @@ import java.util.function.Supplier;
 @GraphQLName(
 	description = "Represents a fragment field with HTML.",
 	value = "FragmentFieldHTML"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Represents a fragment field with HTML."
 )
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "FragmentFieldHTML")
@@ -132,8 +137,16 @@ public class FragmentFieldHTML implements Serializable {
 
 			sb.append("\"html\": ");
 
-			if (html instanceof Map) {
+			if (html instanceof Collection) {
+				sb.append(JSONFactoryUtil.createJSONArray((Collection<?>)html));
+			}
+			else if (html instanceof Map) {
 				sb.append(JSONFactoryUtil.createJSONObject((Map<?, ?>)html));
+			}
+			else if (html instanceof Object[]) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						Arrays.asList((Object[])html)));
 			}
 			else if (html instanceof String) {
 				sb.append("\"");
@@ -246,4 +259,4 @@ public class FragmentFieldHTML implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-354032235
+// LIFERAY-REST-BUILDER-HASH:305110250

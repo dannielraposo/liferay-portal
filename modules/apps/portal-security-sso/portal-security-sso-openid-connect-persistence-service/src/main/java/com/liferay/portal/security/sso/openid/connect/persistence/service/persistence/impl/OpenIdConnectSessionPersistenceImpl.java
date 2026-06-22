@@ -76,62 +76,9 @@ public class OpenIdConnectSessionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUserId;
-	private FinderPath _finderPathWithoutPaginationFindByUserId;
-	private FinderPath _finderPathCountByUserId;
-	private CollectionPersistenceFinder<OpenIdConnectSession>
-		_collectionPersistenceFinderByUserId;
-
-	/**
-	 * Returns all the open ID connect sessions where userId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @return the matching open ID connect sessions
-	 */
-	@Override
-	public List<OpenIdConnectSession> findByUserId(long userId) {
-		return findByUserId(userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the open ID connect sessions where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OpenIdConnectSessionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of open ID connect sessions
-	 * @param end the upper bound of the range of open ID connect sessions (not inclusive)
-	 * @return the range of matching open ID connect sessions
-	 */
-	@Override
-	public List<OpenIdConnectSession> findByUserId(
-		long userId, int start, int end) {
-
-		return findByUserId(userId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the open ID connect sessions where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OpenIdConnectSessionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of open ID connect sessions
-	 * @param end the upper bound of the range of open ID connect sessions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching open ID connect sessions
-	 */
-	@Override
-	public List<OpenIdConnectSession> findByUserId(
-		long userId, int start, int end,
-		OrderByComparator<OpenIdConnectSession> orderByComparator) {
-
-		return findByUserId(userId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<OpenIdConnectSession, NoSuchSessionException>
+			_collectionPersistenceFinderByUserId;
 
 	/**
 	 * Returns an ordered range of all the open ID connect sessions where userId = &#63;.
@@ -172,16 +119,8 @@ public class OpenIdConnectSessionPersistenceImpl
 			OrderByComparator<OpenIdConnectSession> orderByComparator)
 		throws NoSuchSessionException {
 
-		OpenIdConnectSession openIdConnectSession = fetchByUserId_First(
-			userId, orderByComparator);
-
-		if (openIdConnectSession != null) {
-			return openIdConnectSession;
-		}
-
-		throw new NoSuchSessionException(
-			_collectionPersistenceFinderByUserId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId}));
+		return _collectionPersistenceFinderByUserId.findFirst(
+			finderCache, new Object[] {userId}, orderByComparator);
 	}
 
 	/**
@@ -223,12 +162,9 @@ public class OpenIdConnectSessionPersistenceImpl
 			finderCache, new Object[] {userId});
 	}
 
-	private FinderPath
-		_finderPathWithPaginationFindByLtAccessTokenExpirationDate;
-	private FinderPath
-		_finderPathWithPaginationCountByLtAccessTokenExpirationDate;
-	private CollectionPersistenceFinder<OpenIdConnectSession>
-		_collectionPersistenceFinderByLtAccessTokenExpirationDate;
+	private CollectionPersistenceFinder
+		<OpenIdConnectSession, NoSuchSessionException>
+			_collectionPersistenceFinderByLtAccessTokenExpirationDate;
 
 	/**
 	 * Returns all the open ID connect sessions where accessTokenExpirationDate &lt; &#63;.
@@ -326,19 +262,10 @@ public class OpenIdConnectSessionPersistenceImpl
 			OrderByComparator<OpenIdConnectSession> orderByComparator)
 		throws NoSuchSessionException {
 
-		OpenIdConnectSession openIdConnectSession =
-			fetchByLtAccessTokenExpirationDate_First(
-				accessTokenExpirationDate, orderByComparator);
-
-		if (openIdConnectSession != null) {
-			return openIdConnectSession;
-		}
-
-		throw new NoSuchSessionException(
-			_collectionPersistenceFinderByLtAccessTokenExpirationDate.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {accessTokenExpirationDate}));
+		return _collectionPersistenceFinderByLtAccessTokenExpirationDate.
+			findFirst(
+				finderCache, new Object[] {accessTokenExpirationDate},
+				orderByComparator);
 	}
 
 	/**
@@ -386,9 +313,9 @@ public class OpenIdConnectSessionPersistenceImpl
 			finderCache, new Object[] {accessTokenExpirationDate});
 	}
 
-	private FinderPath _finderPathFetchByU_I;
-	private UniquePersistenceFinder<OpenIdConnectSession>
-		_uniquePersistenceFinderByU_I;
+	private UniquePersistenceFinder
+		<OpenIdConnectSession, NoSuchSessionException>
+			_uniquePersistenceFinderByU_I;
 
 	/**
 	 * Returns the open ID connect session where userId = &#63; and issuer = &#63; or throws a <code>NoSuchSessionException</code> if it could not be found.
@@ -402,33 +329,8 @@ public class OpenIdConnectSessionPersistenceImpl
 	public OpenIdConnectSession findByU_I(long userId, String issuer)
 		throws NoSuchSessionException {
 
-		OpenIdConnectSession openIdConnectSession = fetchByU_I(userId, issuer);
-
-		if (openIdConnectSession == null) {
-			String message =
-				_uniquePersistenceFinderByU_I.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId, issuer});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchSessionException(message);
-		}
-
-		return openIdConnectSession;
-	}
-
-	/**
-	 * Returns the open ID connect session where userId = &#63; and issuer = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param userId the user ID
-	 * @param issuer the issuer
-	 * @return the matching open ID connect session, or <code>null</code> if a matching open ID connect session could not be found
-	 */
-	@Override
-	public OpenIdConnectSession fetchByU_I(long userId, String issuer) {
-		return fetchByU_I(userId, issuer, true);
+		return _uniquePersistenceFinderByU_I.find(
+			finderCache, new Object[] {userId, issuer});
 	}
 
 	/**
@@ -476,9 +378,9 @@ public class OpenIdConnectSessionPersistenceImpl
 			finderCache, new Object[] {userId, issuer});
 	}
 
-	private FinderPath _finderPathFetchByI_S;
-	private UniquePersistenceFinder<OpenIdConnectSession>
-		_uniquePersistenceFinderByI_S;
+	private UniquePersistenceFinder
+		<OpenIdConnectSession, NoSuchSessionException>
+			_uniquePersistenceFinderByI_S;
 
 	/**
 	 * Returns the open ID connect session where issuer = &#63; and sessionId = &#63; or throws a <code>NoSuchSessionException</code> if it could not be found.
@@ -492,34 +394,8 @@ public class OpenIdConnectSessionPersistenceImpl
 	public OpenIdConnectSession findByI_S(String issuer, String sessionId)
 		throws NoSuchSessionException {
 
-		OpenIdConnectSession openIdConnectSession = fetchByI_S(
-			issuer, sessionId);
-
-		if (openIdConnectSession == null) {
-			String message =
-				_uniquePersistenceFinderByI_S.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {issuer, sessionId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchSessionException(message);
-		}
-
-		return openIdConnectSession;
-	}
-
-	/**
-	 * Returns the open ID connect session where issuer = &#63; and sessionId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param issuer the issuer
-	 * @param sessionId the session ID
-	 * @return the matching open ID connect session, or <code>null</code> if a matching open ID connect session could not be found
-	 */
-	@Override
-	public OpenIdConnectSession fetchByI_S(String issuer, String sessionId) {
-		return fetchByI_S(issuer, sessionId, true);
+		return _uniquePersistenceFinderByI_S.find(
+			finderCache, new Object[] {issuer, sessionId});
 	}
 
 	/**
@@ -568,77 +444,9 @@ public class OpenIdConnectSessionPersistenceImpl
 			finderCache, new Object[] {issuer, sessionId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_A_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_A_C;
-	private FinderPath _finderPathCountByC_A_C;
-	private CollectionPersistenceFinder<OpenIdConnectSession>
-		_collectionPersistenceFinderByC_A_C;
-
-	/**
-	 * Returns all the open ID connect sessions where companyId = &#63; and authServerWellKnownURI = &#63; and clientId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param authServerWellKnownURI the auth server well known uri
-	 * @param clientId the client ID
-	 * @return the matching open ID connect sessions
-	 */
-	@Override
-	public List<OpenIdConnectSession> findByC_A_C(
-		long companyId, String authServerWellKnownURI, String clientId) {
-
-		return findByC_A_C(
-			companyId, authServerWellKnownURI, clientId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the open ID connect sessions where companyId = &#63; and authServerWellKnownURI = &#63; and clientId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OpenIdConnectSessionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param authServerWellKnownURI the auth server well known uri
-	 * @param clientId the client ID
-	 * @param start the lower bound of the range of open ID connect sessions
-	 * @param end the upper bound of the range of open ID connect sessions (not inclusive)
-	 * @return the range of matching open ID connect sessions
-	 */
-	@Override
-	public List<OpenIdConnectSession> findByC_A_C(
-		long companyId, String authServerWellKnownURI, String clientId,
-		int start, int end) {
-
-		return findByC_A_C(
-			companyId, authServerWellKnownURI, clientId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the open ID connect sessions where companyId = &#63; and authServerWellKnownURI = &#63; and clientId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OpenIdConnectSessionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param authServerWellKnownURI the auth server well known uri
-	 * @param clientId the client ID
-	 * @param start the lower bound of the range of open ID connect sessions
-	 * @param end the upper bound of the range of open ID connect sessions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching open ID connect sessions
-	 */
-	@Override
-	public List<OpenIdConnectSession> findByC_A_C(
-		long companyId, String authServerWellKnownURI, String clientId,
-		int start, int end,
-		OrderByComparator<OpenIdConnectSession> orderByComparator) {
-
-		return findByC_A_C(
-			companyId, authServerWellKnownURI, clientId, start, end,
-			orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<OpenIdConnectSession, NoSuchSessionException>
+			_collectionPersistenceFinderByC_A_C;
 
 	/**
 	 * Returns an ordered range of all the open ID connect sessions where companyId = &#63; and authServerWellKnownURI = &#63; and clientId = &#63;.
@@ -685,17 +493,10 @@ public class OpenIdConnectSessionPersistenceImpl
 			OrderByComparator<OpenIdConnectSession> orderByComparator)
 		throws NoSuchSessionException {
 
-		OpenIdConnectSession openIdConnectSession = fetchByC_A_C_First(
-			companyId, authServerWellKnownURI, clientId, orderByComparator);
-
-		if (openIdConnectSession != null) {
-			return openIdConnectSession;
-		}
-
-		throw new NoSuchSessionException(
-			_collectionPersistenceFinderByC_A_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, authServerWellKnownURI, clientId}));
+		return _collectionPersistenceFinderByC_A_C.findFirst(
+			finderCache,
+			new Object[] {companyId, authServerWellKnownURI, clientId},
+			orderByComparator);
 	}
 
 	/**
@@ -751,9 +552,9 @@ public class OpenIdConnectSessionPersistenceImpl
 			new Object[] {companyId, authServerWellKnownURI, clientId});
 	}
 
-	private FinderPath _finderPathFetchByU_A_C;
-	private UniquePersistenceFinder<OpenIdConnectSession>
-		_uniquePersistenceFinderByU_A_C;
+	private UniquePersistenceFinder
+		<OpenIdConnectSession, NoSuchSessionException>
+			_uniquePersistenceFinderByU_A_C;
 
 	/**
 	 * Returns the open ID connect session where userId = &#63; and authServerWellKnownURI = &#63; and clientId = &#63; or throws a <code>NoSuchSessionException</code> if it could not be found.
@@ -769,38 +570,9 @@ public class OpenIdConnectSessionPersistenceImpl
 			long userId, String authServerWellKnownURI, String clientId)
 		throws NoSuchSessionException {
 
-		OpenIdConnectSession openIdConnectSession = fetchByU_A_C(
-			userId, authServerWellKnownURI, clientId);
-
-		if (openIdConnectSession == null) {
-			String message =
-				_uniquePersistenceFinderByU_A_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {userId, authServerWellKnownURI, clientId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchSessionException(message);
-		}
-
-		return openIdConnectSession;
-	}
-
-	/**
-	 * Returns the open ID connect session where userId = &#63; and authServerWellKnownURI = &#63; and clientId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param userId the user ID
-	 * @param authServerWellKnownURI the auth server well known uri
-	 * @param clientId the client ID
-	 * @return the matching open ID connect session, or <code>null</code> if a matching open ID connect session could not be found
-	 */
-	@Override
-	public OpenIdConnectSession fetchByU_A_C(
-		long userId, String authServerWellKnownURI, String clientId) {
-
-		return fetchByU_A_C(userId, authServerWellKnownURI, clientId, true);
+		return _uniquePersistenceFinderByU_A_C.find(
+			finderCache,
+			new Object[] {userId, authServerWellKnownURI, clientId});
 	}
 
 	/**
@@ -1056,164 +828,160 @@ public class OpenIdConnectSessionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId"}, true);
-
-		_finderPathWithoutPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, true);
-
-		_finderPathCountByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"},
-			false);
-
 		_collectionPersistenceFinderByUserId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUserId,
-				_finderPathWithoutPaginationFindByUserId,
-				_finderPathCountByUserId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, false),
 				_SQL_SELECT_OPENIDCONNECTSESSION_WHERE,
 				_SQL_COUNT_OPENIDCONNECTSESSION_WHERE,
 				OpenIdConnectSessionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"openIdConnectSession.", "userId", FinderColumn.Type.LONG,
 					"=", true, true, OpenIdConnectSession::getUserId));
 
-		_finderPathWithPaginationFindByLtAccessTokenExpirationDate =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-				"findByLtAccessTokenExpirationDate",
-				new String[] {
-					Date.class.getName(), Integer.class.getName(),
-					Integer.class.getName(), OrderByComparator.class.getName()
-				},
-				new String[] {"accessTokenExpirationDate"}, true);
-
-		_finderPathWithPaginationCountByLtAccessTokenExpirationDate =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-				"countByLtAccessTokenExpirationDate",
-				new String[] {Date.class.getName()},
-				new String[] {"accessTokenExpirationDate"}, false);
-
 		_collectionPersistenceFinderByLtAccessTokenExpirationDate =
 			new CollectionPersistenceFinder<>(
 				this,
-				_finderPathWithPaginationFindByLtAccessTokenExpirationDate,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByLtAccessTokenExpirationDate",
+					new String[] {
+						Date.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"accessTokenExpirationDate"}, true),
 				null,
-				_finderPathWithPaginationCountByLtAccessTokenExpirationDate,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByLtAccessTokenExpirationDate",
+					new String[] {Date.class.getName()},
+					new String[] {"accessTokenExpirationDate"}, false),
 				_SQL_SELECT_OPENIDCONNECTSESSION_WHERE,
 				_SQL_COUNT_OPENIDCONNECTSESSION_WHERE,
 				OpenIdConnectSessionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"openIdConnectSession.", "accessTokenExpirationDate",
 					FinderColumn.Type.DATE, "<", true, true,
 					OpenIdConnectSession::getAccessTokenExpirationDate));
 
-		_finderPathFetchByU_I = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByU_I",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"userId", "issuer"}, false,
-			OpenIdConnectSession::getUserId, OpenIdConnectSession::getIssuer);
-
 		_uniquePersistenceFinderByU_I = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByU_I, _SQL_SELECT_OPENIDCONNECTSESSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByU_I",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"userId", "issuer"}, 0, 2, false,
+				OpenIdConnectSession::getUserId,
+				convertNullFunction(OpenIdConnectSession::getIssuer)),
+			_SQL_SELECT_OPENIDCONNECTSESSION_WHERE, "",
 			new FinderColumn<>(
 				"openIdConnectSession.", "userId", FinderColumn.Type.LONG, "=",
-				true, false, OpenIdConnectSession::getUserId),
+				true, true, OpenIdConnectSession::getUserId),
 			new FinderColumn<>(
 				"openIdConnectSession.", "issuer", FinderColumn.Type.STRING,
 				"=", true, true, OpenIdConnectSession::getIssuer));
 
-		_finderPathFetchByI_S = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByI_S",
-			new String[] {String.class.getName(), String.class.getName()},
-			new String[] {"issuer", "sessionId"}, false,
-			OpenIdConnectSession::getIssuer,
-			OpenIdConnectSession::getSessionId);
-
 		_uniquePersistenceFinderByI_S = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByI_S, _SQL_SELECT_OPENIDCONNECTSESSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByI_S",
+				new String[] {String.class.getName(), String.class.getName()},
+				new String[] {"issuer", "sessionId"}, 0, 3, false,
+				convertNullFunction(OpenIdConnectSession::getIssuer),
+				convertNullFunction(OpenIdConnectSession::getSessionId)),
+			_SQL_SELECT_OPENIDCONNECTSESSION_WHERE, "",
 			new FinderColumn<>(
 				"openIdConnectSession.", "issuer", FinderColumn.Type.STRING,
-				"=", true, false, OpenIdConnectSession::getIssuer),
+				"=", true, true, OpenIdConnectSession::getIssuer),
 			new FinderColumn<>(
 				"openIdConnectSession.", "sessionId", FinderColumn.Type.STRING,
 				"=", true, true, OpenIdConnectSession::getSessionId));
 
-		_finderPathWithPaginationFindByC_A_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A_C",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "authServerWellKnownURI", "clientId"},
-			true);
-
-		_finderPathWithoutPaginationFindByC_A_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A_C",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"companyId", "authServerWellKnownURI", "clientId"},
-			true);
-
-		_finderPathCountByC_A_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A_C",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"companyId", "authServerWellKnownURI", "clientId"},
-			false);
-
 		_collectionPersistenceFinderByC_A_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_A_C,
-			_finderPathWithoutPaginationFindByC_A_C, _finderPathCountByC_A_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_A_C",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {
+					"companyId", "authServerWellKnownURI", "clientId"
+				},
+				true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_A_C",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName()
+				},
+				new String[] {
+					"companyId", "authServerWellKnownURI", "clientId"
+				},
+				0, 6, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_A_C",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName()
+				},
+				new String[] {
+					"companyId", "authServerWellKnownURI", "clientId"
+				},
+				0, 6, false, null),
 			_SQL_SELECT_OPENIDCONNECTSESSION_WHERE,
 			_SQL_COUNT_OPENIDCONNECTSESSION_WHERE,
 			OpenIdConnectSessionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"openIdConnectSession.", "companyId", FinderColumn.Type.LONG,
-				"=", true, false, OpenIdConnectSession::getCompanyId),
+				"=", true, true, OpenIdConnectSession::getCompanyId),
 			new FinderColumn<>(
 				"openIdConnectSession.", "authServerWellKnownURI",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				OpenIdConnectSession::getAuthServerWellKnownURI),
 			new FinderColumn<>(
 				"openIdConnectSession.", "clientId", FinderColumn.Type.STRING,
 				"=", true, true, OpenIdConnectSession::getClientId));
 
-		_finderPathFetchByU_A_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByU_A_C",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"userId", "authServerWellKnownURI", "clientId"},
-			false, OpenIdConnectSession::getUserId,
-			OpenIdConnectSession::getAuthServerWellKnownURI,
-			OpenIdConnectSession::getClientId);
-
 		_uniquePersistenceFinderByU_A_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByU_A_C,
-			_SQL_SELECT_OPENIDCONNECTSESSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByU_A_C",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"userId", "authServerWellKnownURI", "clientId"},
+				0, 6, false, OpenIdConnectSession::getUserId,
+				convertNullFunction(
+					OpenIdConnectSession::getAuthServerWellKnownURI),
+				convertNullFunction(OpenIdConnectSession::getClientId)),
+			_SQL_SELECT_OPENIDCONNECTSESSION_WHERE, "",
 			new FinderColumn<>(
 				"openIdConnectSession.", "userId", FinderColumn.Type.LONG, "=",
-				true, false, OpenIdConnectSession::getUserId),
+				true, true, OpenIdConnectSession::getUserId),
 			new FinderColumn<>(
 				"openIdConnectSession.", "authServerWellKnownURI",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				OpenIdConnectSession::getAuthServerWellKnownURI),
 			new FinderColumn<>(
 				"openIdConnectSession.", "clientId", FinderColumn.Type.STRING,
@@ -1285,4 +1053,4 @@ public class OpenIdConnectSessionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-194384117
+// LIFERAY-SERVICE-BUILDER-HASH:-835170189

@@ -1,0 +1,28 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+import {test} from '@playwright/test';
+
+import {InsightDetailPage} from '../pages/InsightDetailPage';
+import {OnPagePage} from '../pages/OnPagePage';
+import {SEOStudioSitePage} from '../pages/SEOStudioSitePage';
+
+const seoStudioPagesTest = test.extend<{
+	insightDetailPage: InsightDetailPage;
+	onPagePage: OnPagePage;
+	seoStudioSitePage: SEOStudioSitePage;
+}>({
+	insightDetailPage: async ({page}, use) => {
+		await use(new InsightDetailPage(page));
+	},
+	onPagePage: async ({page}, use) => {
+		await use(new OnPagePage(page));
+	},
+	seoStudioSitePage: async ({page}, use) => {
+		await use(new SEOStudioSitePage(page));
+	},
+});
+
+export {seoStudioPagesTest};

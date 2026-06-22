@@ -9,15 +9,39 @@ $c-horizontal-resizer: map-merge(
 		right: 0rem,
 		top: 0rem,
 		user-select: none,
-		width: 0.5rem,
+		width: 0.75rem,
 		z-index: 10,
 
+		before: (
+			bottom: 0rem,
+			content: '',
+			left: 0.25rem,
+			position: absolute,
+			right: 0.25rem,
+			top: 0rem,
+		),
+
 		hover: (
-			background-color: $primary-l0,
+			before: (
+				background-color: $primary,
+			),
+		),
+
+		active: (
+			before: (
+				background-color: $primary-d2,
+			),
 		),
 
 		focus: (
-			background-color: $primary-l0,
+			box-shadow: $component-focus-inset-box-shadow,
+			outline: 0,
+
+			before: (
+				background-color: $primary,
+				bottom: 0.25rem,
+				top: 0.25rem,
+			),
 		),
 	),
 	$c-horizontal-resizer

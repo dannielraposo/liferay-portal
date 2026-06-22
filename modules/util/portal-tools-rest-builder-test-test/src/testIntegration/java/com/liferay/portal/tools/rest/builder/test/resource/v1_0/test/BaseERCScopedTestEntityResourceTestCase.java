@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -142,7 +143,8 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -152,7 +154,8 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -163,7 +166,8 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 				_testCompanyAdminUser.getEmailAddress(),
 				PropsValues.DEFAULT_ADMIN_PASSWORD
 			).endpoint(
-				testCompany.getVirtualHostname(), 8080, "http"
+				testCompany.getVirtualHostname(),
+				PortalUtil.getPortalServerPort(false), "http"
 			).locale(
 				LocaleUtil.getDefault()
 			).parameter(
@@ -293,6 +297,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ERCScopedTestEntity ercScopedTestEntity1 =
 			testGraphQLDeleteAssetLibraryERCScopedTestEntity_addERCScopedTestEntity();
 
@@ -343,8 +348,9 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 
 		Assert.assertTrue(errorsJSONArray1.length() > 0);
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ERCScopedTestEntity ercScopedTestEntity2 =
 			testGraphQLDeleteAssetLibraryERCScopedTestEntity_addERCScopedTestEntity();
 
@@ -352,7 +358,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 			JSONUtil.getValueAsBoolean(
 				invokeGraphQLMutation(
 					new GraphQLField(
-						"test_v1_0",
+						"portalTools_v1_0",
 						new GraphQLField(
 							"deleteAssetLibraryERCScopedTestEntity",
 							new HashMap<String, Object>() {
@@ -371,13 +377,13 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 													"\"");
 								}
 							}))),
-				"JSONObject/data", "JSONObject/test_v1_0",
+				"JSONObject/data", "JSONObject/portalTools_v1_0",
 				"Object/deleteAssetLibraryERCScopedTestEntity"));
 
 		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
-					"test_v1_0",
+					"portalTools_v1_0",
 					new GraphQLField(
 						"assetLibraryERCScopedTestEntity",
 						new HashMap<String, Object>() {
@@ -433,6 +439,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ERCScopedTestEntity ercScopedTestEntity1 =
 			testGraphQLDeleteERCScopedTestEntity_addERCScopedTestEntity();
 
@@ -452,8 +459,9 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 						})),
 				"JSONObject/data", "Object/deleteERCScopedTestEntity"));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ERCScopedTestEntity ercScopedTestEntity2 =
 			testGraphQLDeleteERCScopedTestEntity_addERCScopedTestEntity();
 
@@ -461,7 +469,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 			JSONUtil.getValueAsBoolean(
 				invokeGraphQLMutation(
 					new GraphQLField(
-						"test_v1_0",
+						"portalTools_v1_0",
 						new GraphQLField(
 							"deleteERCScopedTestEntity",
 							new HashMap<String, Object>() {
@@ -474,7 +482,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 													"\"");
 								}
 							}))),
-				"JSONObject/data", "JSONObject/test_v1_0",
+				"JSONObject/data", "JSONObject/portalTools_v1_0",
 				"Object/deleteERCScopedTestEntity"));
 	}
 
@@ -560,6 +568,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ERCScopedTestEntity ercScopedTestEntity1 =
 			testGraphQLDeleteSiteERCScopedTestEntity_addERCScopedTestEntity();
 
@@ -608,8 +617,9 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 
 		Assert.assertTrue(errorsJSONArray1.length() > 0);
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ERCScopedTestEntity ercScopedTestEntity2 =
 			testGraphQLDeleteSiteERCScopedTestEntity_addERCScopedTestEntity();
 
@@ -617,7 +627,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 			JSONUtil.getValueAsBoolean(
 				invokeGraphQLMutation(
 					new GraphQLField(
-						"test_v1_0",
+						"portalTools_v1_0",
 						new GraphQLField(
 							"deleteSiteERCScopedTestEntity",
 							new HashMap<String, Object>() {
@@ -636,13 +646,13 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 													"\"");
 								}
 							}))),
-				"JSONObject/data", "JSONObject/test_v1_0",
+				"JSONObject/data", "JSONObject/portalTools_v1_0",
 				"Object/deleteSiteERCScopedTestEntity"));
 
 		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
-					"test_v1_0",
+					"portalTools_v1_0",
 					new GraphQLField(
 						"eRCScopedTestEntity",
 						new HashMap<String, Object>() {
@@ -766,10 +776,11 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 		createBatchAction.put("method", "POST");
 		createBatchAction.put(
 			"href",
-			"http://localhost:8080/o/test/v1.0/asset-libraries/{assetLibraryExternalReferenceCode}/erc-scoped-test-entities/batch".
-				replace(
-					"{assetLibraryExternalReferenceCode}",
-					String.valueOf(assetLibraryExternalReferenceCode)));
+			("http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/portal-tools-rest-builder-test/v1.0/asset-libraries/{assetLibraryExternalReferenceCode}/erc-scoped-test-entities/batch").
+					replace(
+						"{assetLibraryExternalReferenceCode}",
+						String.valueOf(assetLibraryExternalReferenceCode)));
 
 		expectedActions.put("createBatch", createBatchAction);
 
@@ -859,12 +870,13 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 					assetLibraryERCScopedTestEntitiesJSONObject.getString(
 						"items"))));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		assetLibraryERCScopedTestEntitiesJSONObject =
 			JSONUtil.getValueAsJSONObject(
-				invokeGraphQLQuery(new GraphQLField("test_v1_0", graphQLField)),
-				"JSONObject/data", "JSONObject/test_v1_0",
+				invokeGraphQLQuery(
+					new GraphQLField("portalTools_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/portalTools_v1_0",
 				"JSONObject/assetLibraryERCScopedTestEntities");
 
 		Assert.assertEquals(
@@ -956,7 +968,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 						"JSONObject/data",
 						"Object/assetLibraryERCScopedTestEntity"))));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertTrue(
 			equals(
@@ -965,7 +977,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"test_v1_0",
+								"portalTools_v1_0",
 								new GraphQLField(
 									"assetLibraryERCScopedTestEntity",
 									new HashMap<String, Object>() {
@@ -985,7 +997,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 										}
 									},
 									getGraphQLFields()))),
-						"JSONObject/data", "JSONObject/test_v1_0",
+						"JSONObject/data", "JSONObject/portalTools_v1_0",
 						"Object/assetLibraryERCScopedTestEntity"))));
 	}
 
@@ -1020,14 +1032,14 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"test_v1_0",
+						"portalTools_v1_0",
 						new GraphQLField(
 							"assetLibraryERCScopedTestEntity",
 							new HashMap<String, Object>() {
@@ -1238,11 +1250,12 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 				ERCScopedTestEntitySerDes.toDTOs(
 					eRCScopedTestEntitiesJSONObject.getString("items"))));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		eRCScopedTestEntitiesJSONObject = JSONUtil.getValueAsJSONObject(
-			invokeGraphQLQuery(new GraphQLField("test_v1_0", graphQLField)),
-			"JSONObject/data", "JSONObject/test_v1_0",
+			invokeGraphQLQuery(
+				new GraphQLField("portalTools_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/portalTools_v1_0",
 			"JSONObject/eRCScopedTestEntities");
 
 		Assert.assertEquals(
@@ -1413,10 +1426,11 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 		createBatchAction.put("method", "POST");
 		createBatchAction.put(
 			"href",
-			"http://localhost:8080/o/test/v1.0/sites/{siteExternalReferenceCode}/erc-scoped-test-entities/batch".
-				replace(
-					"{siteExternalReferenceCode}",
-					String.valueOf(siteExternalReferenceCode)));
+			("http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/portal-tools-rest-builder-test/v1.0/sites/{siteExternalReferenceCode}/erc-scoped-test-entities/batch").
+					replace(
+						"{siteExternalReferenceCode}",
+						String.valueOf(siteExternalReferenceCode)));
 
 		expectedActions.put("createBatch", createBatchAction);
 
@@ -1501,11 +1515,12 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 				ERCScopedTestEntitySerDes.toDTOs(
 					siteERCScopedTestEntitiesJSONObject.getString("items"))));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		siteERCScopedTestEntitiesJSONObject = JSONUtil.getValueAsJSONObject(
-			invokeGraphQLQuery(new GraphQLField("test_v1_0", graphQLField)),
-			"JSONObject/data", "JSONObject/test_v1_0",
+			invokeGraphQLQuery(
+				new GraphQLField("portalTools_v1_0", graphQLField)),
+			"JSONObject/data", "JSONObject/portalTools_v1_0",
 			"JSONObject/siteERCScopedTestEntities");
 
 		Assert.assertEquals(
@@ -1589,7 +1604,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 								getGraphQLFields())),
 						"JSONObject/data", "Object/eRCScopedTestEntity"))));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertTrue(
 			equals(
@@ -1598,7 +1613,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"test_v1_0",
+								"portalTools_v1_0",
 								new GraphQLField(
 									"eRCScopedTestEntity",
 									new HashMap<String, Object>() {
@@ -1618,7 +1633,7 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 										}
 									},
 									getGraphQLFields()))),
-						"JSONObject/data", "JSONObject/test_v1_0",
+						"JSONObject/data", "JSONObject/portalTools_v1_0",
 						"Object/eRCScopedTestEntity"))));
 	}
 
@@ -1653,14 +1668,14 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"test_v1_0",
+						"portalTools_v1_0",
 						new GraphQLField(
 							"eRCScopedTestEntity",
 							new HashMap<String, Object>() {
@@ -2228,7 +2243,8 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).parameters(
 			parameters
 		).build();
@@ -2425,16 +2441,22 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 		else if (value instanceof Boolean || value instanceof Number) {
 			return value.toString();
 		}
-		else if (value instanceof Date date) {
+		else if (value instanceof Date) {
+			Date date = (Date)value;
+
 			return "\"" +
 				DateUtil.getDate(
 					date, "yyyy-MM-dd'T'HH:mm:ss'Z'", LocaleUtil.getDefault(),
 					TimeZone.getTimeZone("UTC")) + "\"";
 		}
-		else if (value instanceof Enum<?> enm) {
+		else if (value instanceof Enum) {
+			Enum<?> enm = (Enum<?>)value;
+
 			return enm.name();
 		}
-		else if (value instanceof Map<?, ?> map) {
+		else if (value instanceof Map) {
+			Map<?, ?> map = (Map<?, ?>)value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -2447,7 +2469,9 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 
 			return "{" + String.join(", ", entries) + "}";
 		}
-		else if (value instanceof Object[] array) {
+		else if (value instanceof Object[]) {
+			Object[] array = (Object[])value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Object entry : array) {
@@ -3235,7 +3259,9 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -3564,4 +3590,4 @@ public abstract class BaseERCScopedTestEntityResourceTestCase {
 		ERCScopedTestEntityResource _ercScopedTestEntityResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1605245932
+// LIFERAY-REST-BUILDER-HASH:-1660322624

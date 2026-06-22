@@ -1,9 +1,11 @@
 import {
 	formatPlanData,
 	getPlanAddOns,
+	getPlanLabel,
 	getPropIcon,
 	getPropLabel,
 	INDIVIDUALS,
+	isLDPPlan,
 	PAGEVIEWS,
 	SubscriptionNames
 } from '../subscriptions';
@@ -52,6 +54,30 @@ describe('subscriptions', () => {
 			);
 
 			expect(planAddOns).toEqual({});
+		});
+	});
+
+	describe('getPlanLabel', () => {
+		it('should return the label for the Liferay Data Platform plan', () => {
+			expect(getPlanLabel(SubscriptionNames.LiferayDataPlatform)).toEqual(
+				'Liferay Data Platform'
+			);
+		});
+
+		it('should return the label for the Liferay Data Platform Private Beta plan', () => {
+			expect(
+				getPlanLabel(SubscriptionNames.LiferayDataPlatformPrivateBeta)
+			).toEqual('Liferay Data Platform (Private Beta)');
+		});
+
+		it('should return the label for the Liferay Data Platform Enterprise plan', () => {
+			expect(
+				getPlanLabel(SubscriptionNames.LiferayDataPlatformEnterprise)
+			).toEqual('Liferay Data Platform Enterprise');
+		});
+
+		it('should return an empty string for an unknown plan', () => {
+			expect(getPlanLabel('something-unknown')).toEqual('');
 		});
 	});
 
@@ -114,6 +140,31 @@ describe('subscriptions', () => {
 			const plan = formatPlanData(null);
 
 			expect(plan).toMatchSnapshot();
+		});
+	});
+
+	describe('isLDPPlan', () => {
+		it.each([
+			SubscriptionNames.LiferayDataPlatform,
+			SubscriptionNames.LiferayDataPlatformEnterprise,
+			SubscriptionNames.LiferayDataPlatformPrivateBeta
+		])('returns true for %s', name => {
+			expect(isLDPPlan(name)).toBe(true);
+		});
+
+		it.each([
+			SubscriptionNames.LiferayAnalyticsCloudBasic,
+			SubscriptionNames.LiferayAnalyticsCloudBusiness,
+			SubscriptionNames.LiferayAnalyticsCloudEnterprise,
+			SubscriptionNames.LiferaySaasEnterprisePlan,
+			SubscriptionNames.LxcBusinessPlan
+		])('returns false for non-LDP plan %s', name => {
+			expect(isLDPPlan(name)).toBe(false);
+		});
+
+		it('returns false when the subscription is missing (null/undefined)', () => {
+			expect(isLDPPlan(null)).toBe(false);
+			expect(isLDPPlan(undefined)).toBe(false);
 		});
 	});
 });

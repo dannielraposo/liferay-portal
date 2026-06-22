@@ -12,6 +12,7 @@ import {
 import {Page} from '@playwright/test';
 
 import {liferayConfig} from '../liferay.config';
+import {AnalyticsSettingsRestApiHelper} from './AnalyticsSettingsRestApiHelper';
 import {ApiBuilderHelper} from './ApiBuilderHelper';
 import {CookiesApiHelper} from './CookiesApiHelper';
 import {DataEngineApiHelper} from './DataEngineApiHelper';
@@ -41,14 +42,15 @@ import {HeadlessCommerceReturnApiHelper} from './HeadlessCommerceReturnApiHelper
 import {HeadlessDeliveryApiHelper} from './HeadlessDeliveryApiHelper';
 import {HeadlessDigitalSalesRoomApiHelper} from './HeadlessDigitalSalesRoomApiHelper';
 import {HeadlessPortalInstanceApiHelper} from './HeadlessPortalInstanceApiHelper';
-import {HeadlessSiteApiHelper} from './HeadlessSiteApiHelper';
 import {LanguageApiHelper} from './LanguageApiHelper';
 import {ListTypeAdminApiHelper} from './ListTypeAdminApiHelper';
 import {NotificationApiHelper} from './NotificationApiHelper';
+import {ObjectActionApiHelper} from './ObjectActionApiHelper';
 import {ObjectAdminApiHelper} from './ObjectAdminApiHelper';
 import {ObjectEntryApiHelper} from './ObjectEntryApiHelper';
 import {ObjectEntryFolderApiHelper} from './ObjectEntryFolderApiHelper';
 import {SCIMApiHelper} from './SCIMApiHelper';
+import {SEOStudioApiHelper} from './SEOStudioApiHelper';
 import {SearchExperiencesApiHelper} from './SearchExperiencesApiHelper';
 import {JSONWebServicesAnnouncementsEntryApiHelper} from './json-web-services/JSONWebServicesAnnouncementsEntryApiHelper';
 import {JSONWebServicesAssetDisplayPageEntryApiHelper} from './json-web-services/JSONWebServicesAssetDisplayPageEntryApiHelper';
@@ -118,6 +120,7 @@ export async function getHeader(
 }
 
 export class ApiHelpers {
+	readonly analyticsSettingsRest: AnalyticsSettingsRestApiHelper;
 	readonly apiBuilder: ApiBuilderHelper;
 	readonly baseUrl: string;
 	readonly cookies: CookiesApiHelper;
@@ -147,7 +150,6 @@ export class ApiHelpers {
 	readonly headlessCommerceReturn: HeadlessCommerceReturnApiHelper;
 	readonly headlessDelivery: HeadlessDeliveryApiHelper;
 	readonly headlessDigitalSalesRoom: HeadlessDigitalSalesRoomApiHelper;
-	readonly headlessSite: HeadlessSiteApiHelper;
 	readonly headlessPortalInstance: HeadlessPortalInstanceApiHelper;
 	readonly jsonWebServicesAnnouncementsEntryApiHelper: JSONWebServicesAnnouncementsEntryApiHelper;
 	readonly jsonWebServicesAssetDisplayPageEntry: JSONWebServicesAssetDisplayPageEntryApiHelper;
@@ -182,18 +184,21 @@ export class ApiHelpers {
 	readonly language: LanguageApiHelper;
 	readonly listTypeAdmin: ListTypeAdminApiHelper;
 	readonly notification: NotificationApiHelper;
+	readonly objectAction: ObjectActionApiHelper;
 	readonly objectAdmin: ObjectAdminApiHelper;
 	readonly objectEntry: ObjectEntryApiHelper;
 	readonly objectFolder: ObjectEntryFolderApiHelper;
 	readonly page: Page;
 	readonly scim: SCIMApiHelper;
 	readonly searchExperiences: SearchExperiencesApiHelper;
+	readonly seoStudio: SEOStudioApiHelper;
 
 	private static readonly _authorization = `Basic ${btoa(
 		`test@liferay.com:test`
 	)}`;
 
 	constructor(page: Page, baseUrl?: string) {
+		this.analyticsSettingsRest = new AnalyticsSettingsRestApiHelper(this);
 		this.apiBuilder = new ApiBuilderHelper(this);
 		this.baseUrl = baseUrl
 			? baseUrl + '/o/'
@@ -238,7 +243,6 @@ export class ApiHelpers {
 		this.headlessDigitalSalesRoom = new HeadlessDigitalSalesRoomApiHelper(
 			this
 		);
-		this.headlessSite = new HeadlessSiteApiHelper(this);
 		this.headlessPortalInstance = new HeadlessPortalInstanceApiHelper(this);
 		this.jsonWebServicesAnnouncementsEntryApiHelper =
 			new JSONWebServicesAnnouncementsEntryApiHelper(this);
@@ -294,12 +298,14 @@ export class ApiHelpers {
 		this.language = new LanguageApiHelper(this);
 		this.listTypeAdmin = new ListTypeAdminApiHelper(this);
 		this.notification = new NotificationApiHelper(this);
+		this.objectAction = new ObjectActionApiHelper(this);
 		this.objectAdmin = new ObjectAdminApiHelper(this);
 		this.objectEntry = new ObjectEntryApiHelper(this);
 		this.objectFolder = new ObjectEntryFolderApiHelper(this);
 		this.page = page;
 		this.scim = new SCIMApiHelper(this);
 		this.searchExperiences = new SearchExperiencesApiHelper(this);
+		this.seoStudio = new SEOStudioApiHelper(this);
 	}
 
 	async buildRestClient<
@@ -653,6 +659,11 @@ export class DataApiHelpers extends ApiHelpers {
 			}
 			else if (item.type === 'product') {
 				await this.headlessCommerceAdminCatalog.deleteProduct(item.id);
+			}
+			else if (item.type === 'productGroup') {
+				await this.headlessCommerceAdminCatalog.deleteProductGroup(
+					item.id
+				);
 			}
 			else if (item.type === 'productConfiguration') {
 				await this.headlessCommerceAdminCatalog.deleteProductConfiguration(

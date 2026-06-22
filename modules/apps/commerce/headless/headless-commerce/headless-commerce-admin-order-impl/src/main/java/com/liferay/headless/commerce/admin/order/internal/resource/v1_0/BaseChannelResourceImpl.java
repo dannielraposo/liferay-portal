@@ -46,9 +46,13 @@ public abstract class BaseChannelResourceImpl implements ChannelResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/orders/by-externalReferenceCode/{externalReferenceCode}/channel'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Nested field for orders accessed by externalReferenceCode; returns the Channel. Throws NoSuchOrderException (404) if order not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -78,9 +82,13 @@ public abstract class BaseChannelResourceImpl implements ChannelResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/orders/{id}/channel'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Nested field accessor returning the Channel for an order by order ID."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the by-externalReferenceCode path variant; identifiers are server-assigned and stable across the resource lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -108,9 +116,13 @@ public abstract class BaseChannelResourceImpl implements ChannelResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rule-channels/{orderRuleChannelId}/channel'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Nested field accessor: returns the Channel entity linked to an OrderRuleChannel via corEntryRel."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of an order-rule-to-channel relationship (COREntryRel).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "orderRuleChannelId"
 			)
@@ -138,9 +150,13 @@ public abstract class BaseChannelResourceImpl implements ChannelResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-type-channels/{orderTypeChannelId}/channel'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Nested field accessor: returns the Channel entity linked to an OrderTypeChannel via commerceOrderTypeRel."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of an order-type-to-channel relationship.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "orderTypeChannelId"
 			)
@@ -608,4 +624,4 @@ public abstract class BaseChannelResourceImpl implements ChannelResource {
 		LogFactoryUtil.getLog(BaseChannelResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:305586542
+// LIFERAY-REST-BUILDER-HASH:-1221675449

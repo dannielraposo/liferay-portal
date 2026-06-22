@@ -3,104 +3,267 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {ClayCheckbox} from '@clayui/form';
+import {ClayButtonWithIcon} from '@clayui/button';
 import ClayLayout from '@clayui/layout';
-import React from 'react';
+import classnames from 'classnames';
+import {sub} from 'frontend-js-web';
+import React, {useEffect, useId, useRef, useState} from 'react';
 
+import '../../../../css/utilities.scss';
+import {PageTreeModalConfiguration} from '../../../pages/export/components/PageTreeModal';
+import {ExportImportProcess} from '../../../types/exportImportProcess';
 import {
+	PreviewPortletDataHandlerBoolean,
+	PreviewPortletDataHandlerSection as PortletDataHandlerSectionType,
+} from '../../../types/portletDataHandler';
+import {
+	COMPACT_SECTION_NAMES,
 	HandlerSelection,
-	getInitialSelection,
+	SCROLLABLE_SECTION_NAMES,
+	SECTION_KEY_CONTENT,
+	SECTION_KEY_CONTENT_AND_DATA,
+	SECTION_KEY_SITE_BUILDER,
+	getInitialSelections,
+	getSelectionSummary,
 	isSelected,
 	updateSelection,
 } from '../../../utils/contentSelection';
-import {
-	PortletDataHandlerBoolean,
-	PortletDataHandlerSection as PortletDataHandlerSectionType,
-} from '../../../utils/mockPortletDataHandlerSections';
+import CollapsibleGroup from './CollapsibleGroup';
 import PortletDataControl from './PortletDataControl';
+import SectionFooter from './SectionFooter';
+import SectionTags from './SectionTags';
 
 export type SectionSelection = Record<string, HandlerSelection>;
 
 interface ContentSectionProps {
+	commentsAndRatingsEnabled?: boolean;
+	lookAndFeelEnabled?: boolean;
 	onChange: (value: SectionSelection | undefined) => void;
+	pageTreeModalConfiguration?: PageTreeModalConfiguration;
+	process?: ExportImportProcess;
 	section: PortletDataHandlerSectionType;
+	showDeletions?: boolean;
 	value: SectionSelection | undefined;
 }
 
 export default function ContentSection({
+	commentsAndRatingsEnabled = false,
+	lookAndFeelEnabled = false,
 	onChange,
+	pageTreeModalConfiguration,
+	process = 'export',
 	section,
+	showDeletions,
 	value,
 }: ContentSectionProps) {
-	const portletContextsValue = value || {};
+	const bodyRef = useRef<HTMLDivElement>(null);
+	const checkboxId = useId();
+	const [overflowing, setOverflowing] = useState(false);
 
-	const controls = section.portletDataHandlers.map<PortletDataHandlerBoolean>(
-		(handler) => ({...handler, type: 'boolean'})
+	const compact = COMPACT_SECTION_NAMES.includes(section.name);
+	const scrollable = SCROLLABLE_SECTION_NAMES.includes(section.name);
+
+	useEffect(() => {
+		const element = bodyRef.current;
+
+		if (!scrollable || !element || typeof ResizeObserver === 'undefined') {
+			return;
+		}
+
+		const resizeObserver = new ResizeObserver(() =>
+			setOverflowing(element.scrollHeight > element.clientHeight)
+		);
+
+		resizeObserver.observe(element);
+
+		for (const child of Array.from(element.children)) {
+			resizeObserver.observe(child);
+		}
+
+		return () => resizeObserver.disconnect();
+	}, [scrollable, section]);
+
+	const previewPortletDataHandlers =
+		section.previewPortletDataHandlers.map<PreviewPortletDataHandlerBoolean>(
+			(handler) => ({...handler, type: 'Boolean'})
+		);
+
+	const syntheticPreviewPortletDataHandlers = [
+		{
+			applies:
+				lookAndFeelEnabled && section.name === SECTION_KEY_SITE_BUILDER,
+			previewPortletDataHandler: {
+				label: Liferay.Language.get('look-and-feel'),
+				name: 'lookAndFeel',
+				previewPortletDataHandlerControls: [
+					{
+						label: Liferay.Language.get('theme-settings'),
+						name: 'themeSettings',
+						type: 'Boolean',
+					},
+					{
+						label: Liferay.Language.get('logo'),
+						name: 'logo',
+						type: 'Boolean',
+					},
+					{
+						label: Liferay.Language.get('site-pages-settings'),
+						name: 'sitePagesSettings',
+						type: 'Boolean',
+					},
+					{
+						label: Liferay.Language.get('site-template-settings'),
+						name: 'siteTemplateSettings',
+						type: 'Boolean',
+					},
+				],
+				type: 'Boolean',
+			} as PreviewPortletDataHandlerBoolean,
+		},
+	]
+		.filter(({applies}) => applies)
+		.map(({previewPortletDataHandler}) => previewPortletDataHandler);
+
+	const allPreviewPortletDataHandlers = [
+		...previewPortletDataHandlers,
+		...syntheticPreviewPortletDataHandlers,
+	];
+
+	const sectionSelection = value || {};
+
+	const allSelected = allPreviewPortletDataHandlers.every((context) =>
+		isSelected(sectionSelection[context.name], context)
 	);
 
-	const selected = controls.every((context) =>
-		isSelected(portletContextsValue[context.name], context)
+	const anySelected = allPreviewPortletDataHandlers.some((context) =>
+		isSelected(sectionSelection[context.name], context)
 	);
 
-	const handleSelectAll = () => {
-		if (selected) {
-			onChange(undefined);
-		}
-		else {
-			const newValue: SectionSelection = {};
-
-			controls.forEach((context) => {
-				newValue[context.name] = getInitialSelection(context);
-			});
-
-			onChange(newValue);
-		}
-	};
+	const sectionFooters = [
+		{
+			applies:
+				commentsAndRatingsEnabled &&
+				(section.name === SECTION_KEY_CONTENT ||
+					section.name === SECTION_KEY_CONTENT_AND_DATA) &&
+				anySelected,
+			fields: [
+				{key: 'comments', label: Liferay.Language.get('comments')},
+				{key: 'ratings', label: Liferay.Language.get('ratings')},
+			],
+			name: 'commentsAndRatings',
+			subtitle:
+				process === 'import'
+					? Liferay.Language.get(
+							'for-each-of-the-selected-content-types,-import-their'
+						)
+					: Liferay.Language.get(
+							'for-each-of-the-selected-content-types,-export-their'
+						),
+			title: Liferay.Language.get('comments-and-ratings'),
+		},
+	].filter(({applies}) => applies);
 
 	return (
-		<div className="mb-5 sheet">
-			<ClayLayout.ContentRow padded>
-				<ClayLayout.ContentCol expand={false}>
-					<ClayCheckbox
-						checked={selected}
-						indeterminate={
-							!!Object.keys(portletContextsValue).length &&
-							!selected
+		<ClayLayout.Sheet className="mt-0">
+			<CollapsibleGroup
+				bodyClassName={classnames('mt-2 pl-2', {
+					'border rounded': overflowing,
+					'content-section-scroll': scrollable,
+				})}
+				bodyRef={bodyRef}
+				checkboxId={checkboxId}
+				disclosure={({expanded, ...disclosureProps}) => (
+					<ClayButtonWithIcon
+						{...disclosureProps}
+						aria-label={
+							expanded
+								? sub(
+										Liferay.Language.get('collapse-x'),
+										section.label
+									)
+								: sub(
+										Liferay.Language.get('expand-x'),
+										section.label
+									)
 						}
-						onChange={handleSelectAll}
+						className="text-secondary"
+						displayType="unstyled"
+						symbol={expanded ? 'angle-down' : 'angle-right'}
 					/>
-				</ClayLayout.ContentCol>
-
-				<ClayLayout.ContentCol expand>
-					<div className="font-weight-bold h3 mb-0">
-						{section.label}
-					</div>
-				</ClayLayout.ContentCol>
-			</ClayLayout.ContentRow>
-
-			<div
-				className="overflow-auto pl-4"
-				style={{
-					maxHeight: '400px',
-				}}
+				)}
+				indeterminate={
+					!allSelected &&
+					allPreviewPortletDataHandlers.some(
+						(context) =>
+							sectionSelection[context.name] !== undefined
+					)
+				}
+				label={section.label}
+				labelClassName="font-weight-bold text-6"
+				onToggle={() =>
+					onChange(
+						allSelected
+							? undefined
+							: getInitialSelections(
+									allPreviewPortletDataHandlers
+								)
+					)
+				}
+				selected={allSelected}
+				summary={getSelectionSummary(
+					allPreviewPortletDataHandlers,
+					sectionSelection
+				)}
+				tags={
+					<SectionTags
+						additionCount={section.additionCount}
+						deletionCount={
+							showDeletions ? section.deletionCount : undefined
+						}
+					/>
+				}
 			>
-				{controls.map((context) => (
+				{allPreviewPortletDataHandlers.map((context) => (
 					<PortletDataControl
+						compact={compact}
 						control={context}
 						key={context.name}
 						onChange={(controlValue) =>
 							onChange(
 								updateSelection(
-									portletContextsValue,
+									sectionSelection,
 									context.name,
 									controlValue
 								)
 							)
 						}
-						value={portletContextsValue[context.name]}
+						pageTreeModalConfiguration={pageTreeModalConfiguration}
+						showDeletions={showDeletions}
+						topLevel
+						value={sectionSelection[context.name]}
 					/>
 				))}
-			</div>
-		</div>
+
+				{sectionFooters.map((sectionFooter) => (
+					<SectionFooter
+						fields={sectionFooter.fields}
+						key={sectionFooter.name}
+						name={sectionFooter.name}
+						onChange={(sectionFooterValue) =>
+							onChange(
+								updateSelection(
+									sectionSelection,
+									sectionFooter.name,
+									sectionFooterValue
+								)
+							)
+						}
+						subtitle={sectionFooter.subtitle}
+						title={sectionFooter.title}
+						value={sectionSelection[sectionFooter.name]}
+					/>
+				))}
+			</CollapsibleGroup>
+		</ClayLayout.Sheet>
 	);
 }

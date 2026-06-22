@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -79,69 +78,15 @@ public class CommerceTaxMethodPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<CommerceTaxMethod>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the commerce tax methods where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching commerce tax methods
-	 */
-	@Override
-	public List<CommerceTaxMethod> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce tax methods where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxMethodModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of commerce tax methods
-	 * @param end the upper bound of the range of commerce tax methods (not inclusive)
-	 * @return the range of matching commerce tax methods
-	 */
-	@Override
-	public List<CommerceTaxMethod> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceTaxMethod, NoSuchTaxMethodException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the commerce tax methods where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxMethodModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of commerce tax methods
-	 * @param end the upper bound of the range of commerce tax methods (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce tax methods
-	 */
-	@Override
-	public List<CommerceTaxMethod> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<CommerceTaxMethod> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce tax methods where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxMethodModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxMethodModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -176,16 +121,8 @@ public class CommerceTaxMethodPersistenceImpl
 			OrderByComparator<CommerceTaxMethod> orderByComparator)
 		throws NoSuchTaxMethodException {
 
-		CommerceTaxMethod commerceTaxMethod = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (commerceTaxMethod != null) {
-			return commerceTaxMethod;
-		}
-
-		throw new NoSuchTaxMethodException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -226,8 +163,7 @@ public class CommerceTaxMethodPersistenceImpl
 			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathFetchByG_E;
-	private UniquePersistenceFinder<CommerceTaxMethod>
+	private UniquePersistenceFinder<CommerceTaxMethod, NoSuchTaxMethodException>
 		_uniquePersistenceFinderByG_E;
 
 	/**
@@ -242,34 +178,8 @@ public class CommerceTaxMethodPersistenceImpl
 	public CommerceTaxMethod findByG_E(long groupId, String engineKey)
 		throws NoSuchTaxMethodException {
 
-		CommerceTaxMethod commerceTaxMethod = fetchByG_E(groupId, engineKey);
-
-		if (commerceTaxMethod == null) {
-			String message =
-				_uniquePersistenceFinderByG_E.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, engineKey});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchTaxMethodException(message);
-		}
-
-		return commerceTaxMethod;
-	}
-
-	/**
-	 * Returns the commerce tax method where groupId = &#63; and engineKey = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param engineKey the engine key
-	 * @return the matching commerce tax method, or <code>null</code> if a matching commerce tax method could not be found
-	 */
-	@Override
-	public CommerceTaxMethod fetchByG_E(long groupId, String engineKey) {
-		return fetchByG_E(groupId, engineKey, true);
+		return _uniquePersistenceFinderByG_E.find(
+			finderCache, new Object[] {groupId, engineKey});
 	}
 
 	/**
@@ -317,72 +227,15 @@ public class CommerceTaxMethodPersistenceImpl
 			finderCache, new Object[] {groupId, engineKey});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_A;
-	private FinderPath _finderPathWithoutPaginationFindByG_A;
-	private FinderPath _finderPathCountByG_A;
-	private CollectionPersistenceFinder<CommerceTaxMethod>
-		_collectionPersistenceFinderByG_A;
-
-	/**
-	 * Returns all the commerce tax methods where groupId = &#63; and active = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param active the active
-	 * @return the matching commerce tax methods
-	 */
-	@Override
-	public List<CommerceTaxMethod> findByG_A(long groupId, boolean active) {
-		return findByG_A(
-			groupId, active, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce tax methods where groupId = &#63; and active = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxMethodModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param active the active
-	 * @param start the lower bound of the range of commerce tax methods
-	 * @param end the upper bound of the range of commerce tax methods (not inclusive)
-	 * @return the range of matching commerce tax methods
-	 */
-	@Override
-	public List<CommerceTaxMethod> findByG_A(
-		long groupId, boolean active, int start, int end) {
-
-		return findByG_A(groupId, active, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceTaxMethod, NoSuchTaxMethodException>
+			_collectionPersistenceFinderByG_A;
 
 	/**
 	 * Returns an ordered range of all the commerce tax methods where groupId = &#63; and active = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxMethodModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param active the active
-	 * @param start the lower bound of the range of commerce tax methods
-	 * @param end the upper bound of the range of commerce tax methods (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce tax methods
-	 */
-	@Override
-	public List<CommerceTaxMethod> findByG_A(
-		long groupId, boolean active, int start, int end,
-		OrderByComparator<CommerceTaxMethod> orderByComparator) {
-
-		return findByG_A(groupId, active, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce tax methods where groupId = &#63; and active = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxMethodModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxMethodModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -419,16 +272,8 @@ public class CommerceTaxMethodPersistenceImpl
 			OrderByComparator<CommerceTaxMethod> orderByComparator)
 		throws NoSuchTaxMethodException {
 
-		CommerceTaxMethod commerceTaxMethod = fetchByG_A_First(
-			groupId, active, orderByComparator);
-
-		if (commerceTaxMethod != null) {
-			return commerceTaxMethod;
-		}
-
-		throw new NoSuchTaxMethodException(
-			_collectionPersistenceFinderByG_A.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, active}));
+		return _collectionPersistenceFinderByG_A.findFirst(
+			finderCache, new Object[] {groupId, active}, orderByComparator);
 	}
 
 	/**
@@ -688,81 +533,77 @@ public class CommerceTaxMethodPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_COMMERCETAXMETHOD_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_COMMERCETAXMETHOD_WHERE,
 				_SQL_COUNT_COMMERCETAXMETHOD_WHERE,
 				CommerceTaxMethodModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"commerceTaxMethod.", "groupId", FinderColumn.Type.LONG,
 					"=", true, true, CommerceTaxMethod::getGroupId));
 
-		_finderPathFetchByG_E = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_E",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "engineKey"}, false,
-			CommerceTaxMethod::getGroupId, CommerceTaxMethod::getEngineKey);
-
 		_uniquePersistenceFinderByG_E = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_E, _SQL_SELECT_COMMERCETAXMETHOD_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_E",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "engineKey"}, 0, 2, false,
+				CommerceTaxMethod::getGroupId,
+				convertNullFunction(CommerceTaxMethod::getEngineKey)),
+			_SQL_SELECT_COMMERCETAXMETHOD_WHERE, "",
 			new FinderColumn<>(
 				"commerceTaxMethod.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, CommerceTaxMethod::getGroupId),
+				true, true, CommerceTaxMethod::getGroupId),
 			new FinderColumn<>(
 				"commerceTaxMethod.", "engineKey", FinderColumn.Type.STRING,
 				"=", true, true, CommerceTaxMethod::getEngineKey));
 
-		_finderPathWithPaginationFindByG_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_A",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "active_"}, true);
-
-		_finderPathWithoutPaginationFindByG_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"groupId", "active_"}, true);
-
-		_finderPathCountByG_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"groupId", "active_"}, false);
-
 		_collectionPersistenceFinderByG_A = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_A,
-			_finderPathWithoutPaginationFindByG_A, _finderPathCountByG_A,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_A",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "active_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_A",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"groupId", "active_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_A",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"groupId", "active_"}, false),
 			_SQL_SELECT_COMMERCETAXMETHOD_WHERE,
 			_SQL_COUNT_COMMERCETAXMETHOD_WHERE,
-			CommerceTaxMethodModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			CommerceTaxMethodModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"commerceTaxMethod.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, CommerceTaxMethod::getGroupId),
+				true, true, CommerceTaxMethod::getGroupId),
 			new FinderColumn<>(
-				"commerceTaxMethod.", "active", FinderColumn.Type.BOOLEAN, "=",
-				true, true, CommerceTaxMethod::isActive));
+				"commerceTaxMethod.", "active", "active_",
+				FinderColumn.Type.BOOLEAN, "=", true, true,
+				CommerceTaxMethod::isActive));
 
 		CommerceTaxMethodUtil.setPersistence(this);
 	}
@@ -833,4 +674,4 @@ public class CommerceTaxMethodPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:57622854
+// LIFERAY-SERVICE-BUILDER-HASH:362947519

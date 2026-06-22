@@ -131,6 +131,8 @@ public class KaleoInstanceLocalServiceImpl
 		KaleoInstance kaleoInstance = kaleoInstancePersistence.findByPrimaryKey(
 			kaleoInstanceId);
 
+		kaleoInstancePersistence.reassociateIfAbsent(kaleoInstance);
+
 		kaleoInstance.setCompleted(true);
 		kaleoInstance.setCompletionDate(new Date());
 
@@ -437,7 +439,7 @@ public class KaleoInstanceLocalServiceImpl
 		properties = {
 			@Property(
 				name = ExceptionRetryAcceptor.EXCEPTION_NAME,
-				value = "org.hibernate.StaleObjectStateException"
+				value = "org.hibernate.StaleStateException"
 			)
 		}
 	)

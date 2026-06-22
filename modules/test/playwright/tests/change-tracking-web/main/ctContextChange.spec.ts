@@ -174,17 +174,28 @@ test('LPD-29693, LPD-29294 Assert silence context change popover behavior', asyn
 
 	await page.getByLabel('Hide warning when changing').uncheck();
 
-	await page.getByRole('button', {name: 'Save'}).click();
+	await Promise.all([
+		page.waitForResponse(
+			(response) =>
+				response.url().includes('save_display_preference') &&
+				response.ok()
+		),
+		page.getByRole('button', {name: 'Save'}).click(),
+	]);
 
-	await page.reload();
-
-	await journalPage.goto(site1.friendlyUrlPath);
+	await page
+		.goto(
+			`/group${site1.friendlyUrlPath}/~/control_panel/manage?p_p_id=com_liferay_journal_web_portlet_JournalPortlet`
+		)
+		.catch(() => {});
 
 	await expect(popoverCheckbox).toBeVisible();
 
 	await popoverCheckbox.check();
 
-	await page.getByTestId('applicationsMenu').click();
+	await page
+		.getByRole('button', {name: 'Stay in Current Publication'})
+		.click();
 
 	await journalPage.goto(site2.friendlyUrlPath);
 

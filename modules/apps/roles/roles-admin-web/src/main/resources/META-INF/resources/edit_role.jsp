@@ -65,6 +65,7 @@ renderResponse.setTitle((role == null) ? LanguageUtil.get(request, "new-role") :
 
 	<liferay-ui:error exception="<%= DuplicateRoleException.class %>" message="please-enter-a-unique-name" />
 	<liferay-ui:error exception="<%= RequiredRoleException.class %>" message="old-role-name-is-a-required-system-role" />
+	<liferay-ui:error exception="<%= RoleSubtypeException.class %>" message="please-enter-a-valid-subtype" />
 
 	<aui:model-context bean="<%= role %>" model="<%= Role.class %>" />
 
@@ -138,7 +139,7 @@ renderResponse.setTitle((role == null) ? LanguageUtil.get(request, "new-role") :
 				</liferay-ui:error>
 
 				<c:choose>
-					<c:when test="<%= (role != null) && role.isSystem() %>">
+					<c:when test="<%= RoleConstants.isUnmodifiable(role) %>">
 						<aui:input disabled="<%= true %>" helpMessage="key-field-help" label="key" name="viewNameField" type="text" value="<%= roleName %>" />
 						<aui:input name="name" type="hidden" value="<%= roleName %>" />
 					</c:when>

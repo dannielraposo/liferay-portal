@@ -121,7 +121,7 @@ public class AssetUsageResourceTest extends BaseAssetUsageResourceTestCase {
 		_depotEntry = _depotEntryLocalService.addDepotEntry(
 			Collections.singletonMap(
 				LocaleUtil.US, RandomTestUtil.randomString()),
-			null, DepotConstants.TYPE_ASSET_LIBRARY, _serviceContext);
+			null, DepotConstants.TYPE_SPACE, _serviceContext);
 
 		_objectEntryFolder =
 			_objectEntryFolderLocalService.
@@ -348,7 +348,7 @@ public class AssetUsageResourceTest extends BaseAssetUsageResourceTestCase {
 		themeDisplay.setPortalURL(
 			testCompany.getPortalURL(testGroup.getGroupId()));
 		themeDisplay.setServerName("localhost");
-		themeDisplay.setServerPort(8080);
+		themeDisplay.setServerPort(PortalUtil.getPortalServerPort(false));
 		themeDisplay.setSiteGroupId(testGroup.getGroupId());
 		themeDisplay.setUser(testCompany.getGuestUser());
 

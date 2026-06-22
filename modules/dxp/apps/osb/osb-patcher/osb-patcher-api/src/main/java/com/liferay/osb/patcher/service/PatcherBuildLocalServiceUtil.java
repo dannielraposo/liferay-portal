@@ -577,6 +577,19 @@ public class PatcherBuildLocalServiceUtil {
 		return getService().hasPatcherFixPatcherBuilds(patcherFixId);
 	}
 
+	public static PatcherBuild preparePatcherBuild(
+			long userId, long patcherProductVersionId,
+			long patcherProjectVersionId, String accountEntryCode, int type,
+			java.util.Locale locale, String patcherBuildName,
+			boolean useExistingHotfix)
+		throws Exception {
+
+		return getService().preparePatcherBuild(
+			userId, patcherProductVersionId, patcherProjectVersionId,
+			accountEntryCode, type, locale, patcherBuildName,
+			useExistingHotfix);
+	}
+
 	public static void setPatcherAccountPatcherBuilds(
 		long patcherAccountId, long[] patcherBuildIds) {
 
@@ -690,4 +703,4 @@ public class PatcherBuildLocalServiceUtil {
 			PatcherBuildLocalServiceUtil.class, PatcherBuildLocalService.class);
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1866436041
+// LIFERAY-SERVICE-BUILDER-HASH:-673211173

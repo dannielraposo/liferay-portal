@@ -11,11 +11,17 @@
 ViewAllSectionDisplayContext viewAllSectionDisplayContext = (ViewAllSectionDisplayContext)request.getAttribute(ViewAllSectionDisplayContext.class.getName());
 %>
 
-<div>
+<div class="cms-all-view position-relative">
 	<div>
 		<react:component
 			module="{Breadcrumb} from site-cms-site-initializer"
 			props="<%= viewAllSectionDisplayContext.getBreadcrumbProps() %>"
+		/>
+	</div>
+
+	<div>
+		<react:component
+			module="{AllQuickFilters} from site-cms-site-initializer"
 		/>
 	</div>
 

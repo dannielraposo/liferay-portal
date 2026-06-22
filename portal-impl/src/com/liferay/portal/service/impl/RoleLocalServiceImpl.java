@@ -828,22 +828,22 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 	@Override
 	public List<Role> getGroupRolesAndTeamRoles(
 		long companyId, String name, List<String> excludedNames, String title,
-		String description, int[] types, long excludedTeamRoleId,
-		long teamGroupId, int start, int end) {
+		String description, int[] types, String subtype,
+		long excludedTeamRoleId, long teamGroupId, int start, int end) {
 
 		return roleFinder.findByGroupRoleAndTeamRole(
-			companyId, name, excludedNames, title, description, types,
+			companyId, name, excludedNames, title, description, types, subtype,
 			excludedTeamRoleId, teamGroupId, start, end);
 	}
 
 	@Override
 	public int getGroupRolesAndTeamRolesCount(
 		long companyId, String name, List<String> excludedNames, String title,
-		String description, int[] types, long excludedTeamRoleId,
-		long teamGroupId) {
+		String description, int[] types, String subtype,
+		long excludedTeamRoleId, long teamGroupId) {
 
 		return roleFinder.countByGroupRoleAndTeamRole(
-			companyId, name, excludedNames, title, description, types,
+			companyId, name, excludedNames, title, description, types, subtype,
 			excludedTeamRoleId, teamGroupId);
 	}
 
@@ -1990,7 +1990,7 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 
 		validate(roleId, role.getCompanyId(), role.getClassNameId(), name);
 
-		if (role.isSystem()) {
+		if (RoleConstants.isUnmodifiable(role)) {
 			name = role.getName();
 			subtype = null;
 		}

@@ -293,6 +293,7 @@ create table Country (
 	mvccVersion LONG default 0 not null,
 	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
+	externalReferenceCode VARCHAR(75) null,
 	defaultLanguageId VARCHAR(75) null,
 	countryId LONG not null,
 	companyId LONG,
@@ -313,6 +314,7 @@ create table Country (
 	subjectToVAT BOOLEAN,
 	zipRequired BOOLEAN,
 	lastPublishDate DATE null,
+	status INTEGER,
 	primary key (countryId, ctCollectionId)
 );
 
@@ -691,6 +693,7 @@ create table Layout (
 	themeId VARCHAR(75) null,
 	colorSchemeId VARCHAR(75) null,
 	styleBookEntryERC VARCHAR(75) null,
+	styleBookEntryScopeERC VARCHAR(75) null,
 	css TEXT null,
 	priority INTEGER,
 	faviconFileEntryERC VARCHAR(75) null,
@@ -1146,6 +1149,7 @@ create table Region (
 	mvccVersion LONG default 0 not null,
 	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
+	externalReferenceCode VARCHAR(75) null,
 	defaultLanguageId VARCHAR(75) null,
 	regionId LONG not null,
 	companyId LONG,
@@ -1159,6 +1163,7 @@ create table Region (
 	position DOUBLE,
 	regionCode VARCHAR(75) null,
 	lastPublishDate DATE null,
+	status INTEGER,
 	primary key (regionId, ctCollectionId)
 );
 
@@ -1469,6 +1474,7 @@ create table Ticket (
 	classPK LONG,
 	key_ VARCHAR(255) null,
 	type_ INTEGER,
+	emailAddress VARCHAR(254) null,
 	extraInfo TEXT null,
 	expirationDate DATE null
 );

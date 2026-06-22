@@ -6,6 +6,7 @@
 package com.liferay.jenkins.results.parser;
 
 import com.liferay.jenkins.results.parser.failure.message.generator.CIFailureMessageGenerator;
+import com.liferay.jenkins.results.parser.failure.message.generator.ClosedChannelExceptionFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.CompileFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.FailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.GenericFailureMessageGenerator;
@@ -48,7 +49,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -646,7 +647,7 @@ public class BaseDownstreamBuild extends BaseBuild implements DownstreamBuild {
 			for (Element valueElement : rootElement.elements("value")) {
 				String liferayErrorText = "LIFERAY_ERROR: ";
 
-				String valueElementText = StringEscapeUtils.escapeHtml(
+				String valueElementText = StringEscapeUtils.escapeHtml4(
 					valueElement.getText());
 
 				if (valueElementText.startsWith(liferayErrorText)) {
@@ -1213,7 +1214,7 @@ public class BaseDownstreamBuild extends BaseBuild implements DownstreamBuild {
 			return;
 		}
 
-		String workspace = System.getenv("WORKSPACE");
+		String workspace = Environment.get("WORKSPACE");
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(workspace)) {
 			throw new RuntimeException("Please set WORKSPACE");
@@ -1279,6 +1280,7 @@ public class BaseDownstreamBuild extends BaseBuild implements DownstreamBuild {
 		new LocalGitMirrorFailureMessageGenerator(),
 		//
 		new CIFailureMessageGenerator(),
+		new ClosedChannelExceptionFailureMessageGenerator(),
 		new GenericFailureMessageGenerator()
 	};
 

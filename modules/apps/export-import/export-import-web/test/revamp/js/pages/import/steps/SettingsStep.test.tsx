@@ -9,62 +9,41 @@ import {Formik} from 'formik';
 import React from 'react';
 
 import SettingsStep from '../../../../../../src/main/resources/META-INF/resources/revamp/js/pages/import/steps/SettingsStep';
+import {
+	DATA_STRATEGIES,
+	USER_ID_STRATEGIES,
+} from '../../../../../../src/main/resources/META-INF/resources/revamp/js/types/exportImportProcess';
+import {
+	SCOPES,
+	Scope,
+} from '../../../../../../src/main/resources/META-INF/resources/revamp/js/types/scope';
 
 const defaultInitialValues = {
-	authorshipStrategy: 'useOriginalAuthor',
-	importPermissions: false,
-	updateDataStrategy: 'mirror',
+	dataStrategy: DATA_STRATEGIES.MIRROR,
+	userIdStrategy: USER_ID_STRATEGIES.CURRENT_USER_ID,
 };
 
 const renderSettingsStep = (
-	overrides: Partial<typeof defaultInitialValues> = {}
+	overrides: Partial<typeof defaultInitialValues> = {},
+	scope: Scope = SCOPES.SITE
 ) =>
 	render(
 		<Formik
 			initialValues={{...defaultInitialValues, ...overrides}}
 			onSubmit={jest.fn()}
 		>
-			<SettingsStep />
+			<SettingsStep scope={scope} />
 		</Formik>
 	);
 
 describe('SettingsStep', () => {
-	it('renders the permissions, authorship, and update-data sections', () => {
+	it('renders the authorship and update-data sections', () => {
 		renderSettingsStep();
 
-		expect(screen.getByText('permissions')).toBeInTheDocument();
 		expect(
 			screen.getByText('authorship-of-the-content')
 		).toBeInTheDocument();
 		expect(screen.getByText('update-data')).toBeInTheDocument();
-	});
-
-	it('starts with the import-permissions checkbox unchecked and toggles on click', async () => {
-		const user = userEvent.setup();
-
-		renderSettingsStep();
-
-		const checkbox = screen.getByLabelText('import-permissions');
-
-		expect(checkbox).not.toBeChecked();
-
-		await user.click(checkbox);
-
-		expect(checkbox).toBeChecked();
-	});
-
-	it('toggles the import-permissions checkbox when its row is clicked', async () => {
-		const user = userEvent.setup();
-
-		renderSettingsStep();
-
-		const checkbox = screen.getByLabelText('import-permissions');
-
-		expect(checkbox).not.toBeChecked();
-
-		await user.click(screen.getByText('export-import-permissions-help'));
-
-		expect(checkbox).toBeChecked();
 	});
 
 	it('selects use-the-original-author authorship by default', () => {
@@ -98,7 +77,6 @@ describe('SettingsStep', () => {
 		expect(
 			screen.getByLabelText('mirror-with-overwriting')
 		).not.toBeChecked();
-		expect(screen.getByLabelText('copy-as-new')).not.toBeChecked();
 	});
 
 	it('switches the update-data strategy when a different option is selected', async () => {
@@ -106,11 +84,36 @@ describe('SettingsStep', () => {
 
 		renderSettingsStep();
 
-		const radio = screen.getByLabelText('copy-as-new');
+		const radio = screen.getByLabelText('mirror-with-overwriting');
 
 		await user.click(radio);
 
 		expect(radio).toBeChecked();
 		expect(screen.getByLabelText('mirror')).not.toBeChecked();
+	});
+
+	it('does not show the copy-as-new strategy', () => {
+		renderSettingsStep();
+
+		expect(screen.queryByLabelText('copy-as-new')).not.toBeInTheDocument();
+	});
+
+	it('shows mirror as a read-only label at the company scope', () => {
+		renderSettingsStep({}, SCOPES.COMPANY);
+
+		expect(screen.getByText('mirror')).toBeInTheDocument();
+		expect(
+			screen.getByText('import-data-strategy-mirror-help')
+		).toBeInTheDocument();
+	});
+
+	it('hides the update-data strategy options at the company scope', () => {
+		renderSettingsStep({}, SCOPES.COMPANY);
+
+		expect(screen.queryByLabelText('mirror')).not.toBeInTheDocument();
+		expect(
+			screen.queryByLabelText('mirror-with-overwriting')
+		).not.toBeInTheDocument();
+		expect(screen.queryByLabelText('copy-as-new')).not.toBeInTheDocument();
 	});
 });

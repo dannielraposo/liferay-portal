@@ -12,7 +12,9 @@ import {loginTest} from '../../../../../fixtures/loginTest';
 import {EFDSVisualizationMode, waitForFDS} from '../../../../../utils/waitFor';
 import {waitForAlert} from '../../../../../utils/waitForAlert';
 import {systemDataSetsPageTest} from '../../../../frontend-data-set-admin-web/main/fixtures/systemDataSetsPageTest';
+import {SystemDataSetsPage} from '../../../../frontend-data-set-admin-web/main/pages/SystemDataSetsPage';
 import {fdsSamplePageTest} from '../../fixtures/fdsSamplePageTest';
+import {FDSSamplePage} from '../../pages/FDSSamplePage';
 
 const test = mergeTests(
 	apiHelpersTest,
@@ -27,14 +29,54 @@ const test = mergeTests(
 
 let fdsSamplePageURL: string;
 
-test.beforeEach(async ({fdsSamplePage, page, site}) => {
+async function deleteAdvancedSampleCustomization({
+	fdsSamplePage,
+	systemDataSetsPage,
+}: {
+	fdsSamplePage: FDSSamplePage;
+	systemDataSetsPage: SystemDataSetsPage;
+}) {
+	await systemDataSetsPage.goto();
+
+	const advancedSampleRow = systemDataSetsPage.pageContainer
+		.locator('.fds tr')
+		.filter({hasText: 'Advanced Sample'});
+
+	if ((await advancedSampleRow.count()) === 0) {
+		return;
+	}
+
+	await advancedSampleRow.locator('.dropdown-toggle').click();
+
+	await fdsSamplePage.dropdownMenu
+		.getByRole('menuitem', {name: 'Delete'})
+		.click();
+
+	const deleteModal = systemDataSetsPage.page.getByRole('dialog');
+
+	await deleteModal.getByRole('button', {name: 'Delete'}).click();
+
+	await waitForAlert(systemDataSetsPage.page);
+
+	await expect(advancedSampleRow).not.toBeAttached();
+}
+
+test.beforeEach(async ({fdsSamplePage, page, site, systemDataSetsPage}) => {
+	await deleteAdvancedSampleCustomization({
+		fdsSamplePage,
+		systemDataSetsPage,
+	});
+
 	const {url} = await fdsSamplePage.setupFDSSampleWidget({site});
 
 	fdsSamplePageURL = url;
 
 	await fdsSamplePage.selectTab('Advanced');
 
-	await waitForFDS({page, visualizationMode: EFDSVisualizationMode.TABLE});
+	await waitForFDS({
+		page,
+		visualizationMode: EFDSVisualizationMode.TABLE,
+	});
 });
 
 test('Resize columns', {tag: '@LPD-54497'}, async ({fdsSamplePage, page}) => {
@@ -53,9 +95,12 @@ test('Resize columns', {tag: '@LPD-54497'}, async ({fdsSamplePage, page}) => {
 		const resizer = firstColumnHeader.locator('.dnd-th-resizer');
 		const resizerBoundingBox = await resizer.boundingBox();
 
-		await page.mouse.move(resizerBoundingBox.x, resizerBoundingBox.y);
+		const startX = resizerBoundingBox.x + resizerBoundingBox.width / 2;
+		const startY = resizerBoundingBox.y + resizerBoundingBox.height / 2;
+
+		await page.mouse.move(startX, startY);
 		await page.mouse.down();
-		await page.mouse.move(resizerBoundingBox.x + 50, resizerBoundingBox.y);
+		await page.mouse.move(startX + 50, startY, {steps: 5});
 		await page.mouse.up();
 	});
 
@@ -71,12 +116,19 @@ test('Resize columns', {tag: '@LPD-54497'}, async ({fdsSamplePage, page}) => {
 test(
 	'Hide column and assert correct visibility of columns',
 	{tag: '@LPD-45051'},
-	async ({page}) => {
-		const initialBodyCellText = await page.locator('td').nth(1).innerText();
+	async ({fdsSamplePage, page}) => {
+		const firstRowItemActionButton =
+			fdsSamplePage.table.itemActionButtons.first();
 
-		const rowAction = page.locator('td .component-action').first();
+		const tableCells = fdsSamplePage.table.container.locator('td');
+
+		const initialBodyCellText = await tableCells.nth(1).innerText();
+
+		const rowAction = tableCells.locator('.component-action').first();
 
 		await test.step('Check that row actions are present', async () => {
+			await firstRowItemActionButton.hover();
+
 			await expect(rowAction).toBeAttached();
 		});
 
@@ -93,9 +145,7 @@ test(
 		});
 
 		await test.step('Check that the first column is hidden and the row actions are still present', async () => {
-			await expect(page.locator('td').nth(1)).not.toHaveText(
-				initialBodyCellText
-			);
+			await expect(tableCells.nth(1)).not.toHaveText(initialBodyCellText);
 
 			await expect(rowAction).toBeAttached();
 		});
@@ -106,75 +156,61 @@ test(
 	'Columns with nested field names are shown',
 	{tag: '@LPD-75783'},
 	async ({fdsSamplePage, page, systemDataSetsPage}) => {
-		await test.step('Check author column, defined by creator.name field name, is visible', async () => {
-			expect(
-				fdsSamplePage.table.container.locator(
-					'[data-id="string,creator,name"]'
-				)
-			).toBeVisible();
-		});
-
-		await test.step('Create System Data Set', async () => {
-			await systemDataSetsPage.goto();
-
-			const creationModal = systemDataSetsPage.creationModal;
-
-			const advancedSampleListItem = creationModal.listItems.filter({
-				hasText: 'Advanced Sample',
+		try {
+			await test.step('Check author column, defined by creator.name field name, is visible', async () => {
+				await expect(
+					fdsSamplePage.table.container.locator(
+						'[data-id="string,creator,name"]'
+					)
+				).toBeVisible();
 			});
 
-			await systemDataSetsPage.createButton.click();
+			await test.step('Create System Data Set', async () => {
+				await systemDataSetsPage.goto();
 
-			await expect(advancedSampleListItem).toBeVisible();
+				const creationModal = systemDataSetsPage.creationModal;
 
-			await advancedSampleListItem.click();
+				const advancedSampleListItem = creationModal.listItems.filter({
+					hasText: 'Advanced Sample',
+				});
 
-			await expect(advancedSampleListItem).toHaveClass(/selected/);
+				await systemDataSetsPage.createButton.click();
 
-			await creationModal.createButton.click();
+				await expect(advancedSampleListItem).toBeVisible();
 
-			await waitForAlert(systemDataSetsPage.page);
-		});
+				await advancedSampleListItem.click();
 
-		await test.step('Check author column is still visible', async () => {
-			await page.goto(fdsSamplePageURL);
+				await expect(advancedSampleListItem).toHaveClass(/selected/);
 
-			await fdsSamplePage.selectTab('Advanced');
+				await creationModal.createButton.click();
 
-			await waitForFDS({
-				page,
-				visualizationMode: EFDSVisualizationMode.TABLE,
+				await waitForAlert(systemDataSetsPage.page);
 			});
 
-			expect(
-				fdsSamplePage.table.container.locator(
-					'[data-id="string,creator.name"]'
-				)
-			).toBeVisible();
-		});
+			await test.step('Check author column is still visible', async () => {
+				await page.goto(fdsSamplePageURL);
 
-		await test.step('Delete used system data set', async () => {
-			await systemDataSetsPage.goto();
+				await fdsSamplePage.selectTab('Advanced');
 
-			const fdsRows = systemDataSetsPage.pageContainer.locator('.fds tr');
+				await waitForFDS({
+					page,
+					visualizationMode: EFDSVisualizationMode.TABLE,
+				});
 
-			const advancedSampleRow = fdsRows.filter({
-				hasText: 'Advanced Sample',
+				await expect(
+					fdsSamplePage.table.container.locator(
+						'[data-id="string,creator.name"]'
+					)
+				).toBeVisible();
 			});
-
-			await advancedSampleRow.locator('.dropdown-toggle').click();
-
-			await fdsSamplePage.dropdownMenu
-				.getByRole('menuitem', {name: 'Delete'})
-				.click();
-
-			const deleteModal = systemDataSetsPage.page.getByRole('dialog');
-
-			await deleteModal.getByRole('button', {name: 'Delete'}).click();
-
-			await waitForAlert(systemDataSetsPage.page);
-
-			await expect(advancedSampleRow).not.toBeAttached();
-		});
+		}
+		finally {
+			await test.step('Delete used system data set', async () => {
+				await deleteAdvancedSampleCustomization({
+					fdsSamplePage,
+					systemDataSetsPage,
+				});
+			});
+		}
 	}
 );

@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -107,7 +108,8 @@ public abstract class BaseAccountMemberResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -242,6 +244,7 @@ public abstract class BaseAccountMemberResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountMember accountMember1 =
 			testGraphQLDeleteAccountByExternalReferenceCodeAccountMember_addAccountMember();
 
@@ -284,6 +287,7 @@ public abstract class BaseAccountMemberResourceTestCase {
 
 		// Using the namespace headlessCommerceAdminAccount_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountMember accountMember2 =
 			testGraphQLDeleteAccountByExternalReferenceCodeAccountMember_addAccountMember();
 
@@ -387,6 +391,7 @@ public abstract class BaseAccountMemberResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountMember accountMember1 =
 			testGraphQLDeleteAccountIdAccountMember_addAccountMember();
 
@@ -424,6 +429,7 @@ public abstract class BaseAccountMemberResourceTestCase {
 
 		// Using the namespace headlessCommerceAdminAccount_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountMember accountMember2 =
 			testGraphQLDeleteAccountIdAccountMember_addAccountMember();
 
@@ -1889,7 +1895,9 @@ public abstract class BaseAccountMemberResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -2155,4 +2163,4 @@ public abstract class BaseAccountMemberResourceTestCase {
 		AccountMemberResource _accountMemberResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1966633415
+// LIFERAY-REST-BUILDER-HASH:-717923296

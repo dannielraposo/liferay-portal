@@ -1,0 +1,159 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+import {act, fireEvent, render, screen} from '@testing-library/react';
+import React from 'react';
+
+import '@testing-library/jest-dom';
+
+import AIAssistantChat from '../../../src/main/resources/META-INF/resources/js/AIAssistantChat/AIAssistantChat';
+import {createEventSource} from '../../../src/main/resources/META-INF/resources/js/AIAssistantChat/api';
+import {postAIIssueReport} from '../../../src/main/resources/META-INF/resources/js/ReportFeedback/api';
+
+jest.mock(
+	'../../../src/main/resources/META-INF/resources/js/AIAssistantChat/api',
+	() => ({
+		createEventSource: jest.fn(() => Promise.resolve(null)),
+		postChatByExternalReferenceCodeMessage: jest.fn(() =>
+			Promise.resolve()
+		),
+	})
+);
+
+jest.mock(
+	'../../../src/main/resources/META-INF/resources/js/ReportFeedback/api'
+);
+
+const mockCreateEventSource = createEventSource as jest.MockedFunction<
+	typeof createEventSource
+>;
+const mockPostAIIssueReport = postAIIssueReport as jest.MockedFunction<
+	typeof postAIIssueReport
+>;
+
+const defaultProps = {
+	getContext: () => ({}),
+	instructionDefinitionScope: 'test-scope',
+};
+
+function createFakeEventSource() {
+	const listeners: Record<string, (event: {data: string}) => void> = {};
+
+	return {
+		addEventListener: jest.fn(
+			(type: string, handler: (event: {data: string}) => void) => {
+				listeners[type] = handler;
+			}
+		),
+		close: jest.fn(),
+		emit(type: string, data: string) {
+			listeners[type]?.({data});
+		},
+	};
+}
+
+async function renderAndOpen() {
+	await act(async () => {
+		render(<AIAssistantChat {...defaultProps} />);
+	});
+
+	await act(async () => {
+		screen
+			.getByRole('button', {name: 'ai-assistant'})
+			.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+	});
+}
+
+describe('AIAssistantChat', () => {
+	beforeEach(() => {
+		window.HTMLElement.prototype.scrollIntoView = jest.fn();
+
+		mockCreateEventSource.mockReset();
+		mockCreateEventSource.mockResolvedValue(null);
+		mockPostAIIssueReport.mockReset();
+		mockPostAIIssueReport.mockResolvedValue({id: 'report-1'});
+
+		global.Liferay = {
+			...global.Liferay,
+			Util: {
+				...global.Liferay?.Util,
+				openToast: jest.fn(),
+			},
+		};
+	});
+
+	it('shows the chat input immediately on open', async () => {
+		await renderAndOpen();
+
+		expect(
+			screen.getByPlaceholderText('Ask me anything...')
+		).toBeInTheDocument();
+	});
+
+	it('shows the footer disclaimer', async () => {
+		await renderAndOpen();
+
+		expect(
+			screen.getByText('ai-generated-responses-may-be-inaccurate')
+		).toBeInTheDocument();
+	});
+
+	it('exposes the feedback row on a successful message and wires the codes', async () => {
+		const fakeEventSource = createFakeEventSource();
+
+		mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
+
+		await renderAndOpen();
+
+		await act(async () => {
+			fakeEventSource.emit(
+				'Chat Message Sent',
+				JSON.stringify({
+					agentDefinitionExternalReferenceCodes: ['agent-x'],
+					data: 'Here is your answer',
+				})
+			);
+		});
+
+		expect(
+			screen.getByRole('button', {name: 'report-bad-result'})
+		).toBeInTheDocument();
+
+		await act(async () => {
+			fireEvent.click(
+				screen.getByRole('button', {name: 'good-response'})
+			);
+		});
+
+		expect(mockPostAIIssueReport).toHaveBeenCalledWith({
+			agentDefinitionExternalReferenceCodes: ['agent-x'],
+			feedback: 'positive',
+			surface: 'aiAssistant',
+		});
+	});
+
+	it('hides the feedback row on an error message', async () => {
+		const fakeEventSource = createFakeEventSource();
+
+		mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
+
+		await renderAndOpen();
+
+		await act(async () => {
+			fakeEventSource.emit(
+				'Agent Invocation Failed',
+				JSON.stringify({data: 'Something went wrong'})
+			);
+		});
+
+		expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', {name: 'good-response'})
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', {name: 'report-bad-result'})
+		).not.toBeInTheDocument();
+	});
+});

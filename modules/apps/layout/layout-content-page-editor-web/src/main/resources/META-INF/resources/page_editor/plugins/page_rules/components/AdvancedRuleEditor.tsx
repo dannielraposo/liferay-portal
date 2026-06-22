@@ -10,10 +10,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 
 import {config} from '../../../app/config';
 import {LAYOUT_DATA_ITEM_TYPES} from '../../../app/config/constants/layoutDataItemTypes';
-import {
-	ObjectField,
-	ObjectFields,
-} from '../../../app/contexts/ObjectDataContext';
+import {LAYOUT_TYPES} from '../../../app/config/constants/layoutTypes';
 import {
 	useRuleValidation,
 	useScriptError,
@@ -23,24 +20,29 @@ import {useSelector} from '../../../app/contexts/StoreContext';
 import selectFormConfiguration from '../../../app/selectors/selectFormConfiguration';
 import selectLayoutDataItemLabel from '../../../app/selectors/selectLayoutDataItemLabel';
 import FormService from '../../../app/services/FormService';
-import InfoItemService from '../../../app/services/InfoItemService';
 import RulesService from '../../../app/services/RulesService';
 import {CACHE_KEYS, getCacheItem, getCacheKey} from '../../../app/utils/cache';
 import {isLayoutDataItemDeleted} from '../../../app/utils/isLayoutDataItemDeleted';
 import useCache from '../../../app/utils/useCache';
 import {visitSelectedInputLayoutDataItems} from '../../../app/utils/visitSelectedInputLayoutDataItems';
+import {MappingField, MappingFields} from '../../../types/MappingField';
 import {State} from '../../../types/State';
 import {FragmentLayoutDataItem} from '../../../types/layout_data/FragmentLayoutDataItem';
-import {filterAndConvertMappingFields} from './Condition';
+import {MappingFieldItem} from '../utils/useMappingFieldItems';
 
 type Props = {
+	mappingFieldItems: MappingFieldItem[];
 	onChange: (value: string | undefined) => void;
 	value?: string;
 };
 
 type CodeEditorSidebarPanel = (typeof config.codeEditorSidebarPanels)[number];
 
-export default function AdvancedRuleEditor({onChange, value}: Props) {
+export default function AdvancedRuleEditor({
+	mappingFieldItems,
+	onChange,
+	value,
+}: Props) {
 	const id = useId();
 
 	const state = useSelector((state: State) => state);
@@ -84,7 +86,7 @@ export default function AdvancedRuleEditor({onChange, value}: Props) {
 	);
 
 	useEffect(() => {
-		getFormFieldsSections(state).then((sections) => {
+		getFormFieldsSections(state, mappingFieldItems).then((sections) => {
 			setCodeEditorSidebarPanels([
 				...config.codeEditorSidebarPanels,
 				...sections,
@@ -93,7 +95,13 @@ export default function AdvancedRuleEditor({onChange, value}: Props) {
 				segmentEntriesSection,
 			]);
 		});
-	}, [state, segmentEntriesSection, rolesSection, usersSection]);
+	}, [
+		mappingFieldItems,
+		rolesSection,
+		segmentEntriesSection,
+		state,
+		usersSection,
+	]);
 
 	useRuleValidation(() => {
 		setError(scriptError || '');
@@ -150,31 +158,27 @@ function getUsersSection(
 	};
 }
 
-async function getFormFieldsSections(state: State) {
+async function getFormFieldsSections(
+	state: State,
+	mappingFieldItems: MappingFieldItem[]
+) {
 	const sections: CodeEditorSidebarPanel[] = [];
 
-	if (config.selectedMappingTypes) {
-		const {subtype, type} = config.selectedMappingTypes;
-
-		const mappingFields =
-			(await InfoItemService.getAvailableStructureMappingFields({
-				classNameId: type.id,
-				classTypeId: subtype ? subtype.id : '',
-			})) as ObjectFields;
-
+	if (
+		config.layoutType === LAYOUT_TYPES.display &&
+		mappingFieldItems.length
+	) {
 		sections.push({
-			items: filterAndConvertMappingFields(mappingFields).map((field) => {
-				return {
-					content: field.value,
-					label: field.label,
-				};
-			}),
+			items: mappingFieldItems.map((field) => ({
+				content: field.value,
+				label: field.label,
+			})),
 			key: 'mappingFields',
 			label: sub(
 				Liferay.Language.get('x-default'),
-				config.selectedMappingTypes.subtype
+				config.selectedMappingTypes?.subtype
 					? config.selectedMappingTypes.subtype.label
-					: config.selectedMappingTypes.type.label
+					: config.selectedMappingTypes?.type.label ?? ''
 			),
 		});
 	}
@@ -230,12 +234,12 @@ async function getFormFieldsSections(state: State) {
 					classTypeId,
 				});
 
-		const formFields = (await promise) as ObjectFields;
+		const formFields = (await promise) as MappingFields;
 
 		const items = formFields
 			.flatMap((field) => ('fields' in field ? field.fields : [field]))
 			.filter(
-				(field) =>
+				(field): field is MappingField =>
 					'key' in field &&
 					selectedInputsData.some(
 						(inputField: any) => inputField.fieldId === field.key
@@ -244,8 +248,7 @@ async function getFormFieldsSections(state: State) {
 			)
 			.map((field) => {
 				const inputField = selectedInputsData.find(
-					(inputField) =>
-						inputField.fieldId === (field as ObjectField).key
+					(inputField) => inputField.fieldId === field.key
 				)!;
 
 				return {

@@ -8,9 +8,14 @@ export const OBJECT_DEFINITION_CLASS_NAME =
 export const OBJECT_ENTRY_FOLDER_CLASS_NAME =
 	'com.liferay.object.model.ObjectEntryFolder';
 
-export const ENTERPRISE_URL = 'https://www.liferay.com/web/lr/cms-upgrade';
+export const ENTERPRISE_URL =
+	'https://www.liferay.com/web/lr/cms-upgrade?utm_medium=referral&utm_source=cms-ft&utm_content=cms-ft-upgrade&utm_cid=701VO00000wwP6IYAU';
+
+export const ERC_MAX_LENGTH = 75;
 
 export const EXPIRING_SOON_THRESHOLD_DAYS = 7;
+
+export const FDS_EVENT_DISPLAY_UPDATED = 'fds-display-updated';
 
 export const FDS_EVENT_UPDATE_DISPLAY = 'fds-update-display';
 
@@ -42,10 +47,21 @@ export const ASSET_STATUS_TO_DISPLAY_TYPE = {
 	[ASSET_STATUS.SCHEDULED]: 'info',
 } as const;
 
+export const COLLABORATOR_TYPE = {
+	EXTERNAL_USER: 'Email',
+	USER: 'User',
+	USER_GROUP: 'UserGroup',
+} as const;
+
+export type CollaboratorType =
+	(typeof COLLABORATOR_TYPE)[keyof typeof COLLABORATOR_TYPE];
+
 export const ROOT_FOLDER_ERC = {
 	CONTENTS: 'L_CONTENTS',
 	FILES: 'L_FILES',
 } as const;
+
+export const SITE_TEMPLATE_TYPE = 'SiteTemplate';
 
 export const ROOT_FOLDER_ERCS: ReadonlySet<string> = new Set([
 	ROOT_FOLDER_ERC.CONTENTS,
@@ -63,3 +79,22 @@ export const ITEM_SELECTOR_ITEM_TYPE = {
 
 export type ItemSelectorItemType =
 	(typeof ITEM_SELECTOR_ITEM_TYPE)[keyof typeof ITEM_SELECTOR_ITEM_TYPE];
+
+export const CMSSiteInitializerFDSNames = {
+	ALL_SECTION: '-allSection',
+} as const;
+
+export const WORKFLOW_STATUS = {
+	APPROVED: 0,
+	DRAFT: 2,
+	EXPIRED: 3,
+} as const;
+
+export type WorkflowStatus =
+	(typeof WORKFLOW_STATUS)[keyof typeof WORKFLOW_STATUS];
+
+export const FDS_FILTER_ID = {
+	DATE_EXPIRATION: 'dateExpiration',
+	DATE_REVIEW: 'dateReview',
+	STATUS: 'status',
+} as const;

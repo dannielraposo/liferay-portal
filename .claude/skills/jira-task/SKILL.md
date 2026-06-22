@@ -9,7 +9,7 @@ name: jira-task
 
 # Create a Jira Task in LPD
 
-Create a task ticket in the LPD Jira project through the REST API, authenticating with credentials from the `${JIRA_API_USER}` and `${JIRA_API_TOKEN}` environment variables.
+Create a task ticket in the LPD Jira project through the REST API.
 
 ## Input
 
@@ -26,40 +26,15 @@ Request any missing details from the user:
 
 The LPD project requires the following fields. Apply these defaults unless the user specifies otherwise:
 
-- **Component**: Select from the list below, or infer from the code area. Common components include:
-	- `Content Publishing > Resource Importer` (ID: `15805`)
-	- `Data Integration > Export/Import` (ID: `16131`)
-	- `Headless Batch Engine API` (ID: `16022`)
+- **Component**: Infer from the code area. Fetch the LPD project components and select the one whose name matches the relevant area or keyword.
 - **Issue Type**: `Task` (ID: `10002`).
 
 Note: Unlike bugs, tasks do not require the Affects Version or Cross Cutting Properties fields.
 
-When no listed component matches, search by keyword:
-
-```bash
-curl \
-	--silent \
-	--url "https://liferay.atlassian.net/rest/api/3/project/LPD/components" \
-	--user "${JIRA_API_USER}:${JIRA_API_TOKEN}" \
-	| python3 -c "import json, sys; [print(f'{c[\"id\"]:>6} {c[\"name\"]}') for c in json.load(sys.stdin) if 'SEARCH_TERM' in c['name'].lower()]"
-```
-
 ## Create the Ticket
 
-Submit the issue through Jira REST API v3:
-
-```bash
-curl \
-	--data '<JSON payload>' \
-	--header "Content-Type: application/json" \
-	--request POST \
-	--silent \
-	--url "https://liferay.atlassian.net/rest/api/3/issue" \
-	--user "${JIRA_API_USER}:${JIRA_API_TOKEN}"
-```
-
-Author the description in Atlassian Document Format (ADF) with the following sections, in order: Description, Acceptance Criteria (when applicable). Append a Reference section when a commit is referenced.
+Create the issue in the LPD project with the gathered summary, description, and required fields. Author the description in Atlassian Document Format (ADF) with the following sections, in order: Description, Acceptance Criteria (when applicable). Append a Reference section when a commit is referenced.
 
 ## Output
 
-Return the ticket key and the browse URL: `https://liferay.atlassian.net/browse/<KEY>`.
+The ticket key and the browse URL: `https://liferay.atlassian.net/browse/<KEY>`.

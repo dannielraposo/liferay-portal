@@ -13,13 +13,11 @@ import com.liferay.message.boards.model.impl.MBBanModelImpl;
 import com.liferay.message.boards.service.persistence.MBBanPersistence;
 import com.liferay.message.boards.service.persistence.MBBanUtil;
 import com.liferay.message.boards.service.persistence.impl.constants.MBPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -88,66 +86,14 @@ public class MBBanPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<MBBan>
+	private CollectionPersistenceFinder<MBBan, NoSuchBanException>
 		_collectionPersistenceFinderByUuid;
 
 	/**
-	 * Returns all the message boards bans where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards bans where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of message boards bans
-	 * @param end the upper bound of the range of message boards bans (not inclusive)
-	 * @return the range of matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the message boards bans where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of message boards bans
-	 * @param end the upper bound of the range of message boards bans (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<MBBan> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards bans where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -162,14 +108,9 @@ public class MBBanPersistenceImpl
 		String uuid, int start, int end,
 		OrderByComparator<MBBan> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -185,15 +126,8 @@ public class MBBanPersistenceImpl
 			String uuid, OrderByComparator<MBBan> orderByComparator)
 		throws NoSuchBanException {
 
-		MBBan mbBan = fetchByUuid_First(uuid, orderByComparator);
-
-		if (mbBan != null) {
-			return mbBan;
-		}
-
-		throw new NoSuchBanException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -230,17 +164,12 @@ public class MBBanPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<MBBan> _uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder<MBBan, NoSuchBanException>
+		_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the message boards ban where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchBanException</code> if it could not be found.
@@ -254,33 +183,8 @@ public class MBBanPersistenceImpl
 	public MBBan findByUUID_G(String uuid, long groupId)
 		throws NoSuchBanException {
 
-		MBBan mbBan = fetchByUUID_G(uuid, groupId);
-
-		if (mbBan == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchBanException(message);
-		}
-
-		return mbBan;
-	}
-
-	/**
-	 * Returns the message boards ban where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching message boards ban, or <code>null</code> if a matching message boards ban could not be found
-	 */
-	@Override
-	public MBBan fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -295,13 +199,8 @@ public class MBBanPersistenceImpl
 	public MBBan fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -333,73 +232,14 @@ public class MBBanPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<MBBan>
+	private CollectionPersistenceFinder<MBBan, NoSuchBanException>
 		_collectionPersistenceFinderByUuid_C;
 
 	/**
-	 * Returns all the message boards bans where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards bans where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message boards bans
-	 * @param end the upper bound of the range of message boards bans (not inclusive)
-	 * @return the range of matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the message boards bans where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message boards bans
-	 * @param end the upper bound of the range of message boards bans (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<MBBan> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards bans where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -415,14 +255,9 @@ public class MBBanPersistenceImpl
 		String uuid, long companyId, int start, int end,
 		OrderByComparator<MBBan> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -440,15 +275,8 @@ public class MBBanPersistenceImpl
 			OrderByComparator<MBBan> orderByComparator)
 		throws NoSuchBanException {
 
-		MBBan mbBan = fetchByUuid_C_First(uuid, companyId, orderByComparator);
-
-		if (mbBan != null) {
-			return mbBan;
-		}
-
-		throw new NoSuchBanException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -489,76 +317,18 @@ public class MBBanPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<MBBan>
+	private CollectionPersistenceFinder<MBBan, NoSuchBanException>
 		_collectionPersistenceFinderByGroupId;
 
 	/**
-	 * Returns all the message boards bans where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards bans where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of message boards bans
-	 * @param end the upper bound of the range of message boards bans (not inclusive)
-	 * @return the range of matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByGroupId(long groupId, int start, int end) {
-		return findByGroupId(groupId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the message boards bans where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of message boards bans
-	 * @param end the upper bound of the range of message boards bans (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<MBBan> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards bans where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -573,14 +343,9 @@ public class MBBanPersistenceImpl
 		long groupId, int start, int end,
 		OrderByComparator<MBBan> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				finderCache, new Object[] {groupId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -596,15 +361,8 @@ public class MBBanPersistenceImpl
 			long groupId, OrderByComparator<MBBan> orderByComparator)
 		throws NoSuchBanException {
 
-		MBBan mbBan = fetchByGroupId_First(groupId, orderByComparator);
-
-		if (mbBan != null) {
-			return mbBan;
-		}
-
-		throw new NoSuchBanException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -641,75 +399,18 @@ public class MBBanPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				finderCache, new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUserId;
-	private FinderPath _finderPathWithoutPaginationFindByUserId;
-	private FinderPath _finderPathCountByUserId;
-	private CollectionPersistenceFinder<MBBan>
+	private CollectionPersistenceFinder<MBBan, NoSuchBanException>
 		_collectionPersistenceFinderByUserId;
 
 	/**
-	 * Returns all the message boards bans where userId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @return the matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByUserId(long userId) {
-		return findByUserId(userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards bans where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of message boards bans
-	 * @param end the upper bound of the range of message boards bans (not inclusive)
-	 * @return the range of matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByUserId(long userId, int start, int end) {
-		return findByUserId(userId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the message boards bans where userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of message boards bans
-	 * @param end the upper bound of the range of message boards bans (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByUserId(
-		long userId, int start, int end,
-		OrderByComparator<MBBan> orderByComparator) {
-
-		return findByUserId(userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards bans where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -724,14 +425,9 @@ public class MBBanPersistenceImpl
 		long userId, int start, int end,
 		OrderByComparator<MBBan> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _collectionPersistenceFinderByUserId.find(
-				finderCache, new Object[] {userId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUserId.find(
+			finderCache, new Object[] {userId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -747,15 +443,8 @@ public class MBBanPersistenceImpl
 			long userId, OrderByComparator<MBBan> orderByComparator)
 		throws NoSuchBanException {
 
-		MBBan mbBan = fetchByUserId_First(userId, orderByComparator);
-
-		if (mbBan != null) {
-			return mbBan;
-		}
-
-		throw new NoSuchBanException(
-			_collectionPersistenceFinderByUserId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId}));
+		return _collectionPersistenceFinderByUserId.findFirst(
+			finderCache, new Object[] {userId}, orderByComparator);
 	}
 
 	/**
@@ -792,76 +481,18 @@ public class MBBanPersistenceImpl
 	 */
 	@Override
 	public int countByUserId(long userId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _collectionPersistenceFinderByUserId.count(
-				finderCache, new Object[] {userId});
-		}
+		return _collectionPersistenceFinderByUserId.count(
+			finderCache, new Object[] {userId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByBanUserId;
-	private FinderPath _finderPathWithoutPaginationFindByBanUserId;
-	private FinderPath _finderPathCountByBanUserId;
-	private CollectionPersistenceFinder<MBBan>
+	private CollectionPersistenceFinder<MBBan, NoSuchBanException>
 		_collectionPersistenceFinderByBanUserId;
 
 	/**
-	 * Returns all the message boards bans where banUserId = &#63;.
-	 *
-	 * @param banUserId the ban user ID
-	 * @return the matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByBanUserId(long banUserId) {
-		return findByBanUserId(
-			banUserId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards bans where banUserId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
-	 * </p>
-	 *
-	 * @param banUserId the ban user ID
-	 * @param start the lower bound of the range of message boards bans
-	 * @param end the upper bound of the range of message boards bans (not inclusive)
-	 * @return the range of matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByBanUserId(long banUserId, int start, int end) {
-		return findByBanUserId(banUserId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the message boards bans where banUserId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
-	 * </p>
-	 *
-	 * @param banUserId the ban user ID
-	 * @param start the lower bound of the range of message boards bans
-	 * @param end the upper bound of the range of message boards bans (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards bans
-	 */
-	@Override
-	public List<MBBan> findByBanUserId(
-		long banUserId, int start, int end,
-		OrderByComparator<MBBan> orderByComparator) {
-
-		return findByBanUserId(banUserId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards bans where banUserId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBBanModelImpl</code>.
 	 * </p>
 	 *
 	 * @param banUserId the ban user ID
@@ -876,14 +507,9 @@ public class MBBanPersistenceImpl
 		long banUserId, int start, int end,
 		OrderByComparator<MBBan> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _collectionPersistenceFinderByBanUserId.find(
-				finderCache, new Object[] {banUserId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByBanUserId.find(
+			finderCache, new Object[] {banUserId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -899,15 +525,8 @@ public class MBBanPersistenceImpl
 			long banUserId, OrderByComparator<MBBan> orderByComparator)
 		throws NoSuchBanException {
 
-		MBBan mbBan = fetchByBanUserId_First(banUserId, orderByComparator);
-
-		if (mbBan != null) {
-			return mbBan;
-		}
-
-		throw new NoSuchBanException(
-			_collectionPersistenceFinderByBanUserId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {banUserId}));
+		return _collectionPersistenceFinderByBanUserId.findFirst(
+			finderCache, new Object[] {banUserId}, orderByComparator);
 	}
 
 	/**
@@ -944,17 +563,12 @@ public class MBBanPersistenceImpl
 	 */
 	@Override
 	public int countByBanUserId(long banUserId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _collectionPersistenceFinderByBanUserId.count(
-				finderCache, new Object[] {banUserId});
-		}
+		return _collectionPersistenceFinderByBanUserId.count(
+			finderCache, new Object[] {banUserId});
 	}
 
-	private FinderPath _finderPathFetchByG_B;
-	private UniquePersistenceFinder<MBBan> _uniquePersistenceFinderByG_B;
+	private UniquePersistenceFinder<MBBan, NoSuchBanException>
+		_uniquePersistenceFinderByG_B;
 
 	/**
 	 * Returns the message boards ban where groupId = &#63; and banUserId = &#63; or throws a <code>NoSuchBanException</code> if it could not be found.
@@ -968,34 +582,8 @@ public class MBBanPersistenceImpl
 	public MBBan findByG_B(long groupId, long banUserId)
 		throws NoSuchBanException {
 
-		MBBan mbBan = fetchByG_B(groupId, banUserId);
-
-		if (mbBan == null) {
-			String message =
-				_uniquePersistenceFinderByG_B.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, banUserId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchBanException(message);
-		}
-
-		return mbBan;
-	}
-
-	/**
-	 * Returns the message boards ban where groupId = &#63; and banUserId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param banUserId the ban user ID
-	 * @return the matching message boards ban, or <code>null</code> if a matching message boards ban could not be found
-	 */
-	@Override
-	public MBBan fetchByG_B(long groupId, long banUserId) {
-		return fetchByG_B(groupId, banUserId, true);
+		return _uniquePersistenceFinderByG_B.find(
+			finderCache, new Object[] {groupId, banUserId});
 	}
 
 	/**
@@ -1010,13 +598,8 @@ public class MBBanPersistenceImpl
 	public MBBan fetchByG_B(
 		long groupId, long banUserId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBBan.class)) {
-
-			return _uniquePersistenceFinderByG_B.fetch(
-				finderCache, new Object[] {groupId, banUserId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_B.fetch(
+			finderCache, new Object[] {groupId, banUserId}, useFinderCache);
 	}
 
 	/**
@@ -1334,177 +917,157 @@ public class MBBanPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_MBBAN_WHERE, _SQL_COUNT_MBBAN_WHERE,
-			MBBanModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MBBanModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"mbBan.", "uuid", FinderColumn.Type.STRING, "=", true, true,
-				MBBan::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, MBBan::getUuid,
-			MBBan::getGroupId);
+				"mbBan.", "uuid", "uuid_", FinderColumn.Type.STRING, "=", true,
+				true, MBBan::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_MBBAN_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(MBBan::getUuid), MBBan::getGroupId),
+			_SQL_SELECT_MBBAN_WHERE, "",
 			new FinderColumn<>(
-				"mbBan.", "uuid", FinderColumn.Type.STRING, "=", true, false,
-				MBBan::getUuid),
+				"mbBan.", "uuid", "uuid_", FinderColumn.Type.STRING, "=", true,
+				true, MBBan::getUuid),
 			new FinderColumn<>(
 				"mbBan.", "groupId", FinderColumn.Type.LONG, "=", true, true,
 				MBBan::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_MBBAN_WHERE,
-				_SQL_COUNT_MBBAN_WHERE, MBBanModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_MBBAN_WHERE, _SQL_COUNT_MBBAN_WHERE,
+				MBBanModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"mbBan.", "uuid", FinderColumn.Type.STRING, "=", true,
-					false, MBBan::getUuid),
+					"mbBan.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+					true, true, MBBan::getUuid),
 				new FinderColumn<>(
 					"mbBan.", "companyId", FinderColumn.Type.LONG, "=", true,
 					true, MBBan::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_MBBAN_WHERE,
-				_SQL_COUNT_MBBAN_WHERE, MBBanModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_MBBAN_WHERE, _SQL_COUNT_MBBAN_WHERE,
+				MBBanModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mbBan.", "groupId", FinderColumn.Type.LONG, "=", true,
 					true, MBBan::getGroupId));
 
-		_finderPathWithPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId"}, true);
-
-		_finderPathWithoutPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, true);
-
-		_finderPathCountByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"},
-			false);
-
 		_collectionPersistenceFinderByUserId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUserId,
-				_finderPathWithoutPaginationFindByUserId,
-				_finderPathCountByUserId, _SQL_SELECT_MBBAN_WHERE,
-				_SQL_COUNT_MBBAN_WHERE, MBBanModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, false),
+				_SQL_SELECT_MBBAN_WHERE, _SQL_COUNT_MBBAN_WHERE,
+				MBBanModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mbBan.", "userId", FinderColumn.Type.LONG, "=", true, true,
 					MBBan::getUserId));
 
-		_finderPathWithPaginationFindByBanUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByBanUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"banUserId"}, true);
-
-		_finderPathWithoutPaginationFindByBanUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByBanUserId",
-			new String[] {Long.class.getName()}, new String[] {"banUserId"},
-			true);
-
-		_finderPathCountByBanUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByBanUserId",
-			new String[] {Long.class.getName()}, new String[] {"banUserId"},
-			false);
-
 		_collectionPersistenceFinderByBanUserId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByBanUserId,
-				_finderPathWithoutPaginationFindByBanUserId,
-				_finderPathCountByBanUserId, _SQL_SELECT_MBBAN_WHERE,
-				_SQL_COUNT_MBBAN_WHERE, MBBanModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByBanUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"banUserId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByBanUserId", new String[] {Long.class.getName()},
+					new String[] {"banUserId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByBanUserId", new String[] {Long.class.getName()},
+					new String[] {"banUserId"}, false),
+				_SQL_SELECT_MBBAN_WHERE, _SQL_COUNT_MBBAN_WHERE,
+				MBBanModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mbBan.", "banUserId", FinderColumn.Type.LONG, "=", true,
 					true, MBBan::getBanUserId));
 
-		_finderPathFetchByG_B = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_B",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "banUserId"}, false, MBBan::getGroupId,
-			MBBan::getBanUserId);
-
 		_uniquePersistenceFinderByG_B = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_B, _SQL_SELECT_MBBAN_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_B",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "banUserId"}, 0, 0, false,
+				MBBan::getGroupId, MBBan::getBanUserId),
+			_SQL_SELECT_MBBAN_WHERE, "",
 			new FinderColumn<>(
-				"mbBan.", "groupId", FinderColumn.Type.LONG, "=", true, false,
+				"mbBan.", "groupId", FinderColumn.Type.LONG, "=", true, true,
 				MBBan::getGroupId),
 			new FinderColumn<>(
 				"mbBan.", "banUserId", FinderColumn.Type.LONG, "=", true, true,
@@ -1582,4 +1145,4 @@ public class MBBanPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1875799182
+// LIFERAY-SERVICE-BUILDER-HASH:-1214689131

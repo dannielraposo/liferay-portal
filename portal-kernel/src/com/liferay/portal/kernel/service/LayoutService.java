@@ -741,7 +741,8 @@ public interface LayoutService extends BaseService {
 			Map<Locale, String> robotsMap, String type, boolean hidden,
 			Map<Locale, String> friendlyURLMap, boolean hasIconImage,
 			byte[] iconBytes, String styleBookEntryERC,
-			String faviconFileEntryERC, String faviconFileEntryScopeERC,
+			String styleBookEntryScopeERC, String faviconFileEntryERC,
+			String faviconFileEntryScopeERC,
 			String masterLayoutPageTemplateEntryERC,
 			ServiceContext serviceContext)
 		throws PortalException;
@@ -901,4 +902,4 @@ public interface LayoutService extends BaseService {
 		throws PortalException;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1420307162
+// LIFERAY-SERVICE-BUILDER-HASH:1518656952

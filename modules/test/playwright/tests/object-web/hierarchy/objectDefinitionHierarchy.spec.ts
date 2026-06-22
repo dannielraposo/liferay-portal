@@ -28,6 +28,7 @@ export const test = mergeTests(
 	dataApiHelpersTest,
 	featureFlagsTest({
 		'LPD-34594': {enabled: true},
+		'LPD-69877': {enabled: true},
 	}),
 	loginTest(),
 	objectPagesTest
@@ -35,6 +36,145 @@ export const test = mergeTests(
 
 test.beforeEach(({page}) => {
 	page.setViewportSize({height: 1080, width: 1920});
+});
+
+test.describe('Allow Standalone Entries toggle', () => {
+
+	// The inheritance relationship created inside the test cannot be deleted
+	// directly (edge relationships are protected by the BE), so we convert it
+	// to non-edge here. afterEach runs even when the test body throws, so
+	// the automatic apiHelpers cleanup chain stays unblocked.
+
+	let relationshipForCleanup: ObjectRelationship | undefined;
+
+	test.afterEach(async ({apiHelpers}) => {
+		if (relationshipForCleanup) {
+			await apiHelpers.objectAdmin.patchObjectRelationshipEdge(
+				relationshipForCleanup,
+				false
+			);
+
+			relationshipForCleanup = undefined;
+		}
+	});
+
+	test('is disabled when the child has standalone entries', async ({
+		apiHelpers,
+		editObjectDetailsPage,
+		modelBuilderDiagramPage,
+		modelBuilderRightSidebarPage,
+	}) => {
+		const child =
+			await test.step('Create the parent and child object definitions with inheritance', async () => {
+				const parent =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						panelCategoryKey: 'control_panel.object',
+						status: {code: 0},
+					});
+
+				apiHelpers.data.push({
+					id: parent.id!,
+					type: 'objectDefinition',
+				});
+
+				const child =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						panelCategoryKey: 'control_panel.object',
+						status: {code: 0},
+					});
+
+				apiHelpers.data.push({
+					id: child.id!,
+					type: 'objectDefinition',
+				});
+
+				relationshipForCleanup =
+					await apiHelpers.objectAdmin.postObjectDefinitionInheritanceRelationship(
+						parent,
+						child
+					);
+
+				apiHelpers.data.push({
+					id: relationshipForCleanup.id!,
+					type: 'objectRelationship',
+				});
+
+				await apiHelpers.objectAdmin.patchObjectDefinitionSetting(
+					child.id!,
+					'allowStandaloneObjectEntry',
+					'true'
+				);
+
+				return child;
+			});
+
+		await test.step('Confirm the toggle is checked and enabled when no standalone entries exist', async () => {
+			await editObjectDetailsPage.goto(child.label!['en_US']);
+
+			await expect(
+				editObjectDetailsPage.allowStandaloneEntriesToggle
+			).toBeChecked();
+
+			await expect(
+				editObjectDetailsPage.allowStandaloneEntriesToggle
+			).toBeEnabled();
+
+			await modelBuilderDiagramPage.goto({
+				objectFolderName: 'Default',
+			});
+
+			await modelBuilderDiagramPage.toggleSidebarsButton.click();
+
+			await modelBuilderDiagramPage.objectDefinitionNodes
+				.getByText(child.label!['en_US'], {exact: true})
+				.click();
+
+			await expect(
+				modelBuilderRightSidebarPage.allowStandaloneEntriesToggle
+			).toBeChecked();
+
+			await expect(
+				modelBuilderRightSidebarPage.allowStandaloneEntriesToggle
+			).toBeEnabled();
+		});
+
+		await test.step('Create a standalone entry', async () => {
+			await apiHelpers.objectEntry.postObjectEntry(
+				{textField: 'standalone-' + getRandomInt()},
+				child.restContextPath!.replace(/^\/o\//, '')
+			);
+		});
+
+		await test.step('Confirm the toggle is checked and disabled when a standalone entry exists', async () => {
+			await editObjectDetailsPage.goto(child.label!['en_US']);
+
+			await expect(
+				editObjectDetailsPage.allowStandaloneEntriesToggle
+			).toBeChecked();
+
+			await expect(
+				editObjectDetailsPage.allowStandaloneEntriesToggle
+			).toBeDisabled();
+
+			await modelBuilderDiagramPage.goto({
+				objectFolderName: 'Default',
+			});
+
+			await modelBuilderDiagramPage.toggleSidebarsButton.click();
+
+			await modelBuilderDiagramPage.objectDefinitionNodes
+				.getByText(child.label!['en_US'], {exact: true})
+				.click();
+
+			await expect(
+				modelBuilderRightSidebarPage.allowStandaloneEntriesToggle
+			).toBeChecked();
+
+			await expect(
+				modelBuilderRightSidebarPage.allowStandaloneEntriesToggle
+			).toBeDisabled();
+		});
+	});
 });
 
 test.describe('Manage root model elements through View Object Entries', () => {
@@ -494,6 +634,189 @@ test.describe('Manage root model elements through View Object Entries', () => {
 });
 
 test.describe('Manage root models elements through Objects Admin', () => {
+	test.describe('Disable inheritance modal flows', () => {
+
+		// Inheritance edges with linked entries cannot be PUT edge=false until
+		// the entries are gone, and apiHelpers cannot delete an edge=true
+		// relationship. Delete the parent entry here so the cascade clears the
+		// linked child, then PUT edge=false on the relationships so the
+		// automatic apiHelpers cleanup chain stays unblocked.
+
+		let parentApplicationName = '';
+		let parentEntryId: number | undefined;
+		let relationshipsForCleanup: ObjectRelationship[] = [];
+
+		test.afterEach(async ({apiHelpers}) => {
+			if (parentEntryId !== undefined && parentApplicationName) {
+				await apiHelpers.delete(
+					`${apiHelpers.baseUrl}${parentApplicationName}/${parentEntryId}`
+				);
+			}
+
+			for (const objectRelationship of relationshipsForCleanup) {
+				await apiHelpers.objectAdmin.patchObjectRelationshipEdge(
+					objectRelationship,
+					false
+				);
+			}
+
+			parentApplicationName = '';
+			parentEntryId = undefined;
+			relationshipsForCleanup = [];
+		});
+
+		test('shows modal with warning message before disabling inheritance', async ({
+			apiHelpers,
+			objectRelationshipsPage,
+		}) => {
+			const parent =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					status: {code: 0},
+				});
+
+			const child =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					status: {code: 0},
+				});
+
+			pushToApiHelpersData(
+				apiHelpers,
+				[parent.id!, child.id!],
+				'objectDefinition'
+			);
+
+			const relationship =
+				await apiHelpers.objectAdmin.postObjectDefinitionInheritanceRelationship(
+					parent,
+					child
+				);
+
+			relationshipsForCleanup = [relationship];
+
+			apiHelpers.data.push({
+				id: relationship.id!,
+				type: 'objectRelationship',
+			});
+
+			await objectRelationshipsPage.goto(parent.label!['en_US']);
+
+			await objectRelationshipsPage.actionsButton.click();
+
+			await objectRelationshipsPage.editObjectRelationshipOption.click();
+
+			await objectRelationshipsPage.inheritanceCheckbox.click();
+
+			await expect(
+				objectRelationshipsPage.inheritanceModalHeader
+			).toBeVisible();
+
+			await expect(
+				objectRelationshipsPage.inheritanceModalConfirmationMessage
+			).toBeVisible();
+		});
+
+		test(
+			'shows modal blocking disabling inheritance when entries would be orphaned',
+			{tag: '@LPD-89021'},
+			async ({apiHelpers, objectRelationshipsPage}) => {
+
+				// Build a child with two inheritance parents and standalone=false
+
+				const parent1 =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						status: {code: 0},
+					});
+
+				const parent2 =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						status: {code: 0},
+					});
+
+				const child =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						status: {code: 0},
+					});
+
+				pushToApiHelpersData(
+					apiHelpers,
+					[parent1.id!, parent2.id!, child.id!],
+					'objectDefinition'
+				);
+
+				const relationship1 =
+					await apiHelpers.objectAdmin.postObjectDefinitionInheritanceRelationship(
+						parent1,
+						child
+					);
+
+				const relationship2 =
+					await apiHelpers.objectAdmin.postObjectDefinitionInheritanceRelationship(
+						parent2,
+						child
+					);
+
+				relationshipsForCleanup = [relationship1, relationship2];
+
+				apiHelpers.data.push(
+					{id: relationship1.id!, type: 'objectRelationship'},
+					{id: relationship2.id!, type: 'objectRelationship'}
+				);
+
+				await apiHelpers.objectAdmin.patchObjectDefinitionSetting(
+					child.id!,
+					'allowStandaloneObjectEntry',
+					'false'
+				);
+
+				// Create a child entry linked under parent1
+
+				parentApplicationName = parent1.restContextPath!.replace(
+					/^\/o\//,
+					''
+				);
+
+				const parentEntry =
+					await apiHelpers.objectEntry.postObjectEntry(
+						{textField: 'parent-' + getRandomInt()},
+						parentApplicationName
+					);
+
+				parentEntryId = parentEntry.id;
+
+				await apiHelpers.post(
+					`${apiHelpers.baseUrl}${parentApplicationName}/${parentEntry.id}/${relationship1.name}`,
+					{data: {textField: 'linked-' + getRandomInt()}}
+				);
+
+				// Open Edit relationship and uncheck inheritance
+
+				await objectRelationshipsPage.goto(parent1.label!['en_US']);
+
+				await objectRelationshipsPage.actionsButton.click();
+
+				await objectRelationshipsPage.editObjectRelationshipOption.click();
+
+				await objectRelationshipsPage.inheritanceCheckbox.click();
+
+				// Block modal fires directly from the pre-check (no warning step)
+
+				await expect(
+					objectRelationshipsPage.disableInheritanceNotAllowedModalHeader
+				).toBeVisible();
+
+				await expect(
+					objectRelationshipsPage.disableInheritanceNotAllowedModalBody
+				).toBeVisible();
+
+				await objectRelationshipsPage.disableInheritanceNotAllowedModalDoneButton.click();
+
+				await expect(
+					objectRelationshipsPage.disableInheritanceNotAllowedModalHeader
+				).toBeHidden();
+			}
+		);
+	});
+
 	test('cannot delete an object definition with inheritance enabled on its relationship', async ({
 		apiHelpers,
 		page,
@@ -1368,95 +1691,6 @@ test.describe('Manage root models elements through Objects Admin', () => {
 
 			await expect(
 				page.getByRole('cell', {name: 'Inherited'})
-			).toBeVisible();
-		}
-		finally {
-			const objectRelationshipAPIClient =
-				await apiHelpers.buildRestClient(ObjectRelationshipAPI);
-
-			for (const objectRelationship of objectRelationships) {
-				await objectRelationshipAPIClient.putObjectRelationship(
-					objectRelationship.id,
-					{
-						...objectRelationship,
-						edge: false,
-					}
-				);
-			}
-		}
-	});
-
-	test('shows modal with warning message before disabling inheritance', async ({
-		apiHelpers,
-		objectRelationshipsPage,
-	}) => {
-		const objectRelationships: ObjectRelationship[] = [];
-
-		try {
-			const objectDefinition1 =
-				await apiHelpers.objectAdmin.postRandomObjectDefinition({
-					status: {code: 0},
-				});
-
-			const objectDefinition2 =
-				await apiHelpers.objectAdmin.postRandomObjectDefinition({
-					status: {code: 0},
-				});
-
-			pushToApiHelpersData(
-				apiHelpers,
-				[objectDefinition1.id, objectDefinition2.id],
-				'objectDefinition'
-			);
-
-			const objectRelationshipAPIClient =
-				await apiHelpers.buildRestClient(ObjectRelationshipAPI);
-
-			const {body: objectRelationship} =
-				await objectRelationshipAPIClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
-					objectDefinition1.externalReferenceCode,
-					{
-						edge: true,
-						label: {
-							en_US: 'objectRelationshipLabel' + getRandomInt(),
-						},
-						name:
-							'objectRelationshipName' +
-							Math.floor(Math.random() * 99),
-						objectDefinitionExternalReferenceCode1:
-							objectDefinition1.externalReferenceCode,
-						objectDefinitionExternalReferenceCode2:
-							objectDefinition2.externalReferenceCode,
-						objectDefinitionId1: objectDefinition1.id,
-						objectDefinitionId2: objectDefinition2.id,
-						objectDefinitionName2: objectDefinition2.name,
-						type: 'oneToMany',
-					}
-				);
-
-			objectRelationships.push(objectRelationship);
-
-			apiHelpers.data.push({
-				id: objectRelationship.id,
-				type: 'objectRelationship',
-			});
-
-			await objectRelationshipsPage.goto(
-				objectDefinition1.label['en_US']
-			);
-
-			await objectRelationshipsPage.actionsButton.click();
-
-			await objectRelationshipsPage.editObjectRelationshipOption.click();
-
-			await objectRelationshipsPage.inheritanceCheckbox.click();
-
-			await expect(
-				objectRelationshipsPage.inheritanceModalHeader
-			).toBeVisible();
-
-			await expect(
-				objectRelationshipsPage.inheritanceModalConfirmationMessage
 			).toBeVisible();
 		}
 		finally {

@@ -7,6 +7,7 @@ package com.liferay.depot.internal.security.permission.wrapper;
 
 import com.liferay.depot.constants.DepotConstants;
 import com.liferay.depot.constants.DepotRolesConstants;
+import com.liferay.depot.internal.util.PermissionUtil;
 import com.liferay.depot.model.DepotEntry;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.petra.function.UnsafeFunction;
@@ -228,30 +229,17 @@ public class DepotPermissionCheckerWrapper extends PermissionCheckerWrapper {
 		}
 	}
 
-	private boolean _hasCMSAdministratorRole(long companyId)
-		throws PortalException {
-
-		Boolean value = PermissionCacheUtil.getUserPrimaryKeyRole(
-			getUserId(), companyId, RoleConstants.CMS_ADMINISTRATOR);
-
-		if (value == null) {
-			value = _roleLocalService.hasUserRole(
-				getUserId(), companyId, RoleConstants.CMS_ADMINISTRATOR, true);
-
-			PermissionCacheUtil.putUserPrimaryKeyRole(
-				getUserId(), companyId, RoleConstants.CMS_ADMINISTRATOR, value);
-		}
-
-		return value;
-	}
-
 	private Boolean _hasPermission(
 		long groupId, String name, long primKey, String actionId) {
 
 		if (StringUtil.equals(name, Group.class.getName())) {
 			Group group = _groupLocalService.fetchGroup(primKey);
 
-			if ((group != null) && group.isDepot()) {
+			if (group == null) {
+				return null;
+			}
+
+			if (group.isDepot()) {
 				try {
 					if (!_supportedActionIds.contains(actionId)) {
 						return false;
@@ -274,6 +262,19 @@ public class DepotPermissionCheckerWrapper extends PermissionCheckerWrapper {
 					return false;
 				}
 			}
+			else if (actionId.equals(ActionKeys.VIEW) && group.isSite()) {
+				try {
+					return PermissionUtil.hasCMSAdministratorRole(
+						group.getCompanyId()) ||
+						   PermissionUtil.isDepotGroupAdminOrOwner(
+							   group.getCompanyId());
+				}
+				catch (PortalException portalException) {
+					_log.error(portalException);
+
+					return false;
+				}
+			}
 		}
 		else if (StringUtil.equals(name, Role.class.getName())) {
 			Role role = _roleLocalService.fetchRole(primKey);
@@ -282,7 +283,9 @@ public class DepotPermissionCheckerWrapper extends PermissionCheckerWrapper {
 				(role.getType() == RoleConstants.TYPE_DEPOT)) {
 
 				try {
-					if (_hasCMSAdministratorRole(getCompanyId())) {
+					if (PermissionUtil.hasCMSAdministratorRole(
+							getCompanyId())) {
+
 						return true;
 					}
 
@@ -349,7 +352,7 @@ public class DepotPermissionCheckerWrapper extends PermissionCheckerWrapper {
 			return false;
 		}
 
-		return _hasCMSAdministratorRole(group.getCompanyId());
+		return PermissionUtil.hasCMSAdministratorRole(group.getCompanyId());
 	}
 
 	private boolean _isContentReviewer(Group group) throws PortalException {

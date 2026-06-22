@@ -1,0 +1,60 @@
+@use '../index.scss';
+
+.liferay-ai-hub-form {
+	&-aggreements-text {
+		font-size: 11px;
+		text-align: justify;
+	}
+
+	&-aggreements-check-box,
+	&-label-check-box,
+	&-purpose-helper-text {
+		font-size: 11px;
+	}
+
+	&-fail {
+		border: solid 1px red !important;
+	}
+
+	&-select-input {
+		height: 40px;
+	}
+
+	.loading-animation {
+		margin: 0px !important;
+	}
+
+	&-container {
+		max-width: 610px;
+	}
+
+	&-next-step-page-icon {
+		height: 40px !important;
+		margin: 20px !important;
+		width: 40px !important;
+	}
+
+	&-token-name {
+		font-size: 16px;
+		font-weight: 600;
+		line-height: 24px;
+	}
+
+	&-token-description {
+		font-size: 13px;
+		font-weight: 400;
+		line-height: 16px;
+	}
+
+	&-token-price {
+		font-size: 18px;
+		font-weight: 600;
+		line-height: 20px;
+		text-align: right;
+		vertical-align: middle;
+	}
+
+	&-info {
+		font-size: 14px;
+	}
+}

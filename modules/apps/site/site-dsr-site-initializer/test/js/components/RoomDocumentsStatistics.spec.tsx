@@ -9,6 +9,8 @@ import React from 'react';
 
 import DocumentsStatistics from '../../../src/main/resources/META-INF/resources/js/main_view/analytics/components/RoomDocumentsStatistics';
 
+let originalLiferay: any;
+
 const mockLiferayLanguageGet = jest.fn((key: string) => {
 	if (key === '1-hour') {
 		return '1 hour';
@@ -33,14 +35,6 @@ const mockLiferayLanguageGet = jest.fn((key: string) => {
 	return key;
 });
 
-(global as any).Liferay = {
-	...(global as any).Liferay,
-	Language: {
-		...(global as any).Liferay.Language,
-		get: mockLiferayLanguageGet,
-	},
-};
-
 jest.mock('frontend-js-web', () => ({
 	...(jest.requireActual('frontend-js-web') as any),
 	sub: (str: string, ...args: any[]) => {
@@ -60,7 +54,41 @@ jest.mock(
 	})
 );
 
+jest.mock(
+	'../../../src/main/resources/META-INF/resources/js/common/hooks/useAnalyticsQuery',
+	() => {
+		const {
+			roomDocumentsStatisticsFixture,
+		} = require('../fixtures/RoomDocumentsStatisticsFixture');
+
+		return {
+			__esModule: true,
+			default: jest.fn(() => ({
+				isLoading: false,
+				response: roomDocumentsStatisticsFixture,
+				sendRequest: jest.fn(),
+			})),
+		};
+	}
+);
+
 describe('RoomDocumentsStatistics', () => {
+	beforeAll(() => {
+		originalLiferay = (global as any).Liferay;
+
+		(global as any).Liferay = {
+			...originalLiferay,
+			Language: {
+				...originalLiferay?.Language,
+				get: mockLiferayLanguageGet,
+			},
+		};
+	});
+
+	afterAll(() => {
+		(global as any).Liferay = originalLiferay;
+	});
+
 	beforeEach(() => {
 		jest.fn();
 	});
@@ -73,7 +101,7 @@ describe('RoomDocumentsStatistics', () => {
 	it('renders the component with provided data', () => {
 		const {baseElement} = render(
 			<DocumentsStatistics
-				dsrDevEnvEnabled={true}
+				isAnalyticsEnabled={true}
 				namespace="test-namespace"
 			/>
 		);
@@ -85,51 +113,29 @@ describe('RoomDocumentsStatistics', () => {
 		expect(screen.getAllByText('324')[0]).toBeInTheDocument();
 	});
 
-	it('renders the correct average time', () => {
+	it('renders the user involved count from userInvolvedMetric', () => {
 		render(
 			<DocumentsStatistics
-				dsrDevEnvEnabled={true}
+				isAnalyticsEnabled={true}
 				namespace="test-namespace"
 			/>
 		);
 
-		expect(screen.getByText('1 hour 33 minutes')).toBeInTheDocument();
+		expect(screen.getAllByText('4').length).toBe(3);
+		expect(screen.getAllByText('3').length).toBe(2);
+		expect(screen.getByText('2')).toBeInTheDocument();
 	});
 
-	it('renders the correct last viewed date', () => {
+	it('renders the not-configured message when analytics cloud is not configured', () => {
 		render(
 			<DocumentsStatistics
-				dsrDevEnvEnabled={true}
+				isAnalyticsEnabled={false}
 				namespace="test-namespace"
 			/>
 		);
 
-		const count = screen.getAllByText('Mar 3, 2026');
-
-		expect(count.length).toBe(2);
-	});
-
-	it('renders the correct user involved count', () => {
-		render(
-			<DocumentsStatistics
-				dsrDevEnvEnabled={true}
-				namespace="test-namespace"
-			/>
-		);
-
-		const count = screen.getAllByText('4 users');
-
-		expect(count.length).toBe(3);
-	});
-
-	it('handles duplicate users in user involved count', () => {
-		render(
-			<DocumentsStatistics
-				dsrDevEnvEnabled={true}
-				namespace="test-namespace"
-			/>
-		);
-
-		expect(screen.getByText('2 users')).toBeInTheDocument();
+		expect(
+			screen.getByText('analytics-cloud-is-not-configured')
+		).toBeInTheDocument();
 	});
 });

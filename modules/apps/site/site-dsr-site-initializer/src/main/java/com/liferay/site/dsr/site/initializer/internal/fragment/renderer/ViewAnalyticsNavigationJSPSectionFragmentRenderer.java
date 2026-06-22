@@ -34,6 +34,11 @@ public class ViewAnalyticsNavigationJSPSectionFragmentRenderer
 		<ViewAnalyticsNavigationAnalyticsSectionDisplayContext> {
 
 	@Override
+	public String getCollectionKey() {
+		return "digital-sales-room-analytics";
+	}
+
+	@Override
 	public JSONObject getConfigurationJSONObject(
 		FragmentRendererContext fragmentRendererContext) {
 
@@ -73,6 +78,7 @@ public class ViewAnalyticsNavigationJSPSectionFragmentRenderer
 				WebKeys.THEME_DISPLAY);
 
 		return new ViewAnalyticsNavigationAnalyticsSectionDisplayContext(
+			analyticsSettingsManager,
 			getConfigurationJSONObject(fragmentRendererContext),
 			_fragmentEntryConfigurationParser,
 			fragmentRendererContext.getFragmentEntryLink(), httpServletRequest,

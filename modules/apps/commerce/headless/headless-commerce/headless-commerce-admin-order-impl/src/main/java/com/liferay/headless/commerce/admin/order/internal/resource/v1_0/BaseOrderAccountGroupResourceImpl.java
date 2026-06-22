@@ -47,9 +47,13 @@ public abstract class BaseOrderAccountGroupResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rule-account-groups/{orderRuleAccountGroupId}/account-group'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Nested field accessor: returns the AccountGroup entity linked to an OrderRuleAccountGroup via corEntryRel."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of an order-rule-to-account-group relationship (COREntryRel).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "orderRuleAccountGroupId"
 			)
@@ -521,4 +525,4 @@ public abstract class BaseOrderAccountGroupResourceImpl
 		LogFactoryUtil.getLog(BaseOrderAccountGroupResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1018799172
+// LIFERAY-REST-BUILDER-HASH:1559592105

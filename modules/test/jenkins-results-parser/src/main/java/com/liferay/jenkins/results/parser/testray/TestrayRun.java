@@ -5,13 +5,13 @@
 
 package com.liferay.jenkins.results.parser.testray;
 
+import com.liferay.jenkins.results.parser.Dom4JUtil;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
-import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
-import com.liferay.jenkins.results.parser.test.clazz.group.BatchTestClassGroup;
-import com.liferay.jenkins.results.parser.test.clazz.group.FunctionalAxisTestClassGroup;
+import com.liferay.jenkins.results.parser.Retryable;
 
-import java.io.File;
 import java.io.IOException;
+
+import java.net.URLEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +22,9 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.dom4j.Element;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -29,307 +32,214 @@ import org.json.JSONObject;
  */
 public class TestrayRun {
 
+	public static final String[] FIELD_NAMES = {
+		"dateCreated", "dateModified", "id", "name"
+	};
+
 	public static String getDefaultRunIDString() {
-		return _properties.getProperty("testray.environment.default[master]");
-	}
-
-	public List<Factor> getFactors() {
-		return factors;
-	}
-
-	public long getID() {
-		if (_jsonObject == null) {
-			return 0;
+		try {
+			return JenkinsResultsParserUtil.getBuildProperty(
+				"testray.environment.default[master]");
 		}
-
-		return _jsonObject.getLong("id");
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
 	}
 
-	public String getRunIDString() {
-		if ((_jsonObject != null) && _jsonObject.has("name")) {
-			return _jsonObject.getString("name");
-		}
+	public static String getRunIDString(
+		String batchName, String testSuiteName, Properties properties) {
 
 		List<String> factorValues = new ArrayList<>();
 
-		for (Factor factor : getFactors()) {
-			factorValues.add(factor.getValue());
+		for (String factorNameKey : _getFactorNameKeys(properties)) {
+			String factoryName = _getFactorName(factorNameKey, properties);
+			String factoryValue = _getFactorValue(
+				batchName, testSuiteName, factorNameKey, properties);
+
+			if (JenkinsResultsParserUtil.isNullOrEmpty(factoryName) ||
+				JenkinsResultsParserUtil.isNullOrEmpty(factoryValue)) {
+
+				continue;
+			}
+
+			factorValues.add(factoryValue);
+		}
+
+		if (factorValues.isEmpty()) {
+			return getDefaultRunIDString();
 		}
 
 		return JenkinsResultsParserUtil.join("|", factorValues);
+	}
+
+	public String getEnvironmentHash() {
+		StringBuilder sb = new StringBuilder();
+
+		for (TestrayFactor testrayFactor : getTestrayFactors()) {
+			TestrayFactor.Category category = testrayFactor.getCategory();
+
+			sb.append(category.getID());
+
+			TestrayFactor.Option option = testrayFactor.getOption();
+
+			sb.append(option.getID());
+		}
+
+		String environment = sb.toString();
+
+		return String.valueOf(environment.hashCode());
+	}
+
+	public Element getEnvironmentsElement() {
+		Element environmentsElement = Dom4JUtil.getNewElement("environments");
+
+		for (TestrayFactor testrayFactor : getTestrayFactors()) {
+			Element environmentElement = environmentsElement.addElement(
+				"environment");
+
+			TestrayFactor.Category category = testrayFactor.getCategory();
+
+			environmentElement.addAttribute("type", category.getName());
+
+			TestrayFactor.Option option = testrayFactor.getOption();
+
+			environmentElement.addAttribute("option", option.getName());
+		}
+
+		return environmentsElement;
+	}
+
+	public long getID() {
+		if (_id != null) {
+			return _id;
+		}
+
+		JSONObject jsonObject = getJSONObject();
+
+		_id = jsonObject.optLong("id");
+
+		return _id;
+	}
+
+	public String getRunIDString() {
+		return _name;
 	}
 
 	public TestrayBuild getTestrayBuild() {
 		return _testrayBuild;
 	}
 
-	public static class Factor {
-
-		public Factor(String name, String value) {
-			_name = name;
-			_value = value;
+	public synchronized List<TestrayFactor> getTestrayFactors() {
+		if (_testrayFactors != null) {
+			return _testrayFactors;
 		}
 
-		public String getName() {
-			return _name;
+		List<TestrayFactor> testrayFactors = _getTestrayFactorsByRunID();
+
+		if (testrayFactors == null) {
+			testrayFactors = _getTestrayFactorsByName();
 		}
 
-		public String getValue() {
-			return _value;
-		}
+		_testrayFactors = testrayFactors;
 
-		@Override
-		public String toString() {
-			return getName() + "=" + getValue();
-		}
-
-		private final String _name;
-		private final String _value;
-
+		return _testrayFactors;
 	}
 
-	protected TestrayRun(
-		TestrayBuild testrayBuild, AxisTestClassGroup axisTestClassGroup,
-		List<File> propertiesFiles) {
+	public TestrayServer getTestrayServer() {
+		TestrayBuild testrayBuild = getTestrayBuild();
 
-		_testrayBuild = testrayBuild;
-
-		try {
-			_properties.putAll(JenkinsResultsParserUtil.getBuildProperties());
-		}
-		catch (IOException ioException) {
-			throw new RuntimeException(ioException);
+		if (testrayBuild == null) {
+			return null;
 		}
 
-		for (int i = propertiesFiles.size() - 1; i >= 0; i--) {
-			_properties.putAll(
-				JenkinsResultsParserUtil.getProperties(propertiesFiles.get(i)));
-		}
+		return testrayBuild.getTestrayServer();
+	}
 
-		initializeFactorsByAxisTestClassGroup(axisTestClassGroup);
-
-		JSONObject jsonObject = null;
-
-		String runIDString = getRunIDString();
-
-		for (TestrayRun testrayRun : testrayBuild.getTestrayRuns()) {
-			String testrayRunIDString = testrayRun.getRunIDString();
-
-			if (Objects.equals(
-					runIDString.toLowerCase(),
-					testrayRunIDString.toLowerCase())) {
-
-				jsonObject = testrayRun.getJSONObject();
-
-				break;
-			}
-		}
-
-		_jsonObject = jsonObject;
+	public void setID(long id) {
+		_id = id;
 	}
 
 	protected TestrayRun(TestrayBuild testrayBuild, JSONObject jsonObject) {
 		_testrayBuild = testrayBuild;
 		_jsonObject = jsonObject;
 
-		try {
-			_properties.putAll(JenkinsResultsParserUtil.getBuildProperties());
-		}
-		catch (IOException ioException) {
-			throw new RuntimeException(ioException);
-		}
-
-		initializeFactorsByJSONObject(jsonObject);
+		_name = jsonObject.getString("name");
 	}
 
-	protected TestrayRun(
-		TestrayBuild testrayBuild, String batchName, String testSuiteName,
-		List<File> propertiesFiles) {
-
+	protected TestrayRun(TestrayBuild testrayBuild, String name) {
 		_testrayBuild = testrayBuild;
-
-		try {
-			_properties.putAll(JenkinsResultsParserUtil.getBuildProperties());
-		}
-		catch (IOException ioException) {
-			throw new RuntimeException(ioException);
-		}
-
-		for (int i = propertiesFiles.size() - 1; i >= 0; i--) {
-			_properties.putAll(
-				JenkinsResultsParserUtil.getProperties(propertiesFiles.get(i)));
-		}
-
-		initializeFactorsByBatchName(batchName, testSuiteName);
-
-		JSONObject jsonObject = null;
-
-		String runIDString = getRunIDString();
-
-		for (TestrayRun testrayRun : testrayBuild.getTestrayRuns()) {
-			String testrayRunIDString = testrayRun.getRunIDString();
-
-			if (Objects.equals(
-					runIDString.toLowerCase(),
-					testrayRunIDString.toLowerCase())) {
-
-				jsonObject = testrayRun.getJSONObject();
-
-				break;
-			}
-		}
-
-		_jsonObject = jsonObject;
+		_name = name;
 	}
 
-	protected JSONObject getJSONObject() {
+	protected synchronized JSONObject getJSONObject() {
+		if (_cached || (_jsonObject != null)) {
+			return _jsonObject;
+		}
+
+		final TestrayBuild testrayBuild = getTestrayBuild();
+
+		final String filterString = JenkinsResultsParserUtil.combine(
+			"environmentHash eq '", getEnvironmentHash(), "' and name eq '",
+			getRunIDString(), "' and r_buildToRuns_c_buildId eq '",
+			String.valueOf(testrayBuild.getID()), "'");
+
+		Retryable<JSONObject> retryable = new Retryable<JSONObject>(
+			true, 3, 5, true) {
+
+			@Override
+			public JSONObject execute() {
+				TestrayServer testrayServer = getTestrayServer();
+
+				try {
+					JSONObject existingJSONObject = new JSONObject(
+						testrayServer.requestGet(
+							"/o/c/runs?filter=" +
+								URLEncoder.encode(filterString, "UTF-8")));
+
+					JSONArray existingItemsJSONArray =
+						existingJSONObject.optJSONArray("items");
+
+					if ((existingItemsJSONArray != null) &&
+						!existingItemsJSONArray.isEmpty()) {
+
+						return existingItemsJSONArray.getJSONObject(0);
+					}
+
+					JSONObject postRequestJSONObject = new JSONObject();
+
+					postRequestJSONObject.put(
+						"environmentHash", getEnvironmentHash()
+					).put(
+						"name", getRunIDString()
+					).put(
+						"number", _getNextRunNumber()
+					).put(
+						"r_buildToRuns_c_buildId", testrayBuild.getID()
+					);
+
+					return new JSONObject(
+						testrayServer.requestPost(
+							"/o/c/runs", postRequestJSONObject.toString()));
+				}
+				catch (IOException ioException) {
+					throw new RuntimeException(ioException);
+				}
+			}
+
+		};
+
+		_jsonObject = retryable.executeWithRetries();
+
+		_cached = true;
+
 		return _jsonObject;
 	}
 
-	protected Properties getProperties() {
-		return _properties;
-	}
+	private static String _getFactorName(
+		String factorNameKey, Properties properties) {
 
-	protected void initializeFactorsByAxisTestClassGroup(
-		AxisTestClassGroup axisTestClassGroup) {
-
-		factors = new ArrayList<>();
-
-		if (axisTestClassGroup == null) {
-			return;
-		}
-
-		String batchName = axisTestClassGroup.getBatchName();
-
-		if (axisTestClassGroup instanceof FunctionalAxisTestClassGroup) {
-			FunctionalAxisTestClassGroup functionalAxisTestClassGroup =
-				(FunctionalAxisTestClassGroup)axisTestClassGroup;
-
-			Properties poshiProperties =
-				functionalAxisTestClassGroup.getPoshiProperties();
-
-			String browserChromeVersion = poshiProperties.getProperty(
-				"browser.chrome.version");
-
-			if ((browserChromeVersion != null) &&
-				browserChromeVersion.equals("139.0")) {
-
-				batchName += "-chrome139";
-			}
-		}
-
-		for (String factorNameKey : _getFactorNameKeys()) {
-			if (factorNameKey.equals("search_engine")) {
-				continue;
-			}
-
-			String factoryName = _getFactorName(factorNameKey);
-			String factoryValue = _getFactorValue(batchName, factorNameKey);
-
-			if (JenkinsResultsParserUtil.isNullOrEmpty(factoryName) ||
-				JenkinsResultsParserUtil.isNullOrEmpty(factoryValue)) {
-
-				continue;
-			}
-
-			factors.add(new Factor(factoryName, factoryValue));
-		}
-
-		BatchTestClassGroup batchTestClassGroup =
-			axisTestClassGroup.getBatchTestClassGroup();
-
-		_addSearchEngineFactor(
-			batchName, batchTestClassGroup.getTestSuiteName());
-	}
-
-	protected void initializeFactorsByBatchName(
-		String batchName, String testSuiteName) {
-
-		factors = new ArrayList<>();
-
-		if (JenkinsResultsParserUtil.isNullOrEmpty(batchName)) {
-			return;
-		}
-
-		for (String factorNameKey : _getFactorNameKeys()) {
-			if (factorNameKey.equals("search_engine")) {
-				continue;
-			}
-
-			String factoryName = _getFactorName(factorNameKey);
-			String factoryValue = _getFactorValue(batchName, factorNameKey);
-
-			if (JenkinsResultsParserUtil.isNullOrEmpty(factoryName) ||
-				JenkinsResultsParserUtil.isNullOrEmpty(factoryValue)) {
-
-				continue;
-			}
-
-			factors.add(new Factor(factoryName, factoryValue));
-		}
-
-		_addSearchEngineFactor(batchName, testSuiteName);
-	}
-
-	protected void initializeFactorsByJSONObject(JSONObject jsonObject) {
-		factors = new ArrayList<>();
-
-		if (jsonObject == null) {
-			return;
-		}
-
-		String runIDString = jsonObject.optString("name");
-
-		if (JenkinsResultsParserUtil.isNullOrEmpty(runIDString)) {
-			return;
-		}
-
-		for (String factorValue : runIDString.split("\\|")) {
-			for (String propertyName : _properties.stringPropertyNames()) {
-				Matcher factorValueMatcher = _factorValuePattern.matcher(
-					propertyName);
-
-				if (!factorValueMatcher.find()) {
-					continue;
-				}
-
-				if (factorValue.equals(_properties.getProperty(propertyName))) {
-					String factorName = _getFactorName(
-						factorValueMatcher.group("nameKey"));
-
-					factors.add(new Factor(factorName, factorValue));
-
-					break;
-				}
-			}
-		}
-	}
-
-	protected List<Factor> factors;
-
-	private void _addSearchEngineFactor(
-		String batchName, String testSuiteName) {
-
-		String searchEngineFactorValue = _getSearchEngineFactorValue(
-			batchName, testSuiteName);
-
-		if (JenkinsResultsParserUtil.isNullOrEmpty(searchEngineFactorValue)) {
-			return;
-		}
-
-		String searchEngineFactorName = _getFactorName("search_engine");
-
-		if (JenkinsResultsParserUtil.isNullOrEmpty(searchEngineFactorName)) {
-			return;
-		}
-
-		factors.add(
-			new Factor(searchEngineFactorName, searchEngineFactorValue));
-	}
-
-	private String _getFactorName(String factorNameKey) {
 		String factorName = JenkinsResultsParserUtil.getProperty(
-			_properties,
+			properties,
 			JenkinsResultsParserUtil.combine(
 				_PROPERTY_KEY_FACTOR_NAME, "[", factorNameKey, "]"));
 
@@ -340,10 +250,10 @@ public class TestrayRun {
 		return null;
 	}
 
-	private Set<String> _getFactorNameKeys() {
+	private static Set<String> _getFactorNameKeys(Properties properties) {
 		Set<String> factorNameKeys = new TreeSet<>();
 
-		for (String propertyName : _properties.stringPropertyNames()) {
+		for (String propertyName : properties.stringPropertyNames()) {
 			Matcher matcher = _factorNamePattern.matcher(propertyName);
 
 			if (!matcher.find()) {
@@ -356,11 +266,23 @@ public class TestrayRun {
 		return factorNameKeys;
 	}
 
-	private String _getFactorValue(String batchName, String factorNameKey) {
+	private static String _getFactorValue(
+		String batchName, String testSuiteName, String factorNameKey,
+		Properties properties) {
+
+		if (Objects.equals(factorNameKey, "search_engine")) {
+			String factorValue = _getSearchEngineFactorValue(
+				batchName, testSuiteName, properties);
+
+			if (!JenkinsResultsParserUtil.isNullOrEmpty(factorValue)) {
+				return factorValue;
+			}
+		}
+
 		String matchingValueKey = null;
 		String matchingPropertyName = null;
 
-		for (String propertyName : _properties.stringPropertyNames()) {
+		for (String propertyName : properties.stringPropertyNames()) {
 			Matcher matcher = _factorValuePattern.matcher(propertyName);
 
 			if (!matcher.find()) {
@@ -389,11 +311,11 @@ public class TestrayRun {
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(matchingPropertyName)) {
 			return JenkinsResultsParserUtil.getProperty(
-				_properties, matchingPropertyName);
+				properties, matchingPropertyName);
 		}
 
 		String factorValue = JenkinsResultsParserUtil.getProperty(
-			_properties,
+			properties,
 			JenkinsResultsParserUtil.combine(
 				_PROPERTY_KEY_FACTOR_VALUE, "[", factorNameKey, "]"));
 
@@ -404,25 +326,25 @@ public class TestrayRun {
 		return factorValue;
 	}
 
-	private String _getSearchEngineFactorValue(
-		String batchName, String testSuiteName) {
+	private static String _getSearchEngineFactorValue(
+		String batchName, String testSuiteName, Properties properties) {
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(batchName) &&
 			!(batchName.startsWith("functional") ||
 			  batchName.startsWith("modules-integration") ||
 			  batchName.startsWith("modules-unit"))) {
 
-			return _properties.getProperty("search.engine.default");
+			return properties.getProperty("search.engine.default");
 		}
 
 		String searchEngine = null;
 		String searchEngineVersion = null;
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(testSuiteName)) {
-			searchEngine = _properties.getProperty(
+			searchEngine = properties.getProperty(
 				"search.engine[" + testSuiteName + "]");
 
-			searchEngineVersion = _properties.getProperty(
+			searchEngineVersion = properties.getProperty(
 				"search.engine.version[" + testSuiteName + "]");
 		}
 
@@ -443,12 +365,12 @@ public class TestrayRun {
 		if (JenkinsResultsParserUtil.isNullOrEmpty(searchEngineVersion) &&
 			!JenkinsResultsParserUtil.isNullOrEmpty(searchEngine)) {
 
-			searchEngineVersion = _properties.getProperty(
+			searchEngineVersion = properties.getProperty(
 				"search.engine.version[" + searchEngine + "]");
 		}
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(searchEngine)) {
-			return _properties.getProperty("search.engine.default");
+			return properties.getProperty("search.engine.default");
 		}
 
 		String searchEngineFactorValue = _toTitleCase(searchEngine);
@@ -460,7 +382,7 @@ public class TestrayRun {
 		return searchEngineFactorValue;
 	}
 
-	private String _toTitleCase(String name) {
+	private static String _toTitleCase(String name) {
 		if (JenkinsResultsParserUtil.isNullOrEmpty(name)) {
 			return name;
 		}
@@ -483,6 +405,110 @@ public class TestrayRun {
 		return sb.toString();
 	}
 
+	private synchronized int _getNextRunNumber() {
+		TestrayBuild testrayBuild = getTestrayBuild();
+
+		String filterString = JenkinsResultsParserUtil.combine(
+			"r_buildToRuns_c_buildId eq '",
+			String.valueOf(testrayBuild.getID()), "'");
+
+		try {
+			TestrayServer testrayServer = getTestrayServer();
+
+			JSONObject jsonObject = new JSONObject(
+				testrayServer.requestGet(
+					"/o/c/runs?filter=" +
+						URLEncoder.encode(filterString, "UTF-8")));
+
+			return jsonObject.optInt("totalCount") + 1;
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
+	}
+
+	private List<TestrayFactor> _getTestrayFactorsByName() {
+		List<TestrayFactor> testrayFactors = new ArrayList<>();
+
+		String name = getRunIDString();
+
+		for (String optionName : name.split("\\|")) {
+			TestrayFactor.Option testrayFactorOption =
+				TestrayFactory.newTestrayFactorOption(
+					optionName, _testrayBuild.getTestrayServer());
+
+			testrayFactors.add(
+				TestrayFactory.newRunTestrayFactor(testrayFactorOption, this));
+		}
+
+		return testrayFactors;
+	}
+
+	private List<TestrayFactor> _getTestrayFactorsByRunID() {
+		long runID = 0;
+
+		if (_id != null) {
+			runID = _id;
+		}
+		else if (_jsonObject != null) {
+			runID = _jsonObject.optLong("id");
+		}
+
+		if (runID <= 0) {
+			return null;
+		}
+
+		String filterString = JenkinsResultsParserUtil.combine(
+			"r_runToFactors_c_runId eq '", String.valueOf(runID), "'");
+
+		try {
+			TestrayServer testrayServer = _testrayBuild.getTestrayServer();
+
+			JSONObject responseJSONObject = new JSONObject(
+				testrayServer.requestGet(
+					JenkinsResultsParserUtil.combine(
+						"/o/c/factors?filter=",
+						URLEncoder.encode(filterString, "UTF-8"),
+						"&pageSize=100")));
+
+			JSONArray itemsJSONArray = responseJSONObject.optJSONArray("items");
+
+			if ((itemsJSONArray == null) || itemsJSONArray.isEmpty()) {
+				return null;
+			}
+
+			List<TestrayFactor> testrayFactors = new ArrayList<>();
+
+			for (int i = 0; i < itemsJSONArray.length(); i++) {
+				JSONObject factorJSONObject = itemsJSONArray.getJSONObject(i);
+
+				JSONObject optionJSONObject = factorJSONObject.optJSONObject(
+					"factorOptionToFactors");
+
+				if (optionJSONObject == null) {
+					continue;
+				}
+
+				TestrayFactor.Option testrayFactorOption =
+					TestrayFactory.newTestrayFactorOption(
+						optionJSONObject, _testrayBuild.getTestrayServer());
+
+				testrayFactors.add(
+					TestrayFactory.newRunTestrayFactor(
+						testrayFactorOption, this));
+			}
+
+			if (testrayFactors.isEmpty()) {
+				return null;
+			}
+
+			return testrayFactors;
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
+	}
+
 	private static final String _PROPERTY_KEY_FACTOR_NAME =
 		"testray.environment.factor.name";
 
@@ -494,9 +520,12 @@ public class TestrayRun {
 	private static final Pattern _factorValuePattern = Pattern.compile(
 		_PROPERTY_KEY_FACTOR_VALUE +
 			"\\[(?<nameKey>[^\\]]+)\\](\\[(?<valueKey>[^\\]]+)\\])?");
-	private static final Properties _properties = new Properties();
 
-	private final JSONObject _jsonObject;
+	private boolean _cached;
+	private Long _id;
+	private JSONObject _jsonObject;
+	private final String _name;
 	private final TestrayBuild _testrayBuild;
+	private List<TestrayFactor> _testrayFactors;
 
 }

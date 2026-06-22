@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 .vertical-timeline-root {
 	$borderSize1: 1px;
 
@@ -76,6 +78,7 @@
 					}
 
 					.timeline-panel-body-content-details {
+						max-width: none;
 						width: auto;
 					}
 
@@ -88,6 +91,7 @@
 						line-height: 1;
 
 						.text-truncate {
+							line-height: normal;
 							margin-bottom: 8px;
 						}
 					}
@@ -142,7 +146,7 @@
 				display: flex;
 				justify-content: space-between;
 				margin-left: auto;
-				width: 30%;
+				max-width: 30%;
 
 				.icon-group {
 					display: flex;
@@ -156,36 +160,45 @@
 							font-size: $fontSizeMedium;
 						}
 					}
+
+					.label-info {
+						background-color: $cadmin-info-l2;
+						border-color: $cadmin-info-l2;
+						color: $cadmin-info-d1;
+						padding: 2px;
+					}
+
+					.label-item {
+						border-radius: 0.25rem;
+						border-width: 0.0625rem;
+						font-size: 0.75rem;
+						letter-spacing: math.div(
+							$fontSizeExtraSmall * -0.2,
+							13
+						);
+						padding: 0.125rem 0.25rem;
+						text-transform: none;
+					}
+
+					.label-success {
+						background-color: $cadmin-success-l2;
+						border-color: $cadmin-success-l2;
+						color: $cadmin-success-d1;
+						padding: 2px;
+					}
 				}
 			}
 
+			.attributes-payload {
+				color: $mainLighten28;
+				font-family: monospace;
+				font-size: 12px;
+				white-space: pre-wrap;
+				width: 100%;
+			}
+
 			.timeline-panel-body-content-text {
-				overflow-x: hidden;
-
-				.attributes-title {
-					margin-bottom: 9px;
-				}
-
-				.attributes-item {
-					color: $mainLighten28;
-					font-weight: $fontWeightRegular;
-					margin-bottom: 8px;
-
-					.attribute-key {
-						display: table-cell;
-						min-width: 140px;
-						padding-right: 8px;
-					}
-
-					.attribute-value {
-						display: table-cell;
-						max-width: 550px;
-
-						&.attribute-important {
-							font-weight: $fontWeightSemiBold;
-						}
-					}
-				}
+				overflow-x: clip;
 
 				.event-icon {
 					margin-left: 40px;
@@ -232,7 +245,7 @@
 			background-color: $primaryLighten45;
 
 			.timeline-panel-body-content:not(.selectable) {
-				background-color: $lightBackground;
+				background-color: $white;
 			}
 		}
 
@@ -295,6 +308,18 @@
 			border: 2px solid $white;
 			height: 22px;
 			width: 22px;
+		}
+
+		&.timeline-increment-dxp {
+			> .sticker-point {
+				background-color: $primary;
+			}
+		}
+
+		&.timeline-increment-webhook {
+			> .sticker-point {
+				background-color: $cadmin-teal-l1;
+			}
 		}
 
 		.timeline-time-label {

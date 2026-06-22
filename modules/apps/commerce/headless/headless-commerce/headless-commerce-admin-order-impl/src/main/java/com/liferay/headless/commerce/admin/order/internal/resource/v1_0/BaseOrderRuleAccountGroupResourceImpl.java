@@ -74,9 +74,13 @@ public abstract class BaseOrderRuleAccountGroupResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rule-account-groups/{orderRuleAccountGroupId}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes an Order Rule Account Group by ID. Backed by the matching commerce service method on the target resource."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of an order-rule-to-account-group relationship (COREntryRel).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "orderRuleAccountGroupId"
 			)
@@ -154,17 +158,23 @@ public abstract class BaseOrderRuleAccountGroupResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules/by-externalReferenceCode/{externalReferenceCode}/order-rule-account-groups'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Retrieves order rule by externalReferenceCode, then returns linked account groups. Throws NoSuchCOREntryException (404) if order rule not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page number used together with pageSize to navigate paginated result sets. Defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items to return per page in paginated result sets. Defaults to the resource pagination configuration when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			)
@@ -200,29 +210,38 @@ public abstract class BaseOrderRuleAccountGroupResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules/{id}/order-rule-account-groups'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Nested field (OrderRule.orderRuleAccountGroups): paginated list of account groups linked to order rule by ID."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the by-externalReferenceCode path variant; identifiers are server-assigned and stable across the resource lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model -- typically accountId, channelId, orderStatus, orderTypeId, paymentStatus, sku, name, and createDate. Example -- filter=orderStatus eq 10.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page number used together with pageSize to navigate paginated result sets. Defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items to return per page in paginated result sets. Defaults to the resource pagination configuration when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Free-text search expression applied to the indexed search corpus of the target resource (for example, the creator email for orders, the SKU for order items, the name for order rules).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Comma-separated list of fields to sort by. Each field accepts the suffix :asc or :desc; sortable fields depend on the endpoint and are sourced from the matching entity model.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -262,9 +281,13 @@ public abstract class BaseOrderRuleAccountGroupResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules/by-externalReferenceCode/{externalReferenceCode}/order-rule-account-groups' -d $'{"accountGroupExternalReferenceCode": ___, "accountGroupId": ___, "orderRuleExternalReferenceCode": ___, "orderRuleId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Add an account group to an order rule via externalReferenceCode. Throws NoSuchCOREntryException (404) if order rule not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -301,9 +324,13 @@ public abstract class BaseOrderRuleAccountGroupResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules/{id}/order-rule-account-groups' -d $'{"accountGroupExternalReferenceCode": ___, "accountGroupId": ___, "orderRuleExternalReferenceCode": ___, "orderRuleId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Add an account group to an order rule via order rule ID."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the by-externalReferenceCode path variant; identifiers are server-assigned and stable across the resource lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -1095,4 +1122,4 @@ public abstract class BaseOrderRuleAccountGroupResourceImpl
 		LogFactoryUtil.getLog(BaseOrderRuleAccountGroupResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1078060920
+// LIFERAY-REST-BUILDER-HASH:-1777560324

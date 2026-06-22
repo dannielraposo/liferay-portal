@@ -9,19 +9,22 @@ import React, {useEffect, useRef, useState} from 'react';
 
 import {FormikFieldText} from '../../../components/forms/formik';
 import {FormikFieldFileSelector} from '../../../components/forms/formik/FormikFieldFileSelector';
-import {getValidateLarFile} from '../../../utils/getValidateLarFile';
-import {useWizard} from '../NewImport';
+import {postImportPreview} from '../../../services/postImportPreview';
+import {ImportPreview} from '../../../types/exportImportPreview';
 
-interface FileSelectionValues {
-	fileSelector?: File;
-	name: string;
-}
-
-export default function FileSelectionStep() {
+export default function FileSelectionStep({
+	importPreviewAPIURL,
+	setImportPreview,
+}: {
+	importPreviewAPIURL: string;
+	setImportPreview: (importPreview?: ImportPreview) => void;
+}) {
 	const [progress, setProgress] = useState<number>();
-	const {groupId} = useWizard();
 
-	const {setFieldValue, values} = useFormikContext<FileSelectionValues>();
+	const {setFieldValue, values} = useFormikContext<{
+		fileSelector?: File;
+		name: string;
+	}>();
 	const autoFilledFileRef = useRef<File | undefined>(undefined);
 
 	useEffect(() => {
@@ -36,15 +39,27 @@ export default function FileSelectionStep() {
 		if (currentFile instanceof File && !values.name) {
 			setFieldValue('name', currentFile.name.replace(/\.lar$/i, ''));
 		}
-	}, [values.fileSelector, values.name, setFieldValue]);
 
-	const handleUpload = (file: File, signal?: AbortSignal) =>
-		getValidateLarFile({
+		if (!currentFile) {
+			setFieldValue('contentSelection', undefined);
+			setImportPreview(undefined);
+		}
+	}, [values.fileSelector, values.name, setFieldValue, setImportPreview]);
+
+	const handleUpload = async (file: File, signal?: AbortSignal) => {
+		const result = await postImportPreview({
 			file,
-			groupId,
 			onProgress: setProgress,
 			signal,
+			url: importPreviewAPIURL,
 		});
+
+		if (result.data) {
+			setImportPreview(result.data);
+		}
+
+		return result;
+	};
 
 	return (
 		<>
@@ -73,7 +88,7 @@ export default function FileSelectionStep() {
 				/>
 			</ClayLayout.Sheet>
 
-			<ClayLayout.Sheet>
+			<ClayLayout.Sheet className="mt-4">
 				<ClayLayout.SheetHeader className="mb-1">
 					<div className="mb-2 sheet-title" id="fileSelector-label">
 						{Liferay.Language.get('file-upload')}

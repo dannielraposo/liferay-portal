@@ -10,35 +10,29 @@ import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoColumnTable;
 import com.liferay.expando.kernel.service.persistence.ExpandoColumnPersistence;
 import com.liferay.expando.kernel.service.persistence.ExpandoColumnUtil;
-import com.liferay.petra.lang.SafeCloseable;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelperUtil;
+import com.liferay.portal.kernel.service.persistence.impl.ArrayableFinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
+import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portlet.expando.model.impl.ExpandoColumnImpl;
 import com.liferay.portlet.expando.model.impl.ExpandoColumnModelImpl;
 
@@ -47,7 +41,6 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
@@ -55,7 +48,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -86,67 +78,15 @@ public class ExpandoColumnPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByTableId;
-	private FinderPath _finderPathWithoutPaginationFindByTableId;
-	private FinderPath _finderPathCountByTableId;
-	private CollectionPersistenceFinder<ExpandoColumn>
-		_collectionPersistenceFinderByTableId;
-
-	/**
-	 * Returns all the expando columns where tableId = &#63;.
-	 *
-	 * @param tableId the table ID
-	 * @return the matching expando columns
-	 */
-	@Override
-	public List<ExpandoColumn> findByTableId(long tableId) {
-		return findByTableId(
-			tableId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the expando columns where tableId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
-	 * </p>
-	 *
-	 * @param tableId the table ID
-	 * @param start the lower bound of the range of expando columns
-	 * @param end the upper bound of the range of expando columns (not inclusive)
-	 * @return the range of matching expando columns
-	 */
-	@Override
-	public List<ExpandoColumn> findByTableId(long tableId, int start, int end) {
-		return findByTableId(tableId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<ExpandoColumn, NoSuchColumnException>
+			_collectionPersistenceFinderByTableId;
 
 	/**
 	 * Returns an ordered range of all the expando columns where tableId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
-	 * </p>
-	 *
-	 * @param tableId the table ID
-	 * @param start the lower bound of the range of expando columns
-	 * @param end the upper bound of the range of expando columns (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching expando columns
-	 */
-	@Override
-	public List<ExpandoColumn> findByTableId(
-		long tableId, int start, int end,
-		OrderByComparator<ExpandoColumn> orderByComparator) {
-
-		return findByTableId(tableId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the expando columns where tableId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
 	 * </p>
 	 *
 	 * @param tableId the table ID
@@ -162,14 +102,9 @@ public class ExpandoColumnPersistenceImpl
 		OrderByComparator<ExpandoColumn> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					ExpandoColumn.class)) {
-
-			return _collectionPersistenceFinderByTableId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {tableId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByTableId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -185,16 +120,9 @@ public class ExpandoColumnPersistenceImpl
 			long tableId, OrderByComparator<ExpandoColumn> orderByComparator)
 		throws NoSuchColumnException {
 
-		ExpandoColumn expandoColumn = fetchByTableId_First(
-			tableId, orderByComparator);
-
-		if (expandoColumn != null) {
-			return expandoColumn;
-		}
-
-		throw new NoSuchColumnException(
-			_collectionPersistenceFinderByTableId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {tableId}));
+		return _collectionPersistenceFinderByTableId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId},
+			orderByComparator);
 	}
 
 	/**
@@ -214,41 +142,10 @@ public class ExpandoColumnPersistenceImpl
 	}
 
 	/**
-	 * Returns all the expando columns that the user has permission to view where tableId = &#63;.
-	 *
-	 * @param tableId the table ID
-	 * @return the matching expando columns that the user has permission to view
-	 */
-	@Override
-	public List<ExpandoColumn> filterFindByTableId(long tableId) {
-		return filterFindByTableId(
-			tableId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the expando columns that the user has permission to view where tableId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
-	 * </p>
-	 *
-	 * @param tableId the table ID
-	 * @param start the lower bound of the range of expando columns
-	 * @param end the upper bound of the range of expando columns (not inclusive)
-	 * @return the range of matching expando columns that the user has permission to view
-	 */
-	@Override
-	public List<ExpandoColumn> filterFindByTableId(
-		long tableId, int start, int end) {
-
-		return filterFindByTableId(tableId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the expando columns that the user has permissions to view where tableId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
 	 * </p>
 	 *
 	 * @param tableId the table ID
@@ -262,96 +159,9 @@ public class ExpandoColumnPersistenceImpl
 		long tableId, int start, int end,
 		OrderByComparator<ExpandoColumn> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return findByTableId(tableId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByTableId(
-					tableId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_EXPANDOCOLUMN_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_EXPANDOCOLUMN_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_TABLEID_TABLEID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_EXPANDOCOLUMN_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(ExpandoColumnModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ExpandoColumnModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ExpandoColumn.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ExpandoColumnImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ExpandoColumnImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(tableId);
-
-			return (List<ExpandoColumn>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByTableId.filterFind(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId}, start,
+			end, orderByComparator);
 	}
 
 	/**
@@ -373,13 +183,8 @@ public class ExpandoColumnPersistenceImpl
 	 */
 	@Override
 	public int countByTableId(long tableId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					ExpandoColumn.class)) {
-
-			return _collectionPersistenceFinderByTableId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {tableId});
-		}
+		return _collectionPersistenceFinderByTableId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId});
 	}
 
 	/**
@@ -390,127 +195,21 @@ public class ExpandoColumnPersistenceImpl
 	 */
 	@Override
 	public int filterCountByTableId(long tableId) {
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return countByTableId(tableId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ExpandoColumn> expandoColumns = findByTableId(tableId);
-
-			expandoColumns = InlineSQLHelperUtil.filter(expandoColumns);
-
-			return expandoColumns.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_EXPANDOCOLUMN_WHERE);
-
-		sb.append(_FINDER_COLUMN_TABLEID_TABLEID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ExpandoColumn.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(tableId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByTableId.filterCount(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId});
 	}
 
-	private static final String _FINDER_COLUMN_TABLEID_TABLEID_2 =
-		"expandoColumn.tableId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByT_N;
-	private FinderPath _finderPathWithoutPaginationFindByT_N;
-	private FinderPath _finderPathFetchByT_N;
-	private FinderPath _finderPathCountByT_N;
-	private FinderPath _finderPathWithPaginationCountByT_N;
-
-	/**
-	 * Returns all the expando columns where tableId = &#63; and name = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
-	 * </p>
-	 *
-	 * @param tableId the table ID
-	 * @param names the names
-	 * @return the matching expando columns
-	 */
-	@Override
-	public List<ExpandoColumn> findByT_N(long tableId, String[] names) {
-		return findByT_N(
-			tableId, names, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the expando columns where tableId = &#63; and name = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
-	 * </p>
-	 *
-	 * @param tableId the table ID
-	 * @param names the names
-	 * @param start the lower bound of the range of expando columns
-	 * @param end the upper bound of the range of expando columns (not inclusive)
-	 * @return the range of matching expando columns
-	 */
-	@Override
-	public List<ExpandoColumn> findByT_N(
-		long tableId, String[] names, int start, int end) {
-
-		return findByT_N(tableId, names, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the expando columns where tableId = &#63; and name = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
-	 * </p>
-	 *
-	 * @param tableId the table ID
-	 * @param names the names
-	 * @param start the lower bound of the range of expando columns
-	 * @param end the upper bound of the range of expando columns (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching expando columns
-	 */
-	@Override
-	public List<ExpandoColumn> findByT_N(
-		long tableId, String[] names, int start, int end,
-		OrderByComparator<ExpandoColumn> orderByComparator) {
-
-		return findByT_N(tableId, names, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder
+		<ExpandoColumn, NoSuchColumnException>
+			_collectionPersistenceFinderByT_N;
+	private UniquePersistenceFinder<ExpandoColumn, NoSuchColumnException>
+		_uniquePersistenceFinderByT_N;
 
 	/**
 	 * Returns an ordered range of all the expando columns where tableId = &#63; and name = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoColumnModelImpl</code>.
 	 * </p>
 	 *
 	 * @param tableId the table ID
@@ -527,19 +226,11 @@ public class ExpandoColumnPersistenceImpl
 		OrderByComparator<ExpandoColumn> orderByComparator,
 		boolean useFinderCache) {
 
-		if (names == null) {
-			names = new String[0];
-		}
-		else if (names.length > 1) {
-			for (int i = 0; i < names.length; i++) {
-				names[i] = Objects.toString(names[i], "");
-			}
-
-			names = ArrayUtil.sortedUnique(names);
-		}
+		names = ArrayUtil.sortedUnique(names);
 
 		if (names.length == 1) {
-			ExpandoColumn expandoColumn = fetchByT_N(tableId, names[0]);
+			ExpandoColumn expandoColumn = fetchByT_N(
+				tableId, names[0], useFinderCache);
 
 			if (expandoColumn == null) {
 				return Collections.emptyList();
@@ -553,128 +244,9 @@ public class ExpandoColumnPersistenceImpl
 			}
 		}
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					ExpandoColumn.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						tableId, StringUtil.merge(names)
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					tableId, StringUtil.merge(names), start, end,
-					orderByComparator
-				};
-			}
-
-			List<ExpandoColumn> list = null;
-
-			if (useFinderCache) {
-				list = (List<ExpandoColumn>)FinderCacheUtil.getResult(
-					_finderPathWithPaginationFindByT_N, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (ExpandoColumn expandoColumn : list) {
-						if ((tableId != expandoColumn.getTableId()) ||
-							!ArrayUtil.contains(
-								names, expandoColumn.getName())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_EXPANDOCOLUMN_WHERE);
-
-				sb.append(_FINDER_COLUMN_T_N_TABLEID_2);
-
-				if (names.length > 0) {
-					sb.append("(");
-
-					for (int i = 0; i < names.length; i++) {
-						String name = names[i];
-
-						if (name.isEmpty()) {
-							sb.append(_FINDER_COLUMN_T_N_NAME_3);
-						}
-						else {
-							sb.append(_FINDER_COLUMN_T_N_NAME_2);
-						}
-
-						if ((i + 1) < names.length) {
-							sb.append(WHERE_OR);
-						}
-					}
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(ExpandoColumnModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(tableId);
-
-					for (String name : names) {
-						if ((name != null) && !name.isEmpty()) {
-							queryPos.add(name);
-						}
-					}
-
-					list = (List<ExpandoColumn>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						FinderCacheUtil.putResult(
-							_finderPathWithPaginationFindByT_N, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByT_N.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId, names},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -689,41 +261,8 @@ public class ExpandoColumnPersistenceImpl
 	public ExpandoColumn findByT_N(long tableId, String name)
 		throws NoSuchColumnException {
 
-		ExpandoColumn expandoColumn = fetchByT_N(tableId, name);
-
-		if (expandoColumn == null) {
-			StringBundler sb = new StringBundler(6);
-
-			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-			sb.append("tableId=");
-			sb.append(tableId);
-
-			sb.append(", name=");
-			sb.append(name);
-
-			sb.append("}");
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(sb.toString());
-			}
-
-			throw new NoSuchColumnException(sb.toString());
-		}
-
-		return expandoColumn;
-	}
-
-	/**
-	 * Returns the expando column where tableId = &#63; and name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param tableId the table ID
-	 * @param name the name
-	 * @return the matching expando column, or <code>null</code> if a matching expando column could not be found
-	 */
-	@Override
-	public ExpandoColumn fetchByT_N(long tableId, String name) {
-		return fetchByT_N(tableId, name, true);
+		return _uniquePersistenceFinderByT_N.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId, name});
 	}
 
 	/**
@@ -738,101 +277,9 @@ public class ExpandoColumnPersistenceImpl
 	public ExpandoColumn fetchByT_N(
 		long tableId, String name, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					ExpandoColumn.class)) {
-
-			name = Objects.toString(name, "");
-
-			Object[] finderArgs = null;
-
-			if (useFinderCache) {
-				finderArgs = new Object[] {tableId, name};
-			}
-
-			Object result = null;
-
-			if (useFinderCache) {
-				result = FinderCacheUtil.getResult(
-					_finderPathFetchByT_N, finderArgs, this);
-			}
-
-			if (result instanceof ExpandoColumn) {
-				ExpandoColumn expandoColumn = (ExpandoColumn)result;
-
-				if ((tableId != expandoColumn.getTableId()) ||
-					!Objects.equals(name, expandoColumn.getName())) {
-
-					result = null;
-				}
-			}
-
-			if (result == null) {
-				StringBundler sb = new StringBundler(4);
-
-				sb.append(_SQL_SELECT_EXPANDOCOLUMN_WHERE);
-
-				sb.append(_FINDER_COLUMN_T_N_TABLEID_2);
-
-				boolean bindName = false;
-
-				if (name.isEmpty()) {
-					sb.append(_FINDER_COLUMN_T_N_NAME_3);
-				}
-				else {
-					bindName = true;
-
-					sb.append(_FINDER_COLUMN_T_N_NAME_2);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(tableId);
-
-					if (bindName) {
-						queryPos.add(name);
-					}
-
-					List<ExpandoColumn> list = query.list();
-
-					if (list.isEmpty()) {
-						if (useFinderCache) {
-							FinderCacheUtil.putResult(
-								_finderPathFetchByT_N, finderArgs, list);
-						}
-					}
-					else {
-						ExpandoColumn expandoColumn = list.get(0);
-
-						result = expandoColumn;
-
-						cacheResult(expandoColumn);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			if (result instanceof List<?>) {
-				return null;
-			}
-			else {
-				return (ExpandoColumn)result;
-			}
-		}
+		return _uniquePersistenceFinderByT_N.fetch(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId, name},
+			useFinderCache);
 	}
 
 	/**
@@ -860,68 +307,9 @@ public class ExpandoColumnPersistenceImpl
 	 */
 	@Override
 	public int countByT_N(long tableId, String name) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					ExpandoColumn.class)) {
-
-			name = Objects.toString(name, "");
-
-			FinderPath finderPath = _finderPathCountByT_N;
-
-			Object[] finderArgs = new Object[] {tableId, name};
-
-			Long count = (Long)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_EXPANDOCOLUMN_WHERE);
-
-				sb.append(_FINDER_COLUMN_T_N_TABLEID_2);
-
-				boolean bindName = false;
-
-				if (name.isEmpty()) {
-					sb.append(_FINDER_COLUMN_T_N_NAME_3);
-				}
-				else {
-					bindName = true;
-
-					sb.append(_FINDER_COLUMN_T_N_NAME_2);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(tableId);
-
-					if (bindName) {
-						queryPos.add(name);
-					}
-
-					count = (Long)query.uniqueResult();
-
-					FinderCacheUtil.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByT_N.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {tableId, new String[] {name}});
 	}
 
 	/**
@@ -933,94 +321,9 @@ public class ExpandoColumnPersistenceImpl
 	 */
 	@Override
 	public int countByT_N(long tableId, String[] names) {
-		if (names == null) {
-			names = new String[0];
-		}
-		else if (names.length > 1) {
-			for (int i = 0; i < names.length; i++) {
-				names[i] = Objects.toString(names[i], "");
-			}
-
-			names = ArrayUtil.sortedUnique(names);
-		}
-
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					ExpandoColumn.class)) {
-
-			Object[] finderArgs = new Object[] {
-				tableId, StringUtil.merge(names)
-			};
-
-			Long count = (Long)FinderCacheUtil.getResult(
-				_finderPathWithPaginationCountByT_N, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_EXPANDOCOLUMN_WHERE);
-
-				sb.append(_FINDER_COLUMN_T_N_TABLEID_2);
-
-				if (names.length > 0) {
-					sb.append("(");
-
-					for (int i = 0; i < names.length; i++) {
-						String name = names[i];
-
-						if (name.isEmpty()) {
-							sb.append(_FINDER_COLUMN_T_N_NAME_3);
-						}
-						else {
-							sb.append(_FINDER_COLUMN_T_N_NAME_2);
-						}
-
-						if ((i + 1) < names.length) {
-							sb.append(WHERE_OR);
-						}
-					}
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(tableId);
-
-					for (String name : names) {
-						if ((name != null) && !name.isEmpty()) {
-							queryPos.add(name);
-						}
-					}
-
-					count = (Long)query.uniqueResult();
-
-					FinderCacheUtil.putResult(
-						_finderPathWithPaginationCountByT_N, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByT_N.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {tableId, ArrayUtil.sortedUnique(names)});
 	}
 
 	/**
@@ -1032,70 +335,9 @@ public class ExpandoColumnPersistenceImpl
 	 */
 	@Override
 	public int filterCountByT_N(long tableId, String name) {
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return countByT_N(tableId, name);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ExpandoColumn> expandoColumns = Arrays.asList(
-				fetchByT_N(tableId, name));
-
-			expandoColumns = InlineSQLHelperUtil.filter(expandoColumns);
-
-			return expandoColumns.size();
-		}
-
-		name = Objects.toString(name, "");
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_EXPANDOCOLUMN_WHERE);
-
-		sb.append(_FINDER_COLUMN_T_N_TABLEID_2);
-
-		boolean bindName = false;
-
-		if (name.isEmpty()) {
-			sb.append(_FINDER_COLUMN_T_N_NAME_3);
-		}
-		else {
-			bindName = true;
-
-			sb.append(_FINDER_COLUMN_T_N_NAME_2);
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ExpandoColumn.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(tableId);
-
-			if (bindName) {
-				queryPos.add(name);
-			}
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByT_N.filterCount(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {tableId, new String[] {name}});
 	}
 
 	/**
@@ -1107,102 +349,10 @@ public class ExpandoColumnPersistenceImpl
 	 */
 	@Override
 	public int filterCountByT_N(long tableId, String[] names) {
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return countByT_N(tableId, names);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ExpandoColumn> expandoColumns = InlineSQLHelperUtil.filter(
-				findByT_N(tableId, names));
-
-			return expandoColumns.size();
-		}
-
-		if (names == null) {
-			names = new String[0];
-		}
-		else if (names.length > 1) {
-			for (int i = 0; i < names.length; i++) {
-				names[i] = Objects.toString(names[i], "");
-			}
-
-			names = ArrayUtil.sortedUnique(names);
-		}
-
-		StringBundler sb = new StringBundler();
-
-		sb.append(_FILTER_SQL_COUNT_EXPANDOCOLUMN_WHERE);
-
-		sb.append(_FINDER_COLUMN_T_N_TABLEID_2);
-
-		if (names.length > 0) {
-			sb.append("(");
-
-			for (int i = 0; i < names.length; i++) {
-				String name = names[i];
-
-				if (name.isEmpty()) {
-					sb.append(_FINDER_COLUMN_T_N_NAME_3);
-				}
-				else {
-					sb.append(_FINDER_COLUMN_T_N_NAME_2);
-				}
-
-				if ((i + 1) < names.length) {
-					sb.append(WHERE_OR);
-				}
-			}
-
-			sb.append(")");
-		}
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ExpandoColumn.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(tableId);
-
-			for (String name : names) {
-				if ((name != null) && !name.isEmpty()) {
-					queryPos.add(name);
-				}
-			}
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByT_N.filterCount(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {tableId, ArrayUtil.sortedUnique(names)});
 	}
-
-	private static final String _FINDER_COLUMN_T_N_TABLEID_2 =
-		"expandoColumn.tableId = ? AND ";
-
-	private static final String _FINDER_COLUMN_T_N_NAME_2 =
-		"expandoColumn.name = ?";
-
-	private static final String _FINDER_COLUMN_T_N_NAME_3 =
-		"(expandoColumn.name IS NULL OR expandoColumn.name = '')";
 
 	public ExpandoColumnPersistenceImpl() {
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
@@ -1475,64 +625,74 @@ public class ExpandoColumnPersistenceImpl
 	 * Initializes the expando column persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByTableId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByTableId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"tableId"}, true);
-
-		_finderPathWithoutPaginationFindByTableId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByTableId",
-			new String[] {Long.class.getName()}, new String[] {"tableId"},
-			true);
-
-		_finderPathCountByTableId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByTableId",
-			new String[] {Long.class.getName()}, new String[] {"tableId"},
-			false);
-
 		_collectionPersistenceFinderByTableId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByTableId,
-				_finderPathWithoutPaginationFindByTableId,
-				_finderPathCountByTableId, _SQL_SELECT_EXPANDOCOLUMN_WHERE,
-				_SQL_COUNT_EXPANDOCOLUMN_WHERE,
-				ExpandoColumnModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByTableId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"tableId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByTableId",
+					new String[] {Long.class.getName()},
+					new String[] {"tableId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByTableId",
+					new String[] {Long.class.getName()},
+					new String[] {"tableId"}, false),
+				_SQL_SELECT_EXPANDOCOLUMN_WHERE, _SQL_COUNT_EXPANDOCOLUMN_WHERE,
+				ExpandoColumnModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"expandoColumn.", "tableId", FinderColumn.Type.LONG, "=",
 					true, true, ExpandoColumn::getTableId));
 
-		_finderPathWithPaginationFindByT_N = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_N",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"tableId", "name"}, true);
+		_collectionPersistenceFinderByT_N =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_N",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"tableId", "name"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByT_N",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"tableId", "name"}, 0, 2, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByT_N",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"tableId", "name"}, 0, 2, false, null),
+				_SQL_SELECT_EXPANDOCOLUMN_WHERE, _SQL_COUNT_EXPANDOCOLUMN_WHERE,
+				ExpandoColumnModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"expandoColumn.", "tableId", FinderColumn.Type.LONG, "=",
+					true, true, ExpandoColumn::getTableId),
+				new ArrayableFinderColumn<>(
+					"expandoColumn.", "name", FinderColumn.Type.STRING, "=",
+					false, true, true, ExpandoColumn::getName));
 
-		_finderPathWithoutPaginationFindByT_N = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByT_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"tableId", "name"}, true);
-
-		_finderPathFetchByT_N = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByT_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"tableId", "name"}, false, ExpandoColumn::getTableId,
-			ExpandoColumn::getName);
-
-		_finderPathCountByT_N = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByT_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"tableId", "name"}, false);
-
-		_finderPathWithPaginationCountByT_N = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByT_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"tableId", "name"}, false);
+		_uniquePersistenceFinderByT_N = new UniquePersistenceFinder<>(
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByT_N",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"tableId", "name"}, 0, 2, false,
+				ExpandoColumn::getTableId,
+				convertNullFunction(ExpandoColumn::getName)),
+			_SQL_SELECT_EXPANDOCOLUMN_WHERE, "",
+			new FinderColumn<>(
+				"expandoColumn.", "tableId", FinderColumn.Type.LONG, "=", true,
+				true, ExpandoColumn::getTableId),
+			new FinderColumn<>(
+				"expandoColumn.", "name", FinderColumn.Type.STRING, "=", true,
+				true, ExpandoColumn::getName));
 
 		ExpandoColumnUtil.setPersistence(this);
 	}
@@ -1555,29 +715,6 @@ public class ExpandoColumnPersistenceImpl
 	private static final String _SQL_COUNT_EXPANDOCOLUMN_WHERE =
 		"SELECT COUNT(expandoColumn) FROM ExpandoColumn expandoColumn WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"expandoColumn.columnId";
-
-	private static final String _FILTER_SQL_SELECT_EXPANDOCOLUMN_WHERE =
-		"SELECT DISTINCT {expandoColumn.*} FROM ExpandoColumn expandoColumn WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_EXPANDOCOLUMN_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {ExpandoColumn.*} FROM (SELECT DISTINCT expandoColumn.columnId FROM ExpandoColumn expandoColumn WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_EXPANDOCOLUMN_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN ExpandoColumn ON TEMP_TABLE.columnId = ExpandoColumn.columnId";
-
-	private static final String _FILTER_SQL_COUNT_EXPANDOCOLUMN_WHERE =
-		"SELECT COUNT(DISTINCT expandoColumn.columnId) AS COUNT_VALUE FROM ExpandoColumn expandoColumn WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "expandoColumn";
-
-	private static final String _FILTER_ENTITY_TABLE = "ExpandoColumn";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "ExpandoColumn.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No ExpandoColumn exists with the key {";
 
@@ -1593,4 +730,4 @@ public class ExpandoColumnPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:160189785
+// LIFERAY-SERVICE-BUILDER-HASH:576650596

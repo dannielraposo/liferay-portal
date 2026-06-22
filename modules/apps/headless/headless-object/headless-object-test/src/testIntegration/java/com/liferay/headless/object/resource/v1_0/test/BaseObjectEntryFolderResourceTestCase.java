@@ -49,6 +49,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -140,7 +141,8 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -150,7 +152,8 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -161,7 +164,8 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 				_testCompanyAdminUser.getEmailAddress(),
 				PropsValues.DEFAULT_ADMIN_PASSWORD
 			).endpoint(
-				testCompany.getVirtualHostname(), 8080, "http"
+				testCompany.getVirtualHostname(),
+				PortalUtil.getPortalServerPort(false), "http"
 			).locale(
 				LocaleUtil.getDefault()
 			).parameter(
@@ -285,6 +289,7 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ObjectEntryFolder objectEntryFolder1 =
 			testGraphQLDeleteObjectEntryFolder_addObjectEntryFolder();
 
@@ -320,6 +325,7 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 
 		// Using the namespace headlessObject_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ObjectEntryFolder objectEntryFolder2 =
 			testGraphQLDeleteObjectEntryFolder_addObjectEntryFolder();
 
@@ -463,6 +469,7 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ObjectEntryFolder objectEntryFolder1 =
 			testGraphQLDeleteScopeScopeKeyObjectEntryFolderByExternalReferenceCode_addObjectEntryFolder();
 
@@ -513,6 +520,7 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 
 		// Using the namespace headlessObject_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ObjectEntryFolder objectEntryFolder2 =
 			testGraphQLDeleteScopeScopeKeyObjectEntryFolderByExternalReferenceCode_addObjectEntryFolder();
 
@@ -673,8 +681,9 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 			public StringBuffer getRequestURL() {
 				return new StringBuffer(
 					StringBundler.concat(
-						"http://localhost:8080/o/v1.0/",
-						RandomTestUtil.randomString(), "/",
+						"http://localhost:",
+						String.valueOf(PortalUtil.getPortalServerPort(false)),
+						"/o/v1.0/", RandomTestUtil.randomString(), "/",
 						RandomTestUtil.randomString()));
 			}
 
@@ -710,8 +719,10 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 			@Override
 			public URI getRequestUri() {
 				return URI.create(
-					"http://localhost:8080/o/" + applicationPath +
-						resourcePath);
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath, resourcePath));
 			}
 
 			@Override
@@ -731,7 +742,11 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 
 			@Override
 			public URI getBaseUri() {
-				return URI.create("http://localhost:8080/o/" + applicationPath);
+				return URI.create(
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath));
 			}
 
 			@Override
@@ -2077,7 +2092,8 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).parameters(
 			parameters
 		).build();
@@ -2365,6 +2381,14 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 
 			if (Objects.equals("status", additionalAssertFieldName)) {
 				if (objectEntryFolder.getStatus() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("systemProperties", additionalAssertFieldName)) {
+				if (objectEntryFolder.getSystemProperties() == null) {
 					valid = false;
 				}
 
@@ -2752,6 +2776,17 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 				if (!Objects.deepEquals(
 						objectEntryFolder1.getStatus(),
 						objectEntryFolder2.getStatus())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("systemProperties", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						objectEntryFolder1.getSystemProperties(),
+						objectEntryFolder2.getSystemProperties())) {
 
 					return false;
 				}
@@ -3280,6 +3315,11 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("systemProperties")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("title")) {
 			Object object = objectEntryFolder.getTitle();
 
@@ -3344,7 +3384,9 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -3690,4 +3732,4 @@ public abstract class BaseObjectEntryFolderResourceTestCase {
 		_vulcanCRUDItemDelegateBuilderRegistry;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1594349893
+// LIFERAY-REST-BUILDER-HASH:858134422

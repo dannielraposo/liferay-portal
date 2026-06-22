@@ -6,9 +6,11 @@
 type TUserAccount = {
 	alternateName?: string;
 	emailAddress?: string;
+	externalReferenceCode?: string;
 	familyName?: string;
 	givenName?: string;
 	id?: string;
+	jobTitle?: string;
 	languageId?: string;
 	name?: string;
 	password?: string;

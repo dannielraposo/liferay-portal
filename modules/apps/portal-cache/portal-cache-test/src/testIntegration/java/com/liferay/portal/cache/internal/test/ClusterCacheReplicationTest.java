@@ -6,16 +6,15 @@
 package com.liferay.portal.cache.internal.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.portal.cache.internal.test.util.PortalCacheReplicationTestUtil;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.PortalCacheException;
 import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
 import com.liferay.portal.kernel.cache.PortalCacheListener;
-import com.liferay.portal.kernel.cache.PortalCacheListenerScope;
 import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
-import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.TomcatClusterTestRule;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserGroupTestUtil;
@@ -27,8 +26,6 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Function;
 
@@ -94,7 +91,171 @@ public class ClusterCacheReplicationTest implements Serializable {
 	}
 
 	@Test
-	public void testDoNotReplicatePut() throws Exception {
+	public void testNotifyEntryPutPingPongFlushing() throws Exception {
+
+		// Assert empty and put value on node 1
+
+		String testCacheName = ClusterCacheReplicationTest.class.getName();
+
+		String testKey = "testKey";
+		String testValue1 = "testValue1";
+		String testValue2 = "testValue2";
+
+		Assert.assertNull(
+			_tomcatNode1.syncExecute(
+				() -> {
+					PortalCache<String, String> portalCache =
+						PortalCacheHelperUtil.getPortalCache(
+							PortalCacheManagerNames.MULTI_VM, testCacheName);
+
+					String value = portalCache.get(testKey);
+
+					portalCache.put(testKey, testValue1);
+
+					return value;
+				}));
+
+		// Assert node 1 can see the value it put
+
+		Assert.assertEquals(
+			testValue1,
+			_tomcatNode1.syncExecute(
+				() -> {
+					PortalCache<String, String> portalCache =
+						PortalCacheHelperUtil.getPortalCache(
+							PortalCacheManagerNames.MULTI_VM, testCacheName);
+
+					return portalCache.get(testKey);
+				}));
+
+		// Assert empty and put value on node 2
+
+		Assert.assertNull(
+			_tomcatNode2.syncExecute(
+				() -> {
+					PortalCache<String, String> portalCache =
+						PortalCacheHelperUtil.getPortalCache(
+							PortalCacheManagerNames.MULTI_VM, testCacheName);
+
+					String value = portalCache.get(testKey);
+
+					portalCache.put(testKey, testValue2);
+
+					return value;
+				}));
+
+		// Assert node 2 can see the value it put
+
+		Assert.assertEquals(
+			testValue2,
+			_tomcatNode2.syncExecute(
+				() -> {
+					PortalCache<String, String> portalCache =
+						PortalCacheHelperUtil.getPortalCache(
+							PortalCacheManagerNames.MULTI_VM, testCacheName);
+
+					return portalCache.get(testKey);
+				}));
+
+		// Assert node 1 sees no value
+
+		Assert.assertNull(
+			_tomcatNode1.syncExecute(
+				() -> {
+					PortalCache<String, String> portalCache =
+						PortalCacheHelperUtil.getPortalCache(
+							PortalCacheManagerNames.MULTI_VM, testCacheName);
+
+					return portalCache.get(testKey);
+				}));
+	}
+
+	@Test
+	public void testNotifyEntryPutWithEntityCacheAndFinderCache()
+		throws Exception {
+
+		// Assert node 1 does not see any UserGroup with testing prefix
+
+		String userGroupNamePrefix =
+			ClusterCacheReplicationTest.class.getSimpleName();
+
+		TomcatNode.ClusterExecutable<ArrayList<UserGroup>>
+			getUserGroupsClusterExecutable = () -> new ArrayList<>(
+				UserGroupLocalServiceUtil.getUserGroups(
+					TestPropsValues.getCompanyId(), userGroupNamePrefix + "%",
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS));
+
+		List<UserGroup> userGroups = _tomcatNode1.syncExecute(
+			getUserGroupsClusterExecutable);
+
+		Assert.assertTrue(userGroups.toString(), userGroups.isEmpty());
+
+		// Add user group1 on node 1
+
+		String userGroupName1 = userGroupNamePrefix + "_userGroup1";
+
+		UserGroup userGroup1 = _tomcatNode1.syncExecute(
+			() -> {
+				UserGroup userGroup = UserGroupTestUtil.addUserGroup();
+
+				userGroup.setName(userGroupName1);
+
+				return UserGroupLocalServiceUtil.updateUserGroup(userGroup);
+			});
+
+		Assert.assertEquals(userGroupName1, userGroup1.getName());
+
+		// Assert node 2 can see user group 1
+
+		userGroups = _tomcatNode2.syncExecute(getUserGroupsClusterExecutable);
+
+		Assert.assertEquals(userGroups.toString(), 1, userGroups.size());
+		Assert.assertEquals(userGroup1, userGroups.get(0));
+
+		// Add user group 2 on node 1
+
+		String userGroupName2 = userGroupNamePrefix + "_userGroup2";
+
+		UserGroup userGroup2 = _tomcatNode1.syncExecute(
+			() -> {
+				UserGroup userGroup = UserGroupTestUtil.addUserGroup();
+
+				userGroup.setName(userGroupName2);
+
+				return UserGroupLocalServiceUtil.updateUserGroup(userGroup);
+			});
+
+		Assert.assertEquals(userGroupName2, userGroup2.getName());
+
+		// Assert node 2 can see user group 1 and user group 2
+
+		userGroups = _tomcatNode2.syncExecute(getUserGroupsClusterExecutable);
+
+		Assert.assertEquals(userGroups.toString(), 2, userGroups.size());
+		Assert.assertEquals(userGroup1, userGroups.get(0));
+		Assert.assertEquals(userGroup2, userGroups.get(1));
+
+		// Remove user group 1 and user group 2 on node 2
+
+		userGroups = _tomcatNode2.syncExecute(
+			() -> {
+				UserGroupLocalServiceUtil.deleteUserGroup(userGroup1);
+				UserGroupLocalServiceUtil.deleteUserGroup(userGroup2);
+
+				return getUserGroupsClusterExecutable.execute();
+			});
+
+		Assert.assertTrue(userGroups.toString(), userGroups.isEmpty());
+
+		// Assert node 1 sees no user group
+
+		userGroups = _tomcatNode1.syncExecute(getUserGroupsClusterExecutable);
+
+		Assert.assertTrue(userGroups.toString(), userGroups.isEmpty());
+	}
+
+	@Test
+	public void testNotifyEntryPutWithoutReplicatePuts() throws Exception {
 
 		// Assert empty on node 1, set up property
 
@@ -111,7 +272,8 @@ public class ClusterCacheReplicationTest implements Serializable {
 						PortalCacheHelperUtil.getPortalCache(
 							PortalCacheManagerNames.MULTI_VM, testCacheName);
 
-					_setFieldValue(portalCache, "_replicatePuts", false);
+					PortalCacheReplicationTestUtil.setReplicatorFieldValue(
+						portalCache, "_replicatePuts", false);
 
 					return portalCache.get(testKey);
 				}));
@@ -125,7 +287,8 @@ public class ClusterCacheReplicationTest implements Serializable {
 						PortalCacheHelperUtil.getPortalCache(
 							PortalCacheManagerNames.MULTI_VM, testCacheName);
 
-					_setFieldValue(portalCache, "_replicatePuts", false);
+					PortalCacheReplicationTestUtil.setReplicatorFieldValue(
+						portalCache, "_replicatePuts", false);
 
 					portalCache.registerPortalCacheListener(
 						new TestPortalCacheListener());
@@ -220,170 +383,8 @@ public class ClusterCacheReplicationTest implements Serializable {
 	}
 
 	@Test
-	public void testEntityCacheFinderCacheSynchronization() throws Exception {
-
-		// Assert node 1 does not see any UserGroup with testing prefix
-
-		String userGroupNamePrefix =
-			ClusterCacheReplicationTest.class.getSimpleName();
-
-		TomcatNode.ClusterExecutable<ArrayList<UserGroup>>
-			getUserGroupsClusterExecutable = () -> new ArrayList<>(
-				UserGroupLocalServiceUtil.getUserGroups(
-					TestPropsValues.getCompanyId(), userGroupNamePrefix + "%",
-					QueryUtil.ALL_POS, QueryUtil.ALL_POS));
-
-		List<UserGroup> userGroups = _tomcatNode1.syncExecute(
-			getUserGroupsClusterExecutable);
-
-		Assert.assertTrue(userGroups.toString(), userGroups.isEmpty());
-
-		// Add user group1 on node 1
-
-		String userGroupName1 = userGroupNamePrefix + "_userGroup1";
-
-		UserGroup userGroup1 = _tomcatNode1.syncExecute(
-			() -> {
-				UserGroup userGroup = UserGroupTestUtil.addUserGroup();
-
-				userGroup.setName(userGroupName1);
-
-				return UserGroupLocalServiceUtil.updateUserGroup(userGroup);
-			});
-
-		Assert.assertEquals(userGroupName1, userGroup1.getName());
-
-		// Assert node 2 can see user group 1
-
-		userGroups = _tomcatNode2.syncExecute(getUserGroupsClusterExecutable);
-
-		Assert.assertEquals(userGroups.toString(), 1, userGroups.size());
-		Assert.assertEquals(userGroup1, userGroups.get(0));
-
-		// Add user group 2 on node 1
-
-		String userGroupName2 = userGroupNamePrefix + "_userGroup2";
-
-		UserGroup userGroup2 = _tomcatNode1.syncExecute(
-			() -> {
-				UserGroup userGroup = UserGroupTestUtil.addUserGroup();
-
-				userGroup.setName(userGroupName2);
-
-				return UserGroupLocalServiceUtil.updateUserGroup(userGroup);
-			});
-
-		Assert.assertEquals(userGroupName2, userGroup2.getName());
-
-		// Assert node 2 can see user group 1 and user group 2
-
-		userGroups = _tomcatNode2.syncExecute(getUserGroupsClusterExecutable);
-
-		Assert.assertEquals(userGroups.toString(), 2, userGroups.size());
-		Assert.assertEquals(userGroup1, userGroups.get(0));
-		Assert.assertEquals(userGroup2, userGroups.get(1));
-
-		// Remove user group 1 and user group 2 on node 2
-
-		userGroups = _tomcatNode2.syncExecute(
-			() -> {
-				UserGroupLocalServiceUtil.deleteUserGroup(userGroup1);
-				UserGroupLocalServiceUtil.deleteUserGroup(userGroup2);
-
-				return getUserGroupsClusterExecutable.execute();
-			});
-
-		Assert.assertTrue(userGroups.toString(), userGroups.isEmpty());
-
-		// Assert node 1 sees no user group
-
-		userGroups = _tomcatNode1.syncExecute(getUserGroupsClusterExecutable);
-
-		Assert.assertTrue(userGroups.toString(), userGroups.isEmpty());
-	}
-
-	@Test
-	public void testPingPongFlushing() throws Exception {
-
-		// Assert empty and put value on node 1
-
-		String testCacheName = ClusterCacheReplicationTest.class.getName();
-
-		String testKey = "testKey";
-		String testValue1 = "testValue1";
-		String testValue2 = "testValue2";
-
-		Assert.assertNull(
-			_tomcatNode1.syncExecute(
-				() -> {
-					PortalCache<String, String> portalCache =
-						PortalCacheHelperUtil.getPortalCache(
-							PortalCacheManagerNames.MULTI_VM, testCacheName);
-
-					String value = portalCache.get(testKey);
-
-					portalCache.put(testKey, testValue1);
-
-					return value;
-				}));
-
-		// Assert node 1 can see the value it put
-
-		Assert.assertEquals(
-			testValue1,
-			_tomcatNode1.syncExecute(
-				() -> {
-					PortalCache<String, String> portalCache =
-						PortalCacheHelperUtil.getPortalCache(
-							PortalCacheManagerNames.MULTI_VM, testCacheName);
-
-					return portalCache.get(testKey);
-				}));
-
-		// Assert empty and put value on node 2
-
-		Assert.assertNull(
-			_tomcatNode2.syncExecute(
-				() -> {
-					PortalCache<String, String> portalCache =
-						PortalCacheHelperUtil.getPortalCache(
-							PortalCacheManagerNames.MULTI_VM, testCacheName);
-
-					String value = portalCache.get(testKey);
-
-					portalCache.put(testKey, testValue2);
-
-					return value;
-				}));
-
-		// Assert node 2 can see the value it put
-
-		Assert.assertEquals(
-			testValue2,
-			_tomcatNode2.syncExecute(
-				() -> {
-					PortalCache<String, String> portalCache =
-						PortalCacheHelperUtil.getPortalCache(
-							PortalCacheManagerNames.MULTI_VM, testCacheName);
-
-					return portalCache.get(testKey);
-				}));
-
-		// Assert node 1 sees no value
-
-		Assert.assertNull(
-			_tomcatNode1.syncExecute(
-				() -> {
-					PortalCache<String, String> portalCache =
-						PortalCacheHelperUtil.getPortalCache(
-							PortalCacheManagerNames.MULTI_VM, testCacheName);
-
-					return portalCache.get(testKey);
-				}));
-	}
-
-	@Test
-	public void testReplicateByCopy() throws Exception {
+	public void testNotifyEntryPutWithoutReplicatePutsViaCopy()
+		throws Exception {
 
 		// Assert node 1 is empty
 
@@ -399,7 +400,8 @@ public class ClusterCacheReplicationTest implements Serializable {
 						PortalCacheHelperUtil.getPortalCache(
 							PortalCacheManagerNames.MULTI_VM, testCacheName);
 
-					_setFieldValue(portalCache, "_replicatePutsViaCopy", true);
+					PortalCacheReplicationTestUtil.setReplicatorFieldValue(
+						portalCache, "_replicatePutsViaCopy", false);
 
 					return portalCache.get(testKey);
 				}));
@@ -413,7 +415,111 @@ public class ClusterCacheReplicationTest implements Serializable {
 						PortalCacheHelperUtil.getPortalCache(
 							PortalCacheManagerNames.MULTI_VM, testCacheName);
 
-					_setFieldValue(portalCache, "_replicatePutsViaCopy", true);
+					PortalCacheReplicationTestUtil.setReplicatorFieldValue(
+						portalCache, "_replicatePutsViaCopy", false);
+
+					portalCache.registerPortalCacheListener(
+						new TestPortalCacheListener());
+
+					return portalCache.get(testKey);
+				}));
+
+		// Assert node 1 can see the value it just put
+
+		Assert.assertEquals(
+			testValue,
+			_tomcatNode1.syncExecute(
+				() -> {
+					PortalCache<String, String> portalCache =
+						PortalCacheHelperUtil.getPortalCache(
+							PortalCacheManagerNames.MULTI_VM, testCacheName);
+
+					portalCache.put(testKey, testValue);
+
+					return portalCache.get(testKey);
+				}));
+
+		// Assert node 2 is still empty, and triggered notifyEntryRemoved
+
+		Assert.assertNull(
+			_tomcatNode2.syncExecute(
+				() -> {
+					PortalCache<String, String> portalCache =
+						PortalCacheHelperUtil.getPortalCache(
+							PortalCacheManagerNames.MULTI_VM, testCacheName);
+
+					TestPortalCacheListener.await(
+						portalCache,
+						TestPortalCacheListener::getRemoveCountDownLatch);
+
+					return portalCache.get(testKey);
+				}));
+
+		// Assert node 1 is empty after removeAll
+
+		Assert.assertNull(
+			_tomcatNode1.syncExecute(
+				() -> {
+					PortalCache<String, String> portalCache =
+						PortalCacheHelperUtil.getPortalCache(
+							PortalCacheManagerNames.MULTI_VM, testCacheName);
+
+					portalCache.removeAll();
+
+					return portalCache.get(testKey);
+				}));
+
+		// Assert node 2 is still empty, and triggered notifyEntryRemoved
+
+		Assert.assertNull(
+			_tomcatNode2.syncExecute(
+				() -> {
+					PortalCache<String, String> portalCache =
+						PortalCacheHelperUtil.getPortalCache(
+							PortalCacheManagerNames.MULTI_VM, testCacheName);
+
+					TestPortalCacheListener.await(
+						portalCache,
+						TestPortalCacheListener::getRemoveAllCountDownLatch);
+
+					return portalCache.get(testKey);
+				}));
+	}
+
+	@Test
+	public void testNotifyEntryPutWithReplicatePutsViaCopy() throws Exception {
+
+		// Assert node 1 is empty
+
+		String testCacheName = ClusterCacheReplicationTest.class.getName();
+
+		String testKey = "testKey";
+		String testValue = "testValue";
+
+		Assert.assertNull(
+			_tomcatNode1.syncExecute(
+				() -> {
+					PortalCache<String, String> portalCache =
+						PortalCacheHelperUtil.getPortalCache(
+							PortalCacheManagerNames.MULTI_VM, testCacheName);
+
+					PortalCacheReplicationTestUtil.setReplicatorFieldValue(
+						portalCache, "_replicatePutsViaCopy", true);
+
+					return portalCache.get(testKey);
+				}));
+
+		// Assert node 2 is empty
+
+		Assert.assertNull(
+			_tomcatNode2.syncExecute(
+				() -> {
+					PortalCache<String, String> portalCache =
+						PortalCacheHelperUtil.getPortalCache(
+							PortalCacheManagerNames.MULTI_VM, testCacheName);
+
+					PortalCacheReplicationTestUtil.setReplicatorFieldValue(
+						portalCache, "_replicatePutsViaCopy", true);
 
 					portalCache.registerPortalCacheListener(
 						new TestPortalCacheListener());
@@ -486,108 +592,8 @@ public class ClusterCacheReplicationTest implements Serializable {
 	}
 
 	@Test
-	public void testReplicateByRemove() throws Exception {
-
-		// Assert node 1 is empty
-
-		String testCacheName = ClusterCacheReplicationTest.class.getName();
-
-		String testKey = "testKey";
-		String testValue = "testValue";
-
-		Assert.assertNull(
-			_tomcatNode1.syncExecute(
-				() -> {
-					PortalCache<String, String> portalCache =
-						PortalCacheHelperUtil.getPortalCache(
-							PortalCacheManagerNames.MULTI_VM, testCacheName);
-
-					_setFieldValue(portalCache, "_replicatePutsViaCopy", false);
-
-					return portalCache.get(testKey);
-				}));
-
-		// Assert node 2 is empty
-
-		Assert.assertNull(
-			_tomcatNode2.syncExecute(
-				() -> {
-					PortalCache<String, String> portalCache =
-						PortalCacheHelperUtil.getPortalCache(
-							PortalCacheManagerNames.MULTI_VM, testCacheName);
-
-					_setFieldValue(portalCache, "_replicatePutsViaCopy", false);
-
-					portalCache.registerPortalCacheListener(
-						new TestPortalCacheListener());
-
-					return portalCache.get(testKey);
-				}));
-
-		// Assert node 1 can see the value it just put
-
-		Assert.assertEquals(
-			testValue,
-			_tomcatNode1.syncExecute(
-				() -> {
-					PortalCache<String, String> portalCache =
-						PortalCacheHelperUtil.getPortalCache(
-							PortalCacheManagerNames.MULTI_VM, testCacheName);
-
-					portalCache.put(testKey, testValue);
-
-					return portalCache.get(testKey);
-				}));
-
-		// Assert node 2 is still empty, and triggered notifyEntryRemoved
-
-		Assert.assertNull(
-			_tomcatNode2.syncExecute(
-				() -> {
-					PortalCache<String, String> portalCache =
-						PortalCacheHelperUtil.getPortalCache(
-							PortalCacheManagerNames.MULTI_VM, testCacheName);
-
-					TestPortalCacheListener.await(
-						portalCache,
-						TestPortalCacheListener::getRemoveCountDownLatch);
-
-					return portalCache.get(testKey);
-				}));
-
-		// Assert node 1 is empty after removeAll
-
-		Assert.assertNull(
-			_tomcatNode1.syncExecute(
-				() -> {
-					PortalCache<String, String> portalCache =
-						PortalCacheHelperUtil.getPortalCache(
-							PortalCacheManagerNames.MULTI_VM, testCacheName);
-
-					portalCache.removeAll();
-
-					return portalCache.get(testKey);
-				}));
-
-		// Assert node 2 is still empty, and triggered notifyEntryRemoved
-
-		Assert.assertNull(
-			_tomcatNode2.syncExecute(
-				() -> {
-					PortalCache<String, String> portalCache =
-						PortalCacheHelperUtil.getPortalCache(
-							PortalCacheManagerNames.MULTI_VM, testCacheName);
-
-					TestPortalCacheListener.await(
-						portalCache,
-						TestPortalCacheListener::getRemoveAllCountDownLatch);
-
-					return portalCache.get(testKey);
-				}));
-	}
-
-	@Test
-	public void testReplicateByUpdateViaCopy() throws Exception {
+	public void testNotifyEntryUpdatedWithReplicateUpdatesViaCopy()
+		throws Exception {
 
 		// Assert node 1 is empty
 
@@ -604,8 +610,9 @@ public class ClusterCacheReplicationTest implements Serializable {
 						PortalCacheHelperUtil.getPortalCache(
 							PortalCacheManagerNames.MULTI_VM, testCacheName);
 
-					_setFieldValue(portalCache, "_replicatePutsViaCopy", true);
-					_setFieldValue(
+					PortalCacheReplicationTestUtil.setReplicatorFieldValue(
+						portalCache, "_replicatePutsViaCopy", true);
+					PortalCacheReplicationTestUtil.setReplicatorFieldValue(
 						portalCache, "_replicateUpdatesViaCopy", true);
 
 					return portalCache.get(testKey);
@@ -620,8 +627,9 @@ public class ClusterCacheReplicationTest implements Serializable {
 						PortalCacheHelperUtil.getPortalCache(
 							PortalCacheManagerNames.MULTI_VM, testCacheName);
 
-					_setFieldValue(portalCache, "_replicatePutsViaCopy", true);
-					_setFieldValue(
+					PortalCacheReplicationTestUtil.setReplicatorFieldValue(
+						portalCache, "_replicatePutsViaCopy", true);
+					PortalCacheReplicationTestUtil.setReplicatorFieldValue(
 						portalCache, "_replicateUpdatesViaCopy", true);
 
 					portalCache.registerPortalCacheListener(
@@ -705,8 +713,9 @@ public class ClusterCacheReplicationTest implements Serializable {
 			throws InterruptedException {
 
 			TestPortalCacheListener testPortalCacheListener =
-				(TestPortalCacheListener)_getPortalCacheListener(
-					TestPortalCacheListener.class.getName(), portalCache);
+				(TestPortalCacheListener)
+					PortalCacheReplicationTestUtil.getPortalCacheListener(
+						TestPortalCacheListener.class.getName(), portalCache);
 
 			CountDownLatch countDownLatch = function.apply(
 				testPortalCacheListener);
@@ -795,47 +804,6 @@ public class ClusterCacheReplicationTest implements Serializable {
 		private final CountDownLatch _updatedCountDownLatch;
 
 	}
-
-	private static PortalCacheListener<?, ?> _getPortalCacheListener(
-		String className, PortalCache<?, ?> portalCache) {
-
-		portalCache = ReflectionTestUtil.getFieldValue(
-			portalCache, "_portalCache");
-
-		Object aggregatedPortalCacheListener = ReflectionTestUtil.getFieldValue(
-			portalCache, "aggregatedPortalCacheListener");
-
-		ConcurrentMap<PortalCacheListener<?, ?>, PortalCacheListenerScope>
-			portalCacheListeners = ReflectionTestUtil.getFieldValue(
-				aggregatedPortalCacheListener, "_portalCacheListeners");
-
-		for (PortalCacheListener<?, ?> portalCacheListener :
-				portalCacheListeners.keySet()) {
-
-			Class<?> clazz = portalCacheListener.getClass();
-
-			if (Objects.equals(clazz.getName(), className)) {
-				return portalCacheListener;
-			}
-		}
-
-		throw new IllegalStateException(className + " does not exist");
-	}
-
-	private void _setFieldValue(
-		PortalCache<?, ?> portalCache, String fieldName, boolean fieldValue) {
-
-		ReflectionTestUtil.setFieldValue(
-			(Object)ReflectionTestUtil.getFieldValue(
-				_getPortalCacheListener(
-					_CLASS_NAME_EHCACHE_PORTAL_CACHE_REPLICATOR, portalCache),
-				"_portalCacheReplicator"),
-			fieldName, fieldValue);
-	}
-
-	private static final String _CLASS_NAME_EHCACHE_PORTAL_CACHE_REPLICATOR =
-		"com.liferay.portal.cache.ehcache.internal.events." +
-			"EhcachePortalCacheReplicatorUtil$EhcachePortalCacheReplicator";
 
 	private static transient TomcatNode _tomcatNode1;
 	private static transient TomcatNode _tomcatNode2;

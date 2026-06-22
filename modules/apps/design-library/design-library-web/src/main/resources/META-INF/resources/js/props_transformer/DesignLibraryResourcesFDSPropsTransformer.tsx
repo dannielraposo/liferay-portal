@@ -4,25 +4,62 @@
  */
 
 import {IFrontendDataSetProps} from '@liferay/frontend-data-set-web';
+import {openModal} from 'frontend-js-components-web';
 import React from 'react';
+import {AddStyleBookModalContent} from 'style-book-web';
 
 import {TableCellContentType} from '../constants';
 import {
+	AuthorRenderer,
 	FromNowDateTimeRenderer,
 	LinkRenderer,
 	createSetItemComponentProps,
 } from './cell_renderers';
 
+type FrontendTokenDefinitionProvider = {
+	name: string;
+	themeId: string;
+};
+
+interface DesignLibraryResourcesAdditionalProps {
+	addStyleBookEntryURL?: string;
+	canAddStyleBook: boolean;
+	frontendTokenDefinitionProviders?: Array<FrontendTokenDefinitionProvider>;
+	styleBookNamespace?: string;
+}
+
 export default function DesignLibraryResourcesFDSPropsTransformer(
-	props: IFrontendDataSetProps
+	props: IFrontendDataSetProps & {
+		additionalProps?: DesignLibraryResourcesAdditionalProps;
+	}
 ): IFrontendDataSetProps {
-	const creationMenu = {
-		primaryItems: [
-			{
-				label: Liferay.Language.get('new-style-book'),
-			},
-		],
-	};
+	const {
+		addStyleBookEntryURL,
+		canAddStyleBook = false,
+		frontendTokenDefinitionProviders = [],
+		styleBookNamespace = '',
+	} = props.additionalProps ?? {};
+
+	const creationMenu =
+		canAddStyleBook && addStyleBookEntryURL
+			? {
+					primaryItems: [
+						{
+							label: Liferay.Language.get('new-style-book'),
+							onClick: () =>
+								openModal({
+									contentComponent: ({closeModal}) =>
+										AddStyleBookModalContent({
+											addStyleBookEntryURL,
+											closeModal,
+											frontendTokenDefinitionProviders,
+											namespace: styleBookNamespace,
+										}),
+								}),
+						},
+					],
+				}
+			: undefined;
 
 	return {
 		...props,
@@ -38,6 +75,11 @@ export default function DesignLibraryResourcesFDSPropsTransformer(
 						/>
 					),
 					name: TableCellContentType.DESIGN_LIBRARY_LINK,
+					type: 'internal',
+				},
+				{
+					component: AuthorRenderer,
+					name: TableCellContentType.AUTHOR,
 					type: 'internal',
 				},
 				{
@@ -68,13 +110,13 @@ export default function DesignLibraryResourcesFDSPropsTransformer(
 							actionId: 'edit',
 							contentRenderer:
 								TableCellContentType.DESIGN_LIBRARY_LINK,
-							fieldName: 'title',
+							fieldName: 'embedded.name',
 							label: Liferay.Language.get('title'),
 							localizeLabel: true,
-							sortable: true,
 						},
 						{
-							fieldName: 'creatorUserId',
+							contentRenderer: TableCellContentType.AUTHOR,
+							fieldName: 'embedded.creator.name',
 							label: Liferay.Language.get('author'),
 							localizeLabel: true,
 							truncate: true,
@@ -105,7 +147,7 @@ export default function DesignLibraryResourcesFDSPropsTransformer(
 				schema: {
 					description: 'dateModified',
 					symbol: '',
-					title: 'title',
+					title: 'embedded.name',
 				},
 				setItemComponentProps: createSetItemComponentProps('book'),
 				thumbnail: 'cards2',

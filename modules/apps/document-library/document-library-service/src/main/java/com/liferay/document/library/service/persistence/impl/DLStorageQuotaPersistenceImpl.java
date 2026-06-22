@@ -16,7 +16,6 @@ import com.liferay.document.library.service.persistence.impl.constants.DLPersist
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -69,8 +68,7 @@ public class DLStorageQuotaPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByCompanyId;
-	private UniquePersistenceFinder<DLStorageQuota>
+	private UniquePersistenceFinder<DLStorageQuota, NoSuchStorageQuotaException>
 		_uniquePersistenceFinderByCompanyId;
 
 	/**
@@ -84,32 +82,8 @@ public class DLStorageQuotaPersistenceImpl
 	public DLStorageQuota findByCompanyId(long companyId)
 		throws NoSuchStorageQuotaException {
 
-		DLStorageQuota dlStorageQuota = fetchByCompanyId(companyId);
-
-		if (dlStorageQuota == null) {
-			String message =
-				_uniquePersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchStorageQuotaException(message);
-		}
-
-		return dlStorageQuota;
-	}
-
-	/**
-	 * Returns the dl storage quota where companyId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching dl storage quota, or <code>null</code> if a matching dl storage quota could not be found
-	 */
-	@Override
-	public DLStorageQuota fetchByCompanyId(long companyId) {
-		return fetchByCompanyId(companyId, true);
+		return _uniquePersistenceFinderByCompanyId.find(
+			finderCache, new Object[] {companyId});
 	}
 
 	/**
@@ -330,13 +304,13 @@ public class DLStorageQuotaPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByCompanyId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false, DLStorageQuota::getCompanyId);
-
 		_uniquePersistenceFinderByCompanyId = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByCompanyId, _SQL_SELECT_DLSTORAGEQUOTA_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByCompanyId",
+				new String[] {Long.class.getName()}, new String[] {"companyId"},
+				0, 0, false, DLStorageQuota::getCompanyId),
+			_SQL_SELECT_DLSTORAGEQUOTA_WHERE, "",
 			new FinderColumn<>(
 				"dlStorageQuota.", "companyId", FinderColumn.Type.LONG, "=",
 				true, true, DLStorageQuota::getCompanyId));
@@ -383,9 +357,6 @@ public class DLStorageQuotaPersistenceImpl
 	@Reference
 	protected FinderCache finderCache;
 
-	private static final String _ENTITY_ALIAS_PREFIX =
-		DLStorageQuotaModelImpl.ENTITY_ALIAS + ".";
-
 	private static final String _SQL_SELECT_DLSTORAGEQUOTA =
 		"SELECT dlStorageQuota FROM DLStorageQuota dlStorageQuota";
 
@@ -404,4 +375,4 @@ public class DLStorageQuotaPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1247639046
+// LIFERAY-SERVICE-BUILDER-HASH:750442108

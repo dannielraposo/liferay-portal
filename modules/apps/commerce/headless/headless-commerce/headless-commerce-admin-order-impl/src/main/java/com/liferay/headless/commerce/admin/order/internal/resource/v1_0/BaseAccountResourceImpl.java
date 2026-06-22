@@ -46,9 +46,13 @@ public abstract class BaseAccountResourceImpl implements AccountResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/orders/by-externalReferenceCode/{externalReferenceCode}/account'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Nested field for orders accessed by externalReferenceCode; returns the associated Account. Throws NoSuchOrderException (404) if order not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -78,9 +82,13 @@ public abstract class BaseAccountResourceImpl implements AccountResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/orders/{id}/account'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Nested field (Order.account): returns the Account entity linked to order.commerceAccountId via _accountDTOConverter. Aliased by both /orders/<id>/account and /orders/by-externalReferenceCode/<externalReferenceCode>/account endpoints."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the by-externalReferenceCode path variant; identifiers are server-assigned and stable across the resource lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -108,9 +116,13 @@ public abstract class BaseAccountResourceImpl implements AccountResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rule-accounts/{orderRuleAccountId}/account'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Nested field accessor: returns the Account entity linked to an OrderRuleAccount via corEntryRel.classNameId and accountEntryId."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of an order-rule-to-account relationship (COREntryRel).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "orderRuleAccountId"
 			)
@@ -578,4 +590,4 @@ public abstract class BaseAccountResourceImpl implements AccountResource {
 		LogFactoryUtil.getLog(BaseAccountResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1423194801
+// LIFERAY-REST-BUILDER-HASH:1126351153

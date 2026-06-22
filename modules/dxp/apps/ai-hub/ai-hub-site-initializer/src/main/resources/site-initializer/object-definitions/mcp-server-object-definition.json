@@ -12,39 +12,11 @@
 	"externalReferenceCode": "L_AI_HUB_MCP_SERVER",
 	"friendlyURLSeparator": "l",
 	"label": {
-		"en_US": "MCP Server"
+		"en_US": "AI Hub MCP Server"
 	},
 	"modifiable": true,
 	"name": "AIHubMCPServer",
 	"objectFields": [
-		{
-			"DBType": "Clob",
-			"businessType": "LongText",
-			"defaultValue": "null",
-			"externalReferenceCode": "AUTHENTICATION_ARGUMENTS",
-			"indexed": true,
-			"indexedAsKeyword": false,
-			"indexedLanguageId": "en_US",
-			"label": {
-				"en_US": "Authentication Arguments"
-			},
-			"listTypeDefinitionId": 0,
-			"localized": false,
-			"name": "authArguments",
-			"objectFieldSettings": [
-				{
-					"name": "showCounter",
-					"value": false
-				}
-			],
-			"readOnly": "false",
-			"readOnlyConditionExpression": "",
-			"required": false,
-			"state": false,
-			"system": true,
-			"type": "Clob",
-			"unique": false
-		},
 		{
 			"DBType": "String",
 			"businessType": "Text",
@@ -58,7 +30,7 @@
 			},
 			"localized": true,
 			"name": "title",
-			"readOnly": "false",
+			"readOnly": false,
 			"readOnlyConditionExpression": "",
 			"required": false,
 			"state": false,
@@ -79,7 +51,7 @@
 			},
 			"localized": false,
 			"name": "url",
-			"readOnly": "false",
+			"readOnly": false,
 			"readOnlyConditionExpression": "",
 			"required": false,
 			"state": false,
@@ -110,7 +82,7 @@
 				}
 			],
 			"objectRelationshipExternalReferenceCode": "L_ACCOUNT_TO_L_AI_HUB_MCP_SERVERS",
-			"readOnly": "false",
+			"readOnly": false,
 			"relationshipType": "oneToMany",
 			"required": true,
 			"system": true,
@@ -121,7 +93,7 @@
 	"panelCategoryKey": "control_panel.object",
 	"parameterRequired": false,
 	"pluralLabel": {
-		"en_US": "MCP Servers"
+		"en_US": "AI Hub MCP Servers"
 	},
 	"portlet": true,
 	"scope": "company",

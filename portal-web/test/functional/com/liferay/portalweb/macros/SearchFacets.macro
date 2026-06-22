@@ -217,6 +217,8 @@ definition {
 			var searchURL = "${searchURL}&${facetURLName}=${termURLValue}";
 		}
 
+		var searchURL = SearchFacets.sortQueryParameters(searchURL = ${searchURL});
+
 		return ${searchURL};
 	}
 
@@ -225,11 +227,16 @@ definition {
 		var facetURLName = StringUtil.replace(${facetName}, " Facet", "");
 
 		var facetURLName = StringUtil.toLowerCase(${facetURLName});
+		var normalizedSearchURL = StringUtil.replaceFirst(${searchURL}, "?", "&");
 
-		var beforeFacetGroup = RegexUtil.replace(${searchURL}, "^(.*?)((?:&${facetURLName}[^&]+)+)(.*)", 1);
-		var afterFacetGroup = RegexUtil.replace(${searchURL}, "^(.*?)((?:&${facetURLName}[^&]+)+)(.*)", 3);
+		var beforeFacetGroup = RegexUtil.replace(${normalizedSearchURL}, "^(.*?)((?:&${facetURLName}[^&]+)+)(.*)", 1);
+		var afterFacetGroup = RegexUtil.replace(${normalizedSearchURL}, "^(.*?)((?:&${facetURLName}[^&]+)+)(.*)", 3);
 
 		var searchURL = "${beforeFacetGroup}${afterFacetGroup}";
+
+		var searchURL = StringUtil.replaceFirst(${searchURL}, "&", "?");
+
+		var searchURL = SearchFacets.sortQueryParameters(searchURL = ${searchURL});
 
 		return ${searchURL};
 	}
@@ -249,10 +256,11 @@ definition {
 		var facetURLName = StringUtil.replace(${facetName}, " Facet", "");
 
 		var facetURLName = StringUtil.toLowerCase(${facetURLName});
+		var normalizedSearchURL = StringUtil.replaceFirst(${searchURL}, "?", "&");
 
-		var beforeFacetGroup = RegexUtil.replace(${searchURL}, "^(.*?)((?:&${facetURLName}[^&]+)+)(.*)", 1);
-		var facetGroup = RegexUtil.replace(${searchURL}, "^(.*?)((?:&${facetURLName}[^&]+)+)(.*)", 2);
-		var afterFacetGroup = RegexUtil.replace(${searchURL}, "^(.*?)((?:&${facetURLName}[^&]+)+)(.*)", 3);
+		var beforeFacetGroup = RegexUtil.replace(${normalizedSearchURL}, "^(.*?)((?:&${facetURLName}[^&]+)+)(.*)", 1);
+		var facetGroup = RegexUtil.replace(${normalizedSearchURL}, "^(.*?)((?:&${facetURLName}[^&]+)+)(.*)", 2);
+		var afterFacetGroup = RegexUtil.replace(${normalizedSearchURL}, "^(.*?)((?:&${facetURLName}[^&]+)+)(.*)", 3);
 		var termURLValue = StringUtil.replace(${termURLValue}, " ", "%20");
 		var facetGroupList = ${facetGroup};
 
@@ -269,6 +277,10 @@ definition {
 		}
 
 		var searchURL = "${beforeFacetGroup}${afterFacetGroup}${facetGroup}";
+
+		var searchURL = StringUtil.replaceFirst(${searchURL}, "&", "?");
+
+		var searchURL = SearchFacets.sortQueryParameters(searchURL = ${searchURL});
 
 		return ${searchURL};
 	}
@@ -353,6 +365,26 @@ definition {
 		PortletEntry.save();
 
 		IFrame.closeFrame();
+	}
+
+	@summary = "Default summary"
+	macro sortQueryParameters(searchURL = null) {
+		if (!(contains(${searchURL}, "?"))) {
+			return ${searchURL};
+		}
+
+		var baseURL = StringUtil.extractFirst(${searchURL}, "?");
+		var queryString = StringUtil.extractLast(${searchURL}, "?");
+
+		var queryParamList = StringUtil.replace(${queryString}, "&", ",");
+
+		var queryParamList = ListUtil.sort(${queryParamList});
+
+		var queryString = StringUtil.replace(${queryParamList}, ",", "&");
+
+		var searchURL = "${baseURL}?${queryString}";
+
+		return ${searchURL};
 	}
 
 	@summary = "Default summary"

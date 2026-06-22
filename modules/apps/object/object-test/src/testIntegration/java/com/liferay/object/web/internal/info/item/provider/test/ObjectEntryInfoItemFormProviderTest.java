@@ -256,6 +256,7 @@ public class ObjectEntryInfoItemFormProviderTest {
 	@Test
 	public void testGetInfoForm() throws Exception {
 		_testGetInfoFormWithAttachmentObjectField();
+		_testGetInfoFormWithEdgeObjectRelationship();
 		_testGetInfoFormWithEnableObjectEntrySchedule();
 		_testGetInfoFormWithObjectAction();
 		_testGetInfoFormWithObjectRelationship();
@@ -388,6 +389,28 @@ public class ObjectEntryInfoItemFormProviderTest {
 			objectField.getObjectFieldId() + "#mimeType", _childInfoForm);
 		_assertInfoField(
 			objectField.getObjectFieldId() + "#size", _childInfoForm);
+	}
+
+	private void _testGetInfoFormWithEdgeObjectRelationship() throws Exception {
+		Node node = _tree.getNode(_objectDefinitionAA.getObjectDefinitionId());
+
+		Edge edge = node.getEdge();
+
+		ObjectRelationship objectRelationship =
+			_objectRelationshipLocalService.getObjectRelationship(
+				edge.getObjectRelationshipId());
+
+		InfoForm infoForm = _getInfoForm(_objectDefinitionA);
+
+		InfoFieldSet infoFieldSet = (InfoFieldSet)infoForm.getInfoFieldSetEntry(
+			_objectDefinitionA.getName());
+
+		InfoFieldSet relationshipInfoFieldSet =
+			(InfoFieldSet)infoFieldSet.getInfoFieldSetEntry(
+				objectRelationship.getName());
+
+		Assert.assertNotNull(
+			relationshipInfoFieldSet.getInfoFieldSetEntry("able"));
 	}
 
 	private void _testGetInfoFormWithEnableObjectEntrySchedule()

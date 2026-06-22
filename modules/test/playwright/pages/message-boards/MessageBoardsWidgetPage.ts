@@ -55,6 +55,82 @@ export class MessageBoardsWidgetPage {
 		await this.page.getByRole('button', {name: buttonName}).click();
 	}
 
+	async goToThread(site: Site, layout: Layout, threadSubject: string) {
+		await this.page.goto(
+			`/web${site.friendlyUrlPath}${layout.friendlyURL}`
+		);
+
+		await this.page.waitForLoadState('networkidle');
+
+		// Open the thread through its message URL: the card title link is
+		// covered by the card overlay, so navigate directly to its href
+
+		const threadURL = await this.page.evaluate((subject) => {
+			const anchors = Array.from(document.querySelectorAll('a'));
+
+			const anchor = anchors.find(
+				(element) =>
+					(element.getAttribute('href') || '').includes(
+						'/message_boards/message/'
+					) && element.textContent?.includes(subject)
+			);
+
+			return anchor?.getAttribute('href') || '';
+		}, threadSubject);
+
+		await this.page.goto(threadURL);
+
+		await this.page.waitForLoadState('networkidle');
+	}
+
+	async replyToThread(
+		site: Site,
+		layout: Layout,
+		threadSubject: string,
+		replyBody: string
+	) {
+		await this.goToThread(site, layout, threadSubject);
+
+		await this.page.getByRole('button', {name: 'Reply'}).click();
+
+		await this.page
+			.frameLocator(
+				'iframe[title*="_com_liferay_message_boards_web_portlet_MBPortlet_replyMessageBody"]'
+			)
+			.getByRole('textbox')
+			.fill(replyBody);
+
+		await this.page
+			.getByRole('button', {exact: true, name: 'Publish'})
+			.click();
+
+		await this.page.waitForLoadState('networkidle');
+	}
+
+	async replyToThreadAsDraft(
+		site: Site,
+		layout: Layout,
+		threadSubject: string,
+		replyBody: string
+	) {
+		await this.goToThread(site, layout, threadSubject);
+
+		await this.page.getByRole('button', {name: 'Reply'}).click();
+
+		await this.page.getByRole('button', {name: 'Advanced Reply'}).click();
+
+		await this.page.waitForLoadState('networkidle');
+
+		await this.page
+			.frameLocator('iframe[title*="bodyEditor"]')
+			.locator('body')
+			.fill(replyBody);
+
+		await this.page.getByRole('button', {name: 'Save as Draft'}).click();
+
+		await this.page.waitForLoadState('networkidle');
+	}
+
 	async addCategory(site: Site, layout: Layout, categoryName: string) {
 		await this.page.goto(
 			`/web${site.friendlyUrlPath}${layout.friendlyURL}`

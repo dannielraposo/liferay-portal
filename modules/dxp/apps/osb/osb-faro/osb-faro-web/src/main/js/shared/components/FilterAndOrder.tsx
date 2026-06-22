@@ -89,7 +89,7 @@ const NestedList: React.FC<Omit<FilterOptionsListPropsType, 'flat'>> = ({
 	onChange
 }) => (
 	<ClayDropDown.Group header={Liferay.Language.get('filter-by')}>
-		{filterByOptions.map(({key, label, values}) =>
+		{filterByOptions.map(({key, label, type = 'checkbox', values}) =>
 			values.length > 1 ? (
 				<ClayDropDown
 					alignmentPosition={Align.RightCenter}
@@ -112,7 +112,7 @@ const NestedList: React.FC<Omit<FilterOptionsListPropsType, 'flat'>> = ({
 							key={value}
 							label={itemLabel}
 							onChange={onChange}
-							type='checkbox'
+							type={type}
 							value={value}
 						/>
 					))}
@@ -124,7 +124,7 @@ const NestedList: React.FC<Omit<FilterOptionsListPropsType, 'flat'>> = ({
 					key={key}
 					label={get(values, ['0', 'label'])}
 					onChange={onChange}
-					type='checkbox'
+					type={type}
 					value={get(values, ['0', 'value'])}
 				/>
 			)
@@ -209,28 +209,33 @@ const FilterAndOrder: React.FC<IFilterAndOrderProps> = ({
 					</ClayButton>
 				}
 			>
-				<FilterOptionsList
-					filterBy={filterBy}
-					filterByOptions={filterByOptions}
-					flat={flat}
-					onChange={(value, field) => {
-						const option = filterByOptions.find(
-							({key}) => key === field
-						);
+				<ClayDropDown.ItemList>
+					<FilterOptionsList
+						filterBy={filterBy}
+						filterByOptions={filterByOptions}
+						flat={flat}
+						onChange={(value, field) => {
+							const option = filterByOptions.find(
+								({key}) => key === field
+							);
 
-						onFilterByChange(
-							filterBy.update(field, (values: any = Set()) => {
-								if (option?.type === 'radio') {
-									return Set([value]);
-								}
+							onFilterByChange(
+								filterBy.update(
+									field,
+									(values: any = Set()) => {
+										if (option?.type === 'radio') {
+											return Set([value]);
+										}
 
-								return values.has(value)
-									? values.delete(value)
-									: values.add(value);
-							})
-						);
-					}}
-				/>
+										return values.has(value)
+											? values.delete(value)
+											: values.add(value);
+									}
+								)
+							);
+						}}
+					/>
+				</ClayDropDown.ItemList>
 			</ClayDropDown>
 		)}
 

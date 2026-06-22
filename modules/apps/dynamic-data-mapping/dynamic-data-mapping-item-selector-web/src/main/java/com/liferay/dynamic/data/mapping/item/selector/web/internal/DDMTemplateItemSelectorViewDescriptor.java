@@ -5,11 +5,11 @@
 
 package com.liferay.dynamic.data.mapping.item.selector.web.internal;
 
-import com.liferay.depot.util.SiteConnectedGroupGroupProviderUtil;
 import com.liferay.dynamic.data.mapping.item.selector.DDMTemplateItemSelectorCriterion;
 import com.liferay.dynamic.data.mapping.item.selector.DDMTemplateItemSelectorReturnType;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateServiceUtil;
 import com.liferay.dynamic.data.mapping.util.DDMUtil;
 import com.liferay.item.selector.ItemSelectorReturnType;
@@ -18,11 +18,15 @@ import com.liferay.item.selector.constants.ItemSelectorPortletKeys;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -32,6 +36,9 @@ import jakarta.portlet.PortletURL;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * @author Eudaldo Alonso
  */
@@ -39,9 +46,11 @@ public class DDMTemplateItemSelectorViewDescriptor
 	implements ItemSelectorViewDescriptor<DDMTemplate> {
 
 	public DDMTemplateItemSelectorViewDescriptor(
+		DDMStructureLocalService ddmStructureLocalService,
 		DDMTemplateItemSelectorCriterion ddmTemplateItemSelectorCriterion,
 		HttpServletRequest httpServletRequest, PortletURL portletURL) {
 
+		_ddmStructureLocalService = ddmStructureLocalService;
 		_ddmTemplateItemSelectorCriterion = ddmTemplateItemSelectorCriterion;
 		_httpServletRequest = httpServletRequest;
 		_portletURL = portletURL;
@@ -110,10 +119,14 @@ public class DDMTemplateItemSelectorViewDescriptor
 				getOrderByCol(), getOrderByType()));
 		ddmTemplateSearchContainer.setOrderByType(getOrderByType());
 
-		long[] groupIds =
-			SiteConnectedGroupGroupProviderUtil.
-				getCurrentAndAncestorSiteAndDepotGroupIds(
-					_themeDisplay.getScopeGroupId(), false, true);
+		long[] groupIds = _getGroupIds();
+
+		if (groupIds.length == 0) {
+			ddmTemplateSearchContainer.setResultsAndTotal(
+				Collections.emptyList());
+
+			return ddmTemplateSearchContainer;
+		}
 
 		ddmTemplateSearchContainer.setResultsAndTotal(
 			() -> DDMTemplateServiceUtil.search(
@@ -146,6 +159,40 @@ public class DDMTemplateItemSelectorViewDescriptor
 		return true;
 	}
 
+	private long[] _getGroupIds() {
+		long refererGroupId = _themeDisplay.getRefererGroupId();
+
+		long scopeGroupId = _themeDisplay.getScopeGroupId();
+
+		long[] scopeAndAncestorSiteGroupIds =
+			PortalUtil.getCurrentAndAncestorSiteGroupIds(scopeGroupId, false);
+
+		long[] refererAndAncestorSiteGroupIds = scopeAndAncestorSiteGroupIds;
+
+		if ((refererGroupId != 0) && (refererGroupId != scopeGroupId)) {
+			refererAndAncestorSiteGroupIds =
+				PortalUtil.getCurrentAndAncestorSiteGroupIds(
+					refererGroupId, false);
+		}
+
+		Set<Long> validGroupIds = SetUtil.fromArray(
+			refererAndAncestorSiteGroupIds);
+
+		validGroupIds.add(_themeDisplay.getCompanyGroupId());
+
+		DDMStructure ddmStructure = _ddmStructureLocalService.fetchDDMStructure(
+			_ddmTemplateItemSelectorCriterion.getDDMStructureId());
+
+		if ((ddmStructure != null) &&
+			_isDepotGroup(ddmStructure.getGroupId())) {
+
+			validGroupIds.add(ddmStructure.getGroupId());
+		}
+
+		return ArrayUtil.filter(
+			scopeAndAncestorSiteGroupIds, validGroupIds::contains);
+	}
+
 	private String _getKeywords() {
 		if (_keywords != null) {
 			return _keywords;
@@ -156,6 +203,17 @@ public class DDMTemplateItemSelectorViewDescriptor
 		return _keywords;
 	}
 
+	private boolean _isDepotGroup(long groupId) {
+		Group group = GroupLocalServiceUtil.fetchGroup(groupId);
+
+		if ((group != null) && group.isDepot()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private final DDMStructureLocalService _ddmStructureLocalService;
 	private final DDMTemplateItemSelectorCriterion
 		_ddmTemplateItemSelectorCriterion;
 	private final HttpServletRequest _httpServletRequest;

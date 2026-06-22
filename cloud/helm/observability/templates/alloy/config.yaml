@@ -1,0 +1,12 @@
+{{- if .Values.alloy.enabled -}}
+apiVersion: v1
+data:
+    config.alloy: |
+{{ tpl (.Files.Get "alloy/config.alloy") . | trimSuffix "\n" | indent 8 | replace "        \n" "\n" }}
+kind: ConfigMap
+metadata:
+    labels:
+        {{- include "observability.labels" . | nindent 8 }}
+    name: liferay-alloy-config
+    namespace: {{ include "observability.namespace" . | quote }}
+{{- end -}}

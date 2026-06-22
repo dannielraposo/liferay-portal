@@ -6,8 +6,20 @@
 import {deepClone} from 'frontend-js-web';
 
 import {IView} from '../utils/types';
-import {ISnapshot} from './ViewsContext';
+import {ISnapshot, ISnapshots} from './ViewsContext';
 import getViewComponent from './getViewComponent';
+
+const mapSnapshots = (
+	snapshots: Array<ISnapshots>,
+	erc: string,
+	updater: (snapshot: ISnapshot) => ISnapshot
+) =>
+	snapshots.map((group) => ({
+		...group,
+		items: group.items.map((snapshot) =>
+			snapshot.erc === erc ? updater(snapshot) : snapshot
+		),
+	}));
 
 export enum EViewsActionTypes {
 	ADD_OR_UPDATE_SNAPSHOT = 'ADD_OR_UPDATE_SNAPSHOT',
@@ -34,27 +46,40 @@ type TViewsActions = {
 
 const viewsActions: TViewsActions = {
 	[EViewsActionTypes.ADD_OR_UPDATE_SNAPSHOT]: (state, value) => {
-		const {snapshots} = state;
+		const {snapshots}: {snapshots: Array<ISnapshots>} = state;
 
 		const {configuration, erc} = value;
 
-		const existentSnapshot = snapshots.find(
-			(snapshot: ISnapshot) => snapshot.erc === erc
+		const existsInSnapshots = snapshots.some((group) =>
+			group.items.some((snapshot) => snapshot.erc === erc)
 		);
 
-		let updatedSnapshots;
+		let updatedSnapshots: Array<ISnapshots>;
 
-		if (!existentSnapshot) {
-			updatedSnapshots = snapshots.concat([value]);
+		if (existsInSnapshots) {
+			updatedSnapshots = mapSnapshots(snapshots, erc, (snapshot) => ({
+				...snapshot,
+				configuration,
+			}));
 		}
 		else {
-			updatedSnapshots = snapshots.map((snapshot: ISnapshot) => {
-				if (snapshot.erc === erc) {
-					snapshot.configuration = configuration;
-				}
+			const hiddenHeaderSnapshotsIndex = snapshots.findIndex(
+				(group) => !group.headerVisible
+			);
 
-				return snapshot;
-			});
+			if (hiddenHeaderSnapshotsIndex >= 0) {
+				updatedSnapshots = snapshots.map((group, index) =>
+					index === hiddenHeaderSnapshotsIndex
+						? {...group, items: [...group.items, value]}
+						: group
+				);
+			}
+			else {
+				updatedSnapshots = [
+					{headerVisible: false, items: [value]},
+					...snapshots,
+				];
+			}
 		}
 
 		return {
@@ -80,36 +105,49 @@ const viewsActions: TViewsActions = {
 		}, state);
 	},
 	[EViewsActionTypes.DELETE_SNAPSHOT]: (state, value) => {
-		const {defaultSnapshot, snapshots} = state;
+		const {
+			defaultSnapshot,
+			snapshots,
+		}: {
+			defaultSnapshot: any;
+			snapshots: Array<ISnapshots>;
+		} = state;
 
-		const remainingSnapshots = snapshots.filter(
-			(snapshot: ISnapshot) => snapshot.erc !== value.snapshotERC
-		);
+		const updatedSnapshots = snapshots.map((group) => ({
+			...group,
+			items: group.items.filter(
+				(snapshot) => snapshot.erc !== value.snapshotERC
+			),
+		}));
 
 		return {
 			...state,
 			...defaultSnapshot,
 			activeSnapshotERC: null,
 			snapshotUpdated: false,
-			snapshots: remainingSnapshots,
+			snapshots: updatedSnapshots,
 		};
 	},
 	[EViewsActionTypes.NOOP]: (state) => state,
 	[EViewsActionTypes.RENAME_ACTIVE_SNAPSHOT]: (state, value) => {
-		const {activeSnapshotERC, snapshots} = state;
+		const {
+			activeSnapshotERC,
+			snapshots,
+		}: {
+			activeSnapshotERC: string;
+			snapshots: Array<ISnapshots>;
+		} = state;
 
-		const updatedSnapshots = snapshots.map((snapshot: ISnapshot) => {
-			if (snapshot.erc === activeSnapshotERC) {
-				snapshot.label = value.label;
-			}
-
-			return snapshot;
-		});
+		const updatedSnapshots = mapSnapshots(
+			snapshots,
+			activeSnapshotERC,
+			(snapshot) => ({...snapshot, label: value.label})
+		);
 
 		return {
 			...state,
 			snapshotUpdated: false,
-			snapshots: [...updatedSnapshots],
+			snapshots: updatedSnapshots,
 		};
 	},
 	[EViewsActionTypes.RESET_TO_DEFAULT_SNAPSHOT]: (state) => {

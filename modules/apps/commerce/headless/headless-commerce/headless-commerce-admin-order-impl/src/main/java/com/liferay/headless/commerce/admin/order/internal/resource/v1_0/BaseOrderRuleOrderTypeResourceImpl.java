@@ -74,9 +74,13 @@ public abstract class BaseOrderRuleOrderTypeResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rule-order-types/{orderRuleOrderTypeId}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes an order rule order-type relationship by ID using _corEntryRelService.deleteCOREntryRel(id). Returns 204 No Content."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of an order-rule-to-order-type relationship (COREntryRel).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "orderRuleOrderTypeId"
 			)
@@ -150,17 +154,23 @@ public abstract class BaseOrderRuleOrderTypeResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules/by-externalReferenceCode/{externalReferenceCode}/order-rule-order-types'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Retrieves order rule by externalReferenceCode, then returns linked order types. Throws NoSuchCOREntryException (404) if order rule not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page number used together with pageSize to navigate paginated result sets. Defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items to return per page in paginated result sets. Defaults to the resource pagination configuration when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			)
@@ -194,21 +204,28 @@ public abstract class BaseOrderRuleOrderTypeResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules/{id}/order-rule-order-types'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Nested field (OrderRule.orderRuleOrderTypes): paginated list of order types linked to order rule by ID."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the by-externalReferenceCode path variant; identifiers are server-assigned and stable across the resource lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page number used together with pageSize to navigate paginated result sets. Defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items to return per page in paginated result sets. Defaults to the resource pagination configuration when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Free-text search expression applied to the indexed search corpus of the target resource (for example, the creator email for orders, the SKU for order items, the name for order rules).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			)
@@ -242,9 +259,13 @@ public abstract class BaseOrderRuleOrderTypeResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules/by-externalReferenceCode/{externalReferenceCode}/order-rule-order-types' -d $'{"orderRuleExternalReferenceCode": ___, "orderRuleId": ___, "orderTypeExternalReferenceCode": ___, "orderTypeId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Add an order type to an order rule via externalReferenceCode. Throws NoSuchCOREntryException (404) if order rule not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -279,9 +300,13 @@ public abstract class BaseOrderRuleOrderTypeResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules/{id}/order-rule-order-types' -d $'{"orderRuleExternalReferenceCode": ___, "orderRuleId": ___, "orderTypeExternalReferenceCode": ___, "orderTypeId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Add an order type to an order rule via order rule ID."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the by-externalReferenceCode path variant; identifiers are server-assigned and stable across the resource lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -1070,4 +1095,4 @@ public abstract class BaseOrderRuleOrderTypeResourceImpl
 		LogFactoryUtil.getLog(BaseOrderRuleOrderTypeResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1843059251
+// LIFERAY-REST-BUILDER-HASH:-336550068

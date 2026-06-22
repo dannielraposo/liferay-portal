@@ -5,19 +5,15 @@
 
 package com.liferay.portal.tools.service.builder.test.compat740.service.persistence.impl;
 
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
+import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.tools.service.builder.test.compat740.exception.NoSuchWhereClauseEntryException;
@@ -35,7 +31,6 @@ import java.lang.reflect.InvocationHandler;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.sql.DataSource;
 
@@ -74,67 +69,15 @@ public class WhereClauseEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByName_Nickname;
-	private FinderPath _finderPathWithoutPaginationFindByName_Nickname;
-	private FinderPath _finderPathCountByName_Nickname;
-
-	/**
-	 * Returns all the where clause entries where name = &#63;.
-	 *
-	 * @param name the name
-	 * @return the matching where clause entries
-	 */
-	@Override
-	public List<WhereClauseEntry> findByName_Nickname(String name) {
-		return findByName_Nickname(
-			name, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the where clause entries where name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WhereClauseEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param name the name
-	 * @param start the lower bound of the range of where clause entries
-	 * @param end the upper bound of the range of where clause entries (not inclusive)
-	 * @return the range of matching where clause entries
-	 */
-	@Override
-	public List<WhereClauseEntry> findByName_Nickname(
-		String name, int start, int end) {
-
-		return findByName_Nickname(name, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<WhereClauseEntry, NoSuchWhereClauseEntryException>
+			_collectionPersistenceFinderByName_Nickname;
 
 	/**
 	 * Returns an ordered range of all the where clause entries where name = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WhereClauseEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param name the name
-	 * @param start the lower bound of the range of where clause entries
-	 * @param end the upper bound of the range of where clause entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching where clause entries
-	 */
-	@Override
-	public List<WhereClauseEntry> findByName_Nickname(
-		String name, int start, int end,
-		OrderByComparator<WhereClauseEntry> orderByComparator) {
-
-		return findByName_Nickname(name, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the where clause entries where name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WhereClauseEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WhereClauseEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param name the name
@@ -150,106 +93,9 @@ public class WhereClauseEntryPersistenceImpl
 		OrderByComparator<WhereClauseEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		name = Objects.toString(name, "");
-
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
-
-			if (useFinderCache) {
-				finderPath = _finderPathWithoutPaginationFindByName_Nickname;
-				finderArgs = new Object[] {name};
-			}
-		}
-		else if (useFinderCache) {
-			finderPath = _finderPathWithPaginationFindByName_Nickname;
-			finderArgs = new Object[] {name, start, end, orderByComparator};
-		}
-
-		List<WhereClauseEntry> list = null;
-
-		if (useFinderCache) {
-			list = (List<WhereClauseEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if ((list != null) && !list.isEmpty()) {
-				for (WhereClauseEntry whereClauseEntry : list) {
-					if (!name.equals(whereClauseEntry.getName())) {
-						list = null;
-
-						break;
-					}
-				}
-			}
-		}
-
-		if (list == null) {
-			StringBundler sb = null;
-
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					3 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(3);
-			}
-
-			sb.append(_SQL_SELECT_WHERECLAUSEENTRY_WHERE);
-
-			boolean bindName = false;
-
-			if (name.isEmpty()) {
-				sb.append(_FINDER_COLUMN_NAME_NICKNAME_NAME_3);
-			}
-			else {
-				bindName = true;
-
-				sb.append(_FINDER_COLUMN_NAME_NICKNAME_NAME_2);
-			}
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-			}
-			else {
-				sb.append(WhereClauseEntryModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindName) {
-					queryPos.add(name);
-				}
-
-				list = (List<WhereClauseEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
-
-				cacheResult(list);
-
-				if (useFinderCache) {
-					finderCache.putResult(finderPath, finderArgs, list);
-				}
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return list;
+		return _collectionPersistenceFinderByName_Nickname.find(
+			finderCache, new Object[] {name}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -265,23 +111,8 @@ public class WhereClauseEntryPersistenceImpl
 			String name, OrderByComparator<WhereClauseEntry> orderByComparator)
 		throws NoSuchWhereClauseEntryException {
 
-		WhereClauseEntry whereClauseEntry = fetchByName_Nickname_First(
-			name, orderByComparator);
-
-		if (whereClauseEntry != null) {
-			return whereClauseEntry;
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("name=");
-		sb.append(name);
-
-		sb.append("}");
-
-		throw new NoSuchWhereClauseEntryException(sb.toString());
+		return _collectionPersistenceFinderByName_Nickname.findFirst(
+			finderCache, new Object[] {name}, orderByComparator);
 	}
 
 	/**
@@ -295,14 +126,8 @@ public class WhereClauseEntryPersistenceImpl
 	public WhereClauseEntry fetchByName_Nickname_First(
 		String name, OrderByComparator<WhereClauseEntry> orderByComparator) {
 
-		List<WhereClauseEntry> list = findByName_Nickname(
-			name, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		return _collectionPersistenceFinderByName_Nickname.fetchFirst(
+			finderCache, new Object[] {name}, orderByComparator);
 	}
 
 	/**
@@ -312,12 +137,8 @@ public class WhereClauseEntryPersistenceImpl
 	 */
 	@Override
 	public void removeByName_Nickname(String name) {
-		for (WhereClauseEntry whereClauseEntry :
-				findByName_Nickname(
-					name, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
-
-			remove(whereClauseEntry);
-		}
+		_collectionPersistenceFinderByName_Nickname.remove(
+			finderCache, new Object[] {name});
 	}
 
 	/**
@@ -328,65 +149,9 @@ public class WhereClauseEntryPersistenceImpl
 	 */
 	@Override
 	public int countByName_Nickname(String name) {
-		name = Objects.toString(name, "");
-
-		FinderPath finderPath = _finderPathCountByName_Nickname;
-
-		Object[] finderArgs = new Object[] {name};
-
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-
-		if (count == null) {
-			StringBundler sb = new StringBundler(2);
-
-			sb.append(_SQL_COUNT_WHERECLAUSEENTRY_WHERE);
-
-			boolean bindName = false;
-
-			if (name.isEmpty()) {
-				sb.append(_FINDER_COLUMN_NAME_NICKNAME_NAME_3);
-			}
-			else {
-				bindName = true;
-
-				sb.append(_FINDER_COLUMN_NAME_NICKNAME_NAME_2);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				if (bindName) {
-					queryPos.add(name);
-				}
-
-				count = (Long)query.uniqueResult();
-
-				finderCache.putResult(finderPath, finderArgs, count);
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return count.intValue();
+		return _collectionPersistenceFinderByName_Nickname.count(
+			finderCache, new Object[] {name});
 	}
-
-	private static final String _FINDER_COLUMN_NAME_NICKNAME_NAME_2 =
-		"whereClauseEntry.name = ? AND whereClauseEntry.nickname IS NOT NULL";
-
-	private static final String _FINDER_COLUMN_NAME_NICKNAME_NAME_3 =
-		"(whereClauseEntry.name IS NULL OR whereClauseEntry.name = '') AND whereClauseEntry.nickname IS NOT NULL";
 
 	public WhereClauseEntryPersistenceImpl() {
 		setModelClass(WhereClauseEntry.class);
@@ -563,22 +328,35 @@ public class WhereClauseEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByName_Nickname = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByName_Nickname",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"name"}, true);
-
-		_finderPathWithoutPaginationFindByName_Nickname = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByName_Nickname",
-			new String[] {String.class.getName()}, new String[] {"name"}, true);
-
-		_finderPathCountByName_Nickname = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByName_Nickname",
-			new String[] {String.class.getName()}, new String[] {"name"},
-			false);
+		_collectionPersistenceFinderByName_Nickname =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByName_Nickname",
+					new String[] {
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"name"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByName_Nickname",
+					new String[] {String.class.getName()},
+					new String[] {"name"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByName_Nickname",
+					new String[] {String.class.getName()},
+					new String[] {"name"}, 0, 1, false, null),
+				_SQL_SELECT_WHERECLAUSEENTRY_WHERE,
+				_SQL_COUNT_WHERECLAUSEENTRY_WHERE,
+				WhereClauseEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"whereClauseEntry.nickname IS NOT NULL",
+				new FinderColumn<>(
+					"whereClauseEntry.", "name", FinderColumn.Type.STRING, "=",
+					true, true, WhereClauseEntry::getName));
 
 		WhereClauseEntryUtil.setPersistence(this);
 	}
@@ -637,13 +415,10 @@ public class WhereClauseEntryPersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No WhereClauseEntry exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		WhereClauseEntryPersistenceImpl.class);
-
 	@Override
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-967105732
+// LIFERAY-SERVICE-BUILDER-HASH:168246361

@@ -108,6 +108,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsValues;
@@ -290,35 +291,10 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 	@Override
 	@Test
-	@TestInfo("LPD-56213")
+	@TestInfo({"LPD-56213", "LPD-94135"})
 	public void testGetSiteSitePageRenderedPage() throws Exception {
-		Layout layout = LayoutTestUtil.addTypeContentLayout(testGroup);
-
-		Layout draftLayout = layout.fetchDraftLayout();
-
-		ContentLayoutTestUtil.addFragmentEntryLinkToLayout(
-			"{}", layout.fetchDraftLayout(),
-			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				draftLayout.getPlid()));
-
-		ContentLayoutTestUtil.publishLayout(draftLayout, layout);
-
-		String friendlyURL = layout.getFriendlyURL();
-
-		String pageHTML = sitePageResource.getSiteSitePageRenderedPage(
-			testGroup.getGroupId(), friendlyURL.substring(1));
-
-		Assert.assertNotNull(pageHTML, pageHTML);
-		Assert.assertTrue(pageHTML, pageHTML.contains("<html"));
-		Assert.assertTrue(pageHTML, pageHTML.contains("<head>"));
-		Assert.assertTrue(pageHTML, pageHTML.contains("<title>"));
-		Assert.assertTrue(pageHTML, pageHTML.contains("</title>"));
-		Assert.assertTrue(
-			pageHTML, pageHTML.contains("<script type=\"importmap\">"));
-		Assert.assertTrue(pageHTML, pageHTML.contains("</head>"));
-		Assert.assertTrue(pageHTML, pageHTML.contains("<body"));
-		Assert.assertTrue(pageHTML, pageHTML.contains("</body>"));
-		Assert.assertTrue(pageHTML, pageHTML.contains("</html>"));
+		_testGetSiteSitePageRenderedPage();
+		_testGetSiteSitePageRenderedPageInRequestedLocale();
 	}
 
 	@Test
@@ -565,7 +541,8 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		).authentication(
 			"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.SPAIN
 		).build();
@@ -703,7 +680,8 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 				public StringBuffer getRequestURL() {
 					return new StringBuffer(
 						StringBundler.concat(
-							"http://localhost:8080/o/v1.0/",
+							"http://localhost:",
+							PortalUtil.getPortalServerPort(false), "/o/v1.0/",
 							RandomTestUtil.randomString(), "/",
 							RandomTestUtil.randomString()));
 				}
@@ -735,7 +713,10 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 				@Override
 				public URI getBaseUri() {
 					return URI.create(
-						"http://localhost:8080/o/" + _applicationPath);
+						StringBundler.concat(
+							"http://localhost:",
+							PortalUtil.getPortalServerPort(false), "/o/",
+							_applicationPath));
 				}
 
 				@Override
@@ -805,8 +786,10 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 				@Override
 				public URI getRequestUri() {
 					return URI.create(
-						"http://localhost:8080/o/" + _applicationPath +
-							_resourcePath);
+						StringBundler.concat(
+							"http://localhost:",
+							PortalUtil.getPortalServerPort(false), "/o/",
+							_applicationPath, _resourcePath));
 				}
 
 				@Override
@@ -833,6 +816,78 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		).user(
 			UserTestUtil.getAdminUser(testCompany.getCompanyId())
 		).build();
+	}
+
+	private void _testGetSiteSitePageRenderedPage() throws Exception {
+		Layout layout = LayoutTestUtil.addTypeContentLayout(testGroup);
+
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		ContentLayoutTestUtil.addFragmentEntryLinkToLayout(
+			"{}", layout.fetchDraftLayout(),
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				draftLayout.getPlid()));
+
+		ContentLayoutTestUtil.publishLayout(draftLayout, layout);
+
+		String friendlyURL = layout.getFriendlyURL();
+
+		String pageHTML = sitePageResource.getSiteSitePageRenderedPage(
+			testGroup.getGroupId(), friendlyURL.substring(1));
+
+		Assert.assertTrue(pageHTML, pageHTML.contains("<html"));
+		Assert.assertTrue(pageHTML, pageHTML.contains("<head>"));
+		Assert.assertTrue(pageHTML, pageHTML.contains("<title>"));
+		Assert.assertTrue(pageHTML, pageHTML.contains("</title>"));
+		Assert.assertTrue(
+			pageHTML, pageHTML.contains("<script type=\"importmap\">"));
+		Assert.assertTrue(pageHTML, pageHTML.contains("</head>"));
+		Assert.assertTrue(pageHTML, pageHTML.contains("<body"));
+		Assert.assertTrue(pageHTML, pageHTML.contains("</body>"));
+		Assert.assertTrue(pageHTML, pageHTML.contains("</html>"));
+	}
+
+	private void _testGetSiteSitePageRenderedPageInRequestedLocale()
+		throws Exception {
+
+		String esName = RandomTestUtil.randomString();
+		String usName = RandomTestUtil.randomString();
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(
+			testGroup,
+			HashMapBuilder.put(
+				LocaleUtil.SPAIN, esName
+			).put(
+				LocaleUtil.US, usName
+			).build());
+
+		String friendlyURL = layout.getFriendlyURL();
+
+		_testGetSiteSitePageRenderedPageInRequestedLocale(
+			esName, friendlyURL.substring(1), LocaleUtil.SPAIN);
+		_testGetSiteSitePageRenderedPageInRequestedLocale(
+			usName, friendlyURL.substring(1), LocaleUtil.US);
+	}
+
+	private void _testGetSiteSitePageRenderedPageInRequestedLocale(
+			String expectedTitle, String friendlyURL, Locale locale)
+		throws Exception {
+
+		SitePageResource sitePageResource = SitePageResource.builder(
+		).authentication(
+			"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD
+		).locale(
+			locale
+		).build();
+
+		String pageHTML = sitePageResource.getSiteSitePageRenderedPage(
+			testGroup.getGroupId(), friendlyURL);
+
+		Assert.assertTrue(
+			pageHTML,
+			pageHTML.contains(
+				" lang=\"" + LocaleUtil.toW3cLanguageId(locale) + "\""));
+		Assert.assertTrue(pageHTML, pageHTML.contains(expectedTitle));
 	}
 
 	private void _testGetSiteSitePagesPagePageSet() throws Exception {

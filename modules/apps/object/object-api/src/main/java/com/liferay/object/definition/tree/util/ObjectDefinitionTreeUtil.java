@@ -26,6 +26,7 @@ import com.liferay.object.tree.Node;
 import com.liferay.object.tree.ObjectDefinitionTreeFactory;
 import com.liferay.object.tree.Tree;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.CurrentConnectionUtil;
@@ -33,6 +34,7 @@ import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -80,7 +82,11 @@ public class ObjectDefinitionTreeUtil {
 			objectDefinitionPersistence.findByPrimaryKey(
 				objectRelationship.getObjectDefinitionId1());
 
-		if (ArrayUtil.isEmpty(objectDefinition1.getRootObjectDefinitionIds())) {
+		if (ArrayUtil.isEmpty(
+				getRootObjectDefinitionIds(
+					objectDefinition1.getObjectDefinitionId(),
+					objectDefinitionSettingLocalService))) {
+
 			_setRootObjectDefinitionIds(
 				new long[] {objectDefinition1.getObjectDefinitionId()},
 				objectDefinition1, objectDefinitionSettingLocalService,
@@ -122,8 +128,18 @@ public class ObjectDefinitionTreeUtil {
 					objectDefinitionPersistence.findByPrimaryKey(
 						node.getPrimaryKey());
 
+				if (FeatureFlagManagerUtil.isEnabled(
+						nodeObjectDefinition.getCompanyId(), "LPD-69877")) {
+
+					_addAllowStandaloneObjectEntrySetting(
+						nodeObjectDefinition,
+						objectDefinitionSettingLocalService);
+				}
+
 				_setRootObjectDefinitionIds(
-					objectDefinition1.getRootObjectDefinitionIds(),
+					getRootObjectDefinitionIds(
+						objectDefinition1.getObjectDefinitionId(),
+						objectDefinitionSettingLocalService),
 					nodeObjectDefinition, objectDefinitionSettingLocalService,
 					new long[] {objectDefinition2.getObjectDefinitionId()});
 
@@ -137,7 +153,9 @@ public class ObjectDefinitionTreeUtil {
 		}
 		else {
 			if (ArrayUtil.isNotEmpty(
-					objectDefinition2.getRootObjectDefinitionIds())) {
+					getRootObjectDefinitionIds(
+						objectDefinition2.getObjectDefinitionId(),
+						objectDefinitionSettingLocalService))) {
 
 				return;
 			}
@@ -154,7 +172,9 @@ public class ObjectDefinitionTreeUtil {
 		}
 
 		for (long rootObjectDefinitionId :
-				objectDefinition1.getRootObjectDefinitionIds()) {
+				getRootObjectDefinitionIds(
+					objectDefinition1.getObjectDefinitionId(),
+					objectDefinitionSettingLocalService)) {
 
 			ObjectDefinition rootObjectDefinition =
 				objectDefinitionPersistence.findByPrimaryKey(
@@ -300,6 +320,15 @@ public class ObjectDefinitionTreeUtil {
 			objectDefinitionPersistence.findByPrimaryKey(
 				objectRelationship.getObjectDefinitionId2());
 
+		if (FeatureFlagManagerUtil.isEnabled(
+				objectRelationship.getCompanyId(), "LPD-69877")) {
+
+			_deleteAllowStandaloneObjectEntrySetting(
+				objectDefinition2.getObjectDefinitionId(),
+				objectDefinitionSettingLocalService,
+				objectRelationshipPersistence);
+		}
+
 		long[] addRootObjectDefinitionIds = new long[0];
 		long[] removeRootObjectDefinitionIds =
 			actualObjectDefinition1RootObjectDefinitionIds;
@@ -377,6 +406,57 @@ public class ObjectDefinitionTreeUtil {
 			objectDefinitionPersistence, objectDefinitionSettingLocalService,
 			objectRelationshipLocalService, objectRelationshipPersistence,
 			oldRootObjectDefinitionIds);
+	}
+
+	private static void _addAllowStandaloneObjectEntrySetting(
+			ObjectDefinition objectDefinition,
+			ObjectDefinitionSettingLocalService
+				objectDefinitionSettingLocalService)
+		throws PortalException {
+
+		ObjectDefinitionSetting objectDefinitionSetting =
+			objectDefinitionSettingLocalService.fetchObjectDefinitionSetting(
+				objectDefinition.getObjectDefinitionId(),
+				ObjectDefinitionSettingConstants.
+					NAME_ALLOW_STANDALONE_OBJECT_ENTRY);
+
+		if (objectDefinitionSetting != null) {
+			return;
+		}
+
+		objectDefinitionSettingLocalService.addObjectDefinitionSetting(
+			objectDefinition.getUserId(),
+			objectDefinition.getObjectDefinitionId(),
+			ObjectDefinitionSettingConstants.NAME_ALLOW_STANDALONE_OBJECT_ENTRY,
+			StringPool.TRUE);
+	}
+
+	private static void _deleteAllowStandaloneObjectEntrySetting(
+			long objectDefinitionId,
+			ObjectDefinitionSettingLocalService
+				objectDefinitionSettingLocalService,
+			ObjectRelationshipPersistence objectRelationshipPersistence)
+		throws PortalException {
+
+		long count = objectRelationshipPersistence.countByODI2_E(
+			objectDefinitionId, true);
+
+		if (count != 0) {
+			return;
+		}
+
+		ObjectDefinitionSetting objectDefinitionSetting =
+			objectDefinitionSettingLocalService.fetchObjectDefinitionSetting(
+				objectDefinitionId,
+				ObjectDefinitionSettingConstants.
+					NAME_ALLOW_STANDALONE_OBJECT_ENTRY);
+
+		if (objectDefinitionSetting == null) {
+			return;
+		}
+
+		objectDefinitionSettingLocalService.deleteObjectDefinitionSetting(
+			objectDefinitionSetting);
 	}
 
 	private static void _performActions(

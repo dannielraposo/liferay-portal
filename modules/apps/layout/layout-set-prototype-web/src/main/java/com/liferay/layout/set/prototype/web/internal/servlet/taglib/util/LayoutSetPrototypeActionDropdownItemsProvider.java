@@ -12,6 +12,7 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
@@ -71,14 +72,24 @@ public class LayoutSetPrototypeActionDropdownItemsProvider {
 							dropdownItem -> {
 								dropdownItem.setHref(
 									siteAdministrationURL.toString());
+								dropdownItem.setIcon("cog");
 								dropdownItem.setLabel(
 									LanguageUtil.get(
 										_httpServletRequest, "manage"));
 							});
 					}
 
-					if (_layoutSetPrototype.isActive() && !group.isGuest()) {
-						add(_getDeactivateActionUnsafeConsumer());
+					if (_layoutSetPrototype.isActive()) {
+						if (!group.isGuest()) {
+							add(_getDeactivateActionUnsafeConsumer());
+						}
+
+						if (FeatureFlagManagerUtil.isEnabled(
+								_themeDisplay.getCompanyId(), "LPD-82107")) {
+
+							add(
+								_getExecuteLayoutSetPrototypeSyncUnsafeConsumer());
+						}
 					}
 					else if (!_layoutSetPrototype.isActive()) {
 						add(_getActivateActionUnsafeConsumer());
@@ -123,6 +134,7 @@ public class LayoutSetPrototypeActionDropdownItemsProvider {
 					"layoutSetPrototypeId",
 					_layoutSetPrototype.getLayoutSetPrototypeId()
 				).buildString());
+			dropdownItem.setIcon("logout");
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "activate"));
 		};
@@ -147,6 +159,7 @@ public class LayoutSetPrototypeActionDropdownItemsProvider {
 					"layoutSetPrototypeId",
 					_layoutSetPrototype.getLayoutSetPrototypeId()
 				).buildString());
+			dropdownItem.setIcon("pause");
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "deactivate"));
 		};
@@ -172,6 +185,30 @@ public class LayoutSetPrototypeActionDropdownItemsProvider {
 			dropdownItem.setIcon("trash");
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "delete"));
+		};
+	}
+
+	private UnsafeConsumer<DropdownItem, Exception>
+		_getExecuteLayoutSetPrototypeSyncUnsafeConsumer() {
+
+		return dropdownItem -> {
+			dropdownItem.putData("action", "executeLayoutSetPrototypeSync");
+			dropdownItem.putData(
+				"executeLayoutSetPrototypeSyncURL",
+				PortletURLBuilder.createActionURL(
+					_renderResponse
+				).setActionName(
+					"executeLayoutSetPrototypeSync"
+				).setRedirect(
+					_themeDisplay.getURLCurrent()
+				).setParameter(
+					"layoutSetPrototypeId",
+					_layoutSetPrototype.getLayoutSetPrototypeId()
+				).buildString());
+			dropdownItem.setIcon("reload");
+			dropdownItem.setLabel(
+				LanguageUtil.get(
+					_httpServletRequest, "execute-site-template-sync"));
 		};
 	}
 

@@ -10,8 +10,8 @@ import React, {useEffect} from 'react';
 
 import FormMappingOptions from '../../../plugins/browser/components/page_structure/components/item_configuration_panels/FormMappingOptions';
 import {config} from '../../config';
+import {useSaveFormMappingFields} from '../../contexts/FormDataContext';
 import {useItemLocalConfig} from '../../contexts/LocalConfigContext';
-import {useSaveObjectFields} from '../../contexts/ObjectDataContext';
 import {useSelector, useSelectorCallback} from '../../contexts/StoreContext';
 import selectLanguageId from '../../selectors/selectLanguageId';
 import {formIsMapped} from '../../utils/formIsMapped';
@@ -91,7 +91,7 @@ function MappedForm({children, item}) {
 
 	const {classNameId, classTypeId} = item.config;
 
-	const saveFields = useSaveObjectFields({classNameId, classTypeId});
+	const saveFields = useSaveFormMappingFields({classNameId, classTypeId});
 
 	useEffect(() => {
 		saveFields();

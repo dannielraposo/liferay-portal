@@ -8,6 +8,7 @@ package com.liferay.headless.admin.site.resource.v1_0.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.headless.admin.site.client.dto.v1_0.ContentPageSpecification;
 import com.liferay.headless.admin.site.client.dto.v1_0.FavIcon;
+import com.liferay.headless.admin.site.client.dto.v1_0.ItemExternalReference;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageElement;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageElementDefinition;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageExperience;
@@ -16,6 +17,7 @@ import com.liferay.headless.admin.site.client.dto.v1_0.Settings;
 import com.liferay.headless.admin.site.client.dto.v1_0.WidgetPageSpecification;
 import com.liferay.headless.admin.site.client.pagination.Page;
 import com.liferay.headless.admin.site.client.problem.Problem;
+import com.liferay.headless.admin.site.client.scope.Scope;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.LayoutPageTemplateEntryTestUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.LayoutUtilityPageEntryTestUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.PageExperiencesTestUtil;
@@ -67,7 +69,8 @@ import org.junit.runner.RunWith;
  */
 @FeatureFlags(
 	featureFlags = {
-		@FeatureFlag(value = "LPD-35443"), @FeatureFlag(value = "LPD-74328")
+		@FeatureFlag("LPD-35443"), @FeatureFlag("LPD-57283"),
+		@FeatureFlag("LPD-74328")
 	}
 )
 @RunWith(Arquillian.class)
@@ -195,16 +198,23 @@ public class PageSpecificationResourceTest
 			ServiceContextTestUtil.getServiceContext(
 				testGroup.getGroupId(), TestPropsValues.getUserId());
 
-		_testGetSitePageSpecificationWithLayoutWithDraftLayout(
-			_addLayout(LayoutConstants.TYPE_CONTENT, serviceContext),
-			serviceContext);
-
 		Layout layout = _addLayout(
 			LayoutConstants.TYPE_PORTLET, serviceContext);
 
 		_testGetSitePageSpecification(
 			layout, layout.getExternalReferenceCode());
 
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			LayoutPageTemplateEntryTestUtil.
+				getWidgetPageLayoutPageTemplateEntry(serviceContext);
+
+		_testGetSitePageSpecification(
+			_layoutLocalService.getLayout(layoutPageTemplateEntry.getPlid()),
+			layoutPageTemplateEntry.getExternalReferenceCode());
+
+		_testGetSitePageSpecificationWithLayoutWithDraftLayout(
+			_addLayout(LayoutConstants.TYPE_CONTENT, serviceContext),
+			serviceContext);
 		_testGetSitePageSpecificationWithLayoutWithDraftLayout(
 			LayoutPageTemplateEntryTestUtil.
 				getBasicLayoutPageTemplateEntryLayout(serviceContext),
@@ -221,14 +231,7 @@ public class PageSpecificationResourceTest
 			LayoutPageTemplateEntryTestUtil.
 				getMasterLayoutPageTemplateEntryLayout(serviceContext),
 			serviceContext);
-
-		LayoutPageTemplateEntry layoutPageTemplateEntry =
-			LayoutPageTemplateEntryTestUtil.
-				getWidgetPageLayoutPageTemplateEntry(serviceContext);
-
-		_testGetSitePageSpecification(
-			_layoutLocalService.getLayout(layoutPageTemplateEntry.getPlid()),
-			layoutPageTemplateEntry.getExternalReferenceCode());
+		_testGetSitePageSpecificationWithStyleBookEntryScopeERC(serviceContext);
 	}
 
 	@Override
@@ -374,6 +377,8 @@ public class PageSpecificationResourceTest
 		_testPutSitePageSpecification(
 			_layoutLocalService.getLayout(layoutPageTemplateEntry.getPlid()),
 			layoutPageTemplateEntry.getExternalReferenceCode(), serviceContext);
+
+		_testPutSitePageSpecificationWithStyleBookEntryScopeERC(serviceContext);
 	}
 
 	@Override
@@ -953,6 +958,51 @@ public class PageSpecificationResourceTest
 			draftLayout, draftLayout.getExternalReferenceCode());
 	}
 
+	private void _testGetSitePageSpecificationWithStyleBookEntryScopeERC(
+			ServiceContext serviceContext)
+		throws Exception {
+
+		StyleBookEntry styleBookEntry =
+			_styleBookEntryLocalService.addStyleBookEntry(
+				null, TestPropsValues.getUserId(), irrelevantGroup.getGroupId(),
+				false, null, RandomTestUtil.randomString(), null,
+				RandomTestUtil.randomString(),
+				ServiceContextTestUtil.getServiceContext(
+					irrelevantGroup.getGroupId(), TestPropsValues.getUserId()));
+
+		Layout layout = _addLayout(
+			LayoutConstants.TYPE_CONTENT, serviceContext);
+
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		draftLayout.setStyleBookEntryERC(
+			styleBookEntry.getExternalReferenceCode());
+		draftLayout.setStyleBookEntryScopeERC(
+			irrelevantGroup.getExternalReferenceCode());
+
+		draftLayout = _layoutLocalService.updateLayout(draftLayout);
+
+		PageSpecification pageSpecification =
+			pageSpecificationResource.getSitePageSpecification(
+				testGroup.getExternalReferenceCode(),
+				draftLayout.getExternalReferenceCode());
+
+		Settings settings = SettingsTestUtil.getSettings(pageSpecification);
+
+		ItemExternalReference itemExternalReference =
+			settings.getStyleBookItemExternalReference();
+
+		Assert.assertEquals(
+			styleBookEntry.getExternalReferenceCode(),
+			itemExternalReference.getExternalReferenceCode());
+
+		Scope scope = itemExternalReference.getScope();
+
+		Assert.assertEquals(
+			irrelevantGroup.getExternalReferenceCode(),
+			scope.getExternalReferenceCode());
+	}
+
 	private void _testPageSpecificationsPage(
 			Layout layout, ServiceContext serviceContext,
 			UnsafeSupplier<Page<PageSpecification>, Exception> unsafeSupplier)
@@ -1153,6 +1203,76 @@ public class PageSpecificationResourceTest
 		_assertPutSiteContentPageSpecification(draftLayout, serviceContext);
 	}
 
+	private void _testPutSitePageSpecificationWithStyleBookEntryScopeERC(
+			ServiceContext serviceContext)
+		throws Exception {
+
+		Layout layout = _addLayout(
+			LayoutConstants.TYPE_CONTENT, serviceContext);
+
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		PageSpecification pageSpecification =
+			pageSpecificationResource.getSitePageSpecification(
+				testGroup.getExternalReferenceCode(),
+				draftLayout.getExternalReferenceCode());
+
+		Settings settings = SettingsTestUtil.getSettings(pageSpecification);
+
+		ItemExternalReference itemExternalReference =
+			new ItemExternalReference();
+
+		StyleBookEntry styleBookEntry =
+			_styleBookEntryLocalService.addStyleBookEntry(
+				null, TestPropsValues.getUserId(), irrelevantGroup.getGroupId(),
+				false, null, RandomTestUtil.randomString(), null,
+				RandomTestUtil.randomString(),
+				ServiceContextTestUtil.getServiceContext(
+					irrelevantGroup.getGroupId(), TestPropsValues.getUserId()));
+
+		itemExternalReference.setExternalReferenceCode(
+			styleBookEntry.getExternalReferenceCode());
+
+		itemExternalReference.setScope(
+			new Scope() {
+				{
+					setExternalReferenceCode(
+						irrelevantGroup.getExternalReferenceCode());
+				}
+			});
+
+		settings.setStyleBookItemExternalReference(itemExternalReference);
+
+		pageSpecification.setStatus(PageSpecification.Status.DRAFT);
+
+		pageSpecificationResource.putSitePageSpecification(
+			testGroup.getExternalReferenceCode(),
+			draftLayout.getExternalReferenceCode(), pageSpecification);
+
+		draftLayout = _layoutLocalService.getLayout(draftLayout.getPlid());
+
+		Assert.assertEquals(
+			styleBookEntry.getExternalReferenceCode(),
+			draftLayout.getStyleBookEntryERC());
+		Assert.assertEquals(
+			irrelevantGroup.getExternalReferenceCode(),
+			draftLayout.getStyleBookEntryScopeERC());
+
+		Scope scope = itemExternalReference.getScope();
+
+		scope.setExternalReferenceCode(RandomTestUtil.randomString());
+
+		pageSpecificationResource.putSitePageSpecification(
+			testGroup.getExternalReferenceCode(),
+			draftLayout.getExternalReferenceCode(), pageSpecification);
+
+		draftLayout = _layoutLocalService.getLayout(draftLayout.getPlid());
+
+		Assert.assertEquals(
+			scope.getExternalReferenceCode(),
+			draftLayout.getStyleBookEntryScopeERC());
+	}
+
 	private Layout _updateLayout(Layout layout, ServiceContext serviceContext)
 		throws Exception {
 
@@ -1170,7 +1290,7 @@ public class PageSpecificationResourceTest
 			layout.getKeywordsMap(), layout.getRobotsMap(), layout.getType(),
 			layout.isHidden(), layout.getFriendlyURLMap(),
 			layout.getIconImage(), null, _getStyleBookEntryERC(serviceContext),
-			null, null, layout.getMasterLayoutPageTemplateEntryERC(),
+			null, null, null, layout.getMasterLayoutPageTemplateEntryERC(),
 			serviceContext);
 	}
 

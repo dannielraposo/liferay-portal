@@ -47,9 +47,13 @@ public abstract class BaseProductGroupResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/discount-product-groups/{discountProductGroupId}/product-group'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the ProductGroup nested in a DiscountProductGroup (via discount link) addressed by internal rel id."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target discount-product-group binding. Server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "discountProductGroupId"
 			)
@@ -79,9 +83,13 @@ public abstract class BaseProductGroupResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-modifier-product-groups/{priceModifierProductGroupId}/product-group'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the ProductGroup nested in a PriceModifierProductGroup (via price modifier link) addressed by internal rel id."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target price-modifier-product-group binding. Server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "priceModifierProductGroupId"
 			)
@@ -551,4 +559,4 @@ public abstract class BaseProductGroupResourceImpl
 		LogFactoryUtil.getLog(BaseProductGroupResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-334926879
+// LIFERAY-REST-BUILDER-HASH:1431075876

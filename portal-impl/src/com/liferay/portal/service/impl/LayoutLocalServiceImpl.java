@@ -494,11 +494,14 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			serviceContext.setModifiedDate(
 				serviceContext.getModifiedDate(date));
 
+			Serializable draftLayoutExternalReferenceCode =
+				serviceContext.getAttribute("draftLayoutExternalReferenceCode");
+
 			addLayout(
 				GetterUtil.getString(
-					serviceContext.getAttribute(
-						"draftLayoutExternalReferenceCode"),
-					layout.getExternalReferenceCode() + "-draft"),
+					draftLayoutExternalReferenceCode,
+					layout.getExternalReferenceCode() +
+						LayoutConstants.EXTERNAL_REFERENCE_CODE_SUFFIX_DRAFT),
 				userId, groupId, privateLayout, parentLayoutId,
 				_classNameLocalService.getClassNameId(Layout.class),
 				layout.getPlid(), nameMap, titleMap, descriptionMap,
@@ -830,7 +833,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			layout.getDescriptionMap(), layout.getKeywordsMap(),
 			layout.getRobotsMap(), type, false, layout.getFriendlyURLMap(),
 			layout.isIconImage(), null, layout.getStyleBookEntryERC(),
-			layout.getFaviconFileEntryERC(),
+			layout.getStyleBookEntryScopeERC(), layout.getFaviconFileEntryERC(),
 			layout.getFaviconFileEntryScopeERC(),
 			masterLayoutPageTemplateEntryERC, serviceContext);
 
@@ -852,11 +855,14 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 					"draftLayoutLayoutSetPrototypeLayoutERC"));
 			serviceContext.setModifiedDate(new Date());
 
+			Serializable draftLayoutExternalReferenceCode =
+				serviceContext.getAttribute("draftLayoutExternalReferenceCode");
+
 			layoutLocalService.addLayout(
 				GetterUtil.getString(
-					serviceContext.getAttribute(
-						"draftLayoutExternalReferenceCode"),
-					layout.getExternalReferenceCode() + "-draft"),
+					draftLayoutExternalReferenceCode,
+					layout.getExternalReferenceCode() +
+						LayoutConstants.EXTERNAL_REFERENCE_CODE_SUFFIX_DRAFT),
 				userId, layout.getGroupId(), layout.isPrivateLayout(),
 				layout.getParentLayoutId(),
 				_classNameLocalService.getClassNameId(Layout.class),
@@ -1863,16 +1869,6 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 			LayoutSet layoutSet = _layoutSetLocalService.getLayoutSet(
 				groupId, privateLayout);
-
-			if (layoutSet.isLayoutSetPrototypeLinkActive() &&
-				!_mergeLayouts(
-					group, layoutSet, groupId, privateLayout, parentLayoutId,
-					start, end, orderByComparator)) {
-
-				return layoutPersistence.findByG_P_P(
-					groupId, privateLayout, parentLayoutId, start, end,
-					orderByComparator);
-			}
 
 			List<Layout> layouts = layoutPersistence.findByG_P_P(
 				groupId, privateLayout, parentLayoutId, start, end,
@@ -3132,7 +3128,8 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			Map<Locale, String> keywordsMap, Map<Locale, String> robotsMap,
 			String type, boolean hidden, Map<Locale, String> friendlyURLMap,
 			boolean hasIconImage, byte[] iconBytes, String styleBookEntryERC,
-			String faviconFileEntryERC, String faviconFileEntryScopeERC,
+			String styleBookEntryScopeERC, String faviconFileEntryERC,
+			String faviconFileEntryScopeERC,
 			String masterLayoutPageTemplateEntryERC,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -3202,6 +3199,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			layout, hasIconImage, iconBytes, "iconImageId", 0, 0, 0);
 
 		layout.setStyleBookEntryERC(styleBookEntryERC);
+		layout.setStyleBookEntryScopeERC(styleBookEntryScopeERC);
 		layout.setFaviconFileEntryERC(faviconFileEntryERC);
 		layout.setFaviconFileEntryScopeERC(faviconFileEntryScopeERC);
 		layout.setMasterLayoutPageTemplateEntryERC(
@@ -3293,7 +3291,8 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	public Layout updateLayout(
 			long groupId, boolean privateLayout, long layoutId,
 			String typeSettings, byte[] iconBytes, String themeId,
-			String colorSchemeId, String styleBookEntryERC, String css,
+			String colorSchemeId, String styleBookEntryERC,
+			String styleBookEntryScopeERC, String css,
 			String faviconFileEntryERC, String faviconFileEntryScopeERC,
 			String masterLayoutPageTemplateEntryERC)
 		throws PortalException {
@@ -3316,6 +3315,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		layout.setThemeId(themeId);
 		layout.setColorSchemeId(colorSchemeId);
 		layout.setStyleBookEntryERC(styleBookEntryERC);
+		layout.setStyleBookEntryScopeERC(styleBookEntryScopeERC);
 		layout.setCss(css);
 		layout.setFaviconFileEntryERC(faviconFileEntryERC);
 		layout.setFaviconFileEntryScopeERC(faviconFileEntryScopeERC);
@@ -3894,27 +3894,17 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		return layout;
 	}
 
-	/**
-	 * Updates the layout replacing its style book entry ID.
-	 *
-	 * @param  groupId the primary key of the group
-	 * @param  privateLayout whether the layout is private to the group
-	 * @param  layoutId the layout ID of the layout
-	 * @param  styleBookEntryERC the external reference code of the style book
-	 *         entry
-	 * @return the updated layout
-	 * @throws PortalException if a portal exception occurred
-	 */
 	@Override
-	public Layout updateStyleBookEntryERC(
+	public Layout updateStyleBookEntry(
 			long groupId, boolean privateLayout, long layoutId,
-			String styleBookEntryERC)
+			String styleBookEntryERC, String styleBookEntryScopeERC)
 		throws PortalException {
 
 		Layout layout = layoutPersistence.findByG_P_L(
 			groupId, privateLayout, layoutId);
 
 		layout.setStyleBookEntryERC(styleBookEntryERC);
+		layout.setStyleBookEntryScopeERC(styleBookEntryScopeERC);
 
 		return layoutPersistence.update(layout);
 	}
@@ -4320,16 +4310,6 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			Group group = _groupPersistence.findByPrimaryKey(
 				layoutSet.getGroupId());
 
-			if (layoutSet.isLayoutSetPrototypeLinkActive() &&
-				!_mergeLayouts(
-					group, layoutSet, layoutSet.getGroupId(),
-					layoutSet.isPrivateLayout(), parentLayoutIds)) {
-
-				return layoutPersistence.findByG_P_P(
-					layoutSet.getGroupId(), layoutSet.isPrivateLayout(),
-					parentLayoutIds);
-			}
-
 			List<Layout> layouts = layoutPersistence.findByG_P_P(
 				layoutSet.getGroupId(), layoutSet.isPrivateLayout(),
 				parentLayoutIds);
@@ -4587,26 +4567,20 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			return false;
 		}
 
-		if (Validator.isNull(layout.getPortletLayoutPageTemplateEntryERC()) &&
-			Validator.isNull(layout.getLayoutSetPrototypeLayoutERC())) {
+		if (Validator.isNull(layout.getPortletLayoutPageTemplateEntryERC()) ||
+			Validator.isNotNull(layout.getLayoutSetPrototypeLayoutERC())) {
 
 			return false;
 		}
 
 		boolean workflowEnabled = WorkflowThreadLocal.isEnabled();
 
-		LayoutSet layoutSet = layout.getLayoutSet();
-
 		try {
 			WorkflowThreadLocal.setEnabled(false);
 
 			Sites sites = _sitesSnapshot.get();
 
-			sites.mergeLayoutPrototypeLayout(group, layout);
-
-			if (Validator.isNotNull(layout.getLayoutSetPrototypeLayoutERC())) {
-				sites.mergeLayoutSetPrototypeLayouts(group, layoutSet);
-			}
+			sites.mergeLayoutPrototypeLayout(layout);
 		}
 		catch (CTTransactionException | PortalException exception) {
 			throw exception;
@@ -4617,46 +4591,6 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		finally {
 			MergeLayoutPrototypesThreadLocal.setMergeComplete(
 				"getLayout", arguments);
-			WorkflowThreadLocal.setEnabled(workflowEnabled);
-		}
-
-		return true;
-	}
-
-	private boolean _mergeLayouts(
-		Group group, LayoutSet layoutSet, Object... arguments) {
-
-		arguments = ArrayUtil.append(
-			arguments, CTCollectionThreadLocal.getCTCollectionId());
-
-		if ((MergeLayoutPrototypesThreadLocal.isMergeComplete(
-				"getLayouts", arguments) &&
-			 !group.isUser()) ||
-			StartupHelperUtil.isUpgrading()) {
-
-			return false;
-		}
-
-		boolean workflowEnabled = WorkflowThreadLocal.isEnabled();
-
-		try {
-			Sites sites = _sitesSnapshot.get();
-
-			if (sites.isLayoutSetMergeable(group, layoutSet)) {
-				WorkflowThreadLocal.setEnabled(false);
-
-				sites.mergeLayoutSetPrototypeLayouts(group, layoutSet);
-			}
-		}
-		catch (Exception exception) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Unable to merge layouts for site template", exception);
-			}
-		}
-		finally {
-			MergeLayoutPrototypesThreadLocal.setMergeComplete(
-				"getLayouts", arguments);
 			WorkflowThreadLocal.setEnabled(workflowEnabled);
 		}
 

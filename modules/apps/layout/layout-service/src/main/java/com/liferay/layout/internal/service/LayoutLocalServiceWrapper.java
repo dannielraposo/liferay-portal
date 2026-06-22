@@ -14,6 +14,7 @@ import com.liferay.fragment.cache.FragmentEntryLinkCache;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.processor.PortletRegistry;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
+import com.liferay.friendly.url.constants.FriendlyURLEntryConstants;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.layout.constants.LayoutTypeSettingsConstants;
@@ -733,6 +734,8 @@ public class LayoutLocalServiceWrapper
 			_friendlyURLEntryLocalService.fetchFriendlyURLEntry(
 				groupId,
 				_layoutFriendlyURLEntryHelper.getClassNameId(privateLayout),
+				FriendlyURLEntryConstants.
+					FRIENDLY_URL_ENTRY_PARENT_CLASS_PK_DEFAULT,
 				friendlyURL);
 
 		if (friendlyURLEntry == null) {
@@ -1419,8 +1422,9 @@ public class LayoutLocalServiceWrapper
 				_targetLayout.getLayoutId(),
 				_getTypeSettings(_sourceLayout, _targetLayout), imageBytes,
 				_sourceLayout.getThemeId(), _sourceLayout.getColorSchemeId(),
-				_sourceLayout.getStyleBookEntryERC(), _sourceLayout.getCss(),
-				_sourceLayout.getFaviconFileEntryERC(),
+				_sourceLayout.getStyleBookEntryERC(),
+				_sourceLayout.getStyleBookEntryScopeERC(),
+				_sourceLayout.getCss(), _sourceLayout.getFaviconFileEntryERC(),
 				_sourceLayout.getFaviconFileEntryScopeERC(),
 				_sourceLayout.getMasterLayoutPageTemplateEntryERC());
 		}

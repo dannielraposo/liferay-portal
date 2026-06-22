@@ -77,6 +77,22 @@ public class PredicateExpressionVisitorImpl
 
 	public PredicateExpressionVisitorImpl(
 		EntityModel entityModel, EntityModelProvider entityModelProvider,
+		Long[] groupIds, ObjectDefinition objectDefinition,
+		ObjectFieldBusinessTypeRegistry objectFieldBusinessTypeRegistry,
+		ObjectFieldLocalService objectFieldLocalService,
+		ObjectRelatedModelsPredicateProviderRegistry
+			objectRelatedModelsPredicateProviderRegistry,
+		ServiceTrackerMap<String, FieldPredicateProvider> serviceTrackerMap) {
+
+		this(
+			entityModel, entityModelProvider, groupIds, new HashMap<>(),
+			objectDefinition, objectFieldBusinessTypeRegistry,
+			objectFieldLocalService,
+			objectRelatedModelsPredicateProviderRegistry, serviceTrackerMap);
+	}
+
+	public PredicateExpressionVisitorImpl(
+		EntityModel entityModel, EntityModelProvider entityModelProvider,
 		ObjectDefinition objectDefinition,
 		ObjectFieldBusinessTypeRegistry objectFieldBusinessTypeRegistry,
 		ObjectFieldLocalService objectFieldLocalService,
@@ -85,8 +101,9 @@ public class PredicateExpressionVisitorImpl
 		ServiceTrackerMap<String, FieldPredicateProvider> serviceTrackerMap) {
 
 		this(
-			entityModel, entityModelProvider, new HashMap<>(), objectDefinition,
-			objectFieldBusinessTypeRegistry, objectFieldLocalService,
+			entityModel, entityModelProvider, null, new HashMap<>(),
+			objectDefinition, objectFieldBusinessTypeRegistry,
+			objectFieldLocalService,
 			objectRelatedModelsPredicateProviderRegistry, serviceTrackerMap);
 	}
 
@@ -98,11 +115,16 @@ public class PredicateExpressionVisitorImpl
 		Predicate predicate = null;
 
 		if (_isComplexProperExpression(left)) {
-			predicate = _getObjectRelationshipPredicate(
-				left,
-				(objectFieldName, relatedObjectDefinition) -> _getPredicate(
-					objectFieldName, relatedObjectDefinition, operation,
-					right));
+			predicate = _getEmptyRelationshipExternalReferenceCodePredicate(
+				operation, (String)left, right);
+
+			if (predicate == null) {
+				predicate = _getObjectRelationshipPredicate(
+					left,
+					(objectFieldName, relatedObjectDefinition) -> _getPredicate(
+						objectFieldName, relatedObjectDefinition, operation,
+						right));
+			}
 		}
 		else {
 			predicate = _getPredicate(
@@ -360,7 +382,7 @@ public class PredicateExpressionVisitorImpl
 
 	private PredicateExpressionVisitorImpl(
 		EntityModel entityModel, EntityModelProvider entityModelProvider,
-		Map<String, String> lambdaVariableExpressionFieldNames,
+		Long[] groupIds, Map<String, String> lambdaVariableExpressionFieldNames,
 		ObjectDefinition objectDefinition,
 		ObjectFieldBusinessTypeRegistry objectFieldBusinessTypeRegistry,
 		ObjectFieldLocalService objectFieldLocalService,
@@ -371,6 +393,7 @@ public class PredicateExpressionVisitorImpl
 		_entityModels.put(
 			objectDefinition.getObjectDefinitionId(), entityModel);
 		_entityModelProvider = entityModelProvider;
+		_groupIds = groupIds;
 		_lambdaVariableExpressionFieldNames =
 			lambdaVariableExpressionFieldNames;
 		_objectDefinition = objectDefinition;
@@ -438,6 +461,46 @@ public class PredicateExpressionVisitorImpl
 		return (Column<?, Object>)_objectFieldLocalService.getColumn(
 			objectDefinition.getObjectDefinitionId(),
 			entityField.getFilterableName(null));
+	}
+
+	private Predicate _getEmptyRelationshipExternalReferenceCodePredicate(
+			BinaryExpression.Operation operation, String left, Object right)
+		throws ExpressionVisitException {
+
+		if ((!Objects.equals(BinaryExpression.Operation.EQ, operation) &&
+			 !Objects.equals(BinaryExpression.Operation.NE, operation)) ||
+			Validator.isNotNull(String.valueOf(right))) {
+
+			return null;
+		}
+
+		List<String> leftParts = ListUtil.fromString(left, StringPool.SLASH);
+
+		if ((leftParts.size() != 2) ||
+			!Objects.equals(leftParts.get(1), "externalReferenceCode")) {
+
+			return null;
+		}
+
+		ObjectRelationship objectRelationship = _fetchObjectRelationship(
+			_objectDefinition, leftParts.get(0));
+
+		if (objectRelationship == null) {
+			return null;
+		}
+
+		ObjectField objectField = _objectFieldLocalService.fetchObjectField(
+			objectRelationship.getObjectFieldId2());
+
+		if ((objectField == null) ||
+			(objectField.getObjectDefinitionId() !=
+				_objectDefinition.getObjectDefinitionId())) {
+
+			return null;
+		}
+
+		return _getPredicate(
+			objectField.getName(), _objectDefinition, operation, right);
 	}
 
 	private EntityField _getEntityField(
@@ -579,7 +642,7 @@ public class PredicateExpressionVisitorImpl
 
 		if (objectValuePairs.isEmpty()) {
 			return objectRelatedModelsPredicateProvider.getPredicate(
-				objectRelationship, predicate);
+				_groupIds, objectRelationship, predicate);
 		}
 
 		ObjectValuePair<ObjectRelationship, ObjectDefinition> objectValuePair =
@@ -589,7 +652,7 @@ public class PredicateExpressionVisitorImpl
 			objectValuePair.getValue(), objectValuePairs,
 			objectValuePair.getKey(),
 			objectRelatedModelsPredicateProvider.getPredicate(
-				objectRelationship, predicate));
+				_groupIds, objectRelationship, predicate));
 	}
 
 	private List<ObjectValuePair<ObjectRelationship, ObjectDefinition>>
@@ -824,7 +887,7 @@ public class PredicateExpressionVisitorImpl
 		return (Predicate)lambdaFunctionExpression.accept(
 			new PredicateExpressionVisitorImpl(
 				_getObjectDefinitionEntityModel(objectDefinition),
-				_entityModelProvider,
+				_entityModelProvider, _groupIds,
 				Collections.singletonMap(
 					lambdaFunctionExpression.getVariableName(),
 					collectionPropertyExpression.getName()),
@@ -853,6 +916,7 @@ public class PredicateExpressionVisitorImpl
 
 	private final EntityModelProvider _entityModelProvider;
 	private final Map<Long, EntityModel> _entityModels = new HashMap<>();
+	private final Long[] _groupIds;
 	private final Map<String, String> _lambdaVariableExpressionFieldNames;
 	private final ObjectDefinition _objectDefinition;
 	private final ObjectFieldBusinessTypeRegistry

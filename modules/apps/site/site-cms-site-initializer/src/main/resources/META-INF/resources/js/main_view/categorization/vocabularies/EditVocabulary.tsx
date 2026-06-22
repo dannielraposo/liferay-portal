@@ -35,6 +35,7 @@ export default function EditVocabulary({
 	backURL,
 	cmsGroupId,
 	defaultLanguageId,
+	externalReferenceCodeMaxLength,
 	locales,
 	spritemap,
 	vocabularyId,
@@ -44,6 +45,7 @@ export default function EditVocabulary({
 	backURL: string;
 	cmsGroupId: number;
 	defaultLanguageId: string;
+	externalReferenceCodeMaxLength: number;
 	locales: any[];
 	spritemap: string;
 	vocabularyId: number;
@@ -151,7 +153,7 @@ export default function EditVocabulary({
 		if (status === 'CONFLICT') {
 			if (
 				error ===
-				'A taxonomy vocabulary with the same external reference code already exists.'
+				'A taxonomy vocabulary with the same external reference code already exists'
 			) {
 				const ercErrorMessage = Liferay.Language.get(
 					'please-enter-a-unique-external-reference-code'
@@ -252,6 +254,7 @@ export default function EditVocabulary({
 
 	const shouldDisableSaveBtn =
 		!vocabulary.name.trim().length ||
+		!!externalReferenceCodeInputError ||
 		!!spaceInputError ||
 		!!assetTypeInputError;
 
@@ -270,6 +273,7 @@ export default function EditVocabulary({
 						<ClayButton
 							aria-label={Liferay.Language.get('back')}
 							borderless
+							data-canonical-name={Liferay.Language.get('cancel')}
 							displayType="secondary"
 							onClick={() => navigate(backURL)}
 							outline
@@ -280,6 +284,7 @@ export default function EditVocabulary({
 
 						<ClayButton
 							className="inline-item-after"
+							data-canonical-name={Liferay.Language.get('save')}
 							disabled={shouldDisableSaveBtn}
 							displayType="primary"
 							onClick={() => {
@@ -343,6 +348,9 @@ export default function EditVocabulary({
 									defaultLanguageId={defaultLanguageId}
 									externalReferenceCodeInputError={
 										externalReferenceCodeInputError
+									}
+									externalReferenceCodeMaxLength={
+										externalReferenceCodeMaxLength
 									}
 									isNew={isNew}
 									locales={locales}

@@ -55,9 +55,15 @@ import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -361,12 +367,13 @@ public class ElasticsearchSearchEngineAdapterDocumentRequestTest {
 					_FIELD_NAME, Boolean.FALSE
 				).build()));
 
-		BooleanQuery query = new BooleanQuery();
+		BooleanQuery booleanQuery = new BooleanQuery();
 
-		query.addExactTerm(_FIELD_NAME, true);
+		booleanQuery.addExactTerm(_FIELD_NAME, true);
 
 		DeleteByQueryDocumentRequest deleteByQueryDocumentRequest =
-			new DeleteByQueryDocumentRequest(query, new String[] {_INDEX_NAME});
+			new DeleteByQueryDocumentRequest(
+				booleanQuery, new String[] {_INDEX_NAME});
 
 		DeleteByQueryDocumentResponse deleteByQueryDocumentResponse =
 			_searchEngineAdapter.execute(deleteByQueryDocumentRequest);
@@ -474,18 +481,70 @@ public class ElasticsearchSearchEngineAdapterDocumentRequestTest {
 					_FIELD_NAME, Boolean.TRUE
 				).build()));
 
-		BooleanQuery query = new BooleanQuery();
+		BooleanQuery booleanQuery = new BooleanQuery();
 
-		query.addExactTerm(_FIELD_NAME, true);
+		booleanQuery.addExactTerm(_FIELD_NAME, true);
 
 		UpdateByQueryDocumentRequest updateByQueryDocumentRequest =
 			new UpdateByQueryDocumentRequest(
-				query, null, new String[] {_INDEX_NAME});
+				booleanQuery, null, new String[] {_INDEX_NAME});
 
 		UpdateByQueryDocumentResponse updateByQueryDocumentResponse =
 			_searchEngineAdapter.execute(updateByQueryDocumentRequest);
 
 		Assert.assertEquals(1, updateByQueryDocumentResponse.getUpdated());
+	}
+
+	@Test
+	public void testExecuteUpdateByQueryDocumentRequestProceedOnConflicts()
+		throws Exception {
+
+		for (int i = 0; i < 50; i++) {
+			_indexDocument(
+				String.valueOf(i),
+				JsonData.of(
+					HashMapBuilder.<String, Object>put(
+						_FIELD_NAME, Boolean.TRUE
+					).build()));
+		}
+
+		List<Throwable> throwables = new CopyOnWriteArrayList<>();
+
+		CountDownLatch countDownLatch = new CountDownLatch(1);
+		ExecutorService executorService = Executors.newFixedThreadPool(
+			_THREAD_COUNT);
+
+		try {
+			List<Future<?>> futures = new ArrayList<>();
+
+			for (int i = 0; i < _THREAD_COUNT; i++) {
+				futures.add(
+					executorService.submit(
+						() -> {
+							try {
+								countDownLatch.await();
+
+								for (int j = 0; j < 30; j++) {
+									_updateByQueryProceedOnConflicts();
+								}
+							}
+							catch (Throwable throwable) {
+								throwables.add(throwable);
+							}
+						}));
+			}
+
+			countDownLatch.countDown();
+
+			for (Future<?> future : futures) {
+				future.get();
+			}
+		}
+		finally {
+			executorService.shutdownNow();
+		}
+
+		Assert.assertTrue(throwables.toString(), throwables.isEmpty());
 	}
 
 	@Test
@@ -745,6 +804,20 @@ public class ElasticsearchSearchEngineAdapterDocumentRequestTest {
 		return _searchEngineAdapter.execute(indexDocumentRequest);
 	}
 
+	private void _updateByQueryProceedOnConflicts() {
+		BooleanQuery booleanQuery = new BooleanQuery();
+
+		booleanQuery.addExactTerm(_FIELD_NAME, true);
+
+		UpdateByQueryDocumentRequest updateByQueryDocumentRequest =
+			new UpdateByQueryDocumentRequest(
+				booleanQuery, null, new String[] {_INDEX_NAME});
+
+		updateByQueryDocumentRequest.setProceedOnConflicts(true);
+
+		_searchEngineAdapter.execute(updateByQueryDocumentRequest);
+	}
+
 	private UpdateDocumentResponse _updateDocumentWithAdapter(
 		String uid, Document document) {
 
@@ -773,6 +846,8 @@ public class ElasticsearchSearchEngineAdapterDocumentRequestTest {
 	private static final String _FIELD_NAME = "matchDocument";
 
 	private static final String _INDEX_NAME = "test_request_index";
+
+	private static final int _THREAD_COUNT = 6;
 
 	private static ElasticsearchFixture _elasticsearchFixture;
 

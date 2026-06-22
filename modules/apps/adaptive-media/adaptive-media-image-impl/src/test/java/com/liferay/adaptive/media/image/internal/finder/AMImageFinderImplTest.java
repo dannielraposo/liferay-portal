@@ -68,6 +68,13 @@ public class AMImageFinderImplTest {
 			_amImageMimeTypeProvider);
 		ReflectionTestUtil.setFieldValue(
 			_amImageFinderImpl, "_amImageURLFactory", _amImageURLFactory);
+
+		Mockito.when(
+			_amImageEntryLocalService.hasAMImageEntryContent(
+				Mockito.anyString(), Mockito.any(FileVersion.class))
+		).thenReturn(
+			true
+		);
 	}
 
 	@Test(expected = PortalException.class)
@@ -142,7 +149,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry = _mockImage(800, 900, 1000L);
@@ -198,7 +205,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry = _mockImage(99, 199, 1000L);
@@ -277,7 +284,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry1 = _mockImage(99, 199, 1000L);
@@ -390,7 +397,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry1 = _mockImage(99, 199, 1000L);
@@ -530,7 +537,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry = _mockImage(800, 900, 1000L);
@@ -600,7 +607,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry = _mockImage(99, 1000, 1000L);
@@ -672,7 +679,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry1 = _mockImage(99, 199, 1000L);
@@ -759,7 +766,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry1 = _mockImage(99, 199, 1000L);
@@ -846,7 +853,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry1 = _mockImage(99, 199, 1000L);
@@ -933,7 +940,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry1 = _mockImage(99, 199, 1000L);
@@ -1032,7 +1039,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry1 = _mockImage(99, 199, 1000L);
@@ -1171,7 +1178,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry1 = _mockImage(100, 1000, 1000L);
@@ -1292,7 +1299,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry1 = _mockImage(99, 1000, 1000L);
@@ -1344,6 +1351,69 @@ public class AMImageFinderImplTest {
 			Integer.valueOf(199),
 			adaptiveMedia1.getValue(
 				AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT));
+	}
+
+	@Test
+	public void testGetMediaWhenContentIsMissing() throws Exception {
+		AMImageConfigurationEntry amImageConfigurationEntry =
+			new AMImageConfigurationEntryImpl(
+				RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+				new HashMap<>());
+
+		AMImageQueryBuilder.ConfigurationStatus enabledConfigurationStatus =
+			AMImageQueryBuilder.ConfigurationStatus.ENABLED;
+
+		Mockito.when(
+			_amImageConfigurationHelper.getAMImageConfigurationEntries(
+				_fileVersion.getCompanyId(),
+				enabledConfigurationStatus.getPredicate())
+		).thenReturn(
+			Collections.singleton(amImageConfigurationEntry)
+		);
+
+		Mockito.when(
+			_fileVersion.getFileName()
+		).thenReturn(
+			RandomTestUtil.randomString()
+		);
+
+		Mockito.when(
+			_fileVersion.getMimeType()
+		).thenReturn(
+			ContentTypes.IMAGE_JPEG
+		);
+
+		AMImageEntry amImageEntry = _mockImage(800, 900, 1000L);
+
+		Mockito.when(
+			_amImageEntryLocalService.fetchAMImageEntry(
+				amImageConfigurationEntry.getUUID(),
+				_fileVersion.getFileVersionId())
+		).thenReturn(
+			amImageEntry
+		);
+
+		Mockito.when(
+			_amImageMimeTypeProvider.isMimeTypeSupported(Mockito.anyString())
+		).thenReturn(
+			true
+		);
+
+		Mockito.when(
+			_amImageEntryLocalService.hasAMImageEntryContent(
+				amImageConfigurationEntry.getUUID(), _fileVersion)
+		).thenReturn(
+			false
+		);
+
+		List<AdaptiveMedia<AMProcessor<FileVersion>>> adaptiveMedias =
+			_amImageFinderImpl.getAdaptiveMedias(
+				amImageQueryBuilder -> amImageQueryBuilder.forFileVersion(
+					_fileVersion
+				).done());
+
+		Assert.assertEquals(
+			adaptiveMedias.toString(), 0, adaptiveMedias.size());
 	}
 
 	@Test
@@ -1455,7 +1525,7 @@ public class AMImageFinderImplTest {
 		Mockito.when(
 			_fileVersion.getMimeType()
 		).thenReturn(
-			"image/jpeg"
+			ContentTypes.IMAGE_JPEG
 		);
 
 		AMImageEntry amImageEntry = _mockImage(99, 99, 1000L);

@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Sharing API
 Bundle-SymbolicName: com.liferay.sharing.api
-Bundle-Version: 18.0.0
+Bundle-Version: 18.0.1
 Export-Package:\
 	com.liferay.sharing.configuration,\
 	com.liferay.sharing.constants,\
@@ -8,6 +8,7 @@ Export-Package:\
 	com.liferay.sharing.exception,\
 	com.liferay.sharing.filter,\
 	com.liferay.sharing.interpreter,\
+	com.liferay.sharing.mail,\
 	com.liferay.sharing.model,\
 	com.liferay.sharing.renderer,\
 	com.liferay.sharing.security.permission,\

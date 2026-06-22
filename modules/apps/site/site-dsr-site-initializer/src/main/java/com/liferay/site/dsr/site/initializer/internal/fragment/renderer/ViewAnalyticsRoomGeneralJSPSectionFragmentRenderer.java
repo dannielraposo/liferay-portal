@@ -26,6 +26,11 @@ public class ViewAnalyticsRoomGeneralJSPSectionFragmentRenderer
 		<ViewAnalyticsRoomGeneralAnalyticsSectionDisplayContext> {
 
 	@Override
+	public String getCollectionKey() {
+		return "digital-sales-room-analytics";
+	}
+
+	@Override
 	public String getLabelKey() {
 		return "room-general";
 	}
@@ -41,7 +46,7 @@ public class ViewAnalyticsRoomGeneralJSPSectionFragmentRenderer
 				WebKeys.THEME_DISPLAY);
 
 		return new ViewAnalyticsRoomGeneralAnalyticsSectionDisplayContext(
-			httpServletRequest,
+			analyticsSettingsManager, httpServletRequest,
 			_objectDefinitionLocalService.
 				fetchObjectDefinitionByExternalReferenceCode(
 					"L_DSR_ROOM", themeDisplay.getCompanyId()));

@@ -202,10 +202,11 @@ const BusinessEvents = () => {
 							: `1 Ticket`
 						: '';
 
-				const isGoLiveType = businessEvent?.eventType?.key === 'goLive';
+				const isGoLiveType =
+					businessEvent?.eventType?.key === 'Go-Live';
 
 				const isOtherEventType =
-					businessEvent?.eventType?.key === 'otherEvent';
+					businessEvent?.eventType?.key === 'Other Event';
 
 				const DetailsColumn = () => {
 					if (isGoLiveType) {

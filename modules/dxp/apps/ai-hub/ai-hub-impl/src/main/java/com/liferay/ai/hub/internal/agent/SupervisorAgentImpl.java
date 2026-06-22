@@ -9,7 +9,7 @@ import com.liferay.ai.hub.agent.AgentContext;
 import com.liferay.ai.hub.agent.SupervisorAgent;
 import com.liferay.ai.hub.internal.memory.ChatMemoryProviderUtil;
 import com.liferay.ai.hub.internal.model.VertexAiGeminiUtil;
-import com.liferay.ai.hub.internal.quota.QuotaUtil;
+import com.liferay.ai.hub.quota.QuotaManager;
 import com.liferay.ai.hub.rest.resource.v1_0.util.SseUtil;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
@@ -38,6 +38,9 @@ import com.liferay.portal.workflow.manager.WorkflowDefinitionManager;
 
 import dev.langchain4j.agentic.AgenticServices;
 import dev.langchain4j.agentic.internal.InternalAgent;
+import dev.langchain4j.agentic.scope.AgentInvocation;
+import dev.langchain4j.agentic.scope.AgenticScope;
+import dev.langchain4j.agentic.scope.ResultWithAgenticScope;
 import dev.langchain4j.agentic.supervisor.SupervisorContextStrategy;
 import dev.langchain4j.agentic.supervisor.SupervisorResponseStrategy;
 import dev.langchain4j.model.vertexai.gemini.VertexAiGeminiChatModel;
@@ -50,6 +53,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Feliphe Marinho
@@ -73,7 +77,8 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 
 					try (VertexAiGeminiChatModel vertexAiGeminiChatModel =
 							VertexAiGeminiUtil.createVertexAiGeminiChatModel(
-								agentContext.getCompanyId())) {
+								_quotaManager,
+								agentContext.getServiceContext())) {
 
 						PermissionThreadLocal.setPermissionChecker(
 							permissionChecker);
@@ -117,7 +122,7 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 
 			InternalAgentFactory internalAgentFactory =
 				new InternalAgentFactory(
-					agentContext, _workflowDefinitionManager,
+					agentContext, _quotaManager, _workflowDefinitionManager,
 					_workflowInstanceManager);
 
 			return TransformUtil.transformToArray(
@@ -188,7 +193,7 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 			SseUtil.send(
 				_language.get(
 					dtoConverterContext.getLocale(),
-					"you-have-exceeded-your-token-quota"),
+					"you-have-exceeded-your-quota"),
 				"Chat Message Sent", null, agentContext.getSseEventSinkKey());
 
 			return;
@@ -212,7 +217,7 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 			SseUtil.send(
 				_language.get(
 					dtoConverterContext.getLocale(),
-					"you-have-exceeded-your-token-quota"),
+					"you-have-exceeded-your-quota"),
 				"Chat Message Sent", null, agentContext.getSseEventSinkKey());
 		}
 	}
@@ -222,10 +227,10 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 			VertexAiGeminiChatModel vertexAiGeminiChatModel)
 		throws PortalException {
 
-		String message = MapUtil.getString(agentContext.getInput(), "message");
+		_quotaManager.checkTokensUsage(
+			agentContext.getCompanyId(), agentContext.getUserId());
 
-		QuotaUtil.checkUsage(
-			agentContext.getCompanyId(), message, agentContext.getUserId());
+		String[] agentDefinitionExternalReferenceCodes = null;
 
 		dev.langchain4j.agentic.supervisor.SupervisorAgent supervisorAgent =
 			AgenticServices.supervisorBuilder(
@@ -241,12 +246,38 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 			).subAgents(
 				(Object[])internalAgents
 			).responseStrategy(
-				SupervisorResponseStrategy.SUMMARY
+				SupervisorResponseStrategy.SCORED
 			).build();
 
+		ResultWithAgenticScope<String> resultWithAgenticScope =
+			supervisorAgent.invokeWithAgenticScope(
+				MapUtil.getString(agentContext.getInput(), "message"));
+
+		AgenticScope agenticScope = resultWithAgenticScope.agenticScope();
+
+		if ((agenticScope != null) &&
+			(agenticScope.agentInvocations() != null)) {
+
+			agentDefinitionExternalReferenceCodes = ArrayUtil.distinct(
+				TransformUtil.transformToArray(
+					agenticScope.agentInvocations(), AgentInvocation::agentName,
+					String.class));
+		}
+
+		String data = resultWithAgenticScope.result();
+
+		if (Validator.isBlank(data)) {
+			DTOConverterContext dtoConverterContext =
+				agentContext.getDTOConverterContext();
+
+			data = _language.get(
+				dtoConverterContext.getLocale(),
+				"i-cannot-fulfill-this-request");
+		}
+
 		SseUtil.send(
-			supervisorAgent.invoke(message), "Chat Message Sent", null,
-			agentContext.getSseEventSinkKey());
+			agentDefinitionExternalReferenceCodes, data, "Chat Message Sent",
+			null, agentContext.getSseEventSinkKey());
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -265,6 +296,9 @@ public class SupervisorAgentImpl implements SupervisorAgent {
 
 	@Reference
 	private PortalExecutorManager _portalExecutorManager;
+
+	@Reference(policyOption = ReferencePolicyOption.GREEDY)
+	private QuotaManager _quotaManager;
 
 	@Reference
 	private WorkflowDefinitionManager _workflowDefinitionManager;

@@ -64,36 +64,6 @@ public abstract class BaseBuildRunner<T extends BuildData>
 		return _job;
 	}
 
-	protected String getLabelExpression(String jobName) {
-		String labelExpression = null;
-
-		try {
-			labelExpression = JenkinsResultsParserUtil.getBuildProperty(
-				"jenkins.osb.jenkins.web.slave.label", jobName);
-
-			if (JenkinsResultsParserUtil.isNullOrEmpty(labelExpression)) {
-				labelExpression = JenkinsResultsParserUtil.getBuildProperty(
-					"jenkins.osb.jenkins.web.slave.label.minimum.ram",
-					String.valueOf(getSlaveRAMMinimum()));
-			}
-
-			if (JenkinsResultsParserUtil.isNullOrEmpty(labelExpression)) {
-				labelExpression = JenkinsResultsParserUtil.getBuildProperty(
-					"cloud.fleet.primary.label");
-			}
-
-			if (JenkinsResultsParserUtil.isNullOrEmpty(labelExpression)) {
-				labelExpression = JenkinsResultsParserUtil.getBuildProperty(
-					"master.auto.scaling.group.name");
-			}
-		}
-		catch (IOException ioException) {
-			throw new RuntimeException(ioException);
-		}
-
-		return labelExpression;
-	}
-
 	protected List<JSONObject> getPreviousBuildJSONObjects() {
 		if (_previousBuildJSONObjects != null) {
 			return _previousBuildJSONObjects;
@@ -124,10 +94,6 @@ public abstract class BaseBuildRunner<T extends BuildData>
 		}
 
 		return _previousBuildJSONObjects;
-	}
-
-	protected int getSlaveRAMMinimum() {
-		return JenkinsMaster.getSlaveRAMMinimumDefault();
 	}
 
 	protected void keepJenkinsBuild(boolean keepLogs) {
@@ -196,7 +162,7 @@ public abstract class BaseBuildRunner<T extends BuildData>
 	protected void retirePreviousBuilds() {
 		long allowedBuildAge = 7 * _MILLISECONDS_PER_DAY;
 
-		String allowedBuildAgeInDays = System.getenv(
+		String allowedBuildAgeInDays = Environment.get(
 			"ALLOWED_BUILD_AGE_IN_DAYS");
 
 		if ((allowedBuildAgeInDays != null) &&

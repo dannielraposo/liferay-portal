@@ -64,13 +64,32 @@ export class DataSetPage {
 		await dropdownMenuItemDelete.click();
 	}
 
+	async expectBulkItemActionHidden({action}: {action: string}) {
+		await this.page
+			.getByTestId('visualization-mode-table')
+			.getByLabel('Actions')
+			.click();
+
+		const menu = this.page.getByRole('menu');
+
+		await expect(menu).toBeVisible();
+
+		await expect(
+			menu.getByRole('menuitem', {exact: true, name: action})
+		).toBeHidden();
+
+		await this.page.keyboard.press('Escape');
+	}
+
 	async execItemAction({
 		action,
 		filter,
+		parentAction,
 		timeout,
 	}: {
 		action: string;
 		filter: string;
+		parentAction?: string;
 		timeout?: number;
 	}) {
 		const item = this.getRow(filter);
@@ -78,6 +97,20 @@ export class DataSetPage {
 		const button = item.getByRole('button', {
 			name: `${filter} Actions`,
 		});
+
+		if (parentAction) {
+			await button.click();
+
+			await this.page
+				.getByRole('menuitem', {exact: true, name: parentAction})
+				.hover();
+
+			await this.page
+				.getByRole('menuitem', {exact: true, name: action})
+				.click();
+
+			return;
+		}
 
 		await clickAndExpectToBeVisible({
 			autoClick: true,

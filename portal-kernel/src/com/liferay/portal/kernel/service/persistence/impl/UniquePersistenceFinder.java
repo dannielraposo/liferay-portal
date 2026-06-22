@@ -5,27 +5,35 @@
 
 package com.liferay.portal.kernel.service.persistence.impl;
 
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.exception.NoSuchModelException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.util.StringUtil;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Shuyang Zhou
  */
-public class UniquePersistenceFinder<T extends BaseModel<T>>
-	extends BasePersistenceFinder<T> {
+public class UniquePersistenceFinder
+	<T extends BaseModel<T>, E extends NoSuchModelException>
+		extends BasePersistenceFinder<T, E> {
 
 	@SafeVarargs
 	public UniquePersistenceFinder(
-		BasePersistenceImpl<T, ?> basePersistenceImpl, FinderPath fetchPath,
-		String sqlSelectWhere, FinderColumn<T>... finderColumns) {
+		BasePersistenceImpl<T, E> basePersistenceImpl, FinderPath fetchPath,
+		String sqlSelectWhere, String where, FinderColumn<T>... finderColumns) {
 
-		super(basePersistenceImpl, sqlSelectWhere, finderColumns);
+		super(basePersistenceImpl, sqlSelectWhere, where, finderColumns);
 
 		_fetchPath = fetchPath;
 	}
@@ -42,31 +50,30 @@ public class UniquePersistenceFinder<T extends BaseModel<T>>
 	public T fetch(
 		FinderCache finderCache, Object[] values, boolean useFinderCache) {
 
-		normalizeValues(values);
+		try (SafeCloseable safeCloseable =
+				setCTCollectionIdWithSafeCloseable()) {
 
-		Object[] finderArgs = null;
+			normalizeValues(values);
 
-		if (useFinderCache) {
-			finderArgs = buildFinderArgs(values);
-		}
+			Object[] finderArgs = null;
 
-		Object result = null;
+			if (useFinderCache) {
+				finderArgs = buildFinderArgs(values);
 
-		if (useFinderCache) {
-			result = finderCache.getResult(
-				_fetchPath, finderArgs, basePersistenceImpl);
-		}
+				Object result = finderCache.getResult(
+					_fetchPath, finderArgs, basePersistenceImpl);
 
-		if (result instanceof BaseModel) {
-			T entity = (T)result;
+				if ((result instanceof BaseModel) &&
+					matchesAll((T)result, values)) {
 
-			if (!matchesAll(entity, values)) {
-				result = null;
+					return (T)result;
+				}
+				else if (result instanceof List<?>) {
+					return null;
+				}
 			}
-		}
 
-		if (result == null) {
-			String sql = buildSQLWhere(sqlSelectWhere, values);
+			String sql = buildSQLWhere(sqlSelectWhere, values, false);
 
 			Session session = null;
 
@@ -85,14 +92,28 @@ public class UniquePersistenceFinder<T extends BaseModel<T>>
 					if (useFinderCache) {
 						finderCache.putResult(_fetchPath, finderArgs, list);
 					}
-				}
-				else {
-					T entity = list.get(0);
 
-					result = entity;
-
-					basePersistenceImpl.cacheResult(entity);
+					return null;
 				}
+
+				if (list.size() > 1) {
+					Collections.sort(list, Collections.reverseOrder());
+
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							StringBundler.concat(
+								"Unique finder on ",
+								basePersistenceImpl.getModelClass(),
+								" returned more than one result for values (",
+								StringUtil.merge(values), ")"));
+					}
+				}
+
+				T entity = list.get(0);
+
+				basePersistenceImpl.cacheResult(entity);
+
+				return entity;
 			}
 			catch (Exception exception) {
 				throw basePersistenceImpl.processException(exception);
@@ -101,13 +122,21 @@ public class UniquePersistenceFinder<T extends BaseModel<T>>
 				basePersistenceImpl.closeSession(session);
 			}
 		}
+	}
 
-		if (result instanceof List<?>) {
-			return null;
+	public T find(FinderCache finderCache, Object[] values) throws E {
+		T entity = fetch(finderCache, values, true);
+
+		if (entity != null) {
+			return entity;
 		}
 
-		return (T)result;
+		throw basePersistenceImpl.newNoSuchModelException(
+			buildNoSuchKeyMessage(values));
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UniquePersistenceFinder.class);
 
 	private final FinderPath _fetchPath;
 

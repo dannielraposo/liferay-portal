@@ -91,6 +91,11 @@ components:
                     format: date-time
                     readOnly: true
                     type: string
+                editURL:
+                    description:
+                        Portal URL to the edit page for this entry.
+                    readOnly: true
+                    type: string
                 hideable:
                     readOnly: true
                     type: boolean
@@ -228,8 +233,7 @@ components:
             type: object
 info:
     description:
-        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.change.tracking.rest.client', and version '6.0.2'."
+        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.change.tracking.rest.client', and version '6.0.3'."
     license:
         name: Apache 2.0
         url: http://www.apache.org/licenses/LICENSE-2.0.html

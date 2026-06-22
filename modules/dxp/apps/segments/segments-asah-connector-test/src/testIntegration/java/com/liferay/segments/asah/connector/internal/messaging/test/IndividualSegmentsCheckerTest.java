@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -98,7 +99,8 @@ public class IndividualSegmentsCheckerTest {
 							RandomTestUtil.randomString()
 						).put(
 							"liferayAnalyticsFaroBackendURL",
-							"http://localhost:8080"
+							"http://localhost:" +
+								PortalUtil.getPortalServerPort(false)
 						).build());
 			ConfigurationTemporarySwapper configurationTemporarySwapper =
 				new ConfigurationTemporarySwapper(
@@ -158,6 +160,47 @@ public class IndividualSegmentsCheckerTest {
 	}
 
 	@Test
+	public void testCheckIndividualSegmentsEntriesWhenNotSyncedWithAnalyticsCloud()
+		throws Exception {
+
+		try (CompanyConfigurationTemporarySwapper
+				companyConfigurationTemporarySwapper =
+					new CompanyConfigurationTemporarySwapper(
+						TestPropsValues.getCompanyId(),
+						AnalyticsConfiguration.class.getName(),
+						HashMapDictionaryBuilder.<String, Object>put(
+							"liferayAnalyticsDataSourceId", StringPool.BLANK
+						).put(
+							"liferayAnalyticsFaroBackendSecuritySignature",
+							StringPool.BLANK
+						).put(
+							"liferayAnalyticsFaroBackendURL", StringPool.BLANK
+						).build());
+			ConfigurationTemporarySwapper configurationTemporarySwapper =
+				new ConfigurationTemporarySwapper(
+					"com.liferay.segments.asah.connector.internal." +
+						"configuration.SegmentsAsahConfiguration",
+					HashMapDictionaryBuilder.<String, Object>put(
+						"anonymousUserSegmentsCacheExpirationTime", "60"
+					).build())) {
+
+			UnsafeRunnable<Exception> jobExecutorUnsafeRunnable =
+				_checkIndividualSegmentsSchedulerJobConfiguration.
+					getJobExecutorUnsafeRunnable();
+
+			jobExecutorUnsafeRunnable.run();
+
+			List<SegmentsEntry> segmentsEntries =
+				_segmentsEntryLocalService.getSegmentsEntriesBySource(
+					SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+
+			Assert.assertEquals(
+				segmentsEntries.toString(), 0, segmentsEntries.size());
+		}
+	}
+
+	@Test
 	public void testIndividualSegmentsDeleteSegmentsEntries() throws Exception {
 		SegmentsTestUtil.addSegmentsEntry(
 			"1234567", "Test Segment 1", null, null,
@@ -190,7 +233,8 @@ public class IndividualSegmentsCheckerTest {
 							RandomTestUtil.randomString()
 						).put(
 							"liferayAnalyticsFaroBackendURL",
-							"http://localhost:8080"
+							"http://localhost:" +
+								PortalUtil.getPortalServerPort(false)
 						).build());
 			ConfigurationTemporarySwapper configurationTemporarySwapper =
 				new ConfigurationTemporarySwapper(

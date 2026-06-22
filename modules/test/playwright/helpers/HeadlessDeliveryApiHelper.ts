@@ -108,6 +108,12 @@ export class HeadlessDeliveryApiHelper {
 		);
 	}
 
+	async deleteMessageBoardSection(messageBoardSectionId: string) {
+		return this.apiHelpers.delete(
+			`${this.apiHelpers.baseUrl}${this.basePath}/message-board-sections/${messageBoardSectionId}`
+		);
+	}
+
 	async deleteSiteDocumentsFolderByExternalReferenceCode(
 		externalReferenceCode: string
 	) {
@@ -128,6 +134,14 @@ export class HeadlessDeliveryApiHelper {
 		);
 	}
 
+	async getMessageBoardThread(
+		messageBoardThreadId: string
+	): Promise<MessageBoardThread> {
+		return this.apiHelpers.get(
+			`${this.apiHelpers.baseUrl}${this.basePath}/message-board-threads/${messageBoardThreadId}`
+		);
+	}
+
 	async getSiteDocumentsPage(siteId: string, sort: string = 'id') {
 		return this.apiHelpers.get(
 			`${this.apiHelpers.baseUrl}${this.basePath}/sites/${siteId}/documents?sort=${sort}`
@@ -137,6 +151,14 @@ export class HeadlessDeliveryApiHelper {
 	async getSitePage(friendlyUrlPath: string, siteId: string) {
 		return this.apiHelpers.get(
 			`${this.apiHelpers.baseUrl}${this.basePath}/sites/${siteId}/site-pages/${friendlyUrlPath}`
+		);
+	}
+
+	async getSiteMessageBoardSectionsPage(
+		siteId: string
+	): Promise<{items: MessageBoardSection[]}> {
+		return this.apiHelpers.get(
+			`${this.apiHelpers.baseUrl}${this.basePath}/sites/${siteId}/message-board-sections`
 		);
 	}
 
@@ -190,6 +212,30 @@ export class HeadlessDeliveryApiHelper {
 		);
 	}
 
+	async postMessageBoardSectionMessageBoardThread({
+		articleBody,
+		headline,
+		keywords,
+		messageBoardSectionId,
+	}: {
+		articleBody: string;
+		headline: string;
+		keywords?: string[];
+		messageBoardSectionId: string;
+	}): Promise<MessageBoardThread> {
+		return this.apiHelpers.post(
+			`${this.apiHelpers.baseUrl}${this.basePath}/message-board-sections/${messageBoardSectionId}/message-board-threads`,
+			{
+				data: {
+					articleBody,
+					headline,
+					keywords,
+				},
+				failOnStatusCode: true,
+			}
+		);
+	}
+
 	async postMessageBoardThread({
 		articleBody,
 		headline,
@@ -229,8 +275,45 @@ export class HeadlessDeliveryApiHelper {
 		);
 	}
 
+	async postMessageBoardSectionMessageBoardSection({
+		parentMessageBoardSectionId,
+		title,
+	}: {
+		parentMessageBoardSectionId: string;
+		title: string;
+	}): Promise<MessageBoardSection> {
+		return this.apiHelpers.post(
+			`${this.apiHelpers.baseUrl}${this.basePath}/message-board-sections/${parentMessageBoardSectionId}/message-board-sections`,
+			{
+				data: {
+					title,
+				},
+				failOnStatusCode: true,
+			}
+		);
+	}
+
+	async postSiteMessageBoardSection({
+		siteId,
+		title,
+	}: {
+		siteId: string;
+		title: string;
+	}): Promise<MessageBoardSection> {
+		return this.apiHelpers.post(
+			`${this.apiHelpers.baseUrl}${this.basePath}/sites/${siteId}/message-board-sections`,
+			{
+				data: {
+					title,
+				},
+				failOnStatusCode: true,
+			}
+		);
+	}
+
 	async postStructuredContent({
 		categoryIds,
+		contentFields,
 		contentStructureId,
 		datePublished,
 		description = '',
@@ -241,6 +324,7 @@ export class HeadlessDeliveryApiHelper {
 		viewableBy = '',
 	}: {
 		categoryIds?: number[];
+		contentFields?: {contentFieldValue: {data: string}; name: string}[];
 		contentStructureId: number;
 		datePublished: string;
 		description?: string;
@@ -254,6 +338,7 @@ export class HeadlessDeliveryApiHelper {
 			`${this.apiHelpers.baseUrl}${this.basePath}/sites/${siteId}/structured-contents`,
 			{
 				data: {
+					contentFields,
 					contentStructureId,
 					datePublished,
 					description,
@@ -406,6 +491,14 @@ export class HeadlessDeliveryApiHelper {
 		documentId: number;
 		file?: fs.ReadStream;
 	}) {
+		const multipart: {document: string; file?: fs.ReadStream} = {
+			document: JSON.stringify(document),
+		};
+
+		if (file) {
+			multipart.file = file;
+		}
+
 		return this.apiHelpers.patchRequestOptions(
 			`${this.apiHelpers.baseUrl}${this.basePath}/documents/${documentId}`,
 			{
@@ -413,10 +506,25 @@ export class HeadlessDeliveryApiHelper {
 				headers: {
 					...(await this.apiHelpers.getCSRFTokenHeader()),
 				},
-				multipart: {
-					document: JSON.stringify(document),
-					file,
+				multipart,
+			}
+		);
+	}
+
+	async patchMessageBoardSection({
+		messageBoardSectionId,
+		title,
+	}: {
+		messageBoardSectionId: string;
+		title: string;
+	}): Promise<MessageBoardSection> {
+		return this.apiHelpers.patchRequestOptions(
+			`${this.apiHelpers.baseUrl}${this.basePath}/message-board-sections/${messageBoardSectionId}`,
+			{
+				data: {
+					title,
 				},
+				failOnStatusCode: true,
 			}
 		);
 	}

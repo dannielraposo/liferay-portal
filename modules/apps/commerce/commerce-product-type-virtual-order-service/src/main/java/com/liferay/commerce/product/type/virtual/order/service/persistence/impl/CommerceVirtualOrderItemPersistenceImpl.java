@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -82,68 +81,15 @@ public class CommerceVirtualOrderItemPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CommerceVirtualOrderItem>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the commerce virtual order items where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching commerce virtual order items
-	 */
-	@Override
-	public List<CommerceVirtualOrderItem> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce virtual order items where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceVirtualOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of commerce virtual order items
-	 * @param end the upper bound of the range of commerce virtual order items (not inclusive)
-	 * @return the range of matching commerce virtual order items
-	 */
-	@Override
-	public List<CommerceVirtualOrderItem> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceVirtualOrderItem, NoSuchVirtualOrderItemException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the commerce virtual order items where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceVirtualOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of commerce virtual order items
-	 * @param end the upper bound of the range of commerce virtual order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce virtual order items
-	 */
-	@Override
-	public List<CommerceVirtualOrderItem> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CommerceVirtualOrderItem> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce virtual order items where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceVirtualOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceVirtualOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -178,16 +124,8 @@ public class CommerceVirtualOrderItemPersistenceImpl
 			OrderByComparator<CommerceVirtualOrderItem> orderByComparator)
 		throws NoSuchVirtualOrderItemException {
 
-		CommerceVirtualOrderItem commerceVirtualOrderItem = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (commerceVirtualOrderItem != null) {
-			return commerceVirtualOrderItem;
-		}
-
-		throw new NoSuchVirtualOrderItemException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -229,9 +167,9 @@ public class CommerceVirtualOrderItemPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<CommerceVirtualOrderItem>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<CommerceVirtualOrderItem, NoSuchVirtualOrderItemException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the commerce virtual order item where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchVirtualOrderItemException</code> if it could not be found.
@@ -245,34 +183,8 @@ public class CommerceVirtualOrderItemPersistenceImpl
 	public CommerceVirtualOrderItem findByUUID_G(String uuid, long groupId)
 		throws NoSuchVirtualOrderItemException {
 
-		CommerceVirtualOrderItem commerceVirtualOrderItem = fetchByUUID_G(
-			uuid, groupId);
-
-		if (commerceVirtualOrderItem == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchVirtualOrderItemException(message);
-		}
-
-		return commerceVirtualOrderItem;
-	}
-
-	/**
-	 * Returns the commerce virtual order item where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching commerce virtual order item, or <code>null</code> if a matching commerce virtual order item could not be found
-	 */
-	@Override
-	public CommerceVirtualOrderItem fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -321,75 +233,15 @@ public class CommerceVirtualOrderItemPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CommerceVirtualOrderItem>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the commerce virtual order items where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching commerce virtual order items
-	 */
-	@Override
-	public List<CommerceVirtualOrderItem> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce virtual order items where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceVirtualOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce virtual order items
-	 * @param end the upper bound of the range of commerce virtual order items (not inclusive)
-	 * @return the range of matching commerce virtual order items
-	 */
-	@Override
-	public List<CommerceVirtualOrderItem> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceVirtualOrderItem, NoSuchVirtualOrderItemException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the commerce virtual order items where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceVirtualOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce virtual order items
-	 * @param end the upper bound of the range of commerce virtual order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce virtual order items
-	 */
-	@Override
-	public List<CommerceVirtualOrderItem> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CommerceVirtualOrderItem> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce virtual order items where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceVirtualOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceVirtualOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -426,16 +278,8 @@ public class CommerceVirtualOrderItemPersistenceImpl
 			OrderByComparator<CommerceVirtualOrderItem> orderByComparator)
 		throws NoSuchVirtualOrderItemException {
 
-		CommerceVirtualOrderItem commerceVirtualOrderItem = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (commerceVirtualOrderItem != null) {
-			return commerceVirtualOrderItem;
-		}
-
-		throw new NoSuchVirtualOrderItemException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -480,9 +324,9 @@ public class CommerceVirtualOrderItemPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathFetchByCommerceOrderItemId;
-	private UniquePersistenceFinder<CommerceVirtualOrderItem>
-		_uniquePersistenceFinderByCommerceOrderItemId;
+	private UniquePersistenceFinder
+		<CommerceVirtualOrderItem, NoSuchVirtualOrderItemException>
+			_uniquePersistenceFinderByCommerceOrderItemId;
 
 	/**
 	 * Returns the commerce virtual order item where commerceOrderItemId = &#63; or throws a <code>NoSuchVirtualOrderItemException</code> if it could not be found.
@@ -496,37 +340,8 @@ public class CommerceVirtualOrderItemPersistenceImpl
 			long commerceOrderItemId)
 		throws NoSuchVirtualOrderItemException {
 
-		CommerceVirtualOrderItem commerceVirtualOrderItem =
-			fetchByCommerceOrderItemId(commerceOrderItemId);
-
-		if (commerceVirtualOrderItem == null) {
-			String message =
-				_uniquePersistenceFinderByCommerceOrderItemId.
-					buildNoSuchKeyMessage(
-						_NO_SUCH_ENTITY_WITH_KEY,
-						new Object[] {commerceOrderItemId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchVirtualOrderItemException(message);
-		}
-
-		return commerceVirtualOrderItem;
-	}
-
-	/**
-	 * Returns the commerce virtual order item where commerceOrderItemId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param commerceOrderItemId the commerce order item ID
-	 * @return the matching commerce virtual order item, or <code>null</code> if a matching commerce virtual order item could not be found
-	 */
-	@Override
-	public CommerceVirtualOrderItem fetchByCommerceOrderItemId(
-		long commerceOrderItemId) {
-
-		return fetchByCommerceOrderItemId(commerceOrderItemId, true);
+		return _uniquePersistenceFinderByCommerceOrderItemId.find(
+			finderCache, new Object[] {commerceOrderItemId});
 	}
 
 	/**
@@ -810,99 +625,90 @@ public class CommerceVirtualOrderItemPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_COMMERCEVIRTUALORDERITEM_WHERE,
 			_SQL_COUNT_COMMERCEVIRTUALORDERITEM_WHERE,
 			CommerceVirtualOrderItemModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"commerceVirtualOrderItem.", "uuid", FinderColumn.Type.STRING,
-				"=", true, true, CommerceVirtualOrderItem::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			CommerceVirtualOrderItem::getUuid,
-			CommerceVirtualOrderItem::getGroupId);
+				"commerceVirtualOrderItem.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CommerceVirtualOrderItem::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_COMMERCEVIRTUALORDERITEM_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(CommerceVirtualOrderItem::getUuid),
+				CommerceVirtualOrderItem::getGroupId),
+			_SQL_SELECT_COMMERCEVIRTUALORDERITEM_WHERE, "",
 			new FinderColumn<>(
-				"commerceVirtualOrderItem.", "uuid", FinderColumn.Type.STRING,
-				"=", true, false, CommerceVirtualOrderItem::getUuid),
+				"commerceVirtualOrderItem.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CommerceVirtualOrderItem::getUuid),
 			new FinderColumn<>(
 				"commerceVirtualOrderItem.", "groupId", FinderColumn.Type.LONG,
 				"=", true, true, CommerceVirtualOrderItem::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_COMMERCEVIRTUALORDERITEM_WHERE,
 				_SQL_COUNT_COMMERCEVIRTUALORDERITEM_WHERE,
 				CommerceVirtualOrderItemModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"commerceVirtualOrderItem.", "uuid",
-					FinderColumn.Type.STRING, "=", true, false,
+					"commerceVirtualOrderItem.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
 					CommerceVirtualOrderItem::getUuid),
 				new FinderColumn<>(
 					"commerceVirtualOrderItem.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceVirtualOrderItem::getCompanyId));
 
-		_finderPathFetchByCommerceOrderItemId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByCommerceOrderItemId",
-			new String[] {Long.class.getName()},
-			new String[] {"commerceOrderItemId"}, false,
-			CommerceVirtualOrderItem::getCommerceOrderItemId);
-
 		_uniquePersistenceFinderByCommerceOrderItemId =
 			new UniquePersistenceFinder<>(
-				this, _finderPathFetchByCommerceOrderItemId,
-				_SQL_SELECT_COMMERCEVIRTUALORDERITEM_WHERE,
+				this,
+				createUniqueFinderPath(
+					FINDER_CLASS_NAME_ENTITY, "fetchByCommerceOrderItemId",
+					new String[] {Long.class.getName()},
+					new String[] {"commerceOrderItemId"}, 0, 0, false,
+					CommerceVirtualOrderItem::getCommerceOrderItemId),
+				_SQL_SELECT_COMMERCEVIRTUALORDERITEM_WHERE, "",
 				new FinderColumn<>(
 					"commerceVirtualOrderItem.", "commerceOrderItemId",
 					FinderColumn.Type.LONG, "=", true, true,
@@ -977,4 +783,4 @@ public class CommerceVirtualOrderItemPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-171496259
+// LIFERAY-SERVICE-BUILDER-HASH:724939746

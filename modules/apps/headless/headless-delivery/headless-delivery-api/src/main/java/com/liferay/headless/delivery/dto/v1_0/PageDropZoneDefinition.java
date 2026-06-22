@@ -25,6 +25,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +41,9 @@ import java.util.function.Supplier;
 @GraphQLName(
 	description = "Represent a definition of a Page drop zone.",
 	value = "PageDropZoneDefinition"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Represent a definition of a Page drop zone."
 )
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "PageDropZoneDefinition")
@@ -136,10 +141,20 @@ public class PageDropZoneDefinition implements Serializable {
 
 			sb.append("\"fragmentSettings\": ");
 
-			if (fragmentSettings instanceof Map) {
+			if (fragmentSettings instanceof Collection) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						(Collection<?>)fragmentSettings));
+			}
+			else if (fragmentSettings instanceof Map) {
 				sb.append(
 					JSONFactoryUtil.createJSONObject(
 						(Map<?, ?>)fragmentSettings));
+			}
+			else if (fragmentSettings instanceof Object[]) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						Arrays.asList((Object[])fragmentSettings)));
 			}
 			else if (fragmentSettings instanceof String) {
 				sb.append("\"");
@@ -252,4 +267,4 @@ public class PageDropZoneDefinition implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1323761812
+// LIFERAY-REST-BUILDER-HASH:-464704656

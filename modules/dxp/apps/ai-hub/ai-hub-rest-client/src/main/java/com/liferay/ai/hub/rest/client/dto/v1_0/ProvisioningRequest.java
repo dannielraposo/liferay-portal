@@ -25,26 +25,94 @@ public class ProvisioningRequest implements Cloneable, Serializable {
 		return ProvisioningRequestSerDes.toDTO(json);
 	}
 
-	public String getCustomerName() {
-		return customerName;
+	public String getAccountEntryExternalReferenceCode() {
+		return accountEntryExternalReferenceCode;
 	}
 
-	public void setCustomerName(String customerName) {
-		this.customerName = customerName;
+	public void setAccountEntryExternalReferenceCode(
+		String accountEntryExternalReferenceCode) {
+
+		this.accountEntryExternalReferenceCode =
+			accountEntryExternalReferenceCode;
 	}
 
-	public void setCustomerName(
-		UnsafeSupplier<String, Exception> customerNameUnsafeSupplier) {
+	public void setAccountEntryExternalReferenceCode(
+		UnsafeSupplier<String, Exception>
+			accountEntryExternalReferenceCodeUnsafeSupplier) {
 
 		try {
-			customerName = customerNameUnsafeSupplier.get();
+			accountEntryExternalReferenceCode =
+				accountEntryExternalReferenceCodeUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected String customerName;
+	protected String accountEntryExternalReferenceCode;
+
+	public Long getAccountEntryId() {
+		return accountEntryId;
+	}
+
+	public void setAccountEntryId(Long accountEntryId) {
+		this.accountEntryId = accountEntryId;
+	}
+
+	public void setAccountEntryId(
+		UnsafeSupplier<Long, Exception> accountEntryIdUnsafeSupplier) {
+
+		try {
+			accountEntryId = accountEntryIdUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Long accountEntryId;
+
+	public String getAccountEntryName() {
+		return accountEntryName;
+	}
+
+	public void setAccountEntryName(String accountEntryName) {
+		this.accountEntryName = accountEntryName;
+	}
+
+	public void setAccountEntryName(
+		UnsafeSupplier<String, Exception> accountEntryNameUnsafeSupplier) {
+
+		try {
+			accountEntryName = accountEntryNameUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String accountEntryName;
+
+	public UserAccount[] getUserAccounts() {
+		return userAccounts;
+	}
+
+	public void setUserAccounts(UserAccount[] userAccounts) {
+		this.userAccounts = userAccounts;
+	}
+
+	public void setUserAccounts(
+		UnsafeSupplier<UserAccount[], Exception> userAccountsUnsafeSupplier) {
+
+		try {
+			userAccounts = userAccountsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected UserAccount[] userAccounts;
 
 	@Override
 	public ProvisioningRequest clone() throws CloneNotSupportedException {
@@ -78,4 +146,4 @@ public class ProvisioningRequest implements Cloneable, Serializable {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-528621504
+// LIFERAY-REST-BUILDER-HASH:1830339160

@@ -10,14 +10,12 @@ import com.liferay.announcements.kernel.model.AnnouncementsDelivery;
 import com.liferay.announcements.kernel.model.AnnouncementsDeliveryTable;
 import com.liferay.announcements.kernel.service.persistence.AnnouncementsDeliveryPersistence;
 import com.liferay.announcements.kernel.service.persistence.AnnouncementsDeliveryUtil;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -75,69 +73,15 @@ public class AnnouncementsDeliveryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<AnnouncementsDelivery>
-		_collectionPersistenceFinderByCompanyId;
-
-	/**
-	 * Returns all the announcements deliveries where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching announcements deliveries
-	 */
-	@Override
-	public List<AnnouncementsDelivery> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the announcements deliveries where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AnnouncementsDeliveryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of announcements deliveries
-	 * @param end the upper bound of the range of announcements deliveries (not inclusive)
-	 * @return the range of matching announcements deliveries
-	 */
-	@Override
-	public List<AnnouncementsDelivery> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<AnnouncementsDelivery, NoSuchDeliveryException>
+			_collectionPersistenceFinderByCompanyId;
 
 	/**
 	 * Returns an ordered range of all the announcements deliveries where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AnnouncementsDeliveryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of announcements deliveries
-	 * @param end the upper bound of the range of announcements deliveries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching announcements deliveries
-	 */
-	@Override
-	public List<AnnouncementsDelivery> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<AnnouncementsDelivery> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the announcements deliveries where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AnnouncementsDeliveryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AnnouncementsDeliveryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -153,14 +97,9 @@ public class AnnouncementsDeliveryPersistenceImpl
 		OrderByComparator<AnnouncementsDelivery> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AnnouncementsDelivery.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {companyId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {companyId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -177,16 +116,9 @@ public class AnnouncementsDeliveryPersistenceImpl
 			OrderByComparator<AnnouncementsDelivery> orderByComparator)
 		throws NoSuchDeliveryException {
 
-		AnnouncementsDelivery announcementsDelivery = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (announcementsDelivery != null) {
-			return announcementsDelivery;
-		}
-
-		throw new NoSuchDeliveryException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {companyId},
+			orderByComparator);
 	}
 
 	/**
@@ -225,77 +157,19 @@ public class AnnouncementsDeliveryPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AnnouncementsDelivery.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUserId;
-	private FinderPath _finderPathWithoutPaginationFindByUserId;
-	private FinderPath _finderPathCountByUserId;
-	private CollectionPersistenceFinder<AnnouncementsDelivery>
-		_collectionPersistenceFinderByUserId;
-
-	/**
-	 * Returns all the announcements deliveries where userId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @return the matching announcements deliveries
-	 */
-	@Override
-	public List<AnnouncementsDelivery> findByUserId(long userId) {
-		return findByUserId(userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the announcements deliveries where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AnnouncementsDeliveryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of announcements deliveries
-	 * @param end the upper bound of the range of announcements deliveries (not inclusive)
-	 * @return the range of matching announcements deliveries
-	 */
-	@Override
-	public List<AnnouncementsDelivery> findByUserId(
-		long userId, int start, int end) {
-
-		return findByUserId(userId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<AnnouncementsDelivery, NoSuchDeliveryException>
+			_collectionPersistenceFinderByUserId;
 
 	/**
 	 * Returns an ordered range of all the announcements deliveries where userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AnnouncementsDeliveryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of announcements deliveries
-	 * @param end the upper bound of the range of announcements deliveries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching announcements deliveries
-	 */
-	@Override
-	public List<AnnouncementsDelivery> findByUserId(
-		long userId, int start, int end,
-		OrderByComparator<AnnouncementsDelivery> orderByComparator) {
-
-		return findByUserId(userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the announcements deliveries where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AnnouncementsDeliveryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AnnouncementsDeliveryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -311,14 +185,9 @@ public class AnnouncementsDeliveryPersistenceImpl
 		OrderByComparator<AnnouncementsDelivery> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AnnouncementsDelivery.class)) {
-
-			return _collectionPersistenceFinderByUserId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {userId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUserId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {userId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -335,16 +204,9 @@ public class AnnouncementsDeliveryPersistenceImpl
 			OrderByComparator<AnnouncementsDelivery> orderByComparator)
 		throws NoSuchDeliveryException {
 
-		AnnouncementsDelivery announcementsDelivery = fetchByUserId_First(
-			userId, orderByComparator);
-
-		if (announcementsDelivery != null) {
-			return announcementsDelivery;
-		}
-
-		throw new NoSuchDeliveryException(
-			_collectionPersistenceFinderByUserId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId}));
+		return _collectionPersistenceFinderByUserId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {userId},
+			orderByComparator);
 	}
 
 	/**
@@ -383,18 +245,13 @@ public class AnnouncementsDeliveryPersistenceImpl
 	 */
 	@Override
 	public int countByUserId(long userId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AnnouncementsDelivery.class)) {
-
-			return _collectionPersistenceFinderByUserId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {userId});
-		}
+		return _collectionPersistenceFinderByUserId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {userId});
 	}
 
-	private FinderPath _finderPathFetchByU_T;
-	private UniquePersistenceFinder<AnnouncementsDelivery>
-		_uniquePersistenceFinderByU_T;
+	private UniquePersistenceFinder
+		<AnnouncementsDelivery, NoSuchDeliveryException>
+			_uniquePersistenceFinderByU_T;
 
 	/**
 	 * Returns the announcements delivery where userId = &#63; and type = &#63; or throws a <code>NoSuchDeliveryException</code> if it could not be found.
@@ -408,33 +265,8 @@ public class AnnouncementsDeliveryPersistenceImpl
 	public AnnouncementsDelivery findByU_T(long userId, String type)
 		throws NoSuchDeliveryException {
 
-		AnnouncementsDelivery announcementsDelivery = fetchByU_T(userId, type);
-
-		if (announcementsDelivery == null) {
-			String message =
-				_uniquePersistenceFinderByU_T.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId, type});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchDeliveryException(message);
-		}
-
-		return announcementsDelivery;
-	}
-
-	/**
-	 * Returns the announcements delivery where userId = &#63; and type = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param userId the user ID
-	 * @param type the type
-	 * @return the matching announcements delivery, or <code>null</code> if a matching announcements delivery could not be found
-	 */
-	@Override
-	public AnnouncementsDelivery fetchByU_T(long userId, String type) {
-		return fetchByU_T(userId, type, true);
+		return _uniquePersistenceFinderByU_T.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {userId, type});
 	}
 
 	/**
@@ -449,14 +281,9 @@ public class AnnouncementsDeliveryPersistenceImpl
 	public AnnouncementsDelivery fetchByU_T(
 		long userId, String type, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AnnouncementsDelivery.class)) {
-
-			return _uniquePersistenceFinderByU_T.fetch(
-				FinderCacheUtil.getFinderCache(), new Object[] {userId, type},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByU_T.fetch(
+			FinderCacheUtil.getFinderCache(), new Object[] {userId, type},
+			useFinderCache);
 	}
 
 	/**
@@ -751,83 +578,77 @@ public class AnnouncementsDeliveryPersistenceImpl
 	 * Initializes the announcements delivery persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
 				_SQL_SELECT_ANNOUNCEMENTSDELIVERY_WHERE,
 				_SQL_COUNT_ANNOUNCEMENTSDELIVERY_WHERE,
 				AnnouncementsDeliveryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"announcementsDelivery.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					AnnouncementsDelivery::getCompanyId));
 
-		_finderPathWithPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId"}, true);
-
-		_finderPathWithoutPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, true);
-
-		_finderPathCountByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"},
-			false);
-
 		_collectionPersistenceFinderByUserId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUserId,
-				_finderPathWithoutPaginationFindByUserId,
-				_finderPathCountByUserId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, false),
 				_SQL_SELECT_ANNOUNCEMENTSDELIVERY_WHERE,
 				_SQL_COUNT_ANNOUNCEMENTSDELIVERY_WHERE,
 				AnnouncementsDeliveryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"announcementsDelivery.", "userId", FinderColumn.Type.LONG,
 					"=", true, true, AnnouncementsDelivery::getUserId));
 
-		_finderPathFetchByU_T = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByU_T",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"userId", "type_"}, false,
-			AnnouncementsDelivery::getUserId, AnnouncementsDelivery::getType);
-
 		_uniquePersistenceFinderByU_T = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByU_T,
-			_SQL_SELECT_ANNOUNCEMENTSDELIVERY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByU_T",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"userId", "type_"}, 0, 2, false,
+				AnnouncementsDelivery::getUserId,
+				convertNullFunction(AnnouncementsDelivery::getType)),
+			_SQL_SELECT_ANNOUNCEMENTSDELIVERY_WHERE, "",
 			new FinderColumn<>(
 				"announcementsDelivery.", "userId", FinderColumn.Type.LONG, "=",
-				true, false, AnnouncementsDelivery::getUserId),
+				true, true, AnnouncementsDelivery::getUserId),
 			new FinderColumn<>(
-				"announcementsDelivery.", "type", FinderColumn.Type.STRING, "=",
-				true, true, AnnouncementsDelivery::getType));
+				"announcementsDelivery.", "type", "type_",
+				FinderColumn.Type.STRING, "=", true, true,
+				AnnouncementsDelivery::getType));
 
 		AnnouncementsDeliveryUtil.setPersistence(this);
 	}
@@ -865,4 +686,4 @@ public class AnnouncementsDeliveryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:331416204
+// LIFERAY-SERVICE-BUILDER-HASH:-1953286915

@@ -1,8 +1,8 @@
 {
 	"dependencies": {
-		"@clayui/button": "^3.161.0",
-		"@clayui/form": "^3.161.0",
-		"@clayui/loading-indicator": "^3.161.0",
+		"@clayui/button": "^3.165.0",
+		"@clayui/form": "^3.165.0",
+		"@clayui/loading-indicator": "^3.165.0",
 		"@liferay/frontend-js-react-web": "*",
 		"classnames": "2.3.1",
 		"frontend-js-web": "*",
@@ -18,5 +18,5 @@
 		"format": "node-scripts format",
 		"test": "node-scripts test"
 	},
-	"version": "6.0.54"
+	"version": "6.0.56"
 }

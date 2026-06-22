@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -73,69 +72,15 @@ public class FaroPreferencesPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<FaroPreferences>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the faro preferenceses where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching faro preferenceses
-	 */
-	@Override
-	public List<FaroPreferences> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the faro preferenceses where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroPreferencesModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of faro preferenceses
-	 * @param end the upper bound of the range of faro preferenceses (not inclusive)
-	 * @return the range of matching faro preferenceses
-	 */
-	@Override
-	public List<FaroPreferences> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FaroPreferences, NoSuchFaroPreferencesException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the faro preferenceses where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroPreferencesModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of faro preferenceses
-	 * @param end the upper bound of the range of faro preferenceses (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching faro preferenceses
-	 */
-	@Override
-	public List<FaroPreferences> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<FaroPreferences> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the faro preferenceses where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroPreferencesModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -169,16 +114,8 @@ public class FaroPreferencesPersistenceImpl
 			long groupId, OrderByComparator<FaroPreferences> orderByComparator)
 		throws NoSuchFaroPreferencesException {
 
-		FaroPreferences faroPreferences = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (faroPreferences != null) {
-			return faroPreferences;
-		}
-
-		throw new NoSuchFaroPreferencesException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -219,9 +156,9 @@ public class FaroPreferencesPersistenceImpl
 			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathFetchByG_O;
-	private UniquePersistenceFinder<FaroPreferences>
-		_uniquePersistenceFinderByG_O;
+	private UniquePersistenceFinder
+		<FaroPreferences, NoSuchFaroPreferencesException>
+			_uniquePersistenceFinderByG_O;
 
 	/**
 	 * Returns the faro preferences where groupId = &#63; and ownerId = &#63; or throws a <code>NoSuchFaroPreferencesException</code> if it could not be found.
@@ -235,33 +172,8 @@ public class FaroPreferencesPersistenceImpl
 	public FaroPreferences findByG_O(long groupId, long ownerId)
 		throws NoSuchFaroPreferencesException {
 
-		FaroPreferences faroPreferences = fetchByG_O(groupId, ownerId);
-
-		if (faroPreferences == null) {
-			String message =
-				_uniquePersistenceFinderByG_O.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, ownerId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFaroPreferencesException(message);
-		}
-
-		return faroPreferences;
-	}
-
-	/**
-	 * Returns the faro preferences where groupId = &#63; and ownerId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param ownerId the owner ID
-	 * @return the matching faro preferences, or <code>null</code> if a matching faro preferences could not be found
-	 */
-	@Override
-	public FaroPreferences fetchByG_O(long groupId, long ownerId) {
-		return fetchByG_O(groupId, ownerId, true);
+		return _uniquePersistenceFinderByG_O.find(
+			finderCache, new Object[] {groupId, ownerId});
 	}
 
 	/**
@@ -486,46 +398,44 @@ public class FaroPreferencesPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_FAROPREFERENCES_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_FAROPREFERENCES_WHERE,
 				_SQL_COUNT_FAROPREFERENCES_WHERE,
 				FaroPreferencesModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"faroPreferences.", "groupId", FinderColumn.Type.LONG, "=",
 					true, true, FaroPreferences::getGroupId));
 
-		_finderPathFetchByG_O = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_O",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "ownerId"}, false,
-			FaroPreferences::getGroupId, FaroPreferences::getOwnerId);
-
 		_uniquePersistenceFinderByG_O = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_O, _SQL_SELECT_FAROPREFERENCES_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_O",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "ownerId"}, 0, 0, false,
+				FaroPreferences::getGroupId, FaroPreferences::getOwnerId),
+			_SQL_SELECT_FAROPREFERENCES_WHERE, "",
 			new FinderColumn<>(
 				"faroPreferences.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, FaroPreferences::getGroupId),
+				true, true, FaroPreferences::getGroupId),
 			new FinderColumn<>(
 				"faroPreferences.", "ownerId", FinderColumn.Type.LONG, "=",
 				true, true, FaroPreferences::getOwnerId));
@@ -596,4 +506,4 @@ public class FaroPreferencesPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-265195834
+// LIFERAY-SERVICE-BUILDER-HASH:-784391405

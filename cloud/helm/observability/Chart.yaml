@@ -1,0 +1,26 @@
+apiVersion: v2
+appVersion: latest
+dependencies:
+    -   alias: grafana-alloy
+        condition: alloy.enabled
+        name: alloy
+        repository: https://grafana.github.io/helm-charts
+        version: 1.8.1
+    -   name: grafana
+        repository: https://grafana-community.github.io/helm-charts
+        version: 12.3.0
+    -   condition: kube-state-metrics.enabled
+        name: kube-state-metrics
+        repository: https://prometheus-community.github.io/helm-charts
+        version: 7.3.0
+    -   condition: prometheus-node-exporter.enabled
+        name: prometheus-node-exporter
+        repository: https://prometheus-community.github.io/helm-charts
+        version: 4.54.0
+description:
+    Liferay is an all-in-one DXP, LCAP, and Commerce platform. This chart creates cloud agnostic observability resources
+    to help monitor your Liferay stack.
+icon: https://www-cdn.liferay.com/documents/d/guest/liferay-logo
+name: observability
+type: application
+version: 0.1.0

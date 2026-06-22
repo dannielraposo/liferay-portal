@@ -75,9 +75,13 @@ public abstract class BaseProductConfigurationListAccountResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/product-configuration-list-accounts/{productConfigurationListAccountId}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Removes the account binding identified by id from its product configuration list. Calls CPConfigurationListRelService.deleteCPConfigurationListRel. Validation -- Service-level NoSuchCPConfigurationListRelException -> 404. Side effects -- Removes the account <-> configuration list association."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Identifier of an account binding on a product configuration list. Addresses a single account-scoped override entry within the parent configuration list.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "productConfigurationListAccountId"
 			)
@@ -158,17 +162,23 @@ public abstract class BaseProductConfigurationListAccountResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/product-configuration-lists/by-externalReferenceCode/{externalReferenceCode}/product-configuration-list-accounts'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists the account bindings of the product configuration list identified by external reference code. Calls CPConfigurationListService.fetchCPConfigurationListByExternalReferenceCode -> getProductConfigurationListIdProductConfigurationListAccountsPage. Validation -- NoSuchCPConfigurationListException -> 404 when ERC not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			)
@@ -204,29 +214,38 @@ public abstract class BaseProductConfigurationListAccountResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/product-configuration-lists/{id}/product-configuration-list-accounts'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists the account bindings of the product configuration list identified by id. Calls CPConfigurationListRelService.getAccountEntryCPConfigurationListRels. Validation -- None at this layer."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model (typically createDate, externalReferenceCode, modifiedDate, productExternalReferenceCode, productId, and similar). Example -- filter=productId eq 12345.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression matched against the resource's indexed fields. Returns the items whose searchable content matches the expression.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression of the form `field:asc` or `field:desc`, comma-separated for multi-field sorting. Supported sort fields depend on the endpoint and are sourced from the matching entity model (typically createDate, modifiedDate, and the resource's name or code field).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -269,9 +288,13 @@ public abstract class BaseProductConfigurationListAccountResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/product-configuration-lists/by-externalReferenceCode/{externalReferenceCode}/product-configuration-list-accounts' -d $'{"accountExternalReferenceCode": ___, "accountId": ___, "productConfigurationListExternalReferenceCode": ___, "productConfigurationListId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Binds an account to the product configuration list identified by external reference code. Calls CPConfigurationListService.fetchCPConfigurationListByExternalReferenceCode -> postProductConfigurationListIdProductConfigurationListAccount. Validation -- NoSuchCPConfigurationListException -> 404 when ERC not found; NoSuchAccountEntryException -> 404 when account lookup fails. Side effects -- Creates a CPConfigurationListRel binding the account to the configuration list."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -308,9 +331,13 @@ public abstract class BaseProductConfigurationListAccountResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/product-configuration-lists/{id}/product-configuration-list-accounts' -d $'{"accountExternalReferenceCode": ___, "accountId": ___, "productConfigurationListExternalReferenceCode": ___, "productConfigurationListId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Binds an account to the product configuration list identified by id. Calls CPConfigurationListService.getCPConfigurationList + AccountEntryService.fetchAccountEntryByExternalReferenceCode/getAccountEntry + CPConfigurationListRelService.addCPConfigurationListRel. Validation -- NoSuchCPConfigurationListException -> 404 when id not found; NoSuchAccountEntryException -> 404 when account lookup fails. Side effects -- Creates a CPConfigurationListRel binding the account to the configuration list."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -1135,4 +1162,4 @@ public abstract class BaseProductConfigurationListAccountResourceImpl
 			BaseProductConfigurationListAccountResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-135717270
+// LIFERAY-REST-BUILDER-HASH:-722004823

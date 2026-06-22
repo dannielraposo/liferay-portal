@@ -9,7 +9,6 @@ import com.liferay.portal.kernel.dao.orm.Criterion;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Order;
 import com.liferay.portal.kernel.dao.orm.Projection;
-import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -19,41 +18,35 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.Criteria;
-import org.hibernate.criterion.DetachedCriteria;
 
 /**
  * @author Brian Wing Shun Chan
  */
 public class DynamicQueryImpl implements DynamicQuery {
 
-	public DynamicQueryImpl(DetachedCriteria detachedCriteria) {
-		_detachedCriteria = detachedCriteria;
+	public DynamicQueryImpl(String alias, Class<?> clazz) {
+		_alias = alias;
+		_clazz = clazz;
 	}
 
 	@Override
 	public DynamicQuery add(Criterion criterion) {
-		CriterionImpl criterionImpl = (CriterionImpl)criterion;
-
-		_detachedCriteria.add(criterionImpl.getWrappedCriterion());
+		_criterions.add(criterion);
 
 		return this;
 	}
 
 	@Override
 	public DynamicQuery addOrder(Order order) {
-		OrderImpl orderImpl = (OrderImpl)order;
-
-		_detachedCriteria.addOrder(orderImpl.getWrappedOrder());
+		_orders.add(order);
 
 		return this;
 	}
 
 	@Override
 	public void compile(Session session) {
-		org.hibernate.Session hibernateSession =
-			(org.hibernate.Session)session.getWrappedSession();
-
-		_criteria = _detachedCriteria.getExecutableCriteria(hibernateSession);
+		_criteria = HibernateCriteriaUtil.buildCriteria(
+			this, (org.hibernate.Session)session.getWrappedSession());
 
 		if ((_start == null) && (_end == null)) {
 			return;
@@ -107,8 +100,24 @@ public class DynamicQueryImpl implements DynamicQuery {
 		}
 	}
 
-	public DetachedCriteria getDetachedCriteria() {
-		return _detachedCriteria;
+	public String getAlias() {
+		return _alias;
+	}
+
+	public Class<?> getClazz() {
+		return _clazz;
+	}
+
+	public List<Criterion> getCriterions() {
+		return _criterions;
+	}
+
+	public List<Order> getOrders() {
+		return _orders;
+	}
+
+	public Projection getProjection() {
+		return _projection;
 	}
 
 	@Override
@@ -145,22 +154,7 @@ public class DynamicQueryImpl implements DynamicQuery {
 
 	@Override
 	public DynamicQuery setProjection(Projection projection) {
-		return setProjection(projection, true);
-	}
-
-	@Override
-	public DynamicQuery setProjection(
-		Projection projection, boolean useColumnAlias) {
-
-		if (!useColumnAlias) {
-			projection = ProjectionFactoryUtil.sqlProjection(
-				_detachedCriteria.getAlias() + "_." + projection.toString(),
-				null, null);
-		}
-
-		ProjectionImpl projectionImpl = (ProjectionImpl)projection;
-
-		_detachedCriteria.setProjection(projectionImpl.getWrappedProjection());
+		_projection = projection;
 
 		return this;
 	}
@@ -174,9 +168,13 @@ public class DynamicQueryImpl implements DynamicQuery {
 		return super.toString();
 	}
 
+	private final String _alias;
+	private final Class<?> _clazz;
 	private Criteria _criteria;
-	private final DetachedCriteria _detachedCriteria;
+	private final List<Criterion> _criterions = new ArrayList<>();
 	private Integer _end;
+	private final List<Order> _orders = new ArrayList<>();
+	private Projection _projection;
 	private boolean _requiresProcessing = true;
 	private Integer _start;
 

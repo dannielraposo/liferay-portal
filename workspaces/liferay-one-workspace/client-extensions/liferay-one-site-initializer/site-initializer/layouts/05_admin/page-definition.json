@@ -1,0 +1,56 @@
+{
+	"masterPage": {
+		"key": "liferay-one"
+	},
+	"pageElement": {
+		"pageElements": [
+			{
+				"definition": {
+					"indexed": true,
+					"layout": {
+						"widthType": "Fixed"
+					}
+				},
+				"pageElements": [
+					{
+						"definition": {
+							"gutters": false,
+							"indexed": true,
+							"modulesPerRow": 1,
+							"numberOfColumns": 1
+						},
+						"pageElements": [
+							{
+								"definition": {
+									"size": 12
+								},
+								"pageElements": [
+									{
+										"definition": {
+											"widgetInstance": {
+												"widgetConfig": {
+													"properties": "route=admin"
+												},
+												"widgetName": "com_liferay_client_extension_web_internal_portlet_ClientExtensionEntryPortlet_[$COMPANY_ID$]_LXC_liferay_one_custom_element"
+											}
+										},
+										"type": "Widget"
+									}
+								],
+								"type": "Column"
+							}
+						],
+						"type": "Row"
+					}
+				],
+				"type": "Section"
+			}
+		],
+		"type": "Root"
+	},
+	"settings": {
+		"masterPage": {
+			"key": "liferay-one"
+		}
+	}
+}

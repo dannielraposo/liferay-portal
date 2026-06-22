@@ -1,0 +1,19 @@
+{
+	"externalReferenceCode": "L_AI_HUB_GUARDRAIL_TYPES",
+	"listTypeEntries": [
+		{
+			"externalReferenceCode": "INPUT",
+			"key": "input",
+			"name": "Input",
+			"system": true
+		},
+		{
+			"externalReferenceCode": "OUTPUT",
+			"key": "output",
+			"name": "Output",
+			"system": true
+		}
+	],
+	"name": "AI Hub Guardrail Types",
+	"system": true
+}

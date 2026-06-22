@@ -110,11 +110,7 @@ public class TicketPersistenceTest {
 
 	@Test
 	public void testUpdateExisting() throws Exception {
-		long pk = RandomTestUtil.nextLong();
-
-		Ticket newTicket = _persistence.create(pk);
-
-		newTicket.setMvccVersion(RandomTestUtil.nextLong());
+		Ticket newTicket = addTicket();
 
 		newTicket.setCompanyId(RandomTestUtil.nextLong());
 
@@ -127,6 +123,8 @@ public class TicketPersistenceTest {
 		newTicket.setKey(RandomTestUtil.randomString());
 
 		newTicket.setType(RandomTestUtil.nextInt());
+
+		newTicket.setEmailAddress(RandomTestUtil.randomString());
 
 		newTicket.setExtraInfo(RandomTestUtil.randomString());
 
@@ -153,6 +151,8 @@ public class TicketPersistenceTest {
 		Assert.assertEquals(existingTicket.getKey(), newTicket.getKey());
 		Assert.assertEquals(existingTicket.getType(), newTicket.getType());
 		Assert.assertEquals(
+			existingTicket.getEmailAddress(), newTicket.getEmailAddress());
+		Assert.assertEquals(
 			existingTicket.getExtraInfo(), newTicket.getExtraInfo());
 		Assert.assertEquals(
 			Time.getShortTimestamp(existingTicket.getExpirationDate()),
@@ -175,6 +175,16 @@ public class TicketPersistenceTest {
 			RandomTestUtil.nextLong());
 
 		_persistence.countByC_C_C(0L, 0L, 0L);
+	}
+
+	@Test
+	public void testCountByC_T_EA() throws Exception {
+		_persistence.countByC_T_EA(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextInt(), "");
+
+		_persistence.countByC_T_EA(0L, 0, "null");
+
+		_persistence.countByC_T_EA(0L, 0, (String)null);
 	}
 
 	@Test
@@ -222,7 +232,7 @@ public class TicketPersistenceTest {
 		return OrderByComparatorFactoryUtil.create(
 			"Ticket", "mvccVersion", true, "ticketId", true, "companyId", true,
 			"createDate", true, "classNameId", true, "classPK", true, "key",
-			true, "type", true, "expirationDate", true);
+			true, "type", true, "emailAddress", true, "expirationDate", true);
 	}
 
 	@Test
@@ -486,8 +496,6 @@ public class TicketPersistenceTest {
 
 		Ticket ticket = _persistence.create(pk);
 
-		ticket.setMvccVersion(RandomTestUtil.nextLong());
-
 		ticket.setCompanyId(RandomTestUtil.nextLong());
 
 		ticket.setCreateDate(RandomTestUtil.nextDate());
@@ -499,6 +507,8 @@ public class TicketPersistenceTest {
 		ticket.setKey(RandomTestUtil.randomString());
 
 		ticket.setType(RandomTestUtil.nextInt());
+
+		ticket.setEmailAddress(RandomTestUtil.randomString());
 
 		ticket.setExtraInfo(RandomTestUtil.randomString());
 
@@ -514,4 +524,4 @@ public class TicketPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:393071913
+// LIFERAY-SERVICE-BUILDER-HASH:845844700

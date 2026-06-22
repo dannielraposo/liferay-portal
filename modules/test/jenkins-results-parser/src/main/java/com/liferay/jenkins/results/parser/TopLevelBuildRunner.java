@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.dom4j.Element;
 
@@ -124,9 +124,7 @@ public abstract class TopLevelBuildRunner<T extends TopLevelBuildData>
 		}
 
 		return JenkinsResultsParserUtil.getMostAvailableMasterURL(
-			"http://" + cohortName + ".liferay.com", null, 1, jobName,
-			getLabelExpression(jobName), getSlaveRAMMinimum(),
-			JenkinsMaster.getSlavesPerHostDefault());
+			"http://" + cohortName + ".liferay.com", null, 1, jobName);
 	}
 
 	protected String getBuildParameter(String key) {
@@ -144,11 +142,6 @@ public abstract class TopLevelBuildRunner<T extends TopLevelBuildData>
 			key, getJob());
 
 		return jobProperty.getValue();
-	}
-
-	@Override
-	protected int getSlaveRAMMinimum() {
-		return 24;
 	}
 
 	protected TopLevelBuild getTopLevelBuild() {

@@ -12,7 +12,6 @@ import {collapseSection} from '../../utils/collapseSection';
 import {expandSection} from '../../utils/expandSection';
 import fillAndClickOutside from '../../utils/fillAndClickOutside';
 import getRandomString from '../../utils/getRandomString';
-import {hoverAndExpectToBeVisible} from '../../utils/hoverAndExpectToBeVisible';
 import {selectElement} from '../../utils/selectElement';
 import {waitForAlert} from '../../utils/waitForAlert';
 import {SegmentEditorPage} from '../segments-web/SegmentEditorPage';
@@ -290,7 +289,9 @@ export class PageEditorPage {
 			await this.page.keyboard.press('Enter');
 
 			await expect(
-				this.page.locator('#content').getByText(name, {exact: true})
+				this.page
+					.locator('.page-editor__keyboard-movement-preview')
+					.getByText(name, {exact: true})
 			).toBeVisible();
 
 			await this.page.keyboard.press('Enter');
@@ -638,7 +639,7 @@ export class PageEditorPage {
 				trigger: content.getByTitle('Open Actions Menu'),
 			});
 
-			await hoverAndExpectToBeVisible({
+			await clickAndExpectToBeVisible({
 				autoClick: true,
 				target: this.page.locator(`[data-label="${subMenuAction}"]`),
 				trigger: this.page.getByRole('menuitem', {name: action}),
@@ -872,7 +873,18 @@ export class PageEditorPage {
 
 		await sourceNode.hover();
 
+		const sourceBox = await sourceNode.boundingBox();
+
 		await this.page.mouse.down();
+
+		// Move the pointer slightly while pressed so Chromium starts the
+		// native HTML5 drag
+
+		await this.page.mouse.move(
+			sourceBox.x + sourceBox.width / 2,
+			sourceBox.y + sourceBox.height / 2 + 8,
+			{steps: 5}
+		);
 
 		// Calculate drop data
 
@@ -892,15 +904,25 @@ export class PageEditorPage {
 					? /drag-over-bottom/
 					: /drag-over-top/;
 
-		// Check hover is correct
+		const approachY = position === 'top' ? y + 4 : y - 4;
+
+		// Move over the target until the drop indicator appears. Each pass
+		// moves to a nearby point first and then to the real drop point, so
+		// the pointer position always changes and Chromium keeps firing
+		// dragover events.
 
 		await expect(async () => {
-			await targetNode.hover({
-				position: {
-					x: targetBox.width / 2,
-					y,
-				},
-			});
+			await this.page.mouse.move(
+				targetBox.x + targetBox.width / 2,
+				targetBox.y + approachY,
+				{steps: 5}
+			);
+
+			await this.page.mouse.move(
+				targetBox.x + targetBox.width / 2,
+				targetBox.y + y,
+				{steps: 5}
+			);
 
 			await expect(targetNode).toHaveClass(cssClass, {
 				timeout: 1000,
@@ -1945,6 +1967,10 @@ export class PageEditorPage {
 		if (await loadingIndicator.isVisible()) {
 			await loadingIndicator.waitFor({state: 'hidden'});
 		}
+	}
+
+	async toggleSidebars({timeout}: {timeout?: number} = {}) {
+		await this.page.getByLabel('Toggle Sidebars').click({timeout});
 	}
 
 	async undoAction() {

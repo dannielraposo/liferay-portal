@@ -20,6 +20,8 @@ import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.webcache.WebCachePoolUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 
@@ -44,6 +46,8 @@ public class AuthorizationTokenResourceTest
 		try {
 			ConfigurationTestUtil.deleteConfiguration(
 				AIHubCellConfiguration.class.getName());
+
+			WebCachePoolUtil.clear();
 		}
 		catch (Exception exception) {
 			throw new RuntimeException(exception);
@@ -55,6 +59,9 @@ public class AuthorizationTokenResourceTest
 	public void testPostAuthorizationToken() throws Exception {
 		User user = TestPropsValues.getUser();
 
+		String portalURL =
+			"http://localhost:" + PortalUtil.getPortalServerPort(false);
+
 		OAuth2Application oAuth2Application =
 			_oAuth2ApplicationLocalService.addOAuth2Application(
 				user.getCompanyId(), user.getUserId(), user.getFullName(),
@@ -63,9 +70,8 @@ public class AuthorizationTokenResourceTest
 				OAuth2SecureRandomGenerator.generateClientId(),
 				ClientProfile.WEB_APPLICATION.id(),
 				OAuth2SecureRandomGenerator.generateClientSecret(), "",
-				List.of(), "http://localhost:8080", 0, null, "AI Hub", "",
-				List.of("http://localhost:8080"), false,
-				Arrays.asList("Liferay.AI.Hub.REST.everything"), false,
+				List.of(), portalURL, 0, null, "AI Hub", "", List.of(portalURL),
+				false, Arrays.asList("Liferay.AI.Hub.REST.everything"), false,
 				new ServiceContext());
 
 		ConfigurationTestUtil.saveConfiguration(
@@ -75,15 +81,24 @@ public class AuthorizationTokenResourceTest
 			).put(
 				"clientSecret", oAuth2Application.getClientSecret()
 			).put(
-				"serviceURL", "http://localhost:8080"
+				"companyId", user.getCompanyId()
+			).put(
+				"serviceURL", portalURL
 			).build());
 
-		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+		JSONObject jsonObject1 = HTTPTestUtil.invokeToJSONObject(
 			null, "ai-hub-cell/v1.0/authorization-tokens", Http.Method.POST);
 
-		Assert.assertTrue(jsonObject.has("accessToken"));
-		Assert.assertTrue(jsonObject.has("scope"));
-		Assert.assertTrue(jsonObject.has("userToken"));
+		Assert.assertTrue(jsonObject1.has("accessToken"));
+		Assert.assertTrue(jsonObject1.has("scope"));
+		Assert.assertTrue(jsonObject1.has("userToken"));
+
+		JSONObject jsonObject2 = HTTPTestUtil.invokeToJSONObject(
+			null, "ai-hub-cell/v1.0/authorization-tokens", Http.Method.POST);
+
+		Assert.assertEquals(
+			jsonObject1.getString("accessToken"),
+			jsonObject2.getString("accessToken"));
 	}
 
 	@Inject

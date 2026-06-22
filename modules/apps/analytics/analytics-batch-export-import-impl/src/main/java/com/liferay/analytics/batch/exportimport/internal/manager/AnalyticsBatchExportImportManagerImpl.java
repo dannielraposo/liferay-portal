@@ -61,9 +61,10 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.zip.ZipReaderFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 
 import java.net.HttpURLConnection;
@@ -85,15 +86,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipInputStream;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -190,44 +194,44 @@ public class AnalyticsBatchExportImportManagerImpl
 
 		StreamUtil.cleanUp(gzipOutputStream);
 
-		if (!skipUpload) {
-			_notify(
-				"Uploading resources " + resourceName,
-				notificationUnsafeConsumer);
-
-			try (FileInputStream fileInputStream = new FileInputStream(
-					tempFile)) {
+		try {
+			if (!skipUpload) {
+				_notify(
+					"Uploading resource " + resourceName,
+					notificationUnsafeConsumer);
 
 				_upload(
-					companyId, "gzip", fileInputStream,
-					resourceLastModifiedDate, resourceName);
-			}
+					companyId, "gzip", tempFile, resourceLastModifiedDate,
+					resourceName);
 
-			_notify(
-				"Completed uploading resources " + resourceName,
-				notificationUnsafeConsumer);
-		}
-		else {
-			_notify(
-				"Skip uploading resource " + resourceName,
-				notificationUnsafeConsumer);
-		}
-
-		for (BatchEngineExportTask batchEngineExportTask :
-				batchEngineExportTasks) {
-
-			_batchEngineExportTaskLocalService.deleteBatchEngineExportTask(
-				batchEngineExportTask);
-		}
-
-		boolean deleted = tempFile.delete();
-
-		if (_log.isDebugEnabled()) {
-			if (deleted) {
-				_log.debug("Deleted temp file: " + tempFile.getName());
+				_notify(
+					"Completed uploading resource " + resourceName,
+					notificationUnsafeConsumer);
 			}
 			else {
-				_log.debug("Unable to delete temp file: " + tempFile.getName());
+				_notify(
+					"Skip uploading resource " + resourceName,
+					notificationUnsafeConsumer);
+			}
+
+			for (BatchEngineExportTask batchEngineExportTask :
+					batchEngineExportTasks) {
+
+				_batchEngineExportTaskLocalService.deleteBatchEngineExportTask(
+					batchEngineExportTask);
+			}
+		}
+		finally {
+			boolean deleted = tempFile.delete();
+
+			if (_log.isDebugEnabled()) {
+				if (deleted) {
+					_log.debug("Deleted temp file " + tempFile.getName());
+				}
+				else {
+					_log.debug(
+						"Unable to delete temp file " + tempFile.getName());
+				}
 			}
 		}
 	}
@@ -305,37 +309,39 @@ public class AnalyticsBatchExportImportManagerImpl
 
 			File tempFile = FileUtil.createTempFile();
 
-			try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(
-					new FileOutputStream(tempFile));
-				ZipInputStream zipInputStream = new ZipInputStream(
-					_batchEngineExportTaskLocalService.openContentInputStream(
-						batchEngineExportTask.getBatchEngineExportTaskId()))) {
+			try {
+				try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(
+						new FileOutputStream(tempFile));
+					ZipInputStream zipInputStream = new ZipInputStream(
+						_batchEngineExportTaskLocalService.
+							openContentInputStream(
+								batchEngineExportTask.
+									getBatchEngineExportTaskId()))) {
 
-				zipInputStream.getNextEntry();
+					zipInputStream.getNextEntry();
 
-				StreamUtil.transfer(zipInputStream, gzipOutputStream, false);
-			}
-
-			try (FileInputStream fileInputStream = new FileInputStream(
-					tempFile)) {
+					StreamUtil.transfer(
+						zipInputStream, gzipOutputStream, false);
+				}
 
 				_upload(
-					companyId, "gzip", fileInputStream,
-					resourceLastModifiedDate, resourceName);
+					companyId, "gzip", tempFile, resourceLastModifiedDate,
+					resourceName);
+
+				_batchEngineExportTaskLocalService.deleteBatchEngineExportTask(
+					batchEngineExportTask);
 			}
+			finally {
+				boolean deleted = tempFile.delete();
 
-			_batchEngineExportTaskLocalService.deleteBatchEngineExportTask(
-				batchEngineExportTask);
-
-			boolean deleted = tempFile.delete();
-
-			if (_log.isDebugEnabled()) {
-				if (deleted) {
-					_log.debug("Deleted temp file " + tempFile.getName());
-				}
-				else {
-					_log.debug(
-						"Unable to delete temp file " + tempFile.getName());
+				if (_log.isDebugEnabled()) {
+					if (deleted) {
+						_log.debug("Deleted temp file " + tempFile.getName());
+					}
+					else {
+						_log.debug(
+							"Unable to delete temp file " + tempFile.getName());
+					}
 				}
 			}
 
@@ -507,8 +513,8 @@ public class AnalyticsBatchExportImportManagerImpl
 			analyticsConfiguration.liferayAnalyticsURL() + "/endpoints/" +
 				analyticsConfiguration.liferayAnalyticsProjectId());
 
-		try (CloseableHttpClient closeableHttpClient =
-				_getCloseableHttpClient()) {
+		try (CloseableHttpClient closeableHttpClient = _getCloseableHttpClient(
+				false)) {
 
 			CloseableHttpResponse closeableHttpResponse =
 				closeableHttpClient.execute(httpGet);
@@ -682,8 +688,8 @@ public class AnalyticsBatchExportImportManagerImpl
 			HttpUriRequest httpUriRequest)
 		throws Exception {
 
-		try (CloseableHttpClient closeableHttpClient =
-				_getCloseableHttpClient()) {
+		try (CloseableHttpClient closeableHttpClient = _getCloseableHttpClient(
+				false)) {
 
 			CloseableHttpResponse closeableHttpResponse =
 				closeableHttpClient.execute(httpUriRequest);
@@ -718,8 +724,23 @@ public class AnalyticsBatchExportImportManagerImpl
 		}
 	}
 
-	private CloseableHttpClient _getCloseableHttpClient() {
+	private CloseableHttpClient _getCloseableHttpClient(
+		boolean disableAutomaticRetries) {
+
 		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+
+		if (disableAutomaticRetries) {
+			httpClientBuilder.disableAutomaticRetries();
+
+			RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+
+			requestConfigBuilder.setConnectionRequestTimeout(60000);
+			requestConfigBuilder.setConnectTimeout(30000);
+			requestConfigBuilder.setSocketTimeout(600000);
+
+			httpClientBuilder.setDefaultRequestConfig(
+				requestConfigBuilder.build());
+		}
 
 		httpClientBuilder.useSystemProperties();
 
@@ -918,44 +939,60 @@ public class AnalyticsBatchExportImportManagerImpl
 		}
 	}
 
-	private void _upload(
-		long companyId, String contentEncoding, InputStream resourceInputStream,
-		Date resourceLastModifiedDate, String resourceName) {
+	private int _upload(
+			AnalyticsConfiguration analyticsConfiguration, int attempt,
+			String boundary, long companyId, String contentEncoding,
+			File multipartFile, String resourceName)
+		throws Exception {
 
-		_checkCompany(companyId);
-
-		Http.Options options = _getOptions(companyId);
-
-		options.addHeader(HttpHeaders.CONTENT_ENCODING, contentEncoding);
-		options.addHeader(
-			HttpHeaders.CONTENT_TYPE,
-			ContentTypes.MULTIPART_FORM_DATA +
-				"; boundary=__MULTIPART_BOUNDARY__");
-		options.addInputStreamPart(
-			"file", resourceName, resourceInputStream,
-			ContentTypes.MULTIPART_FORM_DATA);
-		options.addPart(
-			"uploadType",
-			(resourceLastModifiedDate != null) ? "INCREMENTAL" : "FULL");
-
-		AnalyticsConfiguration analyticsConfiguration =
-			_analyticsConfigurationRegistry.getAnalyticsConfiguration(
-				companyId);
-
-		options.setLocation(
+		HttpPost httpPost = new HttpPost(
 			analyticsConfiguration.liferayAnalyticsEndpointURL() +
 				"/dxp-batch-entities");
 
-		options.setPost(true);
+		httpPost.setEntity(new FileEntity(multipartFile));
+		httpPost.setHeader(HttpHeaders.CONTENT_ENCODING, contentEncoding);
+		httpPost.setHeader(
+			HttpHeaders.CONTENT_TYPE,
+			ContentTypes.MULTIPART_FORM_DATA + "; boundary=" + boundary);
+		httpPost.setHeader(
+			"OSB-Asah-Data-Source-ID",
+			analyticsConfiguration.liferayAnalyticsDataSourceId());
+		httpPost.setHeader(
+			"OSB-Asah-Faro-Backend-Security-Signature",
+			analyticsConfiguration.
+				liferayAnalyticsFaroBackendSecuritySignature());
+		httpPost.setHeader(
+			"OSB-Asah-Project-ID",
+			analyticsConfiguration.liferayAnalyticsProjectId());
 
-		try (InputStream inputStream = _http.URLtoInputStream(options)) {
-			Http.Response response = options.getResponse();
+		try (CloseableHttpClient closeableHttpClient = _getCloseableHttpClient(
+				true);
 
-			if (response.getResponseCode() ==
-					HttpURLConnection.HTTP_FORBIDDEN) {
+			CloseableHttpResponse closeableHttpResponse =
+				closeableHttpClient.execute(httpPost)) {
 
+			StatusLine statusLine = closeableHttpResponse.getStatusLine();
+
+			int statusCode = statusLine.getStatusCode();
+
+			String responseBody = StringPool.BLANK;
+
+			try {
+				responseBody = EntityUtils.toString(
+					closeableHttpResponse.getEntity(),
+					Charset.defaultCharset());
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to read upload response body for ",
+						resourceName, " (HTTP ", statusCode, ")"),
+					exception);
+			}
+
+			if (statusCode == HttpURLConnection.HTTP_FORBIDDEN) {
 				JSONObject responseJSONObject = _jsonFactory.createJSONObject(
-					StringUtil.read(inputStream));
+					responseBody);
 
 				boolean disconnected = StringUtil.equals(
 					GetterUtil.getString(responseJSONObject.getString("state")),
@@ -966,21 +1003,163 @@ public class AnalyticsBatchExportImportManagerImpl
 					responseJSONObject.getString("message"));
 			}
 
-			if ((response.getResponseCode() < 200) ||
-				(response.getResponseCode() >= 300)) {
+			if ((statusCode >= 200) && (statusCode < 300)) {
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						"Upload completed successfully on attempt " +
+							(attempt + 1));
+				}
 
-				throw new Exception(
-					"Upload failed with HTTP response code: " +
-						response.getResponseCode());
+				return statusCode;
 			}
 
-			if (_log.isDebugEnabled()) {
-				_log.debug("Upload completed successfully");
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Upload of ", resourceName, " returned HTTP ",
+						statusCode, " on attempt ", attempt + 1, ": ",
+						responseBody));
 			}
+
+			if ((statusCode != 400) && (statusCode != 408) &&
+				(statusCode != 429) && (statusCode < 500)) {
+
+				throw new RuntimeException(
+					"Upload failed with HTTP response code: " + statusCode);
+			}
+
+			return statusCode;
+		}
+	}
+
+	private void _upload(
+		long companyId, String contentEncoding, File file,
+		Date resourceLastModifiedDate, String resourceName) {
+
+		_checkCompany(companyId);
+
+		AnalyticsConfiguration analyticsConfiguration =
+			_analyticsConfigurationRegistry.getAnalyticsConfiguration(
+				companyId);
+
+		int lastStatusCode = -1;
+		int retryCount = 3;
+		long[] retryDelays = {5000, 15000};
+
+		for (int attempt = 0; attempt < retryCount; attempt++) {
+			if (attempt > 0) {
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						StringBundler.concat(
+							"Retrying upload of ", resourceName, " (attempt ",
+							attempt + 1, "/", retryCount, ")"));
+				}
+
+				int retryDelayIndex = Math.min(
+					attempt - 1, retryDelays.length - 1);
+
+				try {
+					Thread.sleep(retryDelays[retryDelayIndex]);
+				}
+				catch (InterruptedException interruptedException) {
+					Thread thread = Thread.currentThread();
+
+					thread.interrupt();
+
+					throw new RuntimeException(
+						"Upload retry interrupted", interruptedException);
+				}
+			}
+
+			File multipartFile = null;
+
+			try {
+				String boundary = StringUtil.removeSubstring(
+					String.valueOf(UUID.randomUUID()), "-");
+
+				multipartFile = _writeMultipartFile(
+					boundary, file, resourceName,
+					(resourceLastModifiedDate != null) ? "INCREMENTAL" :
+						"FULL");
+
+				int statusCode = _upload(
+					analyticsConfiguration, attempt, boundary, companyId,
+					contentEncoding, multipartFile, resourceName);
+
+				if ((statusCode >= 200) && (statusCode < 300)) {
+					return;
+				}
+
+				lastStatusCode = statusCode;
+			}
+			catch (IOException ioException) {
+				if (attempt == (retryCount - 1)) {
+					throw new RuntimeException(
+						"Upload failed after " + retryCount + " attempts",
+						ioException);
+				}
+
+				_log.error(
+					StringBundler.concat(
+						"Transport failure on upload attempt ", attempt + 1,
+						": ", ioException.getMessage()));
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+			finally {
+				if (multipartFile != null) {
+					multipartFile.delete();
+				}
+			}
+		}
+
+		throw new RuntimeException(
+			StringBundler.concat(
+				"Upload failed after ", retryCount,
+				" attempts with HTTP response code: ", lastStatusCode));
+	}
+
+	private File _writeMultipartFile(
+			String boundary, File file, String resourceName, String uploadType)
+		throws Exception {
+
+		File tempFile = FileUtil.createTempFile();
+
+		try (OutputStream outputStream = new FileOutputStream(tempFile)) {
+			String filePartHeader = StringBundler.concat(
+				"--", boundary, "\r\n",
+				"Content-Disposition: form-data; name=\"file\"; filename=\"",
+				resourceName, "\"\r\n", "Content-Type: ",
+				ContentTypes.MULTIPART_FORM_DATA, "\r\n\r\n");
+
+			outputStream.write(
+				filePartHeader.getBytes(StandardCharsets.US_ASCII));
+
+			Files.copy(file.toPath(), outputStream);
+
+			String uploadTypePart = StringBundler.concat(
+				"\r\n--", boundary, "\r\n", "Content-Disposition: form-data; ",
+				"name=\"uploadType\"\r\n\r\n", uploadType);
+
+			outputStream.write(
+				uploadTypePart.getBytes(StandardCharsets.US_ASCII));
+
+			String closingBoundary = "\r\n--" + boundary + "--\r\n";
+
+			outputStream.write(
+				closingBoundary.getBytes(StandardCharsets.US_ASCII));
 		}
 		catch (Exception exception) {
-			throw new RuntimeException(exception);
+			tempFile.delete();
+
+			throw exception;
 		}
+
+		return tempFile;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -77,72 +76,15 @@ public class CommerceTaxFixedRatePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCPTaxCategoryId;
-	private FinderPath _finderPathWithoutPaginationFindByCPTaxCategoryId;
-	private FinderPath _finderPathCountByCPTaxCategoryId;
-	private CollectionPersistenceFinder<CommerceTaxFixedRate>
-		_collectionPersistenceFinderByCPTaxCategoryId;
-
-	/**
-	 * Returns all the commerce tax fixed rates where CPTaxCategoryId = &#63;.
-	 *
-	 * @param CPTaxCategoryId the cp tax category ID
-	 * @return the matching commerce tax fixed rates
-	 */
-	@Override
-	public List<CommerceTaxFixedRate> findByCPTaxCategoryId(
-		long CPTaxCategoryId) {
-
-		return findByCPTaxCategoryId(
-			CPTaxCategoryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce tax fixed rates where CPTaxCategoryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxFixedRateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPTaxCategoryId the cp tax category ID
-	 * @param start the lower bound of the range of commerce tax fixed rates
-	 * @param end the upper bound of the range of commerce tax fixed rates (not inclusive)
-	 * @return the range of matching commerce tax fixed rates
-	 */
-	@Override
-	public List<CommerceTaxFixedRate> findByCPTaxCategoryId(
-		long CPTaxCategoryId, int start, int end) {
-
-		return findByCPTaxCategoryId(CPTaxCategoryId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceTaxFixedRate, NoSuchTaxFixedRateException>
+			_collectionPersistenceFinderByCPTaxCategoryId;
 
 	/**
 	 * Returns an ordered range of all the commerce tax fixed rates where CPTaxCategoryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxFixedRateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPTaxCategoryId the cp tax category ID
-	 * @param start the lower bound of the range of commerce tax fixed rates
-	 * @param end the upper bound of the range of commerce tax fixed rates (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce tax fixed rates
-	 */
-	@Override
-	public List<CommerceTaxFixedRate> findByCPTaxCategoryId(
-		long CPTaxCategoryId, int start, int end,
-		OrderByComparator<CommerceTaxFixedRate> orderByComparator) {
-
-		return findByCPTaxCategoryId(
-			CPTaxCategoryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce tax fixed rates where CPTaxCategoryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxFixedRateModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxFixedRateModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CPTaxCategoryId the cp tax category ID
@@ -177,16 +119,8 @@ public class CommerceTaxFixedRatePersistenceImpl
 			OrderByComparator<CommerceTaxFixedRate> orderByComparator)
 		throws NoSuchTaxFixedRateException {
 
-		CommerceTaxFixedRate commerceTaxFixedRate =
-			fetchByCPTaxCategoryId_First(CPTaxCategoryId, orderByComparator);
-
-		if (commerceTaxFixedRate != null) {
-			return commerceTaxFixedRate;
-		}
-
-		throw new NoSuchTaxFixedRateException(
-			_collectionPersistenceFinderByCPTaxCategoryId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {CPTaxCategoryId}));
+		return _collectionPersistenceFinderByCPTaxCategoryId.findFirst(
+			finderCache, new Object[] {CPTaxCategoryId}, orderByComparator);
 	}
 
 	/**
@@ -228,72 +162,15 @@ public class CommerceTaxFixedRatePersistenceImpl
 			finderCache, new Object[] {CPTaxCategoryId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCommerceTaxMethodId;
-	private FinderPath _finderPathWithoutPaginationFindByCommerceTaxMethodId;
-	private FinderPath _finderPathCountByCommerceTaxMethodId;
-	private CollectionPersistenceFinder<CommerceTaxFixedRate>
-		_collectionPersistenceFinderByCommerceTaxMethodId;
-
-	/**
-	 * Returns all the commerce tax fixed rates where commerceTaxMethodId = &#63;.
-	 *
-	 * @param commerceTaxMethodId the commerce tax method ID
-	 * @return the matching commerce tax fixed rates
-	 */
-	@Override
-	public List<CommerceTaxFixedRate> findByCommerceTaxMethodId(
-		long commerceTaxMethodId) {
-
-		return findByCommerceTaxMethodId(
-			commerceTaxMethodId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce tax fixed rates where commerceTaxMethodId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxFixedRateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceTaxMethodId the commerce tax method ID
-	 * @param start the lower bound of the range of commerce tax fixed rates
-	 * @param end the upper bound of the range of commerce tax fixed rates (not inclusive)
-	 * @return the range of matching commerce tax fixed rates
-	 */
-	@Override
-	public List<CommerceTaxFixedRate> findByCommerceTaxMethodId(
-		long commerceTaxMethodId, int start, int end) {
-
-		return findByCommerceTaxMethodId(commerceTaxMethodId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceTaxFixedRate, NoSuchTaxFixedRateException>
+			_collectionPersistenceFinderByCommerceTaxMethodId;
 
 	/**
 	 * Returns an ordered range of all the commerce tax fixed rates where commerceTaxMethodId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxFixedRateModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceTaxMethodId the commerce tax method ID
-	 * @param start the lower bound of the range of commerce tax fixed rates
-	 * @param end the upper bound of the range of commerce tax fixed rates (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce tax fixed rates
-	 */
-	@Override
-	public List<CommerceTaxFixedRate> findByCommerceTaxMethodId(
-		long commerceTaxMethodId, int start, int end,
-		OrderByComparator<CommerceTaxFixedRate> orderByComparator) {
-
-		return findByCommerceTaxMethodId(
-			commerceTaxMethodId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce tax fixed rates where commerceTaxMethodId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxFixedRateModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTaxFixedRateModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commerceTaxMethodId the commerce tax method ID
@@ -328,19 +205,8 @@ public class CommerceTaxFixedRatePersistenceImpl
 			OrderByComparator<CommerceTaxFixedRate> orderByComparator)
 		throws NoSuchTaxFixedRateException {
 
-		CommerceTaxFixedRate commerceTaxFixedRate =
-			fetchByCommerceTaxMethodId_First(
-				commerceTaxMethodId, orderByComparator);
-
-		if (commerceTaxFixedRate != null) {
-			return commerceTaxFixedRate;
-		}
-
-		throw new NoSuchTaxFixedRateException(
-			_collectionPersistenceFinderByCommerceTaxMethodId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {commerceTaxMethodId}));
+		return _collectionPersistenceFinderByCommerceTaxMethodId.findFirst(
+			finderCache, new Object[] {commerceTaxMethodId}, orderByComparator);
 	}
 
 	/**
@@ -382,9 +248,9 @@ public class CommerceTaxFixedRatePersistenceImpl
 			finderCache, new Object[] {commerceTaxMethodId});
 	}
 
-	private FinderPath _finderPathFetchByC_C;
-	private UniquePersistenceFinder<CommerceTaxFixedRate>
-		_uniquePersistenceFinderByC_C;
+	private UniquePersistenceFinder
+		<CommerceTaxFixedRate, NoSuchTaxFixedRateException>
+			_uniquePersistenceFinderByC_C;
 
 	/**
 	 * Returns the commerce tax fixed rate where CPTaxCategoryId = &#63; and commerceTaxMethodId = &#63; or throws a <code>NoSuchTaxFixedRateException</code> if it could not be found.
@@ -399,37 +265,8 @@ public class CommerceTaxFixedRatePersistenceImpl
 			long CPTaxCategoryId, long commerceTaxMethodId)
 		throws NoSuchTaxFixedRateException {
 
-		CommerceTaxFixedRate commerceTaxFixedRate = fetchByC_C(
-			CPTaxCategoryId, commerceTaxMethodId);
-
-		if (commerceTaxFixedRate == null) {
-			String message =
-				_uniquePersistenceFinderByC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {CPTaxCategoryId, commerceTaxMethodId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchTaxFixedRateException(message);
-		}
-
-		return commerceTaxFixedRate;
-	}
-
-	/**
-	 * Returns the commerce tax fixed rate where CPTaxCategoryId = &#63; and commerceTaxMethodId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param CPTaxCategoryId the cp tax category ID
-	 * @param commerceTaxMethodId the commerce tax method ID
-	 * @return the matching commerce tax fixed rate, or <code>null</code> if a matching commerce tax fixed rate could not be found
-	 */
-	@Override
-	public CommerceTaxFixedRate fetchByC_C(
-		long CPTaxCategoryId, long commerceTaxMethodId) {
-
-		return fetchByC_C(CPTaxCategoryId, commerceTaxMethodId, true);
+		return _uniquePersistenceFinderByC_C.find(
+			finderCache, new Object[] {CPTaxCategoryId, commerceTaxMethodId});
 	}
 
 	/**
@@ -688,82 +525,80 @@ public class CommerceTaxFixedRatePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByCPTaxCategoryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPTaxCategoryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"CPTaxCategoryId"}, true);
-
-		_finderPathWithoutPaginationFindByCPTaxCategoryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCPTaxCategoryId",
-			new String[] {Long.class.getName()},
-			new String[] {"CPTaxCategoryId"}, true);
-
-		_finderPathCountByCPTaxCategoryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCPTaxCategoryId",
-			new String[] {Long.class.getName()},
-			new String[] {"CPTaxCategoryId"}, false);
-
 		_collectionPersistenceFinderByCPTaxCategoryId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCPTaxCategoryId,
-				_finderPathWithoutPaginationFindByCPTaxCategoryId,
-				_finderPathCountByCPTaxCategoryId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCPTaxCategoryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CPTaxCategoryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCPTaxCategoryId",
+					new String[] {Long.class.getName()},
+					new String[] {"CPTaxCategoryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCPTaxCategoryId",
+					new String[] {Long.class.getName()},
+					new String[] {"CPTaxCategoryId"}, false),
 				_SQL_SELECT_COMMERCETAXFIXEDRATE_WHERE,
 				_SQL_COUNT_COMMERCETAXFIXEDRATE_WHERE,
 				CommerceTaxFixedRateModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commerceTaxFixedRate.", "CPTaxCategoryId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceTaxFixedRate::getCPTaxCategoryId));
 
-		_finderPathWithPaginationFindByCommerceTaxMethodId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCommerceTaxMethodId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"commerceTaxMethodId"}, true);
-
-		_finderPathWithoutPaginationFindByCommerceTaxMethodId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByCommerceTaxMethodId", new String[] {Long.class.getName()},
-			new String[] {"commerceTaxMethodId"}, true);
-
-		_finderPathCountByCommerceTaxMethodId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCommerceTaxMethodId", new String[] {Long.class.getName()},
-			new String[] {"commerceTaxMethodId"}, false);
-
 		_collectionPersistenceFinderByCommerceTaxMethodId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCommerceTaxMethodId,
-				_finderPathWithoutPaginationFindByCommerceTaxMethodId,
-				_finderPathCountByCommerceTaxMethodId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCommerceTaxMethodId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"commerceTaxMethodId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCommerceTaxMethodId",
+					new String[] {Long.class.getName()},
+					new String[] {"commerceTaxMethodId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCommerceTaxMethodId",
+					new String[] {Long.class.getName()},
+					new String[] {"commerceTaxMethodId"}, false),
 				_SQL_SELECT_COMMERCETAXFIXEDRATE_WHERE,
 				_SQL_COUNT_COMMERCETAXFIXEDRATE_WHERE,
 				CommerceTaxFixedRateModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commerceTaxFixedRate.", "commerceTaxMethodId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceTaxFixedRate::getCommerceTaxMethodId));
 
-		_finderPathFetchByC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"CPTaxCategoryId", "commerceTaxMethodId"}, false,
-			CommerceTaxFixedRate::getCPTaxCategoryId,
-			CommerceTaxFixedRate::getCommerceTaxMethodId);
-
 		_uniquePersistenceFinderByC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_C, _SQL_SELECT_COMMERCETAXFIXEDRATE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"CPTaxCategoryId", "commerceTaxMethodId"}, 0, 0,
+				false, CommerceTaxFixedRate::getCPTaxCategoryId,
+				CommerceTaxFixedRate::getCommerceTaxMethodId),
+			_SQL_SELECT_COMMERCETAXFIXEDRATE_WHERE, "",
 			new FinderColumn<>(
 				"commerceTaxFixedRate.", "CPTaxCategoryId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CommerceTaxFixedRate::getCPTaxCategoryId),
 			new FinderColumn<>(
 				"commerceTaxFixedRate.", "commerceTaxMethodId",
@@ -836,4 +671,4 @@ public class CommerceTaxFixedRatePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1995300531
+// LIFERAY-SERVICE-BUILDER-HASH:2145739620

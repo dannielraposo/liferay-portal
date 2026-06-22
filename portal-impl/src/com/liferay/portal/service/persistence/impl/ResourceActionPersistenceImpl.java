@@ -10,7 +10,6 @@ import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchResourceActionException;
 import com.liferay.portal.kernel.log.Log;
@@ -63,66 +62,15 @@ public class ResourceActionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByName;
-	private FinderPath _finderPathWithoutPaginationFindByName;
-	private FinderPath _finderPathCountByName;
-	private CollectionPersistenceFinder<ResourceAction>
-		_collectionPersistenceFinderByName;
-
-	/**
-	 * Returns all the resource actions where name = &#63;.
-	 *
-	 * @param name the name
-	 * @return the matching resource actions
-	 */
-	@Override
-	public List<ResourceAction> findByName(String name) {
-		return findByName(name, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the resource actions where name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ResourceActionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param name the name
-	 * @param start the lower bound of the range of resource actions
-	 * @param end the upper bound of the range of resource actions (not inclusive)
-	 * @return the range of matching resource actions
-	 */
-	@Override
-	public List<ResourceAction> findByName(String name, int start, int end) {
-		return findByName(name, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ResourceAction, NoSuchResourceActionException>
+			_collectionPersistenceFinderByName;
 
 	/**
 	 * Returns an ordered range of all the resource actions where name = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ResourceActionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param name the name
-	 * @param start the lower bound of the range of resource actions
-	 * @param end the upper bound of the range of resource actions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching resource actions
-	 */
-	@Override
-	public List<ResourceAction> findByName(
-		String name, int start, int end,
-		OrderByComparator<ResourceAction> orderByComparator) {
-
-		return findByName(name, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the resource actions where name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ResourceActionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ResourceActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param name the name
@@ -156,16 +104,9 @@ public class ResourceActionPersistenceImpl
 			String name, OrderByComparator<ResourceAction> orderByComparator)
 		throws NoSuchResourceActionException {
 
-		ResourceAction resourceAction = fetchByName_First(
-			name, orderByComparator);
-
-		if (resourceAction != null) {
-			return resourceAction;
-		}
-
-		throw new NoSuchResourceActionException(
-			_collectionPersistenceFinderByName.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {name}));
+		return _collectionPersistenceFinderByName.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {name},
+			orderByComparator);
 	}
 
 	/**
@@ -207,9 +148,9 @@ public class ResourceActionPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {name});
 	}
 
-	private FinderPath _finderPathFetchByN_A;
-	private UniquePersistenceFinder<ResourceAction>
-		_uniquePersistenceFinderByN_A;
+	private UniquePersistenceFinder
+		<ResourceAction, NoSuchResourceActionException>
+			_uniquePersistenceFinderByN_A;
 
 	/**
 	 * Returns the resource action where name = &#63; and actionId = &#63; or throws a <code>NoSuchResourceActionException</code> if it could not be found.
@@ -223,33 +164,8 @@ public class ResourceActionPersistenceImpl
 	public ResourceAction findByN_A(String name, String actionId)
 		throws NoSuchResourceActionException {
 
-		ResourceAction resourceAction = fetchByN_A(name, actionId);
-
-		if (resourceAction == null) {
-			String message =
-				_uniquePersistenceFinderByN_A.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {name, actionId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchResourceActionException(message);
-		}
-
-		return resourceAction;
-	}
-
-	/**
-	 * Returns the resource action where name = &#63; and actionId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param name the name
-	 * @param actionId the action ID
-	 * @return the matching resource action, or <code>null</code> if a matching resource action could not be found
-	 */
-	@Override
-	public ResourceAction fetchByN_A(String name, String actionId) {
-		return fetchByN_A(name, actionId, true);
+		return _uniquePersistenceFinderByN_A.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {name, actionId});
 	}
 
 	/**
@@ -471,43 +387,41 @@ public class ResourceActionPersistenceImpl
 	 * Initializes the resource action persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByName = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByName",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"name"}, true);
-
-		_finderPathWithoutPaginationFindByName = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByName",
-			new String[] {String.class.getName()}, new String[] {"name"}, true);
-
-		_finderPathCountByName = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByName",
-			new String[] {String.class.getName()}, new String[] {"name"},
-			false);
-
 		_collectionPersistenceFinderByName = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByName,
-			_finderPathWithoutPaginationFindByName, _finderPathCountByName,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByName",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"name"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByName",
+				new String[] {String.class.getName()}, new String[] {"name"}, 0,
+				1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByName",
+				new String[] {String.class.getName()}, new String[] {"name"}, 0,
+				1, false, null),
 			_SQL_SELECT_RESOURCEACTION_WHERE, _SQL_COUNT_RESOURCEACTION_WHERE,
-			ResourceActionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ResourceActionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"resourceAction.", "name", FinderColumn.Type.STRING, "=", true,
 				true, ResourceAction::getName));
 
-		_finderPathFetchByN_A = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByN_A",
-			new String[] {String.class.getName(), String.class.getName()},
-			new String[] {"name", "actionId"}, false, ResourceAction::getName,
-			ResourceAction::getActionId);
-
 		_uniquePersistenceFinderByN_A = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByN_A, _SQL_SELECT_RESOURCEACTION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByN_A",
+				new String[] {String.class.getName(), String.class.getName()},
+				new String[] {"name", "actionId"}, 0, 3, false,
+				convertNullFunction(ResourceAction::getName),
+				convertNullFunction(ResourceAction::getActionId)),
+			_SQL_SELECT_RESOURCEACTION_WHERE, "",
 			new FinderColumn<>(
 				"resourceAction.", "name", FinderColumn.Type.STRING, "=", true,
-				false, ResourceAction::getName),
+				true, ResourceAction::getName),
 			new FinderColumn<>(
 				"resourceAction.", "actionId", FinderColumn.Type.STRING, "=",
 				true, true, ResourceAction::getActionId));
@@ -545,4 +459,4 @@ public class ResourceActionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1152182733
+// LIFERAY-SERVICE-BUILDER-HASH:1746163242

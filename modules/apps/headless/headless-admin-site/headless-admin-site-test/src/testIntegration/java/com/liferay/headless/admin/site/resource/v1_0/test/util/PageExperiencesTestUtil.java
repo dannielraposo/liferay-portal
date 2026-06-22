@@ -8,9 +8,12 @@ package com.liferay.headless.admin.site.resource.v1_0.test.util;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageElement;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageElementDefinition;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageExperience;
+import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -21,8 +24,11 @@ import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalServiceUtil;
 import com.liferay.segments.test.util.SegmentsTestUtil;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.junit.Assert;
@@ -36,19 +42,44 @@ public class PageExperiencesTestUtil {
 		PageExperience[] expectedPageExperiences, Layout layout,
 		PageExperience[] pageExperiences) {
 
-		PageExperience expectedPageExperience = expectedPageExperiences[0];
+		if (_isMultiplePageExperiencesSupported(layout)) {
+			Assert.assertEquals(
+				Arrays.toString(pageExperiences),
+				expectedPageExperiences.length, pageExperiences.length);
+		}
+		else {
+			Assert.assertEquals(
+				Arrays.toString(expectedPageExperiences), 1,
+				expectedPageExperiences.length);
+			Assert.assertEquals(
+				Arrays.toString(pageExperiences), 1, pageExperiences.length);
+		}
 
-		Assert.assertEquals(
-			pageExperiences.toString(), 1, pageExperiences.length);
+		Map<String, PageExperience> pageExperiencesMap = new HashMap<>();
 
-		PageExperience pageExperience = pageExperiences[0];
+		for (PageExperience pageExperience : pageExperiences) {
+			pageExperiencesMap.put(pageExperience.getKey(), pageExperience);
+		}
 
-		Assert.assertEquals(
-			expectedPageExperience.getExternalReferenceCode(),
-			pageExperience.getExternalReferenceCode());
-		Assert.assertEquals(
-			layout.getExternalReferenceCode(),
-			pageExperience.getPageSpecificationExternalReferenceCode());
+		for (PageExperience expectedPageExperience : expectedPageExperiences) {
+			PageExperience pageExperience = pageExperiencesMap.get(
+				expectedPageExperience.getKey());
+
+			Assert.assertEquals(
+				expectedPageExperience.getExternalReferenceCode(),
+				pageExperience.getExternalReferenceCode());
+			Assert.assertEquals(
+				layout.getExternalReferenceCode(),
+				pageExperience.getPageSpecificationExternalReferenceCode());
+
+			if (expectedPageExperience.getUuid() != null) {
+				Assert.assertEquals(
+					expectedPageExperience.getUuid(), pageExperience.getUuid());
+			}
+		}
+
+		PageExperience defaultPageExperience = pageExperiencesMap.get(
+			SegmentsExperienceConstants.KEY_DEFAULT);
 
 		SegmentsExperience segmentsExperience =
 			SegmentsExperienceLocalServiceUtil.fetchDefaultSegmentsExperience(
@@ -56,10 +87,7 @@ public class PageExperiencesTestUtil {
 
 		Assert.assertEquals(
 			segmentsExperience.getExternalReferenceCode(),
-			pageExperience.getExternalReferenceCode());
-
-		Assert.assertEquals(
-			expectedPageExperience.getUuid(), pageExperience.getUuid());
+			defaultPageExperience.getExternalReferenceCode());
 	}
 
 	public static PageExperience getDefaultPageExperience(
@@ -75,6 +103,21 @@ public class PageExperiencesTestUtil {
 		}
 
 		return null;
+	}
+
+	public static PageExperience getDefaultPageExperience(
+		String externalReferenceCode, PageElement[] pageElements,
+		String pageSpecificationExternalReferenceCode, String uuid) {
+
+		PageExperience pageExperience = getPageExperience(
+			externalReferenceCode, SegmentsExperienceConstants.KEY_DEFAULT, 0,
+			uuid);
+
+		pageExperience.setPageElements(pageElements);
+		pageExperience.setPageSpecificationExternalReferenceCode(
+			pageSpecificationExternalReferenceCode);
+
+		return pageExperience;
 	}
 
 	public static PageExperience[] getDefaultPageExperiences(
@@ -143,6 +186,21 @@ public class PageExperiencesTestUtil {
 		return pageExperience;
 	}
 
+	public static PageExperience getPageExperience(
+		String externalReferenceCode, String key, int priority, String uuid) {
+
+		PageExperience pageExperience = new PageExperience();
+
+		pageExperience.setExternalReferenceCode(externalReferenceCode);
+		pageExperience.setKey(key);
+		pageExperience.setName_i18n(
+			Collections.singletonMap("en-US", RandomTestUtil.randomString()));
+		pageExperience.setPriority(priority);
+		pageExperience.setUuid(uuid);
+
+		return pageExperience;
+	}
+
 	public static PageExperience[] getPageExperiences(
 			long companyGroupId, long groupId,
 			String pageSpecificationExternalReferenceCode)
@@ -205,6 +263,68 @@ public class PageExperiencesTestUtil {
 		}
 	}
 
+	public static PageExperience toDraftPageExperience(
+		String draftContentPageSpecificationExternalReferenceCode,
+		PageExperience publishedPageExperience) {
+
+		PageExperience pageExperience = new PageExperience();
+
+		if (SegmentsExperienceConstants.KEY_DEFAULT.equals(
+				publishedPageExperience.getKey())) {
+
+			pageExperience.setExternalReferenceCode(
+				draftContentPageSpecificationExternalReferenceCode +
+					LayoutConstants.EXTERNAL_REFERENCE_CODE_SUFFIX_DEFAULT);
+		}
+		else {
+			pageExperience.setExternalReferenceCode(
+				publishedPageExperience.getExternalReferenceCode() +
+					LayoutConstants.EXTERNAL_REFERENCE_CODE_SUFFIX_DRAFT);
+		}
+
+		pageExperience.setKey(publishedPageExperience.getKey());
+
+		return pageExperience;
+	}
+
+	public static PageExperience toPublishedPageExperience(
+		PageExperience draftPageExperience,
+		String publishedContentPageSpecificationExternalReferenceCode) {
+
+		PageExperience pageExperience = new PageExperience();
+
+		String draftExternalReferenceCode =
+			draftPageExperience.getExternalReferenceCode();
+
+		if (SegmentsExperienceConstants.KEY_DEFAULT.equals(
+				draftPageExperience.getKey())) {
+
+			pageExperience.setExternalReferenceCode(
+				publishedContentPageSpecificationExternalReferenceCode +
+					LayoutConstants.EXTERNAL_REFERENCE_CODE_SUFFIX_DEFAULT);
+		}
+		else if (draftExternalReferenceCode.endsWith(
+					LayoutConstants.EXTERNAL_REFERENCE_CODE_SUFFIX_DRAFT)) {
+
+			int suffixDraftLength =
+				LayoutConstants.EXTERNAL_REFERENCE_CODE_SUFFIX_DRAFT.length();
+
+			pageExperience.setExternalReferenceCode(
+				draftExternalReferenceCode.substring(
+					0,
+					draftExternalReferenceCode.length() - suffixDraftLength));
+		}
+		else {
+			pageExperience.setExternalReferenceCode(
+				draftExternalReferenceCode +
+					LayoutConstants.EXTERNAL_REFERENCE_CODE_SUFFIX_PUBLISHED);
+		}
+
+		pageExperience.setKey(draftPageExperience.getKey());
+
+		return pageExperience;
+	}
+
 	private static PageExperience _getPageExperience(
 			String pageSpecificationExternalReferenceCode, int priority,
 			long scopeGroupId)
@@ -219,6 +339,22 @@ public class PageExperiencesTestUtil {
 		pageExperience.setPriority(priority);
 
 		return pageExperience;
+	}
+
+	private static boolean _isMultiplePageExperiencesSupported(Layout layout) {
+		if (!layout.isTypeContent()) {
+			return false;
+		}
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			LayoutPageTemplateEntryLocalServiceUtil.
+				fetchLayoutPageTemplateEntryByPlid(layout.getPlid());
+
+		if (layoutPageTemplateEntry == null) {
+			return true;
+		}
+
+		return false;
 	}
 
 }

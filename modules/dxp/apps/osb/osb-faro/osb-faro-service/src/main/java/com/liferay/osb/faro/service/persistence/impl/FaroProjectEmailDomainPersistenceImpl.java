@@ -17,11 +17,8 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
@@ -73,69 +70,15 @@ public class FaroProjectEmailDomainPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<FaroProjectEmailDomain>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the faro project email domains where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching faro project email domains
-	 */
-	@Override
-	public List<FaroProjectEmailDomain> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the faro project email domains where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroProjectEmailDomainModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of faro project email domains
-	 * @param end the upper bound of the range of faro project email domains (not inclusive)
-	 * @return the range of matching faro project email domains
-	 */
-	@Override
-	public List<FaroProjectEmailDomain> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FaroProjectEmailDomain, NoSuchFaroProjectEmailDomainException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the faro project email domains where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroProjectEmailDomainModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of faro project email domains
-	 * @param end the upper bound of the range of faro project email domains (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching faro project email domains
-	 */
-	@Override
-	public List<FaroProjectEmailDomain> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<FaroProjectEmailDomain> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the faro project email domains where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroProjectEmailDomainModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroProjectEmailDomainModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -170,16 +113,8 @@ public class FaroProjectEmailDomainPersistenceImpl
 			OrderByComparator<FaroProjectEmailDomain> orderByComparator)
 		throws NoSuchFaroProjectEmailDomainException {
 
-		FaroProjectEmailDomain faroProjectEmailDomain = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (faroProjectEmailDomain != null) {
-			return faroProjectEmailDomain;
-		}
-
-		throw new NoSuchFaroProjectEmailDomainException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -221,72 +156,15 @@ public class FaroProjectEmailDomainPersistenceImpl
 			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByFaroProjectId;
-	private FinderPath _finderPathWithoutPaginationFindByFaroProjectId;
-	private FinderPath _finderPathCountByFaroProjectId;
-	private CollectionPersistenceFinder<FaroProjectEmailDomain>
-		_collectionPersistenceFinderByFaroProjectId;
-
-	/**
-	 * Returns all the faro project email domains where faroProjectId = &#63;.
-	 *
-	 * @param faroProjectId the faro project ID
-	 * @return the matching faro project email domains
-	 */
-	@Override
-	public List<FaroProjectEmailDomain> findByFaroProjectId(
-		long faroProjectId) {
-
-		return findByFaroProjectId(
-			faroProjectId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the faro project email domains where faroProjectId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroProjectEmailDomainModelImpl</code>.
-	 * </p>
-	 *
-	 * @param faroProjectId the faro project ID
-	 * @param start the lower bound of the range of faro project email domains
-	 * @param end the upper bound of the range of faro project email domains (not inclusive)
-	 * @return the range of matching faro project email domains
-	 */
-	@Override
-	public List<FaroProjectEmailDomain> findByFaroProjectId(
-		long faroProjectId, int start, int end) {
-
-		return findByFaroProjectId(faroProjectId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<FaroProjectEmailDomain, NoSuchFaroProjectEmailDomainException>
+			_collectionPersistenceFinderByFaroProjectId;
 
 	/**
 	 * Returns an ordered range of all the faro project email domains where faroProjectId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroProjectEmailDomainModelImpl</code>.
-	 * </p>
-	 *
-	 * @param faroProjectId the faro project ID
-	 * @param start the lower bound of the range of faro project email domains
-	 * @param end the upper bound of the range of faro project email domains (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching faro project email domains
-	 */
-	@Override
-	public List<FaroProjectEmailDomain> findByFaroProjectId(
-		long faroProjectId, int start, int end,
-		OrderByComparator<FaroProjectEmailDomain> orderByComparator) {
-
-		return findByFaroProjectId(
-			faroProjectId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the faro project email domains where faroProjectId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroProjectEmailDomainModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroProjectEmailDomainModelImpl</code>.
 	 * </p>
 	 *
 	 * @param faroProjectId the faro project ID
@@ -321,16 +199,8 @@ public class FaroProjectEmailDomainPersistenceImpl
 			OrderByComparator<FaroProjectEmailDomain> orderByComparator)
 		throws NoSuchFaroProjectEmailDomainException {
 
-		FaroProjectEmailDomain faroProjectEmailDomain =
-			fetchByFaroProjectId_First(faroProjectId, orderByComparator);
-
-		if (faroProjectEmailDomain != null) {
-			return faroProjectEmailDomain;
-		}
-
-		throw new NoSuchFaroProjectEmailDomainException(
-			_collectionPersistenceFinderByFaroProjectId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {faroProjectId}));
+		return _collectionPersistenceFinderByFaroProjectId.findFirst(
+			finderCache, new Object[] {faroProjectId}, orderByComparator);
 	}
 
 	/**
@@ -559,65 +429,58 @@ public class FaroProjectEmailDomainPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
 				_SQL_SELECT_FAROPROJECTEMAILDOMAIN_WHERE,
 				_SQL_COUNT_FAROPROJECTEMAILDOMAIN_WHERE,
 				FaroProjectEmailDomainModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"faroProjectEmailDomain.", "groupId",
 					FinderColumn.Type.LONG, "=", true, true,
 					FaroProjectEmailDomain::getGroupId));
 
-		_finderPathWithPaginationFindByFaroProjectId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByFaroProjectId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"faroProjectId"}, true);
-
-		_finderPathWithoutPaginationFindByFaroProjectId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByFaroProjectId",
-			new String[] {Long.class.getName()}, new String[] {"faroProjectId"},
-			true);
-
-		_finderPathCountByFaroProjectId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByFaroProjectId",
-			new String[] {Long.class.getName()}, new String[] {"faroProjectId"},
-			false);
-
 		_collectionPersistenceFinderByFaroProjectId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByFaroProjectId,
-				_finderPathWithoutPaginationFindByFaroProjectId,
-				_finderPathCountByFaroProjectId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByFaroProjectId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"faroProjectId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByFaroProjectId", new String[] {Long.class.getName()},
+					new String[] {"faroProjectId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByFaroProjectId", new String[] {Long.class.getName()},
+					new String[] {"faroProjectId"}, false),
 				_SQL_SELECT_FAROPROJECTEMAILDOMAIN_WHERE,
 				_SQL_COUNT_FAROPROJECTEMAILDOMAIN_WHERE,
 				FaroProjectEmailDomainModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"faroProjectEmailDomain.", "faroProjectId",
 					FinderColumn.Type.LONG, "=", true, true,
@@ -680,13 +543,10 @@ public class FaroProjectEmailDomainPersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No FaroProjectEmailDomain exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		FaroProjectEmailDomainPersistenceImpl.class);
-
 	@Override
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1990479582
+// LIFERAY-SERVICE-BUILDER-HASH:-1300026619

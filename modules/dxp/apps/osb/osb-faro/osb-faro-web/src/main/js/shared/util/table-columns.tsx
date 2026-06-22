@@ -10,6 +10,7 @@ import moment from 'moment';
 import ProfileType from 'shared/components/table/cell-components/ProfileTypes';
 import React from 'react';
 import SegmentSticker from 'segment/components/SegmentSticker';
+import SequentialEventOrderPopover from 'shared/components/SequentialEventOrderPopover';
 import TextTruncate from 'shared/components/TextTruncate';
 import {
 	AccountNames,
@@ -28,6 +29,7 @@ import {formatTime} from './time';
 import {get, isNil, noop, pickBy} from 'lodash';
 import {getSafeDecodedURIComponent} from './util';
 import {Routes, setUriQueryValues, toRoute} from 'shared/util/router';
+import {SegmentTypes} from './constants';
 import {sub} from 'shared/util/lang';
 
 type ChannelGroupParams = {
@@ -337,7 +339,7 @@ export const IndividualsListCDPColumns = {
 				toRoute(Routes.CONTACTS_INDIVIDUAL, {channelId, groupId, id})
 		},
 		className: 'table-cell-expand',
-		label: `${Liferay.Language.get('member-name')} | ${Liferay.Language.get(
+		label: `${Liferay.Language.get('individual')} | ${Liferay.Language.get(
 			'email'
 		)}`,
 		sortable: true
@@ -1227,7 +1229,14 @@ export const segmentsListColumns = {
 					REAL_TIME: Liferay.Language.get('real-time')
 				};
 
-				return <td>{segmentTypeMap[data.segmentType]}</td>;
+				return (
+					<td>
+						{segmentTypeMap[data.segmentType]}
+
+						{data.segmentType === SegmentTypes.RealTime &&
+							data.sequential && <SequentialEventOrderPopover />}
+					</td>
+				);
 			},
 			label: Liferay.Language.get('type'),
 			sortable: false

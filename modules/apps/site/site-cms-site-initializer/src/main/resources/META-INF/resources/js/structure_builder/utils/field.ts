@@ -4,6 +4,8 @@
  */
 
 import {ObjectField} from '../../common/types/ObjectDefinition';
+import buildLocalizedValue from '../../common/utils/buildLocalizedValue';
+import {getDefaultLanguageLabel} from '../../common/utils/defaultLanguageLabels';
 import {Uuid} from '../types/Uuid';
 import getRandomId from './getRandomId';
 import getUuid from './getUuid';
@@ -18,19 +20,38 @@ export const FIELD_TYPES = [
 	'integer',
 	'decimal',
 	'select-from-list',
+	'phone-number',
 	'date',
 	'datetime',
+	'email',
 	'boolean',
 	'upload',
 ] as const;
+
+const FIELD_TYPE_LANGUAGE_KEY: Record<FieldType, string> = {
+	'boolean': 'boolean',
+	'date': 'date',
+	'datetime': 'date-and-time',
+	'decimal': 'decimal',
+	'email': 'email',
+	'integer': 'numeric',
+	'long-text': 'long-text',
+	'phone-number': 'phone-number',
+	'rich-text': 'rich-text',
+	'select-from-list': 'select-from-list',
+	'text': 'text',
+	'upload': 'upload',
+} as const;
 
 export const FIELD_TYPE_LABEL: Record<FieldType, string> = {
 	'boolean': Liferay.Language.get('boolean'),
 	'date': Liferay.Language.get('date'),
 	'datetime': Liferay.Language.get('date-and-time'),
 	'decimal': Liferay.Language.get('decimal'),
+	'email': Liferay.Language.get('email'),
 	'integer': Liferay.Language.get('numeric'),
 	'long-text': Liferay.Language.get('long-text'),
+	'phone-number': Liferay.Language.get('phone-number'),
 	'rich-text': Liferay.Language.get('rich-text'),
 	'select-from-list': Liferay.Language.get('select-from-list'),
 	'text': Liferay.Language.get('text'),
@@ -42,8 +63,10 @@ export const FIELD_TYPE_ICON: Record<FieldType, string> = {
 	'date': 'calendar',
 	'datetime': 'date-time',
 	'decimal': 'decimal',
+	'email': 'envelope-closed',
 	'integer': 'number',
 	'long-text': 'field-area',
+	'phone-number': 'phone',
 	'rich-text': 'textbox',
 	'select-from-list': 'select',
 	'text': 'custom-field',
@@ -70,10 +93,14 @@ export function getFieldBusinessType(
 			return 'DateTime';
 		case 'decimal':
 			return 'Decimal';
+		case 'email':
+			return 'Text';
 		case 'integer':
 			return 'Integer';
 		case 'long-text':
 			return 'LongText';
+		case 'phone-number':
+			return 'PhoneNumber';
 		case 'rich-text':
 			return 'RichText';
 		case 'text':
@@ -90,8 +117,10 @@ export const FIELD_TYPE_TO_DB_TYPE: Record<FieldType, string> = {
 	'date': 'Date',
 	'datetime': 'DateTime',
 	'decimal': 'Double',
+	'email': 'String',
 	'integer': 'Integer',
 	'long-text': 'Clob',
+	'phone-number': 'String',
 	'rich-text': 'Clob',
 	'select-from-list': 'String',
 	'text': 'String',
@@ -139,12 +168,28 @@ export type DateTimeField = BaseField & {
 	type: 'datetime';
 };
 
+export type EmailField = BaseField & {
+	settings: {
+		autocompleteDomains?: string[];
+		blockedDomains?: string[];
+	};
+	type: 'email';
+} & UniqueValuesSettingsField;
+
 export type LongTextField = BaseField & {
 	type: 'long-text';
 } & MaxLengthSettingsField;
 
 export type NumericField = BaseField & {
 	type: 'integer';
+} & UniqueValuesSettingsField;
+
+export type PhoneNumberField = BaseField & {
+	settings: {
+		country?: string;
+		countrySource: 'definedByUser' | 'fixed';
+	};
+	type: 'phone-number';
 } & UniqueValuesSettingsField;
 
 export type SelectFromListField = BaseField & {
@@ -173,8 +218,10 @@ export type UploadField = BaseField & {
 
 export type Field =
 	| DateTimeField
+	| EmailField
 	| LongTextField
 	| NumericField
+	| PhoneNumberField
 	| SelectFromListField
 	| TextField
 	| UploadField
@@ -184,9 +231,11 @@ export type Field =
 				FieldType,
 				[
 					'datetime',
+					'email',
 					'long-text',
 					'multiselect',
 					'numeric',
+					'phone-number',
 					'select-from-list',
 					'text',
 					'upload',
@@ -199,20 +248,23 @@ export type FieldType = (typeof FIELD_TYPES)[number];
 // Functions
 
 export function getDefaultField({
-	label,
+	languageKey,
 	locked = false,
 	name,
 	parent,
 	required = false,
 	type,
 }: {
-	label?: string;
+	languageKey?: string;
 	locked?: boolean;
 	name?: string;
 	parent: Uuid;
 	required?: boolean;
 	type: FieldType;
 }): Field {
+	const resolvedLanguageKey = languageKey ?? FIELD_TYPE_LANGUAGE_KEY[type];
+	const defaultLocaleLabel = getDefaultLanguageLabel(resolvedLanguageKey);
+
 	const base = {
 		erc: getRandomId(),
 		indexableConfig: {
@@ -220,13 +272,10 @@ export function getDefaultField({
 			indexedAsKeyword: false,
 			indexedLanguageId: Liferay.ThemeDisplay.getDefaultLanguageId(),
 		},
-		label: {
-			[Liferay.ThemeDisplay.getDefaultLanguageId()]:
-				label ?? FIELD_TYPE_LABEL[type],
-		},
+		label: buildLocalizedValue(resolvedLanguageKey),
 		localized: true,
 		locked,
-		name: name ?? normalizeString(FIELD_TYPE_LABEL[type], {style: 'camel'}),
+		name: name ?? normalizeString(defaultLocaleLabel, {style: 'camel'}),
 		parent,
 		required,
 		settings: {},
@@ -248,6 +297,15 @@ export function getDefaultField({
 			multiselection: false,
 			picklistId: 0,
 			type: 'select-from-list',
+		};
+	}
+	else if (type === 'phone-number') {
+		return {
+			...base,
+			settings: {
+				countrySource: 'definedByUser',
+			},
+			type: 'phone-number',
 		};
 	}
 	else if (type === 'upload') {

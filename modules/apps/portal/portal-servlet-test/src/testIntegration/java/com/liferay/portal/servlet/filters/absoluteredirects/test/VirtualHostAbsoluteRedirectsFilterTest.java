@@ -17,6 +17,7 @@ import com.liferay.portal.kernel.service.VirtualHostLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -211,7 +212,8 @@ public class VirtualHostAbsoluteRedirectsFilterTest {
 
 		_mockHttpServletRequest.setRemoteHost(hostname);
 		_mockHttpServletRequest.setServerName(hostname);
-		_mockHttpServletRequest.setServerPort(8080);
+		_mockHttpServletRequest.setServerPort(
+			PortalUtil.getPortalServerPort(false));
 		_mockHttpServletRequest.setRequestURI("/web/guest");
 	}
 
@@ -227,19 +229,19 @@ public class VirtualHostAbsoluteRedirectsFilterTest {
 
 	private static final String _LANGUAGE_ID_FR = "fr_FR";
 
-	private static Set<Locale> _availableLocales;
-	private static long _groupId;
-	private static long _layoutSetId;
-
-	@Inject
-	private static LayoutSetLocalService _layoutSetLocalService;
-
-	@Inject
-	private static VirtualHostLocalService _virtualHostLocalService;
-
 	private final AbsoluteRedirectsFilter _absoluteRedirectsFilter =
 		new AbsoluteRedirectsFilter();
+	private Set<Locale> _availableLocales;
+	private long _groupId;
+	private long _layoutSetId;
+
+	@Inject
+	private LayoutSetLocalService _layoutSetLocalService;
+
 	private MockHttpServletRequest _mockHttpServletRequest;
 	private final TreeMap<String, String> _treeMap = new TreeMap<>();
+
+	@Inject
+	private VirtualHostLocalService _virtualHostLocalService;
 
 }

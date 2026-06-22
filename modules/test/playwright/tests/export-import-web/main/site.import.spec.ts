@@ -25,6 +25,8 @@ import {uiElementsPageTest} from '../../../fixtures/uiElementsTest';
 import {usersAndOrganizationsPagesTest} from '../../../fixtures/usersAndOrganizationsPagesTest';
 import {wikiPagesTest} from '../../../fixtures/wikiPagesTest';
 import {DataApiHelpers} from '../../../helpers/ApiHelpers';
+import {createCategories} from '../../../helpers/CreateCategories';
+import {liferayConfig} from '../../../liferay.config';
 import {HomePage} from '../../../pages/portal-web/HomePage';
 import {getRandomInt} from '../../../utils/getRandomInt';
 import getRandomString from '../../../utils/getRandomString';
@@ -33,6 +35,7 @@ import {openFieldset} from '../../../utils/openFieldset';
 import {performLoginViaApi} from '../../../utils/performLogin';
 import {PORTLET_URLS} from '../../../utils/portletUrls';
 import {readFileFromZip} from '../../../utils/zip';
+import {assetCategoriesPagesTest} from '../../asset-categories-admin-web/main/fixtures/assetCategoriesAdminPagesTest';
 import {companyExportImportPageTest} from './fixtures/companyExportImportPagesTest';
 import {exportImportPagesTest} from './fixtures/exportImportPagesTest';
 import {stagingPageTest} from './fixtures/stagingPageTest';
@@ -53,6 +56,7 @@ export const test = mergeTests(
 		'LPD-44307': {enabled: true},
 		'LPD-44771': {enabled: true},
 		'LPD-45276': {enabled: true},
+		'LPD-76864': {enabled: true},
 	}),
 	globalMenuPagesTest,
 	isolatedSiteTest,
@@ -90,6 +94,91 @@ const testWithDeprecationFF = mergeTests(
 	}),
 	loginTest(),
 	uiElementsPageTest
+);
+
+const testWithObjectExportImportFF = mergeTests(
+	assetCategoriesPagesTest,
+	dataApiHelpersTest,
+	exportImportPagesTest,
+	featureFlagsTest({'LPD-35443': {enabled: true}}),
+	isolatedSiteTest,
+	loginTest()
+);
+
+testWithObjectExportImportFF(
+	'Can export and import vocabularies and categories',
+	{tag: '@LPD-75473'},
+	async ({apiHelpers, assetCategoriesAdminPage, exportImportPage, site}) => {
+		const categoryNames = [
+			{name: getRandomString()},
+			{name: getRandomString()},
+		];
+		const vocabularyName = getRandomString();
+
+		const categories: Array<any> = await createCategories({
+			apiHelpers,
+			categoryNames,
+			siteId: site.id,
+			vocabularyName,
+		});
+
+		apiHelpers.data.push({
+			id: categories[0].vocabularyId,
+			type: 'taxonomyVocabulary',
+		});
+
+		await exportImportPage.goToExport(site.friendlyUrlPath);
+
+		const exportFilePath = await exportImportPage.export({
+			portletLabels: [`Categories 3 Items`],
+		});
+
+		const content1 = await readFileFromZip(
+			'TaxonomyVocabularyResourceImpl.json',
+			exportFilePath
+		);
+
+		expect(JSON.parse(content1).length).toBe(1);
+
+		const content2 = await readFileFromZip(
+			'TaxonomyCategoryResourceImpl.json',
+			exportFilePath
+		);
+
+		expect(JSON.parse(content2).length).toBe(2);
+
+		expect(
+			await apiHelpers.headlessAdminTaxonomy.deleteTaxonomyVocabulary(
+				categories[0].vocabularyId
+			)
+		).toBeOK();
+
+		await assetCategoriesAdminPage.goto(site.friendlyUrlPath);
+
+		await expect(
+			assetCategoriesAdminPage.page.getByRole('menuitem', {
+				exact: true,
+				name: vocabularyName,
+			})
+		).not.toBeVisible();
+
+		await exportImportPage.goToImport(site.friendlyUrlPath);
+
+		await exportImportPage.import({
+			filePath: exportFilePath,
+			taskStatus: 'success',
+		});
+
+		await assetCategoriesAdminPage.goto(site.friendlyUrlPath);
+
+		await assetCategoriesAdminPage.gotoVocabulary(vocabularyName);
+
+		for (const {name} of categoryNames) {
+			await expect(
+				assetCategoriesAdminPage.page.getByRole('row', {name})
+			).toBeVisible();
+		}
+	}
 );
 
 test('Can export and import custom object entries at site level', async ({
@@ -736,21 +825,21 @@ testWithDeprecationFF(
 		});
 
 		await performLoginViaApi({
-			loginUrl: 'http://www.able.com:8080',
+			loginUrl: `http://www.able.com:${liferayConfig.environment.port}`,
 			page,
 			screenName: 'test',
 		});
 
 		const virtualInstanceApiHelpers = new DataApiHelpers(
 			page,
-			'http://www.able.com:8080'
+			`http://www.able.com:${liferayConfig.environment.port}`
 		);
 
 		for (const featureFlag of featureFlags) {
 			await virtualInstanceApiHelpers.featureFlag.updateFeatureFlag(
 				featureFlag.key,
 				featureFlag.enabled,
-				'http://www.able.com:8080'
+				`http://www.able.com:${liferayConfig.environment.port}`
 			);
 		}
 
@@ -761,7 +850,7 @@ testWithDeprecationFF(
 		);
 
 		await page.goto(
-			`http://www.able.com:8080/group${site.friendlyUrlPath}${PORTLET_URLS.import}`
+			`http://www.able.com:${liferayConfig.environment.port}/group${site.friendlyUrlPath}${PORTLET_URLS.import}`
 		);
 		await exportImportPage.importByDefault(exportFilePath);
 		await exportImportPage.importByDefault(exportFilePath);

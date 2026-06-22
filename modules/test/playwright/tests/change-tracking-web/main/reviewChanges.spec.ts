@@ -218,7 +218,11 @@ test('LPD-29088 Assert Publication Overview panel is visible', async ({
 	await page.goto(`/group/guest${PORTLET_URLS.tagsAdmin}`);
 	await page.getByRole('link', {name: 'Add Tag'}).click();
 	await page.getByPlaceholder('Name').fill(getRandomString());
-	await page.getByRole('button', {name: 'Save'}).click();
+
+	await Promise.all([
+		page.waitForLoadState('load'),
+		page.getByRole('button', {name: 'Save'}).click(),
+	]);
 
 	await apiHelpers.headlessDelivery.postMessageBoardThread({
 		articleBody: getRandomString(),
@@ -237,7 +241,13 @@ test('LPD-29088 Assert Publication Overview panel is visible', async ({
 		await apiHelpers.headlessDelivery.postBlog(site2.id);
 	}
 
-	await changeTrackingPage.goToReviewChanges(ctCollection.body.name);
+	await expect(async () => {
+		await changeTrackingPage.goToReviewChanges(ctCollection.body.name);
+
+		await expect(
+			page.getByText(site2.name + ' (3):  Blogs Entry (3)')
+		).toBeVisible({timeout: 10000});
+	}).toPass();
 
 	await expect(page.getByText('Liferay DXP Site (1): Tag (1)')).toBeVisible();
 	await expect(
@@ -247,14 +257,22 @@ test('LPD-29088 Assert Publication Overview panel is visible', async ({
 		)
 	).toBeVisible();
 	await expect(
-		page.getByText(site2.name + ' (3):  Blogs Entry (3)')
+		page.getByText(site2.name + ' (2):  Blogs Entry (2)')
 	).toBeVisible();
 
 	await apiHelpers.headlessChangeTracking.publishCTCollection(
 		ctCollection.body.id
 	);
 
-	await changeTrackingPage.goToReviewChangesHistory(ctCollection.body.name);
+	await expect(async () => {
+		await changeTrackingPage.goToReviewChangesHistory(
+			ctCollection.body.name
+		);
+
+		await expect(
+			page.getByText(site2.name + ' (3):   Blogs Entry (3)')
+		).toBeVisible({timeout: 10000});
+	}).toPass();
 
 	await expect(page.getByText('Liferay DXP Site (1): Tag (1)')).toBeVisible();
 	await expect(
@@ -264,7 +282,7 @@ test('LPD-29088 Assert Publication Overview panel is visible', async ({
 		)
 	).toBeVisible();
 	await expect(
-		page.getByText(site2.name + ' (3):   Blogs Entry (3)')
+		page.getByText(site2.name + ' (2):   Blogs Entry (2)')
 	).toBeVisible();
 });
 
@@ -821,7 +839,7 @@ test.describe('Publications with incomplete status tests', () => {
 			`Success:${journalArticleTitle} was created successfully.`
 		);
 
-		changeTrackingPage.goToReviewChanges(ctCollection2.body.name);
+		await changeTrackingPage.goToReviewChanges(ctCollection2.body.name);
 
 		const firstDropdown = page
 			.locator('.cell-item-actions .dropdown svg.lexicon-icon-ellipsis-v')
@@ -845,14 +863,8 @@ test.describe('Publications with incomplete status tests', () => {
 
 		await expect(publicationSelector).toBeVisible();
 
-		const publicationsOptions = await page.locator(
-			'#_com_liferay_change_tracking_web_portlet_PublicationsPortlet_toPublication > option'
-		);
-
-		await expect(publicationsOptions).toHaveText([
-			'None',
-			ctCollection.body.name,
-		]);
+		await expect(publicationSelector).toContainText('None');
+		await expect(publicationSelector).toContainText(ctCollection.body.name);
 
 		await apiHelpers.headlessChangeTracking.deleteCTCollection(
 			ctCollection2.body.id
@@ -1001,17 +1013,20 @@ test('LPD-78919 Unified view in FragmentEntryLink review page is shown', async (
 	await changeTrackingPage.goToReviewChanges(ctCollection.body.name);
 
 	await page
-		.locator('td')
-		.getByRole('link')
+		.getByRole('row')
 		.filter({hasText: 'Fragment Entry Link'})
+		.getByRole('link')
+		.first()
 		.click();
 
 	const renderViewDropdown = page.locator(
 		'.publications-render-view-divider .dropdown'
 	);
 
+	await renderViewDropdown.waitFor({state: 'visible', timeout: 15000});
+
 	await clickAndExpectToBeVisible({
-		autoClick: true,
+		autoClick: false,
 		target: page.getByRole('menuitem', {name: 'Unified View'}),
 		trigger: renderViewDropdown,
 	});
@@ -1314,7 +1329,7 @@ test('LPS-179026 Can preview changes for WikiPages', async ({
 
 	await changeTrackingPage.goToReviewChanges(ctCollection.body.name);
 
-	await changeTrackingPage.reviewChange(wikiPageTitle);
+	await changeTrackingPage.reviewChange(wikiPageTitle + ' (1.1)');
 
 	await changeTrackingPage.selectRenderView('Unified View');
 

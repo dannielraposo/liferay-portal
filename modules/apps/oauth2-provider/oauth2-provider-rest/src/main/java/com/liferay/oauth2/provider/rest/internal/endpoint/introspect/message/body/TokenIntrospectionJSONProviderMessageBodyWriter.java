@@ -26,7 +26,6 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -105,20 +104,9 @@ public class TokenIntrospectionJSONProviderMessageBodyWriter
 			audience.removeIf(String::isEmpty);
 
 			if (!audience.isEmpty()) {
-				StringBundler audienceSB;
+				StringBundler audienceSB = new StringBundler(5);
 
-				if (audience.size() == 1) {
-					audienceSB = new StringBundler(7);
-
-					Iterator<String> iterator = audience.iterator();
-
-					_append(audienceSB, "aud", iterator.next());
-				}
-				else {
-					audienceSB = new StringBundler(5);
-
-					_append(audienceSB, "aud", audience);
-				}
+				_append(audienceSB, "aud", audience);
 
 				sb.append(audienceSB);
 			}

@@ -348,6 +348,10 @@ public class EditSegmentsEntryDisplayContext {
 				_segmentsCriteriaContributorRegistry.
 					getSegmentsCriteriaContributors()) {
 
+			if (segmentsCriteriaContributor.isDisabled(_renderRequest)) {
+				continue;
+			}
+
 			jsonContributorsJSONArray.put(
 				JSONUtil.put(
 					"entityName", segmentsCriteriaContributor.getEntityName()

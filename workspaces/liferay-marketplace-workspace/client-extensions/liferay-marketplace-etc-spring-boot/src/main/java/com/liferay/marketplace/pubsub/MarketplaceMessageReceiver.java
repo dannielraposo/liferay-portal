@@ -30,8 +30,8 @@ import com.liferay.marketplace.constants.MarketplaceConstants;
 import com.liferay.marketplace.service.KoroneikiService;
 import com.liferay.marketplace.service.MarketplaceService;
 import com.liferay.marketplace.service.ProvisioningHubService;
+import com.liferay.marketplace.util.MarketplaceUtil;
 import com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.Contact;
-import com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.ExternalLink;
 import com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.Product;
 import com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.ProductPurchase;
 import com.liferay.petra.function.transform.TransformUtil;
@@ -40,7 +40,6 @@ import com.liferay.petra.string.StringBundler;
 import java.math.BigDecimal;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.logging.Log;
@@ -184,20 +183,6 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 		};
 	}
 
-	private String _getExternalLinkValue(
-		ExternalLink[] externalLinks, String domain, String entityName) {
-
-		for (ExternalLink externalLink : externalLinks) {
-			if (Objects.equals(externalLink.getDomain(), domain) &&
-				Objects.equals(externalLink.getEntityName(), entityName)) {
-
-				return externalLink.getEntityId();
-			}
-		}
-
-		return null;
-	}
-
 	private Order _getOrder(String externalReferenceCode) throws Exception {
 		OrderResource orderResource = _marketplaceService.getOrderResource();
 
@@ -211,6 +196,18 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 		}
 
 		return null;
+	}
+
+	private String _getOrderTypeExternalReferenceCode(String productName) {
+		if (productName.contains("AI Hub")) {
+			return "AI_HUB";
+		}
+
+		if (productName.contains("LR Tokens")) {
+			return "AI_HUB_TOKEN";
+		}
+
+		return "ADDONS";
 	}
 
 	private PostalAddress _getPostalAddress(
@@ -245,12 +242,6 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 			PostalAddress.class);
 	}
 
-	private String _getSkuExternalReferenceCode(Product product) {
-		Map<String, String> properties = product.getProperties();
-
-		return "SF-" + properties.get("salesforce-product-id");
-	}
-
 	private UserAccount _getUserAccount(String emailAddress) throws Exception {
 		Page<UserAccount> userAccountsPage =
 			_marketplaceService.getUserAccountsPage(
@@ -279,7 +270,7 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 				koroneikiAccount)
 		throws Exception {
 
-		String project = _getExternalLinkValue(
+		String project = MarketplaceUtil.getEntityId(
 			koroneikiAccount.getExternalLinks(), "salesforce", "project");
 
 		if (project != null) {
@@ -288,6 +279,18 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 					"Skipping over account " + koroneikiAccount.getKey() +
 						" because it is a project");
 			}
+
+			_marketplaceService.putSalesforceProject(
+				project,
+				new JSONObject(
+				).put(
+					"koroneikiAccountKey", koroneikiAccount.getKey()
+				).put(
+					"name", koroneikiAccount.getName()
+				).put(
+					"r_salesforceProjectToAccounts_accountEntryERC",
+					koroneikiAccount.getParentAccountKey()
+				));
 
 			return;
 		}
@@ -333,7 +336,7 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 			_log.info("Processing product purchase create " + productPurchase);
 		}
 
-		String opportunityId = _getExternalLinkValue(
+		String opportunityId = MarketplaceUtil.getEntityId(
 			productPurchase.getExternalLinks(), "salesforce", "opportunity");
 
 		if (opportunityId == null) {
@@ -356,8 +359,7 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 			com.liferay.headless.commerce.admin.catalog.client.http.HttpInvoker.
 				HttpResponse httpResponse =
 					skuResource.getSkuByExternalReferenceCodeHttpResponse(
-						_getSkuExternalReferenceCode(
-							productPurchase.getProduct()));
+						productPurchase.getProductKey());
 
 			if (!_isOKStatusCode(httpResponse.getStatusCode())) {
 				if (_log.isInfoEnabled()) {
@@ -381,6 +383,8 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 			OrderResource orderResource =
 				_marketplaceService.getOrderResource();
 
+			Product product = productPurchase.getProduct();
+
 			order = orderResource.postOrder(
 				new Order() {
 					{
@@ -397,12 +401,13 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 											() -> new BigDecimal(
 												productPurchase.getQuantity()));
 										setSkuExternalReferenceCode(
-											() -> _getSkuExternalReferenceCode(
-												productPurchase.getProduct()));
+											productPurchase::getProductKey);
 									}
 								}
 							});
-						setOrderTypeExternalReferenceCode(() -> "ADDONS");
+						setOrderTypeExternalReferenceCode(
+							() -> _getOrderTypeExternalReferenceCode(
+								product.getName()));
 						setPaymentStatus(
 							() ->
 								MarketplaceConstants.

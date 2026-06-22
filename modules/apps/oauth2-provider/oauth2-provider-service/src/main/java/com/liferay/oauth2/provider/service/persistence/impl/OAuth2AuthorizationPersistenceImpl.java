@@ -21,8 +21,6 @@ import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -85,62 +83,9 @@ public class OAuth2AuthorizationPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUserId;
-	private FinderPath _finderPathWithoutPaginationFindByUserId;
-	private FinderPath _finderPathCountByUserId;
-	private CollectionPersistenceFinder<OAuth2Authorization>
-		_collectionPersistenceFinderByUserId;
-
-	/**
-	 * Returns all the o auth2 authorizations where userId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @return the matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByUserId(long userId) {
-		return findByUserId(userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the o auth2 authorizations where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of o auth2 authorizations
-	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
-	 * @return the range of matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByUserId(
-		long userId, int start, int end) {
-
-		return findByUserId(userId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the o auth2 authorizations where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of o auth2 authorizations
-	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByUserId(
-		long userId, int start, int end,
-		OrderByComparator<OAuth2Authorization> orderByComparator) {
-
-		return findByUserId(userId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<OAuth2Authorization, NoSuchOAuth2AuthorizationException>
+			_collectionPersistenceFinderByUserId;
 
 	/**
 	 * Returns an ordered range of all the o auth2 authorizations where userId = &#63;.
@@ -181,16 +126,8 @@ public class OAuth2AuthorizationPersistenceImpl
 			OrderByComparator<OAuth2Authorization> orderByComparator)
 		throws NoSuchOAuth2AuthorizationException {
 
-		OAuth2Authorization oAuth2Authorization = fetchByUserId_First(
-			userId, orderByComparator);
-
-		if (oAuth2Authorization != null) {
-			return oAuth2Authorization;
-		}
-
-		throw new NoSuchOAuth2AuthorizationException(
-			_collectionPersistenceFinderByUserId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId}));
+		return _collectionPersistenceFinderByUserId.findFirst(
+			finderCache, new Object[] {userId}, orderByComparator);
 	}
 
 	/**
@@ -231,66 +168,9 @@ public class OAuth2AuthorizationPersistenceImpl
 			finderCache, new Object[] {userId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByOAuth2ApplicationId;
-	private FinderPath _finderPathWithoutPaginationFindByOAuth2ApplicationId;
-	private FinderPath _finderPathCountByOAuth2ApplicationId;
-	private CollectionPersistenceFinder<OAuth2Authorization>
-		_collectionPersistenceFinderByOAuth2ApplicationId;
-
-	/**
-	 * Returns all the o auth2 authorizations where oAuth2ApplicationId = &#63;.
-	 *
-	 * @param oAuth2ApplicationId the o auth2 application ID
-	 * @return the matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByOAuth2ApplicationId(
-		long oAuth2ApplicationId) {
-
-		return findByOAuth2ApplicationId(
-			oAuth2ApplicationId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the o auth2 authorizations where oAuth2ApplicationId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param oAuth2ApplicationId the o auth2 application ID
-	 * @param start the lower bound of the range of o auth2 authorizations
-	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
-	 * @return the range of matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByOAuth2ApplicationId(
-		long oAuth2ApplicationId, int start, int end) {
-
-		return findByOAuth2ApplicationId(oAuth2ApplicationId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the o auth2 authorizations where oAuth2ApplicationId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param oAuth2ApplicationId the o auth2 application ID
-	 * @param start the lower bound of the range of o auth2 authorizations
-	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByOAuth2ApplicationId(
-		long oAuth2ApplicationId, int start, int end,
-		OrderByComparator<OAuth2Authorization> orderByComparator) {
-
-		return findByOAuth2ApplicationId(
-			oAuth2ApplicationId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<OAuth2Authorization, NoSuchOAuth2AuthorizationException>
+			_collectionPersistenceFinderByOAuth2ApplicationId;
 
 	/**
 	 * Returns an ordered range of all the o auth2 authorizations where oAuth2ApplicationId = &#63;.
@@ -331,19 +211,8 @@ public class OAuth2AuthorizationPersistenceImpl
 			OrderByComparator<OAuth2Authorization> orderByComparator)
 		throws NoSuchOAuth2AuthorizationException {
 
-		OAuth2Authorization oAuth2Authorization =
-			fetchByOAuth2ApplicationId_First(
-				oAuth2ApplicationId, orderByComparator);
-
-		if (oAuth2Authorization != null) {
-			return oAuth2Authorization;
-		}
-
-		throw new NoSuchOAuth2AuthorizationException(
-			_collectionPersistenceFinderByOAuth2ApplicationId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {oAuth2ApplicationId}));
+		return _collectionPersistenceFinderByOAuth2ApplicationId.findFirst(
+			finderCache, new Object[] {oAuth2ApplicationId}, orderByComparator);
 	}
 
 	/**
@@ -385,72 +254,9 @@ public class OAuth2AuthorizationPersistenceImpl
 			finderCache, new Object[] {oAuth2ApplicationId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_ATCH;
-	private FinderPath _finderPathWithoutPaginationFindByC_ATCH;
-	private FinderPath _finderPathCountByC_ATCH;
-	private CollectionPersistenceFinder<OAuth2Authorization>
-		_collectionPersistenceFinderByC_ATCH;
-
-	/**
-	 * Returns all the o auth2 authorizations where companyId = &#63; and accessTokenContentHash = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param accessTokenContentHash the access token content hash
-	 * @return the matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByC_ATCH(
-		long companyId, long accessTokenContentHash) {
-
-		return findByC_ATCH(
-			companyId, accessTokenContentHash, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the o auth2 authorizations where companyId = &#63; and accessTokenContentHash = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param accessTokenContentHash the access token content hash
-	 * @param start the lower bound of the range of o auth2 authorizations
-	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
-	 * @return the range of matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByC_ATCH(
-		long companyId, long accessTokenContentHash, int start, int end) {
-
-		return findByC_ATCH(
-			companyId, accessTokenContentHash, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the o auth2 authorizations where companyId = &#63; and accessTokenContentHash = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param accessTokenContentHash the access token content hash
-	 * @param start the lower bound of the range of o auth2 authorizations
-	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByC_ATCH(
-		long companyId, long accessTokenContentHash, int start, int end,
-		OrderByComparator<OAuth2Authorization> orderByComparator) {
-
-		return findByC_ATCH(
-			companyId, accessTokenContentHash, start, end, orderByComparator,
-			true);
-	}
+	private CollectionPersistenceFinder
+		<OAuth2Authorization, NoSuchOAuth2AuthorizationException>
+			_collectionPersistenceFinderByC_ATCH;
 
 	/**
 	 * Returns an ordered range of all the o auth2 authorizations where companyId = &#63; and accessTokenContentHash = &#63;.
@@ -493,17 +299,9 @@ public class OAuth2AuthorizationPersistenceImpl
 			OrderByComparator<OAuth2Authorization> orderByComparator)
 		throws NoSuchOAuth2AuthorizationException {
 
-		OAuth2Authorization oAuth2Authorization = fetchByC_ATCH_First(
-			companyId, accessTokenContentHash, orderByComparator);
-
-		if (oAuth2Authorization != null) {
-			return oAuth2Authorization;
-		}
-
-		throw new NoSuchOAuth2AuthorizationException(
-			_collectionPersistenceFinderByC_ATCH.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, accessTokenContentHash}));
+		return _collectionPersistenceFinderByC_ATCH.findFirst(
+			finderCache, new Object[] {companyId, accessTokenContentHash},
+			orderByComparator);
 	}
 
 	/**
@@ -549,72 +347,9 @@ public class OAuth2AuthorizationPersistenceImpl
 			finderCache, new Object[] {companyId, accessTokenContentHash});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_RTCH;
-	private FinderPath _finderPathWithoutPaginationFindByC_RTCH;
-	private FinderPath _finderPathCountByC_RTCH;
-	private CollectionPersistenceFinder<OAuth2Authorization>
-		_collectionPersistenceFinderByC_RTCH;
-
-	/**
-	 * Returns all the o auth2 authorizations where companyId = &#63; and refreshTokenContentHash = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param refreshTokenContentHash the refresh token content hash
-	 * @return the matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByC_RTCH(
-		long companyId, long refreshTokenContentHash) {
-
-		return findByC_RTCH(
-			companyId, refreshTokenContentHash, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the o auth2 authorizations where companyId = &#63; and refreshTokenContentHash = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param refreshTokenContentHash the refresh token content hash
-	 * @param start the lower bound of the range of o auth2 authorizations
-	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
-	 * @return the range of matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByC_RTCH(
-		long companyId, long refreshTokenContentHash, int start, int end) {
-
-		return findByC_RTCH(
-			companyId, refreshTokenContentHash, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the o auth2 authorizations where companyId = &#63; and refreshTokenContentHash = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param refreshTokenContentHash the refresh token content hash
-	 * @param start the lower bound of the range of o auth2 authorizations
-	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByC_RTCH(
-		long companyId, long refreshTokenContentHash, int start, int end,
-		OrderByComparator<OAuth2Authorization> orderByComparator) {
-
-		return findByC_RTCH(
-			companyId, refreshTokenContentHash, start, end, orderByComparator,
-			true);
-	}
+	private CollectionPersistenceFinder
+		<OAuth2Authorization, NoSuchOAuth2AuthorizationException>
+			_collectionPersistenceFinderByC_RTCH;
 
 	/**
 	 * Returns an ordered range of all the o auth2 authorizations where companyId = &#63; and refreshTokenContentHash = &#63;.
@@ -657,17 +392,9 @@ public class OAuth2AuthorizationPersistenceImpl
 			OrderByComparator<OAuth2Authorization> orderByComparator)
 		throws NoSuchOAuth2AuthorizationException {
 
-		OAuth2Authorization oAuth2Authorization = fetchByC_RTCH_First(
-			companyId, refreshTokenContentHash, orderByComparator);
-
-		if (oAuth2Authorization != null) {
-			return oAuth2Authorization;
-		}
-
-		throw new NoSuchOAuth2AuthorizationException(
-			_collectionPersistenceFinderByC_RTCH.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, refreshTokenContentHash}));
+		return _collectionPersistenceFinderByC_RTCH.findFirst(
+			finderCache, new Object[] {companyId, refreshTokenContentHash},
+			orderByComparator);
 	}
 
 	/**
@@ -713,78 +440,9 @@ public class OAuth2AuthorizationPersistenceImpl
 			finderCache, new Object[] {companyId, refreshTokenContentHash});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByU_O_R;
-	private FinderPath _finderPathWithoutPaginationFindByU_O_R;
-	private FinderPath _finderPathCountByU_O_R;
-	private CollectionPersistenceFinder<OAuth2Authorization>
-		_collectionPersistenceFinderByU_O_R;
-
-	/**
-	 * Returns all the o auth2 authorizations where userId = &#63; and oAuth2ApplicationId = &#63; and rememberDeviceContent = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @param oAuth2ApplicationId the o auth2 application ID
-	 * @param rememberDeviceContent the remember device content
-	 * @return the matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByU_O_R(
-		long userId, long oAuth2ApplicationId, String rememberDeviceContent) {
-
-		return findByU_O_R(
-			userId, oAuth2ApplicationId, rememberDeviceContent,
-			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the o auth2 authorizations where userId = &#63; and oAuth2ApplicationId = &#63; and rememberDeviceContent = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param oAuth2ApplicationId the o auth2 application ID
-	 * @param rememberDeviceContent the remember device content
-	 * @param start the lower bound of the range of o auth2 authorizations
-	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
-	 * @return the range of matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByU_O_R(
-		long userId, long oAuth2ApplicationId, String rememberDeviceContent,
-		int start, int end) {
-
-		return findByU_O_R(
-			userId, oAuth2ApplicationId, rememberDeviceContent, start, end,
-			null);
-	}
-
-	/**
-	 * Returns an ordered range of all the o auth2 authorizations where userId = &#63; and oAuth2ApplicationId = &#63; and rememberDeviceContent = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param oAuth2ApplicationId the o auth2 application ID
-	 * @param rememberDeviceContent the remember device content
-	 * @param start the lower bound of the range of o auth2 authorizations
-	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching o auth2 authorizations
-	 */
-	@Override
-	public List<OAuth2Authorization> findByU_O_R(
-		long userId, long oAuth2ApplicationId, String rememberDeviceContent,
-		int start, int end,
-		OrderByComparator<OAuth2Authorization> orderByComparator) {
-
-		return findByU_O_R(
-			userId, oAuth2ApplicationId, rememberDeviceContent, start, end,
-			orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<OAuth2Authorization, NoSuchOAuth2AuthorizationException>
+			_collectionPersistenceFinderByU_O_R;
 
 	/**
 	 * Returns an ordered range of all the o auth2 authorizations where userId = &#63; and oAuth2ApplicationId = &#63; and rememberDeviceContent = &#63;.
@@ -831,20 +489,10 @@ public class OAuth2AuthorizationPersistenceImpl
 			OrderByComparator<OAuth2Authorization> orderByComparator)
 		throws NoSuchOAuth2AuthorizationException {
 
-		OAuth2Authorization oAuth2Authorization = fetchByU_O_R_First(
-			userId, oAuth2ApplicationId, rememberDeviceContent,
+		return _collectionPersistenceFinderByU_O_R.findFirst(
+			finderCache,
+			new Object[] {userId, oAuth2ApplicationId, rememberDeviceContent},
 			orderByComparator);
-
-		if (oAuth2Authorization != null) {
-			return oAuth2Authorization;
-		}
-
-		throw new NoSuchOAuth2AuthorizationException(
-			_collectionPersistenceFinderByU_O_R.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {
-					userId, oAuth2ApplicationId, rememberDeviceContent
-				}));
 	}
 
 	/**
@@ -1462,183 +1110,173 @@ public class OAuth2AuthorizationPersistenceImpl
 				"OA2Auths_OA2ScopeGrants", "companyId", "oAuth2AuthorizationId",
 				"oAuth2ScopeGrantId", this, OAuth2ScopeGrant.class);
 
-		_finderPathWithPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId"}, true);
-
-		_finderPathWithoutPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, true);
-
-		_finderPathCountByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"},
-			false);
-
 		_collectionPersistenceFinderByUserId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUserId,
-				_finderPathWithoutPaginationFindByUserId,
-				_finderPathCountByUserId, _SQL_SELECT_OAUTH2AUTHORIZATION_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, false),
+				_SQL_SELECT_OAUTH2AUTHORIZATION_WHERE,
 				_SQL_COUNT_OAUTH2AUTHORIZATION_WHERE,
 				OAuth2AuthorizationModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"oAuth2Authorization.", "userId", FinderColumn.Type.LONG,
 					"=", true, true, OAuth2Authorization::getUserId));
 
-		_finderPathWithPaginationFindByOAuth2ApplicationId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByOAuth2ApplicationId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"oAuth2ApplicationId"}, true);
-
-		_finderPathWithoutPaginationFindByOAuth2ApplicationId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByOAuth2ApplicationId", new String[] {Long.class.getName()},
-			new String[] {"oAuth2ApplicationId"}, true);
-
-		_finderPathCountByOAuth2ApplicationId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByOAuth2ApplicationId", new String[] {Long.class.getName()},
-			new String[] {"oAuth2ApplicationId"}, false);
-
 		_collectionPersistenceFinderByOAuth2ApplicationId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByOAuth2ApplicationId,
-				_finderPathWithoutPaginationFindByOAuth2ApplicationId,
-				_finderPathCountByOAuth2ApplicationId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByOAuth2ApplicationId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"oAuth2ApplicationId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByOAuth2ApplicationId",
+					new String[] {Long.class.getName()},
+					new String[] {"oAuth2ApplicationId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByOAuth2ApplicationId",
+					new String[] {Long.class.getName()},
+					new String[] {"oAuth2ApplicationId"}, false),
 				_SQL_SELECT_OAUTH2AUTHORIZATION_WHERE,
 				_SQL_COUNT_OAUTH2AUTHORIZATION_WHERE,
 				OAuth2AuthorizationModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"oAuth2Authorization.", "oAuth2ApplicationId",
 					FinderColumn.Type.LONG, "=", true, true,
 					OAuth2Authorization::getOAuth2ApplicationId));
 
-		_finderPathWithPaginationFindByC_ATCH = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_ATCH",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "accessTokenContentHash"}, true);
-
-		_finderPathWithoutPaginationFindByC_ATCH = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_ATCH",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "accessTokenContentHash"}, true);
-
-		_finderPathCountByC_ATCH = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_ATCH",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "accessTokenContentHash"}, false);
-
 		_collectionPersistenceFinderByC_ATCH =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByC_ATCH,
-				_finderPathWithoutPaginationFindByC_ATCH,
-				_finderPathCountByC_ATCH, _SQL_SELECT_OAUTH2AUTHORIZATION_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_ATCH",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId", "accessTokenContentHash"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_ATCH",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"companyId", "accessTokenContentHash"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_ATCH",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"companyId", "accessTokenContentHash"},
+					false),
+				_SQL_SELECT_OAUTH2AUTHORIZATION_WHERE,
 				_SQL_COUNT_OAUTH2AUTHORIZATION_WHERE,
 				OAuth2AuthorizationModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"oAuth2Authorization.", "companyId", FinderColumn.Type.LONG,
-					"=", true, false, OAuth2Authorization::getCompanyId),
+					"=", true, true, OAuth2Authorization::getCompanyId),
 				new FinderColumn<>(
 					"oAuth2Authorization.", "accessTokenContentHash",
 					FinderColumn.Type.LONG, "=", true, true,
 					OAuth2Authorization::getAccessTokenContentHash));
 
-		_finderPathWithPaginationFindByC_RTCH = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_RTCH",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "refreshTokenContentHash"}, true);
-
-		_finderPathWithoutPaginationFindByC_RTCH = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_RTCH",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "refreshTokenContentHash"}, true);
-
-		_finderPathCountByC_RTCH = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_RTCH",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "refreshTokenContentHash"}, false);
-
 		_collectionPersistenceFinderByC_RTCH =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByC_RTCH,
-				_finderPathWithoutPaginationFindByC_RTCH,
-				_finderPathCountByC_RTCH, _SQL_SELECT_OAUTH2AUTHORIZATION_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_RTCH",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId", "refreshTokenContentHash"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_RTCH",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"companyId", "refreshTokenContentHash"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_RTCH",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"companyId", "refreshTokenContentHash"},
+					false),
+				_SQL_SELECT_OAUTH2AUTHORIZATION_WHERE,
 				_SQL_COUNT_OAUTH2AUTHORIZATION_WHERE,
 				OAuth2AuthorizationModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"oAuth2Authorization.", "companyId", FinderColumn.Type.LONG,
-					"=", true, false, OAuth2Authorization::getCompanyId),
+					"=", true, true, OAuth2Authorization::getCompanyId),
 				new FinderColumn<>(
 					"oAuth2Authorization.", "refreshTokenContentHash",
 					FinderColumn.Type.LONG, "=", true, true,
 					OAuth2Authorization::getRefreshTokenContentHash));
 
-		_finderPathWithPaginationFindByU_O_R = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_O_R",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {
-				"userId", "oAuth2ApplicationId", "rememberDeviceContent"
-			},
-			true);
-
-		_finderPathWithoutPaginationFindByU_O_R = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_O_R",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {
-				"userId", "oAuth2ApplicationId", "rememberDeviceContent"
-			},
-			true);
-
-		_finderPathCountByU_O_R = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByU_O_R",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {
-				"userId", "oAuth2ApplicationId", "rememberDeviceContent"
-			},
-			false);
-
 		_collectionPersistenceFinderByU_O_R = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByU_O_R,
-			_finderPathWithoutPaginationFindByU_O_R, _finderPathCountByU_O_R,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_O_R",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {
+					"userId", "oAuth2ApplicationId", "rememberDeviceContent"
+				},
+				true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_O_R",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {
+					"userId", "oAuth2ApplicationId", "rememberDeviceContent"
+				},
+				0, 4, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByU_O_R",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {
+					"userId", "oAuth2ApplicationId", "rememberDeviceContent"
+				},
+				0, 4, false, null),
 			_SQL_SELECT_OAUTH2AUTHORIZATION_WHERE,
 			_SQL_COUNT_OAUTH2AUTHORIZATION_WHERE,
 			OAuth2AuthorizationModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"oAuth2Authorization.", "userId", FinderColumn.Type.LONG, "=",
-				true, false, OAuth2Authorization::getUserId),
+				true, true, OAuth2Authorization::getUserId),
 			new FinderColumn<>(
 				"oAuth2Authorization.", "oAuth2ApplicationId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				OAuth2Authorization::getOAuth2ApplicationId),
 			new FinderColumn<>(
 				"oAuth2Authorization.", "rememberDeviceContent",
@@ -1708,9 +1346,6 @@ public class OAuth2AuthorizationPersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No OAuth2Authorization exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		OAuth2AuthorizationPersistenceImpl.class);
-
 	private static final Set<String> _badColumnNames = SetUtil.fromArray(
 		new String[] {"oAuth2ApplicationScopeAliasesId"});
 
@@ -1720,4 +1355,4 @@ public class OAuth2AuthorizationPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1717724663
+// LIFERAY-SERVICE-BUILDER-HASH:-217571806

@@ -81,6 +81,8 @@ public abstract class BaseTopLevelBuildReport
 		jsonArray.put(String.valueOf(testrayAttachmentURL));
 
 		buildReportJSONObject.put("testrayAttachmentURLs", jsonArray);
+
+		clearTestrayAttachmentURLCaches();
 	}
 
 	@Override
@@ -135,6 +137,10 @@ public abstract class BaseTopLevelBuildReport
 
 	@Override
 	public TestrayCloudObject getBuildReportTestrayCloudObject() {
+		if (!TestrayCloudBucket.hasGoogleApplicationCredentials()) {
+			return null;
+		}
+
 		JenkinsMaster jenkinsMaster = getJenkinsMaster();
 
 		TestrayCloudBucket testrayCloudBucket =
@@ -402,10 +408,21 @@ public abstract class BaseTopLevelBuildReport
 	@Override
 	public URL getTestResultsJSONUserContentURL() {
 		try {
+			String masterHostname = JenkinsResultsParserUtil.getBuildProperty(
+				"jenkins.remote.url[test-1-0]");
+
+			if (JenkinsResultsParserUtil.isNullOrEmpty(masterHostname)) {
+				masterHostname = "https://test-1-0.liferay.com/";
+			}
+
+			if (!masterHostname.endsWith("/")) {
+				masterHostname += "/";
+			}
+
 			return new URL(
 				JenkinsResultsParserUtil.combine(
-					"https://test-1-0.liferay.com/userContent/testResults/",
-					getJobName(), "/builds/", String.valueOf(getBuildNumber()),
+					masterHostname, "userContent/testResults/", getJobName(),
+					"/builds/", String.valueOf(getBuildNumber()),
 					"/test.results.json"));
 		}
 		catch (IOException ioException) {

@@ -6,7 +6,6 @@
 import {useProvider} from '@clayui/provider';
 import {
 	Keys,
-	PanelResizer,
 	useControlledState,
 	useId,
 	useIsMobileDevice,
@@ -17,6 +16,7 @@ import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {CSSTransition} from 'react-transition-group';
 
 import {FocusTrap} from '../focus-trap';
+import {ResizeHandle} from '../resize-handle';
 import {Body} from './Body';
 import {Footer} from './Footer';
 import {Header} from './Header';
@@ -153,6 +153,7 @@ export function SidePanel({
 	displayType = 'light',
 	externalSidePanelRef,
 	fluid = false,
+	'id': externalId,
 	onOpenChange,
 	'open': externalOpen,
 	'panelWidth': externalPanelWidth,
@@ -247,10 +248,12 @@ export function SidePanel({
 		}
 	}, [closeOnEscape, open]);
 
+	const internalPanelId = useId();
 	const titleId = useId();
 
 	const offsetTop = useOffsetTop(containerRef);
 
+	const panelId = externalId ?? internalPanelId;
 	const panelWidth = isResizable
 		? Math.min(sidePanelObservedMaxWidth, resizeWidth)
 		: externalPanelWidth && Math.max(externalPanelWidth, PANEL_WIDTH_MIN);
@@ -336,6 +339,7 @@ export function SidePanel({
 					aria-labelledby={
 						!ariaLabelledby && !ariaLabel ? titleId : ariaLabelledby
 					}
+					id={panelId}
 					ref={sidePanelRef}
 					style={panelWidth ? {width: panelWidth} : undefined}
 					tabIndex={-1}
@@ -348,12 +352,13 @@ export function SidePanel({
 						</FocusTrap>
 
 						{isResizable && (
-							<PanelResizer
-								onPanelWidthChange={setResizeWidth}
-								panelWidth={panelWidth}
-								panelWidthMax={sidePanelObservedMaxWidth}
-								panelWidthMin={PANEL_WIDTH_MIN}
+							<ResizeHandle
+								aria-controls={panelId}
+								maxWidth={sidePanelObservedMaxWidth}
+								minWidth={PANEL_WIDTH_MIN}
+								onWidthChange={setResizeWidth}
 								position={direction}
+								width={panelWidth}
 							/>
 						)}
 					</SidePanelContext.Provider>

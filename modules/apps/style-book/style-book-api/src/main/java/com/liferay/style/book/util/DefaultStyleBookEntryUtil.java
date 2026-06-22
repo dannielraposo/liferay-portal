@@ -14,7 +14,6 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.style.book.model.StyleBookEntry;
 import com.liferay.style.book.service.StyleBookEntryLocalServiceUtil;
 
@@ -55,7 +54,8 @@ public class DefaultStyleBookEntryUtil {
 	}
 
 	public static StyleBookEntry getDefaultStyleBookEntry(Layout layout) {
-		StyleBookEntry styleBookEntry = _getStyleBookEntry(layout);
+		StyleBookEntry styleBookEntry =
+			StyleBookEntryProviderUtil.getStyleBookEntry(layout);
 
 		if ((styleBookEntry == null) ||
 			!_isStyleBookEntryApplicable(layout, styleBookEntry)) {
@@ -104,22 +104,12 @@ public class DefaultStyleBookEntryUtil {
 				layout.getMasterLayoutPlid());
 
 			if (masterLayout != null) {
-				styleBookEntry = _getStyleBookEntry(masterLayout);
+				styleBookEntry = StyleBookEntryProviderUtil.getStyleBookEntry(
+					masterLayout);
 			}
 		}
 
 		return styleBookEntry;
-	}
-
-	private static StyleBookEntry _getStyleBookEntry(Layout layout) {
-		if (Validator.isNull(layout.getStyleBookEntryERC())) {
-			return null;
-		}
-
-		return StyleBookEntryLocalServiceUtil.
-			fetchStyleBookEntryByExternalReferenceCode(
-				layout.getStyleBookEntryERC(),
-				StagingUtil.getLiveGroupId(layout.getGroupId()));
 	}
 
 	private static boolean _isStyleBookEntryApplicable(

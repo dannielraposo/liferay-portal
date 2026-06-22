@@ -13,6 +13,7 @@ import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
+import com.liferay.jenkins.results.parser.Environment;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.ParallelExecutor;
 
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
@@ -81,7 +83,7 @@ public class TestrayCloudBucket {
 			return _hasGoogleApplicationCredentials;
 		}
 
-		String googleApplicationCredentials = System.getenv(
+		String googleApplicationCredentials = Environment.get(
 			"GOOGLE_APPLICATION_CREDENTIALS");
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(
@@ -183,6 +185,8 @@ public class TestrayCloudBucket {
 			TestrayCloudObject testrayCloudObject =
 				TestrayCloudObjectFactory.newTestrayCloudObject(this, blob);
 
+			_testrayCloudObjectsByKey.put(key, testrayCloudObject);
+
 			System.out.println(
 				JenkinsResultsParserUtil.combine(
 					"Created Cloud Object ", testrayCloudObject.getURLString(),
@@ -216,6 +220,8 @@ public class TestrayCloudBucket {
 
 		TestrayCloudObject testrayCloudObject =
 			TestrayCloudObjectFactory.newTestrayCloudObject(this, blob);
+
+		_testrayCloudObjectsByKey.put(key, testrayCloudObject);
 
 		System.out.println(
 			JenkinsResultsParserUtil.combine(
@@ -251,7 +257,13 @@ public class TestrayCloudBucket {
 	public void deleteTestrayCloudObject(
 		TestrayCloudObject testrayCloudObject) {
 
+		if (testrayCloudObject == null) {
+			return;
+		}
+
 		testrayCloudObject.delete();
+
+		_testrayCloudObjectsByKey.remove(testrayCloudObject.getKey());
 	}
 
 	public void deleteTestrayCloudObjects(
@@ -323,6 +335,13 @@ public class TestrayCloudBucket {
 	}
 
 	public TestrayCloudObject getTestrayCloudObject(String key) {
+		TestrayCloudObject testrayCloudObject = _testrayCloudObjectsByKey.get(
+			key);
+
+		if (testrayCloudObject != null) {
+			return testrayCloudObject;
+		}
+
 		Bucket bucket = _getBucket();
 
 		Blob blob = bucket.get(key);
@@ -331,7 +350,12 @@ public class TestrayCloudBucket {
 			return null;
 		}
 
-		return TestrayCloudObjectFactory.newTestrayCloudObject(this, blob);
+		testrayCloudObject = TestrayCloudObjectFactory.newTestrayCloudObject(
+			this, blob);
+
+		_testrayCloudObjectsByKey.put(key, testrayCloudObject);
+
+		return testrayCloudObject;
 	}
 
 	public List<TestrayCloudObject> getTestrayCloudObjects() {
@@ -405,5 +429,7 @@ public class TestrayCloudBucket {
 		JenkinsResultsParserUtil.getNewThreadPoolExecutor(16, true);
 
 	private final String _name;
+	private final Map<String, TestrayCloudObject> _testrayCloudObjectsByKey =
+		new ConcurrentHashMap<>();
 
 }

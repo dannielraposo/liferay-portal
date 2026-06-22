@@ -13,13 +13,11 @@ import com.liferay.data.engine.model.impl.DEDataListViewModelImpl;
 import com.liferay.data.engine.service.persistence.DEDataListViewPersistence;
 import com.liferay.data.engine.service.persistence.DEDataListViewUtil;
 import com.liferay.data.engine.service.persistence.impl.constants.DEPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -88,66 +86,15 @@ public class DEDataListViewPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<DEDataListView>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the de data list views where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the de data list views where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of de data list views
-	 * @param end the upper bound of the range of de data list views (not inclusive)
-	 * @return the range of matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DEDataListView, NoSuchDataListViewException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the de data list views where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of de data list views
-	 * @param end the upper bound of the range of de data list views (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<DEDataListView> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data list views where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -163,14 +110,9 @@ public class DEDataListViewPersistenceImpl
 		OrderByComparator<DEDataListView> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataListView.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -186,16 +128,8 @@ public class DEDataListViewPersistenceImpl
 			String uuid, OrderByComparator<DEDataListView> orderByComparator)
 		throws NoSuchDataListViewException {
 
-		DEDataListView deDataListView = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (deDataListView != null) {
-			return deDataListView;
-		}
-
-		throw new NoSuchDataListViewException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -232,17 +166,11 @@ public class DEDataListViewPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataListView.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<DEDataListView>
+	private UniquePersistenceFinder<DEDataListView, NoSuchDataListViewException>
 		_uniquePersistenceFinderByUUID_G;
 
 	/**
@@ -257,33 +185,8 @@ public class DEDataListViewPersistenceImpl
 	public DEDataListView findByUUID_G(String uuid, long groupId)
 		throws NoSuchDataListViewException {
 
-		DEDataListView deDataListView = fetchByUUID_G(uuid, groupId);
-
-		if (deDataListView == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchDataListViewException(message);
-		}
-
-		return deDataListView;
-	}
-
-	/**
-	 * Returns the de data list view where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching de data list view, or <code>null</code> if a matching de data list view could not be found
-	 */
-	@Override
-	public DEDataListView fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -298,13 +201,8 @@ public class DEDataListViewPersistenceImpl
 	public DEDataListView fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataListView.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -336,73 +234,15 @@ public class DEDataListViewPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<DEDataListView>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the de data list views where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the de data list views where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of de data list views
-	 * @param end the upper bound of the range of de data list views (not inclusive)
-	 * @return the range of matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DEDataListView, NoSuchDataListViewException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the de data list views where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of de data list views
-	 * @param end the upper bound of the range of de data list views (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<DEDataListView> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data list views where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -419,14 +259,9 @@ public class DEDataListViewPersistenceImpl
 		OrderByComparator<DEDataListView> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataListView.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -444,16 +279,8 @@ public class DEDataListViewPersistenceImpl
 			OrderByComparator<DEDataListView> orderByComparator)
 		throws NoSuchDataListViewException {
 
-		DEDataListView deDataListView = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (deDataListView != null) {
-			return deDataListView;
-		}
-
-		throw new NoSuchDataListViewException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -494,79 +321,19 @@ public class DEDataListViewPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataListView.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByDDMStructureId;
-	private FinderPath _finderPathWithoutPaginationFindByDDMStructureId;
-	private FinderPath _finderPathCountByDDMStructureId;
-	private CollectionPersistenceFinder<DEDataListView>
-		_collectionPersistenceFinderByDDMStructureId;
-
-	/**
-	 * Returns all the de data list views where ddmStructureId = &#63;.
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @return the matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByDDMStructureId(long ddmStructureId) {
-		return findByDDMStructureId(
-			ddmStructureId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the de data list views where ddmStructureId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @param start the lower bound of the range of de data list views
-	 * @param end the upper bound of the range of de data list views (not inclusive)
-	 * @return the range of matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByDDMStructureId(
-		long ddmStructureId, int start, int end) {
-
-		return findByDDMStructureId(ddmStructureId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DEDataListView, NoSuchDataListViewException>
+			_collectionPersistenceFinderByDDMStructureId;
 
 	/**
 	 * Returns an ordered range of all the de data list views where ddmStructureId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @param start the lower bound of the range of de data list views
-	 * @param end the upper bound of the range of de data list views (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByDDMStructureId(
-		long ddmStructureId, int start, int end,
-		OrderByComparator<DEDataListView> orderByComparator) {
-
-		return findByDDMStructureId(
-			ddmStructureId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data list views where ddmStructureId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ddmStructureId the ddm structure ID
@@ -582,14 +349,9 @@ public class DEDataListViewPersistenceImpl
 		OrderByComparator<DEDataListView> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataListView.class)) {
-
-			return _collectionPersistenceFinderByDDMStructureId.find(
-				finderCache, new Object[] {ddmStructureId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByDDMStructureId.find(
+			finderCache, new Object[] {ddmStructureId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -606,16 +368,8 @@ public class DEDataListViewPersistenceImpl
 			OrderByComparator<DEDataListView> orderByComparator)
 		throws NoSuchDataListViewException {
 
-		DEDataListView deDataListView = fetchByDDMStructureId_First(
-			ddmStructureId, orderByComparator);
-
-		if (deDataListView != null) {
-			return deDataListView;
-		}
-
-		throw new NoSuchDataListViewException(
-			_collectionPersistenceFinderByDDMStructureId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {ddmStructureId}));
+		return _collectionPersistenceFinderByDDMStructureId.findFirst(
+			finderCache, new Object[] {ddmStructureId}, orderByComparator);
 	}
 
 	/**
@@ -653,90 +407,19 @@ public class DEDataListViewPersistenceImpl
 	 */
 	@Override
 	public int countByDDMStructureId(long ddmStructureId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataListView.class)) {
-
-			return _collectionPersistenceFinderByDDMStructureId.count(
-				finderCache, new Object[] {ddmStructureId});
-		}
+		return _collectionPersistenceFinderByDDMStructureId.count(
+			finderCache, new Object[] {ddmStructureId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_C_DDMSI;
-	private FinderPath _finderPathWithoutPaginationFindByG_C_DDMSI;
-	private FinderPath _finderPathCountByG_C_DDMSI;
-	private CollectionPersistenceFinder<DEDataListView>
-		_collectionPersistenceFinderByG_C_DDMSI;
-
-	/**
-	 * Returns all the de data list views where groupId = &#63; and companyId = &#63; and ddmStructureId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @return the matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByG_C_DDMSI(
-		long groupId, long companyId, long ddmStructureId) {
-
-		return findByG_C_DDMSI(
-			groupId, companyId, ddmStructureId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the de data list views where groupId = &#63; and companyId = &#63; and ddmStructureId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @param start the lower bound of the range of de data list views
-	 * @param end the upper bound of the range of de data list views (not inclusive)
-	 * @return the range of matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByG_C_DDMSI(
-		long groupId, long companyId, long ddmStructureId, int start, int end) {
-
-		return findByG_C_DDMSI(
-			groupId, companyId, ddmStructureId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DEDataListView, NoSuchDataListViewException>
+			_collectionPersistenceFinderByG_C_DDMSI;
 
 	/**
 	 * Returns an ordered range of all the de data list views where groupId = &#63; and companyId = &#63; and ddmStructureId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @param start the lower bound of the range of de data list views
-	 * @param end the upper bound of the range of de data list views (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data list views
-	 */
-	@Override
-	public List<DEDataListView> findByG_C_DDMSI(
-		long groupId, long companyId, long ddmStructureId, int start, int end,
-		OrderByComparator<DEDataListView> orderByComparator) {
-
-		return findByG_C_DDMSI(
-			groupId, companyId, ddmStructureId, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data list views where groupId = &#63; and companyId = &#63; and ddmStructureId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataListViewModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -754,14 +437,9 @@ public class DEDataListViewPersistenceImpl
 		OrderByComparator<DEDataListView> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataListView.class)) {
-
-			return _collectionPersistenceFinderByG_C_DDMSI.find(
-				finderCache, new Object[] {groupId, companyId, ddmStructureId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_C_DDMSI.find(
+			finderCache, new Object[] {groupId, companyId, ddmStructureId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -780,17 +458,9 @@ public class DEDataListViewPersistenceImpl
 			OrderByComparator<DEDataListView> orderByComparator)
 		throws NoSuchDataListViewException {
 
-		DEDataListView deDataListView = fetchByG_C_DDMSI_First(
-			groupId, companyId, ddmStructureId, orderByComparator);
-
-		if (deDataListView != null) {
-			return deDataListView;
-		}
-
-		throw new NoSuchDataListViewException(
-			_collectionPersistenceFinderByG_C_DDMSI.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, companyId, ddmStructureId}));
+		return _collectionPersistenceFinderByG_C_DDMSI.findFirst(
+			finderCache, new Object[] {groupId, companyId, ddmStructureId},
+			orderByComparator);
 	}
 
 	/**
@@ -839,13 +509,8 @@ public class DEDataListViewPersistenceImpl
 	public int countByG_C_DDMSI(
 		long groupId, long companyId, long ddmStructureId) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataListView.class)) {
-
-			return _collectionPersistenceFinderByG_C_DDMSI.count(
-				finderCache, new Object[] {groupId, companyId, ddmStructureId});
-		}
+		return _collectionPersistenceFinderByG_C_DDMSI.count(
+			finderCache, new Object[] {groupId, companyId, ddmStructureId});
 	}
 
 	public DEDataListViewPersistenceImpl() {
@@ -1149,147 +814,143 @@ public class DEDataListViewPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_DEDATALISTVIEW_WHERE, _SQL_COUNT_DEDATALISTVIEW_WHERE,
-			DEDataListViewModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			DEDataListViewModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"deDataListView.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, DEDataListView::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, DEDataListView::getUuid,
-			DEDataListView::getGroupId);
+				"deDataListView.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, DEDataListView::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_DEDATALISTVIEW_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(DEDataListView::getUuid),
+				DEDataListView::getGroupId),
+			_SQL_SELECT_DEDATALISTVIEW_WHERE, "",
 			new FinderColumn<>(
-				"deDataListView.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, DEDataListView::getUuid),
+				"deDataListView.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, DEDataListView::getUuid),
 			new FinderColumn<>(
 				"deDataListView.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, DEDataListView::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_DEDATALISTVIEW_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_DEDATALISTVIEW_WHERE,
 				_SQL_COUNT_DEDATALISTVIEW_WHERE,
-				DEDataListViewModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				DEDataListViewModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"deDataListView.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, DEDataListView::getUuid),
+					"deDataListView.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					DEDataListView::getUuid),
 				new FinderColumn<>(
 					"deDataListView.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, DEDataListView::getCompanyId));
 
-		_finderPathWithPaginationFindByDDMStructureId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByDDMStructureId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"ddmStructureId"}, true);
-
-		_finderPathWithoutPaginationFindByDDMStructureId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByDDMStructureId",
-			new String[] {Long.class.getName()},
-			new String[] {"ddmStructureId"}, true);
-
-		_finderPathCountByDDMStructureId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByDDMStructureId",
-			new String[] {Long.class.getName()},
-			new String[] {"ddmStructureId"}, false);
-
 		_collectionPersistenceFinderByDDMStructureId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByDDMStructureId,
-				_finderPathWithoutPaginationFindByDDMStructureId,
-				_finderPathCountByDDMStructureId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByDDMStructureId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"ddmStructureId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByDDMStructureId", new String[] {Long.class.getName()},
+					new String[] {"ddmStructureId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByDDMStructureId",
+					new String[] {Long.class.getName()},
+					new String[] {"ddmStructureId"}, false),
 				_SQL_SELECT_DEDATALISTVIEW_WHERE,
 				_SQL_COUNT_DEDATALISTVIEW_WHERE,
-				DEDataListViewModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				DEDataListViewModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"deDataListView.", "ddmStructureId", FinderColumn.Type.LONG,
 					"=", true, true, DEDataListView::getDdmStructureId));
 
-		_finderPathWithPaginationFindByG_C_DDMSI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_DDMSI",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "companyId", "ddmStructureId"}, true);
-
-		_finderPathWithoutPaginationFindByG_C_DDMSI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_DDMSI",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "companyId", "ddmStructureId"}, true);
-
-		_finderPathCountByG_C_DDMSI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_DDMSI",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "companyId", "ddmStructureId"}, false);
-
 		_collectionPersistenceFinderByG_C_DDMSI =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_C_DDMSI,
-				_finderPathWithoutPaginationFindByG_C_DDMSI,
-				_finderPathCountByG_C_DDMSI, _SQL_SELECT_DEDATALISTVIEW_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_DDMSI",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "companyId", "ddmStructureId"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByG_C_DDMSI",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {"groupId", "companyId", "ddmStructureId"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByG_C_DDMSI",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {"groupId", "companyId", "ddmStructureId"},
+					false),
+				_SQL_SELECT_DEDATALISTVIEW_WHERE,
 				_SQL_COUNT_DEDATALISTVIEW_WHERE,
-				DEDataListViewModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				DEDataListViewModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"deDataListView.", "groupId", FinderColumn.Type.LONG, "=",
-					true, false, DEDataListView::getGroupId),
+					true, true, DEDataListView::getGroupId),
 				new FinderColumn<>(
 					"deDataListView.", "companyId", FinderColumn.Type.LONG, "=",
-					true, false, DEDataListView::getCompanyId),
+					true, true, DEDataListView::getCompanyId),
 				new FinderColumn<>(
 					"deDataListView.", "ddmStructureId", FinderColumn.Type.LONG,
 					"=", true, true, DEDataListView::getDdmStructureId));
@@ -1366,4 +1027,4 @@ public class DEDataListViewPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-644580803
+// LIFERAY-SERVICE-BUILDER-HASH:-1564433548

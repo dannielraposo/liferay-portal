@@ -203,6 +203,37 @@ export class MasterPagesPage {
 		await this.page.getByRole('button', {name: 'Import'}).click();
 	}
 
+	async makeCopy(
+		name: string,
+		type: 'master-page' | 'master-page-with-permissions' = 'master-page'
+	) {
+		const label =
+			type === 'master-page-with-permissions'
+				? 'Master Page With Permissions'
+				: 'Master Page';
+
+		// Open the actions menu
+
+		await clickAndExpectToBeVisible({
+			autoClick: false,
+			target: this.page.getByRole('menuitem', {name: 'Make a Copy'}),
+			trigger: this.getMasterCard(name).getByLabel('More actions'),
+		});
+
+		// Click desired option
+
+		await clickAndExpectToBeVisible({
+			autoClick: true,
+			target: this.page
+				.getByText(label, {exact: true})
+				.filter({visible: true}),
+			timeout: 5000,
+			trigger: this.page.getByRole('menuitem', {name: 'Make a Copy'}),
+		});
+
+		await waitForAlert(this.page);
+	}
+
 	async openMasterActionsMenu(name: string) {
 		await this.getMasterCard(name).getByLabel('More actions').click();
 	}

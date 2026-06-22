@@ -16,13 +16,12 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -92,21 +91,6 @@ public abstract class BaseStandaloneBuildTestrayCaseResult
 	}
 
 	@Override
-	public List<TestrayAttachment> getTestrayAttachments() {
-		List<TestrayAttachment> testrayAttachments = new ArrayList<>();
-
-		testrayAttachments.add(getTopLevelBuildDatabaseTestrayAttachment());
-		testrayAttachments.add(getTopLevelBuildReportTestrayAttachment());
-		testrayAttachments.add(getTopLevelJenkinsConsoleTestrayAttachment());
-		testrayAttachments.add(getTopLevelJenkinsReportTestrayAttachment());
-		testrayAttachments.add(getTopLevelJobSummaryTestrayAttachment());
-
-		testrayAttachments.removeAll(Collections.singleton(null));
-
-		return testrayAttachments;
-	}
-
-	@Override
 	public String getType() {
 		try {
 			return JenkinsResultsParserUtil.getProperty(
@@ -126,19 +110,19 @@ public abstract class BaseStandaloneBuildTestrayCaseResult
 	public void recordTestrayCaseResult(Job job) {
 		TestrayBuild testrayBuild = getTestrayBuild();
 
-		TestrayRun testrayRun = null;
+		String testSuiteName = null;
 
 		if (job instanceof TestSuiteJob) {
 			TestSuiteJob testSuiteJob = (TestSuiteJob)job;
 
-			testrayRun = TestrayFactory.newTestrayRun(
-				testrayBuild, getBatchName(), testSuiteJob.getTestSuiteName(),
-				job.getJobPropertiesFiles());
+			testSuiteName = testSuiteJob.getTestSuiteName();
 		}
-		else {
-			testrayRun = TestrayFactory.newTestrayRun(
-				testrayBuild, getBatchName(), job.getJobPropertiesFiles());
-		}
+
+		TestrayRun testrayRun = TestrayFactory.newTestrayRun(
+			testrayBuild, getBatchName(), testSuiteName,
+			job.getJobProperties());
+
+		setTestrayRun(testrayRun);
 
 		long start = JenkinsResultsParserUtil.getCurrentTimeMillis();
 
@@ -146,15 +130,7 @@ public abstract class BaseStandaloneBuildTestrayCaseResult
 
 		Element rootElement = document.addElement("testsuite");
 
-		Element environmentsElement = rootElement.addElement("environments");
-
-		for (TestrayRun.Factor factor : testrayRun.getFactors()) {
-			Element environmentElement = environmentsElement.addElement(
-				"environment");
-
-			environmentElement.addAttribute("type", factor.getName());
-			environmentElement.addAttribute("option", factor.getValue());
-		}
+		rootElement.add(testrayRun.getEnvironmentsElement());
 
 		Map<String, String> propertiesMap = new HashMap<>();
 
@@ -251,7 +227,7 @@ public abstract class BaseStandaloneBuildTestrayCaseResult
 							warningsPropertyElement.addElement("value");
 
 						warningPropertyElement.addText(
-							StringEscapeUtils.escapeHtml(warning));
+							StringEscapeUtils.escapeHtml4(warning));
 					}
 				}
 

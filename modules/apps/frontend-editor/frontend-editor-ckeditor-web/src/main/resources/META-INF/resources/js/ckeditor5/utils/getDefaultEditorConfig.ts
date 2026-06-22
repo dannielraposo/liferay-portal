@@ -30,7 +30,7 @@ import {
 	ImageToolbar,
 } from '@ckeditor/ckeditor5-image/dist/index.js';
 import {Indent} from '@ckeditor/ckeditor5-indent/dist/index.js';
-import {Link} from '@ckeditor/ckeditor5-link/dist/index.js';
+import {Link, LinkImage} from '@ckeditor/ckeditor5-link/dist/index.js';
 import {List} from '@ckeditor/ckeditor5-list/dist/index.js';
 import {MediaEmbed} from '@ckeditor/ckeditor5-media-embed/dist/index.js';
 import {Paragraph} from '@ckeditor/ckeditor5-paragraph/dist/index.js';
@@ -68,6 +68,7 @@ const getDefaultEditorConfig = ({
 		Italic,
 		Image,
 		Link,
+		LinkImage,
 		List,
 		Paragraph,
 		PasteFromOffice,
@@ -248,6 +249,16 @@ const getDefaultEditorConfig = ({
 			],
 		},
 		mediaEmbed: {
+			extraProviders: [
+				{
+					html: ([url]: string[]) =>
+						'<div style="position: relative; padding-bottom: 56.2493%; height: 0;">' +
+						`<video controls src="${url}" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></video>` +
+						'</div>',
+					name: 'directVideo',
+					url: /^.+\.(mp4|webm|ogg|ogv|mov|avi|m4v|mkv|wmv)(?:[/?].*)?$/i,
+				},
+			],
 			previewsInData: true,
 		},
 		plugins: advancedPlugins,

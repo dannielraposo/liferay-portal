@@ -73,9 +73,9 @@ public class LikeFinderEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByO_O_P;
-	private UniquePersistenceFinder<LikeFinderEntry>
-		_uniquePersistenceFinderByO_O_P;
+	private UniquePersistenceFinder
+		<LikeFinderEntry, NoSuchLikeFinderEntryException>
+			_uniquePersistenceFinderByO_O_P;
 
 	/**
 	 * Returns the like finder entry where ownerId = &#63; and ownerType = &#63; and portletId = &#63; or throws a <code>NoSuchLikeFinderEntryException</code> if it could not be found.
@@ -91,38 +91,8 @@ public class LikeFinderEntryPersistenceImpl
 			long ownerId, int ownerType, String portletId)
 		throws NoSuchLikeFinderEntryException {
 
-		LikeFinderEntry likeFinderEntry = fetchByO_O_P(
-			ownerId, ownerType, portletId);
-
-		if (likeFinderEntry == null) {
-			String message =
-				_uniquePersistenceFinderByO_O_P.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {ownerId, ownerType, portletId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchLikeFinderEntryException(message);
-		}
-
-		return likeFinderEntry;
-	}
-
-	/**
-	 * Returns the like finder entry where ownerId = &#63; and ownerType = &#63; and portletId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param ownerId the owner ID
-	 * @param ownerType the owner type
-	 * @param portletId the portlet ID
-	 * @return the matching like finder entry, or <code>null</code> if a matching like finder entry could not be found
-	 */
-	@Override
-	public LikeFinderEntry fetchByO_O_P(
-		long ownerId, int ownerType, String portletId) {
-
-		return fetchByO_O_P(ownerId, ownerType, portletId, true);
+		return _uniquePersistenceFinderByO_O_P.find(
+			finderCache, new Object[] {ownerId, ownerType, portletId});
 	}
 
 	/**
@@ -176,10 +146,9 @@ public class LikeFinderEntryPersistenceImpl
 			finderCache, new Object[] {ownerId, ownerType, portletId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_O_O_LikeP;
-	private FinderPath _finderPathWithPaginationCountByC_O_O_LikeP;
-	private CollectionPersistenceFinder<LikeFinderEntry>
-		_collectionPersistenceFinderByC_O_O_LikeP;
+	private CollectionPersistenceFinder
+		<LikeFinderEntry, NoSuchLikeFinderEntryException>
+			_collectionPersistenceFinderByC_O_O_LikeP;
 
 	/**
 	 * Returns all the like finder entries where companyId = &#63; and ownerId = &#63; and ownerType = &#63; and portletId LIKE &#63;.
@@ -297,17 +266,10 @@ public class LikeFinderEntryPersistenceImpl
 			OrderByComparator<LikeFinderEntry> orderByComparator)
 		throws NoSuchLikeFinderEntryException {
 
-		LikeFinderEntry likeFinderEntry = fetchByC_O_O_LikeP_First(
-			companyId, ownerId, ownerType, portletId, orderByComparator);
-
-		if (likeFinderEntry != null) {
-			return likeFinderEntry;
-		}
-
-		throw new NoSuchLikeFinderEntryException(
-			_collectionPersistenceFinderByC_O_O_LikeP.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, ownerId, ownerType, portletId}));
+		return _collectionPersistenceFinderByC_O_O_LikeP.findFirst(
+			finderCache,
+			new Object[] {companyId, ownerId, ownerType, portletId},
+			orderByComparator);
 	}
 
 	/**
@@ -543,64 +505,68 @@ public class LikeFinderEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByO_O_P = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByO_O_P",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"ownerId", "ownerType", "portletId"}, false,
-			LikeFinderEntry::getOwnerId, LikeFinderEntry::getOwnerType,
-			LikeFinderEntry::getPortletId);
-
 		_uniquePersistenceFinderByO_O_P = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByO_O_P, _SQL_SELECT_LIKEFINDERENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByO_O_P",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"ownerId", "ownerType", "portletId"}, 0, 4, false,
+				LikeFinderEntry::getOwnerId, LikeFinderEntry::getOwnerType,
+				convertNullFunction(LikeFinderEntry::getPortletId)),
+			_SQL_SELECT_LIKEFINDERENTRY_WHERE, "",
 			new FinderColumn<>(
 				"likeFinderEntry.", "ownerId", FinderColumn.Type.LONG, "=",
-				true, false, LikeFinderEntry::getOwnerId),
+				true, true, LikeFinderEntry::getOwnerId),
 			new FinderColumn<>(
 				"likeFinderEntry.", "ownerType", FinderColumn.Type.INTEGER, "=",
-				true, false, LikeFinderEntry::getOwnerType),
+				true, true, LikeFinderEntry::getOwnerType),
 			new FinderColumn<>(
 				"likeFinderEntry.", "portletId", FinderColumn.Type.STRING, "=",
 				true, true, LikeFinderEntry::getPortletId));
 
-		_finderPathWithPaginationFindByC_O_O_LikeP = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_O_O_LikeP",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "ownerId", "ownerType", "portletId"},
-			true);
-
-		_finderPathWithPaginationCountByC_O_O_LikeP = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_O_O_LikeP",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), String.class.getName()
-			},
-			new String[] {"companyId", "ownerId", "ownerType", "portletId"},
-			false);
-
 		_collectionPersistenceFinderByC_O_O_LikeP =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByC_O_O_LikeP, null,
-				_finderPathWithPaginationCountByC_O_O_LikeP,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_O_O_LikeP",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"companyId", "ownerId", "ownerType", "portletId"
+					},
+					true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByC_O_O_LikeP",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), String.class.getName()
+					},
+					new String[] {
+						"companyId", "ownerId", "ownerType", "portletId"
+					},
+					false),
 				_SQL_SELECT_LIKEFINDERENTRY_WHERE,
 				_SQL_COUNT_LIKEFINDERENTRY_WHERE,
 				LikeFinderEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"likeFinderEntry.", "companyId", FinderColumn.Type.LONG,
-					"=", true, false, LikeFinderEntry::getCompanyId),
+					"=", true, true, LikeFinderEntry::getCompanyId),
 				new FinderColumn<>(
 					"likeFinderEntry.", "ownerId", FinderColumn.Type.LONG, "=",
-					true, false, LikeFinderEntry::getOwnerId),
+					true, true, LikeFinderEntry::getOwnerId),
 				new FinderColumn<>(
 					"likeFinderEntry.", "ownerType", FinderColumn.Type.INTEGER,
-					"=", true, false, LikeFinderEntry::getOwnerType),
+					"=", true, true, LikeFinderEntry::getOwnerType),
 				new FinderColumn<>(
 					"likeFinderEntry.", "portletId", FinderColumn.Type.STRING,
 					"LIKE", true, true, LikeFinderEntry::getPortletId));
@@ -671,4 +637,4 @@ public class LikeFinderEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-10880837
+// LIFERAY-SERVICE-BUILDER-HASH:375128588

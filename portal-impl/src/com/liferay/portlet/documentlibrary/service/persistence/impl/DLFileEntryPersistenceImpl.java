@@ -11,7 +11,6 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryTable;
 import com.liferay.document.library.kernel.service.persistence.DLFileEntryPersistence;
 import com.liferay.document.library.kernel.service.persistence.DLFileEntryUtil;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
@@ -19,10 +18,6 @@ import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -32,13 +27,14 @@ import com.liferay.portal.kernel.sanitizer.SanitizerException;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelperUtil;
+import com.liferay.portal.kernel.service.persistence.impl.ArrayableFinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -47,7 +43,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portlet.documentlibrary.model.impl.DLFileEntryImpl;
@@ -96,66 +91,14 @@ public class DLFileEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByUuid;
 
 	/**
-	 * Returns all the document library file entries where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -171,14 +114,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -194,15 +132,9 @@ public class DLFileEntryPersistenceImpl
 			String uuid, OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByUuid_First(uuid, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid},
+			orderByComparator);
 	}
 
 	/**
@@ -240,17 +172,11 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<DLFileEntry>
+	private UniquePersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_uniquePersistenceFinderByUUID_G;
 
 	/**
@@ -265,33 +191,8 @@ public class DLFileEntryPersistenceImpl
 	public DLFileEntry findByUUID_G(String uuid, long groupId)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByUUID_G(uuid, groupId);
-
-		if (dlFileEntry == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFileEntryException(message);
-		}
-
-		return dlFileEntry;
-	}
-
-	/**
-	 * Returns the document library file entry where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching document library file entry, or <code>null</code> if a matching document library file entry could not be found
-	 */
-	@Override
-	public DLFileEntry fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -306,14 +207,9 @@ public class DLFileEntryPersistenceImpl
 	public DLFileEntry fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId},
+			useFinderCache);
 	}
 
 	/**
@@ -345,73 +241,14 @@ public class DLFileEntryPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByUuid_C;
 
 	/**
-	 * Returns all the document library file entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -428,15 +265,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {uuid, companyId}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -454,16 +285,9 @@ public class DLFileEntryPersistenceImpl
 			OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId},
+			orderByComparator);
 	}
 
 	/**
@@ -505,77 +329,19 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<DLFileEntry>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the document library file entries where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByGroupId(long groupId, int start, int end) {
-		return findByGroupId(groupId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<DLFileEntry, NoSuchFileEntryException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the document library file entries where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -591,14 +357,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {groupId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -614,16 +375,9 @@ public class DLFileEntryPersistenceImpl
 			long groupId, OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId},
+			orderByComparator);
 	}
 
 	/**
@@ -643,41 +397,10 @@ public class DLFileEntryPersistenceImpl
 	}
 
 	/**
-	 * Returns all the document library file entries that the user has permission to view where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByGroupId(long groupId) {
-		return filterFindByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries that the user has permission to view where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByGroupId(
-		long groupId, int start, int end) {
-
-		return filterFindByGroupId(groupId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries that the user has permissions to view where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -691,95 +414,9 @@ public class DLFileEntryPersistenceImpl
 		long groupId, int start, int end,
 		OrderByComparator<DLFileEntry> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByGroupId(groupId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByGroupId(
-					groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_DLFILEENTRY_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, DLFileEntryImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, DLFileEntryImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			return (List<DLFileEntry>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterFind(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId}, start,
+			end, orderByComparator, groupId);
 	}
 
 	/**
@@ -801,13 +438,8 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId});
 	}
 
 	/**
@@ -818,120 +450,18 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int filterCountByGroupId(long groupId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByGroupId(groupId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<DLFileEntry> dlFileEntries = findByGroupId(groupId);
-
-			dlFileEntries = InlineSQLHelperUtil.filter(dlFileEntries, groupId);
-
-			return dlFileEntries.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_DLFILEENTRY_WHERE);
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterCount(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_GROUPID_GROUPID_2 =
-		"dlFileEntry.groupId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByCompanyId;
 
 	/**
-	 * Returns all the document library file entries where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -947,14 +477,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {companyId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {companyId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -970,16 +495,9 @@ public class DLFileEntryPersistenceImpl
 			long companyId, OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {companyId},
+			orderByComparator);
 	}
 
 	/**
@@ -1017,79 +535,18 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByRepositoryId;
-	private FinderPath _finderPathWithoutPaginationFindByRepositoryId;
-	private FinderPath _finderPathCountByRepositoryId;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByRepositoryId;
 
 	/**
-	 * Returns all the document library file entries where repositoryId = &#63;.
-	 *
-	 * @param repositoryId the repository ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByRepositoryId(long repositoryId) {
-		return findByRepositoryId(
-			repositoryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where repositoryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param repositoryId the repository ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByRepositoryId(
-		long repositoryId, int start, int end) {
-
-		return findByRepositoryId(repositoryId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where repositoryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param repositoryId the repository ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByRepositoryId(
-		long repositoryId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByRepositoryId(
-			repositoryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where repositoryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -1105,14 +562,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByRepositoryId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {repositoryId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByRepositoryId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {repositoryId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1128,16 +580,9 @@ public class DLFileEntryPersistenceImpl
 			long repositoryId, OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByRepositoryId_First(
-			repositoryId, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByRepositoryId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {repositoryId}));
+		return _collectionPersistenceFinderByRepositoryId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {repositoryId},
+			orderByComparator);
 	}
 
 	/**
@@ -1175,78 +620,18 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByRepositoryId(long repositoryId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByRepositoryId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {repositoryId});
-		}
+		return _collectionPersistenceFinderByRepositoryId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {repositoryId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByMimeType;
-	private FinderPath _finderPathWithoutPaginationFindByMimeType;
-	private FinderPath _finderPathCountByMimeType;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByMimeType;
 
 	/**
-	 * Returns all the document library file entries where mimeType = &#63;.
-	 *
-	 * @param mimeType the mime type
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByMimeType(String mimeType) {
-		return findByMimeType(
-			mimeType, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where mimeType = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param mimeType the mime type
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByMimeType(
-		String mimeType, int start, int end) {
-
-		return findByMimeType(mimeType, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where mimeType = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param mimeType the mime type
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByMimeType(
-		String mimeType, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByMimeType(mimeType, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where mimeType = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param mimeType the mime type
@@ -1262,14 +647,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByMimeType.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {mimeType},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByMimeType.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {mimeType}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1285,16 +665,9 @@ public class DLFileEntryPersistenceImpl
 			String mimeType, OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByMimeType_First(
-			mimeType, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByMimeType.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {mimeType}));
+		return _collectionPersistenceFinderByMimeType.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {mimeType},
+			orderByComparator);
 	}
 
 	/**
@@ -1332,79 +705,18 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByMimeType(String mimeType) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByMimeType.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {mimeType});
-		}
+		return _collectionPersistenceFinderByMimeType.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {mimeType});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByFileEntryTypeId;
-	private FinderPath _finderPathWithoutPaginationFindByFileEntryTypeId;
-	private FinderPath _finderPathCountByFileEntryTypeId;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByFileEntryTypeId;
 
 	/**
-	 * Returns all the document library file entries where fileEntryTypeId = &#63;.
-	 *
-	 * @param fileEntryTypeId the file entry type ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByFileEntryTypeId(long fileEntryTypeId) {
-		return findByFileEntryTypeId(
-			fileEntryTypeId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where fileEntryTypeId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fileEntryTypeId the file entry type ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByFileEntryTypeId(
-		long fileEntryTypeId, int start, int end) {
-
-		return findByFileEntryTypeId(fileEntryTypeId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where fileEntryTypeId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fileEntryTypeId the file entry type ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByFileEntryTypeId(
-		long fileEntryTypeId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByFileEntryTypeId(
-			fileEntryTypeId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where fileEntryTypeId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param fileEntryTypeId the file entry type ID
@@ -1420,15 +732,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByFileEntryTypeId.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {fileEntryTypeId}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByFileEntryTypeId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {fileEntryTypeId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1445,16 +751,9 @@ public class DLFileEntryPersistenceImpl
 			OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByFileEntryTypeId_First(
-			fileEntryTypeId, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByFileEntryTypeId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {fileEntryTypeId}));
+		return _collectionPersistenceFinderByFileEntryTypeId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {fileEntryTypeId},
+			orderByComparator);
 	}
 
 	/**
@@ -1493,80 +792,18 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByFileEntryTypeId(long fileEntryTypeId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByFileEntryTypeId.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {fileEntryTypeId});
-		}
+		return _collectionPersistenceFinderByFileEntryTypeId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {fileEntryTypeId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindBySmallImageId;
-	private FinderPath _finderPathWithoutPaginationFindBySmallImageId;
-	private FinderPath _finderPathCountBySmallImageId;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderBySmallImageId;
 
 	/**
-	 * Returns all the document library file entries where smallImageId = &#63;.
-	 *
-	 * @param smallImageId the small image ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findBySmallImageId(long smallImageId) {
-		return findBySmallImageId(
-			smallImageId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where smallImageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param smallImageId the small image ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findBySmallImageId(
-		long smallImageId, int start, int end) {
-
-		return findBySmallImageId(smallImageId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where smallImageId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param smallImageId the small image ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findBySmallImageId(
-		long smallImageId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findBySmallImageId(
-			smallImageId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where smallImageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param smallImageId the small image ID
@@ -1582,14 +819,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderBySmallImageId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {smallImageId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderBySmallImageId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {smallImageId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1605,16 +837,9 @@ public class DLFileEntryPersistenceImpl
 			long smallImageId, OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchBySmallImageId_First(
-			smallImageId, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderBySmallImageId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {smallImageId}));
+		return _collectionPersistenceFinderBySmallImageId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {smallImageId},
+			orderByComparator);
 	}
 
 	/**
@@ -1652,79 +877,18 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countBySmallImageId(long smallImageId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderBySmallImageId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {smallImageId});
-		}
+		return _collectionPersistenceFinderBySmallImageId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {smallImageId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByLargeImageId;
-	private FinderPath _finderPathWithoutPaginationFindByLargeImageId;
-	private FinderPath _finderPathCountByLargeImageId;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByLargeImageId;
 
 	/**
-	 * Returns all the document library file entries where largeImageId = &#63;.
-	 *
-	 * @param largeImageId the large image ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByLargeImageId(long largeImageId) {
-		return findByLargeImageId(
-			largeImageId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where largeImageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param largeImageId the large image ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByLargeImageId(
-		long largeImageId, int start, int end) {
-
-		return findByLargeImageId(largeImageId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where largeImageId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param largeImageId the large image ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByLargeImageId(
-		long largeImageId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByLargeImageId(
-			largeImageId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where largeImageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param largeImageId the large image ID
@@ -1740,14 +904,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByLargeImageId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {largeImageId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByLargeImageId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {largeImageId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1763,16 +922,9 @@ public class DLFileEntryPersistenceImpl
 			long largeImageId, OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByLargeImageId_First(
-			largeImageId, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByLargeImageId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {largeImageId}));
+		return _collectionPersistenceFinderByLargeImageId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {largeImageId},
+			orderByComparator);
 	}
 
 	/**
@@ -1810,79 +962,18 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByLargeImageId(long largeImageId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByLargeImageId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {largeImageId});
-		}
+		return _collectionPersistenceFinderByLargeImageId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {largeImageId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCustom1ImageId;
-	private FinderPath _finderPathWithoutPaginationFindByCustom1ImageId;
-	private FinderPath _finderPathCountByCustom1ImageId;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByCustom1ImageId;
 
 	/**
-	 * Returns all the document library file entries where custom1ImageId = &#63;.
-	 *
-	 * @param custom1ImageId the custom1 image ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByCustom1ImageId(long custom1ImageId) {
-		return findByCustom1ImageId(
-			custom1ImageId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where custom1ImageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param custom1ImageId the custom1 image ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByCustom1ImageId(
-		long custom1ImageId, int start, int end) {
-
-		return findByCustom1ImageId(custom1ImageId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where custom1ImageId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param custom1ImageId the custom1 image ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByCustom1ImageId(
-		long custom1ImageId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByCustom1ImageId(
-			custom1ImageId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where custom1ImageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param custom1ImageId the custom1 image ID
@@ -1898,14 +989,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByCustom1ImageId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {custom1ImageId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCustom1ImageId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {custom1ImageId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1922,16 +1008,9 @@ public class DLFileEntryPersistenceImpl
 			OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByCustom1ImageId_First(
-			custom1ImageId, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByCustom1ImageId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {custom1ImageId}));
+		return _collectionPersistenceFinderByCustom1ImageId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {custom1ImageId},
+			orderByComparator);
 	}
 
 	/**
@@ -1969,80 +1048,18 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByCustom1ImageId(long custom1ImageId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByCustom1ImageId.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {custom1ImageId});
-		}
+		return _collectionPersistenceFinderByCustom1ImageId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {custom1ImageId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCustom2ImageId;
-	private FinderPath _finderPathWithoutPaginationFindByCustom2ImageId;
-	private FinderPath _finderPathCountByCustom2ImageId;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByCustom2ImageId;
 
 	/**
-	 * Returns all the document library file entries where custom2ImageId = &#63;.
-	 *
-	 * @param custom2ImageId the custom2 image ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByCustom2ImageId(long custom2ImageId) {
-		return findByCustom2ImageId(
-			custom2ImageId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where custom2ImageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param custom2ImageId the custom2 image ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByCustom2ImageId(
-		long custom2ImageId, int start, int end) {
-
-		return findByCustom2ImageId(custom2ImageId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where custom2ImageId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param custom2ImageId the custom2 image ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByCustom2ImageId(
-		long custom2ImageId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByCustom2ImageId(
-			custom2ImageId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where custom2ImageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param custom2ImageId the custom2 image ID
@@ -2058,14 +1075,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByCustom2ImageId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {custom2ImageId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCustom2ImageId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {custom2ImageId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2082,16 +1094,9 @@ public class DLFileEntryPersistenceImpl
 			OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByCustom2ImageId_First(
-			custom2ImageId, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByCustom2ImageId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {custom2ImageId}));
+		return _collectionPersistenceFinderByCustom2ImageId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {custom2ImageId},
+			orderByComparator);
 	}
 
 	/**
@@ -2129,82 +1134,19 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByCustom2ImageId(long custom2ImageId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByCustom2ImageId.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {custom2ImageId});
-		}
+		return _collectionPersistenceFinderByCustom2ImageId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {custom2ImageId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_U;
-	private FinderPath _finderPathWithoutPaginationFindByG_U;
-	private FinderPath _finderPathCountByG_U;
-	private CollectionPersistenceFinder<DLFileEntry>
-		_collectionPersistenceFinderByG_U;
-
-	/**
-	 * Returns all the document library file entries where groupId = &#63; and userId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_U(long groupId, long userId) {
-		return findByG_U(
-			groupId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where groupId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_U(
-		long groupId, long userId, int start, int end) {
-
-		return findByG_U(groupId, userId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<DLFileEntry, NoSuchFileEntryException>
+			_collectionPersistenceFinderByG_U;
 
 	/**
 	 * Returns an ordered range of all the document library file entries where groupId = &#63; and userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_U(
-		long groupId, long userId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByG_U(groupId, userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where groupId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2221,15 +1163,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByG_U.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, userId}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_U.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId, userId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2247,16 +1183,9 @@ public class DLFileEntryPersistenceImpl
 			OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByG_U_First(
-			groupId, userId, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByG_U.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, userId}));
+		return _collectionPersistenceFinderByG_U.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId, userId},
+			orderByComparator);
 	}
 
 	/**
@@ -2278,43 +1207,10 @@ public class DLFileEntryPersistenceImpl
 	}
 
 	/**
-	 * Returns all the document library file entries that the user has permission to view where groupId = &#63; and userId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @return the matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_U(long groupId, long userId) {
-		return filterFindByG_U(
-			groupId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries that the user has permission to view where groupId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_U(
-		long groupId, long userId, int start, int end) {
-
-		return filterFindByG_U(groupId, userId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries that the user has permissions to view where groupId = &#63; and userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2329,99 +1225,9 @@ public class DLFileEntryPersistenceImpl
 		long groupId, long userId, int start, int end,
 		OrderByComparator<DLFileEntry> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_U(groupId, userId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_U(
-					groupId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_DLFILEENTRY_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_U_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_USERID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, DLFileEntryImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, DLFileEntryImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(userId);
-
-			return (List<DLFileEntry>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_U.filterFind(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId, userId},
+			start, end, orderByComparator, groupId);
 	}
 
 	/**
@@ -2445,14 +1251,8 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByG_U(long groupId, long userId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByG_U.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, userId});
-		}
+		return _collectionPersistenceFinderByG_U.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId, userId});
 	}
 
 	/**
@@ -2464,130 +1264,20 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_U(long groupId, long userId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_U(groupId, userId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<DLFileEntry> dlFileEntries = findByG_U(groupId, userId);
-
-			dlFileEntries = InlineSQLHelperUtil.filter(dlFileEntries, groupId);
-
-			return dlFileEntries.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_DLFILEENTRY_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_U_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_USERID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(userId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_U.filterCount(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId, userId},
+			groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_U_GROUPID_2 =
-		"dlFileEntry.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_U_USERID_2 =
-		"dlFileEntry.userId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByG_F;
-	private FinderPath _finderPathWithoutPaginationFindByG_F;
-	private FinderPath _finderPathCountByG_F;
-	private FinderPath _finderPathWithPaginationCountByG_F;
-
-	/**
-	 * Returns all the document library file entries where groupId = &#63; and folderId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F(long groupId, long folderId) {
-		return findByG_F(
-			groupId, folderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where groupId = &#63; and folderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F(
-		long groupId, long folderId, int start, int end) {
-
-		return findByG_F(groupId, folderId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<DLFileEntry, NoSuchFileEntryException>
+			_collectionPersistenceFinderByG_F;
 
 	/**
 	 * Returns an ordered range of all the document library file entries where groupId = &#63; and folderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F(
-		long groupId, long folderId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByG_F(
-			groupId, folderId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where groupId = &#63; and folderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2604,106 +1294,10 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByG_F;
-					finderArgs = new Object[] {groupId, folderId};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByG_F;
-				finderArgs = new Object[] {
-					groupId, folderId, start, end, orderByComparator
-				};
-			}
-
-			List<DLFileEntry> list = null;
-
-			if (useFinderCache) {
-				list = (List<DLFileEntry>)FinderCacheUtil.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (DLFileEntry dlFileEntry : list) {
-						if ((groupId != dlFileEntry.getGroupId()) ||
-							(folderId != dlFileEntry.getFolderId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						4 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(4);
-				}
-
-				sb.append(_SQL_SELECT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_F_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_F_FOLDERID_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(DLFileEntryModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(folderId);
-
-					list = (List<DLFileEntry>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						FinderCacheUtil.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_F.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2756,54 +1350,16 @@ public class DLFileEntryPersistenceImpl
 		long groupId, long folderId,
 		OrderByComparator<DLFileEntry> orderByComparator) {
 
-		List<DLFileEntry> list = findByG_F(
-			groupId, folderId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the document library file entries that the user has permission to view where groupId = &#63; and folderId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @return the matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_F(long groupId, long folderId) {
-		return filterFindByG_F(
-			groupId, folderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries that the user has permission to view where groupId = &#63; and folderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_F(
-		long groupId, long folderId, int start, int end) {
-
-		return filterFindByG_F(groupId, folderId, start, end, null);
+		return _collectionPersistenceFinderByG_F.fetchFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}}, orderByComparator);
 	}
 
 	/**
 	 * Returns an ordered range of all the document library file entries that the user has permissions to view where groupId = &#63; and folderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2818,139 +1374,17 @@ public class DLFileEntryPersistenceImpl
 		long groupId, long folderId, int start, int end,
 		OrderByComparator<DLFileEntry> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_F(groupId, folderId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_F(
-					groupId, folderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_DLFILEENTRY_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_F_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_F_FOLDERID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, DLFileEntryImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, DLFileEntryImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(folderId);
-
-			return (List<DLFileEntry>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * Returns all the document library file entries that the user has permission to view where groupId = &#63; and folderId = any &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param folderIds the folder IDs
-	 * @return the matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_F(long groupId, long[] folderIds) {
-		return filterFindByG_F(
-			groupId, folderIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries that the user has permission to view where groupId = &#63; and folderId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderIds the folder IDs
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_F(
-		long groupId, long[] folderIds, int start, int end) {
-
-		return filterFindByG_F(groupId, folderIds, start, end, null);
+		return _collectionPersistenceFinderByG_F.filterFind(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
 	 * Returns an ordered range of all the document library file entries that the user has permission to view where groupId = &#63; and folderId = any &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2965,176 +1399,17 @@ public class DLFileEntryPersistenceImpl
 		long groupId, long[] folderIds, int start, int end,
 		OrderByComparator<DLFileEntry> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_F(groupId, folderIds, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_F(
-					groupId, folderIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		StringBundler sb = new StringBundler();
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_DLFILEENTRY_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_F_GROUPID_2);
-
-		if (folderIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_G_F_FOLDERID_7);
-
-			sb.append(StringUtil.merge(folderIds));
-
-			sb.append(")");
-
-			sb.append(")");
-		}
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, DLFileEntryImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, DLFileEntryImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			return (List<DLFileEntry>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * Returns all the document library file entries where groupId = &#63; and folderId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderIds the folder IDs
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F(long groupId, long[] folderIds) {
-		return findByG_F(
-			groupId, folderIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where groupId = &#63; and folderId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderIds the folder IDs
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F(
-		long groupId, long[] folderIds, int start, int end) {
-
-		return findByG_F(groupId, folderIds, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where groupId = &#63; and folderId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderIds the folder IDs
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F(
-		long groupId, long[] folderIds, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByG_F(
-			groupId, folderIds, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByG_F.filterFind(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, ArrayUtil.sortedUnique(folderIds)}, start,
+			end, orderByComparator, groupId);
 	}
 
 	/**
 	 * Returns an ordered range of all the document library file entries where groupId = &#63; and folderId = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -3151,125 +1426,10 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		if (folderIds.length == 1) {
-			return findByG_F(
-				groupId, folderIds[0], start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						groupId, StringUtil.merge(folderIds)
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					groupId, StringUtil.merge(folderIds), start, end,
-					orderByComparator
-				};
-			}
-
-			List<DLFileEntry> list = null;
-
-			if (useFinderCache) {
-				list = (List<DLFileEntry>)FinderCacheUtil.getResult(
-					_finderPathWithPaginationFindByG_F, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (DLFileEntry dlFileEntry : list) {
-						if ((groupId != dlFileEntry.getGroupId()) ||
-							!ArrayUtil.contains(
-								folderIds, dlFileEntry.getFolderId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_F_GROUPID_2);
-
-				if (folderIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_F_FOLDERID_7);
-
-					sb.append(StringUtil.merge(folderIds));
-
-					sb.append(")");
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(DLFileEntryModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					list = (List<DLFileEntry>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						FinderCacheUtil.putResult(
-							_finderPathWithPaginationFindByG_F, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_F.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, ArrayUtil.sortedUnique(folderIds)}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3280,13 +1440,9 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public void removeByG_F(long groupId, long folderId) {
-		for (DLFileEntry dlFileEntry :
-				findByG_F(
-					groupId, folderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(dlFileEntry);
-		}
+		_collectionPersistenceFinderByG_F.remove(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}});
 	}
 
 	/**
@@ -3298,55 +1454,9 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByG_F(long groupId, long folderId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			FinderPath finderPath = _finderPathCountByG_F;
-
-			Object[] finderArgs = new Object[] {groupId, folderId};
-
-			Long count = (Long)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_F_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_F_FOLDERID_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(folderId);
-
-					count = (Long)query.uniqueResult();
-
-					FinderCacheUtil.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_F.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}});
 	}
 
 	/**
@@ -3358,75 +1468,9 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByG_F(long groupId, long[] folderIds) {
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			Object[] finderArgs = new Object[] {
-				groupId, StringUtil.merge(folderIds)
-			};
-
-			Long count = (Long)FinderCacheUtil.getResult(
-				_finderPathWithPaginationCountByG_F, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_F_GROUPID_2);
-
-				if (folderIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_F_FOLDERID_7);
-
-					sb.append(StringUtil.merge(folderIds));
-
-					sb.append(")");
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					count = (Long)query.uniqueResult();
-
-					FinderCacheUtil.putResult(
-						_finderPathWithPaginationCountByG_F, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_F.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, ArrayUtil.sortedUnique(folderIds)});
 	}
 
 	/**
@@ -3438,56 +1482,9 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_F(long groupId, long folderId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_F(groupId, folderId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<DLFileEntry> dlFileEntries = findByG_F(groupId, folderId);
-
-			dlFileEntries = InlineSQLHelperUtil.filter(dlFileEntries, groupId);
-
-			return dlFileEntries.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_DLFILEENTRY_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_F_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_F_FOLDERID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(folderId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_F.filterCount(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}}, groupId);
 	}
 
 	/**
@@ -3499,151 +1496,19 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_F(long groupId, long[] folderIds) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_F(groupId, folderIds);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<DLFileEntry> dlFileEntries = InlineSQLHelperUtil.filter(
-				findByG_F(groupId, folderIds), groupId);
-
-			return dlFileEntries.size();
-		}
-
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		StringBundler sb = new StringBundler();
-
-		sb.append(_FILTER_SQL_COUNT_DLFILEENTRY_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_F_GROUPID_2);
-
-		if (folderIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_G_F_FOLDERID_7);
-
-			sb.append(StringUtil.merge(folderIds));
-
-			sb.append(")");
-
-			sb.append(")");
-		}
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_F.filterCount(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, ArrayUtil.sortedUnique(folderIds)}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_F_GROUPID_2 =
-		"dlFileEntry.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_F_FOLDERID_2 =
-		"dlFileEntry.folderId = ?";
-
-	private static final String _FINDER_COLUMN_G_F_FOLDERID_7 =
-		"dlFileEntry.folderId IN (";
-
-	private FinderPath _finderPathWithPaginationFindByR_F;
-	private FinderPath _finderPathWithoutPaginationFindByR_F;
-	private FinderPath _finderPathCountByR_F;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByR_F;
 
 	/**
-	 * Returns all the document library file entries where repositoryId = &#63; and folderId = &#63;.
-	 *
-	 * @param repositoryId the repository ID
-	 * @param folderId the folder ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByR_F(long repositoryId, long folderId) {
-		return findByR_F(
-			repositoryId, folderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where repositoryId = &#63; and folderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param repositoryId the repository ID
-	 * @param folderId the folder ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByR_F(
-		long repositoryId, long folderId, int start, int end) {
-
-		return findByR_F(repositoryId, folderId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where repositoryId = &#63; and folderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param repositoryId the repository ID
-	 * @param folderId the folder ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByR_F(
-		long repositoryId, long folderId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByR_F(
-			repositoryId, folderId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where repositoryId = &#63; and folderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -3660,15 +1525,10 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByR_F.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {repositoryId, folderId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByR_F.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {repositoryId, folderId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3686,17 +1546,9 @@ public class DLFileEntryPersistenceImpl
 			OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByR_F_First(
-			repositoryId, folderId, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByR_F.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {repositoryId, folderId}));
+		return _collectionPersistenceFinderByR_F.findFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {repositoryId, folderId}, orderByComparator);
 	}
 
 	/**
@@ -3739,82 +1591,19 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByR_F(long repositoryId, long folderId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByR_F.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {repositoryId, folderId});
-		}
+		return _collectionPersistenceFinderByR_F.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {repositoryId, folderId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByF_N;
-	private FinderPath _finderPathWithoutPaginationFindByF_N;
-	private FinderPath _finderPathCountByF_N;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByF_N;
 
 	/**
-	 * Returns all the document library file entries where folderId = &#63; and name = &#63;.
-	 *
-	 * @param folderId the folder ID
-	 * @param name the name
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByF_N(long folderId, String name) {
-		return findByF_N(
-			folderId, name, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where folderId = &#63; and name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param folderId the folder ID
-	 * @param name the name
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByF_N(
-		long folderId, String name, int start, int end) {
-
-		return findByF_N(folderId, name, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where folderId = &#63; and name = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param folderId the folder ID
-	 * @param name the name
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByF_N(
-		long folderId, String name, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByF_N(folderId, name, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where folderId = &#63; and name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param folderId the folder ID
@@ -3831,14 +1620,9 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByF_N.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {folderId, name},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByF_N.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {folderId, name},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -3856,16 +1640,9 @@ public class DLFileEntryPersistenceImpl
 			OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByF_N_First(
-			folderId, name, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByF_N.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {folderId, name}));
+		return _collectionPersistenceFinderByF_N.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {folderId, name},
+			orderByComparator);
 	}
 
 	/**
@@ -3907,88 +1684,19 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByF_N(long folderId, String name) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByF_N.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {folderId, name});
-		}
+		return _collectionPersistenceFinderByF_N.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {folderId, name});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_U_F;
-	private FinderPath _finderPathWithoutPaginationFindByG_U_F;
-	private FinderPath _finderPathCountByG_U_F;
-	private FinderPath _finderPathWithPaginationCountByG_U_F;
-
-	/**
-	 * Returns all the document library file entries where groupId = &#63; and userId = &#63; and folderId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param folderId the folder ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_U_F(
-		long groupId, long userId, long folderId) {
-
-		return findByG_U_F(
-			groupId, userId, folderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where groupId = &#63; and userId = &#63; and folderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param folderId the folder ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_U_F(
-		long groupId, long userId, long folderId, int start, int end) {
-
-		return findByG_U_F(groupId, userId, folderId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<DLFileEntry, NoSuchFileEntryException>
+			_collectionPersistenceFinderByG_U_F;
 
 	/**
 	 * Returns an ordered range of all the document library file entries where groupId = &#63; and userId = &#63; and folderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param folderId the folder ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_U_F(
-		long groupId, long userId, long folderId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByG_U_F(
-			groupId, userId, folderId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where groupId = &#63; and userId = &#63; and folderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4006,111 +1714,10 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByG_U_F;
-					finderArgs = new Object[] {groupId, userId, folderId};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByG_U_F;
-				finderArgs = new Object[] {
-					groupId, userId, folderId, start, end, orderByComparator
-				};
-			}
-
-			List<DLFileEntry> list = null;
-
-			if (useFinderCache) {
-				list = (List<DLFileEntry>)FinderCacheUtil.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (DLFileEntry dlFileEntry : list) {
-						if ((groupId != dlFileEntry.getGroupId()) ||
-							(userId != dlFileEntry.getUserId()) ||
-							(folderId != dlFileEntry.getFolderId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						5 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(5);
-				}
-
-				sb.append(_SQL_SELECT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_F_USERID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_F_FOLDERID_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(DLFileEntryModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(userId);
-
-					queryPos.add(folderId);
-
-					list = (List<DLFileEntry>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						FinderCacheUtil.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_U_F.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, userId, new long[] {folderId}}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -4168,59 +1775,17 @@ public class DLFileEntryPersistenceImpl
 		long groupId, long userId, long folderId,
 		OrderByComparator<DLFileEntry> orderByComparator) {
 
-		List<DLFileEntry> list = findByG_U_F(
-			groupId, userId, folderId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the document library file entries that the user has permission to view where groupId = &#63; and userId = &#63; and folderId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param folderId the folder ID
-	 * @return the matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_U_F(
-		long groupId, long userId, long folderId) {
-
-		return filterFindByG_U_F(
-			groupId, userId, folderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries that the user has permission to view where groupId = &#63; and userId = &#63; and folderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param folderId the folder ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_U_F(
-		long groupId, long userId, long folderId, int start, int end) {
-
-		return filterFindByG_U_F(groupId, userId, folderId, start, end, null);
+		return _collectionPersistenceFinderByG_U_F.fetchFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, userId, new long[] {folderId}},
+			orderByComparator);
 	}
 
 	/**
 	 * Returns an ordered range of all the document library file entries that the user has permissions to view where groupId = &#63; and userId = &#63; and folderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4236,149 +1801,17 @@ public class DLFileEntryPersistenceImpl
 		long groupId, long userId, long folderId, int start, int end,
 		OrderByComparator<DLFileEntry> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_U_F(
-				groupId, userId, folderId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_U_F(
-					groupId, userId, folderId, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_DLFILEENTRY_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_F_USERID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_F_FOLDERID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, DLFileEntryImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, DLFileEntryImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(userId);
-
-			queryPos.add(folderId);
-
-			return (List<DLFileEntry>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * Returns all the document library file entries that the user has permission to view where groupId = &#63; and userId = &#63; and folderId = any &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param folderIds the folder IDs
-	 * @return the matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_U_F(
-		long groupId, long userId, long[] folderIds) {
-
-		return filterFindByG_U_F(
-			groupId, userId, folderIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries that the user has permission to view where groupId = &#63; and userId = &#63; and folderId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param folderIds the folder IDs
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_U_F(
-		long groupId, long userId, long[] folderIds, int start, int end) {
-
-		return filterFindByG_U_F(groupId, userId, folderIds, start, end, null);
+		return _collectionPersistenceFinderByG_U_F.filterFind(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, userId, new long[] {folderId}}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
 	 * Returns an ordered range of all the document library file entries that the user has permission to view where groupId = &#63; and userId = &#63; and folderId = any &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4394,187 +1827,17 @@ public class DLFileEntryPersistenceImpl
 		long groupId, long userId, long[] folderIds, int start, int end,
 		OrderByComparator<DLFileEntry> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_U_F(
-				groupId, userId, folderIds, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_U_F(
-					groupId, userId, folderIds, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		StringBundler sb = new StringBundler();
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_DLFILEENTRY_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_F_USERID_2);
-
-		if (folderIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_G_U_F_FOLDERID_7);
-
-			sb.append(StringUtil.merge(folderIds));
-
-			sb.append(")");
-
-			sb.append(")");
-		}
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, DLFileEntryImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, DLFileEntryImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(userId);
-
-			return (List<DLFileEntry>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * Returns all the document library file entries where groupId = &#63; and userId = &#63; and folderId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param folderIds the folder IDs
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_U_F(
-		long groupId, long userId, long[] folderIds) {
-
-		return findByG_U_F(
-			groupId, userId, folderIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where groupId = &#63; and userId = &#63; and folderId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param folderIds the folder IDs
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_U_F(
-		long groupId, long userId, long[] folderIds, int start, int end) {
-
-		return findByG_U_F(groupId, userId, folderIds, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where groupId = &#63; and userId = &#63; and folderId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param folderIds the folder IDs
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_U_F(
-		long groupId, long userId, long[] folderIds, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByG_U_F(
-			groupId, userId, folderIds, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByG_U_F.filterFind(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, userId, ArrayUtil.sortedUnique(folderIds)},
+			start, end, orderByComparator, groupId);
 	}
 
 	/**
 	 * Returns an ordered range of all the document library file entries where groupId = &#63; and userId = &#63; and folderId = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4592,130 +1855,10 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		if (folderIds.length == 1) {
-			return findByG_U_F(
-				groupId, userId, folderIds[0], start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						groupId, userId, StringUtil.merge(folderIds)
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					groupId, userId, StringUtil.merge(folderIds), start, end,
-					orderByComparator
-				};
-			}
-
-			List<DLFileEntry> list = null;
-
-			if (useFinderCache) {
-				list = (List<DLFileEntry>)FinderCacheUtil.getResult(
-					_finderPathWithPaginationFindByG_U_F, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (DLFileEntry dlFileEntry : list) {
-						if ((groupId != dlFileEntry.getGroupId()) ||
-							(userId != dlFileEntry.getUserId()) ||
-							!ArrayUtil.contains(
-								folderIds, dlFileEntry.getFolderId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_F_USERID_2);
-
-				if (folderIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_U_F_FOLDERID_7);
-
-					sb.append(StringUtil.merge(folderIds));
-
-					sb.append(")");
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(DLFileEntryModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(userId);
-
-					list = (List<DLFileEntry>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						FinderCacheUtil.putResult(
-							_finderPathWithPaginationFindByG_U_F, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_U_F.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, userId, ArrayUtil.sortedUnique(folderIds)},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -4727,13 +1870,9 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public void removeByG_U_F(long groupId, long userId, long folderId) {
-		for (DLFileEntry dlFileEntry :
-				findByG_U_F(
-					groupId, userId, folderId, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, null)) {
-
-			remove(dlFileEntry);
-		}
+		_collectionPersistenceFinderByG_U_F.remove(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, userId, new long[] {folderId}});
 	}
 
 	/**
@@ -4746,59 +1885,9 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByG_U_F(long groupId, long userId, long folderId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			FinderPath finderPath = _finderPathCountByG_U_F;
-
-			Object[] finderArgs = new Object[] {groupId, userId, folderId};
-
-			Long count = (Long)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(4);
-
-				sb.append(_SQL_COUNT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_F_USERID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_F_FOLDERID_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(userId);
-
-					queryPos.add(folderId);
-
-					count = (Long)query.uniqueResult();
-
-					FinderCacheUtil.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_U_F.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, userId, new long[] {folderId}});
 	}
 
 	/**
@@ -4811,80 +1900,9 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByG_U_F(long groupId, long userId, long[] folderIds) {
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			Object[] finderArgs = new Object[] {
-				groupId, userId, StringUtil.merge(folderIds)
-			};
-
-			Long count = (Long)FinderCacheUtil.getResult(
-				_finderPathWithPaginationCountByG_U_F, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_U_F_USERID_2);
-
-				if (folderIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_U_F_FOLDERID_7);
-
-					sb.append(StringUtil.merge(folderIds));
-
-					sb.append(")");
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(userId);
-
-					count = (Long)query.uniqueResult();
-
-					FinderCacheUtil.putResult(
-						_finderPathWithPaginationCountByG_U_F, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_U_F.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, userId, ArrayUtil.sortedUnique(folderIds)});
 	}
 
 	/**
@@ -4897,61 +1915,9 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_U_F(long groupId, long userId, long folderId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_U_F(groupId, userId, folderId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<DLFileEntry> dlFileEntries = findByG_U_F(
-				groupId, userId, folderId);
-
-			dlFileEntries = InlineSQLHelperUtil.filter(dlFileEntries, groupId);
-
-			return dlFileEntries.size();
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_DLFILEENTRY_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_F_USERID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_F_FOLDERID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(userId);
-
-			queryPos.add(folderId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_U_F.filterCount(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, userId, new long[] {folderId}}, groupId);
 	}
 
 	/**
@@ -4964,93 +1930,13 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_U_F(long groupId, long userId, long[] folderIds) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_U_F(groupId, userId, folderIds);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<DLFileEntry> dlFileEntries = InlineSQLHelperUtil.filter(
-				findByG_U_F(groupId, userId, folderIds), groupId);
-
-			return dlFileEntries.size();
-		}
-
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		StringBundler sb = new StringBundler();
-
-		sb.append(_FILTER_SQL_COUNT_DLFILEENTRY_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_U_F_USERID_2);
-
-		if (folderIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_G_U_F_FOLDERID_7);
-
-			sb.append(StringUtil.merge(folderIds));
-
-			sb.append(")");
-
-			sb.append(")");
-		}
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(userId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_U_F.filterCount(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, userId, ArrayUtil.sortedUnique(folderIds)},
+			groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_U_F_GROUPID_2 =
-		"dlFileEntry.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_U_F_USERID_2 =
-		"dlFileEntry.userId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_U_F_FOLDERID_2 =
-		"dlFileEntry.folderId = ?";
-
-	private static final String _FINDER_COLUMN_G_U_F_FOLDERID_7 =
-		"dlFileEntry.folderId IN (";
-
-	private FinderPath _finderPathFetchByG_F_N;
-	private UniquePersistenceFinder<DLFileEntry>
+	private UniquePersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_uniquePersistenceFinderByG_F_N;
 
 	/**
@@ -5066,35 +1952,9 @@ public class DLFileEntryPersistenceImpl
 	public DLFileEntry findByG_F_N(long groupId, long folderId, String name)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByG_F_N(groupId, folderId, name);
-
-		if (dlFileEntry == null) {
-			String message =
-				_uniquePersistenceFinderByG_F_N.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, folderId, name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFileEntryException(message);
-		}
-
-		return dlFileEntry;
-	}
-
-	/**
-	 * Returns the document library file entry where groupId = &#63; and folderId = &#63; and name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @param name the name
-	 * @return the matching document library file entry, or <code>null</code> if a matching document library file entry could not be found
-	 */
-	@Override
-	public DLFileEntry fetchByG_F_N(long groupId, long folderId, String name) {
-		return fetchByG_F_N(groupId, folderId, name, true);
+		return _uniquePersistenceFinderByG_F_N.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, folderId, name});
 	}
 
 	/**
@@ -5110,14 +1970,9 @@ public class DLFileEntryPersistenceImpl
 	public DLFileEntry fetchByG_F_N(
 		long groupId, long folderId, String name, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _uniquePersistenceFinderByG_F_N.fetch(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, folderId, name}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_F_N.fetch(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, folderId, name}, useFinderCache);
 	}
 
 	/**
@@ -5152,8 +2007,7 @@ public class DLFileEntryPersistenceImpl
 			new Object[] {groupId, folderId, name});
 	}
 
-	private FinderPath _finderPathFetchByG_F_FN;
-	private UniquePersistenceFinder<DLFileEntry>
+	private UniquePersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_uniquePersistenceFinderByG_F_FN;
 
 	/**
@@ -5170,37 +2024,9 @@ public class DLFileEntryPersistenceImpl
 			long groupId, long folderId, String fileName)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByG_F_FN(groupId, folderId, fileName);
-
-		if (dlFileEntry == null) {
-			String message =
-				_uniquePersistenceFinderByG_F_FN.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, folderId, fileName});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFileEntryException(message);
-		}
-
-		return dlFileEntry;
-	}
-
-	/**
-	 * Returns the document library file entry where groupId = &#63; and folderId = &#63; and fileName = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @param fileName the file name
-	 * @return the matching document library file entry, or <code>null</code> if a matching document library file entry could not be found
-	 */
-	@Override
-	public DLFileEntry fetchByG_F_FN(
-		long groupId, long folderId, String fileName) {
-
-		return fetchByG_F_FN(groupId, folderId, fileName, true);
+		return _uniquePersistenceFinderByG_F_FN.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, folderId, fileName});
 	}
 
 	/**
@@ -5216,14 +2042,9 @@ public class DLFileEntryPersistenceImpl
 	public DLFileEntry fetchByG_F_FN(
 		long groupId, long folderId, String fileName, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _uniquePersistenceFinderByG_F_FN.fetch(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, folderId, fileName}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_F_FN.fetch(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, folderId, fileName}, useFinderCache);
 	}
 
 	/**
@@ -5259,8 +2080,7 @@ public class DLFileEntryPersistenceImpl
 			new Object[] {groupId, folderId, fileName});
 	}
 
-	private FinderPath _finderPathFetchByG_F_T;
-	private UniquePersistenceFinder<DLFileEntry>
+	private UniquePersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_uniquePersistenceFinderByG_F_T;
 
 	/**
@@ -5276,35 +2096,9 @@ public class DLFileEntryPersistenceImpl
 	public DLFileEntry findByG_F_T(long groupId, long folderId, String title)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByG_F_T(groupId, folderId, title);
-
-		if (dlFileEntry == null) {
-			String message =
-				_uniquePersistenceFinderByG_F_T.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, folderId, title});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFileEntryException(message);
-		}
-
-		return dlFileEntry;
-	}
-
-	/**
-	 * Returns the document library file entry where groupId = &#63; and folderId = &#63; and title = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @param title the title
-	 * @return the matching document library file entry, or <code>null</code> if a matching document library file entry could not be found
-	 */
-	@Override
-	public DLFileEntry fetchByG_F_T(long groupId, long folderId, String title) {
-		return fetchByG_F_T(groupId, folderId, title, true);
+		return _uniquePersistenceFinderByG_F_T.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, folderId, title});
 	}
 
 	/**
@@ -5320,14 +2114,9 @@ public class DLFileEntryPersistenceImpl
 	public DLFileEntry fetchByG_F_T(
 		long groupId, long folderId, String title, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _uniquePersistenceFinderByG_F_T.fetch(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, folderId, title}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_F_T.fetch(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, folderId, title}, useFinderCache);
 	}
 
 	/**
@@ -5362,80 +2151,15 @@ public class DLFileEntryPersistenceImpl
 			new Object[] {groupId, folderId, title});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_F_F;
-	private FinderPath _finderPathWithoutPaginationFindByG_F_F;
-	private FinderPath _finderPathCountByG_F_F;
-	private FinderPath _finderPathWithPaginationCountByG_F_F;
-
-	/**
-	 * Returns all the document library file entries where groupId = &#63; and folderId = &#63; and fileEntryTypeId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @param fileEntryTypeId the file entry type ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F_F(
-		long groupId, long folderId, long fileEntryTypeId) {
-
-		return findByG_F_F(
-			groupId, folderId, fileEntryTypeId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where groupId = &#63; and folderId = &#63; and fileEntryTypeId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @param fileEntryTypeId the file entry type ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F_F(
-		long groupId, long folderId, long fileEntryTypeId, int start, int end) {
-
-		return findByG_F_F(
-			groupId, folderId, fileEntryTypeId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<DLFileEntry, NoSuchFileEntryException>
+			_collectionPersistenceFinderByG_F_F;
 
 	/**
 	 * Returns an ordered range of all the document library file entries where groupId = &#63; and folderId = &#63; and fileEntryTypeId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @param fileEntryTypeId the file entry type ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F_F(
-		long groupId, long folderId, long fileEntryTypeId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByG_F_F(
-			groupId, folderId, fileEntryTypeId, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where groupId = &#63; and folderId = &#63; and fileEntryTypeId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -5453,115 +2177,10 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByG_F_F;
-					finderArgs = new Object[] {
-						groupId, folderId, fileEntryTypeId
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByG_F_F;
-				finderArgs = new Object[] {
-					groupId, folderId, fileEntryTypeId, start, end,
-					orderByComparator
-				};
-			}
-
-			List<DLFileEntry> list = null;
-
-			if (useFinderCache) {
-				list = (List<DLFileEntry>)FinderCacheUtil.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (DLFileEntry dlFileEntry : list) {
-						if ((groupId != dlFileEntry.getGroupId()) ||
-							(folderId != dlFileEntry.getFolderId()) ||
-							(fileEntryTypeId !=
-								dlFileEntry.getFileEntryTypeId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						5 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(5);
-				}
-
-				sb.append(_SQL_SELECT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_F_F_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_F_F_FOLDERID_2);
-
-				sb.append(_FINDER_COLUMN_G_F_F_FILEENTRYTYPEID_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(DLFileEntryModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(folderId);
-
-					queryPos.add(fileEntryTypeId);
-
-					list = (List<DLFileEntry>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						FinderCacheUtil.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_F_F.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}, fileEntryTypeId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -5619,60 +2238,17 @@ public class DLFileEntryPersistenceImpl
 		long groupId, long folderId, long fileEntryTypeId,
 		OrderByComparator<DLFileEntry> orderByComparator) {
 
-		List<DLFileEntry> list = findByG_F_F(
-			groupId, folderId, fileEntryTypeId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the document library file entries that the user has permission to view where groupId = &#63; and folderId = &#63; and fileEntryTypeId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @param fileEntryTypeId the file entry type ID
-	 * @return the matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_F_F(
-		long groupId, long folderId, long fileEntryTypeId) {
-
-		return filterFindByG_F_F(
-			groupId, folderId, fileEntryTypeId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries that the user has permission to view where groupId = &#63; and folderId = &#63; and fileEntryTypeId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderId the folder ID
-	 * @param fileEntryTypeId the file entry type ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_F_F(
-		long groupId, long folderId, long fileEntryTypeId, int start, int end) {
-
-		return filterFindByG_F_F(
-			groupId, folderId, fileEntryTypeId, start, end, null);
+		return _collectionPersistenceFinderByG_F_F.fetchFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}, fileEntryTypeId},
+			orderByComparator);
 	}
 
 	/**
 	 * Returns an ordered range of all the document library file entries that the user has permissions to view where groupId = &#63; and folderId = &#63; and fileEntryTypeId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -5688,152 +2264,17 @@ public class DLFileEntryPersistenceImpl
 		long groupId, long folderId, long fileEntryTypeId, int start, int end,
 		OrderByComparator<DLFileEntry> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_F_F(
-				groupId, folderId, fileEntryTypeId, start, end,
-				orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_F_F(
-					groupId, folderId, fileEntryTypeId, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_DLFILEENTRY_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_F_F_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_F_F_FOLDERID_2);
-
-		sb.append(_FINDER_COLUMN_G_F_F_FILEENTRYTYPEID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, DLFileEntryImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, DLFileEntryImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(folderId);
-
-			queryPos.add(fileEntryTypeId);
-
-			return (List<DLFileEntry>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * Returns all the document library file entries that the user has permission to view where groupId = &#63; and folderId = any &#63; and fileEntryTypeId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param folderIds the folder IDs
-	 * @param fileEntryTypeId the file entry type ID
-	 * @return the matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_F_F(
-		long groupId, long[] folderIds, long fileEntryTypeId) {
-
-		return filterFindByG_F_F(
-			groupId, folderIds, fileEntryTypeId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries that the user has permission to view where groupId = &#63; and folderId = any &#63; and fileEntryTypeId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderIds the folder IDs
-	 * @param fileEntryTypeId the file entry type ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries that the user has permission to view
-	 */
-	@Override
-	public List<DLFileEntry> filterFindByG_F_F(
-		long groupId, long[] folderIds, long fileEntryTypeId, int start,
-		int end) {
-
-		return filterFindByG_F_F(
-			groupId, folderIds, fileEntryTypeId, start, end, null);
+		return _collectionPersistenceFinderByG_F_F.filterFind(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}, fileEntryTypeId},
+			start, end, orderByComparator, groupId);
 	}
 
 	/**
 	 * Returns an ordered range of all the document library file entries that the user has permission to view where groupId = &#63; and folderId = any &#63; and fileEntryTypeId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -5849,193 +2290,19 @@ public class DLFileEntryPersistenceImpl
 		long groupId, long[] folderIds, long fileEntryTypeId, int start,
 		int end, OrderByComparator<DLFileEntry> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_F_F(
-				groupId, folderIds, fileEntryTypeId, start, end,
-				orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_F_F(
-					groupId, folderIds, fileEntryTypeId, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		StringBundler sb = new StringBundler();
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_DLFILEENTRY_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_F_F_GROUPID_2);
-
-		if (folderIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_G_F_F_FOLDERID_7);
-
-			sb.append(StringUtil.merge(folderIds));
-
-			sb.append(")");
-
-			sb.append(")");
-
-			sb.append(WHERE_AND);
-		}
-
-		sb.append(_FINDER_COLUMN_G_F_F_FILEENTRYTYPEID_2);
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(DLFileEntryModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, DLFileEntryImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, DLFileEntryImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(fileEntryTypeId);
-
-			return (List<DLFileEntry>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * Returns all the document library file entries where groupId = &#63; and folderId = any &#63; and fileEntryTypeId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderIds the folder IDs
-	 * @param fileEntryTypeId the file entry type ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F_F(
-		long groupId, long[] folderIds, long fileEntryTypeId) {
-
-		return findByG_F_F(
-			groupId, folderIds, fileEntryTypeId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where groupId = &#63; and folderId = any &#63; and fileEntryTypeId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderIds the folder IDs
-	 * @param fileEntryTypeId the file entry type ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F_F(
-		long groupId, long[] folderIds, long fileEntryTypeId, int start,
-		int end) {
-
-		return findByG_F_F(
-			groupId, folderIds, fileEntryTypeId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where groupId = &#63; and folderId = any &#63; and fileEntryTypeId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param folderIds the folder IDs
-	 * @param fileEntryTypeId the file entry type ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByG_F_F(
-		long groupId, long[] folderIds, long fileEntryTypeId, int start,
-		int end, OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByG_F_F(
-			groupId, folderIds, fileEntryTypeId, start, end, orderByComparator,
-			true);
+		return _collectionPersistenceFinderByG_F_F.filterFind(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {
+				groupId, ArrayUtil.sortedUnique(folderIds), fileEntryTypeId
+			},
+			start, end, orderByComparator, groupId);
 	}
 
 	/**
 	 * Returns an ordered range of all the document library file entries where groupId = &#63; and folderId = &#63; and fileEntryTypeId = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -6053,134 +2320,12 @@ public class DLFileEntryPersistenceImpl
 		int end, OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		if (folderIds.length == 1) {
-			return findByG_F_F(
-				groupId, folderIds[0], fileEntryTypeId, start, end,
-				orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						groupId, StringUtil.merge(folderIds), fileEntryTypeId
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					groupId, StringUtil.merge(folderIds), fileEntryTypeId,
-					start, end, orderByComparator
-				};
-			}
-
-			List<DLFileEntry> list = null;
-
-			if (useFinderCache) {
-				list = (List<DLFileEntry>)FinderCacheUtil.getResult(
-					_finderPathWithPaginationFindByG_F_F, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (DLFileEntry dlFileEntry : list) {
-						if ((groupId != dlFileEntry.getGroupId()) ||
-							!ArrayUtil.contains(
-								folderIds, dlFileEntry.getFolderId()) ||
-							(fileEntryTypeId !=
-								dlFileEntry.getFileEntryTypeId())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_F_F_GROUPID_2);
-
-				if (folderIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_F_F_FOLDERID_7);
-
-					sb.append(StringUtil.merge(folderIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_F_F_FILEENTRYTYPEID_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(DLFileEntryModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(fileEntryTypeId);
-
-					list = (List<DLFileEntry>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						FinderCacheUtil.putResult(
-							_finderPathWithPaginationFindByG_F_F, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_F_F.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {
+				groupId, ArrayUtil.sortedUnique(folderIds), fileEntryTypeId
+			},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -6194,13 +2339,9 @@ public class DLFileEntryPersistenceImpl
 	public void removeByG_F_F(
 		long groupId, long folderId, long fileEntryTypeId) {
 
-		for (DLFileEntry dlFileEntry :
-				findByG_F_F(
-					groupId, folderId, fileEntryTypeId, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, null)) {
-
-			remove(dlFileEntry);
-		}
+		_collectionPersistenceFinderByG_F_F.remove(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}, fileEntryTypeId});
 	}
 
 	/**
@@ -6213,61 +2354,9 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByG_F_F(long groupId, long folderId, long fileEntryTypeId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			FinderPath finderPath = _finderPathCountByG_F_F;
-
-			Object[] finderArgs = new Object[] {
-				groupId, folderId, fileEntryTypeId
-			};
-
-			Long count = (Long)FinderCacheUtil.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(4);
-
-				sb.append(_SQL_COUNT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_F_F_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_F_F_FOLDERID_2);
-
-				sb.append(_FINDER_COLUMN_G_F_F_FILEENTRYTYPEID_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(folderId);
-
-					queryPos.add(fileEntryTypeId);
-
-					count = (Long)query.uniqueResult();
-
-					FinderCacheUtil.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_F_F.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}, fileEntryTypeId});
 	}
 
 	/**
@@ -6282,82 +2371,11 @@ public class DLFileEntryPersistenceImpl
 	public int countByG_F_F(
 		long groupId, long[] folderIds, long fileEntryTypeId) {
 
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			Object[] finderArgs = new Object[] {
-				groupId, StringUtil.merge(folderIds), fileEntryTypeId
-			};
-
-			Long count = (Long)FinderCacheUtil.getResult(
-				_finderPathWithPaginationCountByG_F_F, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_DLFILEENTRY_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_F_F_GROUPID_2);
-
-				if (folderIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_F_F_FOLDERID_7);
-
-					sb.append(StringUtil.merge(folderIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_F_F_FILEENTRYTYPEID_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(fileEntryTypeId);
-
-					count = (Long)query.uniqueResult();
-
-					FinderCacheUtil.putResult(
-						_finderPathWithPaginationCountByG_F_F, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_F_F.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {
+				groupId, ArrayUtil.sortedUnique(folderIds), fileEntryTypeId
+			});
 	}
 
 	/**
@@ -6372,61 +2390,10 @@ public class DLFileEntryPersistenceImpl
 	public int filterCountByG_F_F(
 		long groupId, long folderId, long fileEntryTypeId) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_F_F(groupId, folderId, fileEntryTypeId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<DLFileEntry> dlFileEntries = findByG_F_F(
-				groupId, folderId, fileEntryTypeId);
-
-			dlFileEntries = InlineSQLHelperUtil.filter(dlFileEntries, groupId);
-
-			return dlFileEntries.size();
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_DLFILEENTRY_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_F_F_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_F_F_FOLDERID_2);
-
-		sb.append(_FINDER_COLUMN_G_F_F_FILEENTRYTYPEID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(folderId);
-
-			queryPos.add(fileEntryTypeId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_F_F.filterCount(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, new long[] {folderId}, fileEntryTypeId},
+			groupId);
 	}
 
 	/**
@@ -6441,167 +2408,22 @@ public class DLFileEntryPersistenceImpl
 	public int filterCountByG_F_F(
 		long groupId, long[] folderIds, long fileEntryTypeId) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_F_F(groupId, folderIds, fileEntryTypeId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<DLFileEntry> dlFileEntries = InlineSQLHelperUtil.filter(
-				findByG_F_F(groupId, folderIds, fileEntryTypeId), groupId);
-
-			return dlFileEntries.size();
-		}
-
-		if (folderIds == null) {
-			folderIds = new long[0];
-		}
-		else if (folderIds.length > 1) {
-			folderIds = ArrayUtil.sortedUnique(folderIds);
-		}
-
-		StringBundler sb = new StringBundler();
-
-		sb.append(_FILTER_SQL_COUNT_DLFILEENTRY_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_F_F_GROUPID_2);
-
-		if (folderIds.length > 0) {
-			sb.append("(");
-
-			sb.append(_FINDER_COLUMN_G_F_F_FOLDERID_7);
-
-			sb.append(StringUtil.merge(folderIds));
-
-			sb.append(")");
-
-			sb.append(")");
-
-			sb.append(WHERE_AND);
-		}
-
-		sb.append(_FINDER_COLUMN_G_F_F_FILEENTRYTYPEID_2);
-
-		sb.setStringAt(
-			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), DLFileEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(fileEntryTypeId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_F_F.filterCount(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {
+				groupId, ArrayUtil.sortedUnique(folderIds), fileEntryTypeId
+			},
+			groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_F_F_GROUPID_2 =
-		"dlFileEntry.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_F_F_FOLDERID_2 =
-		"dlFileEntry.folderId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_F_F_FOLDERID_7 =
-		"dlFileEntry.folderId IN (";
-
-	private static final String _FINDER_COLUMN_G_F_F_FILEENTRYTYPEID_2 =
-		"dlFileEntry.fileEntryTypeId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByC_C_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C_C;
-	private FinderPath _finderPathCountByC_C_C;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByC_C_C;
 
 	/**
-	 * Returns all the document library file entries where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByC_C_C(
-		long companyId, long classNameId, long classPK) {
-
-		return findByC_C_C(
-			companyId, classNameId, classPK, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByC_C_C(
-		long companyId, long classNameId, long classPK, int start, int end) {
-
-		return findByC_C_C(companyId, classNameId, classPK, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByC_C_C(
-		long companyId, long classNameId, long classPK, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByC_C_C(
-			companyId, classNameId, classPK, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -6619,15 +2441,10 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByC_C_C.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {companyId, classNameId, classPK}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_C_C.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {companyId, classNameId, classPK}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -6646,17 +2463,9 @@ public class DLFileEntryPersistenceImpl
 			OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByC_C_C_First(
-			companyId, classNameId, classPK, orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByC_C_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, classNameId, classPK}));
+		return _collectionPersistenceFinderByC_C_C.findFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {companyId, classNameId, classPK}, orderByComparator);
 	}
 
 	/**
@@ -6702,98 +2511,19 @@ public class DLFileEntryPersistenceImpl
 	 */
 	@Override
 	public int countByC_C_C(long companyId, long classNameId, long classPK) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByC_C_C.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {companyId, classNameId, classPK});
-		}
+		return _collectionPersistenceFinderByC_C_C.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {companyId, classNameId, classPK});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByS_L_C1_C2;
-	private FinderPath _finderPathWithoutPaginationFindByS_L_C1_C2;
-	private FinderPath _finderPathCountByS_L_C1_C2;
-	private CollectionPersistenceFinder<DLFileEntry>
+	private CollectionPersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_collectionPersistenceFinderByS_L_C1_C2;
 
 	/**
-	 * Returns all the document library file entries where smallImageId = &#63; and largeImageId = &#63; and custom1ImageId = &#63; and custom2ImageId = &#63;.
-	 *
-	 * @param smallImageId the small image ID
-	 * @param largeImageId the large image ID
-	 * @param custom1ImageId the custom1 image ID
-	 * @param custom2ImageId the custom2 image ID
-	 * @return the matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByS_L_C1_C2(
-		long smallImageId, long largeImageId, long custom1ImageId,
-		long custom2ImageId) {
-
-		return findByS_L_C1_C2(
-			smallImageId, largeImageId, custom1ImageId, custom2ImageId,
-			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the document library file entries where smallImageId = &#63; and largeImageId = &#63; and custom1ImageId = &#63; and custom2ImageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param smallImageId the small image ID
-	 * @param largeImageId the large image ID
-	 * @param custom1ImageId the custom1 image ID
-	 * @param custom2ImageId the custom2 image ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @return the range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByS_L_C1_C2(
-		long smallImageId, long largeImageId, long custom1ImageId,
-		long custom2ImageId, int start, int end) {
-
-		return findByS_L_C1_C2(
-			smallImageId, largeImageId, custom1ImageId, custom2ImageId, start,
-			end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the document library file entries where smallImageId = &#63; and largeImageId = &#63; and custom1ImageId = &#63; and custom2ImageId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param smallImageId the small image ID
-	 * @param largeImageId the large image ID
-	 * @param custom1ImageId the custom1 image ID
-	 * @param custom2ImageId the custom2 image ID
-	 * @param start the lower bound of the range of document library file entries
-	 * @param end the upper bound of the range of document library file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching document library file entries
-	 */
-	@Override
-	public List<DLFileEntry> findByS_L_C1_C2(
-		long smallImageId, long largeImageId, long custom1ImageId,
-		long custom2ImageId, int start, int end,
-		OrderByComparator<DLFileEntry> orderByComparator) {
-
-		return findByS_L_C1_C2(
-			smallImageId, largeImageId, custom1ImageId, custom2ImageId, start,
-			end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the document library file entries where smallImageId = &#63; and largeImageId = &#63; and custom1ImageId = &#63; and custom2ImageId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param smallImageId the small image ID
@@ -6813,17 +2543,12 @@ public class DLFileEntryPersistenceImpl
 		OrderByComparator<DLFileEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByS_L_C1_C2.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {
-					smallImageId, largeImageId, custom1ImageId, custom2ImageId
-				},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByS_L_C1_C2.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {
+				smallImageId, largeImageId, custom1ImageId, custom2ImageId
+			},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -6844,20 +2569,12 @@ public class DLFileEntryPersistenceImpl
 			OrderByComparator<DLFileEntry> orderByComparator)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByS_L_C1_C2_First(
-			smallImageId, largeImageId, custom1ImageId, custom2ImageId,
+		return _collectionPersistenceFinderByS_L_C1_C2.findFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {
+				smallImageId, largeImageId, custom1ImageId, custom2ImageId
+			},
 			orderByComparator);
-
-		if (dlFileEntry != null) {
-			return dlFileEntry;
-		}
-
-		throw new NoSuchFileEntryException(
-			_collectionPersistenceFinderByS_L_C1_C2.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {
-					smallImageId, largeImageId, custom1ImageId, custom2ImageId
-				}));
 	}
 
 	/**
@@ -6917,20 +2634,14 @@ public class DLFileEntryPersistenceImpl
 		long smallImageId, long largeImageId, long custom1ImageId,
 		long custom2ImageId) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _collectionPersistenceFinderByS_L_C1_C2.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {
-					smallImageId, largeImageId, custom1ImageId, custom2ImageId
-				});
-		}
+		return _collectionPersistenceFinderByS_L_C1_C2.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {
+				smallImageId, largeImageId, custom1ImageId, custom2ImageId
+			});
 	}
 
-	private FinderPath _finderPathFetchByERC_G;
-	private UniquePersistenceFinder<DLFileEntry>
+	private UniquePersistenceFinder<DLFileEntry, NoSuchFileEntryException>
 		_uniquePersistenceFinderByERC_G;
 
 	/**
@@ -6945,36 +2656,9 @@ public class DLFileEntryPersistenceImpl
 	public DLFileEntry findByERC_G(String externalReferenceCode, long groupId)
 		throws NoSuchFileEntryException {
 
-		DLFileEntry dlFileEntry = fetchByERC_G(externalReferenceCode, groupId);
-
-		if (dlFileEntry == null) {
-			String message =
-				_uniquePersistenceFinderByERC_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFileEntryException(message);
-		}
-
-		return dlFileEntry;
-	}
-
-	/**
-	 * Returns the document library file entry where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param groupId the group ID
-	 * @return the matching document library file entry, or <code>null</code> if a matching document library file entry could not be found
-	 */
-	@Override
-	public DLFileEntry fetchByERC_G(
-		String externalReferenceCode, long groupId) {
-
-		return fetchByERC_G(externalReferenceCode, groupId, true);
+		return _uniquePersistenceFinderByERC_G.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {externalReferenceCode, groupId});
 	}
 
 	/**
@@ -6989,14 +2673,9 @@ public class DLFileEntryPersistenceImpl
 	public DLFileEntry fetchByERC_G(
 		String externalReferenceCode, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					DLFileEntry.class)) {
-
-			return _uniquePersistenceFinderByERC_G.fetch(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {externalReferenceCode, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByERC_G.fetch(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {externalReferenceCode, groupId}, useFinderCache);
 	}
 
 	/**
@@ -7419,692 +3098,666 @@ public class DLFileEntryPersistenceImpl
 	 * Initializes the document library file entry persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
-			DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"dlFileEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, DLFileEntry::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, DLFileEntry::getUuid,
-			DLFileEntry::getGroupId);
+				"dlFileEntry.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, DLFileEntry::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_DLFILEENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(DLFileEntry::getUuid),
+				DLFileEntry::getGroupId),
+			_SQL_SELECT_DLFILEENTRY_WHERE, "",
 			new FinderColumn<>(
-				"dlFileEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, DLFileEntry::getUuid),
+				"dlFileEntry.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, DLFileEntry::getUuid),
 			new FinderColumn<>(
 				"dlFileEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, DLFileEntry::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_DLFILEENTRY_WHERE,
-				_SQL_COUNT_DLFILEENTRY_WHERE,
-				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"dlFileEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-					false, DLFileEntry::getUuid),
+					"dlFileEntry.", "uuid", "uuid_", FinderColumn.Type.STRING,
+					"=", true, true, DLFileEntry::getUuid),
 				new FinderColumn<>(
 					"dlFileEntry.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, DLFileEntry::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_DLFILEENTRY_WHERE,
-				_SQL_COUNT_DLFILEENTRY_WHERE,
-				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"dlFileEntry.", "groupId", FinderColumn.Type.LONG, "=",
 					true, true, DLFileEntry::getGroupId));
 
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId, _SQL_SELECT_DLFILEENTRY_WHERE,
-				_SQL_COUNT_DLFILEENTRY_WHERE,
-				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"dlFileEntry.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, DLFileEntry::getCompanyId));
 
-		_finderPathWithPaginationFindByRepositoryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByRepositoryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"repositoryId"}, true);
-
-		_finderPathWithoutPaginationFindByRepositoryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByRepositoryId",
-			new String[] {Long.class.getName()}, new String[] {"repositoryId"},
-			true);
-
-		_finderPathCountByRepositoryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByRepositoryId",
-			new String[] {Long.class.getName()}, new String[] {"repositoryId"},
-			false);
-
 		_collectionPersistenceFinderByRepositoryId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByRepositoryId,
-				_finderPathWithoutPaginationFindByRepositoryId,
-				_finderPathCountByRepositoryId, _SQL_SELECT_DLFILEENTRY_WHERE,
-				_SQL_COUNT_DLFILEENTRY_WHERE,
-				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByRepositoryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"repositoryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByRepositoryId", new String[] {Long.class.getName()},
+					new String[] {"repositoryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByRepositoryId", new String[] {Long.class.getName()},
+					new String[] {"repositoryId"}, false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"dlFileEntry.", "repositoryId", FinderColumn.Type.LONG, "=",
 					true, true, DLFileEntry::getRepositoryId));
 
-		_finderPathWithPaginationFindByMimeType = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByMimeType",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"mimeType"}, true);
-
-		_finderPathWithoutPaginationFindByMimeType = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByMimeType",
-			new String[] {String.class.getName()}, new String[] {"mimeType"},
-			true);
-
-		_finderPathCountByMimeType = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByMimeType",
-			new String[] {String.class.getName()}, new String[] {"mimeType"},
-			false);
-
 		_collectionPersistenceFinderByMimeType =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByMimeType,
-				_finderPathWithoutPaginationFindByMimeType,
-				_finderPathCountByMimeType, _SQL_SELECT_DLFILEENTRY_WHERE,
-				_SQL_COUNT_DLFILEENTRY_WHERE,
-				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByMimeType",
+					new String[] {
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"mimeType"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByMimeType",
+					new String[] {String.class.getName()},
+					new String[] {"mimeType"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByMimeType", new String[] {String.class.getName()},
+					new String[] {"mimeType"}, 0, 1, false, null),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"dlFileEntry.", "mimeType", FinderColumn.Type.STRING, "=",
 					true, true, DLFileEntry::getMimeType));
 
-		_finderPathWithPaginationFindByFileEntryTypeId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByFileEntryTypeId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"fileEntryTypeId"}, true);
-
-		_finderPathWithoutPaginationFindByFileEntryTypeId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByFileEntryTypeId",
-			new String[] {Long.class.getName()},
-			new String[] {"fileEntryTypeId"}, true);
-
-		_finderPathCountByFileEntryTypeId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByFileEntryTypeId",
-			new String[] {Long.class.getName()},
-			new String[] {"fileEntryTypeId"}, false);
-
 		_collectionPersistenceFinderByFileEntryTypeId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByFileEntryTypeId,
-				_finderPathWithoutPaginationFindByFileEntryTypeId,
-				_finderPathCountByFileEntryTypeId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByFileEntryTypeId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"fileEntryTypeId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByFileEntryTypeId",
+					new String[] {Long.class.getName()},
+					new String[] {"fileEntryTypeId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByFileEntryTypeId",
+					new String[] {Long.class.getName()},
+					new String[] {"fileEntryTypeId"}, false),
 				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
-				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"dlFileEntry.", "fileEntryTypeId", FinderColumn.Type.LONG,
 					"=", true, true, DLFileEntry::getFileEntryTypeId));
 
-		_finderPathWithPaginationFindBySmallImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findBySmallImageId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"smallImageId"}, true);
-
-		_finderPathWithoutPaginationFindBySmallImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findBySmallImageId",
-			new String[] {Long.class.getName()}, new String[] {"smallImageId"},
-			true);
-
-		_finderPathCountBySmallImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countBySmallImageId",
-			new String[] {Long.class.getName()}, new String[] {"smallImageId"},
-			false);
-
 		_collectionPersistenceFinderBySmallImageId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindBySmallImageId,
-				_finderPathWithoutPaginationFindBySmallImageId,
-				_finderPathCountBySmallImageId, _SQL_SELECT_DLFILEENTRY_WHERE,
-				_SQL_COUNT_DLFILEENTRY_WHERE,
-				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findBySmallImageId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"smallImageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findBySmallImageId", new String[] {Long.class.getName()},
+					new String[] {"smallImageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countBySmallImageId", new String[] {Long.class.getName()},
+					new String[] {"smallImageId"}, false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"dlFileEntry.", "smallImageId", FinderColumn.Type.LONG, "=",
 					true, true, DLFileEntry::getSmallImageId));
 
-		_finderPathWithPaginationFindByLargeImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLargeImageId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"largeImageId"}, true);
-
-		_finderPathWithoutPaginationFindByLargeImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByLargeImageId",
-			new String[] {Long.class.getName()}, new String[] {"largeImageId"},
-			true);
-
-		_finderPathCountByLargeImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByLargeImageId",
-			new String[] {Long.class.getName()}, new String[] {"largeImageId"},
-			false);
-
 		_collectionPersistenceFinderByLargeImageId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLargeImageId,
-				_finderPathWithoutPaginationFindByLargeImageId,
-				_finderPathCountByLargeImageId, _SQL_SELECT_DLFILEENTRY_WHERE,
-				_SQL_COUNT_DLFILEENTRY_WHERE,
-				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByLargeImageId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"largeImageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByLargeImageId", new String[] {Long.class.getName()},
+					new String[] {"largeImageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByLargeImageId", new String[] {Long.class.getName()},
+					new String[] {"largeImageId"}, false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"dlFileEntry.", "largeImageId", FinderColumn.Type.LONG, "=",
 					true, true, DLFileEntry::getLargeImageId));
 
-		_finderPathWithPaginationFindByCustom1ImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCustom1ImageId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"custom1ImageId"}, true);
-
-		_finderPathWithoutPaginationFindByCustom1ImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCustom1ImageId",
-			new String[] {Long.class.getName()},
-			new String[] {"custom1ImageId"}, true);
-
-		_finderPathCountByCustom1ImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCustom1ImageId",
-			new String[] {Long.class.getName()},
-			new String[] {"custom1ImageId"}, false);
-
 		_collectionPersistenceFinderByCustom1ImageId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCustom1ImageId,
-				_finderPathWithoutPaginationFindByCustom1ImageId,
-				_finderPathCountByCustom1ImageId, _SQL_SELECT_DLFILEENTRY_WHERE,
-				_SQL_COUNT_DLFILEENTRY_WHERE,
-				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCustom1ImageId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"custom1ImageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCustom1ImageId", new String[] {Long.class.getName()},
+					new String[] {"custom1ImageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCustom1ImageId",
+					new String[] {Long.class.getName()},
+					new String[] {"custom1ImageId"}, false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"dlFileEntry.", "custom1ImageId", FinderColumn.Type.LONG,
 					"=", true, true, DLFileEntry::getCustom1ImageId));
 
-		_finderPathWithPaginationFindByCustom2ImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCustom2ImageId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"custom2ImageId"}, true);
-
-		_finderPathWithoutPaginationFindByCustom2ImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCustom2ImageId",
-			new String[] {Long.class.getName()},
-			new String[] {"custom2ImageId"}, true);
-
-		_finderPathCountByCustom2ImageId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCustom2ImageId",
-			new String[] {Long.class.getName()},
-			new String[] {"custom2ImageId"}, false);
-
 		_collectionPersistenceFinderByCustom2ImageId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCustom2ImageId,
-				_finderPathWithoutPaginationFindByCustom2ImageId,
-				_finderPathCountByCustom2ImageId, _SQL_SELECT_DLFILEENTRY_WHERE,
-				_SQL_COUNT_DLFILEENTRY_WHERE,
-				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCustom2ImageId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"custom2ImageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCustom2ImageId", new String[] {Long.class.getName()},
+					new String[] {"custom2ImageId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCustom2ImageId",
+					new String[] {Long.class.getName()},
+					new String[] {"custom2ImageId"}, false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"dlFileEntry.", "custom2ImageId", FinderColumn.Type.LONG,
 					"=", true, true, DLFileEntry::getCustom2ImageId));
 
-		_finderPathWithPaginationFindByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "userId"}, true);
+		_collectionPersistenceFinderByG_U =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "userId"}, false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"dlFileEntry.", "groupId", FinderColumn.Type.LONG, "=",
+					true, true, DLFileEntry::getGroupId),
+				new FinderColumn<>(
+					"dlFileEntry.", "userId", FinderColumn.Type.LONG, "=", true,
+					true, DLFileEntry::getUserId));
 
-		_finderPathWithoutPaginationFindByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "userId"}, true);
-
-		_finderPathCountByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "userId"}, false);
-
-		_collectionPersistenceFinderByG_U = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_U,
-			_finderPathWithoutPaginationFindByG_U, _finderPathCountByG_U,
-			_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
-			DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"dlFileEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, DLFileEntry::getGroupId),
-			new FinderColumn<>(
-				"dlFileEntry.", "userId", FinderColumn.Type.LONG, "=", true,
-				true, DLFileEntry::getUserId));
-
-		_finderPathWithPaginationFindByG_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "folderId"}, true);
-
-		_finderPathWithoutPaginationFindByG_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_F",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "folderId"}, true);
-
-		_finderPathCountByG_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_F",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "folderId"}, false);
-
-		_finderPathWithPaginationCountByG_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_F",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "folderId"}, false);
-
-		_finderPathWithPaginationFindByR_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByR_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"repositoryId", "folderId"}, true);
-
-		_finderPathWithoutPaginationFindByR_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByR_F",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"repositoryId", "folderId"}, true);
-
-		_finderPathCountByR_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByR_F",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"repositoryId", "folderId"}, false);
+		_collectionPersistenceFinderByG_F =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_F",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "folderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_F",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "folderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_F",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "folderId"}, false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"dlFileEntry.", "groupId", FinderColumn.Type.LONG, "=",
+					true, true, DLFileEntry::getGroupId),
+				new ArrayableFinderColumn<>(
+					"dlFileEntry.", "folderId", FinderColumn.Type.LONG, "=",
+					false, true, true, DLFileEntry::getFolderId));
 
 		_collectionPersistenceFinderByR_F = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByR_F,
-			_finderPathWithoutPaginationFindByR_F, _finderPathCountByR_F,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByR_F",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"repositoryId", "folderId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByR_F",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"repositoryId", "folderId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByR_F",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"repositoryId", "folderId"}, false),
 			_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
-			DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"dlFileEntry.", "repositoryId", FinderColumn.Type.LONG, "=",
-				true, false, DLFileEntry::getRepositoryId),
+				true, true, DLFileEntry::getRepositoryId),
 			new FinderColumn<>(
 				"dlFileEntry.", "folderId", FinderColumn.Type.LONG, "=", true,
 				true, DLFileEntry::getFolderId));
 
-		_finderPathWithPaginationFindByF_N = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByF_N",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"folderId", "name"}, true);
-
-		_finderPathWithoutPaginationFindByF_N = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByF_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"folderId", "name"}, true);
-
-		_finderPathCountByF_N = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByF_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"folderId", "name"}, false);
-
 		_collectionPersistenceFinderByF_N = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByF_N,
-			_finderPathWithoutPaginationFindByF_N, _finderPathCountByF_N,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByF_N",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"folderId", "name"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByF_N",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"folderId", "name"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByF_N",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"folderId", "name"}, 0, 2, false, null),
 			_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
-			DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"dlFileEntry.", "folderId", FinderColumn.Type.LONG, "=", true,
-				false, DLFileEntry::getFolderId),
+				true, DLFileEntry::getFolderId),
 			new FinderColumn<>(
 				"dlFileEntry.", "name", FinderColumn.Type.STRING, "=", true,
 				true, DLFileEntry::getName));
 
-		_finderPathWithPaginationFindByG_U_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "userId", "folderId"}, true);
-
-		_finderPathWithoutPaginationFindByG_U_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "userId", "folderId"}, true);
-
-		_finderPathCountByG_U_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "userId", "folderId"}, false);
-
-		_finderPathWithPaginationCountByG_U_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_U_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "userId", "folderId"}, false);
-
-		_finderPathFetchByG_F_N = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_F_N",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "folderId", "name"}, false,
-			DLFileEntry::getGroupId, DLFileEntry::getFolderId,
-			DLFileEntry::getName);
+		_collectionPersistenceFinderByG_U_F =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U_F",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "userId", "folderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U_F",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {"groupId", "userId", "folderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_U_F",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {"groupId", "userId", "folderId"}, false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"dlFileEntry.", "groupId", FinderColumn.Type.LONG, "=",
+					true, true, DLFileEntry::getGroupId),
+				new FinderColumn<>(
+					"dlFileEntry.", "userId", FinderColumn.Type.LONG, "=", true,
+					true, DLFileEntry::getUserId),
+				new ArrayableFinderColumn<>(
+					"dlFileEntry.", "folderId", FinderColumn.Type.LONG, "=",
+					false, true, true, DLFileEntry::getFolderId));
 
 		_uniquePersistenceFinderByG_F_N = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_F_N, _SQL_SELECT_DLFILEENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_F_N",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"groupId", "folderId", "name"}, 0, 4, false,
+				DLFileEntry::getGroupId, DLFileEntry::getFolderId,
+				convertNullFunction(DLFileEntry::getName)),
+			_SQL_SELECT_DLFILEENTRY_WHERE, "",
 			new FinderColumn<>(
 				"dlFileEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, DLFileEntry::getGroupId),
+				true, DLFileEntry::getGroupId),
 			new FinderColumn<>(
 				"dlFileEntry.", "folderId", FinderColumn.Type.LONG, "=", true,
-				false, DLFileEntry::getFolderId),
+				true, DLFileEntry::getFolderId),
 			new FinderColumn<>(
 				"dlFileEntry.", "name", FinderColumn.Type.STRING, "=", true,
 				true, DLFileEntry::getName));
 
-		_finderPathFetchByG_F_FN = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_F_FN",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "folderId", "fileName"}, false,
-			DLFileEntry::getGroupId, DLFileEntry::getFolderId,
-			DLFileEntry::getFileName);
-
 		_uniquePersistenceFinderByG_F_FN = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_F_FN, _SQL_SELECT_DLFILEENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_F_FN",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"groupId", "folderId", "fileName"}, 0, 4, false,
+				DLFileEntry::getGroupId, DLFileEntry::getFolderId,
+				convertNullFunction(DLFileEntry::getFileName)),
+			_SQL_SELECT_DLFILEENTRY_WHERE, "",
 			new FinderColumn<>(
 				"dlFileEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, DLFileEntry::getGroupId),
+				true, DLFileEntry::getGroupId),
 			new FinderColumn<>(
 				"dlFileEntry.", "folderId", FinderColumn.Type.LONG, "=", true,
-				false, DLFileEntry::getFolderId),
+				true, DLFileEntry::getFolderId),
 			new FinderColumn<>(
 				"dlFileEntry.", "fileName", FinderColumn.Type.STRING, "=", true,
 				true, DLFileEntry::getFileName));
 
-		_finderPathFetchByG_F_T = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_F_T",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "folderId", "title"}, false,
-			DLFileEntry::getGroupId, DLFileEntry::getFolderId,
-			DLFileEntry::getTitle);
-
 		_uniquePersistenceFinderByG_F_T = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_F_T, _SQL_SELECT_DLFILEENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_F_T",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"groupId", "folderId", "title"}, 0, 4, false,
+				DLFileEntry::getGroupId, DLFileEntry::getFolderId,
+				convertNullFunction(DLFileEntry::getTitle)),
+			_SQL_SELECT_DLFILEENTRY_WHERE, "",
 			new FinderColumn<>(
 				"dlFileEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, DLFileEntry::getGroupId),
+				true, DLFileEntry::getGroupId),
 			new FinderColumn<>(
 				"dlFileEntry.", "folderId", FinderColumn.Type.LONG, "=", true,
-				false, DLFileEntry::getFolderId),
+				true, DLFileEntry::getFolderId),
 			new FinderColumn<>(
 				"dlFileEntry.", "title", FinderColumn.Type.STRING, "=", true,
 				true, DLFileEntry::getTitle));
 
-		_finderPathWithPaginationFindByG_F_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_F_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "folderId", "fileEntryTypeId"}, true);
-
-		_finderPathWithoutPaginationFindByG_F_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_F_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "folderId", "fileEntryTypeId"}, true);
-
-		_finderPathCountByG_F_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_F_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "folderId", "fileEntryTypeId"}, false);
-
-		_finderPathWithPaginationCountByG_F_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_F_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "folderId", "fileEntryTypeId"}, false);
-
-		_finderPathWithPaginationFindByC_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "classNameId", "classPK"}, true);
-
-		_finderPathWithoutPaginationFindByC_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"companyId", "classNameId", "classPK"}, true);
-
-		_finderPathCountByC_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"companyId", "classNameId", "classPK"}, false);
+		_collectionPersistenceFinderByG_F_F =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_F_F",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "folderId", "fileEntryTypeId"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_F_F",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {"groupId", "folderId", "fileEntryTypeId"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_F_F",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {"groupId", "folderId", "fileEntryTypeId"},
+					false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"dlFileEntry.", "groupId", FinderColumn.Type.LONG, "=",
+					true, true, DLFileEntry::getGroupId),
+				new ArrayableFinderColumn<>(
+					"dlFileEntry.", "folderId", FinderColumn.Type.LONG, "=",
+					false, true, true, DLFileEntry::getFolderId),
+				new FinderColumn<>(
+					"dlFileEntry.", "fileEntryTypeId", FinderColumn.Type.LONG,
+					"=", true, true, DLFileEntry::getFileEntryTypeId));
 
 		_collectionPersistenceFinderByC_C_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C_C,
-			_finderPathWithoutPaginationFindByC_C_C, _finderPathCountByC_C_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"companyId", "classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"companyId", "classNameId", "classPK"}, false),
 			_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
-			DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"dlFileEntry.", "companyId", FinderColumn.Type.LONG, "=", true,
-				false, DLFileEntry::getCompanyId),
+				true, DLFileEntry::getCompanyId),
 			new FinderColumn<>(
 				"dlFileEntry.", "classNameId", FinderColumn.Type.LONG, "=",
-				true, false, DLFileEntry::getClassNameId),
+				true, true, DLFileEntry::getClassNameId),
 			new FinderColumn<>(
 				"dlFileEntry.", "classPK", FinderColumn.Type.LONG, "=", true,
 				true, DLFileEntry::getClassPK));
 
-		_finderPathWithPaginationFindByS_L_C1_C2 = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByS_L_C1_C2",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {
-				"smallImageId", "largeImageId", "custom1ImageId",
-				"custom2ImageId"
-			},
-			true);
-
-		_finderPathWithoutPaginationFindByS_L_C1_C2 = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByS_L_C1_C2",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Long.class.getName()
-			},
-			new String[] {
-				"smallImageId", "largeImageId", "custom1ImageId",
-				"custom2ImageId"
-			},
-			true);
-
-		_finderPathCountByS_L_C1_C2 = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByS_L_C1_C2",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Long.class.getName()
-			},
-			new String[] {
-				"smallImageId", "largeImageId", "custom1ImageId",
-				"custom2ImageId"
-			},
-			false);
-
 		_collectionPersistenceFinderByS_L_C1_C2 =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByS_L_C1_C2,
-				_finderPathWithoutPaginationFindByS_L_C1_C2,
-				_finderPathCountByS_L_C1_C2, _SQL_SELECT_DLFILEENTRY_WHERE,
-				_SQL_COUNT_DLFILEENTRY_WHERE,
-				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByS_L_C1_C2",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"smallImageId", "largeImageId", "custom1ImageId",
+						"custom2ImageId"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByS_L_C1_C2",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Long.class.getName()
+					},
+					new String[] {
+						"smallImageId", "largeImageId", "custom1ImageId",
+						"custom2ImageId"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByS_L_C1_C2",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Long.class.getName()
+					},
+					new String[] {
+						"smallImageId", "largeImageId", "custom1ImageId",
+						"custom2ImageId"
+					},
+					false),
+				_SQL_SELECT_DLFILEENTRY_WHERE, _SQL_COUNT_DLFILEENTRY_WHERE,
+				DLFileEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"dlFileEntry.", "smallImageId", FinderColumn.Type.LONG, "=",
-					true, false, DLFileEntry::getSmallImageId),
+					true, true, DLFileEntry::getSmallImageId),
 				new FinderColumn<>(
 					"dlFileEntry.", "largeImageId", FinderColumn.Type.LONG, "=",
-					true, false, DLFileEntry::getLargeImageId),
+					true, true, DLFileEntry::getLargeImageId),
 				new FinderColumn<>(
 					"dlFileEntry.", "custom1ImageId", FinderColumn.Type.LONG,
-					"=", true, false, DLFileEntry::getCustom1ImageId),
+					"=", true, true, DLFileEntry::getCustom1ImageId),
 				new FinderColumn<>(
 					"dlFileEntry.", "custom2ImageId", FinderColumn.Type.LONG,
 					"=", true, true, DLFileEntry::getCustom2ImageId));
 
-		_finderPathFetchByERC_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "groupId"}, false,
-			DLFileEntry::getExternalReferenceCode, DLFileEntry::getGroupId);
-
 		_uniquePersistenceFinderByERC_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_G, _SQL_SELECT_DLFILEENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "groupId"}, 0, 1, false,
+				convertNullFunction(DLFileEntry::getExternalReferenceCode),
+				DLFileEntry::getGroupId),
+			_SQL_SELECT_DLFILEENTRY_WHERE, "",
 			new FinderColumn<>(
 				"dlFileEntry.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				DLFileEntry::getExternalReferenceCode),
 			new FinderColumn<>(
 				"dlFileEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
@@ -8131,29 +3784,6 @@ public class DLFileEntryPersistenceImpl
 	private static final String _SQL_COUNT_DLFILEENTRY_WHERE =
 		"SELECT COUNT(dlFileEntry) FROM DLFileEntry dlFileEntry WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"dlFileEntry.fileEntryId";
-
-	private static final String _FILTER_SQL_SELECT_DLFILEENTRY_WHERE =
-		"SELECT DISTINCT {dlFileEntry.*} FROM DLFileEntry dlFileEntry WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {DLFileEntry.*} FROM (SELECT DISTINCT dlFileEntry.fileEntryId FROM DLFileEntry dlFileEntry WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_DLFILEENTRY_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN DLFileEntry ON TEMP_TABLE.fileEntryId = DLFileEntry.fileEntryId";
-
-	private static final String _FILTER_SQL_COUNT_DLFILEENTRY_WHERE =
-		"SELECT COUNT(DISTINCT dlFileEntry.fileEntryId) AS COUNT_VALUE FROM DLFileEntry dlFileEntry WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "dlFileEntry";
-
-	private static final String _FILTER_ENTITY_TABLE = "DLFileEntry";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "DLFileEntry.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No DLFileEntry exists with the key {";
 
@@ -8169,4 +3799,4 @@ public class DLFileEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1702238250
+// LIFERAY-SERVICE-BUILDER-HASH:-403643342

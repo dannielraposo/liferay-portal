@@ -13,13 +13,11 @@ import com.liferay.commerce.product.model.impl.CPConfigurationListRelModelImpl;
 import com.liferay.commerce.product.service.persistence.CPConfigurationListRelPersistence;
 import com.liferay.commerce.product.service.persistence.CPConfigurationListRelUtil;
 import com.liferay.commerce.product.service.persistence.impl.constants.CommercePersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -85,73 +83,15 @@ public class CPConfigurationListRelPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCPConfigurationListId;
-	private FinderPath _finderPathWithoutPaginationFindByCPConfigurationListId;
-	private FinderPath _finderPathCountByCPConfigurationListId;
-	private CollectionPersistenceFinder<CPConfigurationListRel>
-		_collectionPersistenceFinderByCPConfigurationListId;
-
-	/**
-	 * Returns all the cp configuration list rels where CPConfigurationListId = &#63;.
-	 *
-	 * @param CPConfigurationListId the cp configuration list ID
-	 * @return the matching cp configuration list rels
-	 */
-	@Override
-	public List<CPConfigurationListRel> findByCPConfigurationListId(
-		long CPConfigurationListId) {
-
-		return findByCPConfigurationListId(
-			CPConfigurationListId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp configuration list rels where CPConfigurationListId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPConfigurationListId the cp configuration list ID
-	 * @param start the lower bound of the range of cp configuration list rels
-	 * @param end the upper bound of the range of cp configuration list rels (not inclusive)
-	 * @return the range of matching cp configuration list rels
-	 */
-	@Override
-	public List<CPConfigurationListRel> findByCPConfigurationListId(
-		long CPConfigurationListId, int start, int end) {
-
-		return findByCPConfigurationListId(
-			CPConfigurationListId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPConfigurationListRel, NoSuchCPConfigurationListRelException>
+			_collectionPersistenceFinderByCPConfigurationListId;
 
 	/**
 	 * Returns an ordered range of all the cp configuration list rels where CPConfigurationListId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPConfigurationListId the cp configuration list ID
-	 * @param start the lower bound of the range of cp configuration list rels
-	 * @param end the upper bound of the range of cp configuration list rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp configuration list rels
-	 */
-	@Override
-	public List<CPConfigurationListRel> findByCPConfigurationListId(
-		long CPConfigurationListId, int start, int end,
-		OrderByComparator<CPConfigurationListRel> orderByComparator) {
-
-		return findByCPConfigurationListId(
-			CPConfigurationListId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp configuration list rels where CPConfigurationListId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CPConfigurationListId the cp configuration list ID
@@ -167,14 +107,9 @@ public class CPConfigurationListRelPersistenceImpl
 		OrderByComparator<CPConfigurationListRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationListRel.class)) {
-
-			return _collectionPersistenceFinderByCPConfigurationListId.find(
-				finderCache, new Object[] {CPConfigurationListId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCPConfigurationListId.find(
+			finderCache, new Object[] {CPConfigurationListId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -191,19 +126,9 @@ public class CPConfigurationListRelPersistenceImpl
 			OrderByComparator<CPConfigurationListRel> orderByComparator)
 		throws NoSuchCPConfigurationListRelException {
 
-		CPConfigurationListRel cpConfigurationListRel =
-			fetchByCPConfigurationListId_First(
-				CPConfigurationListId, orderByComparator);
-
-		if (cpConfigurationListRel != null) {
-			return cpConfigurationListRel;
-		}
-
-		throw new NoSuchCPConfigurationListRelException(
-			_collectionPersistenceFinderByCPConfigurationListId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {CPConfigurationListId}));
+		return _collectionPersistenceFinderByCPConfigurationListId.findFirst(
+			finderCache, new Object[] {CPConfigurationListId},
+			orderByComparator);
 	}
 
 	/**
@@ -242,86 +167,19 @@ public class CPConfigurationListRelPersistenceImpl
 	 */
 	@Override
 	public int countByCPConfigurationListId(long CPConfigurationListId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationListRel.class)) {
-
-			return _collectionPersistenceFinderByCPConfigurationListId.count(
-				finderCache, new Object[] {CPConfigurationListId});
-		}
+		return _collectionPersistenceFinderByCPConfigurationListId.count(
+			finderCache, new Object[] {CPConfigurationListId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<CPConfigurationListRel>
-		_collectionPersistenceFinderByC_C;
-
-	/**
-	 * Returns all the cp configuration list rels where classNameId = &#63; and CPConfigurationListId = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param CPConfigurationListId the cp configuration list ID
-	 * @return the matching cp configuration list rels
-	 */
-	@Override
-	public List<CPConfigurationListRel> findByC_C(
-		long classNameId, long CPConfigurationListId) {
-
-		return findByC_C(
-			classNameId, CPConfigurationListId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp configuration list rels where classNameId = &#63; and CPConfigurationListId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param CPConfigurationListId the cp configuration list ID
-	 * @param start the lower bound of the range of cp configuration list rels
-	 * @param end the upper bound of the range of cp configuration list rels (not inclusive)
-	 * @return the range of matching cp configuration list rels
-	 */
-	@Override
-	public List<CPConfigurationListRel> findByC_C(
-		long classNameId, long CPConfigurationListId, int start, int end) {
-
-		return findByC_C(classNameId, CPConfigurationListId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPConfigurationListRel, NoSuchCPConfigurationListRelException>
+			_collectionPersistenceFinderByC_C;
 
 	/**
 	 * Returns an ordered range of all the cp configuration list rels where classNameId = &#63; and CPConfigurationListId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param CPConfigurationListId the cp configuration list ID
-	 * @param start the lower bound of the range of cp configuration list rels
-	 * @param end the upper bound of the range of cp configuration list rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp configuration list rels
-	 */
-	@Override
-	public List<CPConfigurationListRel> findByC_C(
-		long classNameId, long CPConfigurationListId, int start, int end,
-		OrderByComparator<CPConfigurationListRel> orderByComparator) {
-
-		return findByC_C(
-			classNameId, CPConfigurationListId, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp configuration list rels where classNameId = &#63; and CPConfigurationListId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPConfigurationListRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -338,14 +196,9 @@ public class CPConfigurationListRelPersistenceImpl
 		OrderByComparator<CPConfigurationListRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationListRel.class)) {
-
-			return _collectionPersistenceFinderByC_C.find(
-				finderCache, new Object[] {classNameId, CPConfigurationListId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_C.find(
+			finderCache, new Object[] {classNameId, CPConfigurationListId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -363,17 +216,9 @@ public class CPConfigurationListRelPersistenceImpl
 			OrderByComparator<CPConfigurationListRel> orderByComparator)
 		throws NoSuchCPConfigurationListRelException {
 
-		CPConfigurationListRel cpConfigurationListRel = fetchByC_C_First(
-			classNameId, CPConfigurationListId, orderByComparator);
-
-		if (cpConfigurationListRel != null) {
-			return cpConfigurationListRel;
-		}
-
-		throw new NoSuchCPConfigurationListRelException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {classNameId, CPConfigurationListId}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			finderCache, new Object[] {classNameId, CPConfigurationListId},
+			orderByComparator);
 	}
 
 	/**
@@ -415,18 +260,13 @@ public class CPConfigurationListRelPersistenceImpl
 	 */
 	@Override
 	public int countByC_C(long classNameId, long CPConfigurationListId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationListRel.class)) {
-
-			return _collectionPersistenceFinderByC_C.count(
-				finderCache, new Object[] {classNameId, CPConfigurationListId});
-		}
+		return _collectionPersistenceFinderByC_C.count(
+			finderCache, new Object[] {classNameId, CPConfigurationListId});
 	}
 
-	private FinderPath _finderPathFetchByC_C_C;
-	private UniquePersistenceFinder<CPConfigurationListRel>
-		_uniquePersistenceFinderByC_C_C;
+	private UniquePersistenceFinder
+		<CPConfigurationListRel, NoSuchCPConfigurationListRelException>
+			_uniquePersistenceFinderByC_C_C;
 
 	/**
 	 * Returns the cp configuration list rel where classNameId = &#63; and classPK = &#63; and CPConfigurationListId = &#63; or throws a <code>NoSuchCPConfigurationListRelException</code> if it could not be found.
@@ -442,38 +282,9 @@ public class CPConfigurationListRelPersistenceImpl
 			long classNameId, long classPK, long CPConfigurationListId)
 		throws NoSuchCPConfigurationListRelException {
 
-		CPConfigurationListRel cpConfigurationListRel = fetchByC_C_C(
-			classNameId, classPK, CPConfigurationListId);
-
-		if (cpConfigurationListRel == null) {
-			String message =
-				_uniquePersistenceFinderByC_C_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {classNameId, classPK, CPConfigurationListId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPConfigurationListRelException(message);
-		}
-
-		return cpConfigurationListRel;
-	}
-
-	/**
-	 * Returns the cp configuration list rel where classNameId = &#63; and classPK = &#63; and CPConfigurationListId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param CPConfigurationListId the cp configuration list ID
-	 * @return the matching cp configuration list rel, or <code>null</code> if a matching cp configuration list rel could not be found
-	 */
-	@Override
-	public CPConfigurationListRel fetchByC_C_C(
-		long classNameId, long classPK, long CPConfigurationListId) {
-
-		return fetchByC_C_C(classNameId, classPK, CPConfigurationListId, true);
+		return _uniquePersistenceFinderByC_C_C.find(
+			finderCache,
+			new Object[] {classNameId, classPK, CPConfigurationListId});
 	}
 
 	/**
@@ -490,15 +301,10 @@ public class CPConfigurationListRelPersistenceImpl
 		long classNameId, long classPK, long CPConfigurationListId,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPConfigurationListRel.class)) {
-
-			return _uniquePersistenceFinderByC_C_C.fetch(
-				finderCache,
-				new Object[] {classNameId, classPK, CPConfigurationListId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByC_C_C.fetch(
+			finderCache,
+			new Object[] {classNameId, classPK, CPConfigurationListId},
+			useFinderCache);
 	}
 
 	/**
@@ -825,95 +631,90 @@ public class CPConfigurationListRelPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByCPConfigurationListId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByCPConfigurationListId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"CPConfigurationListId"}, true);
-
-		_finderPathWithoutPaginationFindByCPConfigurationListId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByCPConfigurationListId",
-				new String[] {Long.class.getName()},
-				new String[] {"CPConfigurationListId"}, true);
-
-		_finderPathCountByCPConfigurationListId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCPConfigurationListId", new String[] {Long.class.getName()},
-			new String[] {"CPConfigurationListId"}, false);
-
 		_collectionPersistenceFinderByCPConfigurationListId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCPConfigurationListId,
-				_finderPathWithoutPaginationFindByCPConfigurationListId,
-				_finderPathCountByCPConfigurationListId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCPConfigurationListId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CPConfigurationListId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCPConfigurationListId",
+					new String[] {Long.class.getName()},
+					new String[] {"CPConfigurationListId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCPConfigurationListId",
+					new String[] {Long.class.getName()},
+					new String[] {"CPConfigurationListId"}, false),
 				_SQL_SELECT_CPCONFIGURATIONLISTREL_WHERE,
 				_SQL_COUNT_CPCONFIGURATIONLISTREL_WHERE,
 				CPConfigurationListRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpConfigurationListRel.", "CPConfigurationListId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CPConfigurationListRel::getCPConfigurationListId));
 
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "CPConfigurationListId"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "CPConfigurationListId"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "CPConfigurationListId"}, false);
-
 		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"classNameId", "CPConfigurationListId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "CPConfigurationListId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "CPConfigurationListId"}, false),
 			_SQL_SELECT_CPCONFIGURATIONLISTREL_WHERE,
 			_SQL_COUNT_CPCONFIGURATIONLISTREL_WHERE,
 			CPConfigurationListRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"cpConfigurationListRel.", "classNameId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CPConfigurationListRel::getClassNameId),
 			new FinderColumn<>(
 				"cpConfigurationListRel.", "CPConfigurationListId",
 				FinderColumn.Type.LONG, "=", true, true,
 				CPConfigurationListRel::getCPConfigurationListId));
 
-		_finderPathFetchByC_C_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"classNameId", "classPK", "CPConfigurationListId"},
-			false, CPConfigurationListRel::getClassNameId,
-			CPConfigurationListRel::getClassPK,
-			CPConfigurationListRel::getCPConfigurationListId);
-
 		_uniquePersistenceFinderByC_C_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_C_C,
-			_SQL_SELECT_CPCONFIGURATIONLISTREL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {
+					"classNameId", "classPK", "CPConfigurationListId"
+				},
+				0, 0, false, CPConfigurationListRel::getClassNameId,
+				CPConfigurationListRel::getClassPK,
+				CPConfigurationListRel::getCPConfigurationListId),
+			_SQL_SELECT_CPCONFIGURATIONLISTREL_WHERE, "",
 			new FinderColumn<>(
 				"cpConfigurationListRel.", "classNameId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CPConfigurationListRel::getClassNameId),
 			new FinderColumn<>(
 				"cpConfigurationListRel.", "classPK", FinderColumn.Type.LONG,
-				"=", true, false, CPConfigurationListRel::getClassPK),
+				"=", true, true, CPConfigurationListRel::getClassPK),
 			new FinderColumn<>(
 				"cpConfigurationListRel.", "CPConfigurationListId",
 				FinderColumn.Type.LONG, "=", true, true,
@@ -988,4 +789,4 @@ public class CPConfigurationListRelPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1636608261
+// LIFERAY-SERVICE-BUILDER-HASH:-1759666672

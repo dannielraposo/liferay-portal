@@ -3,228 +3,219 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayButton from '@clayui/button';
-import {Option, Picker} from '@clayui/core';
 import {ClayInput} from '@clayui/form';
-import ClayIcon from '@clayui/icon';
+import {
+	COUNTRY_SOURCE,
+	CountryInfo,
+	CountrySource,
+	PhoneNumberInput,
+} from '@liferay/object-js-components-web';
+import {useFormState} from 'data-engine-js-components-web';
+import {LocalesDropdown} from 'dynamic-data-mapping-form-field-type';
 import {ReactFieldBase as FieldBase} from 'dynamic-data-mapping-form-field-type/api';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 
-import {CountryInfo, getFlagSymbol, parsePhoneValue} from './phoneNumberUtil';
+import type {
+	FieldChangeEventHandler,
+	LocalizedValue,
+} from 'dynamic-data-mapping-form-field-type';
 
-interface PhoneNumberProps {
+// E.164 format: a leading "+" followed by 7 to 15 digits.
+
+const PHONE_NUMBER_PATTERN = /^\+[0-9]{7,15}$/;
+
+interface BasePhoneNumberProps {
 	countries?: CountryInfo[];
+	country?: string;
+	countrySource?: CountrySource;
+	disabled?: boolean;
+	displayErrors?: boolean;
+	errorMessage?: string;
+	fieldName: string;
+	id?: string;
+	label?: string;
 	name: string;
 	onBlur?: (event: React.FocusEvent) => void;
-	onChange?: (event: {target: {value: string}}) => void;
 	onFocus?: (event: React.FocusEvent) => void;
+	pageValidationFailed?: boolean;
 	predefinedValue?: string;
-	prefix?: string;
-	prefixType?: 'definedByUser' | 'fixed';
 	readOnly?: boolean;
-	value?: string;
+	valid?: boolean;
 	[key: string]: unknown;
 }
 
-const PickerTrigger = React.forwardRef<
-	HTMLDivElement,
-	{selectedCountry: CountryInfo & {symbol?: string}} & React.ComponentProps<
-		typeof ClayButton
-	>
->(({selectedCountry, ...otherProps}, ref) => {
-	const flagSymbol = getFlagSymbol(selectedCountry.a2);
+interface LocalizablePhoneNumberProps extends BasePhoneNumberProps {
+	onChange?: FieldChangeEventHandler<LocalizedValue<string>>;
+	value?: LocalizedValue<string>;
+}
 
-	return (
-		<div {...(otherProps as any)} ref={ref}>
-			{flagSymbol && (
-				<span className="inline-item inline-item-before">
-					<ClayIcon symbol={flagSymbol} />
-				</span>
-			)}
+interface NonLocalizablePhoneNumberProps extends BasePhoneNumberProps {
+	onChange?: (event: {target: {value: string}}) => void;
+	value?: string;
+}
 
-			<span>+{selectedCountry.idd}</span>
-		</div>
-	);
-});
+type PhoneNumberProps =
+	| (LocalizablePhoneNumberProps & {localizedObjectField: true})
+	| (NonLocalizablePhoneNumberProps & {localizedObjectField?: false});
 
-const PhoneNumber = ({
+const getValidationState = (value: string) => {
+	if (value && !PHONE_NUMBER_PATTERN.test(value)) {
+		return {
+			displayErrors: true,
+			errorMessage: Liferay.Language.get(
+				'please-enter-a-valid-phone-number'
+			),
+			valid: false,
+		};
+	}
+
+	return {};
+};
+
+const LocalizablePhoneNumber = ({
 	countries = [],
+	country,
+	countrySource = COUNTRY_SOURCE.DEFINED_BY_USER,
+	fieldName,
 	name,
 	onBlur,
 	onChange,
 	onFocus,
 	predefinedValue,
-	prefix,
-	prefixType = 'definedByUser',
+	readOnly,
+	value = {} as LocalizedValue<string>,
+	...otherProps
+}: LocalizablePhoneNumberProps) => {
+	const {availableLocales, editingLanguageId} = useFormState();
+
+	const [touched, setTouched] = useState(false);
+
+	const currentValue = value[editingLanguageId] ?? predefinedValue ?? '';
+	const disabled = readOnly || otherProps.disabled;
+
+	const validationState =
+		touched || otherProps.pageValidationFailed
+			? getValidationState(currentValue)
+			: {};
+
+	const handleBlur = (event: React.FocusEvent) => {
+		setTouched(true);
+
+		onBlur?.(event);
+	};
+
+	const handleChange = (event: {target: {value: string}}) => {
+		const newValue = {
+			...value,
+			[editingLanguageId]: event.target.value,
+		} as LocalizedValue<string>;
+
+		onChange?.({target: {value: newValue}});
+	};
+
+	return (
+		<FieldBase
+			{...otherProps}
+			{...validationState}
+			name={name}
+			readOnly={disabled}
+		>
+			<ClayInput.Group aria-label={otherProps.label} role="group">
+				<PhoneNumberInput
+					countries={countries}
+					country={country}
+					countrySource={countrySource}
+					disabled={disabled}
+					id={otherProps.id as string}
+					key={editingLanguageId}
+					name={name}
+					onBlur={handleBlur}
+					onChange={handleChange}
+					onFocus={onFocus}
+					value={currentValue}
+				/>
+
+				<ClayInput.GroupItem shrink>
+					<LocalesDropdown
+						availableLocales={availableLocales}
+						fieldName={fieldName}
+						value={value}
+					/>
+				</ClayInput.GroupItem>
+			</ClayInput.Group>
+		</FieldBase>
+	);
+};
+
+const NonLocalizablePhoneNumber = ({
+	countries = [],
+	country,
+	countrySource = COUNTRY_SOURCE.DEFINED_BY_USER,
+	name,
+	onBlur,
+	onChange,
+	onFocus,
+	predefinedValue,
 	readOnly,
 	value: initialValue,
 	...otherProps
-}: PhoneNumberProps) => {
-	const [localNumber, setLocalNumber] = useState('');
-	const [selectedCountry, setSelectedCountry] = useState<CountryInfo>(
-		countries[0]
+}: NonLocalizablePhoneNumberProps) => {
+	const [combinedValue, setCombinedValue] = useState(
+		initialValue || predefinedValue || ''
 	);
+	const [touched, setTouched] = useState(false);
 
-	const currentPrefix =
-		prefixType === 'fixed' ? prefix || '' : `+${selectedCountry.idd}`;
+	const disabled = readOnly || otherProps.disabled;
 
-	const combinedValue = `${currentPrefix}${localNumber.replace(/\D/g, '')}`;
+	const validationState =
+		touched || otherProps.pageValidationFailed
+			? getValidationState(combinedValue)
+			: {};
 
-	const disabled = readOnly || (otherProps.disabled as boolean);
+	const handleBlur = (event: React.FocusEvent) => {
+		setTouched(true);
 
-	const fixedCountry =
-		prefixType === 'fixed'
-			? countries.find((country) => `+${country.idd}` === prefix)
-			: null;
-
-	const fixedFlagSymbol = fixedCountry ? getFlagSymbol(fixedCountry.a2) : '';
-
-	const handleValueChange = (country: CountryInfo, number: string) => {
-		if (onChange) {
-			const resolvedPrefix =
-				prefixType === 'fixed' ? prefix || '' : `+${country.idd}`;
-
-			onChange({
-				target: {
-					value: `${resolvedPrefix}${number.replace(/\D/g, '')}`,
-				},
-			});
-		}
+		onBlur?.(event);
 	};
 
-	/** Parse the phone value to set the initial states. */
-	useEffect(() => {
-		const phoneValue = initialValue || predefinedValue || '';
+	const handleChange = (event: {target: {value: string}}) => {
+		setCombinedValue(event.target.value);
 
-		if (prefixType === 'fixed') {
-			if (prefix && phoneValue.startsWith(prefix)) {
-				setLocalNumber(phoneValue.substring(prefix.length));
-			}
-			else {
-				const {localNumber: parsedLocalNumber} = parsePhoneValue(
-					phoneValue,
-					countries
-				);
-
-				setLocalNumber(parsedLocalNumber);
-			}
-		}
-		else {
-			const {countryA2, localNumber: parsedLocalNumber} = parsePhoneValue(
-				phoneValue,
-				countries
-			);
-
-			const country = countries.find(
-				(country) => country.a2 === countryA2
-			);
-
-			setSelectedCountry(country || countries[0]);
-			setLocalNumber(parsedLocalNumber);
-		}
-
-		// eslint-disable-next-line react-compiler/react-compiler
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+		onChange?.(event);
+	};
 
 	return (
-		<FieldBase {...otherProps} name={name} readOnly={disabled}>
-			<ClayInput.Group>
-				<ClayInput.GroupItem prepend={prefixType === 'fixed'} shrink>
-					{prefixType === 'fixed' ? (
-						<ClayInput.GroupText>
-							{fixedFlagSymbol && (
-								<span className="inline-item inline-item-before">
-									<ClayIcon symbol={fixedFlagSymbol} />
-								</span>
-							)}
-
-							{prefix}
-						</ClayInput.GroupText>
-					) : (
-						<Picker
-							as={PickerTrigger}
-							disabled={disabled}
-							items={countries}
-							onSelectionChange={(key) => {
-								const selectedCountry = countries.find(
-									(country) => country.a2 === key
-								);
-
-								if (selectedCountry) {
-									setSelectedCountry(selectedCountry);
-									handleValueChange(
-										selectedCountry,
-										localNumber
-									);
-								}
-							}}
-							searchable
-							selectedCountry={selectedCountry}
-							selectedKey={selectedCountry.a2}
-						>
-							{(country) => {
-								const flagSymbol = getFlagSymbol(country.a2);
-
-								return (
-									<Option
-										key={country.a2}
-										textValue={`+${country.idd} ${country.name}`}
-									>
-										<div className="autofit-row">
-											<div className="autofit-col">
-												{flagSymbol && (
-													<ClayIcon
-														symbol={flagSymbol}
-													/>
-												)}
-											</div>
-
-											<div
-												className="autofit-col"
-												style={{minWidth: '45px'}}
-											>
-												{`+${country.idd}`}
-											</div>
-
-											<div className="autofit-col autofit-col-expand">
-												{country.name}
-											</div>
-										</div>
-									</Option>
-								);
-							}}
-						</Picker>
-					)}
-				</ClayInput.GroupItem>
-
-				<ClayInput.GroupItem prepend={prefixType === 'fixed'}>
-					<ClayInput
-						className="ddm-field-text form-control"
-						disabled={disabled}
-						id={(otherProps.id as string) ?? name}
-						name={`${name}_localNumber`}
-						onBlur={onBlur}
-						onChange={(event) => {
-							const newNumber = event.target.value.replace(
-								/[^0-9\s\-().]/g,
-								''
-							);
-
-							setLocalNumber(newNumber);
-							handleValueChange(selectedCountry, newNumber);
-						}}
-						onFocus={onFocus}
-						pattern="[0-9\s\-\(\).]*"
-						type="tel"
-						value={localNumber}
-					/>
-				</ClayInput.GroupItem>
+		<FieldBase
+			{...otherProps}
+			{...validationState}
+			name={name}
+			readOnly={disabled}
+		>
+			<ClayInput.Group aria-label={otherProps.label} role="group">
+				<PhoneNumberInput
+					countries={countries}
+					country={country}
+					countrySource={countrySource}
+					disabled={disabled}
+					id={otherProps.id as string}
+					name={name}
+					onBlur={handleBlur}
+					onChange={handleChange}
+					onFocus={onFocus}
+					value={initialValue || predefinedValue}
+				/>
 			</ClayInput.Group>
 
 			<input name={name} type="hidden" value={combinedValue} />
 		</FieldBase>
 	);
 };
+
+const PhoneNumber = (props: PhoneNumberProps) =>
+	props.localizedObjectField ? (
+		<LocalizablePhoneNumber {...props} />
+	) : (
+		<NonLocalizablePhoneNumber {...props} />
+	);
 
 export default PhoneNumber;

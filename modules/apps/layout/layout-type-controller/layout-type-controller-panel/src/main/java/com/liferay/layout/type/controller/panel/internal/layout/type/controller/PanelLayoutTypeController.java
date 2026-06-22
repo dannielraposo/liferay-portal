@@ -7,6 +7,8 @@ package com.liferay.layout.type.controller.panel.internal.layout.type.controller
 
 import com.liferay.layout.type.controller.BaseLayoutTypeControllerImpl;
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypeController;
@@ -44,6 +46,20 @@ public class PanelLayoutTypeController extends BaseLayoutTypeControllerImpl {
 		httpServletRequest.setAttribute(WebKeys.SEL_LAYOUT, layout);
 
 		return super.includeEditContent(
+			httpServletRequest, httpServletResponse, layout);
+	}
+
+	@Override
+	public boolean includeLayoutContent(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Layout layout)
+		throws Exception {
+
+		if (_log.isWarnEnabled()) {
+			_log.warn("Layout " + layout.getPlid() + " has a deprecated type");
+		}
+
+		return super.includeLayoutContent(
 			httpServletRequest, httpServletResponse, layout);
 	}
 
@@ -98,6 +114,9 @@ public class PanelLayoutTypeController extends BaseLayoutTypeControllerImpl {
 			"&p_v_l_s_g_id=${liferay:pvlsgid}";
 
 	private static final String _VIEW_PAGE = "/layout/view/panel.jsp";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		PanelLayoutTypeController.class);
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.layout.type.controller.panel)"

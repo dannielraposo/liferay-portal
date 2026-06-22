@@ -184,21 +184,21 @@ export default function Comments({
 			method: 'POST',
 		})
 			.then((response) => {
-				let promise;
-
 				const contentType = response.headers.get('content-type');
 
 				if (
-					contentType &&
-					contentType.indexOf('application/json') !== -1
+					!response.ok ||
+					!contentType ||
+					contentType.indexOf('application/json') === -1
 				) {
-					promise = response.json();
-				}
-				else {
-					promise = response.text();
+					return Promise.reject(
+						new Error(
+							`Unexpected response (status ${response.status})`
+						)
+					);
 				}
 
-				return promise;
+				return response.json();
 			})
 			.then((response) => {
 				const exception = response.exception;
@@ -228,6 +228,13 @@ export default function Comments({
 					else if (exception.indexOf('MessageBodyException') > -1) {
 						errorKey = Liferay.Language.get(
 							'please-enter-a-valid-message'
+						);
+					}
+					else if (
+						exception.indexOf('MustHaveSessionCSRFToken') > -1
+					) {
+						errorKey = Liferay.Language.get(
+							'your-session-has-expired'
 						);
 					}
 					else if (

@@ -13,14 +13,11 @@ import com.liferay.object.model.impl.ObjectEntryFolderModelImpl;
 import com.liferay.object.service.persistence.ObjectEntryFolderPersistence;
 import com.liferay.object.service.persistence.ObjectEntryFolderUtil;
 import com.liferay.object.service.persistence.impl.constants.ObjectPersistenceConstants;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -31,11 +28,11 @@ import com.liferay.portal.kernel.sanitizer.SanitizerException;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -94,60 +91,9 @@ public class ObjectEntryFolderPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<ObjectEntryFolder>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the object entry folders where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching object entry folders
-	 */
-	@Override
-	public List<ObjectEntryFolder> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object entry folders where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object entry folders
-	 * @param end the upper bound of the range of object entry folders (not inclusive)
-	 * @return the range of matching object entry folders
-	 */
-	@Override
-	public List<ObjectEntryFolder> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the object entry folders where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object entry folders
-	 * @param end the upper bound of the range of object entry folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object entry folders
-	 */
-	@Override
-	public List<ObjectEntryFolder> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<ObjectEntryFolder> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<ObjectEntryFolder, NoSuchObjectEntryFolderException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the object entry folders where uuid = &#63;.
@@ -187,16 +133,8 @@ public class ObjectEntryFolderPersistenceImpl
 			String uuid, OrderByComparator<ObjectEntryFolder> orderByComparator)
 		throws NoSuchObjectEntryFolderException {
 
-		ObjectEntryFolder objectEntryFolder = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (objectEntryFolder != null) {
-			return objectEntryFolder;
-		}
-
-		throw new NoSuchObjectEntryFolderException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -237,9 +175,9 @@ public class ObjectEntryFolderPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<ObjectEntryFolder>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<ObjectEntryFolder, NoSuchObjectEntryFolderException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the object entry folder where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchObjectEntryFolderException</code> if it could not be found.
@@ -253,33 +191,8 @@ public class ObjectEntryFolderPersistenceImpl
 	public ObjectEntryFolder findByUUID_G(String uuid, long groupId)
 		throws NoSuchObjectEntryFolderException {
 
-		ObjectEntryFolder objectEntryFolder = fetchByUUID_G(uuid, groupId);
-
-		if (objectEntryFolder == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectEntryFolderException(message);
-		}
-
-		return objectEntryFolder;
-	}
-
-	/**
-	 * Returns the object entry folder where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching object entry folder, or <code>null</code> if a matching object entry folder could not be found
-	 */
-	@Override
-	public ObjectEntryFolder fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -327,67 +240,9 @@ public class ObjectEntryFolderPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<ObjectEntryFolder>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the object entry folders where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching object entry folders
-	 */
-	@Override
-	public List<ObjectEntryFolder> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object entry folders where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object entry folders
-	 * @param end the upper bound of the range of object entry folders (not inclusive)
-	 * @return the range of matching object entry folders
-	 */
-	@Override
-	public List<ObjectEntryFolder> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the object entry folders where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object entry folders
-	 * @param end the upper bound of the range of object entry folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object entry folders
-	 */
-	@Override
-	public List<ObjectEntryFolder> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<ObjectEntryFolder> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<ObjectEntryFolder, NoSuchObjectEntryFolderException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the object entry folders where uuid = &#63; and companyId = &#63;.
@@ -430,16 +285,8 @@ public class ObjectEntryFolderPersistenceImpl
 			OrderByComparator<ObjectEntryFolder> orderByComparator)
 		throws NoSuchObjectEntryFolderException {
 
-		ObjectEntryFolder objectEntryFolder = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (objectEntryFolder != null) {
-			return objectEntryFolder;
-		}
-
-		throw new NoSuchObjectEntryFolderException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -484,9 +331,9 @@ public class ObjectEntryFolderPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathFetchByERC_G_C;
-	private UniquePersistenceFinder<ObjectEntryFolder>
-		_uniquePersistenceFinderByERC_G_C;
+	private UniquePersistenceFinder
+		<ObjectEntryFolder, NoSuchObjectEntryFolderException>
+			_uniquePersistenceFinderByERC_G_C;
 
 	/**
 	 * Returns the object entry folder where externalReferenceCode = &#63; and groupId = &#63; and companyId = &#63; or throws a <code>NoSuchObjectEntryFolderException</code> if it could not be found.
@@ -502,38 +349,9 @@ public class ObjectEntryFolderPersistenceImpl
 			String externalReferenceCode, long groupId, long companyId)
 		throws NoSuchObjectEntryFolderException {
 
-		ObjectEntryFolder objectEntryFolder = fetchByERC_G_C(
-			externalReferenceCode, groupId, companyId);
-
-		if (objectEntryFolder == null) {
-			String message =
-				_uniquePersistenceFinderByERC_G_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, groupId, companyId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectEntryFolderException(message);
-		}
-
-		return objectEntryFolder;
-	}
-
-	/**
-	 * Returns the object entry folder where externalReferenceCode = &#63; and groupId = &#63; and companyId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @return the matching object entry folder, or <code>null</code> if a matching object entry folder could not be found
-	 */
-	@Override
-	public ObjectEntryFolder fetchByERC_G_C(
-		String externalReferenceCode, long groupId, long companyId) {
-
-		return fetchByERC_G_C(externalReferenceCode, groupId, companyId, true);
+		return _uniquePersistenceFinderByERC_G_C.find(
+			finderCache,
+			new Object[] {externalReferenceCode, groupId, companyId});
 	}
 
 	/**
@@ -592,76 +410,9 @@ public class ObjectEntryFolderPersistenceImpl
 			new Object[] {externalReferenceCode, groupId, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_C_P;
-	private FinderPath _finderPathWithoutPaginationFindByG_C_P;
-	private FinderPath _finderPathCountByG_C_P;
-	private CollectionPersistenceFinder<ObjectEntryFolder>
-		_collectionPersistenceFinderByG_C_P;
-
-	/**
-	 * Returns all the object entry folders where groupId = &#63; and companyId = &#63; and parentObjectEntryFolderId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param parentObjectEntryFolderId the parent object entry folder ID
-	 * @return the matching object entry folders
-	 */
-	@Override
-	public List<ObjectEntryFolder> findByG_C_P(
-		long groupId, long companyId, long parentObjectEntryFolderId) {
-
-		return findByG_C_P(
-			groupId, companyId, parentObjectEntryFolderId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object entry folders where groupId = &#63; and companyId = &#63; and parentObjectEntryFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param parentObjectEntryFolderId the parent object entry folder ID
-	 * @param start the lower bound of the range of object entry folders
-	 * @param end the upper bound of the range of object entry folders (not inclusive)
-	 * @return the range of matching object entry folders
-	 */
-	@Override
-	public List<ObjectEntryFolder> findByG_C_P(
-		long groupId, long companyId, long parentObjectEntryFolderId, int start,
-		int end) {
-
-		return findByG_C_P(
-			groupId, companyId, parentObjectEntryFolderId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the object entry folders where groupId = &#63; and companyId = &#63; and parentObjectEntryFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param parentObjectEntryFolderId the parent object entry folder ID
-	 * @param start the lower bound of the range of object entry folders
-	 * @param end the upper bound of the range of object entry folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object entry folders
-	 */
-	@Override
-	public List<ObjectEntryFolder> findByG_C_P(
-		long groupId, long companyId, long parentObjectEntryFolderId, int start,
-		int end, OrderByComparator<ObjectEntryFolder> orderByComparator) {
-
-		return findByG_C_P(
-			groupId, companyId, parentObjectEntryFolderId, start, end,
-			orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder
+		<ObjectEntryFolder, NoSuchObjectEntryFolderException>
+			_collectionPersistenceFinderByG_C_P;
 
 	/**
 	 * Returns an ordered range of all the object entry folders where groupId = &#63; and companyId = &#63; and parentObjectEntryFolderId = &#63;.
@@ -707,17 +458,10 @@ public class ObjectEntryFolderPersistenceImpl
 			OrderByComparator<ObjectEntryFolder> orderByComparator)
 		throws NoSuchObjectEntryFolderException {
 
-		ObjectEntryFolder objectEntryFolder = fetchByG_C_P_First(
-			groupId, companyId, parentObjectEntryFolderId, orderByComparator);
-
-		if (objectEntryFolder != null) {
-			return objectEntryFolder;
-		}
-
-		throw new NoSuchObjectEntryFolderException(
-			_collectionPersistenceFinderByG_C_P.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, companyId, parentObjectEntryFolderId}));
+		return _collectionPersistenceFinderByG_C_P.findFirst(
+			finderCache,
+			new Object[] {groupId, companyId, parentObjectEntryFolderId},
+			orderByComparator);
 	}
 
 	/**
@@ -741,46 +485,6 @@ public class ObjectEntryFolderPersistenceImpl
 	}
 
 	/**
-	 * Returns all the object entry folders that the user has permission to view where groupId = &#63; and companyId = &#63; and parentObjectEntryFolderId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param parentObjectEntryFolderId the parent object entry folder ID
-	 * @return the matching object entry folders that the user has permission to view
-	 */
-	@Override
-	public List<ObjectEntryFolder> filterFindByG_C_P(
-		long groupId, long companyId, long parentObjectEntryFolderId) {
-
-		return filterFindByG_C_P(
-			groupId, companyId, parentObjectEntryFolderId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object entry folders that the user has permission to view where groupId = &#63; and companyId = &#63; and parentObjectEntryFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectEntryFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param parentObjectEntryFolderId the parent object entry folder ID
-	 * @param start the lower bound of the range of object entry folders
-	 * @param end the upper bound of the range of object entry folders (not inclusive)
-	 * @return the range of matching object entry folders that the user has permission to view
-	 */
-	@Override
-	public List<ObjectEntryFolder> filterFindByG_C_P(
-		long groupId, long companyId, long parentObjectEntryFolderId, int start,
-		int end) {
-
-		return filterFindByG_C_P(
-			groupId, companyId, parentObjectEntryFolderId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the object entry folders that the user has permissions to view where groupId = &#63; and companyId = &#63; and parentObjectEntryFolderId = &#63;.
 	 *
 	 * <p>
@@ -800,108 +504,10 @@ public class ObjectEntryFolderPersistenceImpl
 		long groupId, long companyId, long parentObjectEntryFolderId, int start,
 		int end, OrderByComparator<ObjectEntryFolder> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_C_P(
-				groupId, companyId, parentObjectEntryFolderId, start, end,
-				orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_C_P(
-					groupId, companyId, parentObjectEntryFolderId,
-					QueryUtil.ALL_POS, QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTENTRYFOLDER_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTENTRYFOLDER_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_C_P_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_P_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_P_PARENTOBJECTENTRYFOLDERID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTENTRYFOLDER_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectEntryFolderModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectEntryFolderModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectEntryFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectEntryFolderImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectEntryFolderImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(companyId);
-
-			queryPos.add(parentObjectEntryFolderId);
-
-			return (List<ObjectEntryFolder>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_P.filterFind(
+			finderCache,
+			new Object[] {groupId, companyId, parentObjectEntryFolderId}, start,
+			end, orderByComparator, groupId);
 	}
 
 	/**
@@ -949,78 +555,15 @@ public class ObjectEntryFolderPersistenceImpl
 	public int filterCountByG_C_P(
 		long groupId, long companyId, long parentObjectEntryFolderId) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_C_P(groupId, companyId, parentObjectEntryFolderId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectEntryFolder> objectEntryFolders = findByG_C_P(
-				groupId, companyId, parentObjectEntryFolderId);
-
-			objectEntryFolders = InlineSQLHelperUtil.filter(
-				objectEntryFolders, groupId);
-
-			return objectEntryFolders.size();
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTENTRYFOLDER_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_C_P_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_P_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_P_PARENTOBJECTENTRYFOLDERID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectEntryFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(companyId);
-
-			queryPos.add(parentObjectEntryFolderId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_P.filterCount(
+			finderCache,
+			new Object[] {groupId, companyId, parentObjectEntryFolderId},
+			groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_C_P_GROUPID_2 =
-		"objectEntryFolder.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_P_COMPANYID_2 =
-		"objectEntryFolder.companyId = ? AND ";
-
-	private static final String
-		_FINDER_COLUMN_G_C_P_PARENTOBJECTENTRYFOLDERID_2 =
-			"objectEntryFolder.parentObjectEntryFolderId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByG_C_LikeT;
-	private FinderPath _finderPathWithPaginationCountByG_C_LikeT;
-	private CollectionPersistenceFinder<ObjectEntryFolder>
-		_collectionPersistenceFinderByG_C_LikeT;
+	private FilterCollectionPersistenceFinder
+		<ObjectEntryFolder, NoSuchObjectEntryFolderException>
+			_collectionPersistenceFinderByG_C_LikeT;
 
 	/**
 	 * Returns all the object entry folders where groupId = &#63; and companyId = &#63; and treePath LIKE &#63;.
@@ -1127,17 +670,9 @@ public class ObjectEntryFolderPersistenceImpl
 			OrderByComparator<ObjectEntryFolder> orderByComparator)
 		throws NoSuchObjectEntryFolderException {
 
-		ObjectEntryFolder objectEntryFolder = fetchByG_C_LikeT_First(
-			groupId, companyId, treePath, orderByComparator);
-
-		if (objectEntryFolder != null) {
-			return objectEntryFolder;
-		}
-
-		throw new NoSuchObjectEntryFolderException(
-			_collectionPersistenceFinderByG_C_LikeT.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, companyId, treePath}));
+		return _collectionPersistenceFinderByG_C_LikeT.findFirst(
+			finderCache, new Object[] {groupId, companyId, treePath},
+			orderByComparator);
 	}
 
 	/**
@@ -1218,120 +753,9 @@ public class ObjectEntryFolderPersistenceImpl
 		long groupId, long companyId, String treePath, int start, int end,
 		OrderByComparator<ObjectEntryFolder> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_C_LikeT(
-				groupId, companyId, treePath, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_C_LikeT(
-					groupId, companyId, treePath, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		treePath = Objects.toString(treePath, "");
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTENTRYFOLDER_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTENTRYFOLDER_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_C_LIKET_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_LIKET_COMPANYID_2);
-
-		boolean bindTreePath = false;
-
-		if (treePath.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_C_LIKET_TREEPATH_3);
-		}
-		else {
-			bindTreePath = true;
-
-			sb.append(_FINDER_COLUMN_G_C_LIKET_TREEPATH_2);
-		}
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTENTRYFOLDER_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectEntryFolderModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectEntryFolderModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectEntryFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectEntryFolderImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectEntryFolderImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(companyId);
-
-			if (bindTreePath) {
-				queryPos.add(treePath);
-			}
-
-			return (List<ObjectEntryFolder>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_LikeT.filterFind(
+			finderCache, new Object[] {groupId, companyId, treePath}, start,
+			end, orderByComparator, groupId);
 	}
 
 	/**
@@ -1375,93 +799,13 @@ public class ObjectEntryFolderPersistenceImpl
 	public int filterCountByG_C_LikeT(
 		long groupId, long companyId, String treePath) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_C_LikeT(groupId, companyId, treePath);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectEntryFolder> objectEntryFolders = findByG_C_LikeT(
-				groupId, companyId, treePath);
-
-			objectEntryFolders = InlineSQLHelperUtil.filter(
-				objectEntryFolders, groupId);
-
-			return objectEntryFolders.size();
-		}
-
-		treePath = Objects.toString(treePath, "");
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTENTRYFOLDER_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_C_LIKET_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_LIKET_COMPANYID_2);
-
-		boolean bindTreePath = false;
-
-		if (treePath.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_C_LIKET_TREEPATH_3);
-		}
-		else {
-			bindTreePath = true;
-
-			sb.append(_FINDER_COLUMN_G_C_LIKET_TREEPATH_2);
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectEntryFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(companyId);
-
-			if (bindTreePath) {
-				queryPos.add(treePath);
-			}
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_LikeT.filterCount(
+			finderCache, new Object[] {groupId, companyId, treePath}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_C_LIKET_GROUPID_2 =
-		"objectEntryFolder.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_LIKET_COMPANYID_2 =
-		"objectEntryFolder.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_LIKET_TREEPATH_2 =
-		"objectEntryFolder.treePath LIKE ?";
-
-	private static final String _FINDER_COLUMN_G_C_LIKET_TREEPATH_3 =
-		"(objectEntryFolder.treePath IS NULL OR objectEntryFolder.treePath LIKE '')";
-
-	private FinderPath _finderPathWithPaginationFindByG_C_P_N_NotS;
-	private FinderPath _finderPathWithPaginationCountByG_C_P_N_NotS;
-	private CollectionPersistenceFinder<ObjectEntryFolder>
-		_collectionPersistenceFinderByG_C_P_N_NotS;
+	private FilterCollectionPersistenceFinder
+		<ObjectEntryFolder, NoSuchObjectEntryFolderException>
+			_collectionPersistenceFinderByG_C_P_N_NotS;
 
 	/**
 	 * Returns all the object entry folders where groupId = &#63; and companyId = &#63; and parentObjectEntryFolderId = &#63; and name = &#63; and status &ne; &#63;.
@@ -1589,20 +933,12 @@ public class ObjectEntryFolderPersistenceImpl
 			OrderByComparator<ObjectEntryFolder> orderByComparator)
 		throws NoSuchObjectEntryFolderException {
 
-		ObjectEntryFolder objectEntryFolder = fetchByG_C_P_N_NotS_First(
-			groupId, companyId, parentObjectEntryFolderId, name, status,
+		return _collectionPersistenceFinderByG_C_P_N_NotS.findFirst(
+			finderCache,
+			new Object[] {
+				groupId, companyId, parentObjectEntryFolderId, name, status
+			},
 			orderByComparator);
-
-		if (objectEntryFolder != null) {
-			return objectEntryFolder;
-		}
-
-		throw new NoSuchObjectEntryFolderException(
-			_collectionPersistenceFinderByG_C_P_N_NotS.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {
-					groupId, companyId, parentObjectEntryFolderId, name, status
-				}));
 	}
 
 	/**
@@ -1699,129 +1035,12 @@ public class ObjectEntryFolderPersistenceImpl
 		String name, int status, int start, int end,
 		OrderByComparator<ObjectEntryFolder> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_C_P_N_NotS(
-				groupId, companyId, parentObjectEntryFolderId, name, status,
-				start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_C_P_N_NotS(
-					groupId, companyId, parentObjectEntryFolderId, name, status,
-					QueryUtil.ALL_POS, QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		name = Objects.toString(name, "");
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				7 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(8);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_OBJECTENTRYFOLDER_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTENTRYFOLDER_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_PARENTOBJECTENTRYFOLDERID_2);
-
-		boolean bindName = false;
-
-		if (name.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_NAME_3);
-		}
-		else {
-			bindName = true;
-
-			sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_NAME_2);
-		}
-
-		sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_OBJECTENTRYFOLDER_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					ObjectEntryFolderModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(ObjectEntryFolderModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectEntryFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, ObjectEntryFolderImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, ObjectEntryFolderImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(companyId);
-
-			queryPos.add(parentObjectEntryFolderId);
-
-			if (bindName) {
-				queryPos.add(name);
-			}
-
-			queryPos.add(status);
-
-			return (List<ObjectEntryFolder>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_P_N_NotS.filterFind(
+			finderCache,
+			new Object[] {
+				groupId, companyId, parentObjectEntryFolderId, name, status
+			},
+			start, end, orderByComparator, groupId);
 	}
 
 	/**
@@ -1882,104 +1101,13 @@ public class ObjectEntryFolderPersistenceImpl
 		long groupId, long companyId, long parentObjectEntryFolderId,
 		String name, int status) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_C_P_N_NotS(
-				groupId, companyId, parentObjectEntryFolderId, name, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<ObjectEntryFolder> objectEntryFolders = findByG_C_P_N_NotS(
-				groupId, companyId, parentObjectEntryFolderId, name, status);
-
-			objectEntryFolders = InlineSQLHelperUtil.filter(
-				objectEntryFolders, groupId);
-
-			return objectEntryFolders.size();
-		}
-
-		name = Objects.toString(name, "");
-
-		StringBundler sb = new StringBundler(6);
-
-		sb.append(_FILTER_SQL_COUNT_OBJECTENTRYFOLDER_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_COMPANYID_2);
-
-		sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_PARENTOBJECTENTRYFOLDERID_2);
-
-		boolean bindName = false;
-
-		if (name.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_NAME_3);
-		}
-		else {
-			bindName = true;
-
-			sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_NAME_2);
-		}
-
-		sb.append(_FINDER_COLUMN_G_C_P_N_NOTS_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), ObjectEntryFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(companyId);
-
-			queryPos.add(parentObjectEntryFolderId);
-
-			if (bindName) {
-				queryPos.add(name);
-			}
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_C_P_N_NotS.filterCount(
+			finderCache,
+			new Object[] {
+				groupId, companyId, parentObjectEntryFolderId, name, status
+			},
+			groupId);
 	}
-
-	private static final String _FINDER_COLUMN_G_C_P_N_NOTS_GROUPID_2 =
-		"objectEntryFolder.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_P_N_NOTS_COMPANYID_2 =
-		"objectEntryFolder.companyId = ? AND ";
-
-	private static final String
-		_FINDER_COLUMN_G_C_P_N_NOTS_PARENTOBJECTENTRYFOLDERID_2 =
-			"objectEntryFolder.parentObjectEntryFolderId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_P_N_NOTS_NAME_2 =
-		"objectEntryFolder.name = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_P_N_NOTS_NAME_3 =
-		"(objectEntryFolder.name IS NULL OR objectEntryFolder.name = '') AND ";
-
-	private static final String _FINDER_COLUMN_G_C_P_N_NOTS_STATUS_2 =
-		"objectEntryFolder.status != ?";
 
 	public ObjectEntryFolderPersistenceImpl() {
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
@@ -2246,230 +1374,235 @@ public class ObjectEntryFolderPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_OBJECTENTRYFOLDER_WHERE,
 			_SQL_COUNT_OBJECTENTRYFOLDER_WHERE,
-			ObjectEntryFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ObjectEntryFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"objectEntryFolder.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, ObjectEntryFolder::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			ObjectEntryFolder::getUuid, ObjectEntryFolder::getGroupId);
+				"objectEntryFolder.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, ObjectEntryFolder::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_OBJECTENTRYFOLDER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(ObjectEntryFolder::getUuid),
+				ObjectEntryFolder::getGroupId),
+			_SQL_SELECT_OBJECTENTRYFOLDER_WHERE, "",
 			new FinderColumn<>(
-				"objectEntryFolder.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, ObjectEntryFolder::getUuid),
+				"objectEntryFolder.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, ObjectEntryFolder::getUuid),
 			new FinderColumn<>(
 				"objectEntryFolder.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, ObjectEntryFolder::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_OBJECTENTRYFOLDER_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_OBJECTENTRYFOLDER_WHERE,
 				_SQL_COUNT_OBJECTENTRYFOLDER_WHERE,
 				ObjectEntryFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"objectEntryFolder.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, ObjectEntryFolder::getUuid),
+					"objectEntryFolder.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					ObjectEntryFolder::getUuid),
 				new FinderColumn<>(
 					"objectEntryFolder.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, ObjectEntryFolder::getCompanyId));
 
-		_finderPathFetchByERC_G_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_G_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Long.class.getName()
-			},
-			new String[] {"externalReferenceCode", "groupId", "companyId"},
-			false, ObjectEntryFolder::getExternalReferenceCode,
-			ObjectEntryFolder::getGroupId, ObjectEntryFolder::getCompanyId);
-
 		_uniquePersistenceFinderByERC_G_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_G_C,
-			_SQL_SELECT_OBJECTENTRYFOLDER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_G_C",
+				new String[] {
+					String.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"externalReferenceCode", "groupId", "companyId"},
+				0, 1, false,
+				convertNullFunction(
+					ObjectEntryFolder::getExternalReferenceCode),
+				ObjectEntryFolder::getGroupId, ObjectEntryFolder::getCompanyId),
+			_SQL_SELECT_OBJECTENTRYFOLDER_WHERE, "",
 			new FinderColumn<>(
 				"objectEntryFolder.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				ObjectEntryFolder::getExternalReferenceCode),
 			new FinderColumn<>(
 				"objectEntryFolder.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, ObjectEntryFolder::getGroupId),
+				true, true, ObjectEntryFolder::getGroupId),
 			new FinderColumn<>(
 				"objectEntryFolder.", "companyId", FinderColumn.Type.LONG, "=",
 				true, true, ObjectEntryFolder::getCompanyId));
 
-		_finderPathWithPaginationFindByG_C_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_P",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "companyId", "parentObjectEntryFolderId"},
-			true);
-
-		_finderPathWithoutPaginationFindByG_C_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_P",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "companyId", "parentObjectEntryFolderId"},
-			true);
-
-		_finderPathCountByG_C_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_P",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "companyId", "parentObjectEntryFolderId"},
-			false);
-
-		_collectionPersistenceFinderByG_C_P = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_C_P,
-			_finderPathWithoutPaginationFindByG_C_P, _finderPathCountByG_C_P,
-			_SQL_SELECT_OBJECTENTRYFOLDER_WHERE,
-			_SQL_COUNT_OBJECTENTRYFOLDER_WHERE,
-			ObjectEntryFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"objectEntryFolder.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, ObjectEntryFolder::getGroupId),
-			new FinderColumn<>(
-				"objectEntryFolder.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, ObjectEntryFolder::getCompanyId),
-			new FinderColumn<>(
-				"objectEntryFolder.", "parentObjectEntryFolderId",
-				FinderColumn.Type.LONG, "=", true, true,
-				ObjectEntryFolder::getParentObjectEntryFolderId));
-
-		_finderPathWithPaginationFindByG_C_LikeT = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_LikeT",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "companyId", "treePath"}, true);
-
-		_finderPathWithPaginationCountByG_C_LikeT = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C_LikeT",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "companyId", "treePath"}, false);
-
-		_collectionPersistenceFinderByG_C_LikeT =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_C_LikeT, null,
-				_finderPathWithPaginationCountByG_C_LikeT,
+		_collectionPersistenceFinderByG_C_P =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_P",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "companyId", "parentObjectEntryFolderId"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_P",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {
+						"groupId", "companyId", "parentObjectEntryFolderId"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_P",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {
+						"groupId", "companyId", "parentObjectEntryFolderId"
+					},
+					false),
 				_SQL_SELECT_OBJECTENTRYFOLDER_WHERE,
 				_SQL_COUNT_OBJECTENTRYFOLDER_WHERE,
 				ObjectEntryFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"objectEntryFolder.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, ObjectEntryFolder::getGroupId),
+					"=", true, true, ObjectEntryFolder::getGroupId),
 				new FinderColumn<>(
 					"objectEntryFolder.", "companyId", FinderColumn.Type.LONG,
-					"=", true, false, ObjectEntryFolder::getCompanyId),
+					"=", true, true, ObjectEntryFolder::getCompanyId),
+				new FinderColumn<>(
+					"objectEntryFolder.", "parentObjectEntryFolderId",
+					FinderColumn.Type.LONG, "=", true, true,
+					ObjectEntryFolder::getParentObjectEntryFolderId));
+
+		_collectionPersistenceFinderByG_C_LikeT =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_LikeT",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "companyId", "treePath"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C_LikeT",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName()
+					},
+					new String[] {"groupId", "companyId", "treePath"}, false),
+				_SQL_SELECT_OBJECTENTRYFOLDER_WHERE,
+				_SQL_COUNT_OBJECTENTRYFOLDER_WHERE,
+				ObjectEntryFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
+				new FinderColumn<>(
+					"objectEntryFolder.", "groupId", FinderColumn.Type.LONG,
+					"=", true, true, ObjectEntryFolder::getGroupId),
+				new FinderColumn<>(
+					"objectEntryFolder.", "companyId", FinderColumn.Type.LONG,
+					"=", true, true, ObjectEntryFolder::getCompanyId),
 				new FinderColumn<>(
 					"objectEntryFolder.", "treePath", FinderColumn.Type.STRING,
 					"LIKE", true, true, ObjectEntryFolder::getTreePath));
 
-		_finderPathWithPaginationFindByG_C_P_N_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_P_N_NotS",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {
-				"groupId", "companyId", "parentObjectEntryFolderId", "name",
-				"status"
-			},
-			true);
-
-		_finderPathWithPaginationCountByG_C_P_N_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C_P_N_NotS",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {
-				"groupId", "companyId", "parentObjectEntryFolderId", "name",
-				"status"
-			},
-			false);
-
 		_collectionPersistenceFinderByG_C_P_N_NotS =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_C_P_N_NotS, null,
-				_finderPathWithPaginationCountByG_C_P_N_NotS,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByG_C_P_N_NotS",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "companyId", "parentObjectEntryFolderId",
+						"name", "status"
+					},
+					true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByG_C_P_N_NotS",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), String.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {
+						"groupId", "companyId", "parentObjectEntryFolderId",
+						"name", "status"
+					},
+					false),
 				_SQL_SELECT_OBJECTENTRYFOLDER_WHERE,
 				_SQL_COUNT_OBJECTENTRYFOLDER_WHERE,
 				ObjectEntryFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"objectEntryFolder.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, ObjectEntryFolder::getGroupId),
+					"=", true, true, ObjectEntryFolder::getGroupId),
 				new FinderColumn<>(
 					"objectEntryFolder.", "companyId", FinderColumn.Type.LONG,
-					"=", true, false, ObjectEntryFolder::getCompanyId),
+					"=", true, true, ObjectEntryFolder::getCompanyId),
 				new FinderColumn<>(
 					"objectEntryFolder.", "parentObjectEntryFolderId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					ObjectEntryFolder::getParentObjectEntryFolderId),
 				new FinderColumn<>(
 					"objectEntryFolder.", "name", FinderColumn.Type.STRING, "=",
-					true, false, ObjectEntryFolder::getName),
+					true, true, ObjectEntryFolder::getName),
 				new FinderColumn<>(
 					"objectEntryFolder.", "status", FinderColumn.Type.INTEGER,
 					"!=", true, true, ObjectEntryFolder::getStatus));
@@ -2528,29 +1661,6 @@ public class ObjectEntryFolderPersistenceImpl
 	private static final String _SQL_COUNT_OBJECTENTRYFOLDER_WHERE =
 		"SELECT COUNT(objectEntryFolder) FROM ObjectEntryFolder objectEntryFolder WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"objectEntryFolder.objectEntryFolderId";
-
-	private static final String _FILTER_SQL_SELECT_OBJECTENTRYFOLDER_WHERE =
-		"SELECT DISTINCT {objectEntryFolder.*} FROM ObjectEntryFolder objectEntryFolder WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_OBJECTENTRYFOLDER_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {ObjectEntryFolder.*} FROM (SELECT DISTINCT objectEntryFolder.objectEntryFolderId FROM ObjectEntryFolder objectEntryFolder WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_OBJECTENTRYFOLDER_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN ObjectEntryFolder ON TEMP_TABLE.objectEntryFolderId = ObjectEntryFolder.objectEntryFolderId";
-
-	private static final String _FILTER_SQL_COUNT_OBJECTENTRYFOLDER_WHERE =
-		"SELECT COUNT(DISTINCT objectEntryFolder.objectEntryFolderId) AS COUNT_VALUE FROM ObjectEntryFolder objectEntryFolder WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "objectEntryFolder";
-
-	private static final String _FILTER_ENTITY_TABLE = "ObjectEntryFolder";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "ObjectEntryFolder.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No ObjectEntryFolder exists with the key {";
 
@@ -2566,4 +1676,4 @@ public class ObjectEntryFolderPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-656590827
+// LIFERAY-SERVICE-BUILDER-HASH:1638594077

@@ -43,6 +43,9 @@ import java.util.function.Supplier;
 	description = "Represents a task to be executed in a workflow.",
 	value = "WorkflowTask"
 )
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Represents a task to be executed in a workflow."
+)
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "WorkflowTask")
 public class WorkflowTask implements Serializable {
@@ -271,6 +274,50 @@ public class WorkflowTask implements Serializable {
 
 	@JsonIgnore
 	private Supplier<Boolean> _completedSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The task's creator."
+	)
+	@Valid
+	public Creator getCreator() {
+		if (_creatorSupplier != null) {
+			creator = _creatorSupplier.get();
+
+			_creatorSupplier = null;
+		}
+
+		return creator;
+	}
+
+	public void setCreator(Creator creator) {
+		this.creator = creator;
+
+		_creatorSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setCreator(
+		UnsafeSupplier<Creator, Exception> creatorUnsafeSupplier) {
+
+		_creatorSupplier = () -> {
+			try {
+				return creatorUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(description = "The task's creator.")
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Creator creator;
+
+	@JsonIgnore
+	private Supplier<Creator> _creatorSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The task's completion date."
@@ -923,6 +970,18 @@ public class WorkflowTask implements Serializable {
 			sb.append(completed);
 		}
 
+		Creator creator = getCreator();
+
+		if (creator != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"creator\": ");
+
+			sb.append(String.valueOf(creator));
+		}
+
 		Date dateCompletion = getDateCompletion();
 
 		if (dateCompletion != null) {
@@ -1222,4 +1281,4 @@ public class WorkflowTask implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1021469374
+// LIFERAY-REST-BUILDER-HASH:1620557767

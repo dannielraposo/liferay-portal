@@ -36,7 +36,13 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName("Product")
+@GraphQLName(
+	description = "Read-only projection of a product (commerce product) referenced by a discount or price-modifier product binding. Carries the product id and localized name.",
+	value = "Product"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Read-only projection of a product (commerce product) referenced by a discount or price-modifier product binding. Carries the product id and localized name."
+)
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "Product")
 public class Product implements Serializable {
@@ -50,7 +56,10 @@ public class Product implements Serializable {
 	}
 
 	@DecimalMin("0")
-	@io.swagger.v3.oas.annotations.media.Schema(example = "30130")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Internal numeric identifier of the product. Server-assigned and stable.",
+		example = "30130"
+	)
 	public Long getId() {
 		if (_idSupplier != null) {
 			id = _idSupplier.get();
@@ -82,7 +91,9 @@ public class Product implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Internal numeric identifier of the product. Server-assigned and stable."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long id;
 
@@ -90,6 +101,7 @@ public class Product implements Serializable {
 	private Supplier<Long> _idSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Display name of the product.",
 		example = "{en_US=Hand Saw, hr_HR=Product Name HR, hu_HU=Product Name HU}"
 	)
 	@Valid
@@ -126,14 +138,17 @@ public class Product implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "Display name of the product.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Map<String, String> name;
 
 	@JsonIgnore
 	private Supplier<Map<String, String>> _nameSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema(example = "simple")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "SKU key identifying the SKU bound to this price entry.",
+		example = "simple"
+	)
 	public String getSku() {
 		if (_skuSupplier != null) {
 			sku = _skuSupplier.get();
@@ -165,14 +180,19 @@ public class Product implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "SKU key identifying the SKU bound to this price entry."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String sku;
 
 	@JsonIgnore
 	private Supplier<String> _skuSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema(example = "simple")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Resolved thumbnail URL for the bound product. Read-only.",
+		example = "simple"
+	)
 	public String getThumbnail() {
 		if (_thumbnailSupplier != null) {
 			thumbnail = _thumbnailSupplier.get();
@@ -206,7 +226,9 @@ public class Product implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Resolved thumbnail URL for the bound product. Read-only."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String thumbnail;
 
@@ -397,4 +419,4 @@ public class Product implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:324038092
+// LIFERAY-REST-BUILDER-HASH:1998097191

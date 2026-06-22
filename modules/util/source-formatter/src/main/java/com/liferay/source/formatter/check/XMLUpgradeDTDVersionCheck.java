@@ -33,25 +33,18 @@ public class XMLUpgradeDTDVersionCheck extends XMLDTDVersionCheck {
 	}
 
 	@Override
-	protected String getLPVersion() {
-		String[] upgradeToVersionParts = StringUtil.split(
-			_upgradeToVersion, StringPool.PERIOD);
-
-		if (upgradeToVersionParts == null) {
-			return null;
-		}
-
-		return StringBundler.concat(
-			upgradeToVersionParts[0], ".", upgradeToVersionParts[1], ".0");
-	}
-
-	@Override
 	protected String getLPVersionDTD() {
 		String[] upgradeToVersionParts = StringUtil.split(
 			_upgradeToVersion, StringPool.PERIOD);
 
-		if (upgradeToVersionParts == null) {
+		if ((upgradeToVersionParts == null) ||
+			(upgradeToVersionParts.length < 2)) {
+
 			return null;
+		}
+
+		if (upgradeToVersionParts[1].startsWith("q")) {
+			return "7_4_0";
 		}
 
 		return StringBundler.concat(

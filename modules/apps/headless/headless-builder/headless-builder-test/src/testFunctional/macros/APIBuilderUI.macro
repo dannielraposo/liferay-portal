@@ -464,8 +464,8 @@ definition {
 		Click(locator1 = "APIBuilder#EDIT_BUTTON");
 
 		Click(
-			locator1 = "Button#BUTTON_WITH_VALUE",
-			value = ${tabEntity});
+			key_tab = ${tabEntity},
+			locator1 = "NavTab#TAB_LINK");
 	}
 
 	@summary = "Default summary"
@@ -499,23 +499,6 @@ definition {
 		KeyPress(
 			locator1 = "TextInput#SEARCH",
 			value1 = "\RETURN");
-	}
-
-	@summary = "Default summary"
-	macro setPanelCategoryKeyToObject(objectDefinition = null) {
-		Variables.assertDefined(parameterList = ${objectDefinition});
-
-		ObjectAdmin.openObjectAdmin();
-
-		WaitForPageLoad();
-
-		ObjectPortlet.selectCustomObject(label = ${objectDefinition});
-
-		ObjectAdmin.selectDropdownItem(
-			labelName = "Panel Link",
-			optionName = "Object");
-
-		CreateObject.saveObject();
 	}
 
 	@summary = "Default summary"

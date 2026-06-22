@@ -4,7 +4,7 @@
  */
 
 import '@testing-library/jest-dom';
-import {render} from '@testing-library/react';
+import {render, screen} from '@testing-library/react';
 import React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 
@@ -33,11 +33,29 @@ jest.mock(
 	})
 );
 
+jest.mock(
+	'../../../src/main/resources/META-INF/resources/js/common/hooks/useAnalyticsQuery',
+	() => {
+		const {
+			frequencyChartFixture,
+		} = require('../fixtures/FrequencyChartFixture');
+
+		return {
+			__esModule: true,
+			default: jest.fn(() => ({
+				isLoading: false,
+				response: frequencyChartFixture,
+				sendRequest: jest.fn(),
+			})),
+		};
+	}
+);
+
 describe('VisitFrequencyChart component', () => {
 	let container: HTMLElement;
 
 	beforeEach(() => {
-		const view = render(<FrequencyChart dsrDevEnvEnabled={true} />);
+		const view = render(<FrequencyChart isAnalyticsEnabled={true} />);
 
 		container = view.container;
 	});
@@ -70,5 +88,13 @@ describe('VisitFrequencyChart component', () => {
 		);
 
 		expect(xAxisTick).toHaveTextContent('daily');
+	});
+
+	it('renders the not-configured message when analytics cloud is not configured', () => {
+		render(<FrequencyChart isAnalyticsEnabled={false} />);
+
+		expect(
+			screen.getByText('analytics-cloud-is-not-configured')
+		).toBeInTheDocument();
 	});
 });

@@ -52,6 +52,7 @@ export class CommerceAdminChannelDetailsPage {
 		isNestedFrame: boolean,
 		tableName: string
 	) => Promise<Locator>;
+	readonly errorMessage: (text: string) => Locator;
 	readonly frameSaveButton: (
 		isNestedFrame: boolean,
 		tableName: string,
@@ -66,6 +67,7 @@ export class CommerceAdminChannelDetailsPage {
 	) => Promise<Locator>;
 	readonly guestCheckoutToggle: Locator;
 	readonly isActive: Locator;
+	readonly linkSupplierSelect: Locator;
 	readonly linkTab: (tabName: string) => Locator;
 	readonly maxOpenOrderAccountInput: Locator;
 	readonly page: Page;
@@ -108,6 +110,9 @@ export class CommerceAdminChannelDetailsPage {
 	) => Promise<Locator>;
 	readonly sidePanelFrameNavLink: (
 		navItem: string,
+		tableName: string
+	) => Promise<Locator>;
+	readonly sidePanelFrameDeleteMenuItem: (
 		tableName: string
 	) => Promise<Locator>;
 	readonly sidePanelFrameEditMenuItem: (
@@ -275,6 +280,8 @@ export class CommerceAdminChannelDetailsPage {
 				eligibilityOption
 			);
 		};
+		this.errorMessage = (text: string) =>
+			page.locator('.alert-danger').filter({hasText: text});
 		this.frameSaveButton = async (
 			isNestedFrame: boolean,
 			tableName: string,
@@ -305,6 +312,9 @@ export class CommerceAdminChannelDetailsPage {
 		};
 		this.sidePanelFrameLocator = page.frameLocator('.is-visible iframe');
 		this.isActive = this.sidePanelFrameLocator.getByLabel('Active');
+		this.linkSupplierSelect = page.locator(
+			'select[name$="accountEntryId"]'
+		);
 		this.linkTab = (tabName) =>
 			page.getByRole('link', {exact: true, name: tabName});
 		this.maxOpenOrderAccountInput = page.getByLabel(
@@ -421,6 +431,12 @@ export class CommerceAdminChannelDetailsPage {
 				exact: true,
 				name: navItem,
 			});
+		};
+		this.sidePanelFrameDeleteMenuItem = async (tableName: string) => {
+			return (await this.sidePanelFrame(tableName)).getByRole(
+				'menuitem',
+				{name: 'Delete'}
+			);
 		};
 		this.sidePanelFrameEditMenuItem = async (tableName: string) => {
 			return (await this.sidePanelFrame(tableName)).getByRole(
@@ -666,7 +682,7 @@ export class CommerceAdminChannelDetailsPage {
 		).click();
 	}
 
-	async addFixedTaxRate(amount: string, name: string) {
+	async addFixedTaxRate(amount: string, name: string, percentage = false) {
 		const tableName = 'Tax Calculations';
 
 		await (
@@ -676,6 +692,13 @@ export class CommerceAdminChannelDetailsPage {
 		await expect(await this.activeToggle(tableName)).toBeVisible();
 
 		await (await this.activeToggle(tableName)).check();
+
+		if (percentage) {
+			await (await this.sidePanelFrame(tableName))
+				.getByLabel('Percentage')
+				.check();
+		}
+
 		await (await this.frameSaveButton(false, tableName)).click();
 
 		await (await this.taxRatesTab(tableName)).click();
@@ -684,7 +707,9 @@ export class CommerceAdminChannelDetailsPage {
 		await expect(this.taxCategoryChoiceBox).toBeVisible();
 
 		await this.taxCategoryChoiceBox.selectOption(name);
-		await this.addTaxRateFrame.getByLabel('Amount').fill(amount);
+		await this.addTaxRateFrame
+			.getByLabel(percentage ? 'Rate' : 'Amount')
+			.fill(amount);
 		await this.taxRateFrameSubmitButton.click();
 
 		await this.page.reload();
@@ -907,5 +932,21 @@ export class CommerceAdminChannelDetailsPage {
 
 	async goToCurrencies() {
 		await this.currencyTab.click();
+	}
+
+	async setShippingMethodTrackingURL(
+		name: string,
+		trackingURL: string,
+		tableName: string
+	) {
+		await (await this.generalCommerceAdminChannelTableLink(name)).click();
+		await (
+			await this.sidePanelFrameInput('Tracking URL', tableName)
+		).fill(trackingURL);
+		await (await this.frameSaveButton(false, tableName)).click();
+
+		await waitForAlert(await this.sidePanelFrame(tableName));
+
+		await (await this.closeSidePanelFrame(false, tableName)).click();
 	}
 }

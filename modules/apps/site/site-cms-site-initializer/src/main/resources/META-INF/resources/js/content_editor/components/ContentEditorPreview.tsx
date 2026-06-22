@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {PanelResizer as Resizer, useObservedMaxWidth} from '@clayui/shared';
+import {ResizeHandle} from '@clayui/core';
+import {useObservedMaxWidth} from '@clayui/shared';
 import {useEventListener} from '@liferay/frontend-js-react-web';
 import classNames from 'classnames';
 import {useSessionState} from 'frontend-js-components-web';
+import {sessionStorage} from 'frontend-js-web';
 import React, {useCallback, useEffect, useId, useRef, useState} from 'react';
 
 import {
@@ -15,24 +17,36 @@ import {
 } from './ContentEditorToolbar';
 import PreviewBody from './preview/PreviewBody';
 import PreviewHeader from './preview/PreviewHeader';
+import {
+	PREVIEW_VISIBLE_SESSION_KEY,
+	PREVIEW_WIDTH_SESSION_KEY,
+} from './preview/sessionKeys';
 import useIsContentEdited from './useIsContentEdited';
+import useLocalizationLanguageId from './useLocalizationLanguageId';
 
 import '../../../css/content_editor/ContentEditorPreview.scss';
 
 const BREAKPOINT_LG = 992;
 const FORM_SELECTOR = '.lfr-layout-structure-item-form';
 const PREVIEW_WIDTH_MIN = 500;
-const PREVIEW_WIDTH_SESSION_KEY = 'CMSContentEditorPreviewWidth';
 
 export default function ContentEditorPreview({
+	defaultLanguageId,
 	getPreviewDataURL,
 	title,
 }: {
+	defaultLanguageId: Liferay.Language.Locale;
 	getPreviewDataURL: string;
 	title: string;
 }) {
 	const isContentEdited = useIsContentEdited(FORM_SELECTOR);
-	const [isVisible, setIsVisible] = useState<boolean>(false);
+	const [isVisible, setIsVisible] = useState<boolean>(
+		() =>
+			sessionStorage.getItem(
+				PREVIEW_VISIBLE_SESSION_KEY,
+				sessionStorage.TYPES.NECESSARY
+			) === 'true'
+	);
 	const [resizeWidth, setResizeWidth] = useSessionState(
 		PREVIEW_WIDTH_SESSION_KEY,
 		window.innerWidth / 2
@@ -43,6 +57,9 @@ export default function ContentEditorPreview({
 	const previewRef = useRef<HTMLDivElement>(null);
 	const sidePanelBarRef = useRef<HTMLElement | null>(null);
 
+	const localizationLanguageId = useLocalizationLanguageId(defaultLanguageId);
+
+	const previewId = useId();
 	const previewWidthMax = useObservedMaxWidth(previewRef);
 	const previewWidth = Math.min(previewWidthMax, resizeWidth!);
 	const titleId = useId();
@@ -94,17 +111,14 @@ export default function ContentEditorPreview({
 		window
 	);
 
-	if (!Liferay.FeatureFlags['LPD-44507']) {
-		return null;
-	}
-
 	return (
 		<div
 			aria-labelledby={titleId}
-			className={classNames('content-editor__preview c-slideout-end', {
+			className={classNames('content-editor__preview', {
 				resizing,
 				visible: isVisible,
 			})}
+			id={previewId}
 			onTransitionEnd={({propertyName}) => {
 				if (isVisible && propertyName === 'visibility') {
 					previewRef.current?.focus();
@@ -128,19 +142,21 @@ export default function ContentEditorPreview({
 					<PreviewBody
 						getPreviewDataURL={getPreviewDataURL}
 						isContentEdited={isContentEdited}
+						languageId={localizationLanguageId}
 					/>
 				</>
 			) : null}
 
-			<Resizer
-				onPanelWidthChange={(width) => {
+			<ResizeHandle
+				aria-controls={previewId}
+				maxWidth={previewWidthMax}
+				minWidth={PREVIEW_WIDTH_MIN}
+				onWidthChange={(width: number) => {
 					setResizeWidth(width);
 					setResizing(true);
 				}}
-				panelWidth={previewWidth}
-				panelWidthMax={previewWidthMax}
-				panelWidthMin={PREVIEW_WIDTH_MIN}
 				position="right"
+				width={previewWidth}
 			/>
 		</div>
 	);

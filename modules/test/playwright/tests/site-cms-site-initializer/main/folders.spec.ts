@@ -10,6 +10,7 @@ import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {getRandomInt} from '../../../utils/getRandomInt';
 import getRandomString from '../../../utils/getRandomString';
+import {performUserSwitch, userData} from '../../../utils/performLogin';
 import {waitForAlert} from '../../../utils/waitForAlert';
 import {cmsPagesTest} from './fixtures/cmsPagesTest';
 
@@ -43,7 +44,11 @@ test(
 
 		const newFolderTitle = getRandomString();
 
-		await page.getByLabel('Name').fill(newFolderTitle);
+		const nameInput = page.getByLabel('Name');
+
+		await expect(nameInput).toHaveValue(folderTitle);
+
+		await nameInput.fill(newFolderTitle);
 		await page.getByLabel('Description').fill('folder description');
 		await page.getByRole('button', {name: 'Save'}).click();
 
@@ -62,26 +67,23 @@ test(
 
 test(
 	'Folders should not show status',
-	{tag: '@LPD-78615'},
+	{tag: ['@LPD-78615', '@LPD-92355']},
 	async ({apiHelpers, assetsPage, page}) => {
 		const folderTitle = getRandomString();
 
 		await apiHelpers.objectFolder.createObjectEntryFolder({
+			parentObjectEntryFolderExternalReferenceCode: 'L_CONTENTS',
 			scopeKey: 'Default',
 			title: folderTitle,
 		});
 
-		await assetsPage.gotoFiles();
-
-		await assetsPage.changeVisualizationMode('Table');
+		await assetsPage.gotoContents();
 
 		const row = page
 			.getByRole('row')
 			.filter({has: page.getByRole('link', {name: folderTitle})});
 
-		await expect(
-			row.getByRole('cell', {exact: true, name: '--'})
-		).toBeVisible();
+		await expect(row.locator('.cell-embedded-status')).toHaveText('--');
 	}
 );
 
@@ -167,6 +169,152 @@ test(
 		}
 		finally {
 			await apiHelpers.objectFolder.deleteObjectEntryFolder(folder.id);
+		}
+	}
+);
+
+test(
+	'Duplicating a folder creates a copy in the same parent',
+	{tag: '@LPD-88657'},
+	async ({apiHelpers, assetsPage, page}) => {
+		const folderName = `Folder ${getRandomString()}`;
+		const spaceName = 'Default';
+
+		await test.step('Create a folder in the Space', async () => {
+			await apiHelpers.objectFolder.createObjectEntryFolder({
+				parentObjectEntryFolderExternalReferenceCode: 'L_CONTENTS',
+				scopeKey: spaceName,
+				title: folderName,
+			});
+		});
+
+		await test.step('Duplicate the folder', async () => {
+			await assetsPage.gotoSpaceContents(spaceName);
+
+			await assetsPage.execItemAction({
+				action: 'Duplicate',
+				filter: folderName,
+				parentAction: 'Copy',
+			});
+
+			await expect(
+				page.getByRole('link', {
+					exact: true,
+					name: `${folderName} (Copy)`,
+				})
+			).toBeVisible();
+		});
+
+		await test.step('Duplicate the original again and check the suffix increments', async () => {
+			await assetsPage.execItemAction({
+				action: 'Duplicate',
+				filter: folderName,
+				parentAction: 'Copy',
+			});
+
+			await expect(
+				page.getByRole('link', {
+					exact: true,
+					name: `${folderName} (Copy 1)`,
+				})
+			).toBeVisible();
+		});
+	}
+);
+
+test(
+	'Shared folder shows a shared icon in the Files section only for the recipient',
+	{tag: '@LPD-66045'},
+	async ({apiHelpers, assetsPage, page}) => {
+		const folderTitle1 = `Folder ${getRandomString()}`;
+		const folderTitle2 = `Folder ${getRandomString()}`;
+		const spaceName = `Space ${getRandomString()}`;
+
+		const space = await apiHelpers.headlessAssetLibrary.createAssetLibrary({
+			name: spaceName,
+			settings: {},
+			type: 'Space',
+		});
+
+		const objectEntryFolder1 =
+			await apiHelpers.objectFolder.createObjectEntryFolder({
+				parentObjectEntryFolderExternalReferenceCode: 'L_FILES',
+				scopeKey: space.assetLibraryKey,
+				title: folderTitle1,
+			});
+
+		const objectEntryFolder2 =
+			await apiHelpers.objectFolder.createObjectEntryFolder({
+				parentObjectEntryFolderExternalReferenceCode: 'L_FILES',
+				scopeKey: space.assetLibraryKey,
+				title: folderTitle2,
+			});
+
+		try {
+			const user = await apiHelpers.headlessAdminUser.postUserAccount();
+
+			userData[user.alternateName] = {
+				name: user.givenName,
+				password: 'test',
+				surname: user.familyName,
+			};
+
+			const cmsAdminRole =
+				await apiHelpers.headlessAdminUser.getRoleByName(
+					'CMS Administrator'
+				);
+
+			await apiHelpers.headlessAdminUser.postRoleUserAccountAssociation(
+				cmsAdminRole.id,
+				Number(user.id)
+			);
+
+			await apiHelpers.objectFolder.postObjectEntryFolderCollaborators(
+				[
+					{
+						actionIds: ['VIEW'],
+						id: user.id,
+						share: true,
+						type: 'User',
+					},
+				],
+				objectEntryFolder1.id
+			);
+
+			await performUserSwitch(page, user.alternateName);
+
+			await assetsPage.gotoFiles();
+
+			await assetsPage.changeVisualizationMode('Table');
+
+			const folderRow1 = page
+				.getByRole('row')
+				.filter({has: page.getByRole('link', {name: folderTitle1})});
+
+			await expect(folderRow1).toBeVisible();
+
+			await expect(
+				folderRow1.locator('.lexicon-icon-users').first()
+			).toBeVisible();
+
+			const folderRow2 = page
+				.getByRole('row')
+				.filter({has: page.getByRole('link', {name: folderTitle2})});
+
+			await expect(folderRow2).toBeVisible();
+
+			await expect(folderRow2.locator('.lexicon-icon-users')).toHaveCount(
+				0
+			);
+		}
+		finally {
+			await apiHelpers.objectFolder.deleteObjectEntryFolder(
+				objectEntryFolder1.id
+			);
+
+			await apiHelpers.objectFolder.deleteObjectEntryFolder(
+				objectEntryFolder2.id
+			);
 		}
 	}
 );

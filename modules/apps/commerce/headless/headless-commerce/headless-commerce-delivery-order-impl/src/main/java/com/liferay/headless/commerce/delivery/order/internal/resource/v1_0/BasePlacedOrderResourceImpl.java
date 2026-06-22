@@ -77,35 +77,42 @@ public abstract class BasePlacedOrderResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/channels/{channelId}/accounts/{accountId}/placed-orders'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves placed orders for specific account in the given channel."
+		description = "Lists the placed orders the authenticated buyer can view within the given channel and account scope. Searches the order index restricted to the supplied account and channel; orders in the OPEN draft state are excluded. Supports search, filter, sort, and pagination over fields exposed by the placed-order entity model."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Identifier of the buyer account that owns the placed orders. Addresses the account scope when listing orders by account within a channel.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "accountId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Identifier of the commerce channel that owns the placed orders. Addresses the channel scope when listing orders by channel.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model (for PlacedOrder typically account, author, createDate, externalReferenceCode, modifiedDate, name, orderStatus, orderType, purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression. Matched against the indexed fields of the target entity (for PlacedOrder typically account name, author, externalReferenceCode, name, orderType, and purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression in OData order syntax (field asc|desc, comma-separated). Sortable fields depend on the endpoint and are sourced from the matching entity model.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -148,35 +155,42 @@ public abstract class BasePlacedOrderResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/channels/by-externalReferenceCode/{channelExternalReferenceCode}/accounts/by-externalReferenceCode/{accountExternalReferenceCode}/placed-orders'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves placed orders for specific account in the given channel."
+		description = "Lists the placed orders the authenticated buyer can view within the given channel ERC and account ERC scope. Searches the order index filtered to the account and channel; orders in the OPEN draft state are excluded so only committed orders are returned. Supports search, filter, sort, and pagination."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code of the buyer account that owns the placed orders. Addresses the account scope when listing orders by account-ERC within a channel-ERC.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "accountExternalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code of the commerce channel that owns the placed orders. Addresses the channel scope when listing or filtering orders by channel ERC.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelExternalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model (for PlacedOrder typically account, author, createDate, externalReferenceCode, modifiedDate, name, orderStatus, orderType, purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression. Matched against the indexed fields of the target entity (for PlacedOrder typically account name, author, externalReferenceCode, name, orderType, and purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression in OData order syntax (field asc|desc, comma-separated). Sortable fields depend on the endpoint and are sourced from the matching entity model.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -220,31 +234,37 @@ public abstract class BasePlacedOrderResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/channels/by-externalReferenceCode/{externalReferenceCode}/placed-orders'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves placed orders in the given channel."
+		description = "Lists the placed orders the authenticated buyer can view within the given channel ERC scope. Resolves the channel by external reference code and delegates to the channel-id-scoped listing; orders in the OPEN draft state are excluded. Supports search, filter, sort, and pagination."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model (for PlacedOrder typically account, author, createDate, externalReferenceCode, modifiedDate, name, orderStatus, orderType, purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression. Matched against the indexed fields of the target entity (for PlacedOrder typically account name, author, externalReferenceCode, name, orderType, and purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression in OData order syntax (field asc|desc, comma-separated). Sortable fields depend on the endpoint and are sourced from the matching entity model.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -283,31 +303,37 @@ public abstract class BasePlacedOrderResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/channels/{channelId}/placed-orders'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves placed orders in the given channel."
+		description = "Lists the placed orders the authenticated buyer can view within the given channel. When the buyer holds the MANAGE_ALL_ACCOUNTS permission on the channel scope every account's orders are returned; otherwise the result is restricted to the buyer's own commerce accounts. Orders in the OPEN draft state are excluded. Supports search, filter, sort, and pagination."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Identifier of the commerce channel that owns the placed orders. Addresses the channel scope when listing orders by channel.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model (for PlacedOrder typically account, author, createDate, externalReferenceCode, modifiedDate, name, orderStatus, orderType, purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression. Matched against the indexed fields of the target entity (for PlacedOrder typically account name, author, externalReferenceCode, name, orderType, and purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression in OData order syntax (field asc|desc, comma-separated). Sortable fields depend on the endpoint and are sourced from the matching entity model.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -344,11 +370,12 @@ public abstract class BasePlacedOrderResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-orders/{placedOrderId}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieve information of the given Placed Order."
+		description = "Returns a single placed order addressed by id. The order must not be OPEN; if it is, 404 is returned."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal identifier of a placed order. Addresses a single non-open placed order owned by the authenticated buyer or a delegated account user.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "placedOrderId"
 			)
@@ -377,11 +404,12 @@ public abstract class BasePlacedOrderResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-orders/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieve information of the given Placed Order."
+		description = "Returns a single placed order addressed by external reference code. Resolves the order under the authenticated buyer's company; only orders owned by the buyer or by a delegated account user are returned. Returns 404 when the ERC does not resolve."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -411,13 +439,18 @@ public abstract class BasePlacedOrderResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-orders/by-externalReferenceCode/{externalReferenceCode}/payment-url'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns a portal URL that routes the buyer through the payment flow for the placed order addressed by ERC. The URL embeds a guest token when the order is a guest order, and a nextStep parameter that either follows the supplied callbackURL or returns the buyer to the order-confirmation step of the storefront checkout. The order must not be OPEN."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Optional URL the payment gateway redirects the buyer to after the payment flow completes. When omitted, the buyer is routed back to the order-confirmation step on the storefront checkout.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "callbackURL"
 			)
@@ -430,7 +463,9 @@ public abstract class BasePlacedOrderResourceImpl
 	@jakarta.ws.rs.Path(
 		"/placed-orders/by-externalReferenceCode/{externalReferenceCode}/payment-url"
 	)
-	@jakarta.ws.rs.Produces("text/plain")
+	@jakarta.ws.rs.Produces(
+		{"application/json", "application/xml", "text/plain"}
+	)
 	@Override
 	public String getPlacedOrderByExternalReferenceCodePaymentURL(
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
@@ -450,13 +485,18 @@ public abstract class BasePlacedOrderResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-orders/{placedOrderId}/payment-url'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns a portal URL that routes the buyer through the payment flow for the placed order addressed by id. The URL embeds a guest token when the order is a guest order, and a nextStep parameter that either follows the supplied callbackURL or returns the buyer to the order-confirmation step of the storefront checkout. The order must not be OPEN."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal identifier of a placed order. Addresses a single non-open placed order owned by the authenticated buyer or a delegated account user.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "placedOrderId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Optional URL the payment gateway redirects the buyer to after the payment flow completes. When omitted, the buyer is routed back to the order-confirmation step on the storefront checkout.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "callbackURL"
 			)
@@ -467,7 +507,9 @@ public abstract class BasePlacedOrderResourceImpl
 	)
 	@jakarta.ws.rs.GET
 	@jakarta.ws.rs.Path("/placed-orders/{placedOrderId}/payment-url")
-	@jakarta.ws.rs.Produces("text/plain")
+	@jakarta.ws.rs.Produces(
+		{"application/json", "application/xml", "text/plain"}
+	)
 	@Override
 	public String getPlacedOrderPaymentURL(
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
@@ -487,9 +529,13 @@ public abstract class BasePlacedOrderResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-orders/{placedOrderId}' -d $'{"attachments": ___, "customFields": ___, "name": ___, "printedNote": ___, "purchaseOrderNumber": ___, "steps": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates the placed order addressed by id. Applies JSON Merge Patch semantics to a small set of buyer-editable fields (name, printedNote, purchaseOrderNumber) plus custom expando attributes; the order must not be OPEN. Returns 422 when the order status forbids the patch."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal identifier of a placed order. Addresses a single non-open placed order owned by the authenticated buyer or a delegated account user.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "placedOrderId"
 			)
@@ -519,9 +565,13 @@ public abstract class BasePlacedOrderResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-orders/by-externalReferenceCode/{externalReferenceCode}' -d $'{"attachments": ___, "customFields": ___, "name": ___, "printedNote": ___, "purchaseOrderNumber": ___, "steps": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates the placed order addressed by external reference code. Applies JSON Merge Patch semantics to a small set of buyer-editable fields (name, printedNote, purchaseOrderNumber) plus custom expando attributes; the order must not be OPEN. Returns 404 when the ERC does not resolve and 422 when the order status forbids the patch."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -1240,4 +1290,4 @@ public abstract class BasePlacedOrderResourceImpl
 		LogFactoryUtil.getLog(BasePlacedOrderResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1047678927
+// LIFERAY-REST-BUILDER-HASH:-332254295

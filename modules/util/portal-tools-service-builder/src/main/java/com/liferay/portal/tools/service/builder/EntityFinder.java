@@ -8,11 +8,9 @@ package com.liferay.portal.tools.service.builder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Brian Wing Shun Chan
@@ -173,19 +171,11 @@ public class EntityFinder {
 	}
 
 	public boolean isFinderDelegationEnabled() {
-		if (!_serviceBuilder.isVersionGTE_7_4_0() || hasArrayableOperator()) {
+		if (!_serviceBuilder.isVersionGTE_7_4_0() || hasArrayablePagination()) {
 			return false;
 		}
 
-		for (EntityColumn entityColumn : _entityColumns) {
-			if (Objects.equals(entityColumn.getType(), "String") &&
-				!entityColumn.isCaseSensitive()) {
-
-				return false;
-			}
-		}
-
-		return Validator.isNull(_where);
+		return true;
 	}
 
 	public boolean isPretouch() {

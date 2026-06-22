@@ -29,9 +29,12 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import com.nimbusds.oauth2.sdk.GrantType;
+import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.as.AuthorizationServerMetadata;
+import com.nimbusds.oauth2.sdk.auth.ClientAuthenticationMethod;
 import com.nimbusds.oauth2.sdk.id.Issuer;
+import com.nimbusds.oauth2.sdk.pkce.CodeChallengeMethod;
 import com.nimbusds.openid.connect.sdk.SubjectType;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
@@ -41,6 +44,8 @@ import java.net.URL;
 
 import java.security.MessageDigest;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -67,12 +72,17 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 
 		return addOAuthClientASLocalMetadata(
 			null, userId,
-			String.valueOf(
-				authorizationServerMetadata.getAuthorizationEndpointURI()),
-			String.valueOf(authorizationServerMetadata.getIssuer()),
-			String.valueOf(authorizationServerMetadata.getJWKSetURI()), false,
-			String.valueOf(
-				authorizationServerMetadata.getRegistrationEndpointURI()),
+			Objects.toString(
+				authorizationServerMetadata.getAuthorizationEndpointURI(),
+				StringPool.BLANK),
+			Objects.toString(
+				authorizationServerMetadata.getIssuer(), StringPool.BLANK),
+			Objects.toString(
+				authorizationServerMetadata.getJWKSetURI(), StringPool.BLANK),
+			false,
+			Objects.toString(
+				authorizationServerMetadata.getRegistrationEndpointURI(),
+				StringPool.BLANK),
 			StringUtil.split(
 				StringUtil.merge(authorizationServerMetadata.getGrantTypes()),
 				StringPool.COMMA),
@@ -82,7 +92,9 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 			StringUtil.split(
 				_getSubjectTypes(authorizationServerMetadata),
 				StringPool.COMMA),
-			String.valueOf(authorizationServerMetadata.getTokenEndpointURI()),
+			Objects.toString(
+				authorizationServerMetadata.getTokenEndpointURI(),
+				StringPool.BLANK),
 			_getUserInfoEndpointURI(authorizationServerMetadata));
 	}
 
@@ -94,6 +106,8 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 			String[] supportedSubjectTypes, String tokenEndpoint,
 			String userInfoEndpoint)
 		throws PortalException {
+
+		issuer = _removeTrailingSlash(issuer);
 
 		User user = _userLocalService.getUser(userId);
 
@@ -202,7 +216,7 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 		long companyId, String issuer) {
 
 		return oAuthClientASLocalMetadataPersistence.fetchByC_I(
-			companyId, issuer);
+			companyId, _removeTrailingSlash(issuer));
 	}
 
 	@Override
@@ -271,12 +285,17 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 
 		return updateOAuthClientASLocalMetadata(
 			oAuthClientASLocalMetadataId,
-			String.valueOf(
-				authorizationServerMetadata.getAuthorizationEndpointURI()),
-			String.valueOf(authorizationServerMetadata.getIssuer()),
-			String.valueOf(authorizationServerMetadata.getJWKSetURI()), false,
-			String.valueOf(
-				authorizationServerMetadata.getRegistrationEndpointURI()),
+			Objects.toString(
+				authorizationServerMetadata.getAuthorizationEndpointURI(),
+				StringPool.BLANK),
+			Objects.toString(
+				authorizationServerMetadata.getIssuer(), StringPool.BLANK),
+			Objects.toString(
+				authorizationServerMetadata.getJWKSetURI(), StringPool.BLANK),
+			false,
+			Objects.toString(
+				authorizationServerMetadata.getRegistrationEndpointURI(),
+				StringPool.BLANK),
 			StringUtil.split(
 				StringUtil.merge(authorizationServerMetadata.getGrantTypes()),
 				StringPool.COMMA),
@@ -286,7 +305,9 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 			StringUtil.split(
 				_getSubjectTypes(authorizationServerMetadata),
 				StringPool.COMMA),
-			String.valueOf(authorizationServerMetadata.getTokenEndpointURI()),
+			Objects.toString(
+				authorizationServerMetadata.getTokenEndpointURI(),
+				StringPool.BLANK),
 			_getUserInfoEndpointURI(authorizationServerMetadata));
 	}
 
@@ -297,6 +318,8 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 			String[] supportedScopes, String[] supportedSubjectTypes,
 			String tokenEndpoint, String userInfoEndpoint)
 		throws PortalException {
+
+		issuer = _removeTrailingSlash(issuer);
 
 		OAuthClientASLocalMetadata oAuthClientASLocalMetadata =
 			oAuthClientASLocalMetadataLocalService.
@@ -352,17 +375,47 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 			AuthorizationServerMetadata authorizationServerMetadata =
 				new AuthorizationServerMetadata(new Issuer(issuer));
 
-			authorizationServerMetadata.setAuthorizationEndpointURI(
-				new URI(authorizationEndpoint));
+			if (Validator.isNotNull(authorizationEndpoint)) {
+				authorizationServerMetadata.setAuthorizationEndpointURI(
+					new URI(authorizationEndpoint));
+			}
+
+			authorizationServerMetadata.setCodeChallengeMethods(
+				Collections.singletonList(CodeChallengeMethod.S256));
 			authorizationServerMetadata.setGrantTypes(
 				TransformUtil.transformToList(
 					supportedGrantTypes, GrantType::parse));
-			authorizationServerMetadata.setJWKSetURI(new URI(jwksURI));
-			authorizationServerMetadata.setRegistrationEndpointURI(
-				new URI(registrationEndpoint));
+
+			String introspectionEndpoint = _getIntrospectionEndpoint(
+				tokenEndpoint);
+
+			if (introspectionEndpoint != null) {
+				authorizationServerMetadata.setIntrospectionEndpointURI(
+					new URI(introspectionEndpoint));
+			}
+
+			if (Validator.isNotNull(jwksURI)) {
+				authorizationServerMetadata.setJWKSetURI(new URI(jwksURI));
+			}
+
+			if (Validator.isNotNull(registrationEndpoint)) {
+				authorizationServerMetadata.setRegistrationEndpointURI(
+					new URI(registrationEndpoint));
+			}
+
+			authorizationServerMetadata.setResponseTypes(
+				Collections.singletonList(new ResponseType("code")));
 			authorizationServerMetadata.setScopes(new Scope(supportedScopes));
-			authorizationServerMetadata.setTokenEndpointURI(
-				new URI(tokenEndpoint));
+			authorizationServerMetadata.setTokenEndpointAuthMethods(
+				Arrays.asList(
+					ClientAuthenticationMethod.CLIENT_SECRET_BASIC,
+					ClientAuthenticationMethod.CLIENT_SECRET_POST,
+					ClientAuthenticationMethod.NONE));
+
+			if (Validator.isNotNull(tokenEndpoint)) {
+				authorizationServerMetadata.setTokenEndpointURI(
+					new URI(tokenEndpoint));
+			}
 
 			return String.valueOf(authorizationServerMetadata.toJSONObject());
 		}
@@ -416,15 +469,43 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 						supportedSubjectTypes, SubjectType::parse),
 					new URI(jwksURI));
 
-			oidcProviderMetadata.setAuthorizationEndpointURI(
-				new URI(authorizationEndpoint));
+			if (Validator.isNotNull(authorizationEndpoint)) {
+				oidcProviderMetadata.setAuthorizationEndpointURI(
+					new URI(authorizationEndpoint));
+			}
+
+			oidcProviderMetadata.setCodeChallengeMethods(
+				Collections.singletonList(CodeChallengeMethod.S256));
 			oidcProviderMetadata.setGrantTypes(
 				TransformUtil.transformToList(
 					supportedGrantTypes, GrantType::parse));
+
+			String introspectionEndpoint = _getIntrospectionEndpoint(
+				tokenEndpoint);
+
+			if (introspectionEndpoint != null) {
+				oidcProviderMetadata.setIntrospectionEndpointURI(
+					new URI(introspectionEndpoint));
+			}
+
+			oidcProviderMetadata.setResponseTypes(
+				Collections.singletonList(new ResponseType("code")));
 			oidcProviderMetadata.setScopes(new Scope(supportedScopes));
-			oidcProviderMetadata.setTokenEndpointURI(new URI(tokenEndpoint));
-			oidcProviderMetadata.setUserInfoEndpointURI(
-				new URI(userInfoEndpoint));
+			oidcProviderMetadata.setTokenEndpointAuthMethods(
+				Arrays.asList(
+					ClientAuthenticationMethod.CLIENT_SECRET_BASIC,
+					ClientAuthenticationMethod.CLIENT_SECRET_POST,
+					ClientAuthenticationMethod.NONE));
+
+			if (Validator.isNotNull(tokenEndpoint)) {
+				oidcProviderMetadata.setTokenEndpointURI(
+					new URI(tokenEndpoint));
+			}
+
+			if (Validator.isNotNull(userInfoEndpoint)) {
+				oidcProviderMetadata.setUserInfoEndpointURI(
+					new URI(userInfoEndpoint));
+			}
 
 			return String.valueOf(oidcProviderMetadata.toJSONObject());
 		}
@@ -432,6 +513,19 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 			throw new OAuthClientASLocalMetadataMetadataJSONException(
 				exception.getMessage(), exception);
 		}
+	}
+
+	private String _getIntrospectionEndpoint(String tokenEndpoint) {
+		tokenEndpoint = _removeTrailingSlash(tokenEndpoint);
+
+		if ((tokenEndpoint == null) || !tokenEndpoint.endsWith("/token")) {
+			return null;
+		}
+
+		String basePath = tokenEndpoint.substring(
+			0, tokenEndpoint.length() - "/token".length());
+
+		return basePath + "/introspect";
 	}
 
 	private String _getSubjectTypes(
@@ -452,8 +546,9 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 		if (authorizationServerMetadata instanceof
 				OIDCProviderMetadata oidcProviderMetadata) {
 
-			return String.valueOf(
-				oidcProviderMetadata.getUserInfoEndpointURI());
+			return Objects.toString(
+				oidcProviderMetadata.getUserInfoEndpointURI(),
+				StringPool.BLANK);
 		}
 
 		return StringPool.BLANK;
@@ -474,6 +569,14 @@ public class OAuthClientASLocalMetadataLocalServiceImpl
 			throw new OAuthClientASLocalMetadataMetadataJSONException(
 				exception.getMessage(), exception);
 		}
+	}
+
+	private String _removeTrailingSlash(String urlString) {
+		if ((urlString == null) || !urlString.endsWith(StringPool.SLASH)) {
+			return urlString;
+		}
+
+		return urlString.substring(0, urlString.length() - 1);
 	}
 
 	private void _validate(

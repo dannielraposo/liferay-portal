@@ -72,6 +72,7 @@ import {loadData} from './utils/loadData';
 
 import {logError} from './utils/logError';
 import {transformAdditionalAPIURLParameters} from './utils/transformAdditionalAPIURLParameters';
+import transformDataSetItems from './utils/transformDataSetItems';
 import {
 	EConfigInURLBehavior,
 	EConfigInURLKeys,
@@ -92,7 +93,7 @@ import {
 	VisibleFieldNames,
 } from './utils/types';
 import useConfigInURL, {useUpdateConfig} from './utils/useConfigInURL';
-import ViewsContext, {ISnapshot} from './views/ViewsContext';
+import ViewsContext, {ISnapshot, ISnapshots} from './views/ViewsContext';
 import getViewComponent from './views/getViewComponent';
 import viewsReducer, {EViewsActionTypes} from './views/viewsReducer';
 
@@ -469,10 +470,11 @@ const FrontendDataSetContent = ({
 					selectedItems:
 						newSelectionFilter.selectedData?.selectedItems.map(
 							(newItem) => {
-								const selectedItem = selectionFilter.items.find(
-									(item: ISelectionFilterStateItem) =>
-										item.value === newItem.value
-								);
+								const selectedItem =
+									selectionFilter.items?.find(
+										(item: ISelectionFilterStateItem) =>
+											item.value === newItem.value
+									);
 
 								if (selectedItem) {
 									return selectedItem;
@@ -604,9 +606,12 @@ const FrontendDataSetContent = ({
 			oldSorts: sortsProp,
 		});
 
-		const parsedSnapshots = snapshots?.map((snapshot: ISnapshot) => ({
-			...snapshot,
-			configuration: JSON.parse(snapshot.configuration),
+		const parsedSnapshots = snapshots?.map((group: ISnapshots) => ({
+			...group,
+			items: group.items.map((snapshot: ISnapshot) => ({
+				...snapshot,
+				configuration: JSON.parse(snapshot.configuration),
+			})),
 		}));
 
 		return {
@@ -743,8 +748,14 @@ const FrontendDataSetContent = ({
 		const globalFDSStateSearchQuery = globalFDSState.search.query;
 		const urlSearchQuery = configInURL?.q;
 
-		const shouldUpdateFilters = globalFDSState.filters.some(
-			(filter: IBaseFilterState) => {
+		const hasActiveFilterInURL = Boolean(configInURL?.filters?.length);
+		const hasActiveFilterInState = globalFDSState.filters.some(
+			(filter: IBaseFilterState) => filter.active
+		);
+
+		const shouldUpdateFilters =
+			(hasActiveFilterInURL && !hasActiveFilterInState) ||
+			globalFDSState.filters.some((filter: IBaseFilterState) => {
 				if (filter.preloadedData || filter.selectedData) {
 					const preloadedData = JSON.stringify(filter.preloadedData);
 					const selectedData = JSON.stringify(filter.selectedData);
@@ -755,8 +766,7 @@ const FrontendDataSetContent = ({
 				}
 
 				return false;
-			}
-		);
+			});
 
 		const shouldUpdateSearch =
 			(urlSearchQuery ?? '') !== (globalFDSStateSearchQuery ?? '') &&
@@ -797,29 +807,16 @@ const FrontendDataSetContent = ({
 
 	const updateDataSetItems = useCallback(
 		(dataSetData: IDataSetData) => {
-			const remappedItems = dataSetData.items.map((item) => {
-				if (item.embedded && item.embedded.actions) {
-					const actions = item.embedded.actions;
+			const transformedItems = transformDataSetItems(dataSetData.items);
 
-					delete item.embedded.actions;
-
-					return {
-						...item,
-						actions,
-					};
-				}
-
-				return {
-					...item,
-				};
-			});
-
-			setItems(remappedItems);
+			setItems(transformedItems);
 			setTotal(dataSetData.totalCount);
 
 			if (!dataSetData.items.length && dataSetData.totalCount > 0) {
 				viewsDispatch(updatePageNumber(dataSetData.lastPage));
 			}
+
+			return transformedItems;
 		},
 		[updatePageNumber, viewsDispatch]
 	);
@@ -1299,10 +1296,10 @@ const FrontendDataSetContent = ({
 					}
 
 					if (isMounted()) {
-						updateDataSetItems(data);
+						const updatedItems = updateDataSetItems(data);
 
 						setSelectedItems(
-							data.items.filter(
+							updatedItems.filter(
 								(item: ISelectionFilterStateItem) => {
 									const itemValue = getObjectValueFromPath({
 										object: item,
@@ -1818,7 +1815,9 @@ const FrontendDataSetContent = ({
 		}
 		else {
 			const snapshot = deepClone(
-				snapshots.find((view: ISnapshot) => view.erc === value)
+				snapshots
+					.flatMap((group: ISnapshots) => group.items)
+					.find((snapshot: ISnapshot) => snapshot.erc === value)
 			);
 
 			updateConfigInURL({

@@ -41,6 +41,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -131,7 +132,8 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -869,8 +871,9 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			public StringBuffer getRequestURL() {
 				return new StringBuffer(
 					StringBundler.concat(
-						"http://localhost:8080/o/v1.0/",
-						RandomTestUtil.randomString(), "/",
+						"http://localhost:",
+						String.valueOf(PortalUtil.getPortalServerPort(false)),
+						"/o/v1.0/", RandomTestUtil.randomString(), "/",
 						RandomTestUtil.randomString()));
 			}
 
@@ -906,8 +909,10 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			@Override
 			public URI getRequestUri() {
 				return URI.create(
-					"http://localhost:8080/o/" + applicationPath +
-						resourcePath);
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath, resourcePath));
 			}
 
 			@Override
@@ -927,7 +932,11 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 
 			@Override
 			public URI getBaseUri() {
-				return URI.create("http://localhost:8080/o/" + applicationPath);
+				return URI.create(
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath));
 			}
 
 			@Override
@@ -2221,6 +2230,14 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("creator", additionalAssertFieldName)) {
+				if (workflowTask.getCreator() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("dateCompletion", additionalAssertFieldName)) {
 				if (workflowTask.getDateCompletion() == null) {
 					valid = false;
@@ -2486,6 +2503,17 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				if (!Objects.deepEquals(
 						workflowTask1.getCompleted(),
 						workflowTask2.getCompleted())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("creator", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						workflowTask1.getCreator(),
+						workflowTask2.getCreator())) {
 
 					return false;
 				}
@@ -2769,6 +2797,11 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		}
 
 		if (entityFieldName.equals("completed")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("creator")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
@@ -3128,7 +3161,9 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -3423,4 +3458,4 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		_vulcanCRUDItemDelegateBuilderRegistry;
 
 }
-// LIFERAY-REST-BUILDER-HASH:54509887
+// LIFERAY-REST-BUILDER-HASH:644017525

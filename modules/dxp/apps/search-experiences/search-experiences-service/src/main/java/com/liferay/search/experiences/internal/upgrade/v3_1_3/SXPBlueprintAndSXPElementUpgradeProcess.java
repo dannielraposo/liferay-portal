@@ -28,6 +28,7 @@ import java.util.Objects;
 /**
  * @author Joshua Cords
  * @author Felipe Lorenz
+ * @author Selena Aungst
  */
 public class SXPBlueprintAndSXPElementUpgradeProcess extends UpgradeProcess {
 
@@ -69,6 +70,23 @@ public class SXPBlueprintAndSXPElementUpgradeProcess extends UpgradeProcess {
 					"dependencies/limit_search_to_these_sites.json"));
 
 			preparedStatement.executeUpdate();
+		}
+
+		try (PreparedStatement preparedStatement1 = connection.prepareStatement(
+				"select sxpElementId, elementDefinitionJSON from SXPElement");
+			PreparedStatement preparedStatement2 =
+				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
+					connection,
+					"update SXPElement set elementDefinitionJSON = ? where " +
+						"sxpElementId = ?")) {
+
+			try (ResultSet resultSet = preparedStatement1.executeQuery()) {
+				while (resultSet.next()) {
+					_upgradeSXPElement(preparedStatement2, resultSet);
+				}
+
+				preparedStatement2.executeBatch();
+			}
 		}
 	}
 
@@ -126,6 +144,33 @@ public class SXPBlueprintAndSXPElementUpgradeProcess extends UpgradeProcess {
 		}
 
 		return false;
+	}
+
+	private boolean _isLegacyMultiselectFieldMappings(
+		JSONArray fieldMappingsJSONArray) {
+
+		boolean legacyMultiselect = false;
+
+		for (int i = 0; i < fieldMappingsJSONArray.length(); i++) {
+			JSONObject fieldMappingJSONObject =
+				fieldMappingsJSONArray.getJSONObject(i);
+
+			if (fieldMappingJSONObject == null) {
+				continue;
+			}
+
+			if (fieldMappingJSONObject.has("field")) {
+				return false;
+			}
+
+			if (fieldMappingJSONObject.has("label") ||
+				fieldMappingJSONObject.has("value")) {
+
+				legacyMultiselect = true;
+			}
+		}
+
+		return legacyMultiselect;
 	}
 
 	private void _upgradeConfigurationEntry(
@@ -203,6 +248,100 @@ public class SXPBlueprintAndSXPElementUpgradeProcess extends UpgradeProcess {
 		}
 	}
 
+	private boolean _upgradeLegacyFieldMappings(
+		JSONArray elementInstanceJSONArray) {
+
+		boolean modified = false;
+
+		for (int i = 0; i < elementInstanceJSONArray.length(); i++) {
+			JSONObject elementDefinitionJSONObject =
+				JSONUtil.getValueAsJSONObject(
+					elementInstanceJSONArray.getJSONObject(i),
+					"JSONObject/sxpElement", "JSONObject/elementDefinition");
+
+			if (elementDefinitionJSONObject == null) {
+				continue;
+			}
+
+			if (_upgradeLegacyFieldMappings(elementDefinitionJSONObject)) {
+				modified = true;
+			}
+		}
+
+		return modified;
+	}
+
+	private boolean _upgradeLegacyFieldMappings(
+		JSONObject elementDefinitionJSONObject) {
+
+		JSONArray fieldSetsJSONArray = JSONUtil.getValueAsJSONArray(
+			elementDefinitionJSONObject, "JSONObject/uiConfiguration",
+			"JSONArray/fieldSets");
+
+		if (fieldSetsJSONArray == null) {
+			return false;
+		}
+
+		boolean modified = false;
+
+		for (int i = 0; i < fieldSetsJSONArray.length(); i++) {
+			JSONObject fieldSetJSONObject = fieldSetsJSONArray.getJSONObject(i);
+
+			if (fieldSetJSONObject == null) {
+				continue;
+			}
+
+			JSONArray fieldsJSONArray = fieldSetJSONObject.getJSONArray(
+				"fields");
+
+			if (fieldsJSONArray == null) {
+				continue;
+			}
+
+			for (int j = 0; j < fieldsJSONArray.length(); j++) {
+				JSONObject fieldJSONObject = fieldsJSONArray.getJSONObject(j);
+
+				if (fieldJSONObject == null) {
+					continue;
+				}
+
+				JSONArray fieldMappingsJSONArray = fieldJSONObject.getJSONArray(
+					"fieldMappings");
+
+				if (fieldMappingsJSONArray == null) {
+					continue;
+				}
+
+				if (_isLegacyMultiselectFieldMappings(fieldMappingsJSONArray)) {
+					fieldJSONObject.put(
+						"defaultValue", fieldMappingsJSONArray
+					).remove(
+						"fieldMappings"
+					);
+
+					modified = true;
+
+					continue;
+				}
+
+				for (int k = 0; k < fieldMappingsJSONArray.length(); k++) {
+					JSONObject fieldMappingJSONObject =
+						fieldMappingsJSONArray.getJSONObject(k);
+
+					if ((fieldMappingJSONObject != null) &&
+						fieldMappingJSONObject.has("label")) {
+
+						fieldMappingJSONObject.remove("label");
+
+						modified = true;
+					}
+				}
+			}
+		}
+
+		return modified;
+	}
+
 	private void _upgradeSXPBlueprint(
 			PreparedStatement preparedStatement2, ResultSet resultSet)
 		throws SQLException {
@@ -214,25 +353,75 @@ public class SXPBlueprintAndSXPElementUpgradeProcess extends UpgradeProcess {
 			return;
 		}
 
+		long sxpBlueprintId = resultSet.getLong("sxpBlueprintId");
+
 		try {
 			JSONArray elementInstanceJSONArray = _jsonFactory.createJSONArray(
 				elementInstancesJSON);
 
-			if (!_hasLimitSearchToTheseSites(elementInstanceJSONArray)) {
+			boolean modified = _upgradeLegacyFieldMappings(
+				elementInstanceJSONArray);
+
+			if (_hasLimitSearchToTheseSites(elementInstanceJSONArray)) {
+				elementInstancesJSON = _fixElementInstancesJSON(
+					elementInstanceJSONArray);
+				modified = true;
+			}
+			else if (modified) {
+				elementInstancesJSON = elementInstanceJSONArray.toString();
+			}
+
+			if (!modified) {
 				return;
 			}
 
-			preparedStatement2.setString(
-				1, _fixElementInstancesJSON(elementInstanceJSONArray));
-			preparedStatement2.setLong(2, resultSet.getLong("sxpBlueprintId"));
+			preparedStatement2.setString(1, elementInstancesJSON);
+			preparedStatement2.setLong(2, sxpBlueprintId);
 
 			preparedStatement2.addBatch();
 		}
 		catch (Exception exception) {
-			if (_log.isInfoEnabled()) {
-				_log.info(
+			if (_log.isWarnEnabled()) {
+				_log.warn(
 					"Unable to upgrade search experiences blueprint " +
-						resultSet.getLong("sxpBlueprintId"),
+						sxpBlueprintId,
+					exception);
+			}
+		}
+	}
+
+	private void _upgradeSXPElement(
+			PreparedStatement preparedStatement2, ResultSet resultSet)
+		throws SQLException {
+
+		String elementDefinitionJSON = resultSet.getString(
+			"elementDefinitionJSON");
+
+		if (Validator.isBlank(elementDefinitionJSON)) {
+			return;
+		}
+
+		long sxpElementId = resultSet.getLong("sxpElementId");
+
+		try {
+			JSONObject elementDefinitionJSONObject =
+				_jsonFactory.createJSONObject(elementDefinitionJSON);
+
+			if (!_upgradeLegacyFieldMappings(elementDefinitionJSONObject)) {
+				return;
+			}
+
+			preparedStatement2.setString(
+				1, elementDefinitionJSONObject.toString());
+			preparedStatement2.setLong(2, sxpElementId);
+
+			preparedStatement2.addBatch();
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to upgrade search experiences element " +
+						sxpElementId,
 					exception);
 			}
 		}

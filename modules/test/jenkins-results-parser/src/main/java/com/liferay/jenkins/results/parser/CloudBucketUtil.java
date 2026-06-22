@@ -16,6 +16,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
@@ -25,6 +27,8 @@ import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.json.JSONObject;
 
 /**
  * @author Kenji Heigel
@@ -234,6 +238,53 @@ public class CloudBucketUtil {
 		}
 	}
 
+	public static long getNewestS3ObjectLastModified(String s3ObjectPath)
+		throws IOException, TimeoutException {
+
+		Matcher s3ObjectPathMatcher = _s3ObjectPathPattern.matcher(
+			s3ObjectPath);
+
+		if (!s3ObjectPathMatcher.find()) {
+			throw new RuntimeException(
+				"Invalid S3 object path: " + s3ObjectPath);
+		}
+
+		Process process = JenkinsResultsParserUtil.executeBashCommands(
+			true,
+			JenkinsResultsParserUtil.combine(
+				"aws s3api list-objects-v2 --bucket ",
+				s3ObjectPathMatcher.group("bucketName"),
+				" --output text --prefix ",
+				s3ObjectPathMatcher.group("objectPath"),
+				" --query \"sort_by(Contents, &LastModified)[-1]",
+				".LastModified\""));
+
+		String lastModified = JenkinsResultsParserUtil.readInputStream(
+			process.getInputStream());
+
+		lastModified = lastModified.replace(
+			"Finished executing Bash commands.", "");
+
+		lastModified = lastModified.trim();
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(lastModified) ||
+			lastModified.equals("None")) {
+
+			return Long.MIN_VALUE;
+		}
+
+		try {
+			OffsetDateTime offsetDateTime = OffsetDateTime.parse(lastModified);
+
+			Instant instant = offsetDateTime.toInstant();
+
+			return instant.toEpochMilli();
+		}
+		catch (DateTimeParseException dateTimeParseException) {
+			return Long.MIN_VALUE;
+		}
+	}
+
 	public static String getSignedURL(int duration, String file, String url)
 		throws IOException, TimeoutException {
 
@@ -243,27 +294,69 @@ public class CloudBucketUtil {
 			return null;
 		}
 
+		String authenticationCommand = null;
+		File federatedCredentialFile = null;
+
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("gcloud storage sign-url ");
 		sb.append(url);
-		sb.append(" --private-key-file=");
-		sb.append(file);
 		sb.append(" --duration=");
 		sb.append(duration);
 		sb.append("m");
 
-		Process process = JenkinsResultsParserUtil.executeBashCommands(
-			true, _getGCPAuthenticationCommand(url, url), sb.toString());
+		JSONObject jsonObject = JenkinsResultsParserUtil.createJSONObject(
+			JenkinsResultsParserUtil.read(new File(file)));
 
-		Matcher matcher = _signedURLPattern.matcher(
-			JenkinsResultsParserUtil.readInputStream(process.getInputStream()));
+		String serviceAccountImpersonationURL = jsonObject.optString(
+			"service_account_impersonation_url");
 
-		if (matcher.find()) {
-			return matcher.group(0);
+		if (JenkinsResultsParserUtil.isNullOrEmpty(
+				serviceAccountImpersonationURL)) {
+
+			authenticationCommand = _getGCPAuthenticationCommand(url, url);
+
+			sb.append(" --private-key-file=");
+			sb.append(file);
+		}
+		else {
+			federatedCredentialFile = _writeFederatedCredentialFile(jsonObject);
+
+			authenticationCommand = JenkinsResultsParserUtil.combine(
+				"gcloud auth login --cred-file=",
+				federatedCredentialFile.toString(), " --quiet");
+
+			Matcher serviceAccountImpersonationURLMatcher =
+				_serviceAccountImpersonationURLPattern.matcher(
+					serviceAccountImpersonationURL);
+
+			if (serviceAccountImpersonationURLMatcher.find()) {
+				sb.append(" --impersonate-service-account=");
+				sb.append(
+					serviceAccountImpersonationURLMatcher.group(
+						"serviceAccount"));
+			}
 		}
 
-		return null;
+		try {
+			Process process = JenkinsResultsParserUtil.executeBashCommands(
+				true, authenticationCommand, sb.toString());
+
+			Matcher signedURLMatcher = _signedURLPattern.matcher(
+				JenkinsResultsParserUtil.readInputStream(
+					process.getInputStream()));
+
+			if (signedURLMatcher.find()) {
+				return signedURLMatcher.group(0);
+			}
+
+			return null;
+		}
+		finally {
+			if (federatedCredentialFile != null) {
+				JenkinsResultsParserUtil.delete(federatedCredentialFile);
+			}
+		}
 	}
 
 	public static boolean isS3ObjectOlderThan(
@@ -660,7 +753,7 @@ public class CloudBucketUtil {
 		catch (Exception exception) {
 			NotificationUtil.sendSlackNotification(
 				JenkinsResultsParserUtil.combine(
-					"Build URL: ", System.getenv("BUILD_URL"), "\n\n",
+					"Build URL: ", Environment.get("BUILD_URL"), "\n\n",
 					exception.getMessage()),
 				"ci-aws-notifications", ":aws:",
 				JenkinsResultsParserUtil.combine(
@@ -944,6 +1037,25 @@ public class CloudBucketUtil {
 		}
 	}
 
+	private static File _writeFederatedCredentialFile(
+			JSONObject credentialJSONObject)
+		throws IOException {
+
+		File federatedCredentialFile = File.createTempFile(
+			"federated-credential", ".json");
+
+		JSONObject federatedCredentialJSONObject = new JSONObject(
+			credentialJSONObject.toString());
+
+		federatedCredentialJSONObject.remove(
+			"service_account_impersonation_url");
+
+		JenkinsResultsParserUtil.write(
+			federatedCredentialFile, federatedCredentialJSONObject.toString());
+
+		return federatedCredentialFile;
+	}
+
 	private static final String _CHECKSUM_FILE_EXTENSION = ".sha512";
 
 	private static final boolean _VALIDATE_CHECKSUM;
@@ -955,6 +1067,8 @@ public class CloudBucketUtil {
 		"\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2} +\\d+ (?<fileName>.+)");
 	private static final Pattern _s3ObjectPathPattern = Pattern.compile(
 		"s3://(?<bucketName>[^/]+)/(?<objectPath>.+)");
+	private static final Pattern _serviceAccountImpersonationURLPattern =
+		Pattern.compile("/serviceAccounts/(?<serviceAccount>[^/:]+):");
 	private static final Pattern _signedURLPattern = Pattern.compile(
 		"https:\\/\\/([a-zA-Z\\d-]+\\.)?storage\\." +
 			"(cloud\\.google\\.com|googleapis\\.com)\\/.*");

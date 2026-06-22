@@ -29,6 +29,7 @@ import com.liferay.object.rest.internal.jaxrs.exception.mapper.ObjectEntryManage
 import com.liferay.object.rest.internal.jaxrs.exception.mapper.ObjectEntryScopeExceptionMapper;
 import com.liferay.object.rest.internal.jaxrs.exception.mapper.ObjectEntryStatusExceptionMapper;
 import com.liferay.object.rest.internal.jaxrs.exception.mapper.ObjectEntryValuesExceptionMapper;
+import com.liferay.object.rest.internal.jaxrs.exception.mapper.ObjectFieldReadOnlyExceptionMapper;
 import com.liferay.object.rest.internal.jaxrs.exception.mapper.ObjectRelationshipDeletionTypeExceptionMapper;
 import com.liferay.object.rest.internal.jaxrs.exception.mapper.RequiredObjectEntryVersionExceptionMapper;
 import com.liferay.object.rest.internal.jaxrs.exception.mapper.RequiredObjectRelationshipExceptionMapper;
@@ -72,9 +73,11 @@ import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.db.partition.util.DBPartitionUtil;
 import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.comment.DiscussionPermission;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -219,9 +222,10 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 	private CollaboratorResourceImpl _createCollaboratorResourceImpl() {
 		return new CollaboratorResourceImpl(
 			_classNameLocalService, _collaboratorDTOConverter,
-			_dtoConverterRegistry, _groupLocalService, _objectEntryLocalService,
-			_sharingEntryLocalService, _sharingEntryService,
-			_ticketLocalService, _userGroupLocalService, _userLocalService);
+			_configurationProvider, _dtoConverterRegistry, _groupLocalService,
+			_objectEntryLocalService, _sharingEntryLocalService,
+			_sharingEntryService, _ticketLocalService, _userGroupLocalService,
+			_userLocalService);
 	}
 
 	private CommentResourceImpl _createCommentResourceImpl(
@@ -329,6 +333,14 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 				excludedOperationIds,
 				BaseObjectEntryResourceImpl.class.getMethods(),
 				objectScopeProvider);
+
+			if (FeatureFlagManagerUtil.isEnabled(
+					objectDefinition.getCompanyId(), "LPD-69877") &&
+				!objectDefinition.isAllowStandaloneObjectEntry() &&
+				objectDefinition.isRootDescendantNode()) {
+
+				excludedOperationIds.addAll(_objectEntryCRUDOperationIds);
+			}
 
 			if (objectDefinition.isModifiableAndSystem()) {
 				ObjectEntryScopeProvider objectEntryScopeProvider =
@@ -941,6 +953,7 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 				ObjectEntryScopeExceptionMapper::new,
 				() -> new ObjectEntryStatusExceptionMapper(_language),
 				() -> new ObjectEntryValuesExceptionMapper(_language),
+				ObjectFieldReadOnlyExceptionMapper::new,
 				() -> new ObjectRelationshipDeletionTypeExceptionMapper(
 					_language),
 				() -> new RequiredObjectEntryVersionExceptionMapper(_language),
@@ -1144,6 +1157,18 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 	private static final Log _log = LogFactoryUtil.getLog(
 		ObjectDefinitionDeployerImpl.class);
 
+	private static final List<String> _objectEntryCRUDOperationIds =
+		Arrays.asList(
+			"deleteByExternalReferenceCode", "deleteObjectEntry",
+			"deleteScopeScopeKeyByExternalReferenceCode",
+			"getByExternalReferenceCode", "getObjectEntriesPage",
+			"getObjectEntry", "getScopeScopeKeyByExternalReferenceCode",
+			"getScopeScopeKeyPage", "patchByExternalReferenceCode",
+			"patchObjectEntry", "patchScopeScopeKeyByExternalReferenceCode",
+			"postObjectEntry", "postScopeScopeKey",
+			"putByExternalReferenceCode", "putObjectEntry",
+			"putScopeScopeKeyByExternalReferenceCode");
+
 	private final Map<String, Dictionary<String, Object>>
 		_applicationPropertiesMap = new HashMap<>();
 	private final Map<String, ServiceRegistration<Application>>
@@ -1179,6 +1204,9 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 
 	@Reference
 	private ConfigurationAdmin _configurationAdmin;
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference
 	private PermissionCheckerFactory _defaultPermissionCheckerFactory;

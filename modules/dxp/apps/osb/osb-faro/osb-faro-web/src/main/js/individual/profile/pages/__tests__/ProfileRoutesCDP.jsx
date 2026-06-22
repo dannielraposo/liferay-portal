@@ -1,6 +1,7 @@
 import * as data from 'test/data';
+import DataSourcesProvider from 'shared/context/dataSources';
 import IndividualProfileRoutesCDP from '../ProfileRoutesCDP';
-import mockStore from 'test/mock-store';
+import mockStore, {mockStoreDataLDP} from 'test/mock-store';
 import React from 'react';
 import {BrowserRouter} from 'react-router-dom';
 import {ChannelContext} from 'shared/context/channel';
@@ -30,11 +31,13 @@ describe('IndividualProfileRoutes', () => {
 		window.location = {pathname: '/'};
 
 		const {container} = render(
-			<Provider store={mockStore()}>
+			<Provider store={mockStore(mockStoreDataLDP)}>
 				<ChannelContext.Provider value={mockChannelContext()}>
-					<BrowserRouter>
-						<IndividualProfileRoutesCDP {...defaultProps} />
-					</BrowserRouter>
+					<DataSourcesProvider groupId={defaultProps.groupId}>
+						<BrowserRouter>
+							<IndividualProfileRoutesCDP {...defaultProps} />
+						</BrowserRouter>
+					</DataSourcesProvider>
 				</ChannelContext.Provider>
 			</Provider>
 		);

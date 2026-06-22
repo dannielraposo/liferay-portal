@@ -6,7 +6,7 @@
 import ClayForm, {ClayInput, ClayToggle} from '@clayui/form';
 import ClayLayout from '@clayui/layout';
 import ClayPanel from '@clayui/panel';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 
 import './InstructionDefinitionForm.scss';
 
@@ -19,7 +19,12 @@ import {InputLocalized} from 'frontend-js-components-web';
 
 import Toolbar from '../components/ToolBar';
 import {
+	generateExternalReferenceCode,
+	maskExternalReferenceCode,
+} from '../utils/externalReferenceCode';
+import {
 	getInstructionDefinition,
+	postInstructionDefinition,
 	putInstructionDefinition,
 } from './services/InstructionDefinitionService';
 import {
@@ -32,15 +37,22 @@ export default function InstructionDefinitionForm({
 	accountEntryExternalReferenceCode,
 	backURL,
 	externalReferenceCode,
+	readOnly,
 }: {
 	accountEntryExternalReferenceCode: string;
 	backURL: string;
 	externalReferenceCode: string;
+	readOnly: boolean;
 }) {
 	const [formData, setFormData] = useState<InstructionDefinition>(
 		{} as InstructionDefinition
 	);
 	const [scopeOptions, setScopeOptions] = useState<ListTypeEntry[]>([]);
+
+	const generatedExternalReferenceCode = useMemo(
+		() => generateExternalReferenceCode(),
+		[]
+	);
 
 	const handleActive = () => {
 		setFormData((prev) => ({
@@ -63,7 +75,9 @@ export default function InstructionDefinitionForm({
 
 	const handleSubmit = async () => {
 		try {
-			const response = await putInstructionDefinition(formData);
+			const response = externalReferenceCode
+				? await putInstructionDefinition(formData)
+				: await postInstructionDefinition(formData);
 
 			if (response?.externalReferenceCode) {
 				openToast({
@@ -84,7 +98,10 @@ export default function InstructionDefinitionForm({
 			console.error(error);
 
 			openToast({
-				message: Liferay.Language.get('an-unexpected-error-occurred'),
+				message:
+					error instanceof Error && error.message
+						? error.message
+						: Liferay.Language.get('an-unexpected-error-occurred'),
 				type: 'danger',
 			});
 		}
@@ -96,12 +113,13 @@ export default function InstructionDefinitionForm({
 				setFormData({
 					active: false,
 					description: '',
-					externalReferenceCode: '',
+					externalReferenceCode: generatedExternalReferenceCode,
 					instruction: '',
 					occasion: '',
 					r_accountToAIHubInstructionDefinitions_accountEntryERC:
 						accountEntryExternalReferenceCode,
 					scope: '',
+					system: false,
 					title_i18n: {},
 				});
 
@@ -123,6 +141,7 @@ export default function InstructionDefinitionForm({
 					r_accountToAIHubInstructionDefinitions_accountEntryERC:
 						instructionDefinition.r_accountToAIHubInstructionDefinitions_accountEntryERC,
 					scope: instructionDefinition.scope?.key || '',
+					system: instructionDefinition.system,
 					title_i18n: instructionDefinition.title_i18n,
 				});
 			}
@@ -137,7 +156,11 @@ export default function InstructionDefinitionForm({
 		}
 
 		fetchFormData();
-	}, [accountEntryExternalReferenceCode, externalReferenceCode]);
+	}, [
+		accountEntryExternalReferenceCode,
+		externalReferenceCode,
+		generatedExternalReferenceCode,
+	]);
 
 	useEffect(() => {
 		async function fetchScopeOptions() {
@@ -191,6 +214,7 @@ export default function InstructionDefinitionForm({
 						aria-label={Liferay.Language.get('save')}
 						data-title="Save Button"
 						data-title-set-as-html
+						disabled={readOnly}
 						onClick={handleSubmit}
 						size="sm"
 					>
@@ -215,6 +239,7 @@ export default function InstructionDefinitionForm({
 										</h2>
 
 										<ClayToggle
+											disabled={readOnly}
 											label={Liferay.Language.get(
 												'enable-instruction'
 											)}
@@ -231,6 +256,7 @@ export default function InstructionDefinitionForm({
 
 									<ClayForm.Group>
 										<InputLocalized
+											disabled={readOnly}
 											id="title"
 											label={Liferay.Language.get(
 												'title'
@@ -266,9 +292,18 @@ export default function InstructionDefinitionForm({
 										</label>
 
 										<ClayInput
+											disabled={readOnly}
 											id="externalReferenceCode"
 											name="externalReferenceCode"
-											onChange={handleInputChange}
+											onChange={(event) =>
+												setFormData((prev) => ({
+													...prev,
+													externalReferenceCode:
+														maskExternalReferenceCode(
+															event.target.value
+														),
+												}))
+											}
 											placeholder={Liferay.Language.get(
 												'external-reference-code'
 											)}
@@ -289,6 +324,7 @@ export default function InstructionDefinitionForm({
 
 										<textarea
 											className="form-control"
+											disabled={readOnly}
 											id="description"
 											name="description"
 											onChange={handleInputChange}
@@ -313,6 +349,7 @@ export default function InstructionDefinitionForm({
 
 										<textarea
 											className="form-control"
+											disabled={readOnly}
 											id="instruction"
 											name="instruction"
 											onChange={handleInputChange}
@@ -337,6 +374,7 @@ export default function InstructionDefinitionForm({
 
 										<Picker
 											className="instruction-definition-form-scope-field"
+											disabled={readOnly}
 											items={scopeOptions.map(
 												(option) => ({
 													label:
@@ -385,6 +423,7 @@ export default function InstructionDefinitionForm({
 
 										<textarea
 											className="form-control"
+											disabled={readOnly}
 											id="occasion"
 											name="occasion"
 											onChange={handleInputChange}

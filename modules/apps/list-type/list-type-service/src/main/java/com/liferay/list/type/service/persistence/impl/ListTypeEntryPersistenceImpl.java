@@ -18,9 +18,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -33,6 +30,7 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.service.persistence.impl.ArrayableFinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
@@ -43,7 +41,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
@@ -94,66 +91,15 @@ public class ListTypeEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<ListTypeEntry>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the list type entries where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the list type entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @return the range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ListTypeEntry, NoSuchListTypeEntryException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the list type entries where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<ListTypeEntry> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the list type entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -187,16 +133,8 @@ public class ListTypeEntryPersistenceImpl
 			String uuid, OrderByComparator<ListTypeEntry> orderByComparator)
 		throws NoSuchListTypeEntryException {
 
-		ListTypeEntry listTypeEntry = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (listTypeEntry != null) {
-			return listTypeEntry;
-		}
-
-		throw new NoSuchListTypeEntryException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -237,73 +175,15 @@ public class ListTypeEntryPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<ListTypeEntry>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the list type entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the list type entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @return the range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ListTypeEntry, NoSuchListTypeEntryException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the list type entries where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<ListTypeEntry> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the list type entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -340,16 +220,8 @@ public class ListTypeEntryPersistenceImpl
 			OrderByComparator<ListTypeEntry> orderByComparator)
 		throws NoSuchListTypeEntryException {
 
-		ListTypeEntry listTypeEntry = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (listTypeEntry != null) {
-			return listTypeEntry;
-		}
-
-		throw new NoSuchListTypeEntryException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -394,69 +266,15 @@ public class ListTypeEntryPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByListTypeEntryId;
-	private FinderPath _finderPathWithoutPaginationFindByListTypeEntryId;
-	private FinderPath _finderPathCountByListTypeEntryId;
-	private FinderPath _finderPathWithPaginationCountByListTypeEntryId;
-
-	/**
-	 * Returns all the list type entries where listTypeEntryId = &#63;.
-	 *
-	 * @param listTypeEntryId the list type entry ID
-	 * @return the matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeEntryId(long listTypeEntryId) {
-		return findByListTypeEntryId(
-			listTypeEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the list type entries where listTypeEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeEntryId the list type entry ID
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @return the range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeEntryId(
-		long listTypeEntryId, int start, int end) {
-
-		return findByListTypeEntryId(listTypeEntryId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ListTypeEntry, NoSuchListTypeEntryException>
+			_collectionPersistenceFinderByListTypeEntryId;
 
 	/**
 	 * Returns an ordered range of all the list type entries where listTypeEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeEntryId the list type entry ID
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeEntryId(
-		long listTypeEntryId, int start, int end,
-		OrderByComparator<ListTypeEntry> orderByComparator) {
-
-		return findByListTypeEntryId(
-			listTypeEntryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the list type entries where listTypeEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param listTypeEntryId the list type entry ID
@@ -472,95 +290,9 @@ public class ListTypeEntryPersistenceImpl
 		OrderByComparator<ListTypeEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
-
-			if (useFinderCache) {
-				finderPath = _finderPathWithoutPaginationFindByListTypeEntryId;
-				finderArgs = new Object[] {listTypeEntryId};
-			}
-		}
-		else if (useFinderCache) {
-			finderPath = _finderPathWithPaginationFindByListTypeEntryId;
-			finderArgs = new Object[] {
-				listTypeEntryId, start, end, orderByComparator
-			};
-		}
-
-		List<ListTypeEntry> list = null;
-
-		if (useFinderCache) {
-			list = (List<ListTypeEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if ((list != null) && !list.isEmpty()) {
-				for (ListTypeEntry listTypeEntry : list) {
-					if (listTypeEntryId != listTypeEntry.getListTypeEntryId()) {
-						list = null;
-
-						break;
-					}
-				}
-			}
-		}
-
-		if (list == null) {
-			StringBundler sb = null;
-
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					3 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(3);
-			}
-
-			sb.append(_SQL_SELECT_LISTTYPEENTRY_WHERE);
-
-			sb.append(_FINDER_COLUMN_LISTTYPEENTRYID_LISTTYPEENTRYID_2);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-			}
-			else {
-				sb.append(ListTypeEntryModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(listTypeEntryId);
-
-				list = (List<ListTypeEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
-
-				cacheResult(list);
-
-				if (useFinderCache) {
-					finderCache.putResult(finderPath, finderArgs, list);
-				}
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return list;
+		return _collectionPersistenceFinderByListTypeEntryId.find(
+			finderCache, new Object[] {new long[] {listTypeEntryId}}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -608,78 +340,16 @@ public class ListTypeEntryPersistenceImpl
 		long listTypeEntryId,
 		OrderByComparator<ListTypeEntry> orderByComparator) {
 
-		List<ListTypeEntry> list = findByListTypeEntryId(
-			listTypeEntryId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the list type entries where listTypeEntryId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeEntryIds the list type entry IDs
-	 * @return the matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeEntryId(long[] listTypeEntryIds) {
-		return findByListTypeEntryId(
-			listTypeEntryIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the list type entries where listTypeEntryId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeEntryIds the list type entry IDs
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @return the range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeEntryId(
-		long[] listTypeEntryIds, int start, int end) {
-
-		return findByListTypeEntryId(listTypeEntryIds, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the list type entries where listTypeEntryId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeEntryIds the list type entry IDs
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeEntryId(
-		long[] listTypeEntryIds, int start, int end,
-		OrderByComparator<ListTypeEntry> orderByComparator) {
-
-		return findByListTypeEntryId(
-			listTypeEntryIds, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByListTypeEntryId.fetchFirst(
+			finderCache, new Object[] {new long[] {listTypeEntryId}},
+			orderByComparator);
 	}
 
 	/**
 	 * Returns an ordered range of all the list type entries where listTypeEntryId = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param listTypeEntryIds the list type entry IDs
@@ -695,112 +365,10 @@ public class ListTypeEntryPersistenceImpl
 		OrderByComparator<ListTypeEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		if (listTypeEntryIds == null) {
-			listTypeEntryIds = new long[0];
-		}
-		else if (listTypeEntryIds.length > 1) {
-			listTypeEntryIds = ArrayUtil.sortedUnique(listTypeEntryIds);
-		}
-
-		if (listTypeEntryIds.length == 1) {
-			return findByListTypeEntryId(
-				listTypeEntryIds[0], start, end, orderByComparator);
-		}
-
-		Object[] finderArgs = null;
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
-
-			if (useFinderCache) {
-				finderArgs = new Object[] {StringUtil.merge(listTypeEntryIds)};
-			}
-		}
-		else if (useFinderCache) {
-			finderArgs = new Object[] {
-				StringUtil.merge(listTypeEntryIds), start, end,
-				orderByComparator
-			};
-		}
-
-		List<ListTypeEntry> list = null;
-
-		if (useFinderCache) {
-			list = (List<ListTypeEntry>)finderCache.getResult(
-				_finderPathWithPaginationFindByListTypeEntryId, finderArgs,
-				this);
-
-			if ((list != null) && !list.isEmpty()) {
-				for (ListTypeEntry listTypeEntry : list) {
-					if (!ArrayUtil.contains(
-							listTypeEntryIds,
-							listTypeEntry.getListTypeEntryId())) {
-
-						list = null;
-
-						break;
-					}
-				}
-			}
-		}
-
-		if (list == null) {
-			StringBundler sb = new StringBundler();
-
-			sb.append(_SQL_SELECT_LISTTYPEENTRY_WHERE);
-
-			if (listTypeEntryIds.length > 0) {
-				sb.append("(");
-
-				sb.append(_FINDER_COLUMN_LISTTYPEENTRYID_LISTTYPEENTRYID_7);
-
-				sb.append(StringUtil.merge(listTypeEntryIds));
-
-				sb.append(")");
-
-				sb.append(")");
-			}
-
-			sb.setStringAt(
-				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-			}
-			else {
-				sb.append(ListTypeEntryModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				list = (List<ListTypeEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
-
-				cacheResult(list);
-
-				if (useFinderCache) {
-					finderCache.putResult(
-						_finderPathWithPaginationFindByListTypeEntryId,
-						finderArgs, list);
-				}
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return list;
+		return _collectionPersistenceFinderByListTypeEntryId.find(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(listTypeEntryIds)}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -810,13 +378,8 @@ public class ListTypeEntryPersistenceImpl
 	 */
 	@Override
 	public void removeByListTypeEntryId(long listTypeEntryId) {
-		for (ListTypeEntry listTypeEntry :
-				findByListTypeEntryId(
-					listTypeEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(listTypeEntry);
-		}
+		_collectionPersistenceFinderByListTypeEntryId.remove(
+			finderCache, new Object[] {new long[] {listTypeEntryId}});
 	}
 
 	/**
@@ -827,45 +390,8 @@ public class ListTypeEntryPersistenceImpl
 	 */
 	@Override
 	public int countByListTypeEntryId(long listTypeEntryId) {
-		FinderPath finderPath = _finderPathCountByListTypeEntryId;
-
-		Object[] finderArgs = new Object[] {listTypeEntryId};
-
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-
-		if (count == null) {
-			StringBundler sb = new StringBundler(2);
-
-			sb.append(_SQL_COUNT_LISTTYPEENTRY_WHERE);
-
-			sb.append(_FINDER_COLUMN_LISTTYPEENTRYID_LISTTYPEENTRYID_2);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(listTypeEntryId);
-
-				count = (Long)query.uniqueResult();
-
-				finderCache.putResult(finderPath, finderArgs, count);
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return count.intValue();
+		return _collectionPersistenceFinderByListTypeEntryId.count(
+			finderCache, new Object[] {new long[] {listTypeEntryId}});
 	}
 
 	/**
@@ -876,138 +402,20 @@ public class ListTypeEntryPersistenceImpl
 	 */
 	@Override
 	public int countByListTypeEntryId(long[] listTypeEntryIds) {
-		if (listTypeEntryIds == null) {
-			listTypeEntryIds = new long[0];
-		}
-		else if (listTypeEntryIds.length > 1) {
-			listTypeEntryIds = ArrayUtil.sortedUnique(listTypeEntryIds);
-		}
-
-		Object[] finderArgs = new Object[] {StringUtil.merge(listTypeEntryIds)};
-
-		Long count = (Long)finderCache.getResult(
-			_finderPathWithPaginationCountByListTypeEntryId, finderArgs, this);
-
-		if (count == null) {
-			StringBundler sb = new StringBundler();
-
-			sb.append(_SQL_COUNT_LISTTYPEENTRY_WHERE);
-
-			if (listTypeEntryIds.length > 0) {
-				sb.append("(");
-
-				sb.append(_FINDER_COLUMN_LISTTYPEENTRYID_LISTTYPEENTRYID_7);
-
-				sb.append(StringUtil.merge(listTypeEntryIds));
-
-				sb.append(")");
-
-				sb.append(")");
-			}
-
-			sb.setStringAt(
-				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				count = (Long)query.uniqueResult();
-
-				finderCache.putResult(
-					_finderPathWithPaginationCountByListTypeEntryId, finderArgs,
-					count);
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return count.intValue();
+		return _collectionPersistenceFinderByListTypeEntryId.count(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(listTypeEntryIds)});
 	}
 
-	private static final String
-		_FINDER_COLUMN_LISTTYPEENTRYID_LISTTYPEENTRYID_2 =
-			"listTypeEntry.listTypeEntryId = ?";
-
-	private static final String
-		_FINDER_COLUMN_LISTTYPEENTRYID_LISTTYPEENTRYID_7 =
-			"listTypeEntry.listTypeEntryId IN (";
-
-	private FinderPath _finderPathWithPaginationFindByListTypeDefinitionId;
-	private FinderPath _finderPathWithoutPaginationFindByListTypeDefinitionId;
-	private FinderPath _finderPathCountByListTypeDefinitionId;
-	private FinderPath _finderPathWithPaginationCountByListTypeDefinitionId;
-
-	/**
-	 * Returns all the list type entries where listTypeDefinitionId = &#63;.
-	 *
-	 * @param listTypeDefinitionId the list type definition ID
-	 * @return the matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeDefinitionId(
-		long listTypeDefinitionId) {
-
-		return findByListTypeDefinitionId(
-			listTypeDefinitionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the list type entries where listTypeDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeDefinitionId the list type definition ID
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @return the range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeDefinitionId(
-		long listTypeDefinitionId, int start, int end) {
-
-		return findByListTypeDefinitionId(
-			listTypeDefinitionId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ListTypeEntry, NoSuchListTypeEntryException>
+			_collectionPersistenceFinderByListTypeDefinitionId;
 
 	/**
 	 * Returns an ordered range of all the list type entries where listTypeDefinitionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeDefinitionId the list type definition ID
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeDefinitionId(
-		long listTypeDefinitionId, int start, int end,
-		OrderByComparator<ListTypeEntry> orderByComparator) {
-
-		return findByListTypeDefinitionId(
-			listTypeDefinitionId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the list type entries where listTypeDefinitionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param listTypeDefinitionId the list type definition ID
@@ -1023,99 +431,9 @@ public class ListTypeEntryPersistenceImpl
 		OrderByComparator<ListTypeEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		FinderPath finderPath = null;
-		Object[] finderArgs = null;
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
-
-			if (useFinderCache) {
-				finderPath =
-					_finderPathWithoutPaginationFindByListTypeDefinitionId;
-				finderArgs = new Object[] {listTypeDefinitionId};
-			}
-		}
-		else if (useFinderCache) {
-			finderPath = _finderPathWithPaginationFindByListTypeDefinitionId;
-			finderArgs = new Object[] {
-				listTypeDefinitionId, start, end, orderByComparator
-			};
-		}
-
-		List<ListTypeEntry> list = null;
-
-		if (useFinderCache) {
-			list = (List<ListTypeEntry>)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if ((list != null) && !list.isEmpty()) {
-				for (ListTypeEntry listTypeEntry : list) {
-					if (listTypeDefinitionId !=
-							listTypeEntry.getListTypeDefinitionId()) {
-
-						list = null;
-
-						break;
-					}
-				}
-			}
-		}
-
-		if (list == null) {
-			StringBundler sb = null;
-
-			if (orderByComparator != null) {
-				sb = new StringBundler(
-					3 + (orderByComparator.getOrderByFields().length * 2));
-			}
-			else {
-				sb = new StringBundler(3);
-			}
-
-			sb.append(_SQL_SELECT_LISTTYPEENTRY_WHERE);
-
-			sb.append(
-				_FINDER_COLUMN_LISTTYPEDEFINITIONID_LISTTYPEDEFINITIONID_2);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-			}
-			else {
-				sb.append(ListTypeEntryModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(listTypeDefinitionId);
-
-				list = (List<ListTypeEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
-
-				cacheResult(list);
-
-				if (useFinderCache) {
-					finderCache.putResult(finderPath, finderArgs, list);
-				}
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return list;
+		return _collectionPersistenceFinderByListTypeDefinitionId.find(
+			finderCache, new Object[] {new long[] {listTypeDefinitionId}},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1163,81 +481,16 @@ public class ListTypeEntryPersistenceImpl
 		long listTypeDefinitionId,
 		OrderByComparator<ListTypeEntry> orderByComparator) {
 
-		List<ListTypeEntry> list = findByListTypeDefinitionId(
-			listTypeDefinitionId, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the list type entries where listTypeDefinitionId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeDefinitionIds the list type definition IDs
-	 * @return the matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeDefinitionId(
-		long[] listTypeDefinitionIds) {
-
-		return findByListTypeDefinitionId(
-			listTypeDefinitionIds, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the list type entries where listTypeDefinitionId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeDefinitionIds the list type definition IDs
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @return the range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeDefinitionId(
-		long[] listTypeDefinitionIds, int start, int end) {
-
-		return findByListTypeDefinitionId(
-			listTypeDefinitionIds, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the list type entries where listTypeDefinitionId = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param listTypeDefinitionIds the list type definition IDs
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByListTypeDefinitionId(
-		long[] listTypeDefinitionIds, int start, int end,
-		OrderByComparator<ListTypeEntry> orderByComparator) {
-
-		return findByListTypeDefinitionId(
-			listTypeDefinitionIds, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByListTypeDefinitionId.fetchFirst(
+			finderCache, new Object[] {new long[] {listTypeDefinitionId}},
+			orderByComparator);
 	}
 
 	/**
 	 * Returns an ordered range of all the list type entries where listTypeDefinitionId = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param listTypeDefinitionIds the list type definition IDs
@@ -1253,116 +506,10 @@ public class ListTypeEntryPersistenceImpl
 		OrderByComparator<ListTypeEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		if (listTypeDefinitionIds == null) {
-			listTypeDefinitionIds = new long[0];
-		}
-		else if (listTypeDefinitionIds.length > 1) {
-			listTypeDefinitionIds = ArrayUtil.sortedUnique(
-				listTypeDefinitionIds);
-		}
-
-		if (listTypeDefinitionIds.length == 1) {
-			return findByListTypeDefinitionId(
-				listTypeDefinitionIds[0], start, end, orderByComparator);
-		}
-
-		Object[] finderArgs = null;
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			(orderByComparator == null)) {
-
-			if (useFinderCache) {
-				finderArgs = new Object[] {
-					StringUtil.merge(listTypeDefinitionIds)
-				};
-			}
-		}
-		else if (useFinderCache) {
-			finderArgs = new Object[] {
-				StringUtil.merge(listTypeDefinitionIds), start, end,
-				orderByComparator
-			};
-		}
-
-		List<ListTypeEntry> list = null;
-
-		if (useFinderCache) {
-			list = (List<ListTypeEntry>)finderCache.getResult(
-				_finderPathWithPaginationFindByListTypeDefinitionId, finderArgs,
-				this);
-
-			if ((list != null) && !list.isEmpty()) {
-				for (ListTypeEntry listTypeEntry : list) {
-					if (!ArrayUtil.contains(
-							listTypeDefinitionIds,
-							listTypeEntry.getListTypeDefinitionId())) {
-
-						list = null;
-
-						break;
-					}
-				}
-			}
-		}
-
-		if (list == null) {
-			StringBundler sb = new StringBundler();
-
-			sb.append(_SQL_SELECT_LISTTYPEENTRY_WHERE);
-
-			if (listTypeDefinitionIds.length > 0) {
-				sb.append("(");
-
-				sb.append(
-					_FINDER_COLUMN_LISTTYPEDEFINITIONID_LISTTYPEDEFINITIONID_7);
-
-				sb.append(StringUtil.merge(listTypeDefinitionIds));
-
-				sb.append(")");
-
-				sb.append(")");
-			}
-
-			sb.setStringAt(
-				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-			if (orderByComparator != null) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-			}
-			else {
-				sb.append(ListTypeEntryModelImpl.ORDER_BY_JPQL);
-			}
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				list = (List<ListTypeEntry>)QueryUtil.list(
-					query, getDialect(), start, end);
-
-				cacheResult(list);
-
-				if (useFinderCache) {
-					finderCache.putResult(
-						_finderPathWithPaginationFindByListTypeDefinitionId,
-						finderArgs, list);
-				}
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return list;
+		return _collectionPersistenceFinderByListTypeDefinitionId.find(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(listTypeDefinitionIds)}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1372,13 +519,8 @@ public class ListTypeEntryPersistenceImpl
 	 */
 	@Override
 	public void removeByListTypeDefinitionId(long listTypeDefinitionId) {
-		for (ListTypeEntry listTypeEntry :
-				findByListTypeDefinitionId(
-					listTypeDefinitionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(listTypeEntry);
-		}
+		_collectionPersistenceFinderByListTypeDefinitionId.remove(
+			finderCache, new Object[] {new long[] {listTypeDefinitionId}});
 	}
 
 	/**
@@ -1389,46 +531,8 @@ public class ListTypeEntryPersistenceImpl
 	 */
 	@Override
 	public int countByListTypeDefinitionId(long listTypeDefinitionId) {
-		FinderPath finderPath = _finderPathCountByListTypeDefinitionId;
-
-		Object[] finderArgs = new Object[] {listTypeDefinitionId};
-
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
-
-		if (count == null) {
-			StringBundler sb = new StringBundler(2);
-
-			sb.append(_SQL_COUNT_LISTTYPEENTRY_WHERE);
-
-			sb.append(
-				_FINDER_COLUMN_LISTTYPEDEFINITIONID_LISTTYPEDEFINITIONID_2);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(listTypeDefinitionId);
-
-				count = (Long)query.uniqueResult();
-
-				finderCache.putResult(finderPath, finderArgs, count);
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return count.intValue();
+		return _collectionPersistenceFinderByListTypeDefinitionId.count(
+			finderCache, new Object[] {new long[] {listTypeDefinitionId}});
 	}
 
 	/**
@@ -1439,144 +543,20 @@ public class ListTypeEntryPersistenceImpl
 	 */
 	@Override
 	public int countByListTypeDefinitionId(long[] listTypeDefinitionIds) {
-		if (listTypeDefinitionIds == null) {
-			listTypeDefinitionIds = new long[0];
-		}
-		else if (listTypeDefinitionIds.length > 1) {
-			listTypeDefinitionIds = ArrayUtil.sortedUnique(
-				listTypeDefinitionIds);
-		}
-
-		Object[] finderArgs = new Object[] {
-			StringUtil.merge(listTypeDefinitionIds)
-		};
-
-		Long count = (Long)finderCache.getResult(
-			_finderPathWithPaginationCountByListTypeDefinitionId, finderArgs,
-			this);
-
-		if (count == null) {
-			StringBundler sb = new StringBundler();
-
-			sb.append(_SQL_COUNT_LISTTYPEENTRY_WHERE);
-
-			if (listTypeDefinitionIds.length > 0) {
-				sb.append("(");
-
-				sb.append(
-					_FINDER_COLUMN_LISTTYPEDEFINITIONID_LISTTYPEDEFINITIONID_7);
-
-				sb.append(StringUtil.merge(listTypeDefinitionIds));
-
-				sb.append(")");
-
-				sb.append(")");
-			}
-
-			sb.setStringAt(
-				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				count = (Long)query.uniqueResult();
-
-				finderCache.putResult(
-					_finderPathWithPaginationCountByListTypeDefinitionId,
-					finderArgs, count);
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return count.intValue();
+		return _collectionPersistenceFinderByListTypeDefinitionId.count(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(listTypeDefinitionIds)});
 	}
 
-	private static final String
-		_FINDER_COLUMN_LISTTYPEDEFINITIONID_LISTTYPEDEFINITIONID_2 =
-			"listTypeEntry.listTypeDefinitionId = ?";
-
-	private static final String
-		_FINDER_COLUMN_LISTTYPEDEFINITIONID_LISTTYPEDEFINITIONID_7 =
-			"listTypeEntry.listTypeDefinitionId IN (";
-
-	private FinderPath _finderPathWithPaginationFindByC_U;
-	private FinderPath _finderPathWithoutPaginationFindByC_U;
-	private FinderPath _finderPathCountByC_U;
-	private CollectionPersistenceFinder<ListTypeEntry>
-		_collectionPersistenceFinderByC_U;
-
-	/**
-	 * Returns all the list type entries where companyId = &#63; and userId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @return the matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByC_U(long companyId, long userId) {
-		return findByC_U(
-			companyId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the list type entries where companyId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @return the range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByC_U(
-		long companyId, long userId, int start, int end) {
-
-		return findByC_U(companyId, userId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ListTypeEntry, NoSuchListTypeEntryException>
+			_collectionPersistenceFinderByC_U;
 
 	/**
 	 * Returns an ordered range of all the list type entries where companyId = &#63; and userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of list type entries
-	 * @param end the upper bound of the range of list type entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching list type entries
-	 */
-	@Override
-	public List<ListTypeEntry> findByC_U(
-		long companyId, long userId, int start, int end,
-		OrderByComparator<ListTypeEntry> orderByComparator) {
-
-		return findByC_U(
-			companyId, userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the list type entries where companyId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ListTypeEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1613,16 +593,8 @@ public class ListTypeEntryPersistenceImpl
 			OrderByComparator<ListTypeEntry> orderByComparator)
 		throws NoSuchListTypeEntryException {
 
-		ListTypeEntry listTypeEntry = fetchByC_U_First(
-			companyId, userId, orderByComparator);
-
-		if (listTypeEntry != null) {
-			return listTypeEntry;
-		}
-
-		throw new NoSuchListTypeEntryException(
-			_collectionPersistenceFinderByC_U.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, userId}));
+		return _collectionPersistenceFinderByC_U.findFirst(
+			finderCache, new Object[] {companyId, userId}, orderByComparator);
 	}
 
 	/**
@@ -1667,8 +639,7 @@ public class ListTypeEntryPersistenceImpl
 			finderCache, new Object[] {companyId, userId});
 	}
 
-	private FinderPath _finderPathFetchByLTDI_K;
-	private UniquePersistenceFinder<ListTypeEntry>
+	private UniquePersistenceFinder<ListTypeEntry, NoSuchListTypeEntryException>
 		_uniquePersistenceFinderByLTDI_K;
 
 	/**
@@ -1683,34 +654,8 @@ public class ListTypeEntryPersistenceImpl
 	public ListTypeEntry findByLTDI_K(long listTypeDefinitionId, String key)
 		throws NoSuchListTypeEntryException {
 
-		ListTypeEntry listTypeEntry = fetchByLTDI_K(listTypeDefinitionId, key);
-
-		if (listTypeEntry == null) {
-			String message =
-				_uniquePersistenceFinderByLTDI_K.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {listTypeDefinitionId, key});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchListTypeEntryException(message);
-		}
-
-		return listTypeEntry;
-	}
-
-	/**
-	 * Returns the list type entry where listTypeDefinitionId = &#63; and key = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param listTypeDefinitionId the list type definition ID
-	 * @param key the key
-	 * @return the matching list type entry, or <code>null</code> if a matching list type entry could not be found
-	 */
-	@Override
-	public ListTypeEntry fetchByLTDI_K(long listTypeDefinitionId, String key) {
-		return fetchByLTDI_K(listTypeDefinitionId, key, true);
+		return _uniquePersistenceFinderByLTDI_K.find(
+			finderCache, new Object[] {listTypeDefinitionId, key});
 	}
 
 	/**
@@ -1759,8 +704,7 @@ public class ListTypeEntryPersistenceImpl
 			finderCache, new Object[] {listTypeDefinitionId, key});
 	}
 
-	private FinderPath _finderPathFetchByERC_C_LTDI;
-	private UniquePersistenceFinder<ListTypeEntry>
+	private UniquePersistenceFinder<ListTypeEntry, NoSuchListTypeEntryException>
 		_uniquePersistenceFinderByERC_C_LTDI;
 
 	/**
@@ -1778,42 +722,11 @@ public class ListTypeEntryPersistenceImpl
 			long listTypeDefinitionId)
 		throws NoSuchListTypeEntryException {
 
-		ListTypeEntry listTypeEntry = fetchByERC_C_LTDI(
-			externalReferenceCode, companyId, listTypeDefinitionId);
-
-		if (listTypeEntry == null) {
-			String message =
-				_uniquePersistenceFinderByERC_C_LTDI.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {
-						externalReferenceCode, companyId, listTypeDefinitionId
-					});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchListTypeEntryException(message);
-		}
-
-		return listTypeEntry;
-	}
-
-	/**
-	 * Returns the list type entry where externalReferenceCode = &#63; and companyId = &#63; and listTypeDefinitionId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param companyId the company ID
-	 * @param listTypeDefinitionId the list type definition ID
-	 * @return the matching list type entry, or <code>null</code> if a matching list type entry could not be found
-	 */
-	@Override
-	public ListTypeEntry fetchByERC_C_LTDI(
-		String externalReferenceCode, long companyId,
-		long listTypeDefinitionId) {
-
-		return fetchByERC_C_LTDI(
-			externalReferenceCode, companyId, listTypeDefinitionId, true);
+		return _uniquePersistenceFinderByERC_C_LTDI.find(
+			finderCache,
+			new Object[] {
+				externalReferenceCode, companyId, listTypeDefinitionId
+			});
 	}
 
 	/**
@@ -2140,182 +1053,181 @@ public class ListTypeEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_LISTTYPEENTRY_WHERE, _SQL_COUNT_LISTTYPEENTRY_WHERE,
-			ListTypeEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ListTypeEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"listTypeEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, ListTypeEntry::getUuid));
-
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
+				"listTypeEntry.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, ListTypeEntry::getUuid));
 
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_LISTTYPEENTRY_WHERE,
-				_SQL_COUNT_LISTTYPEENTRY_WHERE,
-				ListTypeEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_LISTTYPEENTRY_WHERE, _SQL_COUNT_LISTTYPEENTRY_WHERE,
+				ListTypeEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"listTypeEntry.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, ListTypeEntry::getUuid),
+					"listTypeEntry.", "uuid", "uuid_", FinderColumn.Type.STRING,
+					"=", true, true, ListTypeEntry::getUuid),
 				new FinderColumn<>(
 					"listTypeEntry.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, ListTypeEntry::getCompanyId));
 
-		_finderPathWithPaginationFindByListTypeEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByListTypeEntryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"listTypeEntryId"}, true);
+		_collectionPersistenceFinderByListTypeEntryId =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByListTypeEntryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"listTypeEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByListTypeEntryId",
+					new String[] {Long.class.getName()},
+					new String[] {"listTypeEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByListTypeEntryId",
+					new String[] {Long.class.getName()},
+					new String[] {"listTypeEntryId"}, false),
+				_SQL_SELECT_LISTTYPEENTRY_WHERE, _SQL_COUNT_LISTTYPEENTRY_WHERE,
+				ListTypeEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new ArrayableFinderColumn<>(
+					"listTypeEntry.", "listTypeEntryId", FinderColumn.Type.LONG,
+					"=", false, true, true, ListTypeEntry::getListTypeEntryId));
 
-		_finderPathWithoutPaginationFindByListTypeEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByListTypeEntryId",
-			new String[] {Long.class.getName()},
-			new String[] {"listTypeEntryId"}, true);
-
-		_finderPathCountByListTypeEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByListTypeEntryId",
-			new String[] {Long.class.getName()},
-			new String[] {"listTypeEntryId"}, false);
-
-		_finderPathWithPaginationCountByListTypeEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByListTypeEntryId",
-			new String[] {Long.class.getName()},
-			new String[] {"listTypeEntryId"}, false);
-
-		_finderPathWithPaginationFindByListTypeDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByListTypeDefinitionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"listTypeDefinitionId"}, true);
-
-		_finderPathWithoutPaginationFindByListTypeDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByListTypeDefinitionId", new String[] {Long.class.getName()},
-			new String[] {"listTypeDefinitionId"}, true);
-
-		_finderPathCountByListTypeDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByListTypeDefinitionId", new String[] {Long.class.getName()},
-			new String[] {"listTypeDefinitionId"}, false);
-
-		_finderPathWithPaginationCountByListTypeDefinitionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"countByListTypeDefinitionId", new String[] {Long.class.getName()},
-			new String[] {"listTypeDefinitionId"}, false);
-
-		_finderPathWithPaginationFindByC_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_U",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "userId"}, true);
-
-		_finderPathWithoutPaginationFindByC_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "userId"}, true);
-
-		_finderPathCountByC_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "userId"}, false);
+		_collectionPersistenceFinderByListTypeDefinitionId =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByListTypeDefinitionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"listTypeDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByListTypeDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"listTypeDefinitionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByListTypeDefinitionId",
+					new String[] {Long.class.getName()},
+					new String[] {"listTypeDefinitionId"}, false),
+				_SQL_SELECT_LISTTYPEENTRY_WHERE, _SQL_COUNT_LISTTYPEENTRY_WHERE,
+				ListTypeEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new ArrayableFinderColumn<>(
+					"listTypeEntry.", "listTypeDefinitionId",
+					FinderColumn.Type.LONG, "=", false, true, true,
+					ListTypeEntry::getListTypeDefinitionId));
 
 		_collectionPersistenceFinderByC_U = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_U,
-			_finderPathWithoutPaginationFindByC_U, _finderPathCountByC_U,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_U",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "userId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_U",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "userId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_U",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "userId"}, false),
 			_SQL_SELECT_LISTTYPEENTRY_WHERE, _SQL_COUNT_LISTTYPEENTRY_WHERE,
-			ListTypeEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ListTypeEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"listTypeEntry.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, ListTypeEntry::getCompanyId),
+				true, true, ListTypeEntry::getCompanyId),
 			new FinderColumn<>(
 				"listTypeEntry.", "userId", FinderColumn.Type.LONG, "=", true,
 				true, ListTypeEntry::getUserId));
 
-		_finderPathFetchByLTDI_K = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByLTDI_K",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"listTypeDefinitionId", "key_"}, false,
-			ListTypeEntry::getListTypeDefinitionId, ListTypeEntry::getKey);
-
 		_uniquePersistenceFinderByLTDI_K = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByLTDI_K, _SQL_SELECT_LISTTYPEENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByLTDI_K",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"listTypeDefinitionId", "key_"}, 0, 2, false,
+				ListTypeEntry::getListTypeDefinitionId,
+				convertNullFunction(ListTypeEntry::getKey)),
+			_SQL_SELECT_LISTTYPEENTRY_WHERE, "",
 			new FinderColumn<>(
 				"listTypeEntry.", "listTypeDefinitionId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				ListTypeEntry::getListTypeDefinitionId),
 			new FinderColumn<>(
-				"listTypeEntry.", "key", FinderColumn.Type.STRING, "=", true,
-				true, ListTypeEntry::getKey));
-
-		_finderPathFetchByERC_C_LTDI = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C_LTDI",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Long.class.getName()
-			},
-			new String[] {
-				"externalReferenceCode", "companyId", "listTypeDefinitionId"
-			},
-			false, ListTypeEntry::getExternalReferenceCode,
-			ListTypeEntry::getCompanyId,
-			ListTypeEntry::getListTypeDefinitionId);
+				"listTypeEntry.", "key", "key_", FinderColumn.Type.STRING, "=",
+				true, true, ListTypeEntry::getKey));
 
 		_uniquePersistenceFinderByERC_C_LTDI = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_C_LTDI, _SQL_SELECT_LISTTYPEENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_C_LTDI",
+				new String[] {
+					String.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {
+					"externalReferenceCode", "companyId", "listTypeDefinitionId"
+				},
+				0, 1, false,
+				convertNullFunction(ListTypeEntry::getExternalReferenceCode),
+				ListTypeEntry::getCompanyId,
+				ListTypeEntry::getListTypeDefinitionId),
+			_SQL_SELECT_LISTTYPEENTRY_WHERE, "",
 			new FinderColumn<>(
 				"listTypeEntry.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				ListTypeEntry::getExternalReferenceCode),
 			new FinderColumn<>(
 				"listTypeEntry.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, ListTypeEntry::getCompanyId),
+				true, true, ListTypeEntry::getCompanyId),
 			new FinderColumn<>(
 				"listTypeEntry.", "listTypeDefinitionId",
 				FinderColumn.Type.LONG, "=", true, true,
@@ -2390,4 +1302,4 @@ public class ListTypeEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1316923057
+// LIFERAY-SERVICE-BUILDER-HASH:-1745131439

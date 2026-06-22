@@ -73,31 +73,37 @@ public abstract class BaseAccountForecastResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-machine-learning/v1.0/accountForecasts/by-monthlyRevenue'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Get the forecast points"
+		description = "Returns a page of monthly revenue forecast points broken down by AccountEntry. Calls CommerceAccountCommerceMLForecastManager.getMonthlyRevenueCommerceAccountCommerceMLForecasts in AccountForecastResourceImpl. Validation -- None (defaults to 3 forecast months and 8 history months from CommerceMLForecastConstants when omitted; forecastStartDate defaults to the current server date; account identifiers the caller cannot view are silently dropped through CommerceAccountPermissionHelper, and an empty intersection returns an empty page). List query support -- None (no filter, search, or sort exposed). Side effects -- None (read-only)."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Restricts the response to the supplied account identifiers. Repeat the parameter once per identifier. The set is further intersected with the accounts the caller has view permission on; when the intersection is empty the response is an empty page.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "accountIds"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of forward months to include in the response. Defaults to 3 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "forecastLength"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Anchor date for the forecast window in ISO 8601 date format (yyyy-MM-dd). Defaults to the current server date when omitted. The response covers historyLength months before this date and forecastLength months from this date forward.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "forecastStartDate"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of historical months to include in the response. Defaults to 8 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "historyLength"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Defaults to 1 when omitted. Combined with pageSize to slice the result set.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Maximum number of items per page. Defaults to the portal-wide Vulcan default when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			)
@@ -792,4 +798,4 @@ public abstract class BaseAccountForecastResourceImpl
 		LogFactoryUtil.getLog(BaseAccountForecastResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1900521535
+// LIFERAY-REST-BUILDER-HASH:-874808222

@@ -10,6 +10,7 @@ import TotalAccounts from 'contacts/components/account/TotalAccounts';
 import URLConstants from 'shared/util/url-constants';
 import {isNil} from 'lodash/fp';
 import {Routes, toRoute} from 'shared/util/router';
+import {SectionHeader} from 'shared/components/SectionHeader';
 import {Sizes} from 'shared/util/constants';
 import {useChannelContext} from 'shared/context/channel';
 import {useCurrentUser} from 'shared/hooks/useCurrentUser';
@@ -25,11 +26,9 @@ const List: React.FC<IListProps> = ({channelId, groupId}) => {
 	const {selectedChannel} = useChannelContext();
 
 	const {data: dataSourceData, loading: dataSourceLoading} = useRequest({
-		dataSourceFn: API.dataSource.search as (params: {
-			[key: string]: any;
-		}) => Promise<any>,
+		dataSourceFn: API.dataSource.fetchChannels,
 		variables: {
-			delta: 1,
+			channelIds: [channelId],
 			groupId
 		}
 	});
@@ -116,10 +115,15 @@ const List: React.FC<IListProps> = ({channelId, groupId}) => {
 					<>
 						<TotalAccounts groupId={groupId} />
 
+						<SectionHeader
+							icon='box-container'
+							title={Liferay.Language.get('accounts')}
+						/>
+
 						<AccountsDataSet
+							apiURL={`/o/faro/contacts/${groupId}/account/search?channelId=${channelId}`}
 							channelId={channelId}
 							groupId={groupId}
-							loading={dataSourceLoading}
 						/>
 					</>
 				) : (

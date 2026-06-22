@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -80,10 +78,10 @@ public class CommerceInventoryBookedQuantityPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByLtExpirationDate;
-	private FinderPath _finderPathWithPaginationCountByLtExpirationDate;
-	private CollectionPersistenceFinder<CommerceInventoryBookedQuantity>
-		_collectionPersistenceFinderByLtExpirationDate;
+	private CollectionPersistenceFinder
+		<CommerceInventoryBookedQuantity,
+		 NoSuchInventoryBookedQuantityException>
+			_collectionPersistenceFinderByLtExpirationDate;
 
 	/**
 	 * Returns all the commerce inventory booked quantities where expirationDate &lt; &#63;.
@@ -180,17 +178,8 @@ public class CommerceInventoryBookedQuantityPersistenceImpl
 				orderByComparator)
 		throws NoSuchInventoryBookedQuantityException {
 
-		CommerceInventoryBookedQuantity commerceInventoryBookedQuantity =
-			fetchByLtExpirationDate_First(expirationDate, orderByComparator);
-
-		if (commerceInventoryBookedQuantity != null) {
-			return commerceInventoryBookedQuantity;
-		}
-
-		throw new NoSuchInventoryBookedQuantityException(
-			_collectionPersistenceFinderByLtExpirationDate.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {expirationDate}));
+		return _collectionPersistenceFinderByLtExpirationDate.findFirst(
+			finderCache, new Object[] {expirationDate}, orderByComparator);
 	}
 
 	/**
@@ -232,62 +221,10 @@ public class CommerceInventoryBookedQuantityPersistenceImpl
 			finderCache, new Object[] {expirationDate});
 	}
 
-	private FinderPath _finderPathWithPaginationFindBySku;
-	private FinderPath _finderPathWithoutPaginationFindBySku;
-	private FinderPath _finderPathCountBySku;
-	private CollectionPersistenceFinder<CommerceInventoryBookedQuantity>
-		_collectionPersistenceFinderBySku;
-
-	/**
-	 * Returns all the commerce inventory booked quantities where sku = &#63;.
-	 *
-	 * @param sku the sku
-	 * @return the matching commerce inventory booked quantities
-	 */
-	@Override
-	public List<CommerceInventoryBookedQuantity> findBySku(String sku) {
-		return findBySku(sku, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory booked quantities where sku = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryBookedQuantityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param sku the sku
-	 * @param start the lower bound of the range of commerce inventory booked quantities
-	 * @param end the upper bound of the range of commerce inventory booked quantities (not inclusive)
-	 * @return the range of matching commerce inventory booked quantities
-	 */
-	@Override
-	public List<CommerceInventoryBookedQuantity> findBySku(
-		String sku, int start, int end) {
-
-		return findBySku(sku, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce inventory booked quantities where sku = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryBookedQuantityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param sku the sku
-	 * @param start the lower bound of the range of commerce inventory booked quantities
-	 * @param end the upper bound of the range of commerce inventory booked quantities (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce inventory booked quantities
-	 */
-	@Override
-	public List<CommerceInventoryBookedQuantity> findBySku(
-		String sku, int start, int end,
-		OrderByComparator<CommerceInventoryBookedQuantity> orderByComparator) {
-
-		return findBySku(sku, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CommerceInventoryBookedQuantity,
+		 NoSuchInventoryBookedQuantityException>
+			_collectionPersistenceFinderBySku;
 
 	/**
 	 * Returns an ordered range of all the commerce inventory booked quantities where sku = &#63;.
@@ -329,16 +266,8 @@ public class CommerceInventoryBookedQuantityPersistenceImpl
 				orderByComparator)
 		throws NoSuchInventoryBookedQuantityException {
 
-		CommerceInventoryBookedQuantity commerceInventoryBookedQuantity =
-			fetchBySku_First(sku, orderByComparator);
-
-		if (commerceInventoryBookedQuantity != null) {
-			return commerceInventoryBookedQuantity;
-		}
-
-		throw new NoSuchInventoryBookedQuantityException(
-			_collectionPersistenceFinderBySku.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {sku}));
+		return _collectionPersistenceFinderBySku.findFirst(
+			finderCache, new Object[] {sku}, orderByComparator);
 	}
 
 	/**
@@ -380,75 +309,10 @@ public class CommerceInventoryBookedQuantityPersistenceImpl
 			finderCache, new Object[] {sku});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_S_U;
-	private FinderPath _finderPathWithoutPaginationFindByC_S_U;
-	private FinderPath _finderPathCountByC_S_U;
-	private CollectionPersistenceFinder<CommerceInventoryBookedQuantity>
-		_collectionPersistenceFinderByC_S_U;
-
-	/**
-	 * Returns all the commerce inventory booked quantities where companyId = &#63; and sku = &#63; and unitOfMeasureKey = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param sku the sku
-	 * @param unitOfMeasureKey the unit of measure key
-	 * @return the matching commerce inventory booked quantities
-	 */
-	@Override
-	public List<CommerceInventoryBookedQuantity> findByC_S_U(
-		long companyId, String sku, String unitOfMeasureKey) {
-
-		return findByC_S_U(
-			companyId, sku, unitOfMeasureKey, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory booked quantities where companyId = &#63; and sku = &#63; and unitOfMeasureKey = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryBookedQuantityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param sku the sku
-	 * @param unitOfMeasureKey the unit of measure key
-	 * @param start the lower bound of the range of commerce inventory booked quantities
-	 * @param end the upper bound of the range of commerce inventory booked quantities (not inclusive)
-	 * @return the range of matching commerce inventory booked quantities
-	 */
-	@Override
-	public List<CommerceInventoryBookedQuantity> findByC_S_U(
-		long companyId, String sku, String unitOfMeasureKey, int start,
-		int end) {
-
-		return findByC_S_U(companyId, sku, unitOfMeasureKey, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce inventory booked quantities where companyId = &#63; and sku = &#63; and unitOfMeasureKey = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryBookedQuantityModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param sku the sku
-	 * @param unitOfMeasureKey the unit of measure key
-	 * @param start the lower bound of the range of commerce inventory booked quantities
-	 * @param end the upper bound of the range of commerce inventory booked quantities (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce inventory booked quantities
-	 */
-	@Override
-	public List<CommerceInventoryBookedQuantity> findByC_S_U(
-		long companyId, String sku, String unitOfMeasureKey, int start, int end,
-		OrderByComparator<CommerceInventoryBookedQuantity> orderByComparator) {
-
-		return findByC_S_U(
-			companyId, sku, unitOfMeasureKey, start, end, orderByComparator,
-			true);
-	}
+	private CollectionPersistenceFinder
+		<CommerceInventoryBookedQuantity,
+		 NoSuchInventoryBookedQuantityException>
+			_collectionPersistenceFinderByC_S_U;
 
 	/**
 	 * Returns an ordered range of all the commerce inventory booked quantities where companyId = &#63; and sku = &#63; and unitOfMeasureKey = &#63;.
@@ -494,18 +358,9 @@ public class CommerceInventoryBookedQuantityPersistenceImpl
 				orderByComparator)
 		throws NoSuchInventoryBookedQuantityException {
 
-		CommerceInventoryBookedQuantity commerceInventoryBookedQuantity =
-			fetchByC_S_U_First(
-				companyId, sku, unitOfMeasureKey, orderByComparator);
-
-		if (commerceInventoryBookedQuantity != null) {
-			return commerceInventoryBookedQuantity;
-		}
-
-		throw new NoSuchInventoryBookedQuantityException(
-			_collectionPersistenceFinderByC_S_U.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, sku, unitOfMeasureKey}));
+		return _collectionPersistenceFinderByC_S_U.findFirst(
+			finderCache, new Object[] {companyId, sku, unitOfMeasureKey},
+			orderByComparator);
 	}
 
 	/**
@@ -797,99 +652,96 @@ public class CommerceInventoryBookedQuantityPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByLtExpirationDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtExpirationDate",
-			new String[] {
-				Date.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"expirationDate"}, true);
-
-		_finderPathWithPaginationCountByLtExpirationDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtExpirationDate",
-			new String[] {Date.class.getName()},
-			new String[] {"expirationDate"}, false);
-
 		_collectionPersistenceFinderByLtExpirationDate =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLtExpirationDate, null,
-				_finderPathWithPaginationCountByLtExpirationDate,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByLtExpirationDate",
+					new String[] {
+						Date.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"expirationDate"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByLtExpirationDate",
+					new String[] {Date.class.getName()},
+					new String[] {"expirationDate"}, false),
 				_SQL_SELECT_COMMERCEINVENTORYBOOKEDQUANTITY_WHERE,
 				_SQL_COUNT_COMMERCEINVENTORYBOOKEDQUANTITY_WHERE,
 				CommerceInventoryBookedQuantityModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commerceInventoryBookedQuantity.", "expirationDate",
 					FinderColumn.Type.DATE, "<", true, true,
 					CommerceInventoryBookedQuantity::getExpirationDate));
 
-		_finderPathWithPaginationFindBySku = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findBySku",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"sku"}, true);
-
-		_finderPathWithoutPaginationFindBySku = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findBySku",
-			new String[] {String.class.getName()}, new String[] {"sku"}, true);
-
-		_finderPathCountBySku = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countBySku",
-			new String[] {String.class.getName()}, new String[] {"sku"}, false);
-
 		_collectionPersistenceFinderBySku = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindBySku,
-			_finderPathWithoutPaginationFindBySku, _finderPathCountBySku,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findBySku",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"sku"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findBySku",
+				new String[] {String.class.getName()}, new String[] {"sku"}, 0,
+				1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countBySku",
+				new String[] {String.class.getName()}, new String[] {"sku"}, 0,
+				1, false, null),
 			_SQL_SELECT_COMMERCEINVENTORYBOOKEDQUANTITY_WHERE,
 			_SQL_COUNT_COMMERCEINVENTORYBOOKEDQUANTITY_WHERE,
 			CommerceInventoryBookedQuantityModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"commerceInventoryBookedQuantity.", "sku",
 				FinderColumn.Type.STRING, "=", true, true,
 				CommerceInventoryBookedQuantity::getSku));
 
-		_finderPathWithPaginationFindByC_S_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S_U",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "sku", "unitOfMeasureKey"}, true);
-
-		_finderPathWithoutPaginationFindByC_S_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S_U",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"companyId", "sku", "unitOfMeasureKey"}, true);
-
-		_finderPathCountByC_S_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S_U",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"companyId", "sku", "unitOfMeasureKey"}, false);
-
 		_collectionPersistenceFinderByC_S_U = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_S_U,
-			_finderPathWithoutPaginationFindByC_S_U, _finderPathCountByC_S_U,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S_U",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "sku", "unitOfMeasureKey"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S_U",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"companyId", "sku", "unitOfMeasureKey"}, 0, 6,
+				true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S_U",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"companyId", "sku", "unitOfMeasureKey"}, 0, 6,
+				false, null),
 			_SQL_SELECT_COMMERCEINVENTORYBOOKEDQUANTITY_WHERE,
 			_SQL_COUNT_COMMERCEINVENTORYBOOKEDQUANTITY_WHERE,
 			CommerceInventoryBookedQuantityModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"commerceInventoryBookedQuantity.", "companyId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CommerceInventoryBookedQuantity::getCompanyId),
 			new FinderColumn<>(
 				"commerceInventoryBookedQuantity.", "sku",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				CommerceInventoryBookedQuantity::getSku),
 			new FinderColumn<>(
 				"commerceInventoryBookedQuantity.", "unitOfMeasureKey",
@@ -956,9 +808,6 @@ public class CommerceInventoryBookedQuantityPersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No CommerceInventoryBookedQuantity exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		CommerceInventoryBookedQuantityPersistenceImpl.class);
-
 	private static final Set<String> _badColumnNames = SetUtil.fromArray(
 		new String[] {"commerceInventoryBookedQuantityId"});
 
@@ -968,4 +817,4 @@ public class CommerceInventoryBookedQuantityPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1245772498
+// LIFERAY-SERVICE-BUILDER-HASH:1095936525

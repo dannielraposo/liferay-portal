@@ -12,6 +12,7 @@ import com.liferay.headless.admin.address.client.resource.v1_0.CountryResource;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.client.http.HttpInvoker;
 import com.liferay.headless.admin.user.client.pagination.Page;
+import com.liferay.headless.admin.user.client.resource.v1_0.AccountGroupResource;
 import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
 import com.liferay.headless.admin.user.client.resource.v1_0.AccountRoleResource;
 import com.liferay.headless.admin.user.client.resource.v1_0.PostalAddressResource;
@@ -182,6 +183,17 @@ public class MarketplaceService extends BaseService {
 		updateOrder(customFields, order.getId(), order.getOrderStatus());
 	}
 
+	public AccountGroupResource getAccountGroupResource() throws Exception {
+		return AccountGroupResource.builder(
+		).header(
+			HttpHeaders.AUTHORIZATION,
+			_liferayOAuth2AccessTokenManager.getAuthorization(
+				"liferay-marketplace-etc-spring-boot-oahs")
+		).endpoint(
+			new URL(lxcDXPServerProtocol + "://" + lxcDXPMainDomain)
+		).build();
+	}
+
 	public AccountResource getAccountResource() throws Exception {
 		return AccountResource.builder(
 		).header(
@@ -204,6 +216,21 @@ public class MarketplaceService extends BaseService {
 		).endpoint(
 			new URL(lxcDXPServerProtocol + "://" + lxcDXPMainDomain)
 		).build();
+	}
+
+	public JSONObject getAIHubApplicationJSONObject(
+		String externalReferenceCode) {
+
+		return new JSONObject(
+			get(
+				_liferayOAuth2AccessTokenManager.getAuthorization(
+					"liferay-marketplace-etc-spring-boot-oahs"),
+				UriComponentsBuilder.fromPath(
+					"/o/c/aihubapplications/by-external-reference-code/" +
+						externalReferenceCode +
+							"?nestedFields=orderToAIHubApplication"
+				).build(
+				).toUri()));
 	}
 
 	public AttachmentResource getAttachmentResource() throws Exception {
@@ -742,6 +769,36 @@ public class MarketplaceService extends BaseService {
 				HashMapBuilder.put(
 					"file", file
 				).build());
+	}
+
+	public JSONObject putAIHubApplication(
+		String externalReferenceCode, JSONObject jsonObject) {
+
+		return new JSONObject(
+			put(
+				_liferayOAuth2AccessTokenManager.getAuthorization(
+					"liferay-marketplace-etc-spring-boot-oahs"),
+				jsonObject.toString(),
+				UriComponentsBuilder.fromPath(
+					"/o/c/aihubapplications/by-external-reference-code/" +
+						externalReferenceCode
+				).build(
+				).toUri()));
+	}
+
+	public JSONObject putSalesforceProject(
+		String externalReferenceCode, JSONObject jsonObject) {
+
+		return new JSONObject(
+			put(
+				_liferayOAuth2AccessTokenManager.getAuthorization(
+					"liferay-marketplace-etc-spring-boot-oahs"),
+				jsonObject.toString(),
+				UriComponentsBuilder.fromPath(
+					"/o/c/salesforceprojects/by-external-reference-code/" +
+						externalReferenceCode
+				).build(
+				).toUri()));
 	}
 
 	public void updateOrder(

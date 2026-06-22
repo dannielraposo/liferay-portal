@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -76,72 +75,15 @@ public class BatchPlannerMappingPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByBatchPlannerPlanId;
-	private FinderPath _finderPathWithoutPaginationFindByBatchPlannerPlanId;
-	private FinderPath _finderPathCountByBatchPlannerPlanId;
-	private CollectionPersistenceFinder<BatchPlannerMapping>
-		_collectionPersistenceFinderByBatchPlannerPlanId;
-
-	/**
-	 * Returns all the batch planner mappings where batchPlannerPlanId = &#63;.
-	 *
-	 * @param batchPlannerPlanId the batch planner plan ID
-	 * @return the matching batch planner mappings
-	 */
-	@Override
-	public List<BatchPlannerMapping> findByBatchPlannerPlanId(
-		long batchPlannerPlanId) {
-
-		return findByBatchPlannerPlanId(
-			batchPlannerPlanId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the batch planner mappings where batchPlannerPlanId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BatchPlannerMappingModelImpl</code>.
-	 * </p>
-	 *
-	 * @param batchPlannerPlanId the batch planner plan ID
-	 * @param start the lower bound of the range of batch planner mappings
-	 * @param end the upper bound of the range of batch planner mappings (not inclusive)
-	 * @return the range of matching batch planner mappings
-	 */
-	@Override
-	public List<BatchPlannerMapping> findByBatchPlannerPlanId(
-		long batchPlannerPlanId, int start, int end) {
-
-		return findByBatchPlannerPlanId(batchPlannerPlanId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<BatchPlannerMapping, NoSuchMappingException>
+			_collectionPersistenceFinderByBatchPlannerPlanId;
 
 	/**
 	 * Returns an ordered range of all the batch planner mappings where batchPlannerPlanId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BatchPlannerMappingModelImpl</code>.
-	 * </p>
-	 *
-	 * @param batchPlannerPlanId the batch planner plan ID
-	 * @param start the lower bound of the range of batch planner mappings
-	 * @param end the upper bound of the range of batch planner mappings (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching batch planner mappings
-	 */
-	@Override
-	public List<BatchPlannerMapping> findByBatchPlannerPlanId(
-		long batchPlannerPlanId, int start, int end,
-		OrderByComparator<BatchPlannerMapping> orderByComparator) {
-
-		return findByBatchPlannerPlanId(
-			batchPlannerPlanId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the batch planner mappings where batchPlannerPlanId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BatchPlannerMappingModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BatchPlannerMappingModelImpl</code>.
 	 * </p>
 	 *
 	 * @param batchPlannerPlanId the batch planner plan ID
@@ -176,19 +118,8 @@ public class BatchPlannerMappingPersistenceImpl
 			OrderByComparator<BatchPlannerMapping> orderByComparator)
 		throws NoSuchMappingException {
 
-		BatchPlannerMapping batchPlannerMapping =
-			fetchByBatchPlannerPlanId_First(
-				batchPlannerPlanId, orderByComparator);
-
-		if (batchPlannerMapping != null) {
-			return batchPlannerMapping;
-		}
-
-		throw new NoSuchMappingException(
-			_collectionPersistenceFinderByBatchPlannerPlanId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {batchPlannerPlanId}));
+		return _collectionPersistenceFinderByBatchPlannerPlanId.findFirst(
+			finderCache, new Object[] {batchPlannerPlanId}, orderByComparator);
 	}
 
 	/**
@@ -230,8 +161,7 @@ public class BatchPlannerMappingPersistenceImpl
 			finderCache, new Object[] {batchPlannerPlanId});
 	}
 
-	private FinderPath _finderPathFetchByBPPI_EFN_IFN;
-	private UniquePersistenceFinder<BatchPlannerMapping>
+	private UniquePersistenceFinder<BatchPlannerMapping, NoSuchMappingException>
 		_uniquePersistenceFinderByBPPI_EFN_IFN;
 
 	/**
@@ -249,42 +179,11 @@ public class BatchPlannerMappingPersistenceImpl
 			String internalFieldName)
 		throws NoSuchMappingException {
 
-		BatchPlannerMapping batchPlannerMapping = fetchByBPPI_EFN_IFN(
-			batchPlannerPlanId, externalFieldName, internalFieldName);
-
-		if (batchPlannerMapping == null) {
-			String message =
-				_uniquePersistenceFinderByBPPI_EFN_IFN.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {
-						batchPlannerPlanId, externalFieldName, internalFieldName
-					});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMappingException(message);
-		}
-
-		return batchPlannerMapping;
-	}
-
-	/**
-	 * Returns the batch planner mapping where batchPlannerPlanId = &#63; and externalFieldName = &#63; and internalFieldName = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param batchPlannerPlanId the batch planner plan ID
-	 * @param externalFieldName the external field name
-	 * @param internalFieldName the internal field name
-	 * @return the matching batch planner mapping, or <code>null</code> if a matching batch planner mapping could not be found
-	 */
-	@Override
-	public BatchPlannerMapping fetchByBPPI_EFN_IFN(
-		long batchPlannerPlanId, String externalFieldName,
-		String internalFieldName) {
-
-		return fetchByBPPI_EFN_IFN(
-			batchPlannerPlanId, externalFieldName, internalFieldName, true);
+		return _uniquePersistenceFinderByBPPI_EFN_IFN.find(
+			finderCache,
+			new Object[] {
+				batchPlannerPlanId, externalFieldName, internalFieldName
+			});
 	}
 
 	/**
@@ -555,61 +454,60 @@ public class BatchPlannerMappingPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByBatchPlannerPlanId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByBatchPlannerPlanId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"batchPlannerPlanId"}, true);
-
-		_finderPathWithoutPaginationFindByBatchPlannerPlanId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByBatchPlannerPlanId", new String[] {Long.class.getName()},
-			new String[] {"batchPlannerPlanId"}, true);
-
-		_finderPathCountByBatchPlannerPlanId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByBatchPlannerPlanId", new String[] {Long.class.getName()},
-			new String[] {"batchPlannerPlanId"}, false);
-
 		_collectionPersistenceFinderByBatchPlannerPlanId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByBatchPlannerPlanId,
-				_finderPathWithoutPaginationFindByBatchPlannerPlanId,
-				_finderPathCountByBatchPlannerPlanId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByBatchPlannerPlanId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"batchPlannerPlanId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByBatchPlannerPlanId",
+					new String[] {Long.class.getName()},
+					new String[] {"batchPlannerPlanId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByBatchPlannerPlanId",
+					new String[] {Long.class.getName()},
+					new String[] {"batchPlannerPlanId"}, false),
 				_SQL_SELECT_BATCHPLANNERMAPPING_WHERE,
 				_SQL_COUNT_BATCHPLANNERMAPPING_WHERE,
 				BatchPlannerMappingModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"batchPlannerMapping.", "batchPlannerPlanId",
 					FinderColumn.Type.LONG, "=", true, true,
 					BatchPlannerMapping::getBatchPlannerPlanId));
 
-		_finderPathFetchByBPPI_EFN_IFN = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByBPPI_EFN_IFN",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName()
-			},
-			new String[] {
-				"batchPlannerPlanId", "externalFieldName", "internalFieldName"
-			},
-			false, BatchPlannerMapping::getBatchPlannerPlanId,
-			BatchPlannerMapping::getExternalFieldName,
-			BatchPlannerMapping::getInternalFieldName);
-
 		_uniquePersistenceFinderByBPPI_EFN_IFN = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByBPPI_EFN_IFN,
-			_SQL_SELECT_BATCHPLANNERMAPPING_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByBPPI_EFN_IFN",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName()
+				},
+				new String[] {
+					"batchPlannerPlanId", "externalFieldName",
+					"internalFieldName"
+				},
+				0, 6, false, BatchPlannerMapping::getBatchPlannerPlanId,
+				convertNullFunction(BatchPlannerMapping::getExternalFieldName),
+				convertNullFunction(BatchPlannerMapping::getInternalFieldName)),
+			_SQL_SELECT_BATCHPLANNERMAPPING_WHERE, "",
 			new FinderColumn<>(
 				"batchPlannerMapping.", "batchPlannerPlanId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				BatchPlannerMapping::getBatchPlannerPlanId),
 			new FinderColumn<>(
 				"batchPlannerMapping.", "externalFieldName",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				BatchPlannerMapping::getExternalFieldName),
 			new FinderColumn<>(
 				"batchPlannerMapping.", "internalFieldName",
@@ -682,4 +580,4 @@ public class BatchPlannerMappingPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:2074634634
+// LIFERAY-SERVICE-BUILDER-HASH:1142760549

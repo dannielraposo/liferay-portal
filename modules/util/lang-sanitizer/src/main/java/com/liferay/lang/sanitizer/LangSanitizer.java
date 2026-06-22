@@ -53,12 +53,22 @@ public class LangSanitizer {
 		langSanitizer.sanitize(
 			ArgumentsUtil.getValue(args, "source.base.dir", "./"));
 
+		System.out.println();
+
 		long endTime = System.currentTimeMillis();
 
 		Collections.sort(_sanitizedMessage, new SanitizedMessageComparator());
 
 		for (int i = 0; i < _sanitizedMessage.size(); i++) {
 			System.out.println((i + 1) + ": " + _sanitizedMessage.get(i));
+		}
+
+		if (_sanitizedMessage.isEmpty()) {
+			System.out.println("There are no violations");
+		}
+		else {
+			System.out.println(
+				"There are " + _sanitizedMessage.size() + " violations");
 		}
 
 		System.out.println(
@@ -79,6 +89,15 @@ public class LangSanitizer {
 			new CopyOnWriteArrayList<>();
 
 		for (File file : _getPropertiesFiles(baseDirName)) {
+			String fileName = file.getName();
+
+			if (fileName.equals("Language.properties") ||
+				fileName.equals("bundle.properties")) {
+
+				System.out.println(
+					"Scanning " + _getModuleName(file.getParentFile()));
+			}
+
 			Future<List<SanitizedMessage>> future = executorService.submit(
 				new Callable<List<SanitizedMessage>>() {
 
@@ -143,6 +162,26 @@ public class LangSanitizer {
 		return String.join(", ", differentWords);
 	}
 
+	private String _getModuleName(File parentDir) {
+		File dir = parentDir;
+
+		while (dir != null) {
+			String dirName = dir.getName();
+
+			if (dirName.equals("src")) {
+				File moduleRootDir = dir.getParentFile();
+
+				return moduleRootDir.getName();
+			}
+
+			dir = dir.getParentFile();
+		}
+
+		File moduleRootDir = parentDir.getParentFile();
+
+		return moduleRootDir.getName();
+	}
+
 	private List<File> _getPropertiesFiles(String baseDirName)
 		throws Exception {
 
@@ -177,10 +216,18 @@ public class LangSanitizer {
 
 					String fileName = String.valueOf(file.getFileName());
 
-					if (fileName.endsWith(".properties") &&
-						(fileName.startsWith("bundle") ||
-						 fileName.startsWith("Language"))) {
+					if (!fileName.endsWith(".properties")) {
+						return FileVisitResult.CONTINUE;
+					}
 
+					String filePath = file.toString();
+
+					if (fileName.startsWith("Language")) {
+						if (filePath.contains("portal-language-lang")) {
+							files.add(file.toFile());
+						}
+					}
+					else if (fileName.startsWith("bundle")) {
 						files.add(file.toFile());
 					}
 

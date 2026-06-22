@@ -77,9 +77,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/{shipmentId}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes the shipment identified by shipmentId. Calls the service with restoreStockQuantity=false; the row is removed without re-crediting the shipped quantity back to the order items."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target shipment. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the shipment's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "shipmentId"
 			)
@@ -149,9 +153,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes the shipment identified by external reference code. Resolves the row against the current company scope and calls deleteCommerceShipment with restoreStockQuantity=false; raises a not-found error (404) when the ERC is unknown."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; PUT against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -179,9 +187,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/{shipmentId}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the shipment identified by shipmentId. Read-only fetch; the response includes the actions HATEOAS map for the current user."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target shipment. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the shipment's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "shipmentId"
 			)
@@ -210,11 +222,12 @@ public abstract class BaseShipmentResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrive information of the given Shipment."
+		description = "Returns the shipment identified by external reference code. Resolves the row against the current company scope; raises a not-found error (404) when the ERC is unknown."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; PUT against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -244,25 +257,33 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists shipment rows for the current company through Liferay's SearchUtil with status set to STATUS_ANY (all workflow states returned). Supports OData v4 filter, full-text search across the shipment's indexed fields, sort, and one-based page/pageSize pagination; the filter and sort fields are sourced from shipment's entity model."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. The supported fields are those exposed by the matching Liferay entity model for shipment (typically createDate, modifiedDate, status, and the shipment identifiers). Example -- filter=status eq 2.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression matched against the resource's indexed fields. Returns the items whose searchable content matches the expression.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression of the form `field:asc` or `field:desc`, comma-separated for multi-field sorting. Supported sort fields depend on the endpoint and are sourced from the matching entity model (typically createDate, modifiedDate, and the status field).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -294,9 +315,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/{shipmentId}' -d $'{"carrier": ___, "customFields": ___, "expectedDate": ___, "externalReferenceCode": ___, "orderExternalReferenceCode": ___, "orderId": ___, "shipmentItems": ___, "shippingAddress": ___, "shippingAddressId": ___, "shippingDate": ___, "shippingMethodId": ___, "trackingNumber": ___, "trackingURL": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Updates the shipment identified by shipmentId using JSON Merge Patch (only the supplied fields are modified). Resolves the row, applies carrier, trackingNumber, trackingURL, expectedDate, shippingDate, and shippingMethodId via updateCommerceShipment, replays the nested shippingAddress and shipmentItems collections when supplied, and optionally rewrites externalReferenceCode. Domain validation (inactive warehouse, malformed address) maps to 422."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target shipment. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the shipment's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "shipmentId"
 			)
@@ -326,9 +351,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/by-externalReferenceCode/{externalReferenceCode}' -d $'{"carrier": ___, "customFields": ___, "expectedDate": ___, "externalReferenceCode": ___, "orderExternalReferenceCode": ___, "orderId": ___, "shipmentItems": ___, "shippingAddress": ___, "shippingAddressId": ___, "shippingDate": ___, "shippingMethodId": ___, "trackingNumber": ___, "trackingURL": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Updates the shipment identified by external reference code using JSON Merge Patch (only the supplied fields are modified). Resolves the row, applies carrier, trackingNumber, trackingURL, expectedDate, shippingDate, and shippingMethodId, and replays the nested shippingAddress and shipmentItems collections when supplied. Raises a not-found error (404) when the ERC is unknown; domain validation (inactive warehouse, malformed address) maps to 422."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; PUT against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -414,6 +443,9 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments' -d $'{"carrier": ___, "customFields": ___, "expectedDate": ___, "externalReferenceCode": ___, "orderExternalReferenceCode": ___, "orderId": ___, "shipmentItems": ___, "shippingAddress": ___, "shippingAddressId": ___, "shippingDate": ___, "shippingMethodId": ___, "trackingNumber": ___, "trackingURL": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates a shipment for an existing order identified by orderId (preferred) or orderExternalReferenceCode. Resolves the order, then calls the service cloning the order's groupId, accountId, shippingAddressId, shippingMethodId, and shippingOptionName. Applies the optional carrier, trackingNumber, trackingURL, expectedDate, and shippingDate via updateCommerceShipment; when shippingAddress is supplied the linked address is updated in place, and when shipmentItems is supplied every existing item is replaced. Raises a not-found error (404) when orderExternalReferenceCode is unknown; domain validation (inactive warehouse, invalid shipping address) maps to 422."
+	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "Shipment")}
 	)
@@ -475,9 +507,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/by-externalReferenceCode/{externalReferenceCode}/status-delivered'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Transitions the shipment identified by external reference code to the DELIVERED workflow state (code 3). Resolves the parent shipment via fetchCommerceShipmentByExternalReferenceCode and calls the service with SHIPMENT_STATUS_DELIVERED; raises a not-found error (404) when the ERC is unknown and a status conflict (400) when the transition is not allowed from the current state."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; PUT against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -507,9 +543,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/by-externalReferenceCode/{externalReferenceCode}/status-finish-processing'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Transitions the shipment identified by external reference code to the READY_TO_BE_SHIPPED workflow state (code 1). Resolves the parent shipment via fetchCommerceShipmentByExternalReferenceCode and calls the service with SHIPMENT_STATUS_READY_TO_BE_SHIPPED; raises a not-found error (404) when the ERC is unknown and a status conflict (400) when the transition is not allowed from the current state."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; PUT against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -539,9 +579,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/by-externalReferenceCode/{externalReferenceCode}/status-shipped'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Transitions the shipment identified by external reference code to the SHIPPED workflow state (code 2). Resolves the parent shipment via fetchCommerceShipmentByExternalReferenceCode and calls the service with SHIPMENT_STATUS_SHIPPED; raises a not-found error (404) when the ERC is unknown and a status conflict (400) when the transition is not allowed from the current state."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; PUT against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -571,9 +615,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/{shipmentId}/status-delivered'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Transitions the shipment identified by shipmentId to the DELIVERED workflow state (code 3). Calls the service with SHIPMENT_STATUS_DELIVERED; raises a status conflict (400) when the transition is not allowed from the current state."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target shipment. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the shipment's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "shipmentId"
 			)
@@ -601,9 +649,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/{shipmentId}/status-finish-processing'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Transitions the shipment identified by shipmentId to the READY_TO_BE_SHIPPED workflow state (code 1). Calls the service with SHIPMENT_STATUS_READY_TO_BE_SHIPPED; raises a status conflict (400) when the transition is not allowed from the current state."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target shipment. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the shipment's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "shipmentId"
 			)
@@ -631,9 +683,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/{shipmentId}/status-shipped'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Transitions the shipment identified by shipmentId to the SHIPPED workflow state (code 2). Calls the service with SHIPMENT_STATUS_SHIPPED; raises a status conflict (400) when the transition is not allowed from the current state."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target shipment. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the shipment's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "shipmentId"
 			)
@@ -664,14 +720,17 @@ public abstract class BaseShipmentResourceImpl
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. The supported fields are those exposed by the matching Liferay entity model for shipment (typically createDate, modifiedDate, status, and the shipment identifiers). Example -- filter=status eq 2.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression matched against the resource's indexed fields. Returns the items whose searchable content matches the expression.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression of the form `field:asc` or `field:desc`, comma-separated for multi-field sorting. Supported sort fields depend on the endpoint and are sourced from the matching entity model (typically createDate, modifiedDate, and the status field).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			),
@@ -740,9 +799,13 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-commerce-admin-shipment/v1.0/shipments/by-externalReferenceCode/{externalReferenceCode}' -d $'{"carrier": ___, "customFields": ___, "expectedDate": ___, "externalReferenceCode": ___, "orderExternalReferenceCode": ___, "orderId": ___, "shipmentItems": ___, "shippingAddress": ___, "shippingAddressId": ___, "shippingDate": ___, "shippingMethodId": ___, "trackingNumber": ___, "trackingURL": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Upserts the shipment identified by external reference code. When the ERC resolves, the row is updated and the nested shippingAddress and shipmentItems collections are replayed; when the ERC is unknown, the request body's orderId is used to resolve the source order and addCommerceShipment is invoked to seed a new shipment from the order's groupId, accountId, shippingAddressId, shippingMethodId, and shippingOptionName. Domain validation maps to 422."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; PUT against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -1564,4 +1627,4 @@ public abstract class BaseShipmentResourceImpl
 		LogFactoryUtil.getLog(BaseShipmentResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1289850270
+// LIFERAY-REST-BUILDER-HASH:-212032286

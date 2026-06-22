@@ -34,6 +34,7 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.mass.delete.MassDeleteCacheThreadLocal;
+import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
@@ -505,6 +506,24 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 	@Override
 	public Hits search(
+		long companyId, long[] groupIds, long userId, long[] classNameIds,
+		long classTypeId, String keywords, boolean showNonindexable,
+		int[] statuses, int start, int end, Sort[] sorts) {
+
+		try {
+			SearchContext searchContext = buildSearchContext(
+				companyId, groupIds, userId, classTypeId, keywords, null, null,
+				showNonindexable, statuses, false, start, end, sorts);
+
+			return doSearch(classNameIds, searchContext);
+		}
+		catch (Exception exception) {
+			throw new SystemException(exception);
+		}
+	}
+
+	@Override
+	public Hits search(
 		long companyId, long[] groupIds, long userId, String className,
 		long classTypeId, String keywords, boolean showNonindexable, int status,
 		int start, int end) {
@@ -543,6 +562,24 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			SearchContext searchContext = buildSearchContext(
 				companyId, groupIds, userId, classTypeId, keywords, null, null,
 				showNonindexable, statuses, false, start, end, sort);
+
+			return doSearch(companyId, className, searchContext);
+		}
+		catch (Exception exception) {
+			throw new SystemException(exception);
+		}
+	}
+
+	@Override
+	public Hits search(
+		long companyId, long[] groupIds, long userId, String className,
+		long classTypeId, String keywords, boolean showNonindexable,
+		int[] statuses, int start, int end, Sort[] sorts) {
+
+		try {
+			SearchContext searchContext = buildSearchContext(
+				companyId, groupIds, userId, classTypeId, keywords, null, null,
+				showNonindexable, statuses, false, start, end, sorts);
 
 			return doSearch(companyId, className, searchContext);
 		}
@@ -1059,13 +1096,24 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 		return buildSearchContext(
 			companyId, groupIds, userId, classTypeId, assetCategoryIds,
 			assetTagNames, showNonindexable, statuses, andSearch, start, end,
-			null);
+			(Sort)null);
 	}
 
 	protected SearchContext buildSearchContext(
 		long companyId, long[] groupIds, long userId, long classTypeId,
 		String assetCategoryIds, String assetTagNames, boolean showNonindexable,
 		int[] statuses, boolean andSearch, int start, int end, Sort sort) {
+
+		return buildSearchContext(
+			companyId, groupIds, userId, classTypeId, assetCategoryIds,
+			assetTagNames, showNonindexable, statuses, andSearch, start, end,
+			(sort == null) ? new Sort[0] : new Sort[] {sort});
+	}
+
+	protected SearchContext buildSearchContext(
+		long companyId, long[] groupIds, long userId, long classTypeId,
+		String assetCategoryIds, String assetTagNames, boolean showNonindexable,
+		int[] statuses, boolean andSearch, int start, int end, Sort[] sorts) {
 
 		SearchContext searchContext = new SearchContext();
 
@@ -1088,7 +1136,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 		searchContext.setCompanyId(companyId);
 		searchContext.setEnd(end);
 		searchContext.setGroupIds(groupIds);
-		searchContext.setSorts(sort);
+		searchContext.setSorts(sorts);
 		searchContext.setStart(start);
 		searchContext.setUserId(userId);
 
@@ -1120,6 +1168,22 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			companyId, groupIds, userId, classTypeId, assetCategoryIds,
 			assetTagNames, showNonindexable, statuses, andSearch, start, end,
 			sort);
+
+		searchContext.setKeywords(keywords);
+
+		return searchContext;
+	}
+
+	protected SearchContext buildSearchContext(
+		long companyId, long[] groupIds, long userId, long classTypeId,
+		String keywords, String assetCategoryIds, String assetTagNames,
+		boolean showNonindexable, int[] statuses, boolean andSearch, int start,
+		int end, Sort[] sorts) {
+
+		SearchContext searchContext = buildSearchContext(
+			companyId, groupIds, userId, classTypeId, assetCategoryIds,
+			assetTagNames, showNonindexable, statuses, andSearch, start, end,
+			sorts);
 
 		searchContext.setKeywords(keywords);
 
@@ -1315,13 +1379,17 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 		AssetRenderer<?> assetRenderer = entry.getAssetRenderer();
 
-		if (assetRenderer == null) {
-			indexer.reindex(entry.getClassName(), entry.getClassPK());
+		if (assetRenderer != null) {
+			Object assetObject = assetRenderer.getAssetObject();
 
-			return;
+			if (assetObject instanceof BaseModel) {
+				indexer.reindex(assetObject);
+
+				return;
+			}
 		}
 
-		indexer.reindex(assetRenderer.getAssetObject());
+		indexer.reindex(entry.getClassName(), entry.getClassPK());
 	}
 
 	private AssetEntry _deleteEntry(

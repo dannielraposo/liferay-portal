@@ -1,0 +1,37 @@
+{
+	"@generated": "b4d3498dba0b521c35d8eeb91ed2a6861be72503",
+	"@readonly": "** AUTO-GENERATED: DO NOT EDIT **",
+	"compilerOptions": {
+		"allowSyntheticDefaultImports": true,
+		"checkJs": false,
+		"composite": true,
+		"declarationDir": "../../../../.tsc/types",
+		"emitDeclarationOnly": true,
+		"jsx": "react",
+		"module": "es2022",
+		"moduleResolution": "node",
+		"paths": {
+			"@liferay/frontend-js-audiences-web/custom-attributes": [
+				"./../src/main/resources/META-INF/resources/custom-attributes/index.ts"
+			]
+		},
+		"rootDir": "../../../..",
+		"skipLibCheck": true,
+		"sourceMap": false,
+		"strict": true,
+		"target": "esnext",
+		"tsBuildInfoFile": "../../../../.tsc/buildinfo/@liferay/frontend-js-audiences-web-test.tsbuildinfo",
+		"typeRoots": [
+			"../../../../node_modules/@types"
+		]
+	},
+	"include": [
+		"**/*.ts",
+		"**/*.tsx",
+		"../../../../global.d.ts",
+		"../src/**/*.ts",
+		"../src/**/*.tsx"
+	],
+	"references": [
+	]
+}

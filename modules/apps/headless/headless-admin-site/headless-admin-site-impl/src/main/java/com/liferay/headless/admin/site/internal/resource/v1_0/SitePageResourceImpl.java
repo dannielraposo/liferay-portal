@@ -6,6 +6,7 @@
 package com.liferay.headless.admin.site.internal.resource.v1_0;
 
 import com.liferay.client.extension.type.manager.CETManager;
+import com.liferay.exportimport.constants.ExportImportConstants;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.vulcan.batch.engine.ExportImportVulcanBatchEngineTaskItemDelegate;
@@ -152,7 +153,7 @@ public class SitePageResourceImpl
 
 			@Override
 			public String getLabelLanguageKey() {
-				return "site-pages";
+				return "static-pages";
 			}
 
 			@Override
@@ -230,6 +231,11 @@ public class SitePageResourceImpl
 			@Override
 			public Scope getScope() {
 				return Scope.SITE;
+			}
+
+			@Override
+			public String getSectionKey() {
+				return ExportImportConstants.SECTION_KEY_SITE_BUILDER;
 			}
 
 			@Override
@@ -374,6 +380,10 @@ public class SitePageResourceImpl
 
 		EnabledUtil.checkEnabled(contextCompany, privateLayout);
 
+		if (Objects.equals(sitePage.getType(), SitePage.Type.WIDGET_PAGE)) {
+			EnabledUtil.checkAddWidgetPageEnabled(contextCompany);
+		}
+
 		return _toSitePage(
 			_addLayout(
 				sitePage.getExternalReferenceCode(),
@@ -399,6 +409,10 @@ public class SitePageResourceImpl
 			sitePageExternalReferenceCode, groupId);
 
 		if (layout == null) {
+			if (Objects.equals(sitePage.getType(), SitePage.Type.WIDGET_PAGE)) {
+				EnabledUtil.checkAddWidgetPageEnabled(contextCompany);
+			}
+
 			return _toSitePage(
 				_addLayout(
 					sitePageExternalReferenceCode, groupId, privateLayout,
@@ -489,10 +503,31 @@ public class SitePageResourceImpl
 					"page's external reference code");
 		}
 
+		PageSpecification[] pageSpecifications =
+			sitePage.getPageSpecifications();
+
+		if (Objects.equals(sitePage.getType(), SitePage.Type.CONTENT_PAGE) &&
+			(pageSpecifications != null) && (pageSpecifications.length == 1)) {
+
+			if (!(pageSpecifications[0] instanceof
+					ContentPageSpecification contentPageSpecification)) {
+
+				throw new ValidationException(
+					"The page specification type does not match the content " +
+						"page type");
+			}
+
+			sitePage.setPageSpecifications(
+				() -> PageSpecificationUtil.toContentPageSpecifications(
+					contentPageSpecification, externalReferenceCode));
+		}
+
 		ServiceContext serviceContext = _getServiceContext(groupId, sitePage);
 
 		_validatePageSpecificationExternalReferenceCode(
 			serviceContext, sitePage);
+
+		Layout layout = null;
 
 		Map<Locale, String> nameMap = LocalizedMapUtil.getLocalizedMap(
 			sitePage.getName_i18n());
@@ -518,17 +553,16 @@ public class SitePageResourceImpl
 		UnicodeProperties typeSettingsUnicodeProperties =
 			_getTypeSettingsUnicodeProperties(groupId, sitePage);
 
-		Layout layout = null;
+		long parentLayoutId = _getParentLayoutId(
+			groupId, sitePage.getParentSitePageExternalReferenceCode(),
+			privateLayout, serviceContext);
 
 		if (Objects.equals(sitePage.getType(), SitePage.Type.CONTENT_PAGE)) {
 			layout = LayoutUtil.addContentLayout(
 				_cetManager, _fragmentEntryProcessorRegistry, groupId,
 				_infoItemServiceRegistry, sitePage.getPageSpecifications(),
-				privateLayout,
-				_getParentLayoutId(
-					groupId, sitePage.getParentSitePageExternalReferenceCode(),
-					privateLayout, serviceContext),
-				nameMap, titleMap, descriptionMap, keywordsMap, robotsMap,
+				privateLayout, parentLayoutId, nameMap, titleMap,
+				descriptionMap, keywordsMap, robotsMap,
 				SitePageTypeUtil.toInternalType(sitePage.getType()),
 				typeSettingsUnicodeProperties,
 				_isHiddenFromNavigation(false, sitePage.getPageSettings()),
@@ -548,10 +582,8 @@ public class SitePageResourceImpl
 
 			layout = LayoutUtil.addLayout(
 				sitePage.getExternalReferenceCode(), groupId, privateLayout,
-				_getParentLayoutId(
-					groupId, sitePage.getParentSitePageExternalReferenceCode(),
-					privateLayout, serviceContext),
-				nameMap, SitePageTypeUtil.toInternalType(sitePage.getType()),
+				parentLayoutId, nameMap,
+				SitePageTypeUtil.toInternalType(sitePage.getType()),
 				typeSettingsUnicodeProperties,
 				_isHiddenFromNavigation(false, sitePage.getPageSettings()),
 				LocalizedMapUtil.getLocalizedMap(
@@ -564,11 +596,8 @@ public class SitePageResourceImpl
 			layout = LayoutUtil.addPortletLayout(
 				_cetManager, sitePage.getExternalReferenceCode(),
 				_infoItemServiceRegistry, groupId, privateLayout,
-				_getParentLayoutId(
-					groupId, sitePage.getParentSitePageExternalReferenceCode(),
-					privateLayout, serviceContext),
-				nameMap, titleMap, descriptionMap, keywordsMap, robotsMap,
-				typeSettingsUnicodeProperties,
+				parentLayoutId, nameMap, titleMap, descriptionMap, keywordsMap,
+				robotsMap, typeSettingsUnicodeProperties,
 				_isHiddenFromNavigation(false, sitePage.getPageSettings()),
 				LocalizedMapUtil.getLocalizedMap(
 					sitePage.getFriendlyUrlPath_i18n()),
@@ -596,17 +625,11 @@ public class SitePageResourceImpl
 			return new CustomMetaTag[0];
 		}
 
-		if (pageSettings instanceof ContentPageSettings) {
-			ContentPageSettings contentPageSettings =
-				(ContentPageSettings)pageSettings;
-
+		if (pageSettings instanceof ContentPageSettings contentPageSettings) {
 			return contentPageSettings.getCustomMetaTags();
 		}
 
-		if (pageSettings instanceof WidgetPageSettings) {
-			WidgetPageSettings widgetPageSettings =
-				(WidgetPageSettings)pageSettings;
-
+		if (pageSettings instanceof WidgetPageSettings widgetPageSettings) {
 			return widgetPageSettings.getCustomMetaTags();
 		}
 
@@ -616,17 +639,11 @@ public class SitePageResourceImpl
 	private String _getDefaultAssetPublisherPortletId(
 		PageSettings pageSettings) {
 
-		if (pageSettings instanceof ContentPageSettings) {
-			ContentPageSettings contentPageSettings =
-				(ContentPageSettings)pageSettings;
-
+		if (pageSettings instanceof ContentPageSettings contentPageSettings) {
 			return contentPageSettings.getDefaultAssetPublisherPortletId();
 		}
 
-		if (pageSettings instanceof WidgetPageSettings) {
-			WidgetPageSettings widgetPageSettings =
-				(WidgetPageSettings)pageSettings;
-
+		if (pageSettings instanceof WidgetPageSettings widgetPageSettings) {
 			return widgetPageSettings.getDefaultAssetPublisherPortletId();
 		}
 
@@ -638,17 +655,11 @@ public class SitePageResourceImpl
 			return null;
 		}
 
-		if (pageSettings instanceof ContentPageSettings) {
-			ContentPageSettings contentPageSettings =
-				(ContentPageSettings)pageSettings;
-
+		if (pageSettings instanceof ContentPageSettings contentPageSettings) {
 			return contentPageSettings.getOpenGraphSettings();
 		}
 
-		if (pageSettings instanceof WidgetPageSettings) {
-			WidgetPageSettings widgetPageSettings =
-				(WidgetPageSettings)pageSettings;
-
+		if (pageSettings instanceof WidgetPageSettings widgetPageSettings) {
 			return widgetPageSettings.getOpenGraphSettings();
 		}
 
@@ -682,17 +693,11 @@ public class SitePageResourceImpl
 			return null;
 		}
 
-		if (pageSettings instanceof ContentPageSettings) {
-			ContentPageSettings contentPageSettings =
-				(ContentPageSettings)pageSettings;
-
+		if (pageSettings instanceof ContentPageSettings contentPageSettings) {
 			return contentPageSettings.getSeoSettings();
 		}
 
-		if (pageSettings instanceof WidgetPageSettings) {
-			WidgetPageSettings widgetPageSettings =
-				(WidgetPageSettings)pageSettings;
-
+		if (pageSettings instanceof WidgetPageSettings widgetPageSettings) {
 			return widgetPageSettings.getSeoSettings();
 		}
 
@@ -709,13 +714,18 @@ public class SitePageResourceImpl
 			contextUser.getUserId(), sitePage.getUuid());
 
 		if (Objects.equals(sitePage.getType(), SitePage.Type.CONTENT_PAGE)) {
-			if (sitePage.getPageSpecifications() == null) {
+			PageSpecification[] pageSpecifications =
+				sitePage.getPageSpecifications();
+
+			if ((pageSpecifications == null) ||
+				(pageSpecifications.length != 2)) {
+
 				return serviceContext;
 			}
 
 			PageSpecification[] sortedContentPageSpecifications =
 				PageSpecificationUtil.getSortedContentPageSpecifications(
-					sitePage.getPageSpecifications());
+					pageSpecifications);
 
 			ContentPageSpecification draftContentPageSpecification =
 				(ContentPageSpecification)sortedContentPageSpecifications[0];
@@ -740,12 +750,11 @@ public class SitePageResourceImpl
 					getSiteTemplatePageSpecificationExternalReferenceCode());
 		}
 
-		if (!(sitePage.getPageSettings() instanceof WidgetPageSettings)) {
+		if (!(sitePage.getPageSettings() instanceof
+				WidgetPageSettings widgetPageSettings)) {
+
 			return serviceContext;
 		}
-
-		WidgetPageSettings widgetPageSettings =
-			(WidgetPageSettings)sitePage.getPageSettings();
 
 		ItemExternalReference itemExternalReference =
 			widgetPageSettings.getWidgetPageTemplateReference();
@@ -1018,6 +1027,9 @@ public class SitePageResourceImpl
 			Layout layout, ServiceContext serviceContext, SitePage sitePage)
 		throws Exception {
 
+		_validatePageSpecificationExternalReferenceCode(
+			serviceContext, sitePage);
+
 		Map<Locale, String> nameMap = layout.getNameMap();
 
 		if (sitePage.getName_i18n() != null) {
@@ -1216,6 +1228,14 @@ public class SitePageResourceImpl
 			return;
 		}
 
+		if (Objects.equals(sitePage.getType(), SitePage.Type.CONTENT_PAGE) &&
+			(pageSpecifications.length == 1)) {
+
+			throw new ValidationException(
+				"A single content page specification cannot be applied to an " +
+					"existing page");
+		}
+
 		PageSpecification publishedPageSpecification = null;
 
 		if (Objects.equals(sitePage.getType(), SitePage.Type.CONTENT_PAGE) &&
@@ -1242,7 +1262,7 @@ public class SitePageResourceImpl
 			publishedPageSpecification = pageSpecifications[0];
 		}
 		else {
-			throw new IllegalArgumentException(
+			throw new ValidationException(
 				"The number of page specifications does not match the page " +
 					"type requirements");
 		}

@@ -10,6 +10,7 @@ import {dataApiHelpersTest} from '../../../../fixtures/dataApiHelpersTest';
 import {featureFlagsTest} from '../../../../fixtures/featureFlagsTest';
 import {isolatedSiteTest} from '../../../../fixtures/isolatedSiteTest';
 import {loginTest} from '../../../../fixtures/loginTest';
+import {clickAndExpectToBeVisible} from '../../../../utils/clickAndExpectToBeVisible';
 import getRandomString from '../../../../utils/getRandomString';
 import {PORTLET_URLS} from '../../../../utils/portletUrls';
 import {waitForAlert} from '../../../../utils/waitForAlert';
@@ -143,9 +144,11 @@ test(
 		});
 
 		await test.step('CMS tag is available in the tag filter selector', async () => {
-			await page.getByRole('button', {name: 'Filter'}).click();
-
-			await page.getByRole('button', {name: 'Select Tags'}).click();
+			await clickAndExpectToBeVisible({
+				autoClick: true,
+				target: page.getByRole('button', {name: 'Select Tags'}),
+				trigger: page.getByRole('button', {name: 'Filter'}),
+			});
 
 			const tagFrame = page.frameLocator('iframe[title="Tags"]');
 
@@ -155,24 +158,24 @@ test(
 		});
 
 		await test.step('CMS category is available in the category filter selector', async () => {
-			await page
-				.getByLabel('of the following')
-				.selectOption('assetCategories');
+			const filterFieldSelect = page.getByLabel('of the following');
+
+			await expect(async () => {
+				if (!(await filterFieldSelect.isVisible())) {
+					await page.getByRole('button', {name: 'Filter'}).click();
+				}
+
+				await expect(filterFieldSelect).toBeVisible({timeout: 2000});
+			}).toPass({timeout: 2000});
+
+			await filterFieldSelect.selectOption('assetCategories');
 
 			await page
 				.getByRole('button', {exact: true, name: 'Select'})
 				.click();
 
-			const categoryFrame = page.frameLocator(
-				'iframe[title="Select Categories"]'
-			);
-
-			await categoryFrame
-				.getByRole('button', {name: vocabularyName})
-				.click();
-
 			await expect(
-				categoryFrame.getByText(categoryName, {exact: true})
+				page.getByText(categoryName, {exact: true})
 			).toBeVisible();
 		});
 	}

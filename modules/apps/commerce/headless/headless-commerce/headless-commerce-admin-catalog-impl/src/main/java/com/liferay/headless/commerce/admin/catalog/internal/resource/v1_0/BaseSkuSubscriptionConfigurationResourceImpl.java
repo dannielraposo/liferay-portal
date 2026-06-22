@@ -47,9 +47,13 @@ public abstract class BaseSkuSubscriptionConfigurationResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/skus/by-externalReferenceCode/{externalReferenceCode}/skuSubscriptionConfiguration'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the subscription configuration of the SKU identified by external reference code. Calls CPInstanceService.fetchCPInstanceByExternalReferenceCode + SkuSubscriptionConfigurationDTOConverter. Validation -- NoSuchCPInstanceException -> 404 when SKU ERC not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -84,9 +88,13 @@ public abstract class BaseSkuSubscriptionConfigurationResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/skus/{id}/skuSubscriptionConfiguration'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the subscription configuration of the SKU identified by id. Calls CPInstanceService.getCPInstance + SkuSubscriptionConfigurationDTOConverter. Validation -- NoSuchCPInstanceException -> 404 when SKU id not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -559,4 +567,4 @@ public abstract class BaseSkuSubscriptionConfigurationResourceImpl
 			BaseSkuSubscriptionConfigurationResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-357287573
+// LIFERAY-REST-BUILDER-HASH:1105706511

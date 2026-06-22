@@ -12,6 +12,10 @@ definition {
 
 		User.firstLoginPG();
 
+		task ("Enable widget pages") {
+			PagesAdmin.enableWidgetPages();
+		}
+
 		task ("Enable dynamic and manual selection") {
 			AssetPublisherPortlet.enableDynamicAndManualSelection();
 		}
@@ -537,7 +541,7 @@ definition {
 
 		Navigator.openSiteURL(siteName = "Site Name");
 
-		Navigator.gotoStagedView();
+		ProductMenu.gotoStagingSite(site = "Site Name");
 
 		PagesAdmin.changeLogo(
 			logoFile = "Document_3.png",

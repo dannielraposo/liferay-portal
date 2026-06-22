@@ -35,14 +35,16 @@ List<Map<String, Object>> classTypesList = new ArrayList<>();
 
 			<%
 			for (long classNameId : editAssetListDisplayContext.getAvailableClassNameIds()) {
-				String label = _getLabel(ClassNameLocalServiceUtil.getClassName(classNameId), locale, company);
+				ClassName className = ClassNameLocalServiceUtil.getClassName(classNameId);
+
+				String label = _getLabel(className, locale, company);
 
 				if (Arrays.binarySearch(classNameIds, classNameId) < 0) {
 					typesLeftList.add(new KeyValuePair(String.valueOf(classNameId), label));
 				}
 			%>
 
-				<aui:option label="<%= label %>" selected="<%= (classNameIds.length == 1) && (classNameId == classNameIds[0]) %>" value="<%= classNameId %>" />
+				<aui:option data-cms="<%= _isCMS(className, company) %>" label="<%= label %>" selected="<%= (classNameIds.length == 1) && (classNameId == classNameIds[0]) %>" value="<%= classNameId %>" />
 
 			<%
 			}
@@ -123,7 +125,7 @@ List<Map<String, Object>> classTypesList = new ArrayList<>();
 		Arrays.sort(assetSelectedClassTypeIds);
 	%>
 
-		<div class='asset-subtype <%= (assetSelectedClassTypeIds.length < 1) ? StringPool.BLANK : "hide" %>' id="<portlet:namespace /><%= className %>Options">
+		<div class='asset-subtype <%= (assetSelectedClassTypeIds.length < 1) ? StringPool.BLANK : "hide" %>' data-class-name="<%= className %>" id="<portlet:namespace /><%= className %>Options">
 			<aui:select helpMessage="changing-this-setting-will-reset-all-mappings-for-this-collection" label='<%= LanguageUtil.get(request, "item-subtype") %>' name='<%= "TypeSettingsProperties--anyClassType" + className + "--" %>'>
 				<aui:option label='<%= StringPool.DASH + LanguageUtil.get(request, "not-selected") + StringPool.DASH %>' selected="<%= editAssetListDisplayContext.isNoAssetTypeSelected() %>" value="" />
 
@@ -172,7 +174,7 @@ List<Map<String, Object>> classTypesList = new ArrayList<>();
 						}
 					%>
 
-						<span class="asset-subtypefields hide" id="<portlet:namespace /><%= classType.getClassTypeId() %>_<%= className %>Options">
+						<span class="asset-subtypefields hide" data-class-name="<%= className %>" id="<portlet:namespace /><%= classType.getClassTypeId() %>_<%= className %>Options">
 							<portlet:renderURL var="selectStructureFieldURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
 								<portlet:param name="mvcPath" value="/asset_list/select_structure_field.jsp" />
 								<portlet:param name="className" value="<%= assetRendererFactory.getClassName() %>" />
@@ -317,6 +319,10 @@ List<Map<String, Object>> classTypesList = new ArrayList<>();
 	context='<%=
 		HashMapBuilder.<String, Object>put(
 			"classTypes", classTypesList
+		).put(
+			"initialProperties", editAssetListDisplayContext.getTypePropertiesJSONArray()
+		).put(
+			"propertiesURL", editAssetListDisplayContext.getTypePropertiesURL()
 		).build()
 	%>'
 	module="{Source} from asset-list-web"
@@ -326,12 +332,16 @@ List<Map<String, Object>> classTypesList = new ArrayList<>();
 private String _getLabel(ClassName className, Locale locale, Company company) {
 	String label = ResourceActionsUtil.getModelResource(locale, className.getValue());
 
-	ObjectDefinition objectDefinition = ObjectDefinitionLocalServiceUtil.fetchObjectDefinitionByClassName(company.getCompanyId(), className.getValue());
-
-	if ((objectDefinition != null) && objectDefinition.isCMS()) {
+	if (_isCMS(className, company)) {
 		label = StringUtil.appendParentheticalSuffix(label, "CMS");
 	}
 
 	return label;
+}
+
+private boolean _isCMS(ClassName className, Company company) {
+	ObjectDefinition objectDefinition = ObjectDefinitionLocalServiceUtil.fetchObjectDefinitionByClassName(company.getCompanyId(), className.getValue());
+
+	return (objectDefinition != null) && objectDefinition.isCMS();
 }
 %>

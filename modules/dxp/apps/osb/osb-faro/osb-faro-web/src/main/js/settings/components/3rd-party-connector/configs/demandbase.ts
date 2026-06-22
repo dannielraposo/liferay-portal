@@ -1,8 +1,7 @@
 import {buildLanguages} from '../buildLanguages';
-import {ConnectorConfig} from '../types';
+import {ConnectorConfig, Entity} from '../types';
 import {DataSourceTypes} from 'shared/util/constants';
 import {fetchConnectorEntityCount} from 'shared/api/connector';
-import {sub} from 'shared/util/lang';
 
 const SLUG = 'demandbase';
 
@@ -13,20 +12,13 @@ const demandbaseConfig: ConnectorConfig = {
 	endpointPath: '/api/demandbase_accounts',
 	entities: [
 		{
-			accessor: 'accounts',
-			description: sub(
-				Liferay.Language.get(
-					'represents-fields-from-the-account-object-within-x'
-				),
-				[displayName]
-			) as string,
+			entity: Entity.Accounts,
 			fetchCount: params =>
-				fetchConnectorEntityCount(SLUG, 'accounts', params),
-			icon: 'briefcase',
-			label: Liferay.Language.get('accounts')
+				fetchConnectorEntityCount(Entity.Accounts, params)
 		}
 	],
 	languages: buildLanguages(displayName),
+	requiresLDP: true,
 	singleton: true,
 	slug: SLUG,
 	type: DataSourceTypes.Demandbase

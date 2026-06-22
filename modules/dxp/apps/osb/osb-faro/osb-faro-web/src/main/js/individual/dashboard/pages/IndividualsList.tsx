@@ -1,7 +1,10 @@
 import * as API from 'shared/api';
 import Card from 'shared/components/Card';
+import ClayLink from '@clayui/link';
+import NoResultsDisplay from 'shared/components/NoResultsDisplay';
 import React, {useMemo} from 'react';
 import SearchableEntityTable from 'shared/components/SearchableEntityTable';
+import URLConstants from 'shared/util/url-constants';
 import {
 	ACCOUNT_NAME,
 	COUNTRY,
@@ -16,8 +19,10 @@ import {
 	ProfileTypes,
 	RelationalOperators
 } from 'segment/segment-editor/dynamic/utils/constants';
-import {FilterOptionType} from 'shared/types';
+import {FilterByType, FilterInputType, FilterOptionType} from 'shared/types';
 import {IndividualsListCDPColumns} from 'shared/util/table-columns';
+import {Map, Set} from 'immutable';
+import {RangeKeyTimeRanges, Sizes} from 'shared/util/constants';
 import {useParams} from 'react-router-dom';
 import {useRequest} from 'shared/hooks/useRequest';
 import {useStatefulPagination} from 'shared/hooks/useStatefulPagination';
@@ -51,6 +56,45 @@ const ORDER_BY_OPTIONS = [
 
 const DEFAULT_FILTER_BY_OPTIONS: FilterOptionType[] = [
 	{
+		key: 'activeUsers',
+		label: Liferay.Language.get('active-individuals'),
+		type: 'radio' as FilterInputType,
+		values: [
+			{
+				label: Liferay.Language.get('last-24-hours'),
+				value: RangeKeyTimeRanges.Last24Hours
+			},
+			{
+				label: Liferay.Language.get('yesterday'),
+				value: RangeKeyTimeRanges.Yesterday
+			},
+			{
+				label: Liferay.Language.get('last-seven-days'),
+				value: RangeKeyTimeRanges.Last7Days
+			},
+			{
+				label: Liferay.Language.get('last-28-days'),
+				value: RangeKeyTimeRanges.Last28Days
+			},
+			{
+				label: Liferay.Language.get('last-30-days'),
+				value: RangeKeyTimeRanges.Last30Days
+			},
+			{
+				label: Liferay.Language.get('last-90-days'),
+				value: RangeKeyTimeRanges.Last90Days
+			},
+			{
+				label: Liferay.Language.get('last-180-days'),
+				value: RangeKeyTimeRanges.Last180Days
+			},
+			{
+				label: Liferay.Language.get('last-year'),
+				value: RangeKeyTimeRanges.LastYear
+			}
+		]
+	},
+	{
 		key: 'profileTypes',
 		label: Liferay.Language.get('profile-type'),
 		values: [
@@ -79,20 +123,21 @@ function transformCountriesInQueryString(countries: string[]) {
 		.join(Conjunctions.Or);
 }
 
-const IndividualsList = () => {
+const IndividualsList: React.FC = () => {
 	const {channelId = '', groupId = ''} = useParams<{
 		channelId: string;
 		groupId: string;
 	}>();
 
 	const paginationParams = useStatefulPagination(undefined, {
+		initialFilterBy: Map({
+			activeUsers: Set([RangeKeyTimeRanges.Last30Days])
+		}) as FilterByType,
 		initialOrderIOMap: createOrderIOMap(NAME)
 	});
 
 	const {data: countriesData, loading: countriesLoading} = useRequest({
-		dataSourceFn: API.individuals.fetchFieldValues as (params: {
-			[key: string]: any;
-		}) => Promise<any>,
+		dataSourceFn: API.individuals.fetchFieldValues,
 		variables: {
 			channelId,
 			fieldMappingFieldName: 'country',
@@ -120,6 +165,11 @@ const IndividualsList = () => {
 		return DEFAULT_FILTER_BY_OPTIONS;
 	}, [countriesData, countriesLoading]);
 
+	const activeUsersValue =
+		paginationParams.filterBy.get('activeUsers')?.first() ?? null;
+
+	const rangeKey = activeUsersValue ? parseInt(activeUsersValue) : null;
+
 	const selectedFilters = {
 		filter: transformCountriesInQueryString(
 			paginationParams.filterBy.get('countries')?.toArray()
@@ -127,6 +177,38 @@ const IndividualsList = () => {
 		profileTypes:
 			paginationParams.filterBy.get('profileTypes')?.toArray() || []
 	};
+
+	const renderNoResults = () => (
+		<NoResultsDisplay
+			description={
+				<>
+					{Liferay.Language.get(
+						'connect-a-data-source-with-people-data'
+					)}
+
+					<ClayLink
+						className='d-block mb-3'
+						href={URLConstants.DataSourceConnection}
+						key='DOCUMENTATION'
+						target='_blank'
+					>
+						{Liferay.Language.get(
+							'access-our-documentation-to-learn-more'
+						)}
+					</ClayLink>
+				</>
+			}
+			icon={{
+				border: false,
+				size: Sizes.XXXLarge,
+				symbol: 'ac_satellite'
+			}}
+			spacer
+			title={Liferay.Language.get(
+				'no-individuals-synced-from-data-sources'
+			)}
+		/>
+	);
 
 	return (
 		<Card>
@@ -155,10 +237,14 @@ const IndividualsList = () => {
 							groupId,
 							profileTypes: selectedFilters.profileTypes.length
 								? selectedFilters.profileTypes
-								: undefined
+								: undefined,
+							rangeEnd: null,
+							rangeKey,
+							rangeStart: null
 						}}
 						filterByOptions={FILTER_BY_OPTIONS}
 						key='individuals-list-table'
+						noResultsRenderer={renderNoResults}
 						orderByOptions={ORDER_BY_OPTIONS}
 						rowIdentifier='id'
 					/>

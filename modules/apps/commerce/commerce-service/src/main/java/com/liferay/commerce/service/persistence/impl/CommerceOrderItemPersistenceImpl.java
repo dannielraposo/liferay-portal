@@ -18,7 +18,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -90,66 +89,15 @@ public class CommerceOrderItemPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CommerceOrderItem>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the commerce order items where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce order items where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @return the range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceOrderItem, NoSuchOrderItemException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the commerce order items where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CommerceOrderItem> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce order items where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -183,16 +131,8 @@ public class CommerceOrderItemPersistenceImpl
 			String uuid, OrderByComparator<CommerceOrderItem> orderByComparator)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (commerceOrderItem != null) {
-			return commerceOrderItem;
-		}
-
-		throw new NoSuchOrderItemException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -233,8 +173,7 @@ public class CommerceOrderItemPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<CommerceOrderItem>
+	private UniquePersistenceFinder<CommerceOrderItem, NoSuchOrderItemException>
 		_uniquePersistenceFinderByUUID_G;
 
 	/**
@@ -249,33 +188,8 @@ public class CommerceOrderItemPersistenceImpl
 	public CommerceOrderItem findByUUID_G(String uuid, long groupId)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem = fetchByUUID_G(uuid, groupId);
-
-		if (commerceOrderItem == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchOrderItemException(message);
-		}
-
-		return commerceOrderItem;
-	}
-
-	/**
-	 * Returns the commerce order item where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching commerce order item, or <code>null</code> if a matching commerce order item could not be found
-	 */
-	@Override
-	public CommerceOrderItem fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -323,73 +237,15 @@ public class CommerceOrderItemPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CommerceOrderItem>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the commerce order items where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce order items where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @return the range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceOrderItem, NoSuchOrderItemException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the commerce order items where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CommerceOrderItem> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce order items where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -426,16 +282,8 @@ public class CommerceOrderItemPersistenceImpl
 			OrderByComparator<CommerceOrderItem> orderByComparator)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (commerceOrderItem != null) {
-			return commerceOrderItem;
-		}
-
-		throw new NoSuchOrderItemException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -480,77 +328,15 @@ public class CommerceOrderItemPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath
-		_finderPathWithPaginationFindByCommerceInventoryBookedQuantityId;
-	private FinderPath
-		_finderPathWithoutPaginationFindByCommerceInventoryBookedQuantityId;
-	private FinderPath _finderPathCountByCommerceInventoryBookedQuantityId;
-	private CollectionPersistenceFinder<CommerceOrderItem>
-		_collectionPersistenceFinderByCommerceInventoryBookedQuantityId;
-
-	/**
-	 * Returns all the commerce order items where commerceInventoryBookedQuantityId = &#63;.
-	 *
-	 * @param commerceInventoryBookedQuantityId the commerce inventory booked quantity ID
-	 * @return the matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCommerceInventoryBookedQuantityId(
-		long commerceInventoryBookedQuantityId) {
-
-		return findByCommerceInventoryBookedQuantityId(
-			commerceInventoryBookedQuantityId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce order items where commerceInventoryBookedQuantityId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceInventoryBookedQuantityId the commerce inventory booked quantity ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @return the range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCommerceInventoryBookedQuantityId(
-		long commerceInventoryBookedQuantityId, int start, int end) {
-
-		return findByCommerceInventoryBookedQuantityId(
-			commerceInventoryBookedQuantityId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceOrderItem, NoSuchOrderItemException>
+			_collectionPersistenceFinderByCommerceInventoryBookedQuantityId;
 
 	/**
 	 * Returns an ordered range of all the commerce order items where commerceInventoryBookedQuantityId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceInventoryBookedQuantityId the commerce inventory booked quantity ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCommerceInventoryBookedQuantityId(
-		long commerceInventoryBookedQuantityId, int start, int end,
-		OrderByComparator<CommerceOrderItem> orderByComparator) {
-
-		return findByCommerceInventoryBookedQuantityId(
-			commerceInventoryBookedQuantityId, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce order items where commerceInventoryBookedQuantityId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commerceInventoryBookedQuantityId the commerce inventory booked quantity ID
@@ -586,19 +372,10 @@ public class CommerceOrderItemPersistenceImpl
 			OrderByComparator<CommerceOrderItem> orderByComparator)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem =
-			fetchByCommerceInventoryBookedQuantityId_First(
-				commerceInventoryBookedQuantityId, orderByComparator);
-
-		if (commerceOrderItem != null) {
-			return commerceOrderItem;
-		}
-
-		throw new NoSuchOrderItemException(
-			_collectionPersistenceFinderByCommerceInventoryBookedQuantityId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {commerceInventoryBookedQuantityId}));
+		return _collectionPersistenceFinderByCommerceInventoryBookedQuantityId.
+			findFirst(
+				finderCache, new Object[] {commerceInventoryBookedQuantityId},
+				orderByComparator);
 	}
 
 	/**
@@ -647,70 +424,15 @@ public class CommerceOrderItemPersistenceImpl
 				finderCache, new Object[] {commerceInventoryBookedQuantityId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCommerceOrderId;
-	private FinderPath _finderPathWithoutPaginationFindByCommerceOrderId;
-	private FinderPath _finderPathCountByCommerceOrderId;
-	private CollectionPersistenceFinder<CommerceOrderItem>
-		_collectionPersistenceFinderByCommerceOrderId;
-
-	/**
-	 * Returns all the commerce order items where commerceOrderId = &#63;.
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @return the matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCommerceOrderId(long commerceOrderId) {
-		return findByCommerceOrderId(
-			commerceOrderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce order items where commerceOrderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @return the range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCommerceOrderId(
-		long commerceOrderId, int start, int end) {
-
-		return findByCommerceOrderId(commerceOrderId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceOrderItem, NoSuchOrderItemException>
+			_collectionPersistenceFinderByCommerceOrderId;
 
 	/**
 	 * Returns an ordered range of all the commerce order items where commerceOrderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCommerceOrderId(
-		long commerceOrderId, int start, int end,
-		OrderByComparator<CommerceOrderItem> orderByComparator) {
-
-		return findByCommerceOrderId(
-			commerceOrderId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce order items where commerceOrderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commerceOrderId the commerce order ID
@@ -745,16 +467,8 @@ public class CommerceOrderItemPersistenceImpl
 			OrderByComparator<CommerceOrderItem> orderByComparator)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem = fetchByCommerceOrderId_First(
-			commerceOrderId, orderByComparator);
-
-		if (commerceOrderItem != null) {
-			return commerceOrderItem;
-		}
-
-		throw new NoSuchOrderItemException(
-			_collectionPersistenceFinderByCommerceOrderId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {commerceOrderId}));
+		return _collectionPersistenceFinderByCommerceOrderId.findFirst(
+			finderCache, new Object[] {commerceOrderId}, orderByComparator);
 	}
 
 	/**
@@ -796,70 +510,15 @@ public class CommerceOrderItemPersistenceImpl
 			finderCache, new Object[] {commerceOrderId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCPInstanceId;
-	private FinderPath _finderPathWithoutPaginationFindByCPInstanceId;
-	private FinderPath _finderPathCountByCPInstanceId;
-	private CollectionPersistenceFinder<CommerceOrderItem>
-		_collectionPersistenceFinderByCPInstanceId;
-
-	/**
-	 * Returns all the commerce order items where CPInstanceId = &#63;.
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @return the matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCPInstanceId(long CPInstanceId) {
-		return findByCPInstanceId(
-			CPInstanceId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce order items where CPInstanceId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @return the range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCPInstanceId(
-		long CPInstanceId, int start, int end) {
-
-		return findByCPInstanceId(CPInstanceId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceOrderItem, NoSuchOrderItemException>
+			_collectionPersistenceFinderByCPInstanceId;
 
 	/**
 	 * Returns an ordered range of all the commerce order items where CPInstanceId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPInstanceId the cp instance ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCPInstanceId(
-		long CPInstanceId, int start, int end,
-		OrderByComparator<CommerceOrderItem> orderByComparator) {
-
-		return findByCPInstanceId(
-			CPInstanceId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce order items where CPInstanceId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CPInstanceId the cp instance ID
@@ -894,16 +553,8 @@ public class CommerceOrderItemPersistenceImpl
 			OrderByComparator<CommerceOrderItem> orderByComparator)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem = fetchByCPInstanceId_First(
-			CPInstanceId, orderByComparator);
-
-		if (commerceOrderItem != null) {
-			return commerceOrderItem;
-		}
-
-		throw new NoSuchOrderItemException(
-			_collectionPersistenceFinderByCPInstanceId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {CPInstanceId}));
+		return _collectionPersistenceFinderByCPInstanceId.findFirst(
+			finderCache, new Object[] {CPInstanceId}, orderByComparator);
 	}
 
 	/**
@@ -945,70 +596,15 @@ public class CommerceOrderItemPersistenceImpl
 			finderCache, new Object[] {CPInstanceId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCProductId;
-	private FinderPath _finderPathWithoutPaginationFindByCProductId;
-	private FinderPath _finderPathCountByCProductId;
-	private CollectionPersistenceFinder<CommerceOrderItem>
-		_collectionPersistenceFinderByCProductId;
-
-	/**
-	 * Returns all the commerce order items where CProductId = &#63;.
-	 *
-	 * @param CProductId the c product ID
-	 * @return the matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCProductId(long CProductId) {
-		return findByCProductId(
-			CProductId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce order items where CProductId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CProductId the c product ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @return the range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCProductId(
-		long CProductId, int start, int end) {
-
-		return findByCProductId(CProductId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceOrderItem, NoSuchOrderItemException>
+			_collectionPersistenceFinderByCProductId;
 
 	/**
 	 * Returns an ordered range of all the commerce order items where CProductId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CProductId the c product ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCProductId(
-		long CProductId, int start, int end,
-		OrderByComparator<CommerceOrderItem> orderByComparator) {
-
-		return findByCProductId(
-			CProductId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce order items where CProductId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CProductId the c product ID
@@ -1043,16 +639,8 @@ public class CommerceOrderItemPersistenceImpl
 			OrderByComparator<CommerceOrderItem> orderByComparator)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem = fetchByCProductId_First(
-			CProductId, orderByComparator);
-
-		if (commerceOrderItem != null) {
-			return commerceOrderItem;
-		}
-
-		throw new NoSuchOrderItemException(
-			_collectionPersistenceFinderByCProductId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {CProductId}));
+		return _collectionPersistenceFinderByCProductId.findFirst(
+			finderCache, new Object[] {CProductId}, orderByComparator);
 	}
 
 	/**
@@ -1094,76 +682,15 @@ public class CommerceOrderItemPersistenceImpl
 			finderCache, new Object[] {CProductId});
 	}
 
-	private FinderPath
-		_finderPathWithPaginationFindByCustomerCommerceOrderItemId;
-	private FinderPath
-		_finderPathWithoutPaginationFindByCustomerCommerceOrderItemId;
-	private FinderPath _finderPathCountByCustomerCommerceOrderItemId;
-	private CollectionPersistenceFinder<CommerceOrderItem>
-		_collectionPersistenceFinderByCustomerCommerceOrderItemId;
-
-	/**
-	 * Returns all the commerce order items where customerCommerceOrderItemId = &#63;.
-	 *
-	 * @param customerCommerceOrderItemId the customer commerce order item ID
-	 * @return the matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCustomerCommerceOrderItemId(
-		long customerCommerceOrderItemId) {
-
-		return findByCustomerCommerceOrderItemId(
-			customerCommerceOrderItemId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the commerce order items where customerCommerceOrderItemId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param customerCommerceOrderItemId the customer commerce order item ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @return the range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCustomerCommerceOrderItemId(
-		long customerCommerceOrderItemId, int start, int end) {
-
-		return findByCustomerCommerceOrderItemId(
-			customerCommerceOrderItemId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceOrderItem, NoSuchOrderItemException>
+			_collectionPersistenceFinderByCustomerCommerceOrderItemId;
 
 	/**
 	 * Returns an ordered range of all the commerce order items where customerCommerceOrderItemId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param customerCommerceOrderItemId the customer commerce order item ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByCustomerCommerceOrderItemId(
-		long customerCommerceOrderItemId, int start, int end,
-		OrderByComparator<CommerceOrderItem> orderByComparator) {
-
-		return findByCustomerCommerceOrderItemId(
-			customerCommerceOrderItemId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce order items where customerCommerceOrderItemId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param customerCommerceOrderItemId the customer commerce order item ID
@@ -1198,19 +725,10 @@ public class CommerceOrderItemPersistenceImpl
 			OrderByComparator<CommerceOrderItem> orderByComparator)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem =
-			fetchByCustomerCommerceOrderItemId_First(
-				customerCommerceOrderItemId, orderByComparator);
-
-		if (commerceOrderItem != null) {
-			return commerceOrderItem;
-		}
-
-		throw new NoSuchOrderItemException(
-			_collectionPersistenceFinderByCustomerCommerceOrderItemId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {customerCommerceOrderItemId}));
+		return _collectionPersistenceFinderByCustomerCommerceOrderItemId.
+			findFirst(
+				finderCache, new Object[] {customerCommerceOrderItemId},
+				orderByComparator);
 	}
 
 	/**
@@ -1258,75 +776,15 @@ public class CommerceOrderItemPersistenceImpl
 			finderCache, new Object[] {customerCommerceOrderItemId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByParentCommerceOrderItemId;
-	private FinderPath
-		_finderPathWithoutPaginationFindByParentCommerceOrderItemId;
-	private FinderPath _finderPathCountByParentCommerceOrderItemId;
-	private CollectionPersistenceFinder<CommerceOrderItem>
-		_collectionPersistenceFinderByParentCommerceOrderItemId;
-
-	/**
-	 * Returns all the commerce order items where parentCommerceOrderItemId = &#63;.
-	 *
-	 * @param parentCommerceOrderItemId the parent commerce order item ID
-	 * @return the matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByParentCommerceOrderItemId(
-		long parentCommerceOrderItemId) {
-
-		return findByParentCommerceOrderItemId(
-			parentCommerceOrderItemId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the commerce order items where parentCommerceOrderItemId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param parentCommerceOrderItemId the parent commerce order item ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @return the range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByParentCommerceOrderItemId(
-		long parentCommerceOrderItemId, int start, int end) {
-
-		return findByParentCommerceOrderItemId(
-			parentCommerceOrderItemId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceOrderItem, NoSuchOrderItemException>
+			_collectionPersistenceFinderByParentCommerceOrderItemId;
 
 	/**
 	 * Returns an ordered range of all the commerce order items where parentCommerceOrderItemId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param parentCommerceOrderItemId the parent commerce order item ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByParentCommerceOrderItemId(
-		long parentCommerceOrderItemId, int start, int end,
-		OrderByComparator<CommerceOrderItem> orderByComparator) {
-
-		return findByParentCommerceOrderItemId(
-			parentCommerceOrderItemId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce order items where parentCommerceOrderItemId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param parentCommerceOrderItemId the parent commerce order item ID
@@ -1361,19 +819,10 @@ public class CommerceOrderItemPersistenceImpl
 			OrderByComparator<CommerceOrderItem> orderByComparator)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem =
-			fetchByParentCommerceOrderItemId_First(
-				parentCommerceOrderItemId, orderByComparator);
-
-		if (commerceOrderItem != null) {
-			return commerceOrderItem;
-		}
-
-		throw new NoSuchOrderItemException(
-			_collectionPersistenceFinderByParentCommerceOrderItemId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {parentCommerceOrderItemId}));
+		return _collectionPersistenceFinderByParentCommerceOrderItemId.
+			findFirst(
+				finderCache, new Object[] {parentCommerceOrderItemId},
+				orderByComparator);
 	}
 
 	/**
@@ -1421,76 +870,15 @@ public class CommerceOrderItemPersistenceImpl
 			finderCache, new Object[] {parentCommerceOrderItemId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_CPI;
-	private FinderPath _finderPathWithoutPaginationFindByC_CPI;
-	private FinderPath _finderPathCountByC_CPI;
-	private CollectionPersistenceFinder<CommerceOrderItem>
-		_collectionPersistenceFinderByC_CPI;
-
-	/**
-	 * Returns all the commerce order items where commerceOrderId = &#63; and CPInstanceId = &#63;.
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @param CPInstanceId the cp instance ID
-	 * @return the matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByC_CPI(
-		long commerceOrderId, long CPInstanceId) {
-
-		return findByC_CPI(
-			commerceOrderId, CPInstanceId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the commerce order items where commerceOrderId = &#63; and CPInstanceId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @param CPInstanceId the cp instance ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @return the range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByC_CPI(
-		long commerceOrderId, long CPInstanceId, int start, int end) {
-
-		return findByC_CPI(commerceOrderId, CPInstanceId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceOrderItem, NoSuchOrderItemException>
+			_collectionPersistenceFinderByC_CPI;
 
 	/**
 	 * Returns an ordered range of all the commerce order items where commerceOrderId = &#63; and CPInstanceId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @param CPInstanceId the cp instance ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByC_CPI(
-		long commerceOrderId, long CPInstanceId, int start, int end,
-		OrderByComparator<CommerceOrderItem> orderByComparator) {
-
-		return findByC_CPI(
-			commerceOrderId, CPInstanceId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce order items where commerceOrderId = &#63; and CPInstanceId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commerceOrderId the commerce order ID
@@ -1527,17 +915,9 @@ public class CommerceOrderItemPersistenceImpl
 			OrderByComparator<CommerceOrderItem> orderByComparator)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem = fetchByC_CPI_First(
-			commerceOrderId, CPInstanceId, orderByComparator);
-
-		if (commerceOrderItem != null) {
-			return commerceOrderItem;
-		}
-
-		throw new NoSuchOrderItemException(
-			_collectionPersistenceFinderByC_CPI.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {commerceOrderId, CPInstanceId}));
+		return _collectionPersistenceFinderByC_CPI.findFirst(
+			finderCache, new Object[] {commerceOrderId, CPInstanceId},
+			orderByComparator);
 	}
 
 	/**
@@ -1583,79 +963,15 @@ public class CommerceOrderItemPersistenceImpl
 			finderCache, new Object[] {commerceOrderId, CPInstanceId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_PCOI;
-	private FinderPath _finderPathWithoutPaginationFindByC_PCOI;
-	private FinderPath _finderPathCountByC_PCOI;
-	private CollectionPersistenceFinder<CommerceOrderItem>
-		_collectionPersistenceFinderByC_PCOI;
-
-	/**
-	 * Returns all the commerce order items where commerceOrderId = &#63; and parentCommerceOrderItemId = &#63;.
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @param parentCommerceOrderItemId the parent commerce order item ID
-	 * @return the matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByC_PCOI(
-		long commerceOrderId, long parentCommerceOrderItemId) {
-
-		return findByC_PCOI(
-			commerceOrderId, parentCommerceOrderItemId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce order items where commerceOrderId = &#63; and parentCommerceOrderItemId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @param parentCommerceOrderItemId the parent commerce order item ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @return the range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByC_PCOI(
-		long commerceOrderId, long parentCommerceOrderItemId, int start,
-		int end) {
-
-		return findByC_PCOI(
-			commerceOrderId, parentCommerceOrderItemId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceOrderItem, NoSuchOrderItemException>
+			_collectionPersistenceFinderByC_PCOI;
 
 	/**
 	 * Returns an ordered range of all the commerce order items where commerceOrderId = &#63; and parentCommerceOrderItemId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @param parentCommerceOrderItemId the parent commerce order item ID
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByC_PCOI(
-		long commerceOrderId, long parentCommerceOrderItemId, int start,
-		int end, OrderByComparator<CommerceOrderItem> orderByComparator) {
-
-		return findByC_PCOI(
-			commerceOrderId, parentCommerceOrderItemId, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce order items where commerceOrderId = &#63; and parentCommerceOrderItemId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commerceOrderId the commerce order ID
@@ -1693,17 +1009,10 @@ public class CommerceOrderItemPersistenceImpl
 			OrderByComparator<CommerceOrderItem> orderByComparator)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem = fetchByC_PCOI_First(
-			commerceOrderId, parentCommerceOrderItemId, orderByComparator);
-
-		if (commerceOrderItem != null) {
-			return commerceOrderItem;
-		}
-
-		throw new NoSuchOrderItemException(
-			_collectionPersistenceFinderByC_PCOI.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {commerceOrderId, parentCommerceOrderItemId}));
+		return _collectionPersistenceFinderByC_PCOI.findFirst(
+			finderCache,
+			new Object[] {commerceOrderId, parentCommerceOrderItemId},
+			orderByComparator);
 	}
 
 	/**
@@ -1756,76 +1065,15 @@ public class CommerceOrderItemPersistenceImpl
 			new Object[] {commerceOrderId, parentCommerceOrderItemId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_S;
-	private FinderPath _finderPathWithoutPaginationFindByC_S;
-	private FinderPath _finderPathCountByC_S;
-	private CollectionPersistenceFinder<CommerceOrderItem>
-		_collectionPersistenceFinderByC_S;
-
-	/**
-	 * Returns all the commerce order items where commerceOrderId = &#63; and subscription = &#63;.
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @param subscription the subscription
-	 * @return the matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByC_S(
-		long commerceOrderId, boolean subscription) {
-
-		return findByC_S(
-			commerceOrderId, subscription, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the commerce order items where commerceOrderId = &#63; and subscription = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @param subscription the subscription
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @return the range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByC_S(
-		long commerceOrderId, boolean subscription, int start, int end) {
-
-		return findByC_S(commerceOrderId, subscription, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceOrderItem, NoSuchOrderItemException>
+			_collectionPersistenceFinderByC_S;
 
 	/**
 	 * Returns an ordered range of all the commerce order items where commerceOrderId = &#63; and subscription = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceOrderId the commerce order ID
-	 * @param subscription the subscription
-	 * @param start the lower bound of the range of commerce order items
-	 * @param end the upper bound of the range of commerce order items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce order items
-	 */
-	@Override
-	public List<CommerceOrderItem> findByC_S(
-		long commerceOrderId, boolean subscription, int start, int end,
-		OrderByComparator<CommerceOrderItem> orderByComparator) {
-
-		return findByC_S(
-			commerceOrderId, subscription, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce order items where commerceOrderId = &#63; and subscription = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceOrderItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commerceOrderId the commerce order ID
@@ -1862,17 +1110,9 @@ public class CommerceOrderItemPersistenceImpl
 			OrderByComparator<CommerceOrderItem> orderByComparator)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem = fetchByC_S_First(
-			commerceOrderId, subscription, orderByComparator);
-
-		if (commerceOrderItem != null) {
-			return commerceOrderItem;
-		}
-
-		throw new NoSuchOrderItemException(
-			_collectionPersistenceFinderByC_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {commerceOrderId, subscription}));
+		return _collectionPersistenceFinderByC_S.findFirst(
+			finderCache, new Object[] {commerceOrderId, subscription},
+			orderByComparator);
 	}
 
 	/**
@@ -1918,8 +1158,7 @@ public class CommerceOrderItemPersistenceImpl
 			finderCache, new Object[] {commerceOrderId, subscription});
 	}
 
-	private FinderPath _finderPathFetchByERC_C;
-	private UniquePersistenceFinder<CommerceOrderItem>
+	private UniquePersistenceFinder<CommerceOrderItem, NoSuchOrderItemException>
 		_uniquePersistenceFinderByERC_C;
 
 	/**
@@ -1935,37 +1174,8 @@ public class CommerceOrderItemPersistenceImpl
 			String externalReferenceCode, long companyId)
 		throws NoSuchOrderItemException {
 
-		CommerceOrderItem commerceOrderItem = fetchByERC_C(
-			externalReferenceCode, companyId);
-
-		if (commerceOrderItem == null) {
-			String message =
-				_uniquePersistenceFinderByERC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, companyId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchOrderItemException(message);
-		}
-
-		return commerceOrderItem;
-	}
-
-	/**
-	 * Returns the commerce order item where externalReferenceCode = &#63; and companyId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param companyId the company ID
-	 * @return the matching commerce order item, or <code>null</code> if a matching commerce order item could not be found
-	 */
-	@Override
-	public CommerceOrderItem fetchByERC_C(
-		String externalReferenceCode, long companyId) {
-
-		return fetchByERC_C(externalReferenceCode, companyId, true);
+		return _uniquePersistenceFinderByERC_C.find(
+			finderCache, new Object[] {externalReferenceCode, companyId});
 	}
 
 	/**
@@ -2326,398 +1536,369 @@ public class CommerceOrderItemPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_COMMERCEORDERITEM_WHERE,
 			_SQL_COUNT_COMMERCEORDERITEM_WHERE,
-			CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"commerceOrderItem.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, CommerceOrderItem::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			CommerceOrderItem::getUuid, CommerceOrderItem::getGroupId);
+				"commerceOrderItem.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, CommerceOrderItem::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_COMMERCEORDERITEM_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(CommerceOrderItem::getUuid),
+				CommerceOrderItem::getGroupId),
+			_SQL_SELECT_COMMERCEORDERITEM_WHERE, "",
 			new FinderColumn<>(
-				"commerceOrderItem.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, CommerceOrderItem::getUuid),
+				"commerceOrderItem.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, CommerceOrderItem::getUuid),
 			new FinderColumn<>(
 				"commerceOrderItem.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, CommerceOrderItem::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_COMMERCEORDERITEM_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_COMMERCEORDERITEM_WHERE,
 				_SQL_COUNT_COMMERCEORDERITEM_WHERE,
 				CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"commerceOrderItem.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, CommerceOrderItem::getUuid),
+					"commerceOrderItem.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					CommerceOrderItem::getUuid),
 				new FinderColumn<>(
 					"commerceOrderItem.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, CommerceOrderItem::getCompanyId));
 
-		_finderPathWithPaginationFindByCommerceInventoryBookedQuantityId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-				"findByCommerceInventoryBookedQuantityId",
-				new String[] {
-					Long.class.getName(), Integer.class.getName(),
-					Integer.class.getName(), OrderByComparator.class.getName()
-				},
-				new String[] {"CIBookedQuantityId"}, true);
-
-		_finderPathWithoutPaginationFindByCommerceInventoryBookedQuantityId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByCommerceInventoryBookedQuantityId",
-				new String[] {Long.class.getName()},
-				new String[] {"CIBookedQuantityId"}, true);
-
-		_finderPathCountByCommerceInventoryBookedQuantityId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCommerceInventoryBookedQuantityId",
-			new String[] {Long.class.getName()},
-			new String[] {"CIBookedQuantityId"}, false);
-
 		_collectionPersistenceFinderByCommerceInventoryBookedQuantityId =
 			new CollectionPersistenceFinder<>(
 				this,
-				_finderPathWithPaginationFindByCommerceInventoryBookedQuantityId,
-				_finderPathWithoutPaginationFindByCommerceInventoryBookedQuantityId,
-				_finderPathCountByCommerceInventoryBookedQuantityId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCommerceInventoryBookedQuantityId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CIBookedQuantityId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCommerceInventoryBookedQuantityId",
+					new String[] {Long.class.getName()},
+					new String[] {"CIBookedQuantityId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCommerceInventoryBookedQuantityId",
+					new String[] {Long.class.getName()},
+					new String[] {"CIBookedQuantityId"}, false),
 				_SQL_SELECT_COMMERCEORDERITEM_WHERE,
 				_SQL_COUNT_COMMERCEORDERITEM_WHERE,
 				CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"commerceOrderItem.", "commerceInventoryBookedQuantityId",
-					FinderColumn.Type.LONG, "=", true, true,
+					"CIBookedQuantityId", FinderColumn.Type.LONG, "=", true,
+					true,
 					CommerceOrderItem::getCommerceInventoryBookedQuantityId));
-
-		_finderPathWithPaginationFindByCommerceOrderId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCommerceOrderId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"commerceOrderId"}, true);
-
-		_finderPathWithoutPaginationFindByCommerceOrderId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCommerceOrderId",
-			new String[] {Long.class.getName()},
-			new String[] {"commerceOrderId"}, true);
-
-		_finderPathCountByCommerceOrderId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCommerceOrderId",
-			new String[] {Long.class.getName()},
-			new String[] {"commerceOrderId"}, false);
 
 		_collectionPersistenceFinderByCommerceOrderId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCommerceOrderId,
-				_finderPathWithoutPaginationFindByCommerceOrderId,
-				_finderPathCountByCommerceOrderId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCommerceOrderId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"commerceOrderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCommerceOrderId",
+					new String[] {Long.class.getName()},
+					new String[] {"commerceOrderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCommerceOrderId",
+					new String[] {Long.class.getName()},
+					new String[] {"commerceOrderId"}, false),
 				_SQL_SELECT_COMMERCEORDERITEM_WHERE,
 				_SQL_COUNT_COMMERCEORDERITEM_WHERE,
 				CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"commerceOrderItem.", "commerceOrderId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceOrderItem::getCommerceOrderId));
 
-		_finderPathWithPaginationFindByCPInstanceId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCPInstanceId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"CPInstanceId"}, true);
-
-		_finderPathWithoutPaginationFindByCPInstanceId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCPInstanceId",
-			new String[] {Long.class.getName()}, new String[] {"CPInstanceId"},
-			true);
-
-		_finderPathCountByCPInstanceId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCPInstanceId",
-			new String[] {Long.class.getName()}, new String[] {"CPInstanceId"},
-			false);
-
 		_collectionPersistenceFinderByCPInstanceId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCPInstanceId,
-				_finderPathWithoutPaginationFindByCPInstanceId,
-				_finderPathCountByCPInstanceId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCPInstanceId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CPInstanceId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCPInstanceId", new String[] {Long.class.getName()},
+					new String[] {"CPInstanceId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCPInstanceId", new String[] {Long.class.getName()},
+					new String[] {"CPInstanceId"}, false),
 				_SQL_SELECT_COMMERCEORDERITEM_WHERE,
 				_SQL_COUNT_COMMERCEORDERITEM_WHERE,
 				CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"commerceOrderItem.", "CPInstanceId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceOrderItem::getCPInstanceId));
 
-		_finderPathWithPaginationFindByCProductId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCProductId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"CProductId"}, true);
-
-		_finderPathWithoutPaginationFindByCProductId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCProductId",
-			new String[] {Long.class.getName()}, new String[] {"CProductId"},
-			true);
-
-		_finderPathCountByCProductId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCProductId",
-			new String[] {Long.class.getName()}, new String[] {"CProductId"},
-			false);
-
 		_collectionPersistenceFinderByCProductId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCProductId,
-				_finderPathWithoutPaginationFindByCProductId,
-				_finderPathCountByCProductId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCProductId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CProductId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCProductId", new String[] {Long.class.getName()},
+					new String[] {"CProductId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCProductId", new String[] {Long.class.getName()},
+					new String[] {"CProductId"}, false),
 				_SQL_SELECT_COMMERCEORDERITEM_WHERE,
 				_SQL_COUNT_COMMERCEORDERITEM_WHERE,
 				CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"commerceOrderItem.", "CProductId", FinderColumn.Type.LONG,
 					"=", true, true, CommerceOrderItem::getCProductId));
 
-		_finderPathWithPaginationFindByCustomerCommerceOrderItemId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-				"findByCustomerCommerceOrderItemId",
-				new String[] {
-					Long.class.getName(), Integer.class.getName(),
-					Integer.class.getName(), OrderByComparator.class.getName()
-				},
-				new String[] {"customerCommerceOrderItemId"}, true);
-
-		_finderPathWithoutPaginationFindByCustomerCommerceOrderItemId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByCustomerCommerceOrderItemId",
-				new String[] {Long.class.getName()},
-				new String[] {"customerCommerceOrderItemId"}, true);
-
-		_finderPathCountByCustomerCommerceOrderItemId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCustomerCommerceOrderItemId",
-			new String[] {Long.class.getName()},
-			new String[] {"customerCommerceOrderItemId"}, false);
-
 		_collectionPersistenceFinderByCustomerCommerceOrderItemId =
 			new CollectionPersistenceFinder<>(
 				this,
-				_finderPathWithPaginationFindByCustomerCommerceOrderItemId,
-				_finderPathWithoutPaginationFindByCustomerCommerceOrderItemId,
-				_finderPathCountByCustomerCommerceOrderItemId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCustomerCommerceOrderItemId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"customerCommerceOrderItemId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCustomerCommerceOrderItemId",
+					new String[] {Long.class.getName()},
+					new String[] {"customerCommerceOrderItemId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCustomerCommerceOrderItemId",
+					new String[] {Long.class.getName()},
+					new String[] {"customerCommerceOrderItemId"}, false),
 				_SQL_SELECT_COMMERCEORDERITEM_WHERE,
 				_SQL_COUNT_COMMERCEORDERITEM_WHERE,
 				CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"commerceOrderItem.", "customerCommerceOrderItemId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceOrderItem::getCustomerCommerceOrderItemId));
 
-		_finderPathWithPaginationFindByParentCommerceOrderItemId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-				"findByParentCommerceOrderItemId",
-				new String[] {
-					Long.class.getName(), Integer.class.getName(),
-					Integer.class.getName(), OrderByComparator.class.getName()
-				},
-				new String[] {"parentCommerceOrderItemId"}, true);
-
-		_finderPathWithoutPaginationFindByParentCommerceOrderItemId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByParentCommerceOrderItemId",
-				new String[] {Long.class.getName()},
-				new String[] {"parentCommerceOrderItemId"}, true);
-
-		_finderPathCountByParentCommerceOrderItemId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByParentCommerceOrderItemId",
-			new String[] {Long.class.getName()},
-			new String[] {"parentCommerceOrderItemId"}, false);
-
 		_collectionPersistenceFinderByParentCommerceOrderItemId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByParentCommerceOrderItemId,
-				_finderPathWithoutPaginationFindByParentCommerceOrderItemId,
-				_finderPathCountByParentCommerceOrderItemId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByParentCommerceOrderItemId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"parentCommerceOrderItemId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByParentCommerceOrderItemId",
+					new String[] {Long.class.getName()},
+					new String[] {"parentCommerceOrderItemId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByParentCommerceOrderItemId",
+					new String[] {Long.class.getName()},
+					new String[] {"parentCommerceOrderItemId"}, false),
 				_SQL_SELECT_COMMERCEORDERITEM_WHERE,
 				_SQL_COUNT_COMMERCEORDERITEM_WHERE,
 				CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"commerceOrderItem.", "parentCommerceOrderItemId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceOrderItem::getParentCommerceOrderItemId));
 
-		_finderPathWithPaginationFindByC_CPI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_CPI",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"commerceOrderId", "CPInstanceId"}, true);
-
-		_finderPathWithoutPaginationFindByC_CPI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_CPI",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"commerceOrderId", "CPInstanceId"}, true);
-
-		_finderPathCountByC_CPI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_CPI",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"commerceOrderId", "CPInstanceId"}, false);
-
 		_collectionPersistenceFinderByC_CPI = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_CPI,
-			_finderPathWithoutPaginationFindByC_CPI, _finderPathCountByC_CPI,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_CPI",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"commerceOrderId", "CPInstanceId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_CPI",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"commerceOrderId", "CPInstanceId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_CPI",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"commerceOrderId", "CPInstanceId"}, false),
 			_SQL_SELECT_COMMERCEORDERITEM_WHERE,
 			_SQL_COUNT_COMMERCEORDERITEM_WHERE,
-			CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"commerceOrderItem.", "commerceOrderId", FinderColumn.Type.LONG,
-				"=", true, false, CommerceOrderItem::getCommerceOrderId),
+				"=", true, true, CommerceOrderItem::getCommerceOrderId),
 			new FinderColumn<>(
 				"commerceOrderItem.", "CPInstanceId", FinderColumn.Type.LONG,
 				"=", true, true, CommerceOrderItem::getCPInstanceId));
 
-		_finderPathWithPaginationFindByC_PCOI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_PCOI",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"commerceOrderId", "parentCommerceOrderItemId"},
-			true);
-
-		_finderPathWithoutPaginationFindByC_PCOI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_PCOI",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"commerceOrderId", "parentCommerceOrderItemId"},
-			true);
-
-		_finderPathCountByC_PCOI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_PCOI",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"commerceOrderId", "parentCommerceOrderItemId"},
-			false);
-
 		_collectionPersistenceFinderByC_PCOI =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByC_PCOI,
-				_finderPathWithoutPaginationFindByC_PCOI,
-				_finderPathCountByC_PCOI, _SQL_SELECT_COMMERCEORDERITEM_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_PCOI",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"commerceOrderId", "parentCommerceOrderItemId"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_PCOI",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {
+						"commerceOrderId", "parentCommerceOrderItemId"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_PCOI",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {
+						"commerceOrderId", "parentCommerceOrderItemId"
+					},
+					false),
+				_SQL_SELECT_COMMERCEORDERITEM_WHERE,
 				_SQL_COUNT_COMMERCEORDERITEM_WHERE,
 				CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"commerceOrderItem.", "commerceOrderId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					CommerceOrderItem::getCommerceOrderId),
 				new FinderColumn<>(
 					"commerceOrderItem.", "parentCommerceOrderItemId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceOrderItem::getParentCommerceOrderItemId));
 
-		_finderPathWithPaginationFindByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"commerceOrderId", "subscription"}, true);
-
-		_finderPathWithoutPaginationFindByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"commerceOrderId", "subscription"}, true);
-
-		_finderPathCountByC_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"commerceOrderId", "subscription"}, false);
-
 		_collectionPersistenceFinderByC_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_S,
-			_finderPathWithoutPaginationFindByC_S, _finderPathCountByC_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_S",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"commerceOrderId", "subscription"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_S",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"commerceOrderId", "subscription"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_S",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"commerceOrderId", "subscription"}, false),
 			_SQL_SELECT_COMMERCEORDERITEM_WHERE,
 			_SQL_COUNT_COMMERCEORDERITEM_WHERE,
-			CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			CommerceOrderItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"commerceOrderItem.", "commerceOrderId", FinderColumn.Type.LONG,
-				"=", true, false, CommerceOrderItem::getCommerceOrderId),
+				"=", true, true, CommerceOrderItem::getCommerceOrderId),
 			new FinderColumn<>(
 				"commerceOrderItem.", "subscription", FinderColumn.Type.BOOLEAN,
 				"=", true, true, CommerceOrderItem::isSubscription));
 
-		_finderPathFetchByERC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "companyId"}, false,
-			CommerceOrderItem::getExternalReferenceCode,
-			CommerceOrderItem::getCompanyId);
-
 		_uniquePersistenceFinderByERC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_C, _SQL_SELECT_COMMERCEORDERITEM_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "companyId"}, 0, 1,
+				false,
+				convertNullFunction(
+					CommerceOrderItem::getExternalReferenceCode),
+				CommerceOrderItem::getCompanyId),
+			_SQL_SELECT_COMMERCEORDERITEM_WHERE, "",
 			new FinderColumn<>(
 				"commerceOrderItem.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				CommerceOrderItem::getExternalReferenceCode),
 			new FinderColumn<>(
 				"commerceOrderItem.", "companyId", FinderColumn.Type.LONG, "=",
@@ -2800,4 +1981,4 @@ public class CommerceOrderItemPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1021085033
+// LIFERAY-SERVICE-BUILDER-HASH:-155449348

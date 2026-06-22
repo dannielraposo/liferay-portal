@@ -35,7 +35,11 @@ public class CommerceOrderAttachmentTableFDSView extends BaseTableFDSView {
 
 		return fdsTableSchemaBuilder.add(
 			"title", "title",
-			fdsTableSchemaField -> fdsTableSchemaField.setSortable(true)
+			fdsTableSchemaField -> fdsTableSchemaField.setContentRenderer(
+				"commerceOrderAttachmentTitleDataRenderer"
+			).setSortable(
+				true
+			)
 		).add(
 			"extension", "extension"
 		).add(
@@ -45,6 +49,10 @@ public class CommerceOrderAttachmentTableFDSView extends BaseTableFDSView {
 			fdsTableSchemaField -> fdsTableSchemaField.setSortable(true)
 		).add(
 			_getDateFDSTableSchemaField("dateModified", "modified-date")
+		).add(
+			"restricted", "restricted",
+			fdsTableSchemaField -> fdsTableSchemaField.setContentRenderer(
+				"commerceOrderAttachmentRestrictedDataRenderer")
 		).build();
 	}
 

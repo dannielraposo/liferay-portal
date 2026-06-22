@@ -1,0 +1,12 @@
+jobs:
+    test-cloud-helm-chart-smoke:
+        if: ${{github.repository == 'cloudnative-team/liferay-portal'}}
+        permissions:
+            contents: read
+        uses: ./.github/workflows/ci-reusable-test-cloud-helm-chart-smoke.yaml
+on:
+    pull_request:
+        paths:
+            -   .github/workflows/ci-reusable-test-cloud-helm-chart-smoke.yaml
+            -   .github/workflows/ci-test-cloud-helm-chart-smoke.yaml
+            -   cloud/helm/default/**

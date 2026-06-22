@@ -6,6 +6,8 @@
 package com.liferay.headless.admin.site.internal.resource.v1_0;
 
 import com.liferay.batch.engine.thread.local.BatchEngineThreadLocal;
+import com.liferay.exportimport.constants.ExportImportConstants;
+import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.exportimport.vulcan.batch.engine.ExportImportVulcanBatchEngineTaskItemDelegate;
 import com.liferay.headless.admin.site.dto.v1_0.NavigationMenu;
 import com.liferay.headless.admin.site.dto.v1_0.NavigationMenuItem;
@@ -47,7 +49,10 @@ import com.liferay.site.navigation.type.SiteNavigationMenuItemTypeRegistry;
 
 import jakarta.ws.rs.core.MultivaluedMap;
 
+import java.io.Serializable;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +73,19 @@ import org.osgi.service.component.annotations.ServiceScope;
 public class NavigationMenuResourceImpl
 	extends BaseNavigationMenuResourceImpl
 	implements ExportImportVulcanBatchEngineTaskItemDelegate<NavigationMenu> {
+
+	@Override
+	public void create(
+			Collection<NavigationMenu> navigationMenus,
+			Map<String, Serializable> parameters)
+		throws Exception {
+
+		if (MergeLayoutPrototypesThreadLocal.isInProgress()) {
+			return;
+		}
+
+		super.create(navigationMenus, parameters);
+	}
 
 	@Override
 	public void deleteSiteNavigationMenu(
@@ -116,6 +134,11 @@ public class NavigationMenuResourceImpl
 			@Override
 			public Scope getScope() {
 				return Scope.SITE;
+			}
+
+			@Override
+			public String getSectionKey() {
+				return ExportImportConstants.SECTION_KEY_SITE_BUILDER;
 			}
 
 			@Override

@@ -41,6 +41,7 @@ const test = mergeTests(
 	collectionsPagesTest,
 	featureFlagsTest({
 		'LPD-11235': {enabled: false},
+		'LPD-76864': {enabled: true},
 		'LPS-169837': {enabled: true},
 		'LPS-178052': {enabled: true},
 	}),
@@ -249,6 +250,51 @@ test('Checks sidebar accessibility', async ({
 		selectors: ['.page-editor__sidebar'],
 	});
 });
+
+test(
+	'Check that the sidebars are fully closed when toggling the Toggle Sidebars button',
+	{
+		tag: ['@LPD-60893'],
+	},
+	async ({apiHelpers, page, pageEditorPage, site}) => {
+		await page.goto('/');
+
+		// Create content page and go to edit mode
+
+		const layout = await apiHelpers.headlessDelivery.createSitePage({
+			siteId: site.id,
+			title: getRandomString(),
+		});
+
+		await pageEditorPage.goto(layout, site.friendlyUrlPath);
+
+		// Click on the Browser panel
+
+		await pageEditorPage.goToSidebarTab('Browser');
+
+		// Check panels are visible
+
+		const configurationPanel = page.getByLabel('Configuration Panel', {
+			exact: true,
+		});
+		const sidebarButtons = page.locator('.page-editor__sidebar__buttons');
+		const sidebarContent = page.locator('.page-editor__sidebar__content');
+
+		await expect(configurationPanel).toBeInViewport();
+		await expect(sidebarButtons).toBeInViewport();
+		await expect(sidebarContent).toBeInViewport();
+
+		// Toggle the Toggle Sidebars button
+
+		await pageEditorPage.toggleSidebars();
+
+		// Check that sidebars are fully out of view
+
+		await expect(configurationPanel).not.toBeInViewport();
+		await expect(sidebarButtons).not.toBeInViewport();
+		await expect(sidebarContent).not.toBeInViewport();
+	}
+);
 
 test.describe('Browser Panel', () => {
 	test('Deleting a fragment while its editable is selected', async ({
@@ -982,6 +1028,13 @@ test.describe('Fragments Panel', () => {
 			await page.getByLabel(`Add ${fragmentName}`).focus();
 
 			await page.keyboard.press('Enter');
+
+			// Wait for the keyboard movement to start before committing it
+
+			await expect(
+				page.locator('.page-editor__keyboard-movement-preview__content')
+			).toBeVisible();
+
 			await page.keyboard.press('Enter');
 
 			await expect(
@@ -1044,21 +1097,28 @@ testWithCKEditor4.describe('Page Contents Panel with CKEditor 4', () => {
 				fragmentId: headingId,
 			});
 
-			await editable.locator('[contenteditable="true"]').waitFor();
+			const editor = editable.locator('[contenteditable="true"]');
+
+			await editor.waitFor();
+
+			await editor.click();
 
 			// Clear current content text and fill with new one
 
-			await page.keyboard.press('Control+KeyA');
+			await page.keyboard.press('ControlOrMeta+KeyA');
 			await page.keyboard.press('Backspace');
 
 			await page.keyboard.type('New Content');
-			await page.locator('body').click();
 
-			await pageEditorPage.waitForChangesSaved();
+			await expect(async () => {
+				await page.keyboard.press('Escape');
 
-			await expect(
-				page.locator('.page-editor__page-contents__page-content')
-			).toContainText('New Content');
+				await pageEditorPage.waitForChangesSaved({timeout: 3000});
+
+				await expect(
+					page.locator('.page-editor__page-contents__page-content')
+				).toContainText('New Content', {timeout: 1000});
+			}).toPass();
 		}
 	);
 });
@@ -1403,7 +1463,7 @@ test.describe('Page Contents Panel', () => {
 				'Animal'
 			);
 
-			const articleTitle = 'Animal 03 - Elephant';
+			const articleTitle = `Animal 03 - Elephant ${getRandomString()}`;
 
 			await journalEditArticlePage.fillTitle(articleTitle);
 			await journalEditArticlePage.publishArticle();

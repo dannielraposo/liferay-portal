@@ -30,6 +30,7 @@ const test = mergeTests(
 	apiHelpersTest,
 	dataApiHelpersTest,
 	featureFlagsTest({
+		'LPD-70673': {enabled: true}, // Email Address field
 		'LPD-83570': {enabled: true}, // Phone Number field
 	}),
 	loginTest(),
@@ -966,6 +967,61 @@ test.describe('Manage object fields through Model Builder', () => {
 });
 
 test.describe('Manage objectFields through Objects Admin UI', () => {
+	test(
+		'can add blocked domains on email address field',
+		{tag: ['@LPD-70673']},
+		async ({apiHelpers, objectFieldsPage}) => {
+			const objectFieldLabel = `emailAddressField${getRandomInt()}`;
+			const blockedDomain = '@gmail.com';
+
+			const objectDefinition =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					status: {code: 0},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+
+			await test.step('Navigate and add an Email Address field', async () => {
+				await objectFieldsPage.goto(objectDefinition.label.en_US);
+
+				await objectFieldsPage.addObjectField({
+					objectFieldBusinessType: 'Email Address',
+					objectFieldLabel,
+				});
+			});
+
+			await test.step('Configure blocked domains in the Advanced tab', async () => {
+				await objectFieldsPage.openObjectField(objectFieldLabel);
+
+				await objectFieldsPage.advancedTab.click();
+
+				const input =
+					objectFieldsPage.iframeLocator.getByPlaceholder(
+						'@example.com'
+					);
+
+				await input.fill(blockedDomain);
+
+				await input.press('Enter');
+
+				await objectFieldsPage.saveObjectField();
+			});
+
+			await test.step('Verify the blocked domain is saved', async () => {
+				await objectFieldsPage.openObjectField(objectFieldLabel);
+
+				await objectFieldsPage.advancedTab.click();
+
+				await expect(
+					objectFieldsPage.iframeLocator.getByText(blockedDomain)
+				).toBeVisible();
+			});
+		}
+	);
+
 	test('can create and edit a formula field on a custom object', async ({
 		apiHelpers,
 		objectFieldsPage,
@@ -1048,111 +1104,6 @@ test.describe('Manage objectFields through Objects Admin UI', () => {
 				'Create an expression.'
 			)
 		).toHaveValue('idfield_name1 + field_name2');
-	});
-
-	test('can edit an aggregation field', async ({
-		apiHelpers,
-		objectFieldsPage,
-		page,
-	}) => {
-		const objectDefinition =
-			await apiHelpers.objectAdmin.postRandomObjectDefinition({
-				status: {code: 0},
-			});
-
-		const objectDefinition2 =
-			await apiHelpers.objectAdmin.postRandomObjectDefinition({
-				status: {code: 0},
-			});
-
-		apiHelpers.data.push({
-			id: objectDefinition.id,
-			type: 'objectDefinition',
-		});
-
-		const objectRelationshipAPIClient = await apiHelpers.buildRestClient(
-			ObjectRelationshipAPI
-		);
-
-		const objectRelationship1 =
-			'objectRelationship' + Math.floor(Math.random() * 99);
-
-		await objectRelationshipAPIClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
-			objectDefinition.externalReferenceCode!,
-			{
-				label: {en_US: objectRelationship1},
-				name: objectRelationship1,
-				objectDefinitionExternalReferenceCode2:
-					objectDefinition.externalReferenceCode,
-				objectDefinitionId2: objectDefinition.id,
-				objectDefinitionName2: objectDefinition.name,
-				type: 'oneToMany',
-			}
-		);
-
-		const objectRelationship2 =
-			'objectRelationship' + Math.floor(Math.random() * 99);
-
-		await objectRelationshipAPIClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
-			objectDefinition.externalReferenceCode!,
-			{
-				label: {en_US: objectRelationship2},
-				name: objectRelationship2,
-				objectDefinitionExternalReferenceCode2:
-					objectDefinition2.externalReferenceCode,
-				objectDefinitionId2: objectDefinition2.id,
-				objectDefinitionName2: objectDefinition2.name,
-				type: 'oneToMany',
-			}
-		);
-
-		await objectFieldsPage.goto(objectDefinition.label['en_US']);
-
-		const objectFieldLabel = 'Custom Aggregation';
-
-		await objectFieldsPage.addObjectField({
-			aggregationField: 'ID',
-			aggregationFieldFunction: 'Max',
-			aggregationFieldRelationship: objectRelationship1,
-			objectFieldBusinessType: 'Aggregation',
-			objectFieldLabel,
-		});
-
-		await page.getByRole('link', {name: objectFieldLabel}).click();
-
-		await objectFieldsPage.iframeLocator
-			.getByLabel('LabelMandatory')
-			.fill(`${objectFieldLabel} Updated`);
-
-		await objectFieldsPage.iframeLocator
-			.getByLabel('RelationshipMandatory')
-			.click();
-
-		await objectFieldsPage.iframeLocator
-			.getByRole('option', {name: objectRelationship2})
-			.click();
-
-		await objectFieldsPage.iframeLocator
-			.getByLabel('FunctionMandatory')
-			.click();
-
-		await objectFieldsPage.iframeLocator
-			.getByRole('option', {name: 'Min'})
-			.click();
-
-		await objectFieldsPage.iframeLocator
-			.getByLabel('FieldMandatory')
-			.click();
-
-		await objectFieldsPage.iframeLocator
-			.getByRole('option', {name: 'ID'})
-			.click();
-
-		await objectFieldsPage.editFieldSaveButton.click();
-
-		await expect(
-			page.getByRole('link', {name: `${objectFieldLabel} Updated`})
-		).toBeVisible();
 	});
 
 	test('can create a formula field on a custom object', async ({
@@ -1303,6 +1254,10 @@ test.describe('Manage objectFields through Objects Admin UI', () => {
 			{
 				objectFieldBusinessType: 'Decimal',
 				objectFieldLabel: `decimal${getRandomInt()}`,
+			},
+			{
+				objectFieldBusinessType: 'Email Address',
+				objectFieldLabel: `emailAddress${getRandomInt()}`,
 			},
 			{
 				objectFieldBusinessType: 'Encrypted',
@@ -1570,6 +1525,257 @@ test.describe('Manage objectFields through Objects Admin UI', () => {
 		}
 	);
 
+	test('can edit an aggregation field', async ({
+		apiHelpers,
+		objectFieldsPage,
+		page,
+	}) => {
+		const objectDefinition =
+			await apiHelpers.objectAdmin.postRandomObjectDefinition({
+				status: {code: 0},
+			});
+
+		const objectDefinition2 =
+			await apiHelpers.objectAdmin.postRandomObjectDefinition({
+				status: {code: 0},
+			});
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		const objectRelationshipAPIClient = await apiHelpers.buildRestClient(
+			ObjectRelationshipAPI
+		);
+
+		const objectRelationship1 =
+			'objectRelationship' + Math.floor(Math.random() * 99);
+
+		await objectRelationshipAPIClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
+			objectDefinition.externalReferenceCode!,
+			{
+				label: {en_US: objectRelationship1},
+				name: objectRelationship1,
+				objectDefinitionExternalReferenceCode2:
+					objectDefinition.externalReferenceCode,
+				objectDefinitionId2: objectDefinition.id,
+				objectDefinitionName2: objectDefinition.name,
+				type: 'oneToMany',
+			}
+		);
+
+		const objectRelationship2 =
+			'objectRelationship' + Math.floor(Math.random() * 99);
+
+		await objectRelationshipAPIClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
+			objectDefinition.externalReferenceCode!,
+			{
+				label: {en_US: objectRelationship2},
+				name: objectRelationship2,
+				objectDefinitionExternalReferenceCode2:
+					objectDefinition2.externalReferenceCode,
+				objectDefinitionId2: objectDefinition2.id,
+				objectDefinitionName2: objectDefinition2.name,
+				type: 'oneToMany',
+			}
+		);
+
+		await objectFieldsPage.goto(objectDefinition.label['en_US']);
+
+		const objectFieldLabel = 'Custom Aggregation';
+
+		await objectFieldsPage.addObjectField({
+			aggregationField: 'ID',
+			aggregationFieldFunction: 'Max',
+			aggregationFieldRelationship: objectRelationship1,
+			objectFieldBusinessType: 'Aggregation',
+			objectFieldLabel,
+		});
+
+		await page.getByRole('link', {name: objectFieldLabel}).click();
+
+		await objectFieldsPage.iframeLocator
+			.getByLabel('LabelMandatory')
+			.fill(`${objectFieldLabel} Updated`);
+
+		await objectFieldsPage.iframeLocator
+			.getByLabel('RelationshipMandatory')
+			.click();
+
+		await objectFieldsPage.iframeLocator
+			.getByRole('option', {name: objectRelationship2})
+			.click();
+
+		await objectFieldsPage.iframeLocator
+			.getByLabel('FunctionMandatory')
+			.click();
+
+		await objectFieldsPage.iframeLocator
+			.getByRole('option', {name: 'Min'})
+			.click();
+
+		await objectFieldsPage.iframeLocator
+			.getByLabel('FieldMandatory')
+			.click();
+
+		await objectFieldsPage.iframeLocator
+			.getByRole('option', {name: 'ID'})
+			.click();
+
+		await objectFieldsPage.editFieldSaveButton.click();
+
+		await expect(
+			page.getByRole('link', {name: `${objectFieldLabel} Updated`})
+		).toBeVisible();
+	});
+
+	test(
+		'can edit the country source and country for a phone number field',
+		{tag: ['@LPD-83570']},
+		async ({apiHelpers, objectFieldsPage}) => {
+			let objectDefinition: ObjectDefinition;
+			let selectedCountry: string;
+			let selectedCountrySource: string;
+
+			const objectFieldLabel = `phoneNumber${getRandomInt()}`;
+
+			await test.step('Create required definitions', async () => {
+				const listTypeDefinition =
+					await apiHelpers.listTypeAdmin.postRandomListTypeDefinition();
+
+				apiHelpers.data.push({
+					id: listTypeDefinition.id,
+					type: 'listTypeDefinition',
+				});
+
+				objectDefinition =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						status: {code: 0},
+					});
+
+				apiHelpers.data.push({
+					id: objectDefinition.id,
+					type: 'objectDefinition',
+				});
+			});
+
+			await test.step('Navigate to the object definition and add a phone number field', async () => {
+				await objectFieldsPage.goto(objectDefinition.label!['en_US']);
+
+				await objectFieldsPage.addObjectField({
+					objectFieldBusinessType: 'Phone Number',
+					objectFieldLabel,
+				});
+			});
+
+			await test.step('Edit the country source and country for the phone number field', async () => {
+				await objectFieldsPage.openObjectField(objectFieldLabel);
+
+				await objectFieldsPage.countrySourceDropdown.click();
+
+				const countrySourceOption =
+					objectFieldsPage.iframeLocator.getByRole('option', {
+						exact: true,
+						name: 'Fixed',
+					});
+
+				selectedCountrySource = await countrySourceOption.innerText();
+
+				await countrySourceOption.click();
+
+				await objectFieldsPage.countryPicker.click();
+
+				const countryOption = objectFieldsPage.iframeLocator
+					.getByRole('option')
+					.nth(1);
+
+				await countryOption.click();
+
+				selectedCountry =
+					await objectFieldsPage.countryPicker.innerText();
+
+				await objectFieldsPage.saveObjectField();
+			});
+
+			await test.step('Verify the updated country source and country are saved', async () => {
+				await objectFieldsPage.openObjectField(objectFieldLabel);
+
+				await expect(objectFieldsPage.countrySourceDropdown).toHaveText(
+					selectedCountrySource
+				);
+
+				await expect(objectFieldsPage.countryPicker).toHaveText(
+					selectedCountry
+				);
+			});
+		}
+	);
+
+	test(
+		'can enable autocomplete and add domains on an email address field',
+		{tag: ['@LPD-70673']},
+		async ({apiHelpers, objectFieldsPage}) => {
+			const objectFieldLabel = `emailAddressField${getRandomInt()}`;
+			const autocompleteDomain = '@liferay.com';
+
+			const objectDefinition =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					status: {code: 0},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+
+			await test.step('Navigate and add an Email Address field', async () => {
+				await objectFieldsPage.goto(objectDefinition.label.en_US);
+
+				await objectFieldsPage.addObjectField({
+					objectFieldBusinessType: 'Email Address',
+					objectFieldLabel,
+				});
+			});
+
+			await test.step('Enable autocomplete and add a domain in the Advanced tab', async () => {
+				await objectFieldsPage.openObjectField(objectFieldLabel);
+
+				await objectFieldsPage.advancedTab.click();
+
+				await objectFieldsPage.iframeLocator
+					.getByRole('switch', {name: 'Enable Autocomplete'})
+					.check();
+
+				const input = objectFieldsPage.iframeLocator
+					.getByPlaceholder('@liferay.com')
+					.last();
+
+				await input.fill(autocompleteDomain);
+
+				await input.press('Enter');
+
+				await objectFieldsPage.saveObjectField();
+			});
+
+			await test.step('Verify autocomplete is enabled and the domain is saved', async () => {
+				await objectFieldsPage.openObjectField(objectFieldLabel);
+
+				await objectFieldsPage.advancedTab.click();
+
+				await expect(
+					objectFieldsPage.iframeLocator.getByRole('switch', {
+						name: 'Enable Autocomplete',
+					})
+				).toBeChecked();
+
+				await expect(
+					objectFieldsPage.iframeLocator.getByText(autocompleteDomain)
+				).toBeVisible();
+			});
+		}
+	);
+
 	test('can only edit external reference code of custom fields through the UI', async ({
 		apiHelpers,
 		objectFieldsPage,
@@ -1682,6 +1888,166 @@ test.describe('Manage objectFields through Objects Admin UI', () => {
 			page.getByRole('row').filter({hasText: newObjectFieldLabel})
 		).toBeHidden();
 	});
+
+	test(
+		'can update relationship field label on system object',
+		{tag: '@LPS-135406'},
+		async ({apiHelpers, objectFieldsPage, page}) => {
+			const objectDefinition =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					status: {code: 0},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+
+			const objectRelationshipAPIClient =
+				await apiHelpers.buildRestClient(ObjectRelationshipAPI);
+
+			const relationshipLabel = 'Relationship' + getRandomInt();
+
+			const {body: objectRelationship} =
+				await objectRelationshipAPIClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
+					'L_USER',
+					{
+						label: {en_US: relationshipLabel},
+						name: 'relationship' + getRandomInt(),
+						objectDefinitionExternalReferenceCode2:
+							objectDefinition.externalReferenceCode,
+						objectDefinitionId2: objectDefinition.id,
+						objectDefinitionName2: objectDefinition.name,
+						type: 'oneToMany',
+					}
+				);
+
+			apiHelpers.data.push({
+				id: objectRelationship.id,
+				type: 'objectRelationship',
+			});
+
+			await objectFieldsPage.goto(objectDefinition.label['en_US']);
+
+			await objectFieldsPage.openObjectField(relationshipLabel);
+
+			const iframeLocator = page.frameLocator('iframe');
+			const newLabel = 'New Relationship' + getRandomInt();
+
+			await iframeLocator.getByLabel('LabelMandatory').clear();
+			await iframeLocator.getByLabel('LabelMandatory').fill(newLabel);
+
+			await objectFieldsPage.editFieldSaveButton.click();
+
+			await waitForAlert(
+				page,
+				'The object field was updated successfully'
+			);
+
+			await page.reload();
+
+			await expect(page.getByText(newLabel)).toBeVisible();
+		}
+	);
+
+	test(
+		'can view description for each field business type',
+		{tag: '@LPD-93353'},
+		async ({apiHelpers, objectFieldsPage, page}) => {
+			const objectDefinition =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					status: {code: 0},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+
+			await objectFieldsPage.goto(objectDefinition.label.en_US);
+
+			await objectFieldsPage.addObjectFieldButton.click();
+
+			await objectFieldsPage.objectFieldLabelInput.waitFor();
+
+			await objectFieldsPage.objectFieldOptionsDropdown.click();
+
+			const fieldTypeDescriptions = [
+				{
+					description: 'Assign the entry to a user or role.',
+					type: 'Assignee',
+				},
+				{
+					description:
+						'Upload files or select from Documents and Media.',
+					type: 'Attachment',
+				},
+				{
+					description:
+						'Automatically generate a unique value when a new entry is added.',
+					type: 'Auto Increment',
+				},
+				{
+					description: 'Select between true or false.',
+					type: 'Boolean',
+				},
+				{description: 'Add a date.', type: 'Date'},
+				{
+					description: 'Add date and time values.',
+					type: 'Date and Time',
+				},
+				{
+					description:
+						'Add a decimal number that supports fractional portions.',
+					type: 'Decimal',
+				},
+				{
+					description: 'Store content as encrypted text.',
+					type: 'Encrypted',
+				},
+				{
+					description:
+						'Add an algorithm that derives its value from other fields.',
+					type: 'Formula',
+				},
+				{
+					description: 'Add an integer up to nine digits.',
+					type: 'Integer',
+				},
+				{
+					description: 'Add a long integer up to 16 digits.',
+					type: 'Long Integer',
+				},
+				{
+					description: 'Add text up to 65,000 characters.',
+					type: 'Long Text',
+				},
+				{
+					description: 'Choose from a picklist.',
+					type: 'Picklist',
+				},
+				{
+					description:
+						'Add a high precision decimal number without rounding.',
+					type: 'Precision Decimal',
+				},
+				{
+					description: 'Create rich text content.',
+					type: 'Rich Text',
+				},
+				{
+					description: 'Add text up to 280 characters.',
+					type: 'Text',
+				},
+			];
+
+			for (const {description, type} of fieldTypeDescriptions) {
+				await expect(
+					page.getByRole('option', {exact: true, name: type})
+				).toContainText(description);
+			}
+		}
+	);
 
 	test('can view more than 20 picklists in the picklist drop-down', async ({
 		apiHelpers,
@@ -2434,88 +2800,6 @@ test.describe('Manage objectFields through Objects Admin UI', () => {
 			});
 		});
 	});
-
-	test(
-		'can edit the prefix type and prefix for a phone number field',
-		{tag: ['@LPD-83570']},
-		async ({apiHelpers, objectFieldsPage}) => {
-			let objectDefinition: ObjectDefinition;
-			let selectedPrefixType: string;
-			let selectedPrefix: string;
-
-			const objectFieldLabel = `phoneNumber${getRandomInt()}`;
-
-			await test.step('Create required definitions', async () => {
-				const listTypeDefinition =
-					await apiHelpers.listTypeAdmin.postRandomListTypeDefinition();
-
-				apiHelpers.data.push({
-					id: listTypeDefinition.id,
-					type: 'listTypeDefinition',
-				});
-
-				objectDefinition =
-					await apiHelpers.objectAdmin.postRandomObjectDefinition({
-						status: {code: 0},
-					});
-
-				apiHelpers.data.push({
-					id: objectDefinition.id,
-					type: 'objectDefinition',
-				});
-			});
-
-			await test.step('Navigate to the object definition and add a phone number field', async () => {
-				await objectFieldsPage.goto(objectDefinition.label!['en_US']);
-
-				await objectFieldsPage.addObjectField({
-					objectFieldBusinessType: 'Phone Number',
-					objectFieldLabel,
-				});
-			});
-
-			await test.step('Edit the prefix type and prefix for the phone number field', async () => {
-				await objectFieldsPage.openObjectField(objectFieldLabel);
-
-				await objectFieldsPage.prefixTypeDropdown.click();
-
-				const prefixTypeOption =
-					objectFieldsPage.iframeLocator.getByRole('option', {
-						exact: true,
-						name: 'Fixed',
-					});
-
-				selectedPrefixType = await prefixTypeOption.innerText();
-
-				await prefixTypeOption.click();
-
-				await objectFieldsPage.prefixDropdown.click();
-
-				const prefixOption = objectFieldsPage.iframeLocator
-					.getByRole('option')
-					.nth(1);
-
-				await prefixOption.click();
-
-				selectedPrefix =
-					await objectFieldsPage.prefixDropdown.innerText();
-
-				await objectFieldsPage.saveObjectField();
-			});
-
-			await test.step('Verify the updated prefix type and prefix are saved', async () => {
-				await objectFieldsPage.openObjectField(objectFieldLabel);
-
-				await expect(objectFieldsPage.prefixTypeDropdown).toHaveText(
-					selectedPrefixType
-				);
-
-				await expect(objectFieldsPage.prefixDropdown).toHaveText(
-					selectedPrefix
-				);
-			});
-		}
-	);
 });
 
 test.describe('Manage object fields default value properties', () => {
@@ -3343,6 +3627,110 @@ test.describe('Manage object fields default value properties', () => {
 			await modelBuilderRightSidebarPage.useDefaultValueToggle.uncheck();
 
 			await expect(rightSidebar).toHaveCSS('width', '320px');
+		}
+	);
+
+	test(
+		'normalizes email address default value to lowercase',
+		{tag: ['@LPD-70673']},
+		async ({apiHelpers, objectFieldsPage}) => {
+			const objectFieldLabel = `emailAddressField${getRandomInt()}`;
+
+			const objectDefinition =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					status: {code: 0},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+
+			await test.step('Add an Email Address field and set a mixed-case default value', async () => {
+				await objectFieldsPage.goto(objectDefinition.label.en_US);
+
+				await objectFieldsPage.addObjectField({
+					objectFieldBusinessType: 'Email Address',
+					objectFieldLabel,
+				});
+
+				await objectFieldsPage.openObjectField(objectFieldLabel);
+
+				await objectFieldsPage.advancedTab.click();
+
+				await objectFieldsPage.useDefaultValueToggle.check();
+
+				await objectFieldsPage.iframeLocator
+					.getByPlaceholder('Enter a default value.')
+					.fill('User@Example.com');
+
+				await objectFieldsPage.saveObjectField();
+			});
+
+			await test.step('Verify the stored default value is lowercase', async () => {
+				await objectFieldsPage.openObjectField(objectFieldLabel);
+
+				await objectFieldsPage.advancedTab.click();
+
+				await expect(
+					objectFieldsPage.iframeLocator.getByPlaceholder(
+						'Enter a default value.'
+					)
+				).toHaveValue('user@example.com');
+			});
+		}
+	);
+
+	test(
+		'shows error for email address field default value when value is invalid',
+		{tag: ['@LPD-70673']},
+		async ({apiHelpers, objectFieldsPage, page}) => {
+			const objectFieldLabel = `emailAddressField${getRandomInt()}`;
+
+			const objectDefinition =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					status: {code: 0},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+
+			const invalidEmailAddress = 'notanemail';
+
+			await test.step('Add an Email Address field and enter an invalid default value', async () => {
+				await objectFieldsPage.goto(objectDefinition.label.en_US);
+
+				await objectFieldsPage.addObjectField({
+					objectFieldBusinessType: 'Email Address',
+					objectFieldLabel,
+				});
+
+				await objectFieldsPage.openObjectField(objectFieldLabel);
+
+				await objectFieldsPage.advancedTab.click();
+
+				await objectFieldsPage.useDefaultValueToggle.check();
+
+				await objectFieldsPage.iframeLocator
+					.getByPlaceholder('Enter a default value.')
+					.fill(invalidEmailAddress);
+
+				await objectFieldsPage.editFieldSaveButton.click();
+			});
+
+			await test.step('Verify the save is rejected and the panel stays open', async () => {
+				await waitForAlert(
+					page,
+					`The value ${invalidEmailAddress} of setting "defaultValue" is invalid for object field "${objectFieldLabel}"`,
+					{type: 'danger'}
+				);
+
+				await expect(
+					objectFieldsPage.editFieldSaveButton
+				).toBeVisible();
+			});
 		}
 	);
 });

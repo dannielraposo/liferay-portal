@@ -24,11 +24,17 @@ components:
                     items:
                         $ref: "#/components/schemas/Variable"
                     type: array
+                model:
+                    $ref: "#/components/schemas/Model"
+                    readOnly: true
                 outputVariable:
                     $ref: "#/components/schemas/Variable"
                 status:
                     $ref: "#/components/schemas/Status"
                     readOnly: true
+                system:
+                    readOnly: true
+                    type: boolean
                 title:
                     type: string
                 version:
@@ -90,6 +96,85 @@ components:
                 url:
                     type: string
             type: object
+        Credential:
+            properties:
+                clientId:
+                    readOnly: true
+                    type: string
+                clientSecret:
+                    readOnly: true
+                    type: string
+            type: object
+        Guardrail:
+            properties:
+                active:
+                    type: boolean
+                description:
+                    type: string
+                externalReferenceCode:
+                    type: string
+                guardrailType:
+                    enum:
+                        -   input
+                        -   output
+                    type: string
+                location:
+                    type: string
+                maliciousUriFilterEnabled:
+                    type: boolean
+                multilanguageDetectionEnabled:
+                    type: boolean
+                piAndJailbreakConfidenceLevel:
+                    default: mediumAndAbove
+                    enum:
+                        -   high
+                        -   lowAndAbove
+                        -   mediumAndAbove
+                    type: string
+                piAndJailbreakFilterEnabled:
+                    type: boolean
+                raiDangerousLevel:
+                    default: none
+                    enum:
+                        -   high
+                        -   lowAndAbove
+                        -   mediumAndAbove
+                        -   none
+                    type: string
+                raiHarassmentLevel:
+                    default: none
+                    enum:
+                        -   high
+                        -   lowAndAbove
+                        -   mediumAndAbove
+                        -   none
+                    type: string
+                raiHateSpeechLevel:
+                    default: none
+                    enum:
+                        -   high
+                        -   lowAndAbove
+                        -   mediumAndAbove
+                        -   none
+                    type: string
+                raiSexuallyExplicitLevel:
+                    default: none
+                    enum:
+                        -   high
+                        -   lowAndAbove
+                        -   mediumAndAbove
+                        -   none
+                    type: string
+                sdpFilterEnabled:
+                    type: boolean
+                title:
+                    readOnly: true
+                    type: string
+                title_i18n:
+                    additionalProperties:
+                        type: string
+                    type: object
+            type: object
         Message:
             properties:
                 chat:
@@ -109,10 +194,67 @@ components:
                 text:
                     type: string
             type: object
+        Model:
+            properties:
+                label:
+                    type: string
+                name:
+                    type: string
+                providerLabel:
+                    type: string
+            type: object
         ProvisioningRequest:
             properties:
-                customerName:
+                accountEntryExternalReferenceCode:
                     type: string
+                accountEntryId:
+                    format: int64
+                    readOnly: true
+                    type: integer
+                accountEntryName:
+                    type: string
+                userAccounts:
+                    items:
+                        $ref: "#/components/schemas/UserAccount"
+                    type: array
+            required:
+                -   accountEntryName
+                -   userAccounts
+            type: object
+        Report:
+            properties:
+                agentDefinitionExternalReferenceCodes:
+                    items:
+                        type: string
+                    type: array
+                chatbotExternalReferenceCode:
+                    type: string
+                dateCreated:
+                    format: date-time
+                    readOnly: true
+                    type: string
+                externalReferenceCode:
+                    readOnly: true
+                    type: string
+                feedback:
+                    type: string
+                id:
+                    format: int64
+                    readOnly: true
+                    type: integer
+                level:
+                    readOnly: true
+                    type: string
+                reason:
+                    type: string
+                surface:
+                    type: string
+                userMessage:
+                    type: string
+            required:
+                -   agentDefinitionExternalReferenceCodes
+                -   feedback
+                -   surface
             type: object
         Site:
             properties:
@@ -130,6 +272,19 @@ components:
                 label_i18n:
                     type: string
             type: object
+        UserAccount:
+            properties:
+                emailAddress:
+                    type: string
+                firstName:
+                    type: string
+                lastName:
+                    type: string
+                screenName:
+                    type: string
+            required:
+                -   emailAddress
+            type: object
         Variable:
             properties:
                 name:
@@ -139,8 +294,7 @@ components:
             type: object
 info:
     description:
-        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.ai.hub.rest.client', and version '1.0.6'."
+        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.ai.hub.rest.client', and version '1.0.6'."
     license:
         name: Apache 2.0
         url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -359,6 +513,81 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ContentRetriever"
             tags: ["ContentRetriever"]
+    "/credentials":
+        get:
+            operationId: getCredential
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Credential"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Credential"
+            tags: ["Credential"]
+    "/guardrails":
+        post:
+            operationId: postGuardrail
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Guardrail"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/Guardrail"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Guardrail"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Guardrail"
+            tags: ["Guardrail"]
+    "/guardrails/by-external-reference-code/{externalReferenceCode}":
+        delete:
+            operationId: deleteGuardrailByExternalReferenceCode
+            parameters:
+                -   in: path
+                    name: externalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+            tags: ["Guardrail"]
+        put:
+            operationId: putGuardrailByExternalReferenceCode
+            parameters:
+                -   in: path
+                    name: externalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Guardrail"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/Guardrail"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Guardrail"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Guardrail"
+            tags: ["Guardrail"]
     "/provisioning":
         post:
             operationId: postProvisioning
@@ -373,9 +602,34 @@ paths:
             responses:
                 200:
                     content:
-                        application/json: {}
-                        application/xml: {}
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ProvisioningRequest"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ProvisioningRequest"
             tags: ["ProvisioningRequest"]
+    "/reports":
+        post:
+            operationId: postReport
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Report"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/Report"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Report"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Report"
+            tags: ["Report"]
     "/sites/by-external-reference-code/{externalReferenceCode}/site-initializer":
         put:
             operationId: putSiteByExternalReferenceCodeSiteInitializer

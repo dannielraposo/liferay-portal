@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PwdGenerator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.log.LogCapture;
@@ -175,7 +176,10 @@ public class UserAccountResourcePerformanceTest {
 				"client_secret_post", user.getUserId(),
 				RandomTestUtil.randomString(), 0, RandomTestUtil.randomString(),
 				"", Collections.emptyList(), "", 0, "", "rest_token", "",
-				Arrays.asList("http://localhost:8080"), false,
+				Arrays.asList(
+					"http://localhost:" +
+						PortalUtil.getPortalServerPort(false)),
+				false,
 				Arrays.asList(
 					"Liferay.Headless.Admin.User.everything",
 					"Liferay.Headless.Admin.User.everything.read",
@@ -272,8 +276,10 @@ public class UserAccountResourcePerformanceTest {
 					"Bearer " + _jsonObject.getString("access_token"));
 				httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
 				httpInvoker.path(
-					"http://localhost:8080/o/headless-admin-user/v1.0" +
-						"/user-accounts");
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false),
+						"/o/headless-admin-user/v1.0/user-accounts"));
 
 				httpInvoker.invoke();
 			}

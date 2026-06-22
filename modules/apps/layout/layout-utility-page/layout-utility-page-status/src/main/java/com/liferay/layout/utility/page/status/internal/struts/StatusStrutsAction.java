@@ -49,6 +49,13 @@ public class StatusStrutsAction implements StrutsAction {
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
+		Exception exception = (Exception)httpServletRequest.getAttribute(
+			WebKeys.PORTAL_STATUS_EXCEPTION);
+
+		if (exception != null) {
+			SessionErrors.remove(httpServletRequest, exception.getClass());
+		}
+
 		LayoutSet layoutSet = _layoutSetLocalService.getLayoutSet(
 			themeDisplay.getScopeGroupId(), false);
 
@@ -67,8 +74,6 @@ public class StatusStrutsAction implements StrutsAction {
 			httpServletResponse, unsyncStringWriter);
 
 		requestDispatcher.include(httpServletRequest, pipingServletResponse);
-
-		SessionErrors.clear(httpServletRequest);
 
 		Document document = null;
 

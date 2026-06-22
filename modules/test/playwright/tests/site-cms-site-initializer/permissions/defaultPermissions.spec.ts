@@ -9,11 +9,19 @@ import {dataApiHelpersTest} from '../../../fixtures/dataApiHelpersTest';
 import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {getRandomInt} from '../../../utils/getRandomInt';
-import {PORTLET_URLS} from '../../../utils/portletUrls';
 import {waitForAlert} from '../../../utils/waitForAlert';
 import {cmsPagesTest} from './fixtures/cmsPagesTest';
 import {DefaultPermissionsPage} from './pages/DefaultPermissionsPage';
 import {PermissionsPage} from './pages/PermissionsPage';
+import {
+	clickMenuItem,
+	createSpace,
+	deleteSpace,
+	getTableRowByText,
+	goToAllSpaces,
+	handleClickMenuItem,
+	updateSpaceExternalReferenceCode,
+} from './utils/permissions';
 
 const test = mergeTests(
 	cmsPagesTest,
@@ -57,28 +65,6 @@ async function checkModalHeader(
 	}).toPass({timeout: 5000});
 }
 
-async function clickMenuItem(menuitem: string, page, objectName?: string) {
-	await expect(async () => {
-		if (!objectName) {
-			await page.getByLabel('Actions').click();
-
-			await page
-				.getByRole('menuitem', {
-					exact: true,
-					name: menuitem,
-				})
-				.click({timeout: 1000});
-		}
-		else {
-			await (await getTableRowByText(page, objectName))
-				.getByRole('button', {name: 'Actions'})
-				.click();
-
-			await handleClickMenuItem(menuitem, page);
-		}
-	}).toPass();
-}
-
 async function closeInfoAlert(page) {
 	await page
 		.locator('.alert-info')
@@ -86,68 +72,13 @@ async function closeInfoAlert(page) {
 		.click();
 }
 
-async function createSpace(page, spaceName: string) {
-	await page.getByLabel('Add Space').first().click();
-	await page.getByLabel('Space Name').fill(spaceName);
-	await page.getByRole('button', {name: 'Continue'}).click();
-	await page.getByRole('button', {name: 'Continue'}).click();
-}
-
-async function deleteSpace(page, spaceName: string) {
-	await expect(async () => {
-		await clickMenuItem('Delete', page, spaceName);
-
-		await page.getByRole('button', {name: 'Delete'}).click();
-	}).toPass({timeout: 5000});
-
-	await waitForAlert(page, `${spaceName} was successfully deleted.`);
-}
-
-async function getTableRowByText(page, text: string) {
-	return page.locator('table.table tbody tr', {hasText: text}).first();
-}
-
-async function goToAllSpaces(page) {
-	await expect(async () => {
-		await page.goto(PORTLET_URLS.cmsAllSpaces);
-
-		await expect(
-			page.getByRole('heading', {exact: true, name: 'All Spaces'})
-		).toBeVisible();
-	}).toPass({timeout: 10000});
-}
-
-async function handleClickMenuItem(menuitem: string, page) {
-	await expect(async () => {
-		if (menuitem.includes('Permissions')) {
-			await page
-				.getByRole('menuitem', {
-					exact: true,
-					name: 'Permissions',
-				})
-				.click({timeout: 1000});
-
-			await page
-				.getByRole('menuitem', {
-					exact: true,
-					name: menuitem,
-				})
-				.click({timeout: 1000});
-		}
-		else {
-			await page
-				.getByRole('menuitem', {
-					exact: true,
-					name: menuitem,
-				})
-				.click({timeout: 1000});
-		}
-	}).toPass({timeout: 5000});
-}
-
 async function resetPermissions(page, folderName?: string) {
 	await expect(async () => {
 		await clickMenuItem('Reset to Default Permissions', page, folderName);
+
+		await expect(page.locator('.liferay-modal .modal-dialog')).toHaveClass(
+			/modal-dialog-centered/
+		);
 
 		await page.getByRole('button', {name: 'Confirm'}).click();
 	}).toPass({timeout: 5000});
@@ -737,7 +668,7 @@ test(
 
 			await waitForAlert(
 				page,
-				`Success:${contentName} was published successfully.`
+				`Success:${contentName} was created successfully.`
 			);
 
 			await clickMenuItem('Permissions', page, contentName);
@@ -1185,6 +1116,140 @@ test(
 				page,
 				permissions: permissionsByRole2,
 			});
+		}
+		finally {
+			await goToAllSpaces(page);
+
+			await deleteSpace(page, spaceName);
+		}
+	}
+);
+
+test(
+	'Space default permissions remain available after changing the Space ERC',
+	{tag: '@LPD-94507'},
+	async ({apiHelpers, defaultPermissionsPage, page}) => {
+		test.setTimeout(90000);
+
+		const spaceName = 'Space' + getRandomInt();
+
+		// Create a Space and configure its default permissions
+
+		await goToAllSpaces(page);
+
+		await createSpace(page, spaceName);
+
+		try {
+			await goToAllSpaces(page);
+
+			await clickMenuItem('Default Permissions', page, spaceName);
+
+			const permissions = [
+				{action: 'DELETE', checked: true, role: 'Power User'},
+				{action: 'PERMISSIONS', checked: true, role: 'User'},
+			];
+
+			await defaultPermissionsPage.checkPermissionsAndSave(permissions);
+
+			// Change the Space ERC from Space Settings
+
+			await updateSpaceExternalReferenceCode(
+				apiHelpers,
+				spaceName,
+				'erc-' + getRandomInt()
+			);
+
+			// LPP-64409: the previously configured default permissions are
+			// still visible after the change
+
+			await goToAllSpaces(page);
+
+			await verifyPermissions({
+				menuitem: 'Default Permissions',
+				objectName: spaceName,
+				page,
+				permissions,
+			});
+
+			// New default permissions can still be added without a system error
+
+			await clickMenuItem('Default Permissions', page, spaceName);
+
+			await defaultPermissionsPage.checkPermissionsAndSave([
+				{action: 'VIEW', role: 'User'},
+			]);
+		}
+		finally {
+			await goToAllSpaces(page);
+
+			await deleteSpace(page, spaceName);
+		}
+	}
+);
+
+test(
+	'Folder default permission management works after changing the Space ERC',
+	{tag: '@LPD-94507'},
+	async ({apiHelpers, defaultPermissionsPage, page, spaceSummaryPage}) => {
+		test.setTimeout(120000);
+
+		const spaceName = 'Space' + getRandomInt();
+
+		await goToAllSpaces(page);
+
+		await createSpace(page, spaceName);
+
+		try {
+
+			// Create a folder before the ERC change
+
+			await spaceSummaryPage.goto(spaceName);
+
+			const folderBefore = 'Folder' + getRandomInt();
+
+			await spaceSummaryPage.createContentFolder(folderBefore);
+
+			// Change the Space ERC from Space Settings
+
+			await updateSpaceExternalReferenceCode(
+				apiHelpers,
+				spaceName,
+				'erc-' + getRandomInt()
+			);
+
+			// Create a folder after the ERC change
+
+			await spaceSummaryPage.goto(spaceName);
+
+			const folderAfter = 'Folder' + getRandomInt();
+
+			await spaceSummaryPage.createContentFolder(folderAfter);
+
+			await spaceSummaryPage.viewAllContentLink.click();
+
+			// LPP-64362: folder Default Permissions and Edit and Propagate
+			// Default Permissions stay usable for folders created both before
+			// and after the ERC change
+
+			for (const folderName of [folderBefore, folderAfter]) {
+				await clickMenuItem('Default Permissions', page, folderName);
+
+				await defaultPermissionsPage.checkPermissionsAndSave([
+					{action: 'VIEW', role: 'User'},
+				]);
+
+				await clickMenuItem(
+					'Edit and Propagate Default Permissions',
+					page,
+					folderName
+				);
+
+				await defaultPermissionsPage.checkPermissionsAndSave(
+					[{action: 'UPDATE', role: 'Power User'}],
+					false,
+					true
+				);
+			}
 		}
 		finally {
 			await goToAllSpaces(page);

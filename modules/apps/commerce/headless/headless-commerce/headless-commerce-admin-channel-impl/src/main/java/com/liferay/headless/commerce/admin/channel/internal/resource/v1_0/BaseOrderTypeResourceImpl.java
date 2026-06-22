@@ -46,9 +46,13 @@ public abstract class BaseOrderTypeResourceImpl implements OrderTypeResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/payment-method-group-rel-order-types/{paymentMethodGroupRelOrderTypeId}/order-type'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Retrieves the order type associated with the parent PaymentMethodGroupRelOrderType, addressed by internal ID. Calls CommercePaymentMethodGroupRelQualifierService.getCommercePaymentMethodGroupRelQualifier. Validation -- NoSuchPaymentMethodGroupRelQualifierException -> 404 when qualifier id not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Identifier of a binding between a payment method group and an order type. Addresses a single rule controlling which payment options apply for a given order type.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "paymentMethodGroupRelOrderTypeId"
 			)
@@ -78,9 +82,13 @@ public abstract class BaseOrderTypeResourceImpl implements OrderTypeResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/shipping-fixed-option-order-types/{shippingFixedOptionOrderTypeId}/order-type'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Retrieves the order type associated with the parent ShippingFixedOptionOrderType, addressed by internal ID. Calls CommerceShippingFixedOptionQualifierService.getCommerceShippingFixedOptionQualifier. Validation -- NoSuchShippingFixedOptionQualifierException -> 404 when qualifier id not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Identifier of a binding between a fixed-rate shipping option and an order type. Addresses a single rule restricting that shipping option to the order type.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "shippingFixedOptionOrderTypeId"
 			)
@@ -550,4 +558,4 @@ public abstract class BaseOrderTypeResourceImpl implements OrderTypeResource {
 		LogFactoryUtil.getLog(BaseOrderTypeResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-2074236138
+// LIFERAY-REST-BUILDER-HASH:-106194637

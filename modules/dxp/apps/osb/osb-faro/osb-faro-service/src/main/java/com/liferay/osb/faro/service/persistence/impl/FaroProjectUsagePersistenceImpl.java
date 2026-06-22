@@ -16,7 +16,6 @@ import com.liferay.osb.faro.service.persistence.impl.constants.OSBFaroPersistenc
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -70,9 +69,9 @@ public class FaroProjectUsagePersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByF_U;
-	private UniquePersistenceFinder<FaroProjectUsage>
-		_uniquePersistenceFinderByF_U;
+	private UniquePersistenceFinder
+		<FaroProjectUsage, NoSuchFaroProjectUsageException>
+			_uniquePersistenceFinderByF_U;
 
 	/**
 	 * Returns the faro project usage where faroProjectId = &#63; and usageTime = &#63; or throws a <code>NoSuchFaroProjectUsageException</code> if it could not be found.
@@ -86,35 +85,8 @@ public class FaroProjectUsagePersistenceImpl
 	public FaroProjectUsage findByF_U(long faroProjectId, long usageTime)
 		throws NoSuchFaroProjectUsageException {
 
-		FaroProjectUsage faroProjectUsage = fetchByF_U(
-			faroProjectId, usageTime);
-
-		if (faroProjectUsage == null) {
-			String message =
-				_uniquePersistenceFinderByF_U.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {faroProjectId, usageTime});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFaroProjectUsageException(message);
-		}
-
-		return faroProjectUsage;
-	}
-
-	/**
-	 * Returns the faro project usage where faroProjectId = &#63; and usageTime = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param faroProjectId the faro project ID
-	 * @param usageTime the usage time
-	 * @return the matching faro project usage, or <code>null</code> if a matching faro project usage could not be found
-	 */
-	@Override
-	public FaroProjectUsage fetchByF_U(long faroProjectId, long usageTime) {
-		return fetchByF_U(faroProjectId, usageTime, true);
+		return _uniquePersistenceFinderByF_U.find(
+			finderCache, new Object[] {faroProjectId, usageTime});
 	}
 
 	/**
@@ -340,17 +312,18 @@ public class FaroProjectUsagePersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByF_U = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByF_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"faroProjectId", "usageTime"}, false,
-			FaroProjectUsage::getFaroProjectId, FaroProjectUsage::getUsageTime);
-
 		_uniquePersistenceFinderByF_U = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByF_U, _SQL_SELECT_FAROPROJECTUSAGE_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByF_U",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"faroProjectId", "usageTime"}, 0, 0, false,
+				FaroProjectUsage::getFaroProjectId,
+				FaroProjectUsage::getUsageTime),
+			_SQL_SELECT_FAROPROJECTUSAGE_WHERE, "",
 			new FinderColumn<>(
 				"faroProjectUsage.", "faroProjectId", FinderColumn.Type.LONG,
-				"=", true, false, FaroProjectUsage::getFaroProjectId),
+				"=", true, true, FaroProjectUsage::getFaroProjectId),
 			new FinderColumn<>(
 				"faroProjectUsage.", "usageTime", FinderColumn.Type.LONG, "=",
 				true, true, FaroProjectUsage::getUsageTime));
@@ -397,9 +370,6 @@ public class FaroProjectUsagePersistenceImpl
 	@Reference
 	protected FinderCache finderCache;
 
-	private static final String _ENTITY_ALIAS_PREFIX =
-		FaroProjectUsageModelImpl.ENTITY_ALIAS + ".";
-
 	private static final String _SQL_SELECT_FAROPROJECTUSAGE =
 		"SELECT faroProjectUsage FROM FaroProjectUsage faroProjectUsage";
 
@@ -418,4 +388,4 @@ public class FaroProjectUsagePersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1259211380
+// LIFERAY-SERVICE-BUILDER-HASH:-1328475243

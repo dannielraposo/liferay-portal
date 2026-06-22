@@ -79,6 +79,19 @@ public class ExportImportReportEntryLocalServiceWrapper
 			exportImportReportEntry);
 	}
 
+	@Override
+	public com.liferay.exportimport.report.model.ExportImportReportEntry
+		addMissingReferenceExportImportReportEntry(
+			long groupId, long companyId, String classExternalReferenceCode,
+			long classNameId, long exportImportConfigurationId,
+			String modelNameLanguageKey) {
+
+		return _exportImportReportEntryLocalService.
+			addMissingReferenceExportImportReportEntry(
+				groupId, companyId, classExternalReferenceCode, classNameId,
+				exportImportConfigurationId, modelNameLanguageKey);
+	}
+
 	/**
 	 * Creates a new export import report entry with the primary key. Does not add the export import report entry to the database.
 	 *
@@ -318,6 +331,15 @@ public class ExportImportReportEntryLocalServiceWrapper
 			getExportImportReportEntriesCount();
 	}
 
+	@Override
+	public int getExportImportReportEntriesCount(
+		long companyId, long exportImportConfigurationId) {
+
+		return _exportImportReportEntryLocalService.
+			getExportImportReportEntriesCount(
+				companyId, exportImportConfigurationId);
+	}
+
 	/**
 	 * Returns the export import report entry with the primary key.
 	 *
@@ -368,6 +390,19 @@ public class ExportImportReportEntryLocalServiceWrapper
 				groupId, companyId, classExternalReferenceCode, classNameId,
 				classPK, exportImportConfigurationId, errorMessage,
 				errorStacktrace, modelNameLanguageKey);
+	}
+
+	@Override
+	public com.liferay.exportimport.report.model.ExportImportReportEntry
+		getOrAddMissingReferenceExportImportReportEntry(
+			long groupId, long companyId, String classExternalReferenceCode,
+			long classNameId, long exportImportConfigurationId,
+			String modelNameLanguageKey) {
+
+		return _exportImportReportEntryLocalService.
+			getOrAddMissingReferenceExportImportReportEntry(
+				groupId, companyId, classExternalReferenceCode, classNameId,
+				exportImportConfigurationId, modelNameLanguageKey);
 	}
 
 	/**
@@ -446,4 +481,4 @@ public class ExportImportReportEntryLocalServiceWrapper
 		_exportImportReportEntryLocalService;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:233950841
+// LIFERAY-SERVICE-BUILDER-HASH:-624051149

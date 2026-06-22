@@ -5,15 +5,11 @@
 
 package com.liferay.portal.service.persistence.impl;
 
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchPortletItemException;
 import com.liferay.portal.kernel.log.Log;
@@ -28,9 +24,9 @@ import com.liferay.portal.kernel.service.persistence.PortletItemUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
+import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.impl.PortletItemImpl;
 import com.liferay.portal.model.impl.PortletItemModelImpl;
 
@@ -41,7 +37,6 @@ import java.lang.reflect.InvocationHandler;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * The persistence implementation for the portlet item service.
@@ -71,73 +66,14 @@ public class PortletItemPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByG_C;
-	private FinderPath _finderPathWithoutPaginationFindByG_C;
-	private FinderPath _finderPathCountByG_C;
-	private CollectionPersistenceFinder<PortletItem>
+	private CollectionPersistenceFinder<PortletItem, NoSuchPortletItemException>
 		_collectionPersistenceFinderByG_C;
 
 	/**
-	 * Returns all the portlet items where groupId = &#63; and classNameId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param classNameId the class name ID
-	 * @return the matching portlet items
-	 */
-	@Override
-	public List<PortletItem> findByG_C(long groupId, long classNameId) {
-		return findByG_C(
-			groupId, classNameId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the portlet items where groupId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of portlet items
-	 * @param end the upper bound of the range of portlet items (not inclusive)
-	 * @return the range of matching portlet items
-	 */
-	@Override
-	public List<PortletItem> findByG_C(
-		long groupId, long classNameId, int start, int end) {
-
-		return findByG_C(groupId, classNameId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the portlet items where groupId = &#63; and classNameId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of portlet items
-	 * @param end the upper bound of the range of portlet items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching portlet items
-	 */
-	@Override
-	public List<PortletItem> findByG_C(
-		long groupId, long classNameId, int start, int end,
-		OrderByComparator<PortletItem> orderByComparator) {
-
-		return findByG_C(
-			groupId, classNameId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the portlet items where groupId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -175,16 +111,9 @@ public class PortletItemPersistenceImpl
 			OrderByComparator<PortletItem> orderByComparator)
 		throws NoSuchPortletItemException {
 
-		PortletItem portletItem = fetchByG_C_First(
-			groupId, classNameId, orderByComparator);
-
-		if (portletItem != null) {
-			return portletItem;
-		}
-
-		throw new NoSuchPortletItemException(
-			_collectionPersistenceFinderByG_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, classNameId}));
+		return _collectionPersistenceFinderByG_C.findFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, classNameId}, orderByComparator);
 	}
 
 	/**
@@ -232,80 +161,14 @@ public class PortletItemPersistenceImpl
 			new Object[] {groupId, classNameId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_P_C;
-	private FinderPath _finderPathWithoutPaginationFindByG_P_C;
-	private FinderPath _finderPathCountByG_P_C;
-	private CollectionPersistenceFinder<PortletItem>
+	private CollectionPersistenceFinder<PortletItem, NoSuchPortletItemException>
 		_collectionPersistenceFinderByG_P_C;
 
 	/**
-	 * Returns all the portlet items where groupId = &#63; and portletId = &#63; and classNameId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param portletId the portlet ID
-	 * @param classNameId the class name ID
-	 * @return the matching portlet items
-	 */
-	@Override
-	public List<PortletItem> findByG_P_C(
-		long groupId, String portletId, long classNameId) {
-
-		return findByG_P_C(
-			groupId, portletId, classNameId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the portlet items where groupId = &#63; and portletId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param portletId the portlet ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of portlet items
-	 * @param end the upper bound of the range of portlet items (not inclusive)
-	 * @return the range of matching portlet items
-	 */
-	@Override
-	public List<PortletItem> findByG_P_C(
-		long groupId, String portletId, long classNameId, int start, int end) {
-
-		return findByG_P_C(groupId, portletId, classNameId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the portlet items where groupId = &#63; and portletId = &#63; and classNameId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletItemModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param portletId the portlet ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of portlet items
-	 * @param end the upper bound of the range of portlet items (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching portlet items
-	 */
-	@Override
-	public List<PortletItem> findByG_P_C(
-		long groupId, String portletId, long classNameId, int start, int end,
-		OrderByComparator<PortletItem> orderByComparator) {
-
-		return findByG_P_C(
-			groupId, portletId, classNameId, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the portlet items where groupId = &#63; and portletId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletItemModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -345,17 +208,9 @@ public class PortletItemPersistenceImpl
 			OrderByComparator<PortletItem> orderByComparator)
 		throws NoSuchPortletItemException {
 
-		PortletItem portletItem = fetchByG_P_C_First(
-			groupId, portletId, classNameId, orderByComparator);
-
-		if (portletItem != null) {
-			return portletItem;
-		}
-
-		throw new NoSuchPortletItemException(
-			_collectionPersistenceFinderByG_P_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, portletId, classNameId}));
+		return _collectionPersistenceFinderByG_P_C.findFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, portletId, classNameId}, orderByComparator);
 	}
 
 	/**
@@ -408,7 +263,8 @@ public class PortletItemPersistenceImpl
 			new Object[] {groupId, portletId, classNameId});
 	}
 
-	private FinderPath _finderPathFetchByG_N_P_C;
+	private UniquePersistenceFinder<PortletItem, NoSuchPortletItemException>
+		_uniquePersistenceFinderByG_N_P_C;
 
 	/**
 	 * Returns the portlet item where groupId = &#63; and name = &#63; and portletId = &#63; and classNameId = &#63; or throws a <code>NoSuchPortletItemException</code> if it could not be found.
@@ -425,52 +281,9 @@ public class PortletItemPersistenceImpl
 			long groupId, String name, String portletId, long classNameId)
 		throws NoSuchPortletItemException {
 
-		PortletItem portletItem = fetchByG_N_P_C(
-			groupId, name, portletId, classNameId);
-
-		if (portletItem == null) {
-			StringBundler sb = new StringBundler(10);
-
-			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-			sb.append("groupId=");
-			sb.append(groupId);
-
-			sb.append(", name=");
-			sb.append(name);
-
-			sb.append(", portletId=");
-			sb.append(portletId);
-
-			sb.append(", classNameId=");
-			sb.append(classNameId);
-
-			sb.append("}");
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(sb.toString());
-			}
-
-			throw new NoSuchPortletItemException(sb.toString());
-		}
-
-		return portletItem;
-	}
-
-	/**
-	 * Returns the portlet item where groupId = &#63; and name = &#63; and portletId = &#63; and classNameId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param name the name
-	 * @param portletId the portlet ID
-	 * @param classNameId the class name ID
-	 * @return the matching portlet item, or <code>null</code> if a matching portlet item could not be found
-	 */
-	@Override
-	public PortletItem fetchByG_N_P_C(
-		long groupId, String name, String portletId, long classNameId) {
-
-		return fetchByG_N_P_C(groupId, name, portletId, classNameId, true);
+		return _uniquePersistenceFinderByG_N_P_C.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, name, portletId, classNameId});
 	}
 
 	/**
@@ -488,118 +301,10 @@ public class PortletItemPersistenceImpl
 		long groupId, String name, String portletId, long classNameId,
 		boolean useFinderCache) {
 
-		name = Objects.toString(name, "");
-		portletId = Objects.toString(portletId, "");
-
-		Object[] finderArgs = null;
-
-		if (useFinderCache) {
-			finderArgs = new Object[] {groupId, name, portletId, classNameId};
-		}
-
-		Object result = null;
-
-		if (useFinderCache) {
-			result = FinderCacheUtil.getResult(
-				_finderPathFetchByG_N_P_C, finderArgs, this);
-		}
-
-		if (result instanceof PortletItem) {
-			PortletItem portletItem = (PortletItem)result;
-
-			if ((groupId != portletItem.getGroupId()) ||
-				!Objects.equals(name, portletItem.getName()) ||
-				!Objects.equals(portletId, portletItem.getPortletId()) ||
-				(classNameId != portletItem.getClassNameId())) {
-
-				result = null;
-			}
-		}
-
-		if (result == null) {
-			StringBundler sb = new StringBundler(6);
-
-			sb.append(_SQL_SELECT_PORTLETITEM_WHERE);
-
-			sb.append(_FINDER_COLUMN_G_N_P_C_GROUPID_2);
-
-			boolean bindName = false;
-
-			if (name.isEmpty()) {
-				sb.append(_FINDER_COLUMN_G_N_P_C_NAME_3);
-			}
-			else {
-				bindName = true;
-
-				sb.append(_FINDER_COLUMN_G_N_P_C_NAME_2);
-			}
-
-			boolean bindPortletId = false;
-
-			if (portletId.isEmpty()) {
-				sb.append(_FINDER_COLUMN_G_N_P_C_PORTLETID_3);
-			}
-			else {
-				bindPortletId = true;
-
-				sb.append(_FINDER_COLUMN_G_N_P_C_PORTLETID_2);
-			}
-
-			sb.append(_FINDER_COLUMN_G_N_P_C_CLASSNAMEID_2);
-
-			String sql = sb.toString();
-
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				Query query = session.createQuery(sql);
-
-				QueryPos queryPos = QueryPos.getInstance(query);
-
-				queryPos.add(groupId);
-
-				if (bindName) {
-					queryPos.add(StringUtil.toLowerCase(name));
-				}
-
-				if (bindPortletId) {
-					queryPos.add(portletId);
-				}
-
-				queryPos.add(classNameId);
-
-				List<PortletItem> list = query.list();
-
-				if (list.isEmpty()) {
-					if (useFinderCache) {
-						FinderCacheUtil.putResult(
-							_finderPathFetchByG_N_P_C, finderArgs, list);
-					}
-				}
-				else {
-					PortletItem portletItem = list.get(0);
-
-					result = portletItem;
-
-					cacheResult(portletItem);
-				}
-			}
-			catch (Exception exception) {
-				throw processException(exception);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		if (result instanceof List<?>) {
-			return null;
-		}
-		else {
-			return (PortletItem)result;
-		}
+		return _uniquePersistenceFinderByG_N_P_C.fetch(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, name, portletId, classNameId},
+			useFinderCache);
 	}
 
 	/**
@@ -635,33 +340,10 @@ public class PortletItemPersistenceImpl
 	public int countByG_N_P_C(
 		long groupId, String name, String portletId, long classNameId) {
 
-		PortletItem portletItem = fetchByG_N_P_C(
-			groupId, name, portletId, classNameId);
-
-		if (portletItem == null) {
-			return 0;
-		}
-
-		return 1;
+		return _uniquePersistenceFinderByG_N_P_C.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, name, portletId, classNameId});
 	}
-
-	private static final String _FINDER_COLUMN_G_N_P_C_GROUPID_2 =
-		"portletItem.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_N_P_C_NAME_2 =
-		"lower(portletItem.name) = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_N_P_C_NAME_3 =
-		"(portletItem.name IS NULL OR portletItem.name = '') AND ";
-
-	private static final String _FINDER_COLUMN_G_N_P_C_PORTLETID_2 =
-		"portletItem.portletId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_N_P_C_PORTLETID_3 =
-		"(portletItem.portletId IS NULL OR portletItem.portletId = '') AND ";
-
-	private static final String _FINDER_COLUMN_G_N_P_C_CLASSNAMEID_2 =
-		"portletItem.classNameId = ?";
 
 	public PortletItemPersistenceImpl() {
 		setModelClass(PortletItem.class);
@@ -860,86 +542,97 @@ public class PortletItemPersistenceImpl
 	 * Initializes the portlet item persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "classNameId"}, true);
-
-		_finderPathWithoutPaginationFindByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "classNameId"}, true);
-
-		_finderPathCountByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "classNameId"}, false);
-
 		_collectionPersistenceFinderByG_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_C,
-			_finderPathWithoutPaginationFindByG_C, _finderPathCountByG_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "classNameId"}, false),
 			_SQL_SELECT_PORTLETITEM_WHERE, _SQL_COUNT_PORTLETITEM_WHERE,
-			PortletItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			PortletItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"portletItem.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, PortletItem::getGroupId),
+				true, PortletItem::getGroupId),
 			new FinderColumn<>(
 				"portletItem.", "classNameId", FinderColumn.Type.LONG, "=",
 				true, true, PortletItem::getClassNameId));
-
-		_finderPathWithPaginationFindByG_P_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P_C",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "portletId", "classNameId"}, true);
-
-		_finderPathWithoutPaginationFindByG_P_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P_C",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Long.class.getName()
-			},
-			new String[] {"groupId", "portletId", "classNameId"}, true);
-
-		_finderPathCountByG_P_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P_C",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Long.class.getName()
-			},
-			new String[] {"groupId", "portletId", "classNameId"}, false);
 
 		_collectionPersistenceFinderByG_P_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_P_C,
-			_finderPathWithoutPaginationFindByG_P_C, _finderPathCountByG_P_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P_C",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "portletId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P_C",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"groupId", "portletId", "classNameId"}, 0, 2,
+				true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P_C",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"groupId", "portletId", "classNameId"}, 0, 2,
+				false, null),
 			_SQL_SELECT_PORTLETITEM_WHERE, _SQL_COUNT_PORTLETITEM_WHERE,
-			PortletItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			PortletItemModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"portletItem.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, PortletItem::getGroupId),
+				true, PortletItem::getGroupId),
 			new FinderColumn<>(
 				"portletItem.", "portletId", FinderColumn.Type.STRING, "=",
-				true, false, PortletItem::getPortletId),
+				true, true, PortletItem::getPortletId),
 			new FinderColumn<>(
 				"portletItem.", "classNameId", FinderColumn.Type.LONG, "=",
 				true, true, PortletItem::getClassNameId));
 
-		_finderPathFetchByG_N_P_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_N_P_C",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "name", "portletId", "classNameId"}, false,
-			PortletItem::getGroupId, PortletItem::getName,
-			PortletItem::getPortletId, PortletItem::getClassNameId);
+		_uniquePersistenceFinderByG_N_P_C = new UniquePersistenceFinder<>(
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_N_P_C",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName(), Long.class.getName()
+				},
+				new String[] {"groupId", "name", "portletId", "classNameId"}, 2,
+				6, false, PortletItem::getGroupId,
+				convertCaseFunction(PortletItem::getName),
+				convertNullFunction(PortletItem::getPortletId),
+				PortletItem::getClassNameId),
+			_SQL_SELECT_PORTLETITEM_WHERE, "",
+			new FinderColumn<>(
+				"portletItem.", "groupId", FinderColumn.Type.LONG, "=", true,
+				true, PortletItem::getGroupId),
+			new FinderColumn<>(
+				"portletItem.", "name", FinderColumn.Type.STRING, "=", false,
+				true, PortletItem::getName),
+			new FinderColumn<>(
+				"portletItem.", "portletId", FinderColumn.Type.STRING, "=",
+				true, true, PortletItem::getPortletId),
+			new FinderColumn<>(
+				"portletItem.", "classNameId", FinderColumn.Type.LONG, "=",
+				true, true, PortletItem::getClassNameId));
 
 		PortletItemUtil.setPersistence(this);
 	}
@@ -974,4 +667,4 @@ public class PortletItemPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:2019323989
+// LIFERAY-SERVICE-BUILDER-HASH:-563345122

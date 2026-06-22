@@ -7,46 +7,12 @@ paths:
 
 # Markdown Style for `.claude`
 
-When creating or editing any Markdown file under `.claude` (CLAUDE.md, SKILL.md, etc.), follow these conventions.
-
-## CLI Commands
-
-- Prefer long-form flags (`--execute` instead of `-e`, `--message` instead of `-m`, `--user` instead of `-u`).
-- Sort flags alphabetically.
-- Keep short flags only for tools without portable long-form support (`nc`, `ps`, `rm`, `sed`).
-- When arguments span multiple lines, place the command alone on the first line and each argument on its own tab-indented line. Do not mix arguments on the command line with arguments on continuation lines.
-
-Before:
-
-```bash
-curl -s -u "$JIRA_API_USER:$JIRA_API_TOKEN" -X POST \
-  -d '{"key":"value"}' \
-  "https://example.com/api"
-```
-
-After:
-
-```bash
-curl \
-	--data '{"key": "value"}' \
-	--request POST \
-	--silent \
-	--url "https://example.com/api" \
-	--user "${JIRA_API_USER}:${JIRA_API_TOKEN}"
-```
+When creating or editing any Markdown file under `.claude` (CLAUDE.md, SKILL.md, etc.), follow these conventions. For prose and general style not specific to Markdown (contractions, prefixes, complete sentences, ID casing, trailing slashes, file endings, CLI flags, and inline JSON spacing), follow the canonical rules in `pr-reviewer/rules`.
 
 ## Code Blocks
 
 - Always leave a blank line before a fenced code block (` ``` `). A code block must never immediately follow a line of text.
 - Indent continuation lines with a tab character, not spaces.
-
-## Directory Paths
-
-- Do not append a trailing slash to directory paths (`<BUNDLE>/osgi/configs`, not `<BUNDLE>/osgi/configs/`).
-
-## File Ending
-
-- Files must end without a trailing newline. The last line of content is the last byte of the file.
 
 ## Frontmatter
 
@@ -57,6 +23,7 @@ curl \
 ## Headings
 
 - Apply Title Case at every level, including table headers.
+- Do not number headings (`### Do the Thing`, not `### 1. Do the Thing`).
 - Follow every heading with a blank line before the body content.
 - Use correct casing for brand and product names (Arquillian, Atlassian, Git, GitHub, Gradle, Jira, JUnit, Liferay, Mockito, Playwright, Poshi, REST API, TypeScript).
 
@@ -78,10 +45,6 @@ gh pr create \
 	--title "<title>"
 ```
 
-## Inline JSON
-
-- Space after `:` and `,`, no space after `{` or before `}`.
-
 ## Lists
 
 - Sort unordered lists alphabetically when the order does not carry meaning.
@@ -90,12 +53,8 @@ gh pr create \
 
 ## Prose
 
-- Avoid contractions ("do not" rather than "don't").
 - Bold specific field or feature names so the capitalization reads as a proper name.
-- Do not hyphenate short prefixes that are not standalone words ("autocreate", "refetch", "rerun").
-- Use complete sentences.
 - Use literal UTF-8 characters (em dashes, curly quotes) rather than HTML entities.
-- Write "ID" in uppercase in prose; reserve lowercase `id` for code contexts.
 
 ## Shell Variables
 
@@ -105,7 +64,3 @@ gh pr create \
 
 - Use `---` for each separator cell (or `:---`, `---:`, or `:---:` for alignment). Do not pad separator cells to match column widths.
 - Use a single space of padding inside each header and data cell.
-
-## URLs
-
-- Do not end URLs with a trailing slash.

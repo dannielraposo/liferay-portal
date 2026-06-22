@@ -46,9 +46,13 @@ public abstract class BaseAccountResourceImpl implements AccountResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/discount-accounts/{discountAccountId}/account'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the Account nested in a DiscountAccount (via discount account link) addressed by internal rel id."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target discount-account binding. Server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "discountAccountId"
 			)
@@ -76,9 +80,13 @@ public abstract class BaseAccountResourceImpl implements AccountResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-list-accounts/{priceListAccountId}/account'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the Account nested in a PriceListAccount (via price list account link) addressed by internal rel id."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target price-list-account binding. Server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "priceListAccountId"
 			)
@@ -546,4 +554,4 @@ public abstract class BaseAccountResourceImpl implements AccountResource {
 		LogFactoryUtil.getLog(BaseAccountResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-882350156
+// LIFERAY-REST-BUILDER-HASH:857901797

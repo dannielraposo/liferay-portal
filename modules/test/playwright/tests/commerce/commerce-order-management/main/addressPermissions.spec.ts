@@ -125,7 +125,7 @@ async function setupAccountWithAddresses(apiHelpers: DataApiHelpers) {
 		await apiHelpers.headlessCommerceAdminAccount.postAddress(account.id, {
 			defaultBilling: false,
 			defaultShipping: false,
-			name: 'Liferay Shipping',
+			name: "Liferay's Shipping",
 			type: ADDRESS_TYPES.SHIPPING,
 		});
 
@@ -191,8 +191,6 @@ test(
 	'Buyer without VIEW_ADDRESSES cannot see the addresses list at checkout',
 	{tag: ['@LPD-85008']},
 	async ({apiHelpers, checkoutPage, commerceMiniCartPage, page}) => {
-		test.setTimeout(120000);
-
 		const {account} = await setupAccountWithAddresses(apiHelpers);
 
 		const role = await apiHelpers.headlessAdminUser.postRole({
@@ -221,10 +219,8 @@ test(
 
 test(
 	'Buyer with VIEW_ADDRESSES sees the addresses list at checkout',
-	{tag: ['@LPD-85008']},
+	{tag: ['@LPD-79025', '@LPD-85008']},
 	async ({apiHelpers, checkoutPage, commerceMiniCartPage, page}) => {
-		test.setTimeout(120000);
-
 		const {account, billingAndShippingAddress, shippingAddress} =
 			await setupAccountWithAddresses(apiHelpers);
 
@@ -271,8 +267,6 @@ test(
 	'Buyer without MANAGE_ADDRESSES can only select existing shipping and billing addresses',
 	{tag: ['@LPD-85008']},
 	async ({apiHelpers, checkoutPage, commerceMiniCartPage, page}) => {
-		test.setTimeout(120000);
-
 		const {account, billingAddress, shippingAddress} =
 			await setupAccountWithAddresses(apiHelpers);
 

@@ -9,6 +9,18 @@ import com.liferay.analytics.settings.rest.dto.v1_0.Channel;
 import com.liferay.analytics.settings.rest.dto.v1_0.DataSource;
 import com.liferay.analytics.settings.rest.manager.AnalyticsSettingsManager;
 import com.liferay.analytics.settings.rest.resource.v1_0.ChannelResource;
+import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
+import com.liferay.document.library.kernel.model.DLFolder;
+import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.service.DLAppService;
+import com.liferay.document.library.kernel.service.DLFolderLocalService;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
+import com.liferay.exportimport.kernel.lar.UserIdStrategy;
+import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
+import com.liferay.exportimport.kernel.service.ExportImportLocalService;
 import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
@@ -34,6 +46,8 @@ import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -44,21 +58,28 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.liveusers.LiveUsers;
 import com.liferay.portal.security.permission.PermissionCacheUtil;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.site.dsr.site.initializer.constants.DSRFolderConstants;
+import com.liferay.site.dsr.site.initializer.thread.local.DSRRoomThreadLocal;
 import com.liferay.sites.kernel.util.Sites;
 
+import java.io.File;
 import java.io.Serializable;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -95,6 +116,168 @@ public class ObjectEntryModelListener extends BaseModelListener<ObjectEntry> {
 		catch (Exception exception) {
 			throw new ModelListenerException(exception);
 		}
+	}
+
+	@Override
+	public void onAfterUpdate(
+			ObjectEntry originalObjectEntry, ObjectEntry objectEntry)
+		throws ModelListenerException {
+
+		try {
+			_onAfterUpdate(originalObjectEntry, objectEntry);
+		}
+		catch (Exception exception) {
+			throw new ModelListenerException(exception);
+		}
+	}
+
+	private void _copyFileEntries(long[] fileEntryIds, Group group)
+		throws Exception {
+
+		long folderId = 0;
+
+		DLFolder dlFolder =
+			_dlFolderLocalService.fetchDLFolderByExternalReferenceCode(
+				DSRFolderConstants.EXTERNAL_REFERENCE_CODE_DSR_DOCUMENTS,
+				group.getGroupId());
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setCompanyId(group.getCompanyId());
+		serviceContext.setScopeGroupId(group.getGroupId());
+
+		if (dlFolder == null) {
+			Folder folder = _dlAppService.addFolder(
+				DSRFolderConstants.EXTERNAL_REFERENCE_CODE_DSR_DOCUMENTS,
+				group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+				"Documents", null, serviceContext);
+
+			folderId = folder.getFolderId();
+		}
+		else {
+			folderId = dlFolder.getFolderId();
+		}
+
+		Map<String, Long> sourceFileEntries = new HashMap<>();
+
+		for (long fileEntryId : fileEntryIds) {
+			FileEntry fileEntry = _dlAppService.getFileEntry(fileEntryId);
+
+			sourceFileEntries.put(fileEntry.getTitle(), fileEntryId);
+		}
+
+		for (FileEntry fileEntry :
+				_dlAppService.getFileEntries(group.getGroupId(), folderId)) {
+
+			if (sourceFileEntries.remove(fileEntry.getTitle()) == null) {
+				_dlAppService.deleteFileEntry(fileEntry.getFileEntryId());
+			}
+		}
+
+		for (long fileEntryId : sourceFileEntries.values()) {
+			_dlAppService.copyFileEntry(
+				fileEntryId, folderId, group.getGroupId(),
+				DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
+				new long[] {group.getGroupId()}, serviceContext);
+		}
+	}
+
+	private void _duplicateGroup(
+			Company company, long[] fileEntryIds, Group group,
+			ObjectDefinition objectDefinition, long objectEntryId, User user)
+		throws Exception {
+
+		Group sourceGroup = _groupLocalService.fetchGroup(
+			group.getCompanyId(),
+			_classNameLocalService.getClassNameId(
+				objectDefinition.getClassName()),
+			objectEntryId);
+
+		if (sourceGroup == null) {
+			return;
+		}
+
+		Map<String, String[]> parameterMap = HashMapBuilder.put(
+			PortletDataHandlerKeys.COMMENTS,
+			new String[] {Boolean.FALSE.toString()}
+		).put(
+			PortletDataHandlerKeys.DATA_STRATEGY,
+			new String[] {PortletDataHandlerKeys.DATA_STRATEGY_MIRROR}
+		).put(
+			PortletDataHandlerKeys.DELETE_MISSING_LAYOUTS,
+			new String[] {Boolean.FALSE.toString()}
+		).put(
+			PortletDataHandlerKeys.DELETE_PORTLET_DATA,
+			new String[] {Boolean.FALSE.toString()}
+		).put(
+			PortletDataHandlerKeys.FAVICON,
+			new String[] {Boolean.TRUE.toString()}
+		).put(
+			PortletDataHandlerKeys.IGNORE_LAST_PUBLISH_DATE,
+			new String[] {Boolean.TRUE.toString()}
+		).put(
+			PortletDataHandlerKeys.LAYOUT_SET_SETTINGS,
+			new String[] {Boolean.TRUE.toString()}
+		).put(
+			PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE,
+			new String[] {
+				PortletDataHandlerKeys.
+					LAYOUTS_IMPORT_MODE_CREATED_FROM_PROTOTYPE
+			}
+		).put(
+			PortletDataHandlerKeys.LOGO, new String[] {Boolean.TRUE.toString()}
+		).put(
+			PortletDataHandlerKeys.PERMISSIONS,
+			new String[] {Boolean.TRUE.toString()}
+		).put(
+			PortletDataHandlerKeys.PORTLET_CONFIGURATION,
+			new String[] {Boolean.TRUE.toString()}
+		).put(
+			PortletDataHandlerKeys.PORTLET_CONFIGURATION_ALL,
+			new String[] {Boolean.TRUE.toString()}
+		).put(
+			PortletDataHandlerKeys.PORTLET_DATA,
+			new String[] {Boolean.TRUE.toString()}
+		).put(
+			PortletDataHandlerKeys.PORTLET_DATA_ALL,
+			new String[] {Boolean.TRUE.toString()}
+		).put(
+			PortletDataHandlerKeys.PORTLET_SETUP_ALL,
+			new String[] {Boolean.TRUE.toString()}
+		).put(
+			PortletDataHandlerKeys.RATINGS,
+			new String[] {Boolean.FALSE.toString()}
+		).put(
+			PortletDataHandlerKeys.THEME_REFERENCE,
+			new String[] {Boolean.TRUE.toString()}
+		).put(
+			PortletDataHandlerKeys.UPDATE_LAST_PUBLISH_DATE,
+			new String[] {Boolean.FALSE.toString()}
+		).put(
+			PortletDataHandlerKeys.USER_ID_STRATEGY,
+			new String[] {UserIdStrategy.CURRENT_USER_ID}
+		).build();
+
+		try (AutoCloseable autoCloseable =
+				_layoutServiceContextHelper.getServiceContextAutoCloseable(
+					company, user)) {
+
+			_importLayouts(parameterMap, false, sourceGroup, group, user);
+			_importLayouts(parameterMap, true, sourceGroup, group, user);
+
+			// Copy file entries after importing layouts
+
+			_copyFileEntries(fileEntryIds, group);
+
+			_updateFragmentEntryLink(group);
+		}
+	}
+
+	private User _getAdministratorUser(long companyId) throws Exception {
+		List<User> users = _userLocalService.getUsersByRoleName(
+			companyId, RoleConstants.ADMINISTRATOR, 0, 1);
+
+		return users.get(0);
 	}
 
 	private String _getFriendlyURL(String friendlyURL) {
@@ -134,6 +317,49 @@ public class ObjectEntryModelListener extends BaseModelListener<ObjectEntry> {
 		ServiceContextThreadLocal.pushServiceContext(serviceContext);
 
 		return serviceContext;
+	}
+
+	private void _importLayouts(
+			Map<String, String[]> parameterMap, boolean privateLayout,
+			Group sourceGroup, Group targetGroup, User user)
+		throws Exception {
+
+		long[] layoutIds = _exportImportHelper.getAllLayoutIds(
+			sourceGroup.getGroupId(), privateLayout);
+
+		if (ArrayUtil.isEmpty(layoutIds)) {
+			return;
+		}
+
+		File file = null;
+
+		try {
+			file = _exportImportLocalService.exportLayoutsAsFile(
+				_exportImportConfigurationLocalService.
+					addDraftExportImportConfiguration(
+						user.getUserId(),
+						ExportImportConfigurationConstants.TYPE_EXPORT_LAYOUT,
+						ExportImportConfigurationSettingsMapFactoryUtil.
+							buildExportLayoutSettingsMap(
+								user, sourceGroup.getGroupId(), privateLayout,
+								layoutIds, parameterMap)));
+
+			_exportImportLocalService.importLayouts(
+				_exportImportConfigurationLocalService.
+					addDraftExportImportConfiguration(
+						user.getUserId(),
+						ExportImportConfigurationConstants.TYPE_IMPORT_LAYOUT,
+						ExportImportConfigurationSettingsMapFactoryUtil.
+							buildImportLayoutSettingsMap(
+								user, targetGroup.getGroupId(), privateLayout,
+								null, parameterMap)),
+				file);
+		}
+		finally {
+			if (file != null) {
+				file.delete();
+			}
+		}
 	}
 
 	private void _onAfterCreate(ObjectEntry objectEntry) throws Exception {
@@ -196,24 +422,32 @@ public class ObjectEntryModelListener extends BaseModelListener<ObjectEntry> {
 						company.getCompanyId());
 		}
 
-		Role administratorRole = _roleLocalService.getRole(
-			company.getCompanyId(), RoleConstants.ADMINISTRATOR);
+		User administratorUser = _getAdministratorUser(company.getCompanyId());
 
 		try (AutoCloseable autoCloseable =
 				_layoutServiceContextHelper.getServiceContextAutoCloseable(
-					company,
-					_userLocalService.getUser(
-						_userLocalService.getRoleUserIds(
-							administratorRole.getRoleId())[0]))) {
+					company, administratorUser)) {
 
-			_sites.updateLayoutSetPrototypesLinks(
-				group, layoutSetPrototype.getLayoutSetPrototypeId(), 0, false,
-				false);
+			long sourceObjectEntryId = DSRRoomThreadLocal.getObjectEntryId();
 
-			_updateFragmentEntryLink(group);
+			if (sourceObjectEntryId == 0) {
+				_sites.updateLayoutSetPrototypesLinks(
+					group, layoutSetPrototype.getLayoutSetPrototypeId(), 0,
+					false, false);
+
+				_updateFragmentEntryLink(group);
+			}
+
+			long[] fileEntryIds = DSRRoomThreadLocal.getFileEntryIds();
 
 			TransactionCommitCallbackUtil.registerCallback(
 				() -> {
+					if (sourceObjectEntryId != 0) {
+						_duplicateGroup(
+							company, fileEntryIds, group, objectDefinition,
+							sourceObjectEntryId, administratorUser);
+					}
+
 					_objectEntryLocalService.partialUpdateObjectEntry(
 						objectEntry.getUserId(), objectEntry.getObjectEntryId(),
 						objectEntry.getObjectEntryFolderId(),
@@ -276,6 +510,63 @@ public class ObjectEntryModelListener extends BaseModelListener<ObjectEntry> {
 		if (group != null) {
 			_groupLocalService.deleteGroup(group);
 		}
+	}
+
+	private void _onAfterUpdate(
+			ObjectEntry originalObjectEntry, ObjectEntry objectEntry)
+		throws Exception {
+
+		ObjectDefinition objectDefinition = objectEntry.getObjectDefinition();
+
+		if (!Objects.equals(
+				objectDefinition.getExternalReferenceCode(), "L_DSR_ROOM") ||
+			(Objects.equals(
+				MapUtil.getString(originalObjectEntry.getValues(), "name"),
+				MapUtil.getString(objectEntry.getValues(), "name")) &&
+			 Objects.equals(
+				 MapUtil.getString(
+					 originalObjectEntry.getValues(), "friendlyURL"),
+				 MapUtil.getString(objectEntry.getValues(), "friendlyURL")))) {
+
+			return;
+		}
+
+		Group group = _groupLocalService.fetchGroup(
+			objectEntry.getCompanyId(),
+			_classNameLocalService.getClassNameId(
+				objectDefinition.getClassName()),
+			objectEntry.getObjectEntryId());
+
+		if (group == null) {
+			return;
+		}
+
+		String name = MapUtil.getString(objectEntry.getValues(), "name");
+
+		String friendlyURL = _getFriendlyURL(
+			MapUtil.getString(objectEntry.getValues(), "friendlyURL", name));
+
+		Map<Locale, String> nameMap = group.getNameMap();
+
+		if (Objects.equals(friendlyURL, group.getFriendlyURL()) &&
+			Objects.equals(name, nameMap.get(LocaleUtil.getDefault()))) {
+
+			return;
+		}
+
+		nameMap.put(LocaleUtil.getDefault(), name);
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setCompanyId(objectEntry.getCompanyId());
+		serviceContext.setUserId(objectEntry.getUserId());
+
+		_groupLocalService.updateGroup(
+			group.getGroupId(), group.getParentGroupId(), nameMap,
+			group.getDescriptionMap(), group.getType(), group.getTypeSettings(),
+			group.isManualMembership(), group.getMembershipRestriction(),
+			friendlyURL, group.isInheritContent(), group.isActive(),
+			serviceContext);
 	}
 
 	private void _patchAnalyticsChannel(
@@ -384,6 +675,22 @@ public class ObjectEntryModelListener extends BaseModelListener<ObjectEntry> {
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
+
+	@Reference
+	private DLAppService _dlAppService;
+
+	@Reference
+	private DLFolderLocalService _dlFolderLocalService;
+
+	@Reference
+	private ExportImportConfigurationLocalService
+		_exportImportConfigurationLocalService;
+
+	@Reference
+	private ExportImportHelper _exportImportHelper;
+
+	@Reference
+	private ExportImportLocalService _exportImportLocalService;
 
 	@Reference
 	private FragmentEntryLinkLocalService _fragmentEntryLinkLocalService;

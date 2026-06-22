@@ -143,9 +143,46 @@ if (ParamUtil.getBoolean(request, "showHeader", true)) {
 			);
 		}
 
+		const scheduleObjectFieldNames = [
+			'displayDate',
+			'expirationDate',
+			'reviewDate',
+		];
+
+		function convertDateToUTC(value) {
+			if (!value) {
+				return null;
+			}
+
+			const date = new Date(value);
+
+			return (
+				String(date.getFullYear()) +
+				'-' +
+				String(date.getMonth() + 1).padStart(2, '0') +
+				'-' +
+				String(date.getDate()).padStart(2, '0') +
+				'T' +
+				String(date.getHours()).padStart(2, '0') +
+				':' +
+				String(date.getMinutes()).padStart(2, '0') +
+				'Z'
+			);
+		}
+
 		function <portlet:namespace />getValues(fields) {
 			return fields.reduce((obj, field) => {
 				if (field.readOnly) {
+					return obj;
+				}
+
+				if (scheduleObjectFieldNames.includes(field.fieldName)) {
+					if (field.value) {
+						return Object.assign(obj, {
+							[field.fieldName]: convertDateToUTC(field.value),
+						});
+					}
+
 					return obj;
 				}
 
@@ -318,7 +355,7 @@ if (ParamUtil.getBoolean(request, "showHeader", true)) {
 								'[data-field-name="friendlyURL"]'
 							);
 
-							if (friendlyURLInputs) {
+							if (friendlyURLInputs.length > 0) {
 								const friendlyURLValues = {};
 
 								friendlyURLInputs.forEach((input) => {

@@ -73,29 +73,38 @@ public abstract class BaseShipmentResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-orders/by-externalReferenceCode/{externalReferenceCode}/shipments'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists the shipments dispatched against the placed order addressed by ERC. Each row carries the carrier, tracking number, tracking URL, status, and a one-line address summary -- the same data point a buyer uses to follow the carrier redirect. Supports search, filter, sort, and pagination."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the by-externalReferenceCode paths. The code is the integration-supplied idempotency key, unique within the resource scope.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model (for PlacedOrder typically account, author, createDate, externalReferenceCode, modifiedDate, name, orderStatus, orderType, purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression. Matched against the indexed fields of the target entity (for PlacedOrder typically account name, author, externalReferenceCode, name, orderType, and purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression in OData order syntax (field asc|desc, comma-separated). Sortable fields depend on the endpoint and are sourced from the matching entity model.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -134,31 +143,37 @@ public abstract class BaseShipmentResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-order/v1.0/placed-orders/{placedOrderId}/shipments'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieve placed order shipments."
+		description = "Lists the shipments dispatched against the placed order addressed by id. Each row carries the carrier, tracking number, tracking URL, status, and a one-line address summary -- the same data point a buyer uses to follow the carrier redirect. Supports search, filter, sort, and pagination."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal identifier of a placed order. Addresses a single non-open placed order owned by the authenticated buyer or a delegated account user.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "placedOrderId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model (for PlacedOrder typically account, author, createDate, externalReferenceCode, modifiedDate, name, orderStatus, orderType, purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression. Matched against the indexed fields of the target entity (for PlacedOrder typically account name, author, externalReferenceCode, name, orderType, and purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression in OData order syntax (field asc|desc, comma-separated). Sortable fields depend on the endpoint and are sourced from the matching entity model.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -197,18 +212,22 @@ public abstract class BaseShipmentResourceImpl
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal identifier of a placed order. Addresses a single non-open placed order owned by the authenticated buyer or a delegated account user.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "placedOrderId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 filter expression that narrows the result set. Supported fields depend on the endpoint and are sourced from the matching entity model (for PlacedOrder typically account, author, createDate, externalReferenceCode, modifiedDate, name, orderStatus, orderType, purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Full-text search expression. Matched against the indexed fields of the target entity (for PlacedOrder typically account name, author, externalReferenceCode, name, orderType, and purchaseOrderNumber).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Sort expression in OData order syntax (field asc|desc, comma-separated). Sortable fields depend on the endpoint and are sourced from the matching entity model.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			),
@@ -949,4 +968,4 @@ public abstract class BaseShipmentResourceImpl
 		LogFactoryUtil.getLog(BaseShipmentResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-31630415
+// LIFERAY-REST-BUILDER-HASH:-831038402

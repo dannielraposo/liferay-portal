@@ -9,7 +9,6 @@ import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchWebDAVPropsException;
 import com.liferay.portal.kernel.log.Log;
@@ -63,8 +62,8 @@ public class WebDAVPropsPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByC_C;
-	private UniquePersistenceFinder<WebDAVProps> _uniquePersistenceFinderByC_C;
+	private UniquePersistenceFinder<WebDAVProps, NoSuchWebDAVPropsException>
+		_uniquePersistenceFinderByC_C;
 
 	/**
 	 * Returns the web dav props where classNameId = &#63; and classPK = &#63; or throws a <code>NoSuchWebDAVPropsException</code> if it could not be found.
@@ -78,34 +77,9 @@ public class WebDAVPropsPersistenceImpl
 	public WebDAVProps findByC_C(long classNameId, long classPK)
 		throws NoSuchWebDAVPropsException {
 
-		WebDAVProps webDAVProps = fetchByC_C(classNameId, classPK);
-
-		if (webDAVProps == null) {
-			String message =
-				_uniquePersistenceFinderByC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {classNameId, classPK});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchWebDAVPropsException(message);
-		}
-
-		return webDAVProps;
-	}
-
-	/**
-	 * Returns the web dav props where classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching web dav props, or <code>null</code> if a matching web dav props could not be found
-	 */
-	@Override
-	public WebDAVProps fetchByC_C(long classNameId, long classPK) {
-		return fetchByC_C(classNameId, classPK, true);
+		return _uniquePersistenceFinderByC_C.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {classNameId, classPK});
 	}
 
 	/**
@@ -352,17 +326,17 @@ public class WebDAVPropsPersistenceImpl
 	 * Initializes the web dav props persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathFetchByC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, false,
-			WebDAVProps::getClassNameId, WebDAVProps::getClassPK);
-
 		_uniquePersistenceFinderByC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_C, _SQL_SELECT_WEBDAVPROPS_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "classPK"}, 0, 0, false,
+				WebDAVProps::getClassNameId, WebDAVProps::getClassPK),
+			_SQL_SELECT_WEBDAVPROPS_WHERE, "",
 			new FinderColumn<>(
 				"webDAVProps.", "classNameId", FinderColumn.Type.LONG, "=",
-				true, false, WebDAVProps::getClassNameId),
+				true, true, WebDAVProps::getClassNameId),
 			new FinderColumn<>(
 				"webDAVProps.", "classPK", FinderColumn.Type.LONG, "=", true,
 				true, WebDAVProps::getClassPK));
@@ -375,9 +349,6 @@ public class WebDAVPropsPersistenceImpl
 
 		EntityCacheUtil.removeCache(WebDAVPropsImpl.class.getName());
 	}
-
-	private static final String _ENTITY_ALIAS_PREFIX =
-		WebDAVPropsModelImpl.ENTITY_ALIAS + ".";
 
 	private static final String _SQL_SELECT_WEBDAVPROPS =
 		"SELECT webDAVProps FROM WebDAVProps webDAVProps";
@@ -397,4 +368,4 @@ public class WebDAVPropsPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-756203934
+// LIFERAY-SERVICE-BUILDER-HASH:-1324387075

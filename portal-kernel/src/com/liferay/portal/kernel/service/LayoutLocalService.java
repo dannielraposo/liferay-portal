@@ -1446,7 +1446,8 @@ public interface LayoutLocalService
 			Map<Locale, String> keywordsMap, Map<Locale, String> robotsMap,
 			String type, boolean hidden, Map<Locale, String> friendlyURLMap,
 			boolean hasIconImage, byte[] iconBytes, String styleBookEntryERC,
-			String faviconFileEntryERC, String faviconFileEntryScopeERC,
+			String styleBookEntryScopeERC, String faviconFileEntryERC,
+			String faviconFileEntryScopeERC,
 			String masterLayoutPageTemplateEntryERC,
 			ServiceContext serviceContext)
 		throws PortalException;
@@ -1454,7 +1455,8 @@ public interface LayoutLocalService
 	public Layout updateLayout(
 			long groupId, boolean privateLayout, long layoutId,
 			String typeSettings, byte[] iconBytes, String themeId,
-			String colorSchemeId, String styleBookEntryERC, String css,
+			String colorSchemeId, String styleBookEntryERC,
+			String styleBookEntryScopeERC, String css,
 			String faviconFileEntryERC, String faviconFileEntryScopeERC,
 			String masterLayoutPageTemplateEntryERC)
 		throws PortalException;
@@ -1654,20 +1656,9 @@ public interface LayoutLocalService
 			long userId, long plid, int status, ServiceContext serviceContext)
 		throws PortalException;
 
-	/**
-	 * Updates the layout replacing its style book entry ID.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param privateLayout whether the layout is private to the group
-	 * @param layoutId the layout ID of the layout
-	 * @param styleBookEntryERC the external reference code of the style book
-	 entry
-	 * @return the updated layout
-	 * @throws PortalException if a portal exception occurred
-	 */
-	public Layout updateStyleBookEntryERC(
+	public Layout updateStyleBookEntry(
 			long groupId, boolean privateLayout, long layoutId,
-			String styleBookEntryERC)
+			String styleBookEntryERC, String styleBookEntryScopeERC)
 		throws PortalException;
 
 	public Layout updateType(long plid, String type) throws PortalException;
@@ -1715,4 +1706,4 @@ public interface LayoutLocalService
 		throws E;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-997549099
+// LIFERAY-SERVICE-BUILDER-HASH:-2015291479

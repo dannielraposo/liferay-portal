@@ -6,7 +6,9 @@
 package com.liferay.ai.hub.rest.internal.manager.v1_0;
 
 import com.liferay.account.model.AccountEntry;
+import com.liferay.ai.hub.configuration.VertexAIConfiguration;
 import com.liferay.ai.hub.rest.dto.v1_0.AgentDefinition;
+import com.liferay.ai.hub.rest.dto.v1_0.Model;
 import com.liferay.ai.hub.rest.dto.v1_0.Status;
 import com.liferay.ai.hub.rest.dto.v1_0.Variable;
 import com.liferay.ai.hub.rest.internal.resource.v1_0.AgentDefinitionResourceImpl;
@@ -20,16 +22,20 @@ import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
@@ -101,7 +107,8 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 	@Override
 	public Page<AgentDefinition> getAgentDefinitionsPage(
 			long companyId, DTOConverterContext dtoConverterContext,
-			String filter, Pagination pagination, String search, Sort[] sorts)
+			String filterString, Pagination pagination, String search,
+			Sort[] sorts)
 		throws Exception {
 
 		Map<String, Map<String, String>> actions = null;
@@ -119,7 +126,8 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 
 		Page<ObjectEntry> page = _objectEntryManager.getObjectEntries(
 			companyId, _getObjectDefinition(companyId), null, null,
-			dtoConverterContext, filter, pagination, search, sorts);
+			dtoConverterContext, _getFilterString(filterString), pagination,
+			search, sorts);
 
 		return Page.of(
 			actions,
@@ -282,6 +290,15 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 			dtoConverterContext.getUriInfo());
 	}
 
+	private String _getFilterString(String filterString) {
+		if (Validator.isNull(filterString)) {
+			return "externalReferenceCode ne 'L_PAGE_BUILDER'";
+		}
+
+		return "(" + filterString +
+			") and externalReferenceCode ne 'L_PAGE_BUILDER'";
+	}
+
 	private ObjectDefinition _getObjectDefinition(long companyId)
 		throws Exception {
 
@@ -319,9 +336,13 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 
 		return new AgentDefinition() {
 			{
-				if (dtoConverterContext != null) {
-					setActions(
-						() -> HashMapBuilder.put(
+				setActions(
+					() -> {
+						if (dtoConverterContext == null) {
+							return null;
+						}
+
+						return HashMapBuilder.put(
 							"activate",
 							() -> {
 								if (workflowDefinition.isActive()) {
@@ -360,9 +381,20 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 								dtoConverterContext,
 								"deleteAgentDefinitionByExternalReferenceCode",
 								workflowDefinition)
-						).build());
-				}
+						).put(
+							"permissions",
+							() -> {
+								Map<String, Map<String, String>> actions =
+									objectEntry.getActions();
 
+								if (MapUtil.isEmpty(actions)) {
+									return null;
+								}
+
+								return actions.get("permissions");
+							}
+						).build();
+					});
 				setActive(
 					() -> GetterUtil.getBoolean(
 						objectEntry.getPropertyValue("active")));
@@ -383,17 +415,43 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 									"inputVariables"))),
 						inputVariable -> _toVariable(inputVariable),
 						Variable.class));
+				setModel(() -> _toModel(dtoConverterContext, companyId));
 				setOutputVariable(
 					() -> _toVariable(
 						GetterUtil.getString(
 							objectEntry.getPropertyValue("outputVariable"))));
 				setStatus(
 					() -> _getStatus(dtoConverterContext, workflowDefinition));
+				setSystem(
+					() -> GetterUtil.getBoolean(
+						objectEntry.getPropertyValue("system")));
 				setTitle(
 					() -> GetterUtil.getString(
 						objectEntry.getPropertyValue("title")));
 				setVersion(workflowDefinition::getVersion);
 				setWorkflowDefinitionName(workflowDefinition::getName);
+			}
+		};
+	}
+
+	private Model _toModel(
+			DTOConverterContext dtoConverterContext, long companyId)
+		throws ConfigurationException {
+
+		VertexAIConfiguration vertexAIConfiguration =
+			_configurationProvider.getCompanyConfiguration(
+				VertexAIConfiguration.class, companyId);
+
+		return new Model() {
+			{
+				setLabel(
+					() -> _language.get(
+						dtoConverterContext.getLocale(),
+						vertexAIConfiguration.modelName()));
+				setName(vertexAIConfiguration::modelName);
+				setProviderLabel(
+					() -> _language.get(
+						dtoConverterContext.getLocale(), "google"));
 			}
 		};
 	}
@@ -415,6 +473,9 @@ public class AgentDefinitionManagerImpl implements AgentDefinitionManager {
 			}
 		};
 	}
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
 
 	@Reference(
 		target = "(model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoDefinition)"

@@ -22,7 +22,7 @@ type Props<T> = {
 	onBlur?: (event: React.FocusEvent<HTMLButtonElement>) => void;
 	onSelectionChange?: (selectedKey: React.Key) => void;
 	placeholder?: string;
-	selectedKey: React.Key;
+	selectedKey: React.Key | undefined;
 	small?: boolean;
 	status: Status;
 	width?: number;
@@ -88,9 +88,7 @@ export default function AsyncPicker<T>({
 }: Props<T>) {
 	const [active, setActive] = useState(false);
 
-	const [value, setValue] = useState(
-		getItemName(items, selectedKey) || placeholder
-	);
+	const value = getItemName(items, selectedKey) || placeholder;
 
 	return (
 		<Picker
@@ -116,17 +114,7 @@ export default function AsyncPicker<T>({
 				setActive(active);
 			}}
 			onBlur={onBlur}
-			onSelectionChange={(selectedKey: React.Key) => {
-				const name = getItemName(items, selectedKey);
-
-				if (name) {
-					setValue(name);
-				}
-
-				if (onSelectionChange) {
-					onSelectionChange(selectedKey);
-				}
-			}}
+			onSelectionChange={onSelectionChange}
 			open={active}
 			placeholder={placeholder}
 			selectedKey={selectedKey ? String(selectedKey) : ''}
@@ -155,7 +143,7 @@ export default function AsyncPicker<T>({
 	);
 }
 
-function getItemName(items: Item[], id: React.Key) {
+function getItemName(items: Item[], id: React.Key | undefined) {
 	const item = items.find((item) => item.id === Number(id));
 
 	return item?.name;

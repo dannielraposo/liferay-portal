@@ -4,6 +4,7 @@
  */
 
 import {
+	KeyboardArrowsIndicator,
 	__NOT_PUBLIC_COLLECTION,
 	__NOT_PUBLIC_LIVE_ANNOUNCER,
 } from '@clayui/core';
@@ -11,6 +12,7 @@ import DropDown from '@clayui/drop-down';
 import {ClayInput as Input} from '@clayui/form';
 import LoadingIndicator from '@clayui/loading-indicator';
 import {
+	ClayPortal,
 	InternalDispatch,
 	Keys,
 	Overlay,
@@ -114,6 +116,15 @@ export interface IProps<T>
 	 * Direction the menu will render relative to the Autocomplete.
 	 */
 	direction?: 'bottom' | 'top';
+
+	/**
+	 * Flag to render the `KeyboardArrowsIndicator` alongside the Autocomplete
+	 * input, hinting that up and down arrow keys can be used to navigate
+	 * the suggestions list. The indicator floats to the right of the input
+	 * and flips to the left when it would overflow the viewport. It is
+	 * only rendered while the suggestions panel is open.
+	 */
+	displayKeyboardArrowsIndicator?: boolean;
 
 	/**
 	 * The estimated height of an item that is used by the virtualizer.
@@ -244,6 +255,7 @@ function AutocompleteInner<T extends Item>(
 		defaultItems,
 		defaultValue,
 		direction = 'bottom',
+		displayKeyboardArrowsIndicator = false,
 		estimateSize,
 		filterKey,
 		items: externalItems,
@@ -658,15 +670,52 @@ function AutocompleteInner<T extends Item>(
 							break;
 						}
 						case Keys.Enter: {
+							if (active && activeDescendant) {
+								event.preventDefault();
+
+								setActive(false);
+
+								onPress();
+
+								break;
+							}
+
+							// Typing into the input clears activeDescendant, so
+							// an exact match would otherwise require an extra
+							// arrow-down before Enter to commit it. Select the
+							// match directly when one exists.
+
+							if (active && value) {
+								const lowerValue = value.toLowerCase();
+
+								const matchedKey = collection
+									.getItems()
+									.find(
+										(key) =>
+											collection
+												.getItem(key)
+												?.value?.toLowerCase() ===
+											lowerValue
+									);
+
+								if (matchedKey && menuRef.current) {
+									event.preventDefault();
+
+									setActive(false);
+
+									const matchedElement =
+										menuRef.current.querySelector(
+											`#${CSS.escape(String(matchedKey))}`
+										) as HTMLElement | null;
+
+									matchedElement?.click();
+
+									break;
+								}
+							}
+
 							setActive(false);
 
-							if (active && activeDescendant) {
-								onPress();
-							}
-
-							if (!active && event.key === Keys.Esc) {
-								setValue('');
-							}
 							break;
 						}
 						case Keys.Home:
@@ -784,6 +833,15 @@ function AutocompleteInner<T extends Item>(
 						<InfiniteScrollFeedback />
 					</div>
 				</Overlay>
+			)}
+
+			{active && displayKeyboardArrowsIndicator && (
+				<ClayPortal>
+					<KeyboardArrowsIndicator
+						anchorRef={inputElementRef}
+						direction="vertical"
+					/>
+				</ClayPortal>
 			)}
 
 			{isLoading && (

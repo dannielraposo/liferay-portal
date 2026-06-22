@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.log.LogCapture;
@@ -140,7 +141,7 @@ public class SiteTestEntityResourceTest
 								getGraphQLFields())),
 						"JSONObject/data", "Object/siteTestEntity"))));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertTrue(
 			equals(
@@ -149,7 +150,7 @@ public class SiteTestEntityResourceTest
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"test_v1_0",
+								"portalTools_v1_0",
 								new GraphQLField(
 									"siteTestEntity",
 									HashMapBuilder.<String, Object>put(
@@ -157,7 +158,7 @@ public class SiteTestEntityResourceTest
 										siteTestEntity.getId()
 									).build(),
 									getGraphQLFields()))),
-						"JSONObject/data", "JSONObject/test_v1_0",
+						"JSONObject/data", "JSONObject/portalTools_v1_0",
 						"Object/siteTestEntity"))));
 	}
 
@@ -181,14 +182,14 @@ public class SiteTestEntityResourceTest
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"test_v1_0",
+						"portalTools_v1_0",
 						new GraphQLField(
 							"siteTestEntity",
 							HashMapBuilder.<String, Object>put(
@@ -225,7 +226,9 @@ public class SiteTestEntityResourceTest
 		throws Exception {
 
 		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
-			null, "test/v1.0/sites/" + siteId + "/site-test-entities",
+			null,
+			"portal-tools-rest-builder-test/v1.0/sites/" + siteId +
+				"/site-test-entities",
 			Http.Method.GET);
 
 		Assert.assertEquals(totalCount, jsonObject.getInt("totalCount"));
@@ -243,7 +246,8 @@ public class SiteTestEntityResourceTest
 			testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).parameter(

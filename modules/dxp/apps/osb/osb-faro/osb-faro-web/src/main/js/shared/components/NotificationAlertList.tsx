@@ -98,8 +98,8 @@ const connector = connect(null, {addAlert});
 
 export const useNotificationsAPI = (groupId: string) => {
 	const response = useRequest({
-		dataSourceFn: (({groupId, type}: any) =>
-			API.notifications.fetchNotifications({groupId, type})) as any,
+		dataSourceFn: ({groupId, type}) =>
+			API.notifications.fetchNotifications({groupId, type}),
 		variables: {
 			groupId,
 			type: NotificationTypes.Alert
@@ -118,7 +118,7 @@ const NotificationAlertList: React.FC<INotificationAlertListProps> = ({
 	stripe = false,
 	subtypes = [NotificationSubtypes.TimeZoneChanged]
 }) => {
-	if (loading || !data.length) return null;
+	if (loading || !data?.length) return null;
 
 	const removeNotification = (notificationId: string) => {
 		API.notifications

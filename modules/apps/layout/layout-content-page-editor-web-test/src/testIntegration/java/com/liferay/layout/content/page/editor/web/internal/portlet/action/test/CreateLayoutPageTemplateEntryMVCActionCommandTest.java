@@ -159,10 +159,10 @@ public class CreateLayoutPageTemplateEntryMVCActionCommandTest {
 				StringPool.BLANK, RandomTestUtil.randomString(),
 				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
-		draftLayout = _layoutLocalService.updateStyleBookEntryERC(
+		draftLayout = _layoutLocalService.updateStyleBookEntry(
 			draftLayout.getGroupId(), draftLayout.isPrivateLayout(),
 			draftLayout.getLayoutId(),
-			styleBookEntry.getExternalReferenceCode());
+			styleBookEntry.getExternalReferenceCode(), null);
 
 		ContentLayoutTestUtil.addPortletToLayout(
 			draftLayout, JournalContentPortletKeys.JOURNAL_CONTENT);

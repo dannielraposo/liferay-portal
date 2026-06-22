@@ -14,16 +14,11 @@ import com.liferay.knowledge.base.model.impl.KBFolderModelImpl;
 import com.liferay.knowledge.base.service.persistence.KBFolderPersistence;
 import com.liferay.knowledge.base.service.persistence.KBFolderUtil;
 import com.liferay.knowledge.base.service.persistence.impl.constants.KBPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -34,12 +29,12 @@ import com.liferay.portal.kernel.sanitizer.SanitizerException;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -101,66 +96,14 @@ public class KBFolderPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<KBFolder>
+	private CollectionPersistenceFinder<KBFolder, NoSuchFolderException>
 		_collectionPersistenceFinderByUuid;
 
 	/**
-	 * Returns all the kb folders where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the kb folders where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @return the range of matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the kb folders where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<KBFolder> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the kb folders where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -175,14 +118,9 @@ public class KBFolderPersistenceImpl
 		String uuid, int start, int end,
 		OrderByComparator<KBFolder> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -198,15 +136,8 @@ public class KBFolderPersistenceImpl
 			String uuid, OrderByComparator<KBFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		KBFolder kbFolder = fetchByUuid_First(uuid, orderByComparator);
-
-		if (kbFolder != null) {
-			return kbFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -243,17 +174,12 @@ public class KBFolderPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<KBFolder> _uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder<KBFolder, NoSuchFolderException>
+		_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the kb folder where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchFolderException</code> if it could not be found.
@@ -267,33 +193,8 @@ public class KBFolderPersistenceImpl
 	public KBFolder findByUUID_G(String uuid, long groupId)
 		throws NoSuchFolderException {
 
-		KBFolder kbFolder = fetchByUUID_G(uuid, groupId);
-
-		if (kbFolder == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFolderException(message);
-		}
-
-		return kbFolder;
-	}
-
-	/**
-	 * Returns the kb folder where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching kb folder, or <code>null</code> if a matching kb folder could not be found
-	 */
-	@Override
-	public KBFolder fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -308,13 +209,8 @@ public class KBFolderPersistenceImpl
 	public KBFolder fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -346,73 +242,14 @@ public class KBFolderPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<KBFolder>
+	private CollectionPersistenceFinder<KBFolder, NoSuchFolderException>
 		_collectionPersistenceFinderByUuid_C;
 
 	/**
-	 * Returns all the kb folders where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the kb folders where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @return the range of matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the kb folders where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<KBFolder> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the kb folders where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -428,14 +265,9 @@ public class KBFolderPersistenceImpl
 		String uuid, long companyId, int start, int end,
 		OrderByComparator<KBFolder> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -453,16 +285,8 @@ public class KBFolderPersistenceImpl
 			OrderByComparator<KBFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		KBFolder kbFolder = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (kbFolder != null) {
-			return kbFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -503,76 +327,18 @@ public class KBFolderPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<KBFolder>
+	private CollectionPersistenceFinder<KBFolder, NoSuchFolderException>
 		_collectionPersistenceFinderByCompanyId;
 
 	/**
-	 * Returns all the kb folders where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the kb folders where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @return the range of matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByCompanyId(long companyId, int start, int end) {
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the kb folders where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<KBFolder> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the kb folders where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -587,14 +353,9 @@ public class KBFolderPersistenceImpl
 		long companyId, int start, int end,
 		OrderByComparator<KBFolder> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				finderCache, new Object[] {companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			finderCache, new Object[] {companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -610,16 +371,8 @@ public class KBFolderPersistenceImpl
 			long companyId, OrderByComparator<KBFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		KBFolder kbFolder = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (kbFolder != null) {
-			return kbFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -656,83 +409,18 @@ public class KBFolderPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				finderCache, new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			finderCache, new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_P;
-	private FinderPath _finderPathWithoutPaginationFindByG_P;
-	private FinderPath _finderPathCountByG_P;
-	private CollectionPersistenceFinder<KBFolder>
+	private FilterCollectionPersistenceFinder<KBFolder, NoSuchFolderException>
 		_collectionPersistenceFinderByG_P;
 
 	/**
-	 * Returns all the kb folders where groupId = &#63; and parentKBFolderId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @return the matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByG_P(long groupId, long parentKBFolderId) {
-		return findByG_P(
-			groupId, parentKBFolderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the kb folders where groupId = &#63; and parentKBFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @return the range of matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByG_P(
-		long groupId, long parentKBFolderId, int start, int end) {
-
-		return findByG_P(groupId, parentKBFolderId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the kb folders where groupId = &#63; and parentKBFolderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByG_P(
-		long groupId, long parentKBFolderId, int start, int end,
-		OrderByComparator<KBFolder> orderByComparator) {
-
-		return findByG_P(
-			groupId, parentKBFolderId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the kb folders where groupId = &#63; and parentKBFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -748,14 +436,9 @@ public class KBFolderPersistenceImpl
 		long groupId, long parentKBFolderId, int start, int end,
 		OrderByComparator<KBFolder> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _collectionPersistenceFinderByG_P.find(
-				finderCache, new Object[] {groupId, parentKBFolderId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_P.find(
+			finderCache, new Object[] {groupId, parentKBFolderId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -773,17 +456,9 @@ public class KBFolderPersistenceImpl
 			OrderByComparator<KBFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		KBFolder kbFolder = fetchByG_P_First(
-			groupId, parentKBFolderId, orderByComparator);
-
-		if (kbFolder != null) {
-			return kbFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByG_P.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, parentKBFolderId}));
+		return _collectionPersistenceFinderByG_P.findFirst(
+			finderCache, new Object[] {groupId, parentKBFolderId},
+			orderByComparator);
 	}
 
 	/**
@@ -805,44 +480,10 @@ public class KBFolderPersistenceImpl
 	}
 
 	/**
-	 * Returns all the kb folders that the user has permission to view where groupId = &#63; and parentKBFolderId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @return the matching kb folders that the user has permission to view
-	 */
-	@Override
-	public List<KBFolder> filterFindByG_P(long groupId, long parentKBFolderId) {
-		return filterFindByG_P(
-			groupId, parentKBFolderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the kb folders that the user has permission to view where groupId = &#63; and parentKBFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @return the range of matching kb folders that the user has permission to view
-	 */
-	@Override
-	public List<KBFolder> filterFindByG_P(
-		long groupId, long parentKBFolderId, int start, int end) {
-
-		return filterFindByG_P(groupId, parentKBFolderId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the kb folders that the user has permissions to view where groupId = &#63; and parentKBFolderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -857,98 +498,9 @@ public class KBFolderPersistenceImpl
 		long groupId, long parentKBFolderId, int start, int end,
 		OrderByComparator<KBFolder> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_P(
-				groupId, parentKBFolderId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_P(
-					groupId, parentKBFolderId, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_KBFOLDER_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_KBFOLDER_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_P_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_PARENTKBFOLDERID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_KBFOLDER_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(KBFolderModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(KBFolderModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), KBFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, KBFolderImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, KBFolderImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(parentKBFolderId);
-
-			return (List<KBFolder>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_P.filterFind(
+			finderCache, new Object[] {groupId, parentKBFolderId}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -972,13 +524,8 @@ public class KBFolderPersistenceImpl
 	 */
 	@Override
 	public int countByG_P(long groupId, long parentKBFolderId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _collectionPersistenceFinderByG_P.count(
-				finderCache, new Object[] {groupId, parentKBFolderId});
-		}
+		return _collectionPersistenceFinderByG_P.count(
+			finderCache, new Object[] {groupId, parentKBFolderId});
 	}
 
 	/**
@@ -990,66 +537,12 @@ public class KBFolderPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_P(long groupId, long parentKBFolderId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_P(groupId, parentKBFolderId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<KBFolder> kbFolders = findByG_P(groupId, parentKBFolderId);
-
-			kbFolders = InlineSQLHelperUtil.filter(kbFolders, groupId);
-
-			return kbFolders.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_KBFOLDER_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_P_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_PARENTKBFOLDERID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), KBFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(parentKBFolderId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_P.filterCount(
+			finderCache, new Object[] {groupId, parentKBFolderId}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_P_GROUPID_2 =
-		"kbFolder.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_P_PARENTKBFOLDERID_2 =
-		"kbFolder.parentKBFolderId = ?";
-
-	private FinderPath _finderPathFetchByG_P_N;
-	private UniquePersistenceFinder<KBFolder> _uniquePersistenceFinderByG_P_N;
+	private UniquePersistenceFinder<KBFolder, NoSuchFolderException>
+		_uniquePersistenceFinderByG_P_N;
 
 	/**
 	 * Returns the kb folder where groupId = &#63; and parentKBFolderId = &#63; and name = &#63; or throws a <code>NoSuchFolderException</code> if it could not be found.
@@ -1065,37 +558,8 @@ public class KBFolderPersistenceImpl
 			long groupId, long parentKBFolderId, String name)
 		throws NoSuchFolderException {
 
-		KBFolder kbFolder = fetchByG_P_N(groupId, parentKBFolderId, name);
-
-		if (kbFolder == null) {
-			String message =
-				_uniquePersistenceFinderByG_P_N.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, parentKBFolderId, name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFolderException(message);
-		}
-
-		return kbFolder;
-	}
-
-	/**
-	 * Returns the kb folder where groupId = &#63; and parentKBFolderId = &#63; and name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @param name the name
-	 * @return the matching kb folder, or <code>null</code> if a matching kb folder could not be found
-	 */
-	@Override
-	public KBFolder fetchByG_P_N(
-		long groupId, long parentKBFolderId, String name) {
-
-		return fetchByG_P_N(groupId, parentKBFolderId, name, true);
+		return _uniquePersistenceFinderByG_P_N.find(
+			finderCache, new Object[] {groupId, parentKBFolderId, name});
 	}
 
 	/**
@@ -1112,14 +576,9 @@ public class KBFolderPersistenceImpl
 		long groupId, long parentKBFolderId, String name,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _uniquePersistenceFinderByG_P_N.fetch(
-				finderCache, new Object[] {groupId, parentKBFolderId, name},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_P_N.fetch(
+			finderCache, new Object[] {groupId, parentKBFolderId, name},
+			useFinderCache);
 	}
 
 	/**
@@ -1154,8 +613,8 @@ public class KBFolderPersistenceImpl
 			finderCache, new Object[] {groupId, parentKBFolderId, name});
 	}
 
-	private FinderPath _finderPathFetchByG_P_UT;
-	private UniquePersistenceFinder<KBFolder> _uniquePersistenceFinderByG_P_UT;
+	private UniquePersistenceFinder<KBFolder, NoSuchFolderException>
+		_uniquePersistenceFinderByG_P_UT;
 
 	/**
 	 * Returns the kb folder where groupId = &#63; and parentKBFolderId = &#63; and urlTitle = &#63; or throws a <code>NoSuchFolderException</code> if it could not be found.
@@ -1171,37 +630,8 @@ public class KBFolderPersistenceImpl
 			long groupId, long parentKBFolderId, String urlTitle)
 		throws NoSuchFolderException {
 
-		KBFolder kbFolder = fetchByG_P_UT(groupId, parentKBFolderId, urlTitle);
-
-		if (kbFolder == null) {
-			String message =
-				_uniquePersistenceFinderByG_P_UT.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, parentKBFolderId, urlTitle});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFolderException(message);
-		}
-
-		return kbFolder;
-	}
-
-	/**
-	 * Returns the kb folder where groupId = &#63; and parentKBFolderId = &#63; and urlTitle = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @param urlTitle the url title
-	 * @return the matching kb folder, or <code>null</code> if a matching kb folder could not be found
-	 */
-	@Override
-	public KBFolder fetchByG_P_UT(
-		long groupId, long parentKBFolderId, String urlTitle) {
-
-		return fetchByG_P_UT(groupId, parentKBFolderId, urlTitle, true);
+		return _uniquePersistenceFinderByG_P_UT.find(
+			finderCache, new Object[] {groupId, parentKBFolderId, urlTitle});
 	}
 
 	/**
@@ -1218,14 +648,9 @@ public class KBFolderPersistenceImpl
 		long groupId, long parentKBFolderId, String urlTitle,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _uniquePersistenceFinderByG_P_UT.fetch(
-				finderCache, new Object[] {groupId, parentKBFolderId, urlTitle},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_P_UT.fetch(
+			finderCache, new Object[] {groupId, parentKBFolderId, urlTitle},
+			useFinderCache);
 	}
 
 	/**
@@ -1262,80 +687,14 @@ public class KBFolderPersistenceImpl
 			finderCache, new Object[] {groupId, parentKBFolderId, urlTitle});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_P_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_P_S;
-	private FinderPath _finderPathCountByG_P_S;
-	private CollectionPersistenceFinder<KBFolder>
+	private FilterCollectionPersistenceFinder<KBFolder, NoSuchFolderException>
 		_collectionPersistenceFinderByG_P_S;
 
 	/**
-	 * Returns all the kb folders where groupId = &#63; and parentKBFolderId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @param status the status
-	 * @return the matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByG_P_S(
-		long groupId, long parentKBFolderId, int status) {
-
-		return findByG_P_S(
-			groupId, parentKBFolderId, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the kb folders where groupId = &#63; and parentKBFolderId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @param status the status
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @return the range of matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByG_P_S(
-		long groupId, long parentKBFolderId, int status, int start, int end) {
-
-		return findByG_P_S(groupId, parentKBFolderId, status, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the kb folders where groupId = &#63; and parentKBFolderId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @param status the status
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching kb folders
-	 */
-	@Override
-	public List<KBFolder> findByG_P_S(
-		long groupId, long parentKBFolderId, int status, int start, int end,
-		OrderByComparator<KBFolder> orderByComparator) {
-
-		return findByG_P_S(
-			groupId, parentKBFolderId, status, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the kb folders where groupId = &#63; and parentKBFolderId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1352,14 +711,9 @@ public class KBFolderPersistenceImpl
 		long groupId, long parentKBFolderId, int status, int start, int end,
 		OrderByComparator<KBFolder> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _collectionPersistenceFinderByG_P_S.find(
-				finderCache, new Object[] {groupId, parentKBFolderId, status},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_P_S.find(
+			finderCache, new Object[] {groupId, parentKBFolderId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1378,17 +732,9 @@ public class KBFolderPersistenceImpl
 			OrderByComparator<KBFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		KBFolder kbFolder = fetchByG_P_S_First(
-			groupId, parentKBFolderId, status, orderByComparator);
-
-		if (kbFolder != null) {
-			return kbFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByG_P_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, parentKBFolderId, status}));
+		return _collectionPersistenceFinderByG_P_S.findFirst(
+			finderCache, new Object[] {groupId, parentKBFolderId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -1411,49 +757,10 @@ public class KBFolderPersistenceImpl
 	}
 
 	/**
-	 * Returns all the kb folders that the user has permission to view where groupId = &#63; and parentKBFolderId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @param status the status
-	 * @return the matching kb folders that the user has permission to view
-	 */
-	@Override
-	public List<KBFolder> filterFindByG_P_S(
-		long groupId, long parentKBFolderId, int status) {
-
-		return filterFindByG_P_S(
-			groupId, parentKBFolderId, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the kb folders that the user has permission to view where groupId = &#63; and parentKBFolderId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentKBFolderId the parent kb folder ID
-	 * @param status the status
-	 * @param start the lower bound of the range of kb folders
-	 * @param end the upper bound of the range of kb folders (not inclusive)
-	 * @return the range of matching kb folders that the user has permission to view
-	 */
-	@Override
-	public List<KBFolder> filterFindByG_P_S(
-		long groupId, long parentKBFolderId, int status, int start, int end) {
-
-		return filterFindByG_P_S(
-			groupId, parentKBFolderId, status, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the kb folders that the user has permissions to view where groupId = &#63; and parentKBFolderId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KBFolderModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1469,103 +776,9 @@ public class KBFolderPersistenceImpl
 		long groupId, long parentKBFolderId, int status, int start, int end,
 		OrderByComparator<KBFolder> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_P_S(
-				groupId, parentKBFolderId, status, start, end,
-				orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_P_S(
-					groupId, parentKBFolderId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_KBFOLDER_WHERE);
-		}
-		else {
-			sb.append(_FILTER_SQL_SELECT_KBFOLDER_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_P_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_S_PARENTKBFOLDERID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_S_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_KBFOLDER_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(KBFolderModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(KBFolderModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), KBFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, KBFolderImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(_FILTER_ENTITY_TABLE, KBFolderImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(parentKBFolderId);
-
-			queryPos.add(status);
-
-			return (List<KBFolder>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_P_S.filterFind(
+			finderCache, new Object[] {groupId, parentKBFolderId, status},
+			start, end, orderByComparator, groupId);
 	}
 
 	/**
@@ -1591,13 +804,8 @@ public class KBFolderPersistenceImpl
 	 */
 	@Override
 	public int countByG_P_S(long groupId, long parentKBFolderId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _collectionPersistenceFinderByG_P_S.count(
-				finderCache, new Object[] {groupId, parentKBFolderId, status});
-		}
+		return _collectionPersistenceFinderByG_P_S.count(
+			finderCache, new Object[] {groupId, parentKBFolderId, status});
 	}
 
 	/**
@@ -1612,74 +820,13 @@ public class KBFolderPersistenceImpl
 	public int filterCountByG_P_S(
 		long groupId, long parentKBFolderId, int status) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_P_S(groupId, parentKBFolderId, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<KBFolder> kbFolders = findByG_P_S(
-				groupId, parentKBFolderId, status);
-
-			kbFolders = InlineSQLHelperUtil.filter(kbFolders, groupId);
-
-			return kbFolders.size();
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_KBFOLDER_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_P_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_S_PARENTKBFOLDERID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_S_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), KBFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(parentKBFolderId);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_P_S.filterCount(
+			finderCache, new Object[] {groupId, parentKBFolderId, status},
+			groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_P_S_GROUPID_2 =
-		"kbFolder.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_P_S_PARENTKBFOLDERID_2 =
-		"kbFolder.parentKBFolderId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_P_S_STATUS_2 =
-		"kbFolder.status = ?";
-
-	private FinderPath _finderPathFetchByERC_G;
-	private UniquePersistenceFinder<KBFolder> _uniquePersistenceFinderByERC_G;
+	private UniquePersistenceFinder<KBFolder, NoSuchFolderException>
+		_uniquePersistenceFinderByERC_G;
 
 	/**
 	 * Returns the kb folder where externalReferenceCode = &#63; and groupId = &#63; or throws a <code>NoSuchFolderException</code> if it could not be found.
@@ -1693,34 +840,8 @@ public class KBFolderPersistenceImpl
 	public KBFolder findByERC_G(String externalReferenceCode, long groupId)
 		throws NoSuchFolderException {
 
-		KBFolder kbFolder = fetchByERC_G(externalReferenceCode, groupId);
-
-		if (kbFolder == null) {
-			String message =
-				_uniquePersistenceFinderByERC_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFolderException(message);
-		}
-
-		return kbFolder;
-	}
-
-	/**
-	 * Returns the kb folder where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param groupId the group ID
-	 * @return the matching kb folder, or <code>null</code> if a matching kb folder could not be found
-	 */
-	@Override
-	public KBFolder fetchByERC_G(String externalReferenceCode, long groupId) {
-		return fetchByERC_G(externalReferenceCode, groupId, true);
+		return _uniquePersistenceFinderByERC_G.find(
+			finderCache, new Object[] {externalReferenceCode, groupId});
 	}
 
 	/**
@@ -1735,14 +856,9 @@ public class KBFolderPersistenceImpl
 	public KBFolder fetchByERC_G(
 		String externalReferenceCode, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					KBFolder.class)) {
-
-			return _uniquePersistenceFinderByERC_G.fetch(
-				finderCache, new Object[] {externalReferenceCode, groupId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByERC_G.fetch(
+			finderCache, new Object[] {externalReferenceCode, groupId},
+			useFinderCache);
 	}
 
 	/**
@@ -2132,236 +1248,222 @@ public class KBFolderPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_KBFOLDER_WHERE, _SQL_COUNT_KBFOLDER_WHERE,
-			KBFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			KBFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"kbFolder.", "uuid", FinderColumn.Type.STRING, "=", true, true,
-				KBFolder::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, KBFolder::getUuid,
-			KBFolder::getGroupId);
+				"kbFolder.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, KBFolder::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_KBFOLDER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(KBFolder::getUuid), KBFolder::getGroupId),
+			_SQL_SELECT_KBFOLDER_WHERE, "",
 			new FinderColumn<>(
-				"kbFolder.", "uuid", FinderColumn.Type.STRING, "=", true, false,
-				KBFolder::getUuid),
+				"kbFolder.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+				true, true, KBFolder::getUuid),
 			new FinderColumn<>(
 				"kbFolder.", "groupId", FinderColumn.Type.LONG, "=", true, true,
 				KBFolder::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_KBFOLDER_WHERE,
-				_SQL_COUNT_KBFOLDER_WHERE, KBFolderModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_KBFOLDER_WHERE, _SQL_COUNT_KBFOLDER_WHERE,
+				KBFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"kbFolder.", "uuid", FinderColumn.Type.STRING, "=", true,
-					false, KBFolder::getUuid),
+					"kbFolder.", "uuid", "uuid_", FinderColumn.Type.STRING, "=",
+					true, true, KBFolder::getUuid),
 				new FinderColumn<>(
 					"kbFolder.", "companyId", FinderColumn.Type.LONG, "=", true,
 					true, KBFolder::getCompanyId));
-
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
 
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId, _SQL_SELECT_KBFOLDER_WHERE,
-				_SQL_COUNT_KBFOLDER_WHERE, KBFolderModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_KBFOLDER_WHERE, _SQL_COUNT_KBFOLDER_WHERE,
+				KBFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"kbFolder.", "companyId", FinderColumn.Type.LONG, "=", true,
 					true, KBFolder::getCompanyId));
 
-		_finderPathWithPaginationFindByG_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "parentKBFolderId"}, true);
-
-		_finderPathWithoutPaginationFindByG_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "parentKBFolderId"}, true);
-
-		_finderPathCountByG_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "parentKBFolderId"}, false);
-
-		_collectionPersistenceFinderByG_P = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_P,
-			_finderPathWithoutPaginationFindByG_P, _finderPathCountByG_P,
-			_SQL_SELECT_KBFOLDER_WHERE, _SQL_COUNT_KBFOLDER_WHERE,
-			KBFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"kbFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, KBFolder::getGroupId),
-			new FinderColumn<>(
-				"kbFolder.", "parentKBFolderId", FinderColumn.Type.LONG, "=",
-				true, true, KBFolder::getParentKBFolderId));
-
-		_finderPathFetchByG_P_N = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_P_N",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "parentKBFolderId", "name"}, false,
-			KBFolder::getGroupId, KBFolder::getParentKBFolderId,
-			KBFolder::getName);
+		_collectionPersistenceFinderByG_P =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "parentKBFolderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "parentKBFolderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "parentKBFolderId"}, false),
+				_SQL_SELECT_KBFOLDER_WHERE, _SQL_COUNT_KBFOLDER_WHERE,
+				KBFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"kbFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
+					true, KBFolder::getGroupId),
+				new FinderColumn<>(
+					"kbFolder.", "parentKBFolderId", FinderColumn.Type.LONG,
+					"=", true, true, KBFolder::getParentKBFolderId));
 
 		_uniquePersistenceFinderByG_P_N = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_P_N, _SQL_SELECT_KBFOLDER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_P_N",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"groupId", "parentKBFolderId", "name"}, 0, 4,
+				false, KBFolder::getGroupId, KBFolder::getParentKBFolderId,
+				convertNullFunction(KBFolder::getName)),
+			_SQL_SELECT_KBFOLDER_WHERE, "",
 			new FinderColumn<>(
-				"kbFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, KBFolder::getGroupId),
+				"kbFolder.", "groupId", FinderColumn.Type.LONG, "=", true, true,
+				KBFolder::getGroupId),
 			new FinderColumn<>(
 				"kbFolder.", "parentKBFolderId", FinderColumn.Type.LONG, "=",
-				true, false, KBFolder::getParentKBFolderId),
+				true, true, KBFolder::getParentKBFolderId),
 			new FinderColumn<>(
 				"kbFolder.", "name", FinderColumn.Type.STRING, "=", true, true,
 				KBFolder::getName));
 
-		_finderPathFetchByG_P_UT = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_P_UT",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "parentKBFolderId", "urlTitle"}, false,
-			KBFolder::getGroupId, KBFolder::getParentKBFolderId,
-			KBFolder::getUrlTitle);
-
 		_uniquePersistenceFinderByG_P_UT = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_P_UT, _SQL_SELECT_KBFOLDER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_P_UT",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"groupId", "parentKBFolderId", "urlTitle"}, 0, 4,
+				false, KBFolder::getGroupId, KBFolder::getParentKBFolderId,
+				convertNullFunction(KBFolder::getUrlTitle)),
+			_SQL_SELECT_KBFOLDER_WHERE, "",
 			new FinderColumn<>(
-				"kbFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, KBFolder::getGroupId),
+				"kbFolder.", "groupId", FinderColumn.Type.LONG, "=", true, true,
+				KBFolder::getGroupId),
 			new FinderColumn<>(
 				"kbFolder.", "parentKBFolderId", FinderColumn.Type.LONG, "=",
-				true, false, KBFolder::getParentKBFolderId),
+				true, true, KBFolder::getParentKBFolderId),
 			new FinderColumn<>(
 				"kbFolder.", "urlTitle", FinderColumn.Type.STRING, "=", true,
 				true, KBFolder::getUrlTitle));
 
-		_finderPathWithPaginationFindByG_P_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "parentKBFolderId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByG_P_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "parentKBFolderId", "status"}, true);
-
-		_finderPathCountByG_P_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "parentKBFolderId", "status"}, false);
-
-		_collectionPersistenceFinderByG_P_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_P_S,
-			_finderPathWithoutPaginationFindByG_P_S, _finderPathCountByG_P_S,
-			_SQL_SELECT_KBFOLDER_WHERE, _SQL_COUNT_KBFOLDER_WHERE,
-			KBFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"kbFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, KBFolder::getGroupId),
-			new FinderColumn<>(
-				"kbFolder.", "parentKBFolderId", FinderColumn.Type.LONG, "=",
-				true, false, KBFolder::getParentKBFolderId),
-			new FinderColumn<>(
-				"kbFolder.", "status", FinderColumn.Type.INTEGER, "=", true,
-				true, KBFolder::getStatus));
-
-		_finderPathFetchByERC_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "groupId"}, false,
-			KBFolder::getExternalReferenceCode, KBFolder::getGroupId);
+		_collectionPersistenceFinderByG_P_S =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "parentKBFolderId", "status"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "parentKBFolderId", "status"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "parentKBFolderId", "status"},
+					false),
+				_SQL_SELECT_KBFOLDER_WHERE, _SQL_COUNT_KBFOLDER_WHERE,
+				KBFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"kbFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
+					true, KBFolder::getGroupId),
+				new FinderColumn<>(
+					"kbFolder.", "parentKBFolderId", FinderColumn.Type.LONG,
+					"=", true, true, KBFolder::getParentKBFolderId),
+				new FinderColumn<>(
+					"kbFolder.", "status", FinderColumn.Type.INTEGER, "=", true,
+					true, KBFolder::getStatus));
 
 		_uniquePersistenceFinderByERC_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_G, _SQL_SELECT_KBFOLDER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "groupId"}, 0, 1, false,
+				convertNullFunction(KBFolder::getExternalReferenceCode),
+				KBFolder::getGroupId),
+			_SQL_SELECT_KBFOLDER_WHERE, "",
 			new FinderColumn<>(
 				"kbFolder.", "externalReferenceCode", FinderColumn.Type.STRING,
-				"=", true, false, KBFolder::getExternalReferenceCode),
+				"=", true, true, KBFolder::getExternalReferenceCode),
 			new FinderColumn<>(
 				"kbFolder.", "groupId", FinderColumn.Type.LONG, "=", true, true,
 				KBFolder::getGroupId));
@@ -2423,29 +1525,6 @@ public class KBFolderPersistenceImpl
 	private static final String _SQL_COUNT_KBFOLDER_WHERE =
 		"SELECT COUNT(kbFolder) FROM KBFolder kbFolder WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"kbFolder.kbFolderId";
-
-	private static final String _FILTER_SQL_SELECT_KBFOLDER_WHERE =
-		"SELECT DISTINCT {kbFolder.*} FROM KBFolder kbFolder WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_KBFOLDER_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {KBFolder.*} FROM (SELECT DISTINCT kbFolder.kbFolderId FROM KBFolder kbFolder WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_KBFOLDER_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN KBFolder ON TEMP_TABLE.kbFolderId = KBFolder.kbFolderId";
-
-	private static final String _FILTER_SQL_COUNT_KBFOLDER_WHERE =
-		"SELECT COUNT(DISTINCT kbFolder.kbFolderId) AS COUNT_VALUE FROM KBFolder kbFolder WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "kbFolder";
-
-	private static final String _FILTER_ENTITY_TABLE = "KBFolder";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "KBFolder.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No KBFolder exists with the key {";
 
@@ -2461,4 +1540,4 @@ public class KBFolderPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-311434525
+// LIFERAY-SERVICE-BUILDER-HASH:1782310815

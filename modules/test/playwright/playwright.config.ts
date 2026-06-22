@@ -11,6 +11,7 @@ import {liferayConfig} from './liferay.config';
 import {config as accessibilityMenuWeb} from './tests/accessibility-menu-web/main/config';
 import {config as accountAdminWebConfig} from './tests/account-admin-web/main/config';
 import {config as addressWebConfig} from './tests/address-web/main/config';
+import {config as aiHubSiteInitializerConfig} from './tests/ai-hub-site-initializer/main/config';
 import {config as analyticsClientJs} from './tests/analytics-client-js/main/config';
 import {config as analyticsReportsJsComponentsWeb} from './tests/analytics-reports-js-components-web/main/config';
 import {config as analyticsSettingsWebConfig} from './tests/analytics-settings-web/main/config';
@@ -84,7 +85,9 @@ import {config as frontendDataSetWebConfig} from './tests/frontend-data-set-web/
 import {config as frontendEditorAlloyEditorWebConfig} from './tests/frontend-editor-alloyeditor-web/main/config';
 import {config as frontendEditorCKEditorWebConfig} from './tests/frontend-editor-ckeditor-web/main/config';
 import {config as frontendJsAuiWebConfig} from './tests/frontend-js-aui-web/main/config';
+import {config as frontendJsAuiWebSearchContainerSelectConfig} from './tests/frontend-js-aui-web/search-container-select/config';
 import {config as frontendJsBootstrapSupportWebConfig} from './tests/frontend-js-bootstrap-support-web/main/config';
+import {config as frontendJsClayWebConfig} from './tests/frontend-js-clay-web/main/config';
 import {config as frontendJsComponentsWebConfig} from './tests/frontend-js-components-web/main/config';
 import {config as frontendJsItemSelectorWebConfig} from './tests/frontend-js-item-selector-web/main/config';
 import {config as frontendJsSpaWebConfig} from './tests/frontend-js-spa-web/main/config';
@@ -119,6 +122,7 @@ import {config as nestedPortletsWebConfig} from './tests/nested-portlets-web/mai
 import {config as notificationWebConfig} from './tests/notification-web/main/config';
 import {config as notificationsWebConfig} from './tests/notifications-web/main/config';
 import {config as oauthClientAdministrationConfig} from './tests/oauth-client-administration/main/config';
+import {config as oauth2ProviderWebConfig} from './tests/oauth2-provider-web/main/config';
 import {config as objectActionWebConfig} from './tests/object-web/action/config';
 import {config as objectClientExtensionWebConfig} from './tests/object-web/client-extension/config';
 import {config as objectContentPageIntegrationWebConfig} from './tests/object-web/content-page-integration/config';
@@ -179,6 +183,7 @@ import {config as scimConfiguraitonWebConfig} from './tests/scim-configuration-w
 import {config as searchExperiencesWebConfig} from './tests/search-experiences-web/main/config';
 import {config as segmentExperimentWebConfig} from './tests/segment-experiment-web/main/config';
 import {config as segmentsWebConfig} from './tests/segments-web/main/config';
+import {config as seoStudioWebConfig} from './tests/seo-studio-web/main/config';
 import {config as pageManagementSiteConfig} from './tests/setup/page-management-site/main/config';
 import {config as pageManagementSiteTeardownConfig} from './tests/setup/page-management-site/teardown/config';
 import {config as siteCmsSiteConfig} from './tests/setup/site-cms-site/main/config';
@@ -202,6 +207,7 @@ import {config as smokeConfig} from './tests/smoke/main/config';
 import {config as stagingConfig} from './tests/staging-configuration-web/main/config';
 import {config as stylebookWebConfig} from './tests/style-book-web/main/config';
 import {config as templateWebConfig} from './tests/template-web/main/config';
+import {config as translationWebConfig} from './tests/translation-web/main/config';
 import {config as trashWebConfig} from './tests/trash-web/main/config';
 import {config as usersAdminWebEmailConfig} from './tests/users-admin-web/email/config';
 import {config as usersAdminWebConfig} from './tests/users-admin-web/main/config';
@@ -233,6 +239,7 @@ export default defineConfig({
 		accessibilityMenuWeb,
 		accountAdminWebConfig,
 		addressWebConfig,
+		aiHubSiteInitializerConfig,
 		analyticsClientJs,
 		analyticsReportsJsComponentsWeb,
 		analyticsSettingsWebConfig,
@@ -307,7 +314,9 @@ export default defineConfig({
 		frontendEditorAlloyEditorWebConfig,
 		frontendEditorCKEditorWebConfig,
 		frontendJsAuiWebConfig,
+		frontendJsAuiWebSearchContainerSelectConfig,
 		frontendJsBootstrapSupportWebConfig,
+		frontendJsClayWebConfig,
 		frontendJsComponentsWebConfig,
 		frontendJsItemSelectorWebConfig,
 		frontendJsSpaWebConfig,
@@ -344,6 +353,7 @@ export default defineConfig({
 		notificationWebConfig,
 		notificationsWebConfig,
 		oauthClientAdministrationConfig,
+		oauth2ProviderWebConfig,
 		listTypeDefinitionsWebConfig,
 		objectActionWebConfig,
 		objectClientExtensionWebConfig,
@@ -405,6 +415,7 @@ export default defineConfig({
 		searchExperiencesWebConfig,
 		segmentExperimentWebConfig,
 		segmentsWebConfig,
+		seoStudioWebConfig,
 		siteAdminWebConfig,
 		siteCmpSiteInitializerConfig,
 		siteCmsSiteInitializerConfig,
@@ -424,6 +435,7 @@ export default defineConfig({
 		stagingConfig,
 		stylebookWebConfig,
 		templateWebConfig,
+		translationWebConfig,
 		trashWebConfig,
 		usersAdminWebConfig,
 		usersAdminWebEmailConfig,

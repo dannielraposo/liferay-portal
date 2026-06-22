@@ -5,7 +5,7 @@
 
 package com.liferay.ai.hub.web.internal.display.context;
 
-import com.liferay.ai.hub.web.internal.util.ActionUtil;
+import com.liferay.ai.hub.web.internal.util.DisplayContextUtil;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
@@ -16,6 +16,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,14 +34,15 @@ public class ViewInstructionDefinitionsDisplayContext {
 	}
 
 	public String getAPIURL() {
-		return "/o/ai-hub/instruction-definitions";
+		return _BASE_API_URL + "?sort=system:desc,dateCreated:asc";
 	}
 
 	public CreationMenu getCreationMenu() throws Exception {
 		return CreationMenuBuilder.addDropdownItem(
 			dropdownItem -> {
 				dropdownItem.setHref(
-					ActionUtil.getAIHubURL(_themeDisplay) + "/instruction");
+					DisplayContextUtil.getAIHubURL(_themeDisplay) +
+						"/instruction");
 				dropdownItem.setLabel(
 					LanguageUtil.get(_httpServletRequest, "new-instruction"));
 			}
@@ -53,18 +55,28 @@ public class ViewInstructionDefinitionsDisplayContext {
 		return List.of(
 			new FDSActionDropdownItem(
 				StringBundler.concat(
-					ActionUtil.getAIHubURL(_themeDisplay), "/instruction",
+					DisplayContextUtil.getAIHubURL(_themeDisplay),
+					"/instruction",
 					"?externalReferenceCode={externalReferenceCode}"),
 				"view", "view", LanguageUtil.get(_httpServletRequest, "view"),
 				"get", null, null),
 			new FDSActionDropdownItem(
 				StringBundler.concat(
-					getAPIURL(), "/by-external-reference-code",
+					_BASE_API_URL, "/by-external-reference-code",
 					"/{externalReferenceCode}"),
 				"trash", "delete",
 				LanguageUtil.get(_httpServletRequest, "delete"), "delete",
-				"delete", "async"));
+				"delete", "async", Collections.singletonMap("system", false)),
+			new FDSActionDropdownItem(
+				DisplayContextUtil.getPermissionsURL(
+					"L_AI_HUB_INSTRUCTION_DEFINITION", _httpServletRequest),
+				"password-policies", "permissions",
+				LanguageUtil.get(_httpServletRequest, "permissions"), "get",
+				"permissions", "modal-permissions"));
 	}
+
+	private static final String _BASE_API_URL =
+		"/o/ai-hub/instruction-definitions";
 
 	private final HttpServletRequest _httpServletRequest;
 	private final ThemeDisplay _themeDisplay;

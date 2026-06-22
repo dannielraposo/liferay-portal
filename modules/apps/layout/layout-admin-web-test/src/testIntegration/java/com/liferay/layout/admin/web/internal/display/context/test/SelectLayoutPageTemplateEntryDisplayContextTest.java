@@ -8,10 +8,17 @@ package com.liferay.layout.admin.web.internal.display.context.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.portlet.MockLiferayPortletRenderRequest;
 import com.liferay.portal.kernel.test.portlet.MockLiferayPortletRenderResponse;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.test.rule.FeatureFlag;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -35,10 +42,14 @@ public class SelectLayoutPageTemplateEntryDisplayContextTest {
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
 
+	@FeatureFlags(
+		featureFlags = @FeatureFlag(enable = false, value = "LPD-76864")
+	)
 	@Test
+	@TestInfo("LPD-89086")
 	public void testGetTypes() throws Exception {
 		MockLiferayPortletRenderRequest mockLiferayPortletRenderRequest =
-			new MockLiferayPortletRenderRequest();
+			_getMockLiferayPortletRenderRequest();
 
 		_mvcRenderCommand.render(
 			mockLiferayPortletRenderRequest,
@@ -54,7 +65,54 @@ public class SelectLayoutPageTemplateEntryDisplayContextTest {
 		Assert.assertTrue(types.containsAll(Arrays.asList(_TYPES)));
 	}
 
+	@FeatureFlags(featureFlags = @FeatureFlag(value = "LPD-76864"))
+	@Test
+	@TestInfo("LPD-89086")
+	public void testGetTypesWithWidgetPageDeprecationFeatureFlag()
+		throws Exception {
+
+		MockLiferayPortletRenderRequest mockLiferayPortletRenderRequest =
+			_getMockLiferayPortletRenderRequest();
+
+		_mvcRenderCommand.render(
+			mockLiferayPortletRenderRequest,
+			new MockLiferayPortletRenderResponse());
+
+		List<String> types = ReflectionTestUtil.invoke(
+			mockLiferayPortletRenderRequest.getAttribute(
+				"com.liferay.layout.admin.web.internal.display.context." +
+					"SelectLayoutPageTemplateEntryDisplayContext"),
+			"getTypes", new Class<?>[0]);
+
+		Assert.assertTrue(types.containsAll(Arrays.asList(_TYPES_WITH_FF)));
+		Assert.assertEquals(
+			types.toString(), _TYPES_WITH_FF.length, types.size());
+	}
+
+	private MockLiferayPortletRenderRequest
+			_getMockLiferayPortletRenderRequest()
+		throws Exception {
+
+		MockLiferayPortletRenderRequest mockLiferayPortletRenderRequest =
+			new MockLiferayPortletRenderRequest();
+
+		ThemeDisplay themeDisplay = new ThemeDisplay();
+
+		themeDisplay.setCompany(
+			CompanyLocalServiceUtil.getCompany(TestPropsValues.getCompanyId()));
+
+		mockLiferayPortletRenderRequest.setAttribute(
+			WebKeys.THEME_DISPLAY, themeDisplay);
+
+		return mockLiferayPortletRenderRequest;
+	}
+
 	private static final String[] _TYPES = {
+		LayoutConstants.TYPE_EMBEDDED, LayoutConstants.TYPE_LINK_TO_LAYOUT,
+		LayoutConstants.TYPE_NODE, LayoutConstants.TYPE_URL
+	};
+
+	private static final String[] _TYPES_WITH_FF = {
 		LayoutConstants.TYPE_EMBEDDED,
 		LayoutConstants.TYPE_FULL_PAGE_APPLICATION,
 		LayoutConstants.TYPE_LINK_TO_LAYOUT, LayoutConstants.TYPE_NODE,

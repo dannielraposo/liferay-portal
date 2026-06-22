@@ -13,8 +13,6 @@ import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchRememberMeTokenException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.RememberMeToken;
 import com.liferay.portal.kernel.model.RememberMeTokenTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -66,60 +64,9 @@ public class RememberMeTokenPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUserId;
-	private FinderPath _finderPathWithoutPaginationFindByUserId;
-	private FinderPath _finderPathCountByUserId;
-	private CollectionPersistenceFinder<RememberMeToken>
-		_collectionPersistenceFinderByUserId;
-
-	/**
-	 * Returns all the remember me tokens where userId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @return the matching remember me tokens
-	 */
-	@Override
-	public List<RememberMeToken> findByUserId(long userId) {
-		return findByUserId(userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the remember me tokens where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RememberMeTokenModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of remember me tokens
-	 * @param end the upper bound of the range of remember me tokens (not inclusive)
-	 * @return the range of matching remember me tokens
-	 */
-	@Override
-	public List<RememberMeToken> findByUserId(long userId, int start, int end) {
-		return findByUserId(userId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the remember me tokens where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RememberMeTokenModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of remember me tokens
-	 * @param end the upper bound of the range of remember me tokens (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching remember me tokens
-	 */
-	@Override
-	public List<RememberMeToken> findByUserId(
-		long userId, int start, int end,
-		OrderByComparator<RememberMeToken> orderByComparator) {
-
-		return findByUserId(userId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<RememberMeToken, NoSuchRememberMeTokenException>
+			_collectionPersistenceFinderByUserId;
 
 	/**
 	 * Returns an ordered range of all the remember me tokens where userId = &#63;.
@@ -159,16 +106,9 @@ public class RememberMeTokenPersistenceImpl
 			long userId, OrderByComparator<RememberMeToken> orderByComparator)
 		throws NoSuchRememberMeTokenException {
 
-		RememberMeToken rememberMeToken = fetchByUserId_First(
-			userId, orderByComparator);
-
-		if (rememberMeToken != null) {
-			return rememberMeToken;
-		}
-
-		throw new NoSuchRememberMeTokenException(
-			_collectionPersistenceFinderByUserId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId}));
+		return _collectionPersistenceFinderByUserId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {userId},
+			orderByComparator);
 	}
 
 	/**
@@ -210,10 +150,9 @@ public class RememberMeTokenPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {userId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByLteExpirationDate;
-	private FinderPath _finderPathWithPaginationCountByLteExpirationDate;
-	private CollectionPersistenceFinder<RememberMeToken>
-		_collectionPersistenceFinderByLteExpirationDate;
+	private CollectionPersistenceFinder
+		<RememberMeToken, NoSuchRememberMeTokenException>
+			_collectionPersistenceFinderByLteExpirationDate;
 
 	/**
 	 * Returns all the remember me tokens where expirationDate &le; &#63;.
@@ -307,17 +246,9 @@ public class RememberMeTokenPersistenceImpl
 			OrderByComparator<RememberMeToken> orderByComparator)
 		throws NoSuchRememberMeTokenException {
 
-		RememberMeToken rememberMeToken = fetchByLteExpirationDate_First(
-			expirationDate, orderByComparator);
-
-		if (rememberMeToken != null) {
-			return rememberMeToken;
-		}
-
-		throw new NoSuchRememberMeTokenException(
-			_collectionPersistenceFinderByLteExpirationDate.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {expirationDate}));
+		return _collectionPersistenceFinderByLteExpirationDate.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {expirationDate},
+			orderByComparator);
 	}
 
 	/**
@@ -551,54 +482,55 @@ public class RememberMeTokenPersistenceImpl
 	 * Initializes the remember me token persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId"}, true);
-
-		_finderPathWithoutPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, true);
-
-		_finderPathCountByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"},
-			false);
-
 		_collectionPersistenceFinderByUserId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUserId,
-				_finderPathWithoutPaginationFindByUserId,
-				_finderPathCountByUserId, _SQL_SELECT_REMEMBERMETOKEN_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, false),
+				_SQL_SELECT_REMEMBERMETOKEN_WHERE,
 				_SQL_COUNT_REMEMBERMETOKEN_WHERE,
 				RememberMeTokenModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"rememberMeToken.", "userId", FinderColumn.Type.LONG, "=",
 					true, true, RememberMeToken::getUserId));
 
-		_finderPathWithPaginationFindByLteExpirationDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLteExpirationDate",
-			new String[] {
-				Date.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"expirationDate"}, true);
-
-		_finderPathWithPaginationCountByLteExpirationDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLteExpirationDate",
-			new String[] {Date.class.getName()},
-			new String[] {"expirationDate"}, false);
-
 		_collectionPersistenceFinderByLteExpirationDate =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLteExpirationDate, null,
-				_finderPathWithPaginationCountByLteExpirationDate,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByLteExpirationDate",
+					new String[] {
+						Date.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"expirationDate"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByLteExpirationDate",
+					new String[] {Date.class.getName()},
+					new String[] {"expirationDate"}, false),
 				_SQL_SELECT_REMEMBERMETOKEN_WHERE,
 				_SQL_COUNT_REMEMBERMETOKEN_WHERE,
 				RememberMeTokenModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"rememberMeToken.", "expirationDate",
 					FinderColumn.Type.DATE, "<=", true, true,
@@ -628,13 +560,10 @@ public class RememberMeTokenPersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No RememberMeToken exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		RememberMeTokenPersistenceImpl.class);
-
 	@Override
 	protected FinderCache getFinderCache() {
 		return FinderCacheUtil.getFinderCache();
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:991410150
+// LIFERAY-SERVICE-BUILDER-HASH:1930733763

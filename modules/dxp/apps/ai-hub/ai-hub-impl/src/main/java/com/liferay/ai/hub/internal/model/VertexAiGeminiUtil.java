@@ -5,13 +5,20 @@
 
 package com.liferay.ai.hub.internal.model;
 
-import com.liferay.ai.hub.internal.configuration.VertexAIConfiguration;
+import com.liferay.ai.hub.configuration.VertexAIConfiguration;
+import com.liferay.ai.hub.internal.langchain4j.model.chat.listener.AIHubChatModelListenerImpl;
+import com.liferay.ai.hub.quota.QuotaManager;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.service.ServiceContext;
 
+import dev.langchain4j.model.vertexai.gemini.HarmCategory;
+import dev.langchain4j.model.vertexai.gemini.SafetyThreshold;
 import dev.langchain4j.model.vertexai.gemini.VertexAiGeminiChatModel;
 import dev.langchain4j.model.vertexai.gemini.VertexAiGeminiStreamingChatModel;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -20,12 +27,12 @@ import java.util.Objects;
 public class VertexAiGeminiUtil {
 
 	public static VertexAiGeminiChatModel createVertexAiGeminiChatModel(
-			long companyId)
+			QuotaManager quotaManager, ServiceContext serviceContext)
 		throws ConfigurationException {
 
 		VertexAIConfiguration vertexAIConfiguration =
 			ConfigurationProviderUtil.getCompanyConfiguration(
-				VertexAIConfiguration.class, companyId);
+				VertexAIConfiguration.class, serviceContext.getCompanyId());
 
 		VertexAiGeminiChatModel.VertexAiGeminiChatModelBuilder builder =
 			VertexAiGeminiChatModel.builder();
@@ -34,22 +41,28 @@ public class VertexAiGeminiUtil {
 			builder.apiEndpoint("aiplatform.googleapis.com");
 		}
 
-		return builder.location(
+		return builder.listeners(
+			Collections.singletonList(
+				new AIHubChatModelListenerImpl(quotaManager, serviceContext))
+		).location(
 			vertexAIConfiguration.location()
 		).modelName(
 			vertexAIConfiguration.modelName()
 		).project(
 			vertexAIConfiguration.projectId()
+		).safetySettings(
+			_safetyThresholds
 		).build();
 	}
 
 	public static VertexAiGeminiStreamingChatModel
-			createVertexAiGeminiStreamingChatModel(long companyId)
+			createVertexAiGeminiStreamingChatModel(
+				QuotaManager quotaManager, ServiceContext serviceContext)
 		throws ConfigurationException {
 
 		VertexAIConfiguration vertexAIConfiguration =
 			ConfigurationProviderUtil.getCompanyConfiguration(
-				VertexAIConfiguration.class, companyId);
+				VertexAIConfiguration.class, serviceContext.getCompanyId());
 
 		VertexAiGeminiStreamingChatModel.VertexAiGeminiStreamingChatModelBuilder
 			builder = VertexAiGeminiStreamingChatModel.builder();
@@ -58,13 +71,29 @@ public class VertexAiGeminiUtil {
 			builder.apiEndpoint("aiplatform.googleapis.com");
 		}
 
-		return builder.location(
+		return builder.listeners(
+			Collections.singletonList(
+				new AIHubChatModelListenerImpl(quotaManager, serviceContext))
+		).location(
 			vertexAIConfiguration.location()
 		).modelName(
 			vertexAIConfiguration.modelName()
 		).project(
 			vertexAIConfiguration.projectId()
+		).safetySettings(
+			_safetyThresholds
 		).build();
 	}
+
+	private static final Map<HarmCategory, SafetyThreshold> _safetyThresholds =
+		Map.of(
+			HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+			SafetyThreshold.BLOCK_MEDIUM_AND_ABOVE,
+			HarmCategory.HARM_CATEGORY_HARASSMENT,
+			SafetyThreshold.BLOCK_MEDIUM_AND_ABOVE,
+			HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+			SafetyThreshold.BLOCK_MEDIUM_AND_ABOVE,
+			HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+			SafetyThreshold.BLOCK_MEDIUM_AND_ABOVE);
 
 }

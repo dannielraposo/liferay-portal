@@ -8,7 +8,6 @@ package com.liferay.portal.tools.service.builder.test.service.persistence.impl;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -64,69 +63,15 @@ public class LVEntryLocalizationPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByLvEntryId;
-	private FinderPath _finderPathWithoutPaginationFindByLvEntryId;
-	private FinderPath _finderPathCountByLvEntryId;
-	private CollectionPersistenceFinder<LVEntryLocalization>
-		_collectionPersistenceFinderByLvEntryId;
-
-	/**
-	 * Returns all the lv entry localizations where lvEntryId = &#63;.
-	 *
-	 * @param lvEntryId the lv entry ID
-	 * @return the matching lv entry localizations
-	 */
-	@Override
-	public List<LVEntryLocalization> findByLvEntryId(long lvEntryId) {
-		return findByLvEntryId(
-			lvEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the lv entry localizations where lvEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LVEntryLocalizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param lvEntryId the lv entry ID
-	 * @param start the lower bound of the range of lv entry localizations
-	 * @param end the upper bound of the range of lv entry localizations (not inclusive)
-	 * @return the range of matching lv entry localizations
-	 */
-	@Override
-	public List<LVEntryLocalization> findByLvEntryId(
-		long lvEntryId, int start, int end) {
-
-		return findByLvEntryId(lvEntryId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<LVEntryLocalization, NoSuchLVEntryLocalizationException>
+			_collectionPersistenceFinderByLvEntryId;
 
 	/**
 	 * Returns an ordered range of all the lv entry localizations where lvEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LVEntryLocalizationModelImpl</code>.
-	 * </p>
-	 *
-	 * @param lvEntryId the lv entry ID
-	 * @param start the lower bound of the range of lv entry localizations
-	 * @param end the upper bound of the range of lv entry localizations (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching lv entry localizations
-	 */
-	@Override
-	public List<LVEntryLocalization> findByLvEntryId(
-		long lvEntryId, int start, int end,
-		OrderByComparator<LVEntryLocalization> orderByComparator) {
-
-		return findByLvEntryId(lvEntryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the lv entry localizations where lvEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LVEntryLocalizationModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LVEntryLocalizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param lvEntryId the lv entry ID
@@ -161,16 +106,8 @@ public class LVEntryLocalizationPersistenceImpl
 			OrderByComparator<LVEntryLocalization> orderByComparator)
 		throws NoSuchLVEntryLocalizationException {
 
-		LVEntryLocalization lvEntryLocalization = fetchByLvEntryId_First(
-			lvEntryId, orderByComparator);
-
-		if (lvEntryLocalization != null) {
-			return lvEntryLocalization;
-		}
-
-		throw new NoSuchLVEntryLocalizationException(
-			_collectionPersistenceFinderByLvEntryId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {lvEntryId}));
+		return _collectionPersistenceFinderByLvEntryId.findFirst(
+			finderCache, new Object[] {lvEntryId}, orderByComparator);
 	}
 
 	/**
@@ -212,9 +149,9 @@ public class LVEntryLocalizationPersistenceImpl
 			finderCache, new Object[] {lvEntryId});
 	}
 
-	private FinderPath _finderPathFetchByLvEntryId_LanguageId;
-	private UniquePersistenceFinder<LVEntryLocalization>
-		_uniquePersistenceFinderByLvEntryId_LanguageId;
+	private UniquePersistenceFinder
+		<LVEntryLocalization, NoSuchLVEntryLocalizationException>
+			_uniquePersistenceFinderByLvEntryId_LanguageId;
 
 	/**
 	 * Returns the lv entry localization where lvEntryId = &#63; and languageId = &#63; or throws a <code>NoSuchLVEntryLocalizationException</code> if it could not be found.
@@ -229,38 +166,8 @@ public class LVEntryLocalizationPersistenceImpl
 			long lvEntryId, String languageId)
 		throws NoSuchLVEntryLocalizationException {
 
-		LVEntryLocalization lvEntryLocalization = fetchByLvEntryId_LanguageId(
-			lvEntryId, languageId);
-
-		if (lvEntryLocalization == null) {
-			String message =
-				_uniquePersistenceFinderByLvEntryId_LanguageId.
-					buildNoSuchKeyMessage(
-						_NO_SUCH_ENTITY_WITH_KEY,
-						new Object[] {lvEntryId, languageId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchLVEntryLocalizationException(message);
-		}
-
-		return lvEntryLocalization;
-	}
-
-	/**
-	 * Returns the lv entry localization where lvEntryId = &#63; and languageId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param lvEntryId the lv entry ID
-	 * @param languageId the language ID
-	 * @return the matching lv entry localization, or <code>null</code> if a matching lv entry localization could not be found
-	 */
-	@Override
-	public LVEntryLocalization fetchByLvEntryId_LanguageId(
-		long lvEntryId, String languageId) {
-
-		return fetchByLvEntryId_LanguageId(lvEntryId, languageId, true);
+		return _uniquePersistenceFinderByLvEntryId_LanguageId.find(
+			finderCache, new Object[] {lvEntryId, languageId});
 	}
 
 	/**
@@ -310,9 +217,9 @@ public class LVEntryLocalizationPersistenceImpl
 			finderCache, new Object[] {lvEntryId, languageId});
 	}
 
-	private FinderPath _finderPathFetchByHeadId;
-	private UniquePersistenceFinder<LVEntryLocalization>
-		_uniquePersistenceFinderByHeadId;
+	private UniquePersistenceFinder
+		<LVEntryLocalization, NoSuchLVEntryLocalizationException>
+			_uniquePersistenceFinderByHeadId;
 
 	/**
 	 * Returns the lv entry localization where headId = &#63; or throws a <code>NoSuchLVEntryLocalizationException</code> if it could not be found.
@@ -325,32 +232,8 @@ public class LVEntryLocalizationPersistenceImpl
 	public LVEntryLocalization findByHeadId(long headId)
 		throws NoSuchLVEntryLocalizationException {
 
-		LVEntryLocalization lvEntryLocalization = fetchByHeadId(headId);
-
-		if (lvEntryLocalization == null) {
-			String message =
-				_uniquePersistenceFinderByHeadId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {headId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchLVEntryLocalizationException(message);
-		}
-
-		return lvEntryLocalization;
-	}
-
-	/**
-	 * Returns the lv entry localization where headId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param headId the head ID
-	 * @return the matching lv entry localization, or <code>null</code> if a matching lv entry localization could not be found
-	 */
-	@Override
-	public LVEntryLocalization fetchByHeadId(long headId) {
-		return fetchByHeadId(headId, true);
+		return _uniquePersistenceFinderByHeadId.find(
+			finderCache, new Object[] {headId});
 	}
 
 	/**
@@ -575,64 +458,58 @@ public class LVEntryLocalizationPersistenceImpl
 	 * Initializes the lv entry localization persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByLvEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLvEntryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"lvEntryId"}, true);
-
-		_finderPathWithoutPaginationFindByLvEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByLvEntryId",
-			new String[] {Long.class.getName()}, new String[] {"lvEntryId"},
-			true);
-
-		_finderPathCountByLvEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByLvEntryId",
-			new String[] {Long.class.getName()}, new String[] {"lvEntryId"},
-			false);
-
 		_collectionPersistenceFinderByLvEntryId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLvEntryId,
-				_finderPathWithoutPaginationFindByLvEntryId,
-				_finderPathCountByLvEntryId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLvEntryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"lvEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByLvEntryId", new String[] {Long.class.getName()},
+					new String[] {"lvEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByLvEntryId", new String[] {Long.class.getName()},
+					new String[] {"lvEntryId"}, false),
 				_SQL_SELECT_LVENTRYLOCALIZATION_WHERE,
 				_SQL_COUNT_LVENTRYLOCALIZATION_WHERE,
 				LVEntryLocalizationModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"lvEntryLocalization.", "lvEntryId", FinderColumn.Type.LONG,
 					"=", true, true, LVEntryLocalization::getLvEntryId));
 
-		_finderPathFetchByLvEntryId_LanguageId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByLvEntryId_LanguageId",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"lvEntryId", "languageId"}, false,
-			LVEntryLocalization::getLvEntryId,
-			LVEntryLocalization::getLanguageId);
-
 		_uniquePersistenceFinderByLvEntryId_LanguageId =
 			new UniquePersistenceFinder<>(
-				this, _finderPathFetchByLvEntryId_LanguageId,
-				_SQL_SELECT_LVENTRYLOCALIZATION_WHERE,
+				this,
+				createUniqueFinderPath(
+					FINDER_CLASS_NAME_ENTITY, "fetchByLvEntryId_LanguageId",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"lvEntryId", "languageId"}, 0, 2, false,
+					LVEntryLocalization::getLvEntryId,
+					convertNullFunction(LVEntryLocalization::getLanguageId)),
+				_SQL_SELECT_LVENTRYLOCALIZATION_WHERE, "",
 				new FinderColumn<>(
 					"lvEntryLocalization.", "lvEntryId", FinderColumn.Type.LONG,
-					"=", true, false, LVEntryLocalization::getLvEntryId),
+					"=", true, true, LVEntryLocalization::getLvEntryId),
 				new FinderColumn<>(
 					"lvEntryLocalization.", "languageId",
 					FinderColumn.Type.STRING, "=", true, true,
 					LVEntryLocalization::getLanguageId));
 
-		_finderPathFetchByHeadId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByHeadId",
-			new String[] {Long.class.getName()}, new String[] {"headId"}, false,
-			LVEntryLocalization::getHeadId);
-
 		_uniquePersistenceFinderByHeadId = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByHeadId,
-			_SQL_SELECT_LVENTRYLOCALIZATION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByHeadId",
+				new String[] {Long.class.getName()}, new String[] {"headId"}, 0,
+				0, false, LVEntryLocalization::getHeadId),
+			_SQL_SELECT_LVENTRYLOCALIZATION_WHERE, "",
 			new FinderColumn<>(
 				"lvEntryLocalization.", "headId", FinderColumn.Type.LONG, "=",
 				true, true, LVEntryLocalization::getHeadId));
@@ -676,4 +553,4 @@ public class LVEntryLocalizationPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1834119017
+// LIFERAY-SERVICE-BUILDER-HASH:1771533351

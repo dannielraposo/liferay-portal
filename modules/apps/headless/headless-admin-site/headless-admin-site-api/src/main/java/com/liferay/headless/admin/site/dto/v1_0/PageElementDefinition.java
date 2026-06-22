@@ -44,6 +44,9 @@ import java.util.function.Supplier;
 	description = "The page element definition.",
 	value = "PageElementDefinition"
 )
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "The page element definition."
+)
 @JsonFilter("Liferay.Vulcan")
 @JsonSubTypes(
 	{
@@ -72,6 +75,10 @@ import java.util.function.Supplier;
 		@JsonSubTypes.Type(
 			name = "FormFragment",
 			value = FormFragmentInstancePageElementDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "FormRelationship",
+			value = FormRelationshipPageElementDefinition.class
 		),
 		@JsonSubTypes.Type(
 			name = "FormStep", value = FormStepPageElementDefinition.class
@@ -112,7 +119,7 @@ public abstract class PageElementDefinition implements Serializable {
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The page element definition's type (basic fragment, collection display, collection item, container, drop zone, form container, form fragment, form step, form step container, fragment drop zone, grid,  module or widget)."
+		description = "The page element definition's type (basic fragment, collection display, collection item, container, drop zone, form container, form fragment, form relationship, form step, form step container, fragment drop zone, grid, module or widget)."
 	)
 	@JsonGetter("type")
 	@Valid
@@ -159,7 +166,7 @@ public abstract class PageElementDefinition implements Serializable {
 	}
 
 	@GraphQLField(
-		description = "The page element definition's type (basic fragment, collection display, collection item, container, drop zone, form container, form fragment, form step, form step container, fragment drop zone, grid,  module or widget)."
+		description = "The page element definition's type (basic fragment, collection display, collection item, container, drop zone, form container, form fragment, form relationship, form step, form step container, fragment drop zone, grid, module or widget)."
 	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Type type;
@@ -228,8 +235,8 @@ public abstract class PageElementDefinition implements Serializable {
 		COLLECTION_DISPLAY("CollectionDisplay"),
 		COLLECTION_ITEM("CollectionItem"), CONTAINER("Container"),
 		DROP_ZONE("DropZone"), FORM_CONTAINER("FormContainer"),
-		FORM_FRAGMENT("FormFragment"), FORM_STEP("FormStep"),
-		FORM_STEP_CONTAINER("FormStepContainer"),
+		FORM_FRAGMENT("FormFragment"), FORM_RELATIONSHIP("FormRelationship"),
+		FORM_STEP("FormStep"), FORM_STEP_CONTAINER("FormStepContainer"),
 		FRAGMENT_DROP_ZONE("FragmentDropZone"), GRID("Grid"), MODULE("Module"),
 		WIDGET("Widget");
 
@@ -355,4 +362,4 @@ public abstract class PageElementDefinition implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:2100635612
+// LIFERAY-REST-BUILDER-HASH:2005536755

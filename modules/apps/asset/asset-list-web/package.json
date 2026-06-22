@@ -1,13 +1,18 @@
 {
 	"dependencies": {
-		"@clayui/button": "^3.161.0",
-		"@clayui/drop-down": "^3.161.0",
-		"@clayui/empty-state": "^3.161.0",
-		"@clayui/form": "^3.161.0",
-		"@clayui/icon": "^3.161.0",
-		"@clayui/link": "^3.161.0",
-		"@clayui/list": "^3.161.0",
-		"@clayui/tooltip": "^3.161.0",
+		"@clayui/button": "^3.165.0",
+		"@clayui/core": "^3.165.0",
+		"@clayui/date-picker": "^3.165.0",
+		"@clayui/drop-down": "^3.165.0",
+		"@clayui/empty-state": "^3.165.0",
+		"@clayui/form": "^3.165.0",
+		"@clayui/icon": "^3.165.0",
+		"@clayui/link": "^3.165.0",
+		"@clayui/list": "^3.165.0",
+		"@clayui/multi-select": "^3.165.0",
+		"@clayui/tooltip": "^3.165.0",
+		"@liferay/frontend-js-state-web": "*",
+		"@liferay/layout-js-components-web": "*",
 		"asset-taglib": "*",
 		"classnames": "2.3.1",
 		"frontend-js-components-web": "*",
@@ -15,7 +20,8 @@
 		"prop-types": "15.7.2",
 		"react": "18.2.0",
 		"react-dnd": "11.1.1",
-		"react-dnd-html5-backend": "11.1.1"
+		"react-dnd-html5-backend": "11.1.1",
+		"uuid": "9.0.0"
 	},
 	"jest": {
 		"modulePathIgnorePatterns": [
@@ -30,5 +36,5 @@
 		"format": "node-scripts format",
 		"test": "node-scripts test"
 	},
-	"version": "3.0.148"
+	"version": "3.0.150"
 }

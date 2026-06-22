@@ -163,7 +163,7 @@ const FragmentContent = ({
 			Promise.all(
 				getAllEditables(fragmentElement).map((editable) => {
 					const editableValue =
-						editableValues[editable.editableValueNamespace][
+						editableValues[editable.editableValueNamespace]?.[
 							editable.editableId
 						];
 
@@ -297,7 +297,9 @@ const FragmentContent = ({
 				/>
 
 				{backgroundImageValue.mediaQueries ? (
-					<style>{backgroundImageValue.mediaQueries}</style>
+					<style nonce={Liferay.CSP?.nonce}>
+						{backgroundImageValue.mediaQueries}
+					</style>
 				) : null}
 			</FragmentContentInteractionsFilter>
 

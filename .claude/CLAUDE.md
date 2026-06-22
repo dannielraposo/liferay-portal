@@ -2,6 +2,10 @@
 
 This is Liferay Portal's main source code repository.
 
+## Code Style
+
+Follow the canonical code style rules in `pr-reviewer/rules` when writing, modifying, or reviewing code. Each numbered file states one rule with its rationale, and `pr-reviewer/STYLE.md` records the philosophy and the matters of taste behind them.
+
 ## High-Level Architecture
 
 ### Portal Core (Ant Based)
@@ -58,6 +62,8 @@ Logs are available at `<bundles>/logs/liferay.<yyyy-MM-dd>.log`. Check them when
 
 	Then copy the resulting `com.liferay.<name>.test.util.jar` from `<bundles>/osgi/test` to `<bundles>/osgi/modules`.
 
+- **`*-test` modules** — Do not deploy. The `testIntegration` task wires the test bundle into the runtime itself, so a manual deploy is redundant and slows the cycle.
+
 - **Gradle plugin modules** (under `modules/sdk/gradle-plugins*`):
 
 	```bash
@@ -71,6 +77,8 @@ Logs are available at `<bundles>/logs/liferay.<yyyy-MM-dd>.log`. Check them when
 
 Liferay DXP is heavily tested. Every change must include test coverage.
 
+Tests that exercise the runtime (Integration, Playwright, Poshi) run against the bundle, not the source — deploy any modules under test first, or the test runs against the previously deployed bundle.
+
 #### Unit Tests
 
 Unit tests are preferred for pure logic.
@@ -81,12 +89,15 @@ cd <module-root> && <gradlew> test --tests <TestClassName>
 
 # Portal core
 ant test-unit
-ant test-unit -Dtest.class=SomeTest
+ant test-class -Dtest.class=SomeTest
 ant test-package -Dtest.package=com.liferay.portal.kernel.util
 
 # Frontend
-cd <module-root> && npm test
+cd <module-root> && yarn test
+cd <module-root> && yarn test <test-file-path>
 ```
+
+Read `.claude/rules/jest-testing.md` before creating a frontend unit test.
 
 #### Integration Tests
 
@@ -116,9 +127,3 @@ Functional tests are a last resort, reserved for complete UI flows that cannot b
 ### Format Source
 
 Run `/format-source` (the `format-source` skill). See `.claude/skills/format-source/SKILL.md` for details.
-
-# Skills
-
-When a request matches a skill's domain, always invoke the skill rather than working manually.
-
-- **worktree-setup** — Any operation involving Git worktrees: creating, configuring ports, listing, checking status, or tearing down. Use `/worktree-setup` with the appropriate argument (`new`, `status`, `list`, `cleanup`).

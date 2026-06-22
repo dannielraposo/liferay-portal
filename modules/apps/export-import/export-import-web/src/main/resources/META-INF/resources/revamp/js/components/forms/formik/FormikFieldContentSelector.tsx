@@ -6,35 +6,51 @@
 import {useField, useFormikContext} from 'formik';
 import React from 'react';
 
-import {PortletDataHandlerSection} from '../../../utils/mockPortletDataHandlerSections';
+import {PageTreeModalConfiguration} from '../../../pages/export/components/PageTreeModal';
+import {ExportImportProcess} from '../../../types/exportImportProcess';
+import {PreviewPortletDataHandlerSection} from '../../../types/portletDataHandler';
 import ContentSelector, {
 	ContentSelection,
 } from '../content_selector/ContentSelector';
 
 interface FormikFieldContentSelectorProps {
 	'aria-labelledby'?: string;
+	'commentsAndRatingsEnabled'?: boolean;
+	'lookAndFeelEnabled'?: boolean;
 	'name': string;
-	'sections': PortletDataHandlerSection[];
+	'pageTreeModalConfiguration'?: PageTreeModalConfiguration;
+	'process'?: ExportImportProcess;
+	'sections': PreviewPortletDataHandlerSection[];
 }
 
 export function FormikFieldContentSelector({
 	'aria-labelledby': ariaLabelledby,
+	commentsAndRatingsEnabled = false,
+	lookAndFeelEnabled = false,
 	name,
+	pageTreeModalConfiguration,
+	process = 'export',
 	sections,
 }: FormikFieldContentSelectorProps) {
 	const [field, meta, helpers] = useField<ContentSelection | undefined>(name);
+	const [{value: deletions}] = useField<boolean | undefined>('deletions');
 	const {setFieldTouched} = useFormikContext();
 
 	return (
 		<ContentSelector
 			aria-labelledby={ariaLabelledby}
+			commentsAndRatingsEnabled={commentsAndRatingsEnabled}
 			errorMessage={meta.touched && meta.error ? meta.error : undefined}
+			lookAndFeelEnabled={lookAndFeelEnabled}
 			name={name}
 			onChange={(newValue) => {
 				helpers.setValue(newValue);
 				setFieldTouched(name, true, false);
 			}}
+			pageTreeModalConfiguration={pageTreeModalConfiguration}
+			process={process}
 			sections={sections}
+			showDeletions={!!deletions}
 			value={field.value}
 		/>
 	);

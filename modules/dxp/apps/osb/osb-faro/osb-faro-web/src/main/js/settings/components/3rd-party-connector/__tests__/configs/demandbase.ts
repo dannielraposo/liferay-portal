@@ -1,5 +1,6 @@
 import demandbaseConfig from '../../configs/demandbase';
 import {DataSourceTypes} from 'shared/util/constants';
+import {Entity} from '../../types';
 import {fetchConnectorEntityCount} from 'shared/api/connector';
 
 jest.mock('shared/api/connector', () => ({
@@ -27,29 +28,23 @@ describe('demandbase config', () => {
 		expect(demandbaseConfig.singleton).toBe(true);
 	});
 
-	it('exposes an accounts entity with the expected metadata', () => {
+	it('exposes the Accounts entity', () => {
 		expect(demandbaseConfig.entities).toHaveLength(1);
 
 		const [accounts] = demandbaseConfig.entities;
 
-		expect(accounts).toEqual(
-			expect.objectContaining({
-				accessor: 'accounts',
-				icon: 'briefcase'
-			})
-		);
+		expect(accounts.entity).toBe(Entity.Accounts);
 		expect(typeof accounts.fetchCount).toBe('function');
 	});
 
-	it('delegates fetchCount to fetchConnectorEntityCount with the slug and entity', async () => {
+	it('delegates fetchCount to fetchConnectorEntityCount with the entity', async () => {
 		await demandbaseConfig.entities[0].fetchCount!({
 			groupId: '42',
 			id: 'data-source-9'
 		});
 
 		expect(fetchConnectorEntityCount).toHaveBeenCalledWith(
-			'demandbase',
-			'accounts',
+			Entity.Accounts,
 			{groupId: '42', id: 'data-source-9'}
 		);
 	});
@@ -58,7 +53,7 @@ describe('demandbase config', () => {
 		expect(demandbaseConfig.languages.connectTitle).toContain(
 			demandbaseConfig.displayName
 		);
-		expect(demandbaseConfig.languages.disconnectedAlert).toContain(
+		expect(demandbaseConfig.languages.tokenLabel).toContain(
 			demandbaseConfig.displayName
 		);
 	});

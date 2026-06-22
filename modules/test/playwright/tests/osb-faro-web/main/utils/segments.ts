@@ -5,6 +5,8 @@
 
 import {Locator, Page, expect} from '@playwright/test';
 
+import {clickAndExpectToBeVisible} from '../../../../utils/clickAndExpectToBeVisible';
+import {waitForAlert} from '../../../../utils/waitForAlert';
 import {SegmentConditions} from './selectors';
 import {searchByTerm} from './utils';
 
@@ -38,8 +40,11 @@ export async function addSegmentField({
 	criterionType: string;
 	page: Page;
 }) {
-	await page.locator('button.dropdown-toggle.btn-outline-secondary').click();
-	await page.getByRole('menuitem', {name: criterionType}).click();
+	await clickAndExpectToBeVisible({
+		autoClick: true,
+		target: page.getByRole('option', {name: criterionType}),
+		trigger: page.getByRole('combobox'),
+	});
 
 	await dragAndDropCriteriaItem({
 		page,
@@ -70,6 +75,25 @@ export async function addStaticMember({
 	}
 
 	await page.getByRole('button', {exact: true, name: 'Add'}).click();
+}
+
+export async function createBatchSegment(page: Page) {
+	const batchSegmentButton = page.getByTestId('batch-segment-button');
+
+	if (await batchSegmentButton.isVisible()) {
+		await expect(batchSegmentButton).not.toBeDisabled();
+
+		await batchSegmentButton.click();
+	}
+	else {
+		await clickAndExpectToBeVisible({
+			autoClick: true,
+			target: page.getByRole('menuitem', {name: 'Batch'}),
+			trigger: page
+				.getByRole('button', {name: 'Menu'})
+				.filter({hasText: 'New Segment'}),
+		});
+	}
 }
 
 export async function createDynamicSegment(page: Page) {
@@ -117,7 +141,9 @@ export async function dragAndDropCriteriaItem({
 		target = page.locator('.display-value').getByText(nestedSegmentField);
 	}
 	else {
-		target = page.locator('div.drop-zone-target').last();
+		target = page
+			.locator('.empty-drop-zone-target, div.drop-zone-target')
+			.last();
 	}
 
 	return await source.dragTo(target);
@@ -177,7 +203,10 @@ export async function includeAnonymousToggle({
 
 export async function saveSegment(page: Page) {
 	await page.locator('button[type="submit"]').click();
-	await page.waitForSelector('div.alert-success', {state: 'visible'});
+
+	await waitForAlert(page, 'Success:Changes to segment saved.', {
+		autoClose: false,
+	});
 }
 
 export async function selectAsset({
@@ -222,13 +251,17 @@ export async function setSegmentName({
 	page: Page;
 	segmentName: string;
 }) {
-	const editDynamicSegmentName = page.getByText('Unnamed Segment');
+	const input = page.getByPlaceholder('Unnamed Segment');
 
-	if (await editDynamicSegmentName.isVisible()) {
-		await editDynamicSegmentName.click();
-	}
+	await expect(async () => {
+		await page.getByLabel('Edit').click();
 
-	await page.getByPlaceholder('Segment').fill(segmentName);
+		await input.fill(segmentName, {timeout: 2000});
+
+		await expect(input).toHaveValue(segmentName);
+	}).toPass();
+
+	await page.keyboard.press('Tab');
 }
 
 export async function viewSegmentCriteriaCard({

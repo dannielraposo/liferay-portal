@@ -48,6 +48,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsValues;
@@ -65,7 +66,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.NavigableMap;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -166,6 +166,121 @@ public class PortalImplAlternateURLTest {
 			"localhost",
 			Arrays.asList(LocaleUtil.US, LocaleUtil.SPAIN, LocaleUtil.GERMANY),
 			LocaleUtil.US);
+	}
+
+	@Test
+	@TestInfo("LPD-88751")
+	public void testAlternateURLsWithLocalizedVirtualHosts() throws Exception {
+		Collection<Locale> availableLocales = Arrays.asList(
+			LocaleUtil.FRANCE, LocaleUtil.GERMANY, LocaleUtil.SPAIN,
+			LocaleUtil.US);
+		Locale defaultLocale = LocaleUtil.US;
+
+		_group = GroupTestUtil.updateDisplaySettings(
+			_group.getGroupId(), availableLocales, defaultLocale);
+
+		Layout layout = LayoutTestUtil.addTypePortletLayout(
+			_group.getGroupId(), false,
+			HashMapBuilder.put(
+				LocaleUtil.FRANCE, RandomTestUtil.randomString()
+			).put(
+				LocaleUtil.GERMANY, RandomTestUtil.randomString()
+			).put(
+				LocaleUtil.SPAIN, RandomTestUtil.randomString()
+			).put(
+				LocaleUtil.US, RandomTestUtil.randomString()
+			).build(),
+			HashMapBuilder.put(
+				LocaleUtil.FRANCE,
+				StringPool.SLASH.concat(_getRandomFriendlyURL())
+			).put(
+				LocaleUtil.GERMANY,
+				StringPool.SLASH.concat(_getRandomFriendlyURL())
+			).put(
+				LocaleUtil.SPAIN,
+				StringPool.SLASH.concat(_getRandomFriendlyURL())
+			).put(
+				LocaleUtil.US, StringPool.SLASH.concat(_getRandomFriendlyURL())
+			).build());
+
+		String defaultVirtualHostname = "default.com";
+		String germanVirtualHostname = "german.de";
+		String spanishVirtualHostname = "spanish.es";
+
+		LayoutSet layoutSet = _group.getPublicLayoutSet();
+
+		_virtualHostLocalService.updateVirtualHosts(
+			_group.getCompanyId(), layoutSet.getLayoutSetId(),
+			TreeMapBuilder.put(
+				defaultVirtualHostname, StringPool.BLANK
+			).put(
+				germanVirtualHostname, LocaleUtil.GERMANY.toString()
+			).put(
+				spanishVirtualHostname, LocaleUtil.SPAIN.toString()
+			).build());
+
+		ThemeDisplay themeDisplay = _getThemeDisplay(_group, layout);
+
+		themeDisplay.setPortalDomain(defaultVirtualHostname);
+
+		PortletPreferences portletPreferences = PrefsPropsUtil.getPreferences(
+			themeDisplay.getCompanyId());
+
+		String previousLocalePrependFriendlyURLStyle =
+			portletPreferences.getValue(
+				PropsKeys.LOCALE_PREPEND_FRIENDLY_URL_STYLE, null);
+
+		portletPreferences.setValue(
+			PropsKeys.LOCALE_PREPEND_FRIENDLY_URL_STYLE, "1");
+
+		portletPreferences.store();
+
+		String canonicalURL = StringBundler.concat(
+			"http://", defaultVirtualHostname, ":",
+			PortalUtil.getPortalServerPort(false),
+			PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING,
+			_group.getFriendlyURL(), layout.getFriendlyURL());
+
+		Map<Locale, String> alternateURLs = _portal.getAlternateURLs(
+			canonicalURL, themeDisplay, layout);
+
+		Assert.assertEquals(
+			StringBundler.concat(
+				"http://", defaultVirtualHostname, ":",
+				PortalUtil.getPortalServerPort(false), "/fr",
+				PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING,
+				_group.getFriendlyURL(),
+				layout.getFriendlyURL(LocaleUtil.FRANCE)),
+			alternateURLs.get(LocaleUtil.FRANCE));
+		Assert.assertEquals(
+			StringBundler.concat(
+				"http://", germanVirtualHostname, ":",
+				PortalUtil.getPortalServerPort(false), "/de",
+				PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING,
+				_group.getFriendlyURL(),
+				layout.getFriendlyURL(LocaleUtil.GERMANY)),
+			alternateURLs.get(LocaleUtil.GERMANY));
+		Assert.assertEquals(
+			StringBundler.concat(
+				"http://", spanishVirtualHostname, ":",
+				PortalUtil.getPortalServerPort(false), "/es",
+				PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING,
+				_group.getFriendlyURL(),
+				layout.getFriendlyURL(LocaleUtil.SPAIN)),
+			alternateURLs.get(LocaleUtil.SPAIN));
+		Assert.assertEquals(canonicalURL, alternateURLs.get(LocaleUtil.US));
+
+		if (previousLocalePrependFriendlyURLStyle == null) {
+			portletPreferences.reset(
+				PropsKeys.LOCALE_PREPEND_FRIENDLY_URL_STYLE);
+		}
+		else {
+			portletPreferences.setValue(
+				PropsKeys.LOCALE_PREPEND_FRIENDLY_URL_STYLE,
+				previousLocalePrependFriendlyURLStyle);
+		}
+
+		portletPreferences.store();
 	}
 
 	@Test
@@ -400,17 +515,18 @@ public class PortalImplAlternateURLTest {
 
 		LayoutSet layoutSet = group.getPublicLayoutSet();
 
-		NavigableMap<String, String> virtualHostnames =
-			layoutSet.getVirtualHostnames();
+		String defaultVirtualHostname = _portal.getDefaultVirtualHostname(
+			false, layoutSet);
 
-		if (virtualHostnames.isEmpty()) {
+		if (Validator.isNull(defaultVirtualHostname)) {
 			return _generateLayoutURL(
 				defaultLocale, friendlyURL, _group.getFriendlyURL(), locale,
 				portalURL, portletPreferences);
 		}
 
 		return StringBundler.concat(
-			"http://", virtualHostnames.firstKey(), ":8080",
+			"http://", defaultVirtualHostname, ":",
+			PortalUtil.getPortalServerPort(false),
 			_getI18nPath(defaultLocale, locale, portletPreferences),
 			friendlyURL);
 	}
@@ -496,7 +612,7 @@ public class PortalImplAlternateURLTest {
 		themeDisplay.setPortalDomain("localhost");
 		themeDisplay.setPortalURL(company.getPortalURL(group.getGroupId()));
 		themeDisplay.setServerName("localhost");
-		themeDisplay.setServerPort(8080);
+		themeDisplay.setServerPort(PortalUtil.getPortalServerPort(false));
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();

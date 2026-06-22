@@ -7,7 +7,7 @@
 	"externalReferenceCode": "L_AI_HUB_CHATBOT",
 	"friendlyURLSeparator": "l",
 	"label": {
-		"en_US": "Chatbot"
+		"en_US": "AI Hub Chatbot"
 	},
 	"modifiable": true,
 	"name": "AIHubChatbot",
@@ -26,6 +26,45 @@
 			"type": "Boolean"
 		},
 		{
+			"DBType": "Long",
+			"businessType": "Attachment",
+			"defaultValue": "null",
+			"externalReferenceCode": "AVATAR",
+			"indexed": true,
+			"indexedAsKeyword": false,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Avatar"
+			},
+			"localized": false,
+			"name": "avatar",
+			"objectFieldSettings": [
+				{
+					"name": "acceptedFileExtensions",
+					"value": "jpeg, jpg, png"
+				},
+				{
+					"name": "maximumFileSize",
+					"value": 0
+				},
+				{
+					"name": "fileSource",
+					"value": "userComputerToDocumentsAndMedia"
+				},
+				{
+					"name": "showFilesInLibrary",
+					"value": false
+				}
+			],
+			"readOnly": "false",
+			"readOnlyConditionExpression": "",
+			"required": false,
+			"state": false,
+			"system": false,
+			"type": "Long",
+			"unique": false
+		},
+		{
 			"DBType": "Clob",
 			"businessType": "LongText",
 			"defaultValue": "null",
@@ -36,10 +75,27 @@
 				"en_US": "Description"
 			},
 			"name": "description",
-			"readOnly": "false",
+			"readOnly": false,
 			"readOnlyConditionExpression": "",
 			"system": true,
 			"type": "Clob"
+		},
+		{
+			"DBType": "String",
+			"businessType": "Text",
+			"externalReferenceCode": "DISCLAIMER_MESSAGE",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Disclaimer Message"
+			},
+			"localized": true,
+			"name": "disclaimerMessage",
+			"readOnly": false,
+			"readOnlyConditionExpression": "",
+			"required": false,
+			"system": true,
+			"type": "String"
 		},
 		{
 			"DBType": "Clob",
@@ -53,7 +109,7 @@
 			},
 			"localized": true,
 			"name": "introMessage",
-			"readOnly": "false",
+			"readOnly": false,
 			"readOnlyConditionExpression": "",
 			"system": true,
 			"type": "Clob"
@@ -70,7 +126,7 @@
 			},
 			"localized": true,
 			"name": "notificationMessage",
-			"readOnly": "false",
+			"readOnly": false,
 			"readOnlyConditionExpression": "",
 			"system": true,
 			"type": "String"
@@ -87,23 +143,10 @@
 			},
 			"localized": true,
 			"name": "placeholderMessage",
-			"readOnly": "false",
+			"readOnly": false,
 			"readOnlyConditionExpression": "",
 			"system": true,
 			"type": "String"
-		},
-		{
-			"DBType": "Boolean",
-			"businessType": "Boolean",
-			"defaultValue": true,
-			"externalReferenceCode": "SHOW_COMPANY_LOGO",
-			"indexed": true,
-			"label": {
-				"en_US": "Show Company Logo"
-			},
-			"name": "showCompanyLogo",
-			"system": true,
-			"type": "Boolean"
 		},
 		{
 			"DBType": "String",
@@ -117,7 +160,7 @@
 			},
 			"localized": true,
 			"name": "title",
-			"readOnly": "false",
+			"readOnly": false,
 			"system": true,
 			"type": "String"
 		},
@@ -129,7 +172,7 @@
 			"indexed": true,
 			"indexedLanguageId": "en_US",
 			"label": {
-				"en_US": "Account to Chatbots"
+				"en_US": "Account to AI Hub Chatbots"
 			},
 			"name": "r_accountToAIHubChatbots_accountEntryId",
 			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
@@ -144,7 +187,7 @@
 				}
 			],
 			"objectRelationshipExternalReferenceCode": "L_ACCOUNT_TO_L_AI_HUB_CHATBOTS",
-			"readOnly": "false",
+			"readOnly": false,
 			"relationshipType": "oneToMany",
 			"required": true,
 			"system": true,
@@ -154,7 +197,7 @@
 	"objectFolderExternalReferenceCode": "default",
 	"panelCategoryKey": "control_panel.object",
 	"pluralLabel": {
-		"en_US": "Chatbots"
+		"en_US": "AI Hub Chatbots"
 	},
 	"portlet": true,
 	"scope": "company",

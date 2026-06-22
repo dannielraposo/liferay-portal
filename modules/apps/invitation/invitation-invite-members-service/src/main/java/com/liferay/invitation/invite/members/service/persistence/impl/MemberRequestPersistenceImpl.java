@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -79,8 +78,7 @@ public class MemberRequestPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByKey;
-	private UniquePersistenceFinder<MemberRequest>
+	private UniquePersistenceFinder<MemberRequest, NoSuchMemberRequestException>
 		_uniquePersistenceFinderByKey;
 
 	/**
@@ -94,32 +92,8 @@ public class MemberRequestPersistenceImpl
 	public MemberRequest findByKey(String key)
 		throws NoSuchMemberRequestException {
 
-		MemberRequest memberRequest = fetchByKey(key);
-
-		if (memberRequest == null) {
-			String message =
-				_uniquePersistenceFinderByKey.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {key});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMemberRequestException(message);
-		}
-
-		return memberRequest;
-	}
-
-	/**
-	 * Returns the member request where key = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param key the key
-	 * @return the matching member request, or <code>null</code> if a matching member request could not be found
-	 */
-	@Override
-	public MemberRequest fetchByKey(String key) {
-		return fetchByKey(key, true);
+		return _uniquePersistenceFinderByKey.find(
+			finderCache, new Object[] {key});
 	}
 
 	/**
@@ -162,70 +136,15 @@ public class MemberRequestPersistenceImpl
 			finderCache, new Object[] {key});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByReceiverUserId;
-	private FinderPath _finderPathWithoutPaginationFindByReceiverUserId;
-	private FinderPath _finderPathCountByReceiverUserId;
-	private CollectionPersistenceFinder<MemberRequest>
-		_collectionPersistenceFinderByReceiverUserId;
-
-	/**
-	 * Returns all the member requests where receiverUserId = &#63;.
-	 *
-	 * @param receiverUserId the receiver user ID
-	 * @return the matching member requests
-	 */
-	@Override
-	public List<MemberRequest> findByReceiverUserId(long receiverUserId) {
-		return findByReceiverUserId(
-			receiverUserId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the member requests where receiverUserId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MemberRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param receiverUserId the receiver user ID
-	 * @param start the lower bound of the range of member requests
-	 * @param end the upper bound of the range of member requests (not inclusive)
-	 * @return the range of matching member requests
-	 */
-	@Override
-	public List<MemberRequest> findByReceiverUserId(
-		long receiverUserId, int start, int end) {
-
-		return findByReceiverUserId(receiverUserId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MemberRequest, NoSuchMemberRequestException>
+			_collectionPersistenceFinderByReceiverUserId;
 
 	/**
 	 * Returns an ordered range of all the member requests where receiverUserId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MemberRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param receiverUserId the receiver user ID
-	 * @param start the lower bound of the range of member requests
-	 * @param end the upper bound of the range of member requests (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching member requests
-	 */
-	@Override
-	public List<MemberRequest> findByReceiverUserId(
-		long receiverUserId, int start, int end,
-		OrderByComparator<MemberRequest> orderByComparator) {
-
-		return findByReceiverUserId(
-			receiverUserId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the member requests where receiverUserId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MemberRequestModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MemberRequestModelImpl</code>.
 	 * </p>
 	 *
 	 * @param receiverUserId the receiver user ID
@@ -260,16 +179,8 @@ public class MemberRequestPersistenceImpl
 			OrderByComparator<MemberRequest> orderByComparator)
 		throws NoSuchMemberRequestException {
 
-		MemberRequest memberRequest = fetchByReceiverUserId_First(
-			receiverUserId, orderByComparator);
-
-		if (memberRequest != null) {
-			return memberRequest;
-		}
-
-		throw new NoSuchMemberRequestException(
-			_collectionPersistenceFinderByReceiverUserId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {receiverUserId}));
+		return _collectionPersistenceFinderByReceiverUserId.findFirst(
+			finderCache, new Object[] {receiverUserId}, orderByComparator);
 	}
 
 	/**
@@ -311,73 +222,15 @@ public class MemberRequestPersistenceImpl
 			finderCache, new Object[] {receiverUserId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByR_S;
-	private FinderPath _finderPathWithoutPaginationFindByR_S;
-	private FinderPath _finderPathCountByR_S;
-	private CollectionPersistenceFinder<MemberRequest>
-		_collectionPersistenceFinderByR_S;
-
-	/**
-	 * Returns all the member requests where receiverUserId = &#63; and status = &#63;.
-	 *
-	 * @param receiverUserId the receiver user ID
-	 * @param status the status
-	 * @return the matching member requests
-	 */
-	@Override
-	public List<MemberRequest> findByR_S(long receiverUserId, int status) {
-		return findByR_S(
-			receiverUserId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the member requests where receiverUserId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MemberRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param receiverUserId the receiver user ID
-	 * @param status the status
-	 * @param start the lower bound of the range of member requests
-	 * @param end the upper bound of the range of member requests (not inclusive)
-	 * @return the range of matching member requests
-	 */
-	@Override
-	public List<MemberRequest> findByR_S(
-		long receiverUserId, int status, int start, int end) {
-
-		return findByR_S(receiverUserId, status, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MemberRequest, NoSuchMemberRequestException>
+			_collectionPersistenceFinderByR_S;
 
 	/**
 	 * Returns an ordered range of all the member requests where receiverUserId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MemberRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param receiverUserId the receiver user ID
-	 * @param status the status
-	 * @param start the lower bound of the range of member requests
-	 * @param end the upper bound of the range of member requests (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching member requests
-	 */
-	@Override
-	public List<MemberRequest> findByR_S(
-		long receiverUserId, int status, int start, int end,
-		OrderByComparator<MemberRequest> orderByComparator) {
-
-		return findByR_S(
-			receiverUserId, status, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the member requests where receiverUserId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MemberRequestModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MemberRequestModelImpl</code>.
 	 * </p>
 	 *
 	 * @param receiverUserId the receiver user ID
@@ -414,17 +267,9 @@ public class MemberRequestPersistenceImpl
 			OrderByComparator<MemberRequest> orderByComparator)
 		throws NoSuchMemberRequestException {
 
-		MemberRequest memberRequest = fetchByR_S_First(
-			receiverUserId, status, orderByComparator);
-
-		if (memberRequest != null) {
-			return memberRequest;
-		}
-
-		throw new NoSuchMemberRequestException(
-			_collectionPersistenceFinderByR_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {receiverUserId, status}));
+		return _collectionPersistenceFinderByR_S.findFirst(
+			finderCache, new Object[] {receiverUserId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -470,8 +315,7 @@ public class MemberRequestPersistenceImpl
 			finderCache, new Object[] {receiverUserId, status});
 	}
 
-	private FinderPath _finderPathFetchByG_R_S;
-	private UniquePersistenceFinder<MemberRequest>
+	private UniquePersistenceFinder<MemberRequest, NoSuchMemberRequestException>
 		_uniquePersistenceFinderByG_R_S;
 
 	/**
@@ -488,38 +332,8 @@ public class MemberRequestPersistenceImpl
 			long groupId, long receiverUserId, int status)
 		throws NoSuchMemberRequestException {
 
-		MemberRequest memberRequest = fetchByG_R_S(
-			groupId, receiverUserId, status);
-
-		if (memberRequest == null) {
-			String message =
-				_uniquePersistenceFinderByG_R_S.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, receiverUserId, status});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMemberRequestException(message);
-		}
-
-		return memberRequest;
-	}
-
-	/**
-	 * Returns the member request where groupId = &#63; and receiverUserId = &#63; and status = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param receiverUserId the receiver user ID
-	 * @param status the status
-	 * @return the matching member request, or <code>null</code> if a matching member request could not be found
-	 */
-	@Override
-	public MemberRequest fetchByG_R_S(
-		long groupId, long receiverUserId, int status) {
-
-		return fetchByG_R_S(groupId, receiverUserId, status, true);
+		return _uniquePersistenceFinderByG_R_S.find(
+			finderCache, new Object[] {groupId, receiverUserId, status});
 	}
 
 	/**
@@ -783,95 +597,89 @@ public class MemberRequestPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByKey = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByKey",
-			new String[] {String.class.getName()}, new String[] {"key_"}, false,
-			MemberRequest::getKey);
-
 		_uniquePersistenceFinderByKey = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByKey, _SQL_SELECT_MEMBERREQUEST_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByKey",
+				new String[] {String.class.getName()}, new String[] {"key_"}, 0,
+				1, false, convertNullFunction(MemberRequest::getKey)),
+			_SQL_SELECT_MEMBERREQUEST_WHERE, "",
 			new FinderColumn<>(
-				"memberRequest.", "key", FinderColumn.Type.STRING, "=", true,
-				true, MemberRequest::getKey));
-
-		_finderPathWithPaginationFindByReceiverUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByReceiverUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"receiverUserId"}, true);
-
-		_finderPathWithoutPaginationFindByReceiverUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByReceiverUserId",
-			new String[] {Long.class.getName()},
-			new String[] {"receiverUserId"}, true);
-
-		_finderPathCountByReceiverUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByReceiverUserId",
-			new String[] {Long.class.getName()},
-			new String[] {"receiverUserId"}, false);
+				"memberRequest.", "key", "key_", FinderColumn.Type.STRING, "=",
+				true, true, MemberRequest::getKey));
 
 		_collectionPersistenceFinderByReceiverUserId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByReceiverUserId,
-				_finderPathWithoutPaginationFindByReceiverUserId,
-				_finderPathCountByReceiverUserId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByReceiverUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"receiverUserId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByReceiverUserId", new String[] {Long.class.getName()},
+					new String[] {"receiverUserId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByReceiverUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"receiverUserId"}, false),
 				_SQL_SELECT_MEMBERREQUEST_WHERE, _SQL_COUNT_MEMBERREQUEST_WHERE,
-				MemberRequestModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				MemberRequestModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"memberRequest.", "receiverUserId", FinderColumn.Type.LONG,
 					"=", true, true, MemberRequest::getReceiverUserId));
 
-		_finderPathWithPaginationFindByR_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByR_S",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"receiverUserId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByR_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByR_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"receiverUserId", "status"}, true);
-
-		_finderPathCountByR_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByR_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"receiverUserId", "status"}, false);
-
 		_collectionPersistenceFinderByR_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByR_S,
-			_finderPathWithoutPaginationFindByR_S, _finderPathCountByR_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByR_S",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"receiverUserId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByR_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"receiverUserId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByR_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"receiverUserId", "status"}, false),
 			_SQL_SELECT_MEMBERREQUEST_WHERE, _SQL_COUNT_MEMBERREQUEST_WHERE,
-			MemberRequestModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MemberRequestModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"memberRequest.", "receiverUserId", FinderColumn.Type.LONG, "=",
-				true, false, MemberRequest::getReceiverUserId),
+				true, true, MemberRequest::getReceiverUserId),
 			new FinderColumn<>(
 				"memberRequest.", "status", FinderColumn.Type.INTEGER, "=",
 				true, true, MemberRequest::getStatus));
 
-		_finderPathFetchByG_R_S = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_R_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "receiverUserId", "status"}, false,
-			MemberRequest::getGroupId, MemberRequest::getReceiverUserId,
-			MemberRequest::getStatus);
-
 		_uniquePersistenceFinderByG_R_S = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_R_S, _SQL_SELECT_MEMBERREQUEST_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_R_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {"groupId", "receiverUserId", "status"}, 0, 0,
+				false, MemberRequest::getGroupId,
+				MemberRequest::getReceiverUserId, MemberRequest::getStatus),
+			_SQL_SELECT_MEMBERREQUEST_WHERE, "",
 			new FinderColumn<>(
 				"memberRequest.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, MemberRequest::getGroupId),
+				true, MemberRequest::getGroupId),
 			new FinderColumn<>(
 				"memberRequest.", "receiverUserId", FinderColumn.Type.LONG, "=",
-				true, false, MemberRequest::getReceiverUserId),
+				true, true, MemberRequest::getReceiverUserId),
 			new FinderColumn<>(
 				"memberRequest.", "status", FinderColumn.Type.INTEGER, "=",
 				true, true, MemberRequest::getStatus));
@@ -945,4 +753,4 @@ public class MemberRequestPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1499930784
+// LIFERAY-SERVICE-BUILDER-HASH:396987869

@@ -144,6 +144,16 @@ public class OAuth2ServiceUpgradeStepRegistrator
 			UpgradeProcessFactory.alterColumnType(
 				"OAuth2Application", "externalReferenceCode",
 				"VARCHAR(1000) null"));
+
+		registry.register(
+			"4.2.7", "4.2.8",
+			UpgradeProcessFactory.addColumns(
+				"OAuth2Authorization", "audiences TEXT null"));
+
+		registry.register(
+			"4.2.8", "4.3.0",
+			new com.liferay.oauth2.provider.internal.upgrade.v4_3_0.
+				OAuth2ApplicationIndexedColumnSizeUpgradeProcess());
 	}
 
 	@Reference

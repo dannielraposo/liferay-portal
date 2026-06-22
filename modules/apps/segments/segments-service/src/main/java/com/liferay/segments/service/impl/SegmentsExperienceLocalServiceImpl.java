@@ -120,8 +120,6 @@ public class SegmentsExperienceLocalServiceImpl
 
 		_checkUnlockedLayout(plid, userId);
 
-		// Segments experience
-
 		User user = _userLocalService.getUser(userId);
 
 		_validateName(nameMap);
@@ -155,12 +153,15 @@ public class SegmentsExperienceLocalServiceImpl
 		segmentsExperience = segmentsExperiencePersistence.update(
 			segmentsExperience);
 
-		// Resources
+		segmentsExperiencePersistence.flush();
 
 		_resourceLocalService.addModelResources(
 			segmentsExperience, serviceContext);
 
-		return segmentsExperience;
+		_compactSegmentsExperiencesPriorities(segmentsExperience);
+
+		return segmentsExperiencePersistence.findByPrimaryKey(
+			segmentsExperience.getSegmentsExperienceId());
 	}
 
 	@Override

@@ -37,6 +37,7 @@ import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandler
 import com.liferay.exportimport.report.constants.ExportImportReportEntryConstants;
 import com.liferay.exportimport.report.model.ExportImportReportEntry;
 import com.liferay.exportimport.report.service.ExportImportReportEntryLocalService;
+import com.liferay.exportimport.test.util.ExportImportTestUtil;
 import com.liferay.exportimport.vulcan.batch.engine.ExportImportVulcanBatchEngineTaskItemDelegate;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
@@ -60,6 +61,7 @@ import com.liferay.object.field.builder.TextObjectFieldBuilder;
 import com.liferay.object.field.setting.builder.ObjectFieldSettingBuilder;
 import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectDefinitionSetting;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
@@ -137,6 +139,7 @@ import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LogEntry;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -155,7 +158,9 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.Serializable;
 
 import java.util.ArrayList;
@@ -1699,7 +1704,7 @@ public class BatchEnginePortletDataHandlerTest {
 
 	@FeatureFlag("LPD-34594")
 	@Test
-	public void testGetDescriptionAndTagWithRootObjectHierarchy()
+	public void testGetDescriptionAndTagWithObjectDefinitionHierarchy()
 		throws Exception {
 
 		Tree tree = TreeTestUtil.createObjectDefinitionTree(
@@ -1713,14 +1718,14 @@ public class BatchEnginePortletDataHandlerTest {
 				"AAA", new String[0]
 			).build());
 
-		ObjectDefinition objectDefinition =
+		ObjectDefinition objectDefinitionA =
 			_objectDefinitionLocalService.getObjectDefinition(
 				TestPropsValues.getCompanyId(), "C_A");
 
 		PortletDataHandler portletDataHandler =
 			_portletDataHandlerProvider.provide(
 				TestPropsValues.getCompanyId(),
-				objectDefinition.getPortletId());
+				objectDefinitionA.getPortletId());
 
 		String description = portletDataHandler.getDescription(
 			LocaleUtil.getDefault());
@@ -2040,6 +2045,85 @@ public class BatchEnginePortletDataHandlerTest {
 	public void testIsConfigurationEnabled() throws Exception {
 		_testIsConfigurationEnabled(false);
 		_testIsConfigurationEnabled(true);
+	}
+
+	@FeatureFlags(
+		featureFlags = {
+			@FeatureFlag(value = "LPD-34594"), @FeatureFlag(value = "LPD-69877")
+		}
+	)
+	@Test
+	public void testIsHiddenWithObjectDefinitionHierarchy() throws Exception {
+
+		// Allow standalone object entry setting is disabled
+
+		TreeTestUtil.createObjectDefinitionTree(
+			_objectDefinitionLocalService, _objectRelationshipLocalService,
+			true,
+			LinkedHashMapBuilder.put(
+				"A", new String[] {"AA"}
+			).put(
+				"AA", new String[] {"AAA"}
+			).put(
+				"AAA", new String[0]
+			).build());
+
+		ObjectDefinition objectDefinitionA =
+			_objectDefinitionLocalService.getObjectDefinition(
+				TestPropsValues.getCompanyId(), "C_A");
+
+		PortletDataHandler portletDataHandler =
+			_portletDataHandlerProvider.provide(
+				TestPropsValues.getCompanyId(),
+				objectDefinitionA.getPortletId());
+
+		Assert.assertFalse(portletDataHandler.isHidden());
+
+		ObjectDefinition objectDefinitionAA =
+			_objectDefinitionLocalService.getObjectDefinition(
+				TestPropsValues.getCompanyId(), "C_AA");
+
+		ObjectDefinitionSetting objectDefinitionSetting =
+			_objectDefinitionSettingLocalService.fetchObjectDefinitionSetting(
+				objectDefinitionAA.getObjectDefinitionId(),
+				ObjectDefinitionSettingConstants.
+					NAME_ALLOW_STANDALONE_OBJECT_ENTRY);
+
+		objectDefinitionSetting.setValue(StringPool.FALSE);
+
+		objectDefinitionSetting =
+			_objectDefinitionSettingLocalService.updateObjectDefinitionSetting(
+				objectDefinitionSetting);
+
+		_objectDefinitionLocalService.deployObjectDefinition(
+			_objectDefinitionLocalService.getObjectDefinition(
+				objectDefinitionAA.getObjectDefinitionId()));
+
+		portletDataHandler = _portletDataHandlerProvider.provide(
+			TestPropsValues.getCompanyId(), objectDefinitionAA.getPortletId());
+
+		Assert.assertTrue(portletDataHandler.isHidden());
+
+		// Allow standalone object entry setting is enabled
+
+		objectDefinitionSetting.setValue(StringPool.TRUE);
+
+		_objectDefinitionSettingLocalService.updateObjectDefinitionSetting(
+			objectDefinitionSetting);
+
+		_objectDefinitionLocalService.deployObjectDefinition(
+			_objectDefinitionLocalService.getObjectDefinition(
+				objectDefinitionAA.getObjectDefinitionId()));
+
+		portletDataHandler = _portletDataHandlerProvider.provide(
+			TestPropsValues.getCompanyId(), objectDefinitionAA.getPortletId());
+
+		Assert.assertFalse(portletDataHandler.isHidden());
+
+		TreeTestUtil.deleteObjectDefinitionHierarchy(
+			_objectDefinitionLocalService,
+			new String[] {"C_A", "C_AA", "C_AAA"}, _objectEntryLocalService,
+			_objectRelationshipLocalService);
 	}
 
 	@Test
@@ -2614,18 +2698,13 @@ public class BatchEnginePortletDataHandlerTest {
 		}
 	}
 
-	private String _getBatchFileNameWithPath(String fileName, long groupId) {
-		return StringBundler.concat(
-			"group/", groupId, StringPool.FORWARD_SLASH, fileName);
-	}
-
 	private JSONArray _getClassExternalReferenceCodesJSONArray(
 			File file, long groupId)
 		throws Exception {
 
 		try (ZipFile zipFile = new ZipFile(file)) {
 			ZipEntry zipEntry = zipFile.getEntry(
-				_getBatchFileNameWithPath(
+				ExportImportTestUtil.getBatchFileNameWithPath(
 					"deletion-system-events.xml", groupId));
 
 			if (zipEntry == null) {
@@ -2652,12 +2731,9 @@ public class BatchEnginePortletDataHandlerTest {
 			String fileNamePrefix, File file, long groupId)
 		throws Exception {
 
-		try (ZipFile zipFile = new ZipFile(file)) {
-			ZipEntry zipEntry = zipFile.getEntry(
-				_getBatchFileNameWithPath(fileNamePrefix + ".json", groupId));
-
-			return JSONFactoryUtil.createJSONArray(
-				StringUtil.read(zipFile.getInputStream(zipEntry)));
+		try (InputStream inputStream = new FileInputStream(file)) {
+			return ExportImportTestUtil.getExportedObjectEntriesJSONArray(
+				fileNamePrefix, inputStream, groupId);
 		}
 	}
 
@@ -2753,28 +2829,29 @@ public class BatchEnginePortletDataHandlerTest {
 			String fileNamePrefix, File file, long groupId)
 		throws Exception {
 
-		try (ZipFile zipFile = new ZipFile(file)) {
-			ZipEntry zipEntry = zipFile.getEntry(
-				_getBatchFileNameWithPath(
-					fileNamePrefix + "_deletions.json", groupId));
+		JSONArray exportedJSONArray;
 
-			if (zipEntry == null) {
-				throw new FileNotFoundException();
-			}
-
-			JSONArray jsonArray1 = JSONFactoryUtil.createJSONArray();
-
-			JSONArray jsonArray2 = JSONFactoryUtil.createJSONArray(
-				StringUtil.read(zipFile.getInputStream(zipEntry)));
-
-			for (int i = 0; i < jsonArray2.length(); i++) {
-				JSONObject jsonObject = jsonArray2.getJSONObject(i);
-
-				jsonArray1.put(jsonObject.getString("externalReferenceCode"));
-			}
-
-			return jsonArray1;
+		try (InputStream inputStream = new FileInputStream(file)) {
+			exportedJSONArray =
+				ExportImportTestUtil.getExportedObjectEntriesJSONArray(
+					fileNamePrefix + "_deletions", inputStream, groupId);
 		}
+
+		if (exportedJSONArray == null) {
+			throw new FileNotFoundException();
+		}
+
+		JSONArray externalReferenceCodesJSONArray =
+			JSONFactoryUtil.createJSONArray();
+
+		for (int i = 0; i < exportedJSONArray.length(); i++) {
+			JSONObject jsonObject = exportedJSONArray.getJSONObject(i);
+
+			externalReferenceCodesJSONArray.put(
+				jsonObject.getString("externalReferenceCode"));
+		}
+
+		return externalReferenceCodesJSONArray;
 	}
 
 	private String _getFriendlyURL(FileEntry fileEntry) throws Exception {

@@ -9,7 +9,6 @@ import ClayLayout from '@clayui/layout';
 import ClayModal from '@clayui/modal';
 import {InternalDispatch} from '@clayui/shared';
 import {
-	ACTION_ITEM_TARGETS,
 	FrontendDataSet,
 	IFileDropSettings,
 	IFrontendDataSetProps,
@@ -30,28 +29,37 @@ type IItemSelectorModalFDSProps = Omit<
 	| 'style'
 >;
 
-export type FilesUploaderComponent = React.ComponentType<{
-	allowedExtensions?: string;
+export type FilesUploaderComponent<T extends object = {}> = React.ComponentType<
+	{
+		allowedExtensions?: string;
 
-	/**
-	 * List of files that will represent the initial state of files to upload.
-	 */
-	files: FileData[];
+		/**
+		 * List of files that will represent the initial state of files to upload.
+		 */
+		files: FileData[];
 
-	/**
-	 * Site/Space where to upload items
-	 */
-	groupId?: number;
+		/**
+		 * Site/Space where to upload items
+		 */
+		groupId?: number;
 
-	maxFileSize?: number;
+		maxFileSize?: number;
 
-	/**
-	 * Callback for when upload is done in both cases: by success, or user cancelation.
-	 */
-	onCloseUploadView: () => void;
-}>;
+		/**
+		 * Callback for when upload is done in both cases: by success, or user cancelation.
+		 */
+		onCloseUploadView: () => void;
+	} & T
+>;
 
 export interface IItemSelectorModalProps<T> {
+
+	/**
+	 * When true, the Select button remains enabled even when no items are
+	 * selected. Clicking it calls onItemsChange with an empty array.
+	 */
+	allowEmptySelection?: boolean;
+
 	allowedExtensions?: string;
 
 	/**
@@ -70,9 +78,15 @@ export interface IItemSelectorModalProps<T> {
 	breadcrumbsLabel?: boolean;
 
 	/**
-	 * URL for item creation used to open a new tab.
+	 * Label for the footer confirmation button. Defaults to "Select".
 	 */
-	createItemURL?: string;
+	confirmButtonLabel?: string;
+
+	/**
+	 * Label shown in the footer as "{label} Selected" when
+	 * 'allowEmptySelection' is true and no items are selected.
+	 */
+	emptySelectionLabel?: string;
 
 	/**
 	 * Configuration properties of the Frontend Data Set used to display data.
@@ -144,24 +158,25 @@ export interface IItemSelectorModalProps<T> {
 	open: boolean;
 
 	/**
+	 * Modal size. Defaults to "full-screen" to preserve the file-picker
+	 * layout; pass a smaller value (e.g. "lg") for compact list pickers.
+	 */
+	size?: React.ComponentProps<typeof ClayModal>['size'];
+
+	/**
 	 * Represents the title of a modal. takes precedence over itemTypeLabel.
 	 */
 	title?: string;
 }
 
-const EMPTY_STATE_PROPS = {
-	description: Liferay.Language.get(
-		'fortunately-it-is-very-easy-to-add-new-ones'
-	),
-	title: Liferay.Language.get('no-items-were-found'),
-};
-
 function ItemSelectorModal<T extends Record<string, any>>({
+	allowEmptySelection = false,
 	allowedExtensions,
 	apiURL,
 	breadcrumbs,
 	breadcrumbsLabel = true,
-	createItemURL,
+	confirmButtonLabel,
+	emptySelectionLabel,
 	fdsProps,
 	filesUploaderComponent: FilesUploaderComponent,
 	groupId,
@@ -179,6 +194,7 @@ function ItemSelectorModal<T extends Record<string, any>>({
 	onItemsChange,
 	onOpenChange,
 	open,
+	size = 'full-screen',
 	title,
 }: IItemSelectorModalProps<T>) {
 	const [selectedItems, setSelectedItems] = useState(externalItems);
@@ -200,6 +216,8 @@ function ItemSelectorModal<T extends Record<string, any>>({
 	};
 
 	const hasSelectedItems = !!selectedItems.length;
+
+	const isSelectEnabled = hasSelectedItems || allowEmptySelection;
 
 	const fileDropSettings = useMemo<IFileDropSettings>(() => {
 		return {
@@ -227,7 +245,7 @@ function ItemSelectorModal<T extends Record<string, any>>({
 	}
 
 	return (
-		<ClayModal observer={observer} size="full-screen">
+		<ClayModal observer={observer} size={size}>
 			<ClayModal.Header
 				closeButtonAriaLabel={Liferay.Language.get('close')}
 			>
@@ -244,7 +262,10 @@ function ItemSelectorModal<T extends Record<string, any>>({
 					fluid
 				>
 					{breadcrumbs && (
-						<ClayLayout.Container fluid>
+						<ClayLayout.Container
+							className="item-selector-modal-breadcrumb-wrapper"
+							fluid
+						>
 							{breadcrumbsLabel && (
 								<h2 className="mb-0 mt-2">
 									{breadcrumbs[breadcrumbs.length - 1].label}
@@ -264,41 +285,21 @@ function ItemSelectorModal<T extends Record<string, any>>({
 						{...fdsProps}
 						apiURL={apiURL}
 						creationMenu={
-							FilesUploaderComponent || createItemURL
+							FilesUploaderComponent
 								? {
 										primaryItems: [
-											...(FilesUploaderComponent
-												? [
-														{
-															label: Liferay.Language.get(
-																'upload-files'
-															),
-															onClick: () =>
-																setViewType(
-																	'upload'
-																),
-														},
-													]
-												: []),
-											...(createItemURL
-												? [
-														{
-															href: createItemURL,
-															label: Liferay.Language.get(
-																'add-new-item'
-															),
-															target: ACTION_ITEM_TARGETS.BLANK,
-														},
-													]
-												: []),
+											{
+												label: Liferay.Language.get(
+													'upload-files'
+												),
+												onClick: () =>
+													setViewType('upload'),
+											},
 										],
 									}
 								: undefined
 						}
-						emptyState={
-							fdsProps.emptyState ||
-							(createItemURL ? EMPTY_STATE_PROPS : undefined)
-						}
+						emptyState={fdsProps.emptyState}
 						fileDropSettings={fileDropSettings}
 						key={fdsRefreshKey}
 						onSelectedItemsChange={setSelectedItems}
@@ -329,7 +330,7 @@ function ItemSelectorModal<T extends Record<string, any>>({
 				<ClayModal.Footer
 					className={classNames({
 						'bg-primary-l3 border-primary border-top':
-							hasSelectedItems,
+							isSelectEnabled,
 					})}
 					first={
 						hasSelectedItems ? (
@@ -360,6 +361,13 @@ function ItemSelectorModal<T extends Record<string, any>>({
 									</strong>
 								</ClayButton>
 							</div>
+						) : allowEmptySelection && emptySelectionLabel ? (
+							<div className="align-items-center d-flex">
+								{sub(
+									Liferay.Language.get('x-selected'),
+									emptySelectionLabel
+								)}
+							</div>
 						) : undefined
 					}
 					last={
@@ -378,7 +386,7 @@ function ItemSelectorModal<T extends Record<string, any>>({
 
 							<ClayButton
 								className="item-preview selector-button"
-								disabled={!hasSelectedItems}
+								disabled={!isSelectEnabled}
 								onClick={() => {
 									onItemsChange(
 										multiSelect
@@ -389,7 +397,8 @@ function ItemSelectorModal<T extends Record<string, any>>({
 									onOpenChange(false);
 								}}
 							>
-								{Liferay.Language.get('select')}
+								{confirmButtonLabel ??
+									Liferay.Language.get('select')}
 							</ClayButton>
 						</ClayButton.Group>
 					}

@@ -48,6 +48,7 @@ import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -140,7 +141,8 @@ public abstract class BaseProductResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -150,7 +152,8 @@ public abstract class BaseProductResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -259,6 +262,7 @@ public abstract class BaseProductResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Product product1 = testGraphQLDeleteProduct_addProduct();
 
 		Assert.assertTrue(
@@ -289,6 +293,7 @@ public abstract class BaseProductResourceTestCase {
 
 		// Using the namespace headlessCommerceAdminCatalog_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Product product2 = testGraphQLDeleteProduct_addProduct();
 
 		Assert.assertTrue(
@@ -420,6 +425,7 @@ public abstract class BaseProductResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Product product1 =
 			testGraphQLDeleteProductByExternalReferenceCode_addProduct();
 
@@ -458,6 +464,7 @@ public abstract class BaseProductResourceTestCase {
 
 		// Using the namespace headlessCommerceAdminCatalog_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Product product2 =
 			testGraphQLDeleteProductByExternalReferenceCode_addProduct();
 
@@ -549,6 +556,7 @@ public abstract class BaseProductResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Product product1 =
 			testGraphQLDeleteProductByExternalReferenceCodeByVersion_addProduct();
 
@@ -589,6 +597,7 @@ public abstract class BaseProductResourceTestCase {
 
 		// Using the namespace headlessCommerceAdminCatalog_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Product product2 =
 			testGraphQLDeleteProductByExternalReferenceCodeByVersion_addProduct();
 
@@ -672,6 +681,7 @@ public abstract class BaseProductResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Product product1 = testGraphQLDeleteProductByVersion_addProduct();
 
 		Assert.assertTrue(
@@ -704,6 +714,7 @@ public abstract class BaseProductResourceTestCase {
 
 		// Using the namespace headlessCommerceAdminCatalog_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Product product2 = testGraphQLDeleteProductByVersion_addProduct();
 
 		Assert.assertTrue(
@@ -820,8 +831,9 @@ public abstract class BaseProductResourceTestCase {
 			public StringBuffer getRequestURL() {
 				return new StringBuffer(
 					StringBundler.concat(
-						"http://localhost:8080/o/v1.0/",
-						RandomTestUtil.randomString(), "/",
+						"http://localhost:",
+						String.valueOf(PortalUtil.getPortalServerPort(false)),
+						"/o/v1.0/", RandomTestUtil.randomString(), "/",
 						RandomTestUtil.randomString()));
 			}
 
@@ -857,8 +869,10 @@ public abstract class BaseProductResourceTestCase {
 			@Override
 			public URI getRequestUri() {
 				return URI.create(
-					"http://localhost:8080/o/" + applicationPath +
-						resourcePath);
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath, resourcePath));
 			}
 
 			@Override
@@ -878,7 +892,11 @@ public abstract class BaseProductResourceTestCase {
 
 			@Override
 			public URI getBaseUri() {
-				return URI.create("http://localhost:8080/o/" + applicationPath);
+				return URI.create(
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath));
 			}
 
 			@Override
@@ -1809,12 +1827,57 @@ public abstract class BaseProductResourceTestCase {
 
 	@Test
 	public void testPatchProduct() throws Exception {
-		Assert.assertTrue(false);
+		Product postProduct = testPatchProduct_addProduct();
+
+		Product randomPatchProduct = randomPatchProduct();
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Product patchProduct = productResource.patchProduct(
+			postProduct.getId(), randomPatchProduct);
+
+		Product expectedPatchProduct = postProduct.clone();
+
+		BeanTestUtil.copyProperties(randomPatchProduct, expectedPatchProduct);
+
+		Product getProduct = productResource.getProduct(patchProduct.getId());
+
+		assertEquals(expectedPatchProduct, getProduct);
+		assertValid(getProduct);
+	}
+
+	protected Product testPatchProduct_addProduct() throws Exception {
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
 	public void testPatchProductByExternalReferenceCode() throws Exception {
-		Assert.assertTrue(false);
+		Product postProduct =
+			testPatchProductByExternalReferenceCode_addProduct();
+
+		Product randomPatchProduct = randomPatchProduct();
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Product patchProduct =
+			productResource.patchProductByExternalReferenceCode(
+				postProduct.getExternalReferenceCode(), randomPatchProduct);
+
+		Product expectedPatchProduct = postProduct.clone();
+
+		BeanTestUtil.copyProperties(randomPatchProduct, expectedPatchProduct);
+
+		Product getProduct = productResource.getProductByExternalReferenceCode(
+			patchProduct.getExternalReferenceCode());
+
+		assertEquals(expectedPatchProduct, getProduct);
+		assertValid(getProduct);
+	}
+
+	protected Product testPatchProductByExternalReferenceCode_addProduct()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -2003,7 +2066,8 @@ public abstract class BaseProductResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).parameters(
 			parameters
 		).build();
@@ -2081,16 +2145,22 @@ public abstract class BaseProductResourceTestCase {
 		else if (value instanceof Boolean || value instanceof Number) {
 			return value.toString();
 		}
-		else if (value instanceof Date date) {
+		else if (value instanceof Date) {
+			Date date = (Date)value;
+
 			return "\"" +
 				DateUtil.getDate(
 					date, "yyyy-MM-dd'T'HH:mm:ss'Z'", LocaleUtil.getDefault(),
 					TimeZone.getTimeZone("UTC")) + "\"";
 		}
-		else if (value instanceof Enum<?> enm) {
+		else if (value instanceof Enum) {
+			Enum<?> enm = (Enum<?>)value;
+
 			return enm.name();
 		}
-		else if (value instanceof Map<?, ?> map) {
+		else if (value instanceof Map) {
+			Map<?, ?> map = (Map<?, ?>)value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -2103,7 +2173,9 @@ public abstract class BaseProductResourceTestCase {
 
 			return "{" + String.join(", ", entries) + "}";
 		}
-		else if (value instanceof Object[] array) {
+		else if (value instanceof Object[]) {
+			Object[] array = (Object[])value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Object entry : array) {
@@ -4073,7 +4145,9 @@ public abstract class BaseProductResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -4402,4 +4476,4 @@ public abstract class BaseProductResourceTestCase {
 		_vulcanCRUDItemDelegateBuilderRegistry;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1621875939
+// LIFERAY-REST-BUILDER-HASH:-1889484572

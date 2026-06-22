@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -95,7 +96,8 @@ public class ObjectEntryFolderModelListenerTest {
 	}
 
 	@Test
-	public void testAddObjectEntryFolder() throws Exception {
+	@TestInfo("LPD-92888")
+	public void testOnAfterCreate() throws Exception {
 		JSONObject rootJSONObject = CMSDefaultPermissionUtil.getJSONObject(
 			_group.getCompanyId(), _group.getCreatorUserId(),
 			_group.getExternalReferenceCode(), DepotEntry.class.getName(),
@@ -104,19 +106,19 @@ public class ObjectEntryFolderModelListenerTest {
 		ObjectEntryFolder rootObjectEntryFolder = _addObjectEntryFolder(
 			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT);
 
-		_assertResourcePermissions(rootJSONObject, rootObjectEntryFolder, null);
+		_assertResourcePermissions(null, rootJSONObject, rootObjectEntryFolder);
 
 		ObjectEntryFolder childObjectEntryFolder = _addObjectEntryFolder(
 			rootObjectEntryFolder.getObjectEntryFolderId());
 
 		_assertResourcePermissions(
-			rootJSONObject, childObjectEntryFolder, null);
+			null, rootJSONObject, childObjectEntryFolder);
 
 		ObjectEntry objectEntry = _fetchObjectEntry(rootObjectEntryFolder);
 
 		Assert.assertNotNull(objectEntry);
 
-		String randomActionId = RandomTestUtil.randomString();
+		String actionId = RandomTestUtil.randomString();
 
 		rootJSONObject.put(
 			"OBJECT_ENTRY_FOLDERS",
@@ -127,8 +129,7 @@ public class ObjectEntryFolderModelListenerTest {
 					ActionKeys.PERMISSIONS)
 			).put(
 				RoleConstants.CMS_ADMINISTRATOR,
-				JSONUtil.putAll(
-					randomActionId, ActionKeys.UPDATE, ActionKeys.VIEW)
+				JSONUtil.putAll(actionId, ActionKeys.UPDATE, ActionKeys.VIEW)
 			).put(
 				RoleConstants.USER,
 				JSONUtil.putAll(
@@ -148,11 +149,11 @@ public class ObjectEntryFolderModelListenerTest {
 			rootObjectEntryFolder.getObjectEntryFolderId());
 
 		_assertResourcePermissions(
-			rootJSONObject, childObjectEntryFolder, randomActionId);
+			actionId, rootJSONObject, childObjectEntryFolder);
 	}
 
 	@Test
-	public void testDeleteObjectEntryFolder() throws Exception {
+	public void testOnAfterRemove() throws Exception {
 		ObjectEntryFolder rootObjectEntryFolder =
 			_objectEntryFolderLocalService.
 				getObjectEntryFolderByExternalReferenceCode(
@@ -198,60 +199,10 @@ public class ObjectEntryFolderModelListenerTest {
 	}
 
 	@Test
-	public void testUpdateObjectEntryFolder() throws Exception {
-		ObjectEntryFolder objectEntryFolder1 =
-			_objectEntryFolderLocalService.
-				getObjectEntryFolderByExternalReferenceCode(
-					ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS,
-					_group.getGroupId(), _group.getCompanyId());
-
-		ObjectEntryFolder objectEntryFolder2 = _addObjectEntryFolder(
-			objectEntryFolder1.getObjectEntryFolderId());
-
-		JSONObject jsonObject = CMSDefaultPermissionUtil.getJSONObject(
-			objectEntryFolder2.getCompanyId(), objectEntryFolder2.getUserId(),
-			objectEntryFolder2.getExternalReferenceCode(),
-			objectEntryFolder2.getModelClassName(), _filterFactory);
-
-		_assertResourcePermissions(jsonObject, objectEntryFolder2, null);
-
-		ObjectEntryFolder objectEntryFolder3 = _addObjectEntryFolder(
-			objectEntryFolder1.getObjectEntryFolderId());
-
-		_assertResourcePermissions(jsonObject, objectEntryFolder3, null);
-
-		ObjectEntry objectEntry = _fetchObjectEntry(objectEntryFolder2);
-
-		Assert.assertNotNull(objectEntry);
-
-		String randomActionId = RandomTestUtil.randomString();
-
-		jsonObject.put(
-			ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS,
-			JSONUtil.put(
-				RoleConstants.CMS_ADMINISTRATOR,
-				JSONUtil.putAll(
-					ActionKeys.UPDATE, ActionKeys.VIEW, randomActionId)
-			).put(
-				RoleConstants.USER, JSONUtil.putAll(ActionKeys.VIEW)
-			));
-
-		CMSDefaultPermissionUtil.addOrUpdateObjectEntry(
-			objectEntry.getExternalReferenceCode(),
-			objectEntryFolder2.getCompanyId(), objectEntryFolder2.getUserId(),
-			objectEntryFolder2.getExternalReferenceCode(),
-			objectEntryFolder2.getModelClassName(), jsonObject,
-			objectEntryFolder2.getGroupId(), objectEntryFolder2.getTreePath());
-
-		objectEntryFolder3 =
-			_objectEntryFolderLocalService.moveObjectEntryFolder(
-				objectEntryFolder3.getUserId(),
-				objectEntryFolder3.getObjectEntryFolderId(),
-				objectEntryFolder2.getObjectEntryFolderId(), false,
-				ServiceContextTestUtil.getServiceContext());
-
-		_assertResourcePermissions(
-			jsonObject, objectEntryFolder3, randomActionId);
+	@TestInfo("LPD-92888")
+	public void testOnAfterUpdate() throws Exception {
+		_testOnAfterUpdateWithExternalReferenceCode();
+		_testOnAfterUpdateWithParentObjectEntryFolder();
 	}
 
 	private ObjectEntryFolder _addObjectEntryFolder(
@@ -268,8 +219,8 @@ public class ObjectEntryFolderModelListenerTest {
 	}
 
 	private void _assertResourcePermissions(
-			JSONObject expectedDefaultPermissionsJSONObject,
-			ObjectEntryFolder objectEntryFolder, String randomActionId)
+			String actionId, JSONObject expectedDefaultPermissionsJSONObject,
+			ObjectEntryFolder objectEntryFolder)
 		throws Exception {
 
 		JSONObject actualDefaultPermissionsJSONObject =
@@ -297,24 +248,25 @@ public class ObjectEntryFolderModelListenerTest {
 					_resourceActionLocalService.getResourceActions(
 						ObjectEntryFolder.class.getName())) {
 
-				String actionId = resourceAction.getActionId();
+				String resourceActionActionId = resourceAction.getActionId();
 
 				if ((objectEntryFolder.getParentObjectEntryFolderId() ==
 						ObjectEntryFolderConstants.
 							PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT) &&
-					Objects.equals(actionId, ActionKeys.DELETE)) {
+					Objects.equals(resourceActionActionId, ActionKeys.DELETE)) {
 
 					Assert.assertFalse(
-						resourcePermission.hasActionId(actionId));
+						resourcePermission.hasActionId(resourceActionActionId));
 				}
 				else {
 					Assert.assertEquals(
-						actionIds.toString(), actionIds.contains(actionId),
-						resourcePermission.hasActionId(actionId));
+						actionIds.toString(),
+						actionIds.contains(resourceActionActionId),
+						resourcePermission.hasActionId(resourceActionActionId));
 				}
 			}
 
-			Assert.assertFalse(resourcePermission.hasActionId(randomActionId));
+			Assert.assertFalse(resourcePermission.hasActionId(actionId));
 		}
 	}
 
@@ -339,6 +291,95 @@ public class ObjectEntryFolderModelListenerTest {
 			ResourceConstants.SCOPE_INDIVIDUAL,
 			String.valueOf(objectEntryFolder.getObjectEntryFolderId()),
 			role.getRoleId());
+	}
+
+	private void _testOnAfterUpdateWithExternalReferenceCode()
+		throws Exception {
+
+		ObjectEntryFolder rootObjectEntryFolder =
+			_objectEntryFolderLocalService.
+				getObjectEntryFolderByExternalReferenceCode(
+					ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS,
+					_group.getGroupId(), _group.getCompanyId());
+
+		ObjectEntryFolder objectEntryFolder = _addObjectEntryFolder(
+			rootObjectEntryFolder.getObjectEntryFolderId());
+
+		String originalExternalReferenceCode =
+			objectEntryFolder.getExternalReferenceCode();
+
+		Assert.assertNotNull(_fetchObjectEntry(objectEntryFolder));
+
+		objectEntryFolder.setExternalReferenceCode(
+			RandomTestUtil.randomString());
+
+		objectEntryFolder =
+			_objectEntryFolderLocalService.updateObjectEntryFolder(
+				objectEntryFolder);
+
+		Assert.assertNull(
+			CMSDefaultPermissionUtil.fetchObjectEntry(
+				objectEntryFolder.getCompanyId(), objectEntryFolder.getUserId(),
+				originalExternalReferenceCode,
+				objectEntryFolder.getModelClassName(), _filterFactory));
+
+		Assert.assertNotNull(_fetchObjectEntry(objectEntryFolder));
+	}
+
+	private void _testOnAfterUpdateWithParentObjectEntryFolder()
+		throws Exception {
+
+		ObjectEntryFolder objectEntryFolder1 =
+			_objectEntryFolderLocalService.
+				getObjectEntryFolderByExternalReferenceCode(
+					ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS,
+					_group.getGroupId(), _group.getCompanyId());
+
+		ObjectEntryFolder objectEntryFolder2 = _addObjectEntryFolder(
+			objectEntryFolder1.getObjectEntryFolderId());
+
+		JSONObject jsonObject = CMSDefaultPermissionUtil.getJSONObject(
+			objectEntryFolder2.getCompanyId(), objectEntryFolder2.getUserId(),
+			objectEntryFolder2.getExternalReferenceCode(),
+			objectEntryFolder2.getModelClassName(), _filterFactory);
+
+		_assertResourcePermissions(null, jsonObject, objectEntryFolder2);
+
+		ObjectEntryFolder objectEntryFolder3 = _addObjectEntryFolder(
+			objectEntryFolder1.getObjectEntryFolderId());
+
+		_assertResourcePermissions(null, jsonObject, objectEntryFolder3);
+
+		ObjectEntry objectEntry = _fetchObjectEntry(objectEntryFolder2);
+
+		Assert.assertNotNull(objectEntry);
+
+		String actionId = RandomTestUtil.randomString();
+
+		jsonObject.put(
+			ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS,
+			JSONUtil.put(
+				RoleConstants.CMS_ADMINISTRATOR,
+				JSONUtil.putAll(actionId, ActionKeys.UPDATE, ActionKeys.VIEW)
+			).put(
+				RoleConstants.USER, JSONUtil.putAll(ActionKeys.VIEW)
+			));
+
+		CMSDefaultPermissionUtil.addOrUpdateObjectEntry(
+			objectEntry.getExternalReferenceCode(),
+			objectEntryFolder2.getCompanyId(), objectEntryFolder2.getUserId(),
+			objectEntryFolder2.getExternalReferenceCode(),
+			objectEntryFolder2.getModelClassName(), jsonObject,
+			objectEntryFolder2.getGroupId(), objectEntryFolder2.getTreePath());
+
+		objectEntryFolder3 =
+			_objectEntryFolderLocalService.moveObjectEntryFolder(
+				objectEntryFolder3.getUserId(),
+				objectEntryFolder3.getObjectEntryFolderId(),
+				objectEntryFolder2.getObjectEntryFolderId(), false,
+				ServiceContextTestUtil.getServiceContext());
+
+		_assertResourcePermissions(actionId, jsonObject, objectEntryFolder3);
 	}
 
 	@Inject

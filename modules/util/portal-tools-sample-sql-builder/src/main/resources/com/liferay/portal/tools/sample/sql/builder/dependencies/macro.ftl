@@ -56,7 +56,7 @@
 <#macro insertContentPageLayout
 	_fragmentEntryLinkModels
 	_layoutModels
-	_templateFileName
+	_layoutTemplateFileName
 >
 	<#list _fragmentEntryLinkModels as fragmentEntryLinkModel>
 		${dataFactory.toInsertSQL(fragmentEntryLinkModel)}
@@ -71,7 +71,7 @@
 
 		${dataFactory.toInsertSQL(layoutPageTemplateStructureModel)}
 
-		<#local layoutPageTemplateStructureRelModel = dataFactory.newLayoutPageTemplateStructureRelModel(layoutModel, layoutPageTemplateStructureModel, _fragmentEntryLinkModels, _templateFileName)>
+		<#local layoutPageTemplateStructureRelModel = dataFactory.newLayoutPageTemplateStructureRelModel(layoutModel, layoutPageTemplateStructureModel, _fragmentEntryLinkModels, _layoutTemplateFileName)>
 
 		${dataFactory.toInsertSQL(layoutPageTemplateStructureRelModel)}
 	</#list>
@@ -231,7 +231,7 @@
 	<#if _insertAssetEntry>
 		<@insertAssetEntry
 			_categoryAndTag = true
-			_entry = dataFactory.newObjectValuePair(journalArticleModel, journalArticleLocalizationModel)
+			_entry = dataFactory.newTuple(journalArticleModel, journalArticleLocalizationModel)
 		/>
 	</#if>
 </#macro>

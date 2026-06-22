@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -77,72 +76,15 @@ public class CommerceTermEntryRelPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCommerceTermEntryId;
-	private FinderPath _finderPathWithoutPaginationFindByCommerceTermEntryId;
-	private FinderPath _finderPathCountByCommerceTermEntryId;
-	private CollectionPersistenceFinder<CommerceTermEntryRel>
-		_collectionPersistenceFinderByCommerceTermEntryId;
-
-	/**
-	 * Returns all the commerce term entry rels where commerceTermEntryId = &#63;.
-	 *
-	 * @param commerceTermEntryId the commerce term entry ID
-	 * @return the matching commerce term entry rels
-	 */
-	@Override
-	public List<CommerceTermEntryRel> findByCommerceTermEntryId(
-		long commerceTermEntryId) {
-
-		return findByCommerceTermEntryId(
-			commerceTermEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce term entry rels where commerceTermEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTermEntryRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceTermEntryId the commerce term entry ID
-	 * @param start the lower bound of the range of commerce term entry rels
-	 * @param end the upper bound of the range of commerce term entry rels (not inclusive)
-	 * @return the range of matching commerce term entry rels
-	 */
-	@Override
-	public List<CommerceTermEntryRel> findByCommerceTermEntryId(
-		long commerceTermEntryId, int start, int end) {
-
-		return findByCommerceTermEntryId(commerceTermEntryId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceTermEntryRel, NoSuchTermEntryRelException>
+			_collectionPersistenceFinderByCommerceTermEntryId;
 
 	/**
 	 * Returns an ordered range of all the commerce term entry rels where commerceTermEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTermEntryRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceTermEntryId the commerce term entry ID
-	 * @param start the lower bound of the range of commerce term entry rels
-	 * @param end the upper bound of the range of commerce term entry rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce term entry rels
-	 */
-	@Override
-	public List<CommerceTermEntryRel> findByCommerceTermEntryId(
-		long commerceTermEntryId, int start, int end,
-		OrderByComparator<CommerceTermEntryRel> orderByComparator) {
-
-		return findByCommerceTermEntryId(
-			commerceTermEntryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce term entry rels where commerceTermEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTermEntryRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTermEntryRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commerceTermEntryId the commerce term entry ID
@@ -177,19 +119,8 @@ public class CommerceTermEntryRelPersistenceImpl
 			OrderByComparator<CommerceTermEntryRel> orderByComparator)
 		throws NoSuchTermEntryRelException {
 
-		CommerceTermEntryRel commerceTermEntryRel =
-			fetchByCommerceTermEntryId_First(
-				commerceTermEntryId, orderByComparator);
-
-		if (commerceTermEntryRel != null) {
-			return commerceTermEntryRel;
-		}
-
-		throw new NoSuchTermEntryRelException(
-			_collectionPersistenceFinderByCommerceTermEntryId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {commerceTermEntryId}));
+		return _collectionPersistenceFinderByCommerceTermEntryId.findFirst(
+			finderCache, new Object[] {commerceTermEntryId}, orderByComparator);
 	}
 
 	/**
@@ -231,77 +162,15 @@ public class CommerceTermEntryRelPersistenceImpl
 			finderCache, new Object[] {commerceTermEntryId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<CommerceTermEntryRel>
-		_collectionPersistenceFinderByC_C;
-
-	/**
-	 * Returns all the commerce term entry rels where classNameId = &#63; and commerceTermEntryId = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param commerceTermEntryId the commerce term entry ID
-	 * @return the matching commerce term entry rels
-	 */
-	@Override
-	public List<CommerceTermEntryRel> findByC_C(
-		long classNameId, long commerceTermEntryId) {
-
-		return findByC_C(
-			classNameId, commerceTermEntryId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce term entry rels where classNameId = &#63; and commerceTermEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTermEntryRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param commerceTermEntryId the commerce term entry ID
-	 * @param start the lower bound of the range of commerce term entry rels
-	 * @param end the upper bound of the range of commerce term entry rels (not inclusive)
-	 * @return the range of matching commerce term entry rels
-	 */
-	@Override
-	public List<CommerceTermEntryRel> findByC_C(
-		long classNameId, long commerceTermEntryId, int start, int end) {
-
-		return findByC_C(classNameId, commerceTermEntryId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceTermEntryRel, NoSuchTermEntryRelException>
+			_collectionPersistenceFinderByC_C;
 
 	/**
 	 * Returns an ordered range of all the commerce term entry rels where classNameId = &#63; and commerceTermEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTermEntryRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param commerceTermEntryId the commerce term entry ID
-	 * @param start the lower bound of the range of commerce term entry rels
-	 * @param end the upper bound of the range of commerce term entry rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce term entry rels
-	 */
-	@Override
-	public List<CommerceTermEntryRel> findByC_C(
-		long classNameId, long commerceTermEntryId, int start, int end,
-		OrderByComparator<CommerceTermEntryRel> orderByComparator) {
-
-		return findByC_C(
-			classNameId, commerceTermEntryId, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce term entry rels where classNameId = &#63; and commerceTermEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTermEntryRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceTermEntryRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -338,17 +207,9 @@ public class CommerceTermEntryRelPersistenceImpl
 			OrderByComparator<CommerceTermEntryRel> orderByComparator)
 		throws NoSuchTermEntryRelException {
 
-		CommerceTermEntryRel commerceTermEntryRel = fetchByC_C_First(
-			classNameId, commerceTermEntryId, orderByComparator);
-
-		if (commerceTermEntryRel != null) {
-			return commerceTermEntryRel;
-		}
-
-		throw new NoSuchTermEntryRelException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {classNameId, commerceTermEntryId}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			finderCache, new Object[] {classNameId, commerceTermEntryId},
+			orderByComparator);
 	}
 
 	/**
@@ -394,9 +255,9 @@ public class CommerceTermEntryRelPersistenceImpl
 			finderCache, new Object[] {classNameId, commerceTermEntryId});
 	}
 
-	private FinderPath _finderPathFetchByC_C_C;
-	private UniquePersistenceFinder<CommerceTermEntryRel>
-		_uniquePersistenceFinderByC_C_C;
+	private UniquePersistenceFinder
+		<CommerceTermEntryRel, NoSuchTermEntryRelException>
+			_uniquePersistenceFinderByC_C_C;
 
 	/**
 	 * Returns the commerce term entry rel where classNameId = &#63; and classPK = &#63; and commerceTermEntryId = &#63; or throws a <code>NoSuchTermEntryRelException</code> if it could not be found.
@@ -412,38 +273,9 @@ public class CommerceTermEntryRelPersistenceImpl
 			long classNameId, long classPK, long commerceTermEntryId)
 		throws NoSuchTermEntryRelException {
 
-		CommerceTermEntryRel commerceTermEntryRel = fetchByC_C_C(
-			classNameId, classPK, commerceTermEntryId);
-
-		if (commerceTermEntryRel == null) {
-			String message =
-				_uniquePersistenceFinderByC_C_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {classNameId, classPK, commerceTermEntryId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchTermEntryRelException(message);
-		}
-
-		return commerceTermEntryRel;
-	}
-
-	/**
-	 * Returns the commerce term entry rel where classNameId = &#63; and classPK = &#63; and commerceTermEntryId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param commerceTermEntryId the commerce term entry ID
-	 * @return the matching commerce term entry rel, or <code>null</code> if a matching commerce term entry rel could not be found
-	 */
-	@Override
-	public CommerceTermEntryRel fetchByC_C_C(
-		long classNameId, long classPK, long commerceTermEntryId) {
-
-		return fetchByC_C_C(classNameId, classPK, commerceTermEntryId, true);
+		return _uniquePersistenceFinderByC_C_C.find(
+			finderCache,
+			new Object[] {classNameId, classPK, commerceTermEntryId});
 	}
 
 	/**
@@ -709,90 +541,86 @@ public class CommerceTermEntryRelPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByCommerceTermEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCommerceTermEntryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"commerceTermEntryId"}, true);
-
-		_finderPathWithoutPaginationFindByCommerceTermEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByCommerceTermEntryId", new String[] {Long.class.getName()},
-			new String[] {"commerceTermEntryId"}, true);
-
-		_finderPathCountByCommerceTermEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCommerceTermEntryId", new String[] {Long.class.getName()},
-			new String[] {"commerceTermEntryId"}, false);
-
 		_collectionPersistenceFinderByCommerceTermEntryId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCommerceTermEntryId,
-				_finderPathWithoutPaginationFindByCommerceTermEntryId,
-				_finderPathCountByCommerceTermEntryId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCommerceTermEntryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"commerceTermEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCommerceTermEntryId",
+					new String[] {Long.class.getName()},
+					new String[] {"commerceTermEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCommerceTermEntryId",
+					new String[] {Long.class.getName()},
+					new String[] {"commerceTermEntryId"}, false),
 				_SQL_SELECT_COMMERCETERMENTRYREL_WHERE,
 				_SQL_COUNT_COMMERCETERMENTRYREL_WHERE,
 				CommerceTermEntryRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commerceTermEntryRel.", "commerceTermEntryId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceTermEntryRel::getCommerceTermEntryId));
 
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "commerceTermEntryId"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "commerceTermEntryId"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "commerceTermEntryId"}, false);
-
 		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"classNameId", "commerceTermEntryId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "commerceTermEntryId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "commerceTermEntryId"}, false),
 			_SQL_SELECT_COMMERCETERMENTRYREL_WHERE,
 			_SQL_COUNT_COMMERCETERMENTRYREL_WHERE,
 			CommerceTermEntryRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"commerceTermEntryRel.", "classNameId", FinderColumn.Type.LONG,
-				"=", true, false, CommerceTermEntryRel::getClassNameId),
+				"=", true, true, CommerceTermEntryRel::getClassNameId),
 			new FinderColumn<>(
 				"commerceTermEntryRel.", "commerceTermEntryId",
 				FinderColumn.Type.LONG, "=", true, true,
 				CommerceTermEntryRel::getCommerceTermEntryId));
 
-		_finderPathFetchByC_C_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"classNameId", "classPK", "commerceTermEntryId"},
-			false, CommerceTermEntryRel::getClassNameId,
-			CommerceTermEntryRel::getClassPK,
-			CommerceTermEntryRel::getCommerceTermEntryId);
-
 		_uniquePersistenceFinderByC_C_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_C_C,
-			_SQL_SELECT_COMMERCETERMENTRYREL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"classNameId", "classPK", "commerceTermEntryId"},
+				0, 0, false, CommerceTermEntryRel::getClassNameId,
+				CommerceTermEntryRel::getClassPK,
+				CommerceTermEntryRel::getCommerceTermEntryId),
+			_SQL_SELECT_COMMERCETERMENTRYREL_WHERE, "",
 			new FinderColumn<>(
 				"commerceTermEntryRel.", "classNameId", FinderColumn.Type.LONG,
-				"=", true, false, CommerceTermEntryRel::getClassNameId),
+				"=", true, true, CommerceTermEntryRel::getClassNameId),
 			new FinderColumn<>(
 				"commerceTermEntryRel.", "classPK", FinderColumn.Type.LONG, "=",
-				true, false, CommerceTermEntryRel::getClassPK),
+				true, true, CommerceTermEntryRel::getClassPK),
 			new FinderColumn<>(
 				"commerceTermEntryRel.", "commerceTermEntryId",
 				FinderColumn.Type.LONG, "=", true, true,
@@ -864,4 +692,4 @@ public class CommerceTermEntryRelPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:764269997
+// LIFERAY-SERVICE-BUILDER-HASH:-331445865

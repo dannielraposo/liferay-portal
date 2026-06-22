@@ -6,6 +6,7 @@
 package com.liferay.journal.internal.upgrade.v6_1_3.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.friendly.url.constants.FriendlyURLEntryConstants;
 import com.liferay.friendly.url.model.FriendlyURLEntryLocalization;
 import com.liferay.friendly.url.test.util.BaseFriendlyURLFormatUpgradeProcessTestCase;
 import com.liferay.journal.model.JournalArticle;
@@ -138,7 +139,10 @@ public class JournalArticleFriendlyURLFormatUpgradeProcessTest
 
 		FriendlyURLEntryLocalization friendlyURLEntryLocalization =
 			friendlyURLEntryLocalService.fetchFriendlyURLEntryLocalization(
-				group.getGroupId(), _classNameId, languageId, urlTitle);
+				group.getGroupId(), _classNameId,
+				FriendlyURLEntryConstants.
+					FRIENDLY_URL_ENTRY_PARENT_CLASS_PK_DEFAULT,
+				languageId, urlTitle);
 
 		Assert.assertEquals(
 			urlTitle, friendlyURLEntryLocalization.getUrlTitle());
@@ -174,15 +178,6 @@ public class JournalArticleFriendlyURLFormatUpgradeProcessTest
 		"com.liferay.journal.internal.upgrade.v6_1_3." +
 			"JournalArticleFriendlyURLFormatUpgradeProcess";
 
-	@Inject
-	private static JournalArticleResourceLocalService
-		_journalArticleResourceLocalService;
-
-	@Inject(
-		filter = "(&(component.name=com.liferay.journal.internal.upgrade.registry.JournalServiceUpgradeStepRegistrator))"
-	)
-	private static UpgradeStepRegistrator _upgradeStepRegistrator;
-
 	private long _classNameId;
 	private JournalArticle _journalArticle;
 
@@ -190,6 +185,15 @@ public class JournalArticleFriendlyURLFormatUpgradeProcessTest
 	private JournalArticleLocalService _journalArticleLocalService;
 
 	@Inject
+	private JournalArticleResourceLocalService
+		_journalArticleResourceLocalService;
+
+	@Inject
 	private MultiVMPool _multiVMPool;
+
+	@Inject(
+		filter = "(&(component.name=com.liferay.journal.internal.upgrade.registry.JournalServiceUpgradeStepRegistrator))"
+	)
+	private UpgradeStepRegistrator _upgradeStepRegistrator;
 
 }

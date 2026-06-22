@@ -918,7 +918,8 @@ public class LayoutServiceUtil {
 			Map<java.util.Locale, String> robotsMap, String type,
 			boolean hidden, Map<java.util.Locale, String> friendlyURLMap,
 			boolean hasIconImage, byte[] iconBytes, String styleBookEntryERC,
-			String faviconFileEntryERC, String faviconFileEntryScopeERC,
+			String styleBookEntryScopeERC, String faviconFileEntryERC,
+			String faviconFileEntryScopeERC,
 			String masterLayoutPageTemplateEntryERC,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -927,8 +928,9 @@ public class LayoutServiceUtil {
 			groupId, privateLayout, layoutId, parentLayoutId, localeNamesMap,
 			localeTitlesMap, descriptionMap, keywordsMap, robotsMap, type,
 			hidden, friendlyURLMap, hasIconImage, iconBytes, styleBookEntryERC,
-			faviconFileEntryERC, faviconFileEntryScopeERC,
-			masterLayoutPageTemplateEntryERC, serviceContext);
+			styleBookEntryScopeERC, faviconFileEntryERC,
+			faviconFileEntryScopeERC, masterLayoutPageTemplateEntryERC,
+			serviceContext);
 	}
 
 	/**
@@ -1137,4 +1139,4 @@ public class LayoutServiceUtil {
 	private static volatile LayoutService _service;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:2069132619
+// LIFERAY-SERVICE-BUILDER-HASH:-1762366102

@@ -10,7 +10,7 @@ name: test-plan
 
 Produce a runnable shell script that executes the tests most likely to regress given the current branch's changes compared to master.
 
-The full test suite takes hours to run, so the team merges aggressively and relies on a daily full-suite run that delivers results within 24 hours of merge. This skill produces a focused pre-merge script (under 20 minutes) that mitigates risk without attempting full coverage — its goal is to catch the most likely regressions, not every possible one.
+The full test suite takes hours to run, so the team merges aggressively and relies on a daily full-suite run that delivers results within 24 hours of merge. This skill produces a focused premerge script (under 20 minutes) that mitigates risk without attempting full coverage — its goal is to catch the most likely regressions, not every possible one.
 
 ## How This Project Organizes Tests
 
@@ -22,7 +22,7 @@ ${CLAUDE_SKILL_DIR}/references/test-organization.md
 
 ## Workflow
 
-### 1. Understand the Changes
+### Understand the Changes
 
 ```bash
 git diff master...HEAD --name-only
@@ -31,7 +31,7 @@ git log master..HEAD --oneline
 
 Read the changed files to understand what the changes actually do — not merely which files were touched, but what behavior changed. This understanding drives the test selection.
 
-### 2. Identify What Could Regress
+### Identify What Could Regress
 
 Consider the blast radius of each change:
 
@@ -43,13 +43,13 @@ Consider the blast radius of each change:
 
 The objective is not to "find every test in modules that were touched" — it is to find tests that exercise the code paths that changed.
 
-### 3. Find the Tests
+### Find the Tests
 
 For each area that could regress, search for test files. Use parallel Agent and Glob calls for speed. Consult `${CLAUDE_SKILL_DIR}/references/test-organization.md` for the exact patterns and conventions.
 
 **Verify every test file exists** before including it in the plan.
 
-### 4. Prioritize Within the 20-Minute Budget
+### Prioritize Within the 20-Minute Budget
 
 Apply the following priority order:
 
@@ -75,12 +75,12 @@ Apply the following priority order:
 
 When the change affects many modules (for example, a framework change), do not attempt to test every single module. Choose a diverse sample that covers different usage patterns of the changed code.
 
-### 5. Write the Script
+### Write the Script
 
 Delete any existing `test.sh` at the repository root, then write a new one. The script must be self-contained and runnable via `bash test.sh`. Use this structure:
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Test plan for branch: <branch-name>
 # Generated: <date>
@@ -90,20 +90,25 @@ Delete any existing `test.sh` at the repository root, then write a new one. The 
 # Affected areas: <list of module groups or components>
 #
 
-REPO_ROOT="$(cd "$(dirname "${0}")" && pwd)"
-EXIT_CODE=0
+set -o errexit
+set -o nounset
+set -o pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+_EXIT_CODE=0
 
 <test commands — one per line, no blank lines between them>
 
-exit ${EXIT_CODE}
+exit ${_EXIT_CODE}
 ```
 
 **Critical rules for the script:**
 
 - Replace `<test commands>` with the actual commands discovered during selection.
-- Suffix every command with `|| EXIT_CODE=1` so failures are recorded without halting execution. The script exits with `${EXIT_CODE}` at the end — `0` when all tests pass, `1` when any fail.
-- Use `"${REPO_ROOT}/gradlew" --project-dir "${REPO_ROOT}/modules"` for Gradle tasks (the `gradlew` wrapper lives at the repository root).
-- Use `npx --prefix "${REPO_ROOT}/modules/test/playwright" playwright test` for Playwright.
+- Suffix every command with `|| _EXIT_CODE=1` so failures are recorded without halting execution. The `||` recovery neutralizes `errexit` on test failures while keeping the strict-mode block in place for unrecovered errors. The script exits with `${_EXIT_CODE}` at the end — `0` when all tests pass, `1` when any fail.
+- Use `./gradlew --project-dir ./modules` for Gradle tasks (the script's `cd` puts the repository root as the working directory).
+- Use `npx --prefix ./modules/test/playwright playwright test` for Playwright.
 - All test types (Unit, Integration, Playwright, Poshi) run directly — the portal is assumed to be running.
 - Precede each command with a single-line comment explaining why it was selected. State the rationale; do not restate the test name or module.
 

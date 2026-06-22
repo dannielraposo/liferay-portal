@@ -38,6 +38,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -111,7 +112,8 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -121,7 +123,8 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -654,7 +657,8 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).parameters(
 			parameters
 		).build();
@@ -805,6 +809,14 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("model", additionalAssertFieldName)) {
+				if (agentDefinition.getModel() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("outputVariable", additionalAssertFieldName)) {
 				if (agentDefinition.getOutputVariable() == null) {
 					valid = false;
@@ -815,6 +827,14 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 
 			if (Objects.equals("status", additionalAssertFieldName)) {
 				if (agentDefinition.getStatus() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("system", additionalAssertFieldName)) {
+				if (agentDefinition.getSystem() == null) {
 					valid = false;
 				}
 
@@ -1037,6 +1057,17 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("model", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						agentDefinition1.getModel(),
+						agentDefinition2.getModel())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("outputVariable", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						agentDefinition1.getOutputVariable(),
@@ -1052,6 +1083,17 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 				if (!Objects.deepEquals(
 						agentDefinition1.getStatus(),
 						agentDefinition2.getStatus())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("system", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						agentDefinition1.getSystem(),
+						agentDefinition2.getSystem())) {
 
 					return false;
 				}
@@ -1314,12 +1356,22 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("model")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("outputVariable")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("status")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("system")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
@@ -1435,7 +1487,9 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -1473,6 +1527,7 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 				externalReferenceCode = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
+				system = RandomTestUtil.randomBoolean();
 				title = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				version = RandomTestUtil.randomInt();
 				workflowDefinitionName = StringUtil.toLowerCase(
@@ -1727,4 +1782,4 @@ public abstract class BaseAgentDefinitionResourceTestCase {
 		_agentDefinitionResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1984347228
+// LIFERAY-REST-BUILDER-HASH:-357511421

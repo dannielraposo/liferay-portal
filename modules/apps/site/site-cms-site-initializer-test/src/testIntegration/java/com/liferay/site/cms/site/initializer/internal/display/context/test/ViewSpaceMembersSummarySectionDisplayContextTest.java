@@ -11,13 +11,9 @@ import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.fragment.renderer.FragmentRenderer;
 import com.liferay.info.constants.InfoDisplayWebKeys;
-import com.liferay.object.model.ObjectEntry;
-import com.liferay.object.rest.test.util.ObjectEntryTestUtil;
-import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -31,14 +27,10 @@ import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.site.cmp.site.initializer.test.util.CMPTestUtil;
-
-import java.io.Serializable;
 
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,15 +55,6 @@ public class ViewSpaceMembersSummarySectionDisplayContextTest
 			new LiferayIntegrationTestRule(),
 			PermissionCheckerMethodTestRule.INSTANCE);
 
-	@Before
-	@Override
-	public void setUp() throws Exception {
-		super.setUp();
-
-		CMPTestUtil.getOrAddGroup(
-			ViewSpaceMembersSummarySectionDisplayContextTest.class);
-	}
-
 	@Test
 	public void testGetHeaderProps() throws Exception {
 		DepotEntry depotEntry = _depotEntryLocalService.addDepotEntry(
@@ -80,26 +63,17 @@ public class ViewSpaceMembersSummarySectionDisplayContextTest
 			ServiceContextTestUtil.getServiceContext());
 
 		mockHttpServletRequest.setAttribute(
-			InfoDisplayWebKeys.INFO_ITEM,
-			ObjectEntryTestUtil.addObjectEntry(
-				depotEntry.getGroupId(),
-				_objectDefinitionLocalService.
-					fetchObjectDefinitionByExternalReferenceCode(
-						"L_CMS_BASIC_WEB_CONTENT",
-						TestPropsValues.getCompanyId()),
-				HashMapBuilder.<String, Serializable>put(
-					"title_i18n",
-					HashMapBuilder.put(
-						"en_US", RandomTestUtil.randomString()
-					).build()
-				).build()));
+			InfoDisplayWebKeys.INFO_ITEM, depotEntry);
 
 		_assertHeaderProps(null, depotEntry.getGroup());
 
-		ObjectEntry objectEntry = CMPTestUtil.addProjectObjectEntry();
+		DepotEntry projectDepotEntry = _depotEntryLocalService.addDepotEntry(
+			RandomTestUtil.randomLocaleStringMap(),
+			RandomTestUtil.randomLocaleStringMap(), DepotConstants.TYPE_PROJECT,
+			ServiceContextTestUtil.getServiceContext());
 
 		mockHttpServletRequest.setAttribute(
-			InfoDisplayWebKeys.INFO_ITEM, objectEntry);
+			InfoDisplayWebKeys.INFO_ITEM, projectDepotEntry);
 
 		_assertHeaderProps(
 			HashMapBuilder.<String, Object>put(
@@ -113,7 +87,7 @@ public class ViewSpaceMembersSummarySectionDisplayContextTest
 						StringUtil.merge(depotEntryGroupIds) + ")";
 				}
 			).build(),
-			_groupLocalService.fetchGroup(objectEntry.getGroupId()));
+			projectDepotEntry.getGroup());
 	}
 
 	private void _assertHeaderProps(
@@ -173,11 +147,5 @@ public class ViewSpaceMembersSummarySectionDisplayContextTest
 		filter = "component.name=com.liferay.site.cms.site.initializer.internal.fragment.renderer.ViewSpaceMembersSummaryJSPSectionFragmentRenderer"
 	)
 	private FragmentRenderer _fragmentRenderer;
-
-	@Inject
-	private GroupLocalService _groupLocalService;
-
-	@Inject
-	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 }

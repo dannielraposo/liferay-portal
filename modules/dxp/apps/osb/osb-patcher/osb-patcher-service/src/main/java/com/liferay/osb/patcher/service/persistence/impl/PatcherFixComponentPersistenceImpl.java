@@ -16,7 +16,6 @@ import com.liferay.osb.patcher.service.persistence.impl.constants.OSBPatcherPers
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -73,9 +72,9 @@ public class PatcherFixComponentPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByName;
-	private UniquePersistenceFinder<PatcherFixComponent>
-		_uniquePersistenceFinderByName;
+	private UniquePersistenceFinder
+		<PatcherFixComponent, NoSuchPatcherFixComponentException>
+			_uniquePersistenceFinderByName;
 
 	/**
 	 * Returns the patcher fix component where name = &#63; or throws a <code>NoSuchPatcherFixComponentException</code> if it could not be found.
@@ -88,32 +87,8 @@ public class PatcherFixComponentPersistenceImpl
 	public PatcherFixComponent findByName(String name)
 		throws NoSuchPatcherFixComponentException {
 
-		PatcherFixComponent patcherFixComponent = fetchByName(name);
-
-		if (patcherFixComponent == null) {
-			String message =
-				_uniquePersistenceFinderByName.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchPatcherFixComponentException(message);
-		}
-
-		return patcherFixComponent;
-	}
-
-	/**
-	 * Returns the patcher fix component where name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param name the name
-	 * @return the matching patcher fix component, or <code>null</code> if a matching patcher fix component could not be found
-	 */
-	@Override
-	public PatcherFixComponent fetchByName(String name) {
-		return fetchByName(name, true);
+		return _uniquePersistenceFinderByName.find(
+			finderCache, new Object[] {name});
 	}
 
 	/**
@@ -364,13 +339,13 @@ public class PatcherFixComponentPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByName = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByName",
-			new String[] {String.class.getName()}, new String[] {"name"}, false,
-			PatcherFixComponent::getName);
-
 		_uniquePersistenceFinderByName = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByName, _SQL_SELECT_PATCHERFIXCOMPONENT_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByName",
+				new String[] {String.class.getName()}, new String[] {"name"}, 0,
+				1, false, convertNullFunction(PatcherFixComponent::getName)),
+			_SQL_SELECT_PATCHERFIXCOMPONENT_WHERE, "",
 			new FinderColumn<>(
 				"patcherFixComponent.", "name", FinderColumn.Type.STRING, "=",
 				true, true, PatcherFixComponent::getName));
@@ -417,9 +392,6 @@ public class PatcherFixComponentPersistenceImpl
 	@Reference
 	protected FinderCache finderCache;
 
-	private static final String _ENTITY_ALIAS_PREFIX =
-		PatcherFixComponentModelImpl.ENTITY_ALIAS + ".";
-
 	private static final String _SQL_SELECT_PATCHERFIXCOMPONENT =
 		"SELECT patcherFixComponent FROM PatcherFixComponent patcherFixComponent";
 
@@ -438,4 +410,4 @@ public class PatcherFixComponentPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-2061297823
+// LIFERAY-SERVICE-BUILDER-HASH:1385925766

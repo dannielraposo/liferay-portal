@@ -23,6 +23,22 @@ export default {
 	title: 'Design System/Components/Card',
 };
 
+const cardActions: React.ComponentProps<
+	typeof ClayCardWithHorizontal
+>['actions'] = [
+	{
+		label: 'clickable',
+		onClick: () => {
+			alert('you clicked!');
+		},
+	},
+	{type: 'divider'},
+	{
+		href: '#',
+		label: 'linkable',
+	},
+];
+
 function ClayCheckboxWithState(props: any) {
 	const [value, setValue] = React.useState<boolean>(false);
 	const checked = props.value || value;
@@ -39,7 +55,7 @@ function ClayCheckboxWithState(props: any) {
 		</ClayCheckbox>
 	);
 }
-export function CardWithInfo(args: any) {
+export function CardWithInfo(args: {disabled?: boolean}) {
 	const [value, setValue] = useState<boolean>(false);
 	const [radioValue, setRadioValue] = useState<string>('');
 
@@ -65,19 +81,7 @@ export function CardWithInfo(args: any) {
 
 				<div className="col-md-4">
 					<ClayCardWithInfo
-						actions={[
-							{
-								label: 'clickable',
-								onClick: () => {
-									alert('you clicked!');
-								},
-							},
-							{type: 'divider'},
-							{
-								href: '#',
-								label: 'linkable',
-							},
-						]}
+						actions={cardActions}
 						description="A cool description"
 						disabled={args.disabled}
 						href="#"
@@ -107,6 +111,7 @@ export function CardWithInfo(args: any) {
 					<ClayCard.Group label="Radio Card Group">
 						<ClayCardWithInfo
 							description="A cool description"
+							disabled={args.disabled}
 							labels={[
 								{
 									displayType: 'danger',
@@ -124,6 +129,7 @@ export function CardWithInfo(args: any) {
 
 						<ClayCardWithInfo
 							description="A cool description"
+							disabled={args.disabled}
 							labels={[
 								{
 									displayType: 'success',
@@ -212,6 +218,7 @@ CardWithInfoImage.args = {
 };
 export function CardWithHorizontal(args: any) {
 	const [value, setValue] = useState<boolean>(false);
+	const [longTextValue, setLongTextValue] = useState<boolean>(false);
 	const [radioValue, setRadioValue] = useState<string>('');
 
 	return (
@@ -226,19 +233,7 @@ export function CardWithHorizontal(args: any) {
 
 				<div className="col-md-4">
 					<ClayCardWithHorizontal
-						actions={[
-							{
-								label: 'clickable',
-								onClick: () => {
-									alert('you clicked!');
-								},
-							},
-							{type: 'divider'},
-							{
-								href: '#',
-								label: 'linkable',
-							},
-						]}
+						actions={cardActions}
 						disabled={args.disabled}
 						href="#"
 						onSelectChange={setValue}
@@ -246,24 +241,23 @@ export function CardWithHorizontal(args: any) {
 						title="Selectable Folder"
 					/>
 				</div>
+
+				<div className="col-md-4">
+					<ClayCardWithHorizontal
+						disabled={args.disabled}
+						href="#"
+						onSelectChange={setLongTextValue}
+						selected={longTextValue}
+						title="This Folder Has an Extremely Long Name That Wraps Onto Multiple Lines Instead of Being Truncated With an Ellipsis"
+						truncate={false}
+					/>
+				</div>
 			</div>
 			<div className="row">
 				<div className="col-md-12">
 					<ClayCard.Group label="Radio Card Group">
 						<ClayCardWithHorizontal
-							actions={[
-								{
-									label: 'clickable',
-									onClick: () => {
-										alert('you clicked!');
-									},
-								},
-								{type: 'divider'},
-								{
-									href: '#',
-									label: 'linkable',
-								},
-							]}
+							actions={cardActions}
 							disabled={args.disabled}
 							href="#"
 							onSelectChange={setRadioValue}
@@ -274,19 +268,7 @@ export function CardWithHorizontal(args: any) {
 						/>
 
 						<ClayCardWithHorizontal
-							actions={[
-								{
-									label: 'clickable',
-									onClick: () => {
-										alert('you clicked!');
-									},
-								},
-								{type: 'divider'},
-								{
-									href: '#',
-									label: 'linkable',
-								},
-							]}
+							actions={cardActions}
 							disabled={args.disabled}
 							href="#"
 							onSelectChange={setRadioValue}
@@ -294,6 +276,18 @@ export function CardWithHorizontal(args: any) {
 							selectableType="radio"
 							selected={radioValue === 'radio2'}
 							title="Radio Selectable Folder 2"
+						/>
+
+						<ClayCardWithHorizontal
+							actions={cardActions}
+							disabled={args.disabled}
+							href="#"
+							onSelectChange={setRadioValue}
+							radioProps={{name: 'cards', value: 'radio3'}}
+							selectableType="radio"
+							selected={radioValue === 'radio3'}
+							title="This Radio Folder Has an Extremely Long Name That Wraps Onto Multiple Lines Instead of Being Truncated With an Ellipsis"
+							truncate={false}
 						/>
 					</ClayCard.Group>
 				</div>
@@ -346,19 +340,7 @@ export function CardWithUser(args: any) {
 			<div className="row">
 				<div className="col-md-4">
 					<ClayCardWithUser
-						actions={[
-							{
-								label: 'clickable',
-								onClick: () => {
-									alert('you clicked!');
-								},
-							},
-							{type: 'divider'},
-							{
-								href: '#',
-								label: 'linkable',
-							},
-						]}
+						actions={cardActions}
 						description="Assistant to the regional manager"
 						disabled={args.disabled}
 						href="#"
@@ -372,7 +354,6 @@ export function CardWithUser(args: any) {
 				<div className="col-md-4">
 					<ClayCardWithUser
 						description="Assistant to the regional manager"
-						disabled={args.disabled}
 						name="Abraham Kuyper"
 						stickerTitle="User Icon"
 						userImageSrc="https://via.placeholder.com/256"

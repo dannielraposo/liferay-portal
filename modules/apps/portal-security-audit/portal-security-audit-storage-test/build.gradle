@@ -1,4 +1,6 @@
 dependencies {
+	testIntegrationImplementation project(":apps:account:account-api")
+	testIntegrationImplementation project(":apps:portal-security-audit:portal-security-audit-event-generators-api")
 	testIntegrationImplementation project(":apps:portal-security-audit:portal-security-audit-storage-api")
 	testIntegrationImplementation project(":apps:portal-security-audit:portal-security-audit-storage-service")
 	testIntegrationImplementation project(":test:arquillian-extension-junit-bridge")

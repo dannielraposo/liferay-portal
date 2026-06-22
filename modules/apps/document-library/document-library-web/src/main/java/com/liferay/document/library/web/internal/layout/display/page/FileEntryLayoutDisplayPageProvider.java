@@ -6,6 +6,7 @@
 package com.liferay.document.library.web.internal.layout.display.page;
 
 import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.friendly.url.constants.FriendlyURLEntryConstants;
 import com.liferay.friendly.url.info.item.provider.InfoItemFriendlyURLProvider;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
@@ -25,6 +26,7 @@ import com.liferay.portal.kernel.repository.LocalRepository;
 import com.liferay.portal.kernel.repository.RepositoryProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -82,7 +84,10 @@ public class FileEntryLayoutDisplayPageProvider
 
 		FriendlyURLEntry friendlyURLEntry =
 			_friendlyURLEntryLocalService.fetchFriendlyURLEntry(
-				groupId, FileEntry.class, urlTitle);
+				groupId, _classNameLocalService.getClassNameId(FileEntry.class),
+				FriendlyURLEntryConstants.
+					FRIENDLY_URL_ENTRY_PARENT_CLASS_PK_DEFAULT,
+				urlTitle);
 
 		if (friendlyURLEntry != null) {
 			return getLayoutDisplayPageObjectProvider(
@@ -153,6 +158,9 @@ public class FileEntryLayoutDisplayPageProvider
 			throw new RuntimeException(portalException);
 		}
 	}
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
 
 	@Reference
 	private DLAppLocalService _dlAppLocalService;

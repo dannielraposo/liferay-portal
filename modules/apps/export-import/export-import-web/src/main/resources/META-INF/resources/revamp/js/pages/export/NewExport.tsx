@@ -3,61 +3,152 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import {Form, Formik, FormikValues} from 'formik';
-import React from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import Footer from '../../components/Footer';
-import {DateFilterValues} from '../../components/date_filter';
-import {FormikDebug} from '../../components/forms/formik';
-import {flattenContentSelection} from '../../utils/flattenContentSelection';
 import {
-	PortletDataHandlerSection,
-	mockPortletDataHandlerSections,
-} from '../../utils/mockPortletDataHandlerSections';
+	DateFilterValues,
+	Range,
+	normalizeDateFilter,
+} from '../../components/date_filter';
+import {ContentSelection} from '../../components/forms/content_selector/ContentSelector';
+import {FormikDebug} from '../../components/forms/formik';
+import {
+	ExportPreviewParams,
+	getExportPreview,
+} from '../../services/getExportPreview';
+import {postExportProcess} from '../../services/postExportProcess';
+import {ExportPreview} from '../../types/exportImportPreview';
+import {toProcessRequestFlags} from '../../utils/contentSelection';
+import {toRequestPortletDataHandlers} from '../../utils/toRequestPortletDataHandlers';
 import DataSelection from './components/DataSelection';
+import {PageTreeModalConfiguration} from './components/PageTreeModal';
 import Setup from './components/Setup';
-
-interface NewExportProps {
-	backURL: string;
-	sections?: PortletDataHandlerSection[];
-}
 
 export function NewExport({
 	backURL,
-	sections = mockPortletDataHandlerSections,
-}: NewExportProps) {
-	const handleApplyFilter = (filterValues: DateFilterValues) => {
+	commentsAndRatingsEnabled = false,
+	exportPreview,
+	exportPreviewAPIURL,
+	exportProcessAPIURL,
+	lookAndFeelEnabled = false,
+	pageTreeModalConfiguration,
+}: {
+	backURL: string;
+	commentsAndRatingsEnabled?: boolean;
+	exportPreview?: ExportPreview;
+	exportPreviewAPIURL: string;
+	exportProcessAPIURL: string;
+	lookAndFeelEnabled?: boolean;
+	pageTreeModalConfiguration: PageTreeModalConfiguration;
+}) {
+	const [preview, setPreview] = useState<ExportPreview | undefined>(
+		exportPreview
+	);
+	const [error, setError] = useState<string | null>(null);
+	const [loading, setLoading] = useState(!exportPreview);
+	const initialPreviewRef = useRef<ExportPreview | undefined>(exportPreview);
 
-		// eslint-disable-next-line no-console
-		console.log('Filtering by:', filterValues);
+	const getPreview = useCallback(
+		(exportPreviewParams: ExportPreviewParams) => {
+			setLoading(true);
+			setError(null);
+
+			getExportPreview(exportPreviewParams).then((result) => {
+				if (result.error !== null) {
+					setError(result.error);
+				}
+				else {
+					setPreview(result.data);
+
+					if (!initialPreviewRef.current) {
+						initialPreviewRef.current = result.data;
+					}
+				}
+
+				setLoading(false);
+			});
+		},
+		[]
+	);
+
+	useEffect(() => {
+		if (exportPreview) {
+			return;
+		}
+
+		getPreview({url: exportPreviewAPIURL});
+	}, [exportPreview, exportPreviewAPIURL, getPreview]);
+
+	if (error) {
+		return <ClayAlert displayType="danger">{error}</ClayAlert>;
+	}
+
+	const sections = preview?.previewPortletDataHandlerSections ?? [];
+
+	const handleApplyFilter = (filterValues: DateFilterValues) => {
+		if (filterValues.range === Range.All && initialPreviewRef.current) {
+			setPreview(initialPreviewRef.current);
+
+			return;
+		}
+
+		getPreview({
+			query: normalizeDateFilter(filterValues),
+			url: exportPreviewAPIURL,
+		});
 	};
 
 	return (
 		<Formik
 			initialValues={{
 				contentSelection: undefined,
-				filename: '',
+				dateFilter: {range: Range.All} as DateFilterValues,
+				deletions: false,
+				name: '',
+				permissions: false,
 			}}
 			onSubmit={async (values) => {
-				const flatValues = flattenContentSelection({
-					contentSelection: values.contentSelection,
-					sections,
+				const contentSelection = values.contentSelection as
+					| ContentSelection
+					| undefined;
+
+				const result = await postExportProcess({
+					exportProcessRequest: {
+						...normalizeDateFilter(values.dateFilter),
+						...toProcessRequestFlags(contentSelection),
+						deletions: !!values.deletions,
+						name: values.name,
+						permissions: !!values.permissions,
+						requestPortletDataHandlers:
+							toRequestPortletDataHandlers(
+								sections,
+								values.contentSelection
+							),
+					},
+					url: exportProcessAPIURL,
 				});
 
-				// eslint-disable-next-line no-console
-				console.log({
-					contentSelection: values.contentSelection,
-					filename: values.filename,
-					flatValues,
-				});
+				if (result.error) {
+					Liferay.Util.openToast({
+						message: result.error,
+						type: 'danger',
+					});
+
+					return;
+				}
+
+				Liferay.Util.navigate(backURL);
 			}}
 			validate={(values: FormikValues) => {
 				const errors: {[key: string]: string} = {};
 
-				if (!values?.filename) {
-					errors.filename = Liferay.Language.get(
+				if (!values?.name) {
+					errors.name = Liferay.Language.get(
 						'this-field-is-required'
 					);
 				}
@@ -77,7 +168,13 @@ export function NewExport({
 					<Setup />
 
 					<DataSelection
+						commentsAndRatingsEnabled={commentsAndRatingsEnabled}
+						deletionCount={preview?.deletionCount}
+						itemsCount={preview?.additionCount}
+						loading={loading}
+						lookAndFeelEnabled={lookAndFeelEnabled}
 						onApplyFilter={handleApplyFilter}
+						pageTreeModalConfiguration={pageTreeModalConfiguration}
 						sections={sections}
 					/>
 

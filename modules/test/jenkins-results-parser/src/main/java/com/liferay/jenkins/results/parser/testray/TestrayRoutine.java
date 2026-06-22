@@ -91,7 +91,8 @@ public class TestrayRoutine {
 				_testrayServer.requestPost(
 					"/o/c/builds", requestJSONObject.toString()));
 
-			return getTestrayBuildByID(responseJSONObject.getLong("id"));
+			return TestrayFactory.newTestrayBuild(
+				this, responseJSONObject.getLong("id"));
 		}
 		catch (IOException ioException) {
 			throw new RuntimeException(
@@ -112,43 +113,35 @@ public class TestrayRoutine {
 	}
 
 	public TestrayBuild getTestrayBuildByID(long buildID) {
-		TestrayBuild testrayBuild = _testrayServer.getTestrayBuildByID(buildID);
-
-		if (testrayBuild != null) {
-			return testrayBuild;
-		}
-
-		String filter = JenkinsResultsParserUtil.combine(
-			"id eq '", String.valueOf(buildID), "' and ",
-			"r_routineToBuilds_c_routineId eq '", String.valueOf(getID()), "'");
-
-		try {
-			Set<JSONObject> entityJSONObjects = _testrayServer.requestGraphQL(
-				"builds", TestrayBuild.FIELD_NAMES, filter, null, 1, 1);
-
-			if (entityJSONObjects.isEmpty()) {
-				return null;
-			}
-
-			Iterator<JSONObject> iterator = entityJSONObjects.iterator();
-
-			return TestrayFactory.newTestrayBuild(this, iterator.next());
-		}
-		catch (IOException ioException) {
-			throw new RuntimeException(ioException);
-		}
+		return TestrayFactory.newTestrayBuild(_testrayServer, buildID);
 	}
 
-	public TestrayBuild getTestrayBuildByName(
-		String buildName, String... names) {
+	public TestrayBuild getTestrayBuildByName(String buildName) {
+		if (JenkinsResultsParserUtil.isNullOrEmpty(buildName)) {
+			return null;
+		}
 
-		String filter = JenkinsResultsParserUtil.combine(
-			"name eq '", buildName, "' and ",
-			"r_routineToBuilds_c_routineId eq '", String.valueOf(getID()), "'");
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("name eq '");
+		sb.append(buildName);
+		sb.append("'");
+
+		TestrayProject testrayProject = getTestrayProject();
+
+		if (testrayProject != null) {
+			sb.append(" and r_projectToBuilds_c_projectId eq '");
+			sb.append(testrayProject.getID());
+			sb.append("'");
+		}
+
+		sb.append(" and r_routineToBuilds_c_routineId eq '");
+		sb.append(getID());
+		sb.append("'");
 
 		try {
 			Set<JSONObject> entityJSONObjects = _testrayServer.requestGraphQL(
-				"builds", TestrayBuild.FIELD_NAMES, filter, null, 1, 1);
+				"builds", TestrayBuild.FIELD_NAMES, sb.toString(), null, 1, 1);
 
 			if (entityJSONObjects.isEmpty()) {
 				return null;
@@ -296,12 +289,13 @@ public class TestrayRoutine {
 
 		setTestrayServer(testrayServer);
 
-		String filter = JenkinsResultsParserUtil.combine(
+		String filterString = JenkinsResultsParserUtil.combine(
 			"id eq '", matcher.group("routineID"), "'");
 
 		try {
 			Set<JSONObject> entityJSONObjects = testrayServer.requestGraphQL(
-				"routines", TestrayRoutine.FIELD_NAMES, filter, null, 1, 1);
+				"routines", TestrayRoutine.FIELD_NAMES, filterString, null, 1,
+				1);
 
 			if (entityJSONObjects.isEmpty()) {
 				return;

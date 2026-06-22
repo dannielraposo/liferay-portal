@@ -618,7 +618,7 @@ export default withFormik({
 		const errors = {};
 
 		if (!values.name) {
-			errors.name = Liferay.Language.get('segment-name-is-required');
+			errors.name = Liferay.Language.get('name-is-required');
 		}
 
 		return errors;

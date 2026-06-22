@@ -56,26 +56,13 @@ public interface OAuth2AuthorizationLocalService
 	 *
 	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.oauth2.provider.service.impl.OAuth2AuthorizationLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the o auth2 authorization local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link OAuth2AuthorizationLocalServiceUtil} if injection and service tracking are not available.
 	 */
-
-	/**
-	 * @deprecated As of Mueller (7.2.x), replaced by {@link
-	 #addOAuth2Authorization(long, long, String, long,long,
-	 String, Date, Date, String, String, String, Date, Date)}
-	 */
-	@Deprecated
 	public OAuth2Authorization addOAuth2Authorization(
 		long companyId, long userId, String userName, long oAuth2ApplicationId,
 		long oAuth2ApplicationScopeAliasesId, String accessTokenContent,
 		Date accessTokenCreateDate, Date accessTokenExpirationDate,
-		String remoteIPInfo, String refreshTokenContent,
-		Date refreshTokenCreateDate, Date refreshTokenExpirationDate);
-
-	public OAuth2Authorization addOAuth2Authorization(
-		long companyId, long userId, String userName, long oAuth2ApplicationId,
-		long oAuth2ApplicationScopeAliasesId, String accessTokenContent,
-		Date accessTokenCreateDate, Date accessTokenExpirationDate,
-		String remoteHostInfo, String remoteIPInfo, String refreshTokenContent,
-		Date refreshTokenCreateDate, Date refreshTokenExpirationDate);
+		List<String> audiencesList, String remoteHostInfo, String remoteIPInfo,
+		String refreshTokenContent, Date refreshTokenCreateDate,
+		Date refreshTokenExpirationDate);
 
 	/**
 	 * Adds the o auth2 authorization to the database. Also notifies the appropriate model listeners.
@@ -404,4 +391,4 @@ public interface OAuth2AuthorizationLocalService
 		String refreshTokenContent, String rememberDeviceContent);
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1337510262
+// LIFERAY-SERVICE-BUILDER-HASH:-1819882809

@@ -13,13 +13,11 @@ import com.liferay.json.storage.model.impl.JSONStorageEntryModelImpl;
 import com.liferay.json.storage.service.persistence.JSONStorageEntryPersistence;
 import com.liferay.json.storage.service.persistence.JSONStorageEntryUtil;
 import com.liferay.json.storage.service.persistence.impl.constants.JSONStorePersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -84,73 +82,15 @@ public class JSONStorageEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCN_CPK;
-	private FinderPath _finderPathWithoutPaginationFindByCN_CPK;
-	private FinderPath _finderPathCountByCN_CPK;
-	private CollectionPersistenceFinder<JSONStorageEntry>
-		_collectionPersistenceFinderByCN_CPK;
-
-	/**
-	 * Returns all the json storage entries where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching json storage entries
-	 */
-	@Override
-	public List<JSONStorageEntry> findByCN_CPK(long classNameId, long classPK) {
-		return findByCN_CPK(
-			classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the json storage entries where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of json storage entries
-	 * @param end the upper bound of the range of json storage entries (not inclusive)
-	 * @return the range of matching json storage entries
-	 */
-	@Override
-	public List<JSONStorageEntry> findByCN_CPK(
-		long classNameId, long classPK, int start, int end) {
-
-		return findByCN_CPK(classNameId, classPK, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<JSONStorageEntry, NoSuchJSONStorageEntryException>
+			_collectionPersistenceFinderByCN_CPK;
 
 	/**
 	 * Returns an ordered range of all the json storage entries where classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of json storage entries
-	 * @param end the upper bound of the range of json storage entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching json storage entries
-	 */
-	@Override
-	public List<JSONStorageEntry> findByCN_CPK(
-		long classNameId, long classPK, int start, int end,
-		OrderByComparator<JSONStorageEntry> orderByComparator) {
-
-		return findByCN_CPK(
-			classNameId, classPK, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the json storage entries where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -167,14 +107,9 @@ public class JSONStorageEntryPersistenceImpl
 		OrderByComparator<JSONStorageEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JSONStorageEntry.class)) {
-
-			return _collectionPersistenceFinderByCN_CPK.find(
-				finderCache, new Object[] {classNameId, classPK}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCN_CPK.find(
+			finderCache, new Object[] {classNameId, classPK}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -192,16 +127,9 @@ public class JSONStorageEntryPersistenceImpl
 			OrderByComparator<JSONStorageEntry> orderByComparator)
 		throws NoSuchJSONStorageEntryException {
 
-		JSONStorageEntry jsonStorageEntry = fetchByCN_CPK_First(
-			classNameId, classPK, orderByComparator);
-
-		if (jsonStorageEntry != null) {
-			return jsonStorageEntry;
-		}
-
-		throw new NoSuchJSONStorageEntryException(
-			_collectionPersistenceFinderByCN_CPK.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {classNameId, classPK}));
+		return _collectionPersistenceFinderByCN_CPK.findFirst(
+			finderCache, new Object[] {classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -243,98 +171,19 @@ public class JSONStorageEntryPersistenceImpl
 	 */
 	@Override
 	public int countByCN_CPK(long classNameId, long classPK) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JSONStorageEntry.class)) {
-
-			return _collectionPersistenceFinderByCN_CPK.count(
-				finderCache, new Object[] {classNameId, classPK});
-		}
+		return _collectionPersistenceFinderByCN_CPK.count(
+			finderCache, new Object[] {classNameId, classPK});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_CN_I_T_VL;
-	private FinderPath _finderPathWithoutPaginationFindByC_CN_I_T_VL;
-	private FinderPath _finderPathCountByC_CN_I_T_VL;
-	private CollectionPersistenceFinder<JSONStorageEntry>
-		_collectionPersistenceFinderByC_CN_I_T_VL;
-
-	/**
-	 * Returns all the json storage entries where companyId = &#63; and classNameId = &#63; and index = &#63; and type = &#63; and valueLong = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param index the index
-	 * @param type the type
-	 * @param valueLong the value long
-	 * @return the matching json storage entries
-	 */
-	@Override
-	public List<JSONStorageEntry> findByC_CN_I_T_VL(
-		long companyId, long classNameId, int index, int type, long valueLong) {
-
-		return findByC_CN_I_T_VL(
-			companyId, classNameId, index, type, valueLong, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the json storage entries where companyId = &#63; and classNameId = &#63; and index = &#63; and type = &#63; and valueLong = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param index the index
-	 * @param type the type
-	 * @param valueLong the value long
-	 * @param start the lower bound of the range of json storage entries
-	 * @param end the upper bound of the range of json storage entries (not inclusive)
-	 * @return the range of matching json storage entries
-	 */
-	@Override
-	public List<JSONStorageEntry> findByC_CN_I_T_VL(
-		long companyId, long classNameId, int index, int type, long valueLong,
-		int start, int end) {
-
-		return findByC_CN_I_T_VL(
-			companyId, classNameId, index, type, valueLong, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<JSONStorageEntry, NoSuchJSONStorageEntryException>
+			_collectionPersistenceFinderByC_CN_I_T_VL;
 
 	/**
 	 * Returns an ordered range of all the json storage entries where companyId = &#63; and classNameId = &#63; and index = &#63; and type = &#63; and valueLong = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param index the index
-	 * @param type the type
-	 * @param valueLong the value long
-	 * @param start the lower bound of the range of json storage entries
-	 * @param end the upper bound of the range of json storage entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching json storage entries
-	 */
-	@Override
-	public List<JSONStorageEntry> findByC_CN_I_T_VL(
-		long companyId, long classNameId, int index, int type, long valueLong,
-		int start, int end,
-		OrderByComparator<JSONStorageEntry> orderByComparator) {
-
-		return findByC_CN_I_T_VL(
-			companyId, classNameId, index, type, valueLong, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the json storage entries where companyId = &#63; and classNameId = &#63; and index = &#63; and type = &#63; and valueLong = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -355,15 +204,10 @@ public class JSONStorageEntryPersistenceImpl
 		OrderByComparator<JSONStorageEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JSONStorageEntry.class)) {
-
-			return _collectionPersistenceFinderByC_CN_I_T_VL.find(
-				finderCache,
-				new Object[] {companyId, classNameId, index, type, valueLong},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_CN_I_T_VL.find(
+			finderCache,
+			new Object[] {companyId, classNameId, index, type, valueLong},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -385,17 +229,10 @@ public class JSONStorageEntryPersistenceImpl
 			OrderByComparator<JSONStorageEntry> orderByComparator)
 		throws NoSuchJSONStorageEntryException {
 
-		JSONStorageEntry jsonStorageEntry = fetchByC_CN_I_T_VL_First(
-			companyId, classNameId, index, type, valueLong, orderByComparator);
-
-		if (jsonStorageEntry != null) {
-			return jsonStorageEntry;
-		}
-
-		throw new NoSuchJSONStorageEntryException(
-			_collectionPersistenceFinderByC_CN_I_T_VL.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, classNameId, index, type, valueLong}));
+		return _collectionPersistenceFinderByC_CN_I_T_VL.findFirst(
+			finderCache,
+			new Object[] {companyId, classNameId, index, type, valueLong},
+			orderByComparator);
 	}
 
 	/**
@@ -452,100 +289,20 @@ public class JSONStorageEntryPersistenceImpl
 	public int countByC_CN_I_T_VL(
 		long companyId, long classNameId, int index, int type, long valueLong) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JSONStorageEntry.class)) {
-
-			return _collectionPersistenceFinderByC_CN_I_T_VL.count(
-				finderCache,
-				new Object[] {companyId, classNameId, index, type, valueLong});
-		}
+		return _collectionPersistenceFinderByC_CN_I_T_VL.count(
+			finderCache,
+			new Object[] {companyId, classNameId, index, type, valueLong});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_CN_K_T_VL;
-	private FinderPath _finderPathWithoutPaginationFindByC_CN_K_T_VL;
-	private FinderPath _finderPathCountByC_CN_K_T_VL;
-	private CollectionPersistenceFinder<JSONStorageEntry>
-		_collectionPersistenceFinderByC_CN_K_T_VL;
-
-	/**
-	 * Returns all the json storage entries where companyId = &#63; and classNameId = &#63; and key = &#63; and type = &#63; and valueLong = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param key the key
-	 * @param type the type
-	 * @param valueLong the value long
-	 * @return the matching json storage entries
-	 */
-	@Override
-	public List<JSONStorageEntry> findByC_CN_K_T_VL(
-		long companyId, long classNameId, String key, int type,
-		long valueLong) {
-
-		return findByC_CN_K_T_VL(
-			companyId, classNameId, key, type, valueLong, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the json storage entries where companyId = &#63; and classNameId = &#63; and key = &#63; and type = &#63; and valueLong = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param key the key
-	 * @param type the type
-	 * @param valueLong the value long
-	 * @param start the lower bound of the range of json storage entries
-	 * @param end the upper bound of the range of json storage entries (not inclusive)
-	 * @return the range of matching json storage entries
-	 */
-	@Override
-	public List<JSONStorageEntry> findByC_CN_K_T_VL(
-		long companyId, long classNameId, String key, int type, long valueLong,
-		int start, int end) {
-
-		return findByC_CN_K_T_VL(
-			companyId, classNameId, key, type, valueLong, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<JSONStorageEntry, NoSuchJSONStorageEntryException>
+			_collectionPersistenceFinderByC_CN_K_T_VL;
 
 	/**
 	 * Returns an ordered range of all the json storage entries where companyId = &#63; and classNameId = &#63; and key = &#63; and type = &#63; and valueLong = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param key the key
-	 * @param type the type
-	 * @param valueLong the value long
-	 * @param start the lower bound of the range of json storage entries
-	 * @param end the upper bound of the range of json storage entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching json storage entries
-	 */
-	@Override
-	public List<JSONStorageEntry> findByC_CN_K_T_VL(
-		long companyId, long classNameId, String key, int type, long valueLong,
-		int start, int end,
-		OrderByComparator<JSONStorageEntry> orderByComparator) {
-
-		return findByC_CN_K_T_VL(
-			companyId, classNameId, key, type, valueLong, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the json storage entries where companyId = &#63; and classNameId = &#63; and key = &#63; and type = &#63; and valueLong = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JSONStorageEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -566,15 +323,10 @@ public class JSONStorageEntryPersistenceImpl
 		OrderByComparator<JSONStorageEntry> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JSONStorageEntry.class)) {
-
-			return _collectionPersistenceFinderByC_CN_K_T_VL.find(
-				finderCache,
-				new Object[] {companyId, classNameId, key, type, valueLong},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_CN_K_T_VL.find(
+			finderCache,
+			new Object[] {companyId, classNameId, key, type, valueLong}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -596,17 +348,10 @@ public class JSONStorageEntryPersistenceImpl
 			OrderByComparator<JSONStorageEntry> orderByComparator)
 		throws NoSuchJSONStorageEntryException {
 
-		JSONStorageEntry jsonStorageEntry = fetchByC_CN_K_T_VL_First(
-			companyId, classNameId, key, type, valueLong, orderByComparator);
-
-		if (jsonStorageEntry != null) {
-			return jsonStorageEntry;
-		}
-
-		throw new NoSuchJSONStorageEntryException(
-			_collectionPersistenceFinderByC_CN_K_T_VL.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, classNameId, key, type, valueLong}));
+		return _collectionPersistenceFinderByC_CN_K_T_VL.findFirst(
+			finderCache,
+			new Object[] {companyId, classNameId, key, type, valueLong},
+			orderByComparator);
 	}
 
 	/**
@@ -665,19 +410,14 @@ public class JSONStorageEntryPersistenceImpl
 		long companyId, long classNameId, String key, int type,
 		long valueLong) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JSONStorageEntry.class)) {
-
-			return _collectionPersistenceFinderByC_CN_K_T_VL.count(
-				finderCache,
-				new Object[] {companyId, classNameId, key, type, valueLong});
-		}
+		return _collectionPersistenceFinderByC_CN_K_T_VL.count(
+			finderCache,
+			new Object[] {companyId, classNameId, key, type, valueLong});
 	}
 
-	private FinderPath _finderPathFetchByCN_CPK_P_I_K;
-	private UniquePersistenceFinder<JSONStorageEntry>
-		_uniquePersistenceFinderByCN_CPK_P_I_K;
+	private UniquePersistenceFinder
+		<JSONStorageEntry, NoSuchJSONStorageEntryException>
+			_uniquePersistenceFinderByCN_CPK_P_I_K;
 
 	/**
 	 * Returns the json storage entry where classNameId = &#63; and classPK = &#63; and parentJSONStorageEntryId = &#63; and index = &#63; and key = &#63; or throws a <code>NoSuchJSONStorageEntryException</code> if it could not be found.
@@ -696,45 +436,11 @@ public class JSONStorageEntryPersistenceImpl
 			int index, String key)
 		throws NoSuchJSONStorageEntryException {
 
-		JSONStorageEntry jsonStorageEntry = fetchByCN_CPK_P_I_K(
-			classNameId, classPK, parentJSONStorageEntryId, index, key);
-
-		if (jsonStorageEntry == null) {
-			String message =
-				_uniquePersistenceFinderByCN_CPK_P_I_K.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {
-						classNameId, classPK, parentJSONStorageEntryId, index,
-						key
-					});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchJSONStorageEntryException(message);
-		}
-
-		return jsonStorageEntry;
-	}
-
-	/**
-	 * Returns the json storage entry where classNameId = &#63; and classPK = &#63; and parentJSONStorageEntryId = &#63; and index = &#63; and key = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param parentJSONStorageEntryId the parent json storage entry ID
-	 * @param index the index
-	 * @param key the key
-	 * @return the matching json storage entry, or <code>null</code> if a matching json storage entry could not be found
-	 */
-	@Override
-	public JSONStorageEntry fetchByCN_CPK_P_I_K(
-		long classNameId, long classPK, long parentJSONStorageEntryId,
-		int index, String key) {
-
-		return fetchByCN_CPK_P_I_K(
-			classNameId, classPK, parentJSONStorageEntryId, index, key, true);
+		return _uniquePersistenceFinderByCN_CPK_P_I_K.find(
+			finderCache,
+			new Object[] {
+				classNameId, classPK, parentJSONStorageEntryId, index, key
+			});
 	}
 
 	/**
@@ -753,17 +459,12 @@ public class JSONStorageEntryPersistenceImpl
 		long classNameId, long classPK, long parentJSONStorageEntryId,
 		int index, String key, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JSONStorageEntry.class)) {
-
-			return _uniquePersistenceFinderByCN_CPK_P_I_K.fetch(
-				finderCache,
-				new Object[] {
-					classNameId, classPK, parentJSONStorageEntryId, index, key
-				},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByCN_CPK_P_I_K.fetch(
+			finderCache,
+			new Object[] {
+				classNameId, classPK, parentJSONStorageEntryId, index, key
+			},
+			useFinderCache);
 	}
 
 	/**
@@ -1077,196 +778,199 @@ public class JSONStorageEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByCN_CPK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCN_CPK",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathWithoutPaginationFindByCN_CPK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCN_CPK",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathCountByCN_CPK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCN_CPK",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, false);
-
 		_collectionPersistenceFinderByCN_CPK =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCN_CPK,
-				_finderPathWithoutPaginationFindByCN_CPK,
-				_finderPathCountByCN_CPK, _SQL_SELECT_JSONSTORAGEENTRY_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCN_CPK",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"classNameId", "classPK"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCN_CPK",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"classNameId", "classPK"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCN_CPK",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"classNameId", "classPK"}, false),
+				_SQL_SELECT_JSONSTORAGEENTRY_WHERE,
 				_SQL_COUNT_JSONSTORAGEENTRY_WHERE,
 				JSONStorageEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"jsonStorageEntry.", "classNameId", FinderColumn.Type.LONG,
-					"=", true, false, JSONStorageEntry::getClassNameId),
+					"=", true, true, JSONStorageEntry::getClassNameId),
 				new FinderColumn<>(
 					"jsonStorageEntry.", "classPK", FinderColumn.Type.LONG, "=",
 					true, true, JSONStorageEntry::getClassPK));
 
-		_finderPathWithPaginationFindByC_CN_I_T_VL = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_CN_I_T_VL",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {
-				"companyId", "classNameId", "index_", "type_", "valueLong"
-			},
-			true);
-
-		_finderPathWithoutPaginationFindByC_CN_I_T_VL = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_CN_I_T_VL",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Long.class.getName()
-			},
-			new String[] {
-				"companyId", "classNameId", "index_", "type_", "valueLong"
-			},
-			true);
-
-		_finderPathCountByC_CN_I_T_VL = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_CN_I_T_VL",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Long.class.getName()
-			},
-			new String[] {
-				"companyId", "classNameId", "index_", "type_", "valueLong"
-			},
-			false);
-
 		_collectionPersistenceFinderByC_CN_I_T_VL =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByC_CN_I_T_VL,
-				_finderPathWithoutPaginationFindByC_CN_I_T_VL,
-				_finderPathCountByC_CN_I_T_VL,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_CN_I_T_VL",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"companyId", "classNameId", "index_", "type_",
+						"valueLong"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByC_CN_I_T_VL",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {
+						"companyId", "classNameId", "index_", "type_",
+						"valueLong"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByC_CN_I_T_VL",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {
+						"companyId", "classNameId", "index_", "type_",
+						"valueLong"
+					},
+					false),
 				_SQL_SELECT_JSONSTORAGEENTRY_WHERE,
 				_SQL_COUNT_JSONSTORAGEENTRY_WHERE,
 				JSONStorageEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"jsonStorageEntry.", "companyId", FinderColumn.Type.LONG,
-					"=", true, false, JSONStorageEntry::getCompanyId),
+					"=", true, true, JSONStorageEntry::getCompanyId),
 				new FinderColumn<>(
 					"jsonStorageEntry.", "classNameId", FinderColumn.Type.LONG,
-					"=", true, false, JSONStorageEntry::getClassNameId),
+					"=", true, true, JSONStorageEntry::getClassNameId),
 				new FinderColumn<>(
-					"jsonStorageEntry.", "index", FinderColumn.Type.INTEGER,
-					"=", true, false, JSONStorageEntry::getIndex),
+					"jsonStorageEntry.", "index", "index_",
+					FinderColumn.Type.INTEGER, "=", true, true,
+					JSONStorageEntry::getIndex),
 				new FinderColumn<>(
-					"jsonStorageEntry.", "type", FinderColumn.Type.INTEGER, "=",
-					true, false, JSONStorageEntry::getType),
+					"jsonStorageEntry.", "type", "type_",
+					FinderColumn.Type.INTEGER, "=", true, true,
+					JSONStorageEntry::getType),
 				new FinderColumn<>(
 					"jsonStorageEntry.", "valueLong", FinderColumn.Type.LONG,
 					"=", true, true, JSONStorageEntry::getValueLong));
-
-		_finderPathWithPaginationFindByC_CN_K_T_VL = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_CN_K_T_VL",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {
-				"companyId", "classNameId", "key_", "type_", "valueLong"
-			},
-			true);
-
-		_finderPathWithoutPaginationFindByC_CN_K_T_VL = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_CN_K_T_VL",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Long.class.getName()
-			},
-			new String[] {
-				"companyId", "classNameId", "key_", "type_", "valueLong"
-			},
-			true);
-
-		_finderPathCountByC_CN_K_T_VL = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_CN_K_T_VL",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Long.class.getName()
-			},
-			new String[] {
-				"companyId", "classNameId", "key_", "type_", "valueLong"
-			},
-			false);
 
 		_collectionPersistenceFinderByC_CN_K_T_VL =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByC_CN_K_T_VL,
-				_finderPathWithoutPaginationFindByC_CN_K_T_VL,
-				_finderPathCountByC_CN_K_T_VL,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_CN_K_T_VL",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"companyId", "classNameId", "key_", "type_", "valueLong"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByC_CN_K_T_VL",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {
+						"companyId", "classNameId", "key_", "type_", "valueLong"
+					},
+					0, 4, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByC_CN_K_T_VL",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Long.class.getName()
+					},
+					new String[] {
+						"companyId", "classNameId", "key_", "type_", "valueLong"
+					},
+					0, 4, false, null),
 				_SQL_SELECT_JSONSTORAGEENTRY_WHERE,
 				_SQL_COUNT_JSONSTORAGEENTRY_WHERE,
 				JSONStorageEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"jsonStorageEntry.", "companyId", FinderColumn.Type.LONG,
-					"=", true, false, JSONStorageEntry::getCompanyId),
+					"=", true, true, JSONStorageEntry::getCompanyId),
 				new FinderColumn<>(
 					"jsonStorageEntry.", "classNameId", FinderColumn.Type.LONG,
-					"=", true, false, JSONStorageEntry::getClassNameId),
+					"=", true, true, JSONStorageEntry::getClassNameId),
 				new FinderColumn<>(
-					"jsonStorageEntry.", "key", FinderColumn.Type.STRING, "=",
-					true, false, JSONStorageEntry::getKey),
+					"jsonStorageEntry.", "key", "key_",
+					FinderColumn.Type.STRING, "=", true, true,
+					JSONStorageEntry::getKey),
 				new FinderColumn<>(
-					"jsonStorageEntry.", "type", FinderColumn.Type.INTEGER, "=",
-					true, false, JSONStorageEntry::getType),
+					"jsonStorageEntry.", "type", "type_",
+					FinderColumn.Type.INTEGER, "=", true, true,
+					JSONStorageEntry::getType),
 				new FinderColumn<>(
 					"jsonStorageEntry.", "valueLong", FinderColumn.Type.LONG,
 					"=", true, true, JSONStorageEntry::getValueLong));
 
-		_finderPathFetchByCN_CPK_P_I_K = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByCN_CPK_P_I_K",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				String.class.getName()
-			},
-			new String[] {
-				"classNameId", "classPK", "parentJSONStorageEntryId", "index_",
-				"key_"
-			},
-			false, JSONStorageEntry::getClassNameId,
-			JSONStorageEntry::getClassPK,
-			JSONStorageEntry::getParentJSONStorageEntryId,
-			JSONStorageEntry::getIndex, JSONStorageEntry::getKey);
-
 		_uniquePersistenceFinderByCN_CPK_P_I_K = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByCN_CPK_P_I_K,
-			_SQL_SELECT_JSONSTORAGEENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByCN_CPK_P_I_K",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName(), Integer.class.getName(),
+					String.class.getName()
+				},
+				new String[] {
+					"classNameId", "classPK", "parentJSONStorageEntryId",
+					"index_", "key_"
+				},
+				0, 16, false, JSONStorageEntry::getClassNameId,
+				JSONStorageEntry::getClassPK,
+				JSONStorageEntry::getParentJSONStorageEntryId,
+				JSONStorageEntry::getIndex,
+				convertNullFunction(JSONStorageEntry::getKey)),
+			_SQL_SELECT_JSONSTORAGEENTRY_WHERE, "",
 			new FinderColumn<>(
 				"jsonStorageEntry.", "classNameId", FinderColumn.Type.LONG, "=",
-				true, false, JSONStorageEntry::getClassNameId),
+				true, true, JSONStorageEntry::getClassNameId),
 			new FinderColumn<>(
 				"jsonStorageEntry.", "classPK", FinderColumn.Type.LONG, "=",
-				true, false, JSONStorageEntry::getClassPK),
+				true, true, JSONStorageEntry::getClassPK),
 			new FinderColumn<>(
 				"jsonStorageEntry.", "parentJSONStorageEntryId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				JSONStorageEntry::getParentJSONStorageEntryId),
 			new FinderColumn<>(
-				"jsonStorageEntry.", "index", FinderColumn.Type.INTEGER, "=",
-				true, false, JSONStorageEntry::getIndex),
+				"jsonStorageEntry.", "index", "index_",
+				FinderColumn.Type.INTEGER, "=", true, true,
+				JSONStorageEntry::getIndex),
 			new FinderColumn<>(
-				"jsonStorageEntry.", "key", FinderColumn.Type.STRING, "=", true,
-				true, JSONStorageEntry::getKey));
+				"jsonStorageEntry.", "key", "key_", FinderColumn.Type.STRING,
+				"=", true, true, JSONStorageEntry::getKey));
 
 		JSONStorageEntryUtil.setPersistence(this);
 	}
@@ -1340,4 +1044,4 @@ public class JSONStorageEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:197721774
+// LIFERAY-SERVICE-BUILDER-HASH:-888314202

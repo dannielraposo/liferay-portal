@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -82,68 +81,15 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CPDVirtualSettingFileEntry>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the cpd virtual setting file entries where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cpd virtual setting file entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cpd virtual setting file entries
-	 * @param end the upper bound of the range of cpd virtual setting file entries (not inclusive)
-	 * @return the range of matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDVirtualSettingFileEntry, NoSuchCPDVirtualSettingFileEntryException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the cpd virtual setting file entries where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cpd virtual setting file entries
-	 * @param end the upper bound of the range of cpd virtual setting file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CPDVirtualSettingFileEntry> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cpd virtual setting file entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -178,16 +124,8 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 			OrderByComparator<CPDVirtualSettingFileEntry> orderByComparator)
 		throws NoSuchCPDVirtualSettingFileEntryException {
 
-		CPDVirtualSettingFileEntry cpdVirtualSettingFileEntry =
-			fetchByUuid_First(uuid, orderByComparator);
-
-		if (cpdVirtualSettingFileEntry != null) {
-			return cpdVirtualSettingFileEntry;
-		}
-
-		throw new NoSuchCPDVirtualSettingFileEntryException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -229,9 +167,9 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<CPDVirtualSettingFileEntry>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<CPDVirtualSettingFileEntry, NoSuchCPDVirtualSettingFileEntryException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the cpd virtual setting file entry where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchCPDVirtualSettingFileEntryException</code> if it could not be found.
@@ -245,34 +183,8 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 	public CPDVirtualSettingFileEntry findByUUID_G(String uuid, long groupId)
 		throws NoSuchCPDVirtualSettingFileEntryException {
 
-		CPDVirtualSettingFileEntry cpdVirtualSettingFileEntry = fetchByUUID_G(
-			uuid, groupId);
-
-		if (cpdVirtualSettingFileEntry == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPDVirtualSettingFileEntryException(message);
-		}
-
-		return cpdVirtualSettingFileEntry;
-	}
-
-	/**
-	 * Returns the cpd virtual setting file entry where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching cpd virtual setting file entry, or <code>null</code> if a matching cpd virtual setting file entry could not be found
-	 */
-	@Override
-	public CPDVirtualSettingFileEntry fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -321,75 +233,15 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CPDVirtualSettingFileEntry>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the cpd virtual setting file entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cpd virtual setting file entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cpd virtual setting file entries
-	 * @param end the upper bound of the range of cpd virtual setting file entries (not inclusive)
-	 * @return the range of matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDVirtualSettingFileEntry, NoSuchCPDVirtualSettingFileEntryException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the cpd virtual setting file entries where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cpd virtual setting file entries
-	 * @param end the upper bound of the range of cpd virtual setting file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CPDVirtualSettingFileEntry> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cpd virtual setting file entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -426,16 +278,8 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 			OrderByComparator<CPDVirtualSettingFileEntry> orderByComparator)
 		throws NoSuchCPDVirtualSettingFileEntryException {
 
-		CPDVirtualSettingFileEntry cpdVirtualSettingFileEntry =
-			fetchByUuid_C_First(uuid, companyId, orderByComparator);
-
-		if (cpdVirtualSettingFileEntry != null) {
-			return cpdVirtualSettingFileEntry;
-		}
-
-		throw new NoSuchCPDVirtualSettingFileEntryException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -480,76 +324,15 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath
-		_finderPathWithPaginationFindByCPDefinitionVirtualSettingId;
-	private FinderPath
-		_finderPathWithoutPaginationFindByCPDefinitionVirtualSettingId;
-	private FinderPath _finderPathCountByCPDefinitionVirtualSettingId;
-	private CollectionPersistenceFinder<CPDVirtualSettingFileEntry>
-		_collectionPersistenceFinderByCPDefinitionVirtualSettingId;
-
-	/**
-	 * Returns all the cpd virtual setting file entries where CPDefinitionVirtualSettingId = &#63;.
-	 *
-	 * @param CPDefinitionVirtualSettingId the cp definition virtual setting ID
-	 * @return the matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByCPDefinitionVirtualSettingId(
-		long CPDefinitionVirtualSettingId) {
-
-		return findByCPDefinitionVirtualSettingId(
-			CPDefinitionVirtualSettingId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the cpd virtual setting file entries where CPDefinitionVirtualSettingId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionVirtualSettingId the cp definition virtual setting ID
-	 * @param start the lower bound of the range of cpd virtual setting file entries
-	 * @param end the upper bound of the range of cpd virtual setting file entries (not inclusive)
-	 * @return the range of matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByCPDefinitionVirtualSettingId(
-		long CPDefinitionVirtualSettingId, int start, int end) {
-
-		return findByCPDefinitionVirtualSettingId(
-			CPDefinitionVirtualSettingId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDVirtualSettingFileEntry, NoSuchCPDVirtualSettingFileEntryException>
+			_collectionPersistenceFinderByCPDefinitionVirtualSettingId;
 
 	/**
 	 * Returns an ordered range of all the cpd virtual setting file entries where CPDefinitionVirtualSettingId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param CPDefinitionVirtualSettingId the cp definition virtual setting ID
-	 * @param start the lower bound of the range of cpd virtual setting file entries
-	 * @param end the upper bound of the range of cpd virtual setting file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByCPDefinitionVirtualSettingId(
-		long CPDefinitionVirtualSettingId, int start, int end,
-		OrderByComparator<CPDVirtualSettingFileEntry> orderByComparator) {
-
-		return findByCPDefinitionVirtualSettingId(
-			CPDefinitionVirtualSettingId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cpd virtual setting file entries where CPDefinitionVirtualSettingId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param CPDefinitionVirtualSettingId the cp definition virtual setting ID
@@ -584,19 +367,10 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 			OrderByComparator<CPDVirtualSettingFileEntry> orderByComparator)
 		throws NoSuchCPDVirtualSettingFileEntryException {
 
-		CPDVirtualSettingFileEntry cpdVirtualSettingFileEntry =
-			fetchByCPDefinitionVirtualSettingId_First(
-				CPDefinitionVirtualSettingId, orderByComparator);
-
-		if (cpdVirtualSettingFileEntry != null) {
-			return cpdVirtualSettingFileEntry;
-		}
-
-		throw new NoSuchCPDVirtualSettingFileEntryException(
-			_collectionPersistenceFinderByCPDefinitionVirtualSettingId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {CPDefinitionVirtualSettingId}));
+		return _collectionPersistenceFinderByCPDefinitionVirtualSettingId.
+			findFirst(
+				finderCache, new Object[] {CPDefinitionVirtualSettingId},
+				orderByComparator);
 	}
 
 	/**
@@ -644,72 +418,15 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 			finderCache, new Object[] {CPDefinitionVirtualSettingId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByFileEntryId;
-	private FinderPath _finderPathWithoutPaginationFindByFileEntryId;
-	private FinderPath _finderPathCountByFileEntryId;
-	private CollectionPersistenceFinder<CPDVirtualSettingFileEntry>
-		_collectionPersistenceFinderByFileEntryId;
-
-	/**
-	 * Returns all the cpd virtual setting file entries where fileEntryId = &#63;.
-	 *
-	 * @param fileEntryId the file entry ID
-	 * @return the matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByFileEntryId(
-		long fileEntryId) {
-
-		return findByFileEntryId(
-			fileEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cpd virtual setting file entries where fileEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fileEntryId the file entry ID
-	 * @param start the lower bound of the range of cpd virtual setting file entries
-	 * @param end the upper bound of the range of cpd virtual setting file entries (not inclusive)
-	 * @return the range of matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByFileEntryId(
-		long fileEntryId, int start, int end) {
-
-		return findByFileEntryId(fileEntryId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDVirtualSettingFileEntry, NoSuchCPDVirtualSettingFileEntryException>
+			_collectionPersistenceFinderByFileEntryId;
 
 	/**
 	 * Returns an ordered range of all the cpd virtual setting file entries where fileEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fileEntryId the file entry ID
-	 * @param start the lower bound of the range of cpd virtual setting file entries
-	 * @param end the upper bound of the range of cpd virtual setting file entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cpd virtual setting file entries
-	 */
-	@Override
-	public List<CPDVirtualSettingFileEntry> findByFileEntryId(
-		long fileEntryId, int start, int end,
-		OrderByComparator<CPDVirtualSettingFileEntry> orderByComparator) {
-
-		return findByFileEntryId(
-			fileEntryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cpd virtual setting file entries where fileEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDVirtualSettingFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param fileEntryId the file entry ID
@@ -744,16 +461,8 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 			OrderByComparator<CPDVirtualSettingFileEntry> orderByComparator)
 		throws NoSuchCPDVirtualSettingFileEntryException {
 
-		CPDVirtualSettingFileEntry cpdVirtualSettingFileEntry =
-			fetchByFileEntryId_First(fileEntryId, orderByComparator);
-
-		if (cpdVirtualSettingFileEntry != null) {
-			return cpdVirtualSettingFileEntry;
-		}
-
-		throw new NoSuchCPDVirtualSettingFileEntryException(
-			_collectionPersistenceFinderByFileEntryId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {fileEntryId}));
+		return _collectionPersistenceFinderByFileEntryId.findFirst(
+			finderCache, new Object[] {fileEntryId}, orderByComparator);
 	}
 
 	/**
@@ -1041,123 +750,108 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_CPDVIRTUALSETTINGFILEENTRY_WHERE,
 			_SQL_COUNT_CPDVIRTUALSETTINGFILEENTRY_WHERE,
 			CPDVirtualSettingFileEntryModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"cpdVirtualSettingFileEntry.", "uuid", FinderColumn.Type.STRING,
-				"=", true, true, CPDVirtualSettingFileEntry::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			CPDVirtualSettingFileEntry::getUuid,
-			CPDVirtualSettingFileEntry::getGroupId);
+				"cpdVirtualSettingFileEntry.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPDVirtualSettingFileEntry::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_CPDVIRTUALSETTINGFILEENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(CPDVirtualSettingFileEntry::getUuid),
+				CPDVirtualSettingFileEntry::getGroupId),
+			_SQL_SELECT_CPDVIRTUALSETTINGFILEENTRY_WHERE, "",
 			new FinderColumn<>(
-				"cpdVirtualSettingFileEntry.", "uuid", FinderColumn.Type.STRING,
-				"=", true, false, CPDVirtualSettingFileEntry::getUuid),
+				"cpdVirtualSettingFileEntry.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CPDVirtualSettingFileEntry::getUuid),
 			new FinderColumn<>(
 				"cpdVirtualSettingFileEntry.", "groupId",
 				FinderColumn.Type.LONG, "=", true, true,
 				CPDVirtualSettingFileEntry::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_CPDVIRTUALSETTINGFILEENTRY_WHERE,
 				_SQL_COUNT_CPDVIRTUALSETTINGFILEENTRY_WHERE,
 				CPDVirtualSettingFileEntryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"cpdVirtualSettingFileEntry.", "uuid",
-					FinderColumn.Type.STRING, "=", true, false,
+					"cpdVirtualSettingFileEntry.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
 					CPDVirtualSettingFileEntry::getUuid),
 				new FinderColumn<>(
 					"cpdVirtualSettingFileEntry.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CPDVirtualSettingFileEntry::getCompanyId));
 
-		_finderPathWithPaginationFindByCPDefinitionVirtualSettingId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-				"findByCPDefinitionVirtualSettingId",
-				new String[] {
-					Long.class.getName(), Integer.class.getName(),
-					Integer.class.getName(), OrderByComparator.class.getName()
-				},
-				new String[] {"CPDefinitionVirtualSettingId"}, true);
-
-		_finderPathWithoutPaginationFindByCPDefinitionVirtualSettingId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByCPDefinitionVirtualSettingId",
-				new String[] {Long.class.getName()},
-				new String[] {"CPDefinitionVirtualSettingId"}, true);
-
-		_finderPathCountByCPDefinitionVirtualSettingId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCPDefinitionVirtualSettingId",
-			new String[] {Long.class.getName()},
-			new String[] {"CPDefinitionVirtualSettingId"}, false);
-
 		_collectionPersistenceFinderByCPDefinitionVirtualSettingId =
 			new CollectionPersistenceFinder<>(
 				this,
-				_finderPathWithPaginationFindByCPDefinitionVirtualSettingId,
-				_finderPathWithoutPaginationFindByCPDefinitionVirtualSettingId,
-				_finderPathCountByCPDefinitionVirtualSettingId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCPDefinitionVirtualSettingId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CPDefinitionVirtualSettingId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCPDefinitionVirtualSettingId",
+					new String[] {Long.class.getName()},
+					new String[] {"CPDefinitionVirtualSettingId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCPDefinitionVirtualSettingId",
+					new String[] {Long.class.getName()},
+					new String[] {"CPDefinitionVirtualSettingId"}, false),
 				_SQL_SELECT_CPDVIRTUALSETTINGFILEENTRY_WHERE,
 				_SQL_COUNT_CPDVIRTUALSETTINGFILEENTRY_WHERE,
 				CPDVirtualSettingFileEntryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpdVirtualSettingFileEntry.",
 					"CPDefinitionVirtualSettingId", FinderColumn.Type.LONG, "=",
@@ -1165,33 +859,29 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 					CPDVirtualSettingFileEntry::
 						getCPDefinitionVirtualSettingId));
 
-		_finderPathWithPaginationFindByFileEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByFileEntryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"fileEntryId"}, true);
-
-		_finderPathWithoutPaginationFindByFileEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByFileEntryId",
-			new String[] {Long.class.getName()}, new String[] {"fileEntryId"},
-			true);
-
-		_finderPathCountByFileEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByFileEntryId",
-			new String[] {Long.class.getName()}, new String[] {"fileEntryId"},
-			false);
-
 		_collectionPersistenceFinderByFileEntryId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByFileEntryId,
-				_finderPathWithoutPaginationFindByFileEntryId,
-				_finderPathCountByFileEntryId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByFileEntryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"fileEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByFileEntryId", new String[] {Long.class.getName()},
+					new String[] {"fileEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByFileEntryId", new String[] {Long.class.getName()},
+					new String[] {"fileEntryId"}, false),
 				_SQL_SELECT_CPDVIRTUALSETTINGFILEENTRY_WHERE,
 				_SQL_COUNT_CPDVIRTUALSETTINGFILEENTRY_WHERE,
 				CPDVirtualSettingFileEntryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"cpdVirtualSettingFileEntry.", "fileEntryId",
 					FinderColumn.Type.LONG, "=", true, true,
@@ -1266,4 +956,4 @@ public class CPDVirtualSettingFileEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-977745514
+// LIFERAY-SERVICE-BUILDER-HASH:46498824

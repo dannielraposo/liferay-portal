@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -73,67 +72,14 @@ public class FaroChannelPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<FaroChannel>
+	private CollectionPersistenceFinder<FaroChannel, NoSuchFaroChannelException>
 		_collectionPersistenceFinderByGroupId;
 
 	/**
-	 * Returns all the faro channels where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching faro channels
-	 */
-	@Override
-	public List<FaroChannel> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the faro channels where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of faro channels
-	 * @param end the upper bound of the range of faro channels (not inclusive)
-	 * @return the range of matching faro channels
-	 */
-	@Override
-	public List<FaroChannel> findByGroupId(long groupId, int start, int end) {
-		return findByGroupId(groupId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the faro channels where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of faro channels
-	 * @param end the upper bound of the range of faro channels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching faro channels
-	 */
-	@Override
-	public List<FaroChannel> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<FaroChannel> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the faro channels where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -167,16 +113,8 @@ public class FaroChannelPersistenceImpl
 			long groupId, OrderByComparator<FaroChannel> orderByComparator)
 		throws NoSuchFaroChannelException {
 
-		FaroChannel faroChannel = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (faroChannel != null) {
-			return faroChannel;
-		}
-
-		throw new NoSuchFaroChannelException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -217,70 +155,14 @@ public class FaroChannelPersistenceImpl
 			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByWorkspaceGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByWorkspaceGroupId;
-	private FinderPath _finderPathCountByWorkspaceGroupId;
-	private CollectionPersistenceFinder<FaroChannel>
+	private CollectionPersistenceFinder<FaroChannel, NoSuchFaroChannelException>
 		_collectionPersistenceFinderByWorkspaceGroupId;
 
 	/**
-	 * Returns all the faro channels where workspaceGroupId = &#63;.
-	 *
-	 * @param workspaceGroupId the workspace group ID
-	 * @return the matching faro channels
-	 */
-	@Override
-	public List<FaroChannel> findByWorkspaceGroupId(long workspaceGroupId) {
-		return findByWorkspaceGroupId(
-			workspaceGroupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the faro channels where workspaceGroupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param workspaceGroupId the workspace group ID
-	 * @param start the lower bound of the range of faro channels
-	 * @param end the upper bound of the range of faro channels (not inclusive)
-	 * @return the range of matching faro channels
-	 */
-	@Override
-	public List<FaroChannel> findByWorkspaceGroupId(
-		long workspaceGroupId, int start, int end) {
-
-		return findByWorkspaceGroupId(workspaceGroupId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the faro channels where workspaceGroupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param workspaceGroupId the workspace group ID
-	 * @param start the lower bound of the range of faro channels
-	 * @param end the upper bound of the range of faro channels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching faro channels
-	 */
-	@Override
-	public List<FaroChannel> findByWorkspaceGroupId(
-		long workspaceGroupId, int start, int end,
-		OrderByComparator<FaroChannel> orderByComparator) {
-
-		return findByWorkspaceGroupId(
-			workspaceGroupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the faro channels where workspaceGroupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param workspaceGroupId the workspace group ID
@@ -315,17 +197,8 @@ public class FaroChannelPersistenceImpl
 			OrderByComparator<FaroChannel> orderByComparator)
 		throws NoSuchFaroChannelException {
 
-		FaroChannel faroChannel = fetchByWorkspaceGroupId_First(
-			workspaceGroupId, orderByComparator);
-
-		if (faroChannel != null) {
-			return faroChannel;
-		}
-
-		throw new NoSuchFaroChannelException(
-			_collectionPersistenceFinderByWorkspaceGroupId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {workspaceGroupId}));
+		return _collectionPersistenceFinderByWorkspaceGroupId.findFirst(
+			finderCache, new Object[] {workspaceGroupId}, orderByComparator);
 	}
 
 	/**
@@ -367,72 +240,14 @@ public class FaroChannelPersistenceImpl
 			finderCache, new Object[] {workspaceGroupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_U;
-	private FinderPath _finderPathWithoutPaginationFindByG_U;
-	private FinderPath _finderPathCountByG_U;
-	private CollectionPersistenceFinder<FaroChannel>
+	private CollectionPersistenceFinder<FaroChannel, NoSuchFaroChannelException>
 		_collectionPersistenceFinderByG_U;
 
 	/**
-	 * Returns all the faro channels where groupId = &#63; and userId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @return the matching faro channels
-	 */
-	@Override
-	public List<FaroChannel> findByG_U(long groupId, long userId) {
-		return findByG_U(
-			groupId, userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the faro channels where groupId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of faro channels
-	 * @param end the upper bound of the range of faro channels (not inclusive)
-	 * @return the range of matching faro channels
-	 */
-	@Override
-	public List<FaroChannel> findByG_U(
-		long groupId, long userId, int start, int end) {
-
-		return findByG_U(groupId, userId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the faro channels where groupId = &#63; and userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of faro channels
-	 * @param end the upper bound of the range of faro channels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching faro channels
-	 */
-	@Override
-	public List<FaroChannel> findByG_U(
-		long groupId, long userId, int start, int end,
-		OrderByComparator<FaroChannel> orderByComparator) {
-
-		return findByG_U(groupId, userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the faro channels where groupId = &#63; and userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>FaroChannelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -469,16 +284,8 @@ public class FaroChannelPersistenceImpl
 			OrderByComparator<FaroChannel> orderByComparator)
 		throws NoSuchFaroChannelException {
 
-		FaroChannel faroChannel = fetchByG_U_First(
-			groupId, userId, orderByComparator);
-
-		if (faroChannel != null) {
-			return faroChannel;
-		}
-
-		throw new NoSuchFaroChannelException(
-			_collectionPersistenceFinderByG_U.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, userId}));
+		return _collectionPersistenceFinderByG_U.findFirst(
+			finderCache, new Object[] {groupId, userId}, orderByComparator);
 	}
 
 	/**
@@ -523,8 +330,8 @@ public class FaroChannelPersistenceImpl
 			finderCache, new Object[] {groupId, userId});
 	}
 
-	private FinderPath _finderPathFetchByC_W;
-	private UniquePersistenceFinder<FaroChannel> _uniquePersistenceFinderByC_W;
+	private UniquePersistenceFinder<FaroChannel, NoSuchFaroChannelException>
+		_uniquePersistenceFinderByC_W;
 
 	/**
 	 * Returns the faro channel where channelId = &#63; and workspaceGroupId = &#63; or throws a <code>NoSuchFaroChannelException</code> if it could not be found.
@@ -538,34 +345,8 @@ public class FaroChannelPersistenceImpl
 	public FaroChannel findByC_W(String channelId, long workspaceGroupId)
 		throws NoSuchFaroChannelException {
 
-		FaroChannel faroChannel = fetchByC_W(channelId, workspaceGroupId);
-
-		if (faroChannel == null) {
-			String message =
-				_uniquePersistenceFinderByC_W.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {channelId, workspaceGroupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFaroChannelException(message);
-		}
-
-		return faroChannel;
-	}
-
-	/**
-	 * Returns the faro channel where channelId = &#63; and workspaceGroupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param channelId the channel ID
-	 * @param workspaceGroupId the workspace group ID
-	 * @return the matching faro channel, or <code>null</code> if a matching faro channel could not be found
-	 */
-	@Override
-	public FaroChannel fetchByC_W(String channelId, long workspaceGroupId) {
-		return fetchByC_W(channelId, workspaceGroupId, true);
+		return _uniquePersistenceFinderByC_W.find(
+			finderCache, new Object[] {channelId, workspaceGroupId});
 	}
 
 	/**
@@ -788,106 +569,98 @@ public class FaroChannelPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_FAROCHANNEL_WHERE,
-				_SQL_COUNT_FAROCHANNEL_WHERE,
-				FaroChannelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_FAROCHANNEL_WHERE, _SQL_COUNT_FAROCHANNEL_WHERE,
+				FaroChannelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"faroChannel.", "groupId", FinderColumn.Type.LONG, "=",
 					true, true, FaroChannel::getGroupId));
 
-		_finderPathWithPaginationFindByWorkspaceGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByWorkspaceGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"workspaceGroupId"}, true);
-
-		_finderPathWithoutPaginationFindByWorkspaceGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByWorkspaceGroupId",
-			new String[] {Long.class.getName()},
-			new String[] {"workspaceGroupId"}, true);
-
-		_finderPathCountByWorkspaceGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByWorkspaceGroupId", new String[] {Long.class.getName()},
-			new String[] {"workspaceGroupId"}, false);
-
 		_collectionPersistenceFinderByWorkspaceGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByWorkspaceGroupId,
-				_finderPathWithoutPaginationFindByWorkspaceGroupId,
-				_finderPathCountByWorkspaceGroupId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByWorkspaceGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"workspaceGroupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByWorkspaceGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"workspaceGroupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByWorkspaceGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"workspaceGroupId"}, false),
 				_SQL_SELECT_FAROCHANNEL_WHERE, _SQL_COUNT_FAROCHANNEL_WHERE,
-				FaroChannelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				FaroChannelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"faroChannel.", "workspaceGroupId", FinderColumn.Type.LONG,
 					"=", true, true, FaroChannel::getWorkspaceGroupId));
 
-		_finderPathWithPaginationFindByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "userId"}, true);
-
-		_finderPathWithoutPaginationFindByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "userId"}, true);
-
-		_finderPathCountByG_U = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "userId"}, false);
-
 		_collectionPersistenceFinderByG_U = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_U,
-			_finderPathWithoutPaginationFindByG_U, _finderPathCountByG_U,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "userId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "userId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "userId"}, false),
 			_SQL_SELECT_FAROCHANNEL_WHERE, _SQL_COUNT_FAROCHANNEL_WHERE,
-			FaroChannelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			FaroChannelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"faroChannel.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, FaroChannel::getGroupId),
+				true, FaroChannel::getGroupId),
 			new FinderColumn<>(
 				"faroChannel.", "userId", FinderColumn.Type.LONG, "=", true,
 				true, FaroChannel::getUserId));
 
-		_finderPathFetchByC_W = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_W",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"channelId", "workspaceGroupId"}, false,
-			FaroChannel::getChannelId, FaroChannel::getWorkspaceGroupId);
-
 		_uniquePersistenceFinderByC_W = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_W, _SQL_SELECT_FAROCHANNEL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_W",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"channelId", "workspaceGroupId"}, 0, 1, false,
+				convertNullFunction(FaroChannel::getChannelId),
+				FaroChannel::getWorkspaceGroupId),
+			_SQL_SELECT_FAROCHANNEL_WHERE, "",
 			new FinderColumn<>(
 				"faroChannel.", "channelId", FinderColumn.Type.STRING, "=",
-				true, false, FaroChannel::getChannelId),
+				true, true, FaroChannel::getChannelId),
 			new FinderColumn<>(
 				"faroChannel.", "workspaceGroupId", FinderColumn.Type.LONG, "=",
 				true, true, FaroChannel::getWorkspaceGroupId));
@@ -958,4 +731,4 @@ public class FaroChannelPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-833682425
+// LIFERAY-SERVICE-BUILDER-HASH:1676199002

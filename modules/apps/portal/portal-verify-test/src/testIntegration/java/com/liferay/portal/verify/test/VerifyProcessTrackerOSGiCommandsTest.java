@@ -71,6 +71,10 @@ public class VerifyProcessTrackerOSGiCommandsTest {
 			_runOnPortalUpgradeVerifiers);
 		StartupHelperUtil.setUpgrading(_upgrading);
 
+		if (_serviceRegistration != null) {
+			_serviceRegistration.unregister();
+		}
+
 		Release release = _releaseLocalService.fetchRelease(_symbolicName);
 
 		if (release != null) {
@@ -209,6 +213,41 @@ public class VerifyProcessTrackerOSGiCommandsTest {
 
 		try (SafeCloseable safeCloseable1 = _upgradePortal(true);
 			SafeCloseable safeCloseable2 = _registerVerifyProcess(
+				true, false)) {
+
+			_assertVerify(false);
+		}
+	}
+
+	@Test
+	public void testRegisterInitialDeploymentVerifyProcessTwiceWithInitialRelease() {
+		_initialDeployment = true;
+
+		Release release = _releaseLocalService.createRelease(
+			_counterLocalService.increment());
+
+		release.setServletContextName(_symbolicName);
+		release.setVerified(false);
+
+		release = _releaseLocalService.updateRelease(release);
+
+		_serviceRegistration = _bundleContext.registerService(
+			Release.class, release,
+			HashMapDictionaryBuilder.<String, Object>put(
+				"release.bundle.symbolic.name", release.getBundleSymbolicName()
+			).put(
+				"release.initial", true
+			).build());
+
+		try (SafeCloseable safeCloseable = _registerVerifyProcess(
+				true, false)) {
+
+			_assertVerify(true);
+		}
+
+		_verifyProcessRun = false;
+
+		try (SafeCloseable safeCloseable = _registerVerifyProcess(
 				true, false)) {
 
 			_assertVerify(false);
@@ -421,6 +460,7 @@ public class VerifyProcessTrackerOSGiCommandsTest {
 	@Inject
 	private ReleaseLocalService _releaseLocalService;
 
+	private ServiceRegistration<Release> _serviceRegistration;
 	private final VerifyProcessTest _verifyProcess = new VerifyProcessTest();
 	private boolean _verifyProcessRun;
 

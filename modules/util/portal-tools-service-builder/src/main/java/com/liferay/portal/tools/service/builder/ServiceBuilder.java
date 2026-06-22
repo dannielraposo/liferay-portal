@@ -1055,6 +1055,30 @@ public class ServiceBuilder {
 		return TextFormatter.formatPlural(s);
 	}
 
+	public String getCacheFieldGetterPrefix(JavaField javaField) {
+		String typeName = getTypeGenericsName(javaField.getType());
+
+		if (typeName.equals("Boolean") || typeName.equals("boolean") ||
+			typeName.equals("java.lang.Boolean")) {
+
+			return "is";
+		}
+
+		return "get";
+	}
+
+	public String getCacheFieldGetterReturnType(JavaField javaField) {
+		String typeName = getTypeGenericsName(javaField.getType());
+
+		if (typeName.equals("Boolean") ||
+			typeName.equals("java.lang.Boolean")) {
+
+			return "boolean";
+		}
+
+		return typeName;
+	}
+
 	public String getCacheFieldMethodName(JavaField javaField) {
 		List<JavaAnnotation> javaAnnotations = javaField.getAnnotations();
 
@@ -3231,7 +3255,7 @@ public class ServiceBuilder {
 			_pendingContents.put(_normalize(modelFile.toString()), content);
 		}
 		else {
-			_write(modelFile, content, _modifiedFileNames);
+			_write(modelFile, content, _modifiedFileNames, false);
 		}
 	}
 
@@ -3951,17 +3975,23 @@ public class ServiceBuilder {
 				"Util.java"));
 
 		if (entity.hasPersistence()) {
-			JavaClass javaClass = _getJavaClass(
+			JavaClass implJavaClass = _getJavaClass(
 				StringBundler.concat(
 					_outputPath, "/service/persistence/impl/", entity.getName(),
 					"PersistenceImpl.java"));
 
+			JavaClass interfaceJavaClass = _getJavaClass(
+				StringBundler.concat(
+					_serviceOutputPath, "/service/persistence/",
+					entity.getName(), "Persistence.java"));
+
 			Map<String, Object> context = _getContext();
 
 			context.put("entity", entity);
-			context.put("methods", _getMethods(javaClass));
+			context.put(
+				"methods", _getMethods(implJavaClass, interfaceJavaClass));
 
-			context = _putDeprecatedKeys(context, javaClass);
+			context = _putDeprecatedKeys(context, implJavaClass);
 
 			String content = _processTemplate(_tplPersistenceUtil, context);
 
@@ -4244,7 +4274,7 @@ public class ServiceBuilder {
 
 		String content = _processTemplate(_tplServiceImpl, context);
 
-		_write(file, content, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames, false);
 	}
 
 	private void _createServicePropsUtil() throws Exception {
@@ -4969,7 +4999,7 @@ public class ServiceBuilder {
 
 		String content = _processTemplate(_TPL_UAD_ANOYMIZER, context);
 
-		_write(file, content, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames, false);
 	}
 
 	private void _createUADBnd(String uadApplicationName) throws Exception {
@@ -5046,7 +5076,7 @@ public class ServiceBuilder {
 
 		String content = _processTemplate(_TPL_UAD_DISPLAY, context);
 
-		_write(file, content, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames, false);
 	}
 
 	private void _createUADExporter(Entity entity) throws Exception {
@@ -5065,7 +5095,7 @@ public class ServiceBuilder {
 
 		String content = _processTemplate(_TPL_UAD_EXPORTER, context);
 
-		_write(file, content, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames, false);
 	}
 
 	private void _deleteFile(String fileName) {
@@ -6060,7 +6090,12 @@ public class ServiceBuilder {
 							getVariableName(javaField), TextFormatter.G);
 					}
 
-					cacheFieldMethods.add("get".concat(methodName));
+					cacheFieldMethods.add(
+						getCacheFieldGetterPrefix(
+							javaField
+						).concat(
+							methodName
+						));
 					cacheFieldMethods.add("set".concat(methodName));
 				}
 
@@ -6071,6 +6106,28 @@ public class ServiceBuilder {
 		for (JavaMethod javaMethod : javaClass.getMethods(false)) {
 			if (!cacheFieldMethods.contains(javaMethod.getName())) {
 				methods.add(javaMethod);
+			}
+		}
+
+		return methods;
+	}
+
+	private List<JavaMethod> _getMethods(
+		JavaClass implJavaClass, JavaClass interfaceJavaClass) {
+
+		List<JavaMethod> methods = _getMethods(implJavaClass);
+
+		Set<String> seenSignatures = new HashSet<>();
+
+		for (JavaMethod method : methods) {
+			seenSignatures.add(_getMethodSignature(method, true));
+		}
+
+		for (JavaMethod method : interfaceJavaClass.getMethods(true)) {
+			if (method.isDefault() &&
+				seenSignatures.add(_getMethodSignature(method, true))) {
+
+				methods.add(method);
 			}
 		}
 
@@ -8095,14 +8152,18 @@ public class ServiceBuilder {
 							Set<String> modifiedFileNames =
 								(Set<String>)pendingWrite[3];
 
+							boolean addHash = (Boolean)pendingWrite[4];
+
 							String parsedContent = JavaParser.parse(
 								file, packagePath, content, _MAX_LINE_LENGTH,
 								false);
 
-							parsedContent =
-								parsedContent +
-									_LIFERAY_SERVICE_BUILDER_HASH_PREFIX +
-										content.hashCode();
+							if (addHash) {
+								parsedContent =
+									parsedContent +
+										_LIFERAY_SERVICE_BUILDER_HASH_PREFIX +
+											content.hashCode();
+							}
 
 							ToolsUtil.writeFileRaw(
 								file, parsedContent, modifiedFileNames);
@@ -8590,6 +8651,14 @@ public class ServiceBuilder {
 			File file, String content, Set<String> modifiedFileNames)
 		throws Exception {
 
+		_write(file, content, modifiedFileNames, true);
+	}
+
+	private void _write(
+			File file, String content, Set<String> modifiedFileNames,
+			boolean addHash)
+		throws Exception {
+
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy");
 
 		String year = simpleDateFormat.format(new Date());
@@ -8616,7 +8685,7 @@ public class ServiceBuilder {
 
 		_pendingContents.put(fileName, content);
 
-		if (oldContent != null) {
+		if (addHash && (oldContent != null)) {
 			int index = oldContent.lastIndexOf(
 				_LIFERAY_SERVICE_BUILDER_HASH_PREFIX);
 
@@ -8667,7 +8736,9 @@ public class ServiceBuilder {
 			CharPool.SLASH, CharPool.PERIOD);
 
 		_pendingWrites.add(
-			new Object[] {file, packagePath, content, modifiedFileNames});
+			new Object[] {
+				file, packagePath, content, modifiedFileNames, addHash
+			});
 	}
 
 	private static final int _DEFAULT_COLUMN_MAX_LENGTH = 75;

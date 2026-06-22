@@ -89,10 +89,7 @@ public class QAWebsitesControllerBuildRunner
 
 			String mostAvailableMasterURL =
 				JenkinsResultsParserUtil.getMostAvailableMasterURL(
-					"http://" + cohortName + ".liferay.com", null, 1,
-					getLabelExpression(jobName), jobName,
-					JenkinsMaster.getSlaveRAMMinimumDefault(),
-					JenkinsMaster.getSlavesPerHostDefault());
+					"http://" + cohortName + ".liferay.com", null, 1, jobName);
 
 			invocationMasterHostname = mostAvailableMasterURL.replaceAll(
 				"https?://([^\\.]+)(.liferay.com.*)?", "\1");
@@ -195,7 +192,7 @@ public class QAWebsitesControllerBuildRunner
 	}
 
 	private boolean _allowConcurrentBuilds() {
-		String allowConcurrentBuildsString = System.getenv(
+		String allowConcurrentBuildsString = Environment.get(
 			"ALLOW_CONCURRENT_BUILDS");
 
 		if (allowConcurrentBuildsString == null) {

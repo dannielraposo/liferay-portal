@@ -7,6 +7,7 @@ package com.liferay.portlet.asset.service.impl;
 
 import com.liferay.asset.kernel.exception.DuplicateVocabularyException;
 import com.liferay.asset.kernel.exception.DuplicateVocabularyExternalReferenceCodeException;
+import com.liferay.asset.kernel.exception.VocabularyExternalReferenceCodeException;
 import com.liferay.asset.kernel.exception.VocabularyNameException;
 import com.liferay.asset.kernel.exception.VocabularyVisibilityTypeException;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
@@ -190,7 +191,7 @@ public class AssetVocabularyLocalServiceImpl
 
 		long vocabularyId = counterLocalService.increment();
 
-		_validateExternalReferenceCode(externalReferenceCode, groupId);
+		_validateExternalReferenceCode(externalReferenceCode, groupId, 0);
 
 		AssetVocabulary vocabulary = assetVocabularyPersistence.create(
 			vocabularyId);
@@ -531,9 +532,9 @@ public class AssetVocabularyLocalServiceImpl
 		AssetVocabulary vocabulary =
 			assetVocabularyPersistence.findByPrimaryKey(vocabularyId);
 
-		if (Validator.isNotNull(externalReferenceCode) &&
-			FeatureFlagManagerUtil.isEnabled(
-				vocabulary.getCompanyId(), "LPD-31228")) {
+		if (Validator.isNotNull(externalReferenceCode)) {
+			_validateExternalReferenceCode(
+				externalReferenceCode, vocabulary.getGroupId(), vocabularyId);
 
 			vocabulary.setExternalReferenceCode(externalReferenceCode);
 		}
@@ -571,6 +572,9 @@ public class AssetVocabularyLocalServiceImpl
 			assetVocabularyPersistence.findByPrimaryKey(vocabularyId);
 
 		if (Validator.isNotNull(externalReferenceCode)) {
+			_validateExternalReferenceCode(
+				externalReferenceCode, vocabulary.getGroupId(), vocabularyId);
+
 			vocabulary.setExternalReferenceCode(externalReferenceCode);
 		}
 
@@ -739,18 +743,30 @@ public class AssetVocabularyLocalServiceImpl
 	}
 
 	private void _validateExternalReferenceCode(
-			String externalReferenceCode, long groupId)
+			String externalReferenceCode, long groupId, long vocabularyId)
 		throws PortalException {
 
 		if (Validator.isNull(externalReferenceCode)) {
 			return;
 		}
 
+		int maxLength = ModelHintsUtil.getMaxLength(
+			AssetVocabulary.class.getName(), "externalReferenceCode");
+
+		if (externalReferenceCode.length() > maxLength) {
+			throw new VocabularyExternalReferenceCodeException(
+				StringBundler.concat(
+					"External reference code length cannot exceed ", maxLength,
+					" characters"));
+		}
+
 		AssetVocabulary assetVocabulary =
 			assetVocabularyPersistence.fetchByERC_G(
 				externalReferenceCode, groupId);
 
-		if (assetVocabulary != null) {
+		if ((assetVocabulary != null) &&
+			(assetVocabulary.getVocabularyId() != vocabularyId)) {
+
 			throw new DuplicateVocabularyExternalReferenceCodeException(
 				StringBundler.concat(
 					"Duplicate vocabulary external reference code ",

@@ -13,6 +13,7 @@ import com.liferay.info.field.type.LongTextInfoFieldType;
 import com.liferay.info.field.type.MultiselectInfoFieldType;
 import com.liferay.info.field.type.NumberInfoFieldType;
 import com.liferay.info.field.type.OptionInfoFieldType;
+import com.liferay.info.field.type.PhoneNumberInfoFieldType;
 import com.liferay.info.field.type.RelationshipInfoFieldType;
 import com.liferay.info.field.type.SelectInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
@@ -240,6 +241,21 @@ public class ObjectFieldInfoFieldConverter {
 						new FunctionInfoLocalizedValue<>(
 							listTypeEntry::getName),
 						listTypeEntry.getKey())));
+		}
+		else if (Objects.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_PHONE_NUMBER)) {
+
+			finalStep.attribute(
+				PhoneNumberInfoFieldType.COUNTRY,
+				ObjectFieldSettingUtil.getValue(
+					ObjectFieldSettingConstants.NAME_COUNTRY, objectField)
+			).attribute(
+				PhoneNumberInfoFieldType.COUNTRY_SOURCE,
+				ObjectFieldSettingUtil.getValue(
+					ObjectFieldSettingConstants.NAME_COUNTRY_SOURCE,
+					objectField)
+			);
 		}
 		else if (Objects.equals(
 					objectField.getBusinessType(),

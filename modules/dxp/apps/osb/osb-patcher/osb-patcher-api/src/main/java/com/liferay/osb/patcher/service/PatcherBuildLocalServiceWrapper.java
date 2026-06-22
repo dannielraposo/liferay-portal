@@ -703,6 +703,20 @@ public class PatcherBuildLocalServiceWrapper
 	}
 
 	@Override
+	public com.liferay.osb.patcher.model.PatcherBuild preparePatcherBuild(
+			long userId, long patcherProductVersionId,
+			long patcherProjectVersionId, String accountEntryCode, int type,
+			java.util.Locale locale, String patcherBuildName,
+			boolean useExistingHotfix)
+		throws Exception {
+
+		return _patcherBuildLocalService.preparePatcherBuild(
+			userId, patcherProductVersionId, patcherProjectVersionId,
+			accountEntryCode, type, locale, patcherBuildName,
+			useExistingHotfix);
+	}
+
+	@Override
 	public void setPatcherAccountPatcherBuilds(
 		long patcherAccountId, long[] patcherBuildIds) {
 
@@ -848,4 +862,4 @@ public class PatcherBuildLocalServiceWrapper
 	private PatcherBuildLocalService _patcherBuildLocalService;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-815333689
+// LIFERAY-SERVICE-BUILDER-HASH:-1571390628

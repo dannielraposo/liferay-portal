@@ -77,8 +77,8 @@ public class EditCountryMVCActionCommand
 
 			if (cmd.equals(Constants.ADD)) {
 				country = _countryService.addCountry(
-					a2, a3, active, billingAllowed, idd, name, number, position,
-					shippingAllowed, subjectToVAT, false,
+					null, a2, a3, active, billingAllowed, idd, name, number,
+					position, shippingAllowed, subjectToVAT, false,
 					ServiceContextFactory.getInstance(
 						Country.class.getName(), actionRequest));
 
@@ -92,9 +92,12 @@ public class EditCountryMVCActionCommand
 			else if (cmd.equals(Constants.UPDATE)) {
 				long countryId = ParamUtil.getLong(actionRequest, "countryId");
 
+				country = _countryService.getCountry(countryId);
+
 				country = _countryService.updateCountry(
-					countryId, a2, a3, active, billingAllowed, idd, name,
-					number, position, shippingAllowed, subjectToVAT);
+					country.getExternalReferenceCode(), countryId, a2, a3,
+					active, billingAllowed, idd, name, number, position,
+					shippingAllowed, subjectToVAT);
 			}
 
 			if (country != null) {

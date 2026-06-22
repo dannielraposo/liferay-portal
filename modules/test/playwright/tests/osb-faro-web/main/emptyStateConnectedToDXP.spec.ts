@@ -6,12 +6,12 @@
 import {expect, mergeTests} from '@playwright/test';
 
 import {apiHelpersTest} from '../../../fixtures/apiHelpersTest';
-import {dataApiHelpersTest} from '../../../fixtures/dataApiHelpersTest';
 import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
+import {isolatedChannelTest} from '../../../fixtures/isolatedChannelTest';
+import {isolatedSiteTest} from '../../../fixtures/isolatedSiteTest';
 import {loginAnalyticsCloudTest} from '../../../fixtures/loginAnalyticsCloudTest';
 import {loginTest} from '../../../fixtures/loginTest';
-import getRandomString from '../../../utils/getRandomString';
-import {syncAnalyticsCloud} from '../../analytics-settings-web/main/utils/analytics-settings';
+import {syncAnalyticsCloudViaAPI} from '../../analytics-settings-web/main/utils/analytics-settings';
 import {switchChannel} from './utils/channel';
 import {
 	ACPage,
@@ -23,44 +23,21 @@ import {addBreakdownByIndividualAttribute} from './utils/utils';
 
 export const test = mergeTests(
 	apiHelpersTest,
-	dataApiHelpersTest,
 	featureFlagsTest({
 		'LPS-178052': {enabled: true},
 	}),
+	isolatedChannelTest,
+	isolatedSiteTest,
 	loginAnalyticsCloudTest(),
 	loginTest()
 );
 
-const randomString = getRandomString();
-
-const channelName = 'My Property ' + randomString;
-const siteName = 'My Site ' + randomString;
-
-let channel;
-let project;
-
-test.beforeEach(async ({apiHelpers, page}) => {
-	await apiHelpers.headlessAdminSite.postSite({
-		name: siteName,
-	});
-
-	const result = await syncAnalyticsCloud({
+test.beforeEach(async ({analyticsChannel, apiHelpers, project, site}) => {
+	await syncAnalyticsCloudViaAPI({
 		apiHelpers,
-		channelName,
-		page,
-		siteName,
-	});
-
-	channel = result.channel;
-	project = result.project;
-});
-
-test.afterEach(async ({apiHelpers}) => {
-	await test.step('Delete channel', async () => {
-		await apiHelpers.jsonWebServicesOSBFaro.deleteChannel(
-			`[${channel.id}]`,
-			project.groupId
-		);
+		channel: analyticsChannel,
+		project,
+		siteId: Number(site.id),
 	});
 });
 
@@ -70,12 +47,11 @@ test(
 	{
 		tag: '@LRAC-10405',
 	},
-
-	async ({page}) => {
+	async ({analyticsChannel: channel, page, project}) => {
 		await test.step('Go to Analytics Cloud and Switch the property', async () => {
 			await navigateToACWorkspace({page});
 			await switchChannel({
-				channelName,
+				channelName: channel.name,
 				page,
 			});
 		});

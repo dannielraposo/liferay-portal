@@ -123,6 +123,7 @@ import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 
 <#if freeMarkerTool.isVersionCompatible(configYAML, 12)>
 	import com.liferay.portal.kernel.util.PropsValues;
@@ -134,7 +135,13 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
-import com.liferay.portal.search.test.rule.SearchTestRule;
+
+<#if freeMarkerTool.isVersionCompatible(configYAML, 6)>
+	import com.liferay.portal.search.test.rule.SearchTestRule;
+<#else>
+	import com.liferay.portal.search.test.util.SearchTestRule;
+</#if>
+
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -258,7 +265,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 		).authentication(
 			_testCompanyAdminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(), PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -268,7 +275,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 			).authentication(
 				_testCompanyAdminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
 			).endpoint(
-				testCompany.getVirtualHostname(), 8080, "http"
+				testCompany.getVirtualHostname(), PortalUtil.getPortalServerPort(false), "http"
 			).locale(
 				LocaleUtil.getDefault()
 			).build();
@@ -279,7 +286,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 			).authentication(
 				_testCompanyAdminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
 			).endpoint(
-				testCompany.getVirtualHostname(), 8080, "http"
+				testCompany.getVirtualHostname(), PortalUtil.getPortalServerPort(false), "http"
 			).locale(
 				LocaleUtil.getDefault()
 			).parameter(
@@ -779,7 +786,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 						Map createBatchAction = new HashMap<>();
 						createBatchAction.put("method", "POST");
-						createBatchAction.put("href", "http://localhost:8080/o${configYAML.application.baseURI}/${openAPIYAML.info.version}${javaMethodSignature.path}/batch".replace("{${firstPathJavaMethodParameter.parameterName}}", String.valueOf(${firstPathJavaMethodParameter.parameterName})));
+						createBatchAction.put("href", ("http://localhost:" + PortalUtil.getPortalServerPort(false) + "/o${configYAML.application.baseURI}/${openAPIYAML.info.version}${javaMethodSignature.path}/batch").replace("{${firstPathJavaMethodParameter.parameterName}}", String.valueOf(${firstPathJavaMethodParameter.parameterName})));
 
 						expectedActions.put("createBatch", createBatchAction);
 					</#if>
@@ -1375,7 +1382,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 					return new MockHttpServletRequest() {
 						@Override
 						public StringBuffer getRequestURL() {
-							return new StringBuffer(StringBundler.concat("http://localhost:8080/o/v1.0/", RandomTestUtil.randomString(), "/", RandomTestUtil.randomString()));
+							return new StringBuffer(StringBundler.concat("http://localhost:", String.valueOf(PortalUtil.getPortalServerPort(false)), "/o/v1.0/", RandomTestUtil.randomString(), "/", RandomTestUtil.randomString()));
 						}
 					};
 				}
@@ -1408,7 +1415,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 						@Override
 						public URI getRequestUri() {
-							return URI.create("http://localhost:8080/o/" + applicationPath + resourcePath);
+							return URI.create(StringBundler.concat("http://localhost:", PortalUtil.getPortalServerPort(false), "/o/", applicationPath, resourcePath));
 						}
 
 						@Override
@@ -1428,7 +1435,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 						@Override
 						public URI getBaseUri() {
-							return URI.create("http://localhost:8080/o/" + applicationPath);
+							return URI.create(StringBundler.concat("http://localhost:", PortalUtil.getPortalServerPort(false), "/o/", applicationPath));
 						}
 
 						@Override
@@ -2048,6 +2055,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 						// No namespace
 
+						@SuppressWarnings("PMD.UnusedLocalVariable")
 						${schemaName} ${schemaVarName}1 = testGraphQL${javaMethodSignature.methodName?cap_first}_add${schemaName}();
 
 						Assert.assertTrue(
@@ -2091,6 +2099,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 						// Using the configured namespace ${configYAML.getGraphQLNamespace()}
 
+						@SuppressWarnings("PMD.UnusedLocalVariable")
 						${schemaName} ${schemaVarName}1 = testGraphQL${javaMethodSignature.methodName?cap_first}_add${schemaName}();
 
 						Assert.assertTrue(
@@ -2143,6 +2152,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 						// Using the namespace ${graphQLNamespace}
 
+						@SuppressWarnings("PMD.UnusedLocalVariable")
 						${schemaName} ${schemaVarName}2 = testGraphQL${javaMethodSignature.methodName?cap_first}_add${schemaName}();
 
 						Assert.assertTrue(
@@ -2948,7 +2958,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 						).authentication(
 							_testCompanyAdminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
 						).endpoint(
-							testCompany.getVirtualHostname(), 8080, "http"
+							testCompany.getVirtualHostname(), PortalUtil.getPortalServerPort(false), "http"
 						).parameters(
 							parameters
 						).build();
@@ -3205,13 +3215,19 @@ public abstract class Base${schemaName}ResourceTestCase {
 				else if (value instanceof Boolean || value instanceof Number) {
 					return value.toString();
 				}
-				else if (value instanceof Date date) {
+				else if (value instanceof Date) {
+					Date date = (Date)value;
+
 					return "\"" + DateUtil.getDate(date, "yyyy-MM-dd'T'HH:mm:ss'Z'", LocaleUtil.getDefault(), TimeZone.getTimeZone("UTC")) + "\"";
 				}
-				else if (value instanceof Enum<?> enm) {
+				else if (value instanceof Enum) {
+					Enum<?> enm = (Enum<?>)value;
+
 					return enm.name();
 				}
-				else if (value instanceof Map<?, ?> map) {
+				else if (value instanceof Map) {
+					Map<?, ?> map = (Map<?, ?>)value;
+
 					List<String> entries = new ArrayList<>();
 
 					for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -3224,7 +3240,9 @@ public abstract class Base${schemaName}ResourceTestCase {
 
 					return "{" + String.join(", ", entries) + "}";
 				}
-				else if (value instanceof Object[] array) {
+				else if (value instanceof Object[]) {
+					Object[] array = (Object[])value;
+
 					List<String> entries = new ArrayList<>();
 
 					for (Object entry : array) {
@@ -3890,7 +3908,7 @@ public abstract class Base${schemaName}ResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path("http://localhost:" + PortalUtil.getPortalServerPort(false) + "/o/graphql");
 		httpInvoker.userNameAndPassword("test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
 		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();

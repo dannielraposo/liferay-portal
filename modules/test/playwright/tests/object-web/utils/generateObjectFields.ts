@@ -118,6 +118,12 @@ function getObjectFieldSpecificProperties(
 				businessType: 'Decimal',
 				type: 'Double',
 			};
+		case 'EmailAddress':
+			return {
+				DBType: 'String',
+				businessType: 'EmailAddress',
+				type: 'String',
+			};
 		case 'Encrypted':
 			return {
 				DBType: 'Clob',
@@ -162,6 +168,18 @@ function getObjectFieldSpecificProperties(
 				listTypeDefinitionExternalReferenceCode,
 				type: 'String',
 			};
+		case 'PhoneNumber':
+			return {
+				DBType: 'String',
+				businessType: 'PhoneNumber',
+				objectFieldSettings: [
+					{
+						name: 'countrySource',
+						value: 'definedByUser',
+					},
+				],
+				type: 'String',
+			};
 		case 'PrecisionDecimal':
 			return {
 				DBType: 'BigDecimal',
@@ -203,10 +221,19 @@ function generateObjectFieldProperties({
 		listTypeDefinitionExternalReferenceCode
 	);
 
-	const mergedSettings = [
+	// Combine the default settings with the caller's settings. If both
+	// have a setting with the same name, the caller's value is kept.
+
+	const mergedSettingsByName = new Map<string, any>();
+
+	for (const setting of [
 		...(objectFieldSpecificProperties.objectFieldSettings ?? []),
 		...(additionalSettings.objectFieldSettings ?? []),
-	];
+	]) {
+		mergedSettingsByName.set(setting.name, setting);
+	}
+
+	const mergedSettings = Array.from(mergedSettingsByName.values());
 
 	return {
 		...objectFieldBaseProperties,

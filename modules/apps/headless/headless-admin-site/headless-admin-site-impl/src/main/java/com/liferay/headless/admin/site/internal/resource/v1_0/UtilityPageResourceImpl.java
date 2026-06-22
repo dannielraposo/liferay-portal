@@ -6,6 +6,7 @@
 package com.liferay.headless.admin.site.internal.resource.v1_0;
 
 import com.liferay.client.extension.type.manager.CETManager;
+import com.liferay.exportimport.constants.ExportImportConstants;
 import com.liferay.exportimport.vulcan.batch.engine.ExportImportVulcanBatchEngineTaskItemDelegate;
 import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
 import com.liferay.headless.admin.site.dto.v1_0.ContentPageSpecification;
@@ -13,9 +14,9 @@ import com.liferay.headless.admin.site.dto.v1_0.PageSpecification;
 import com.liferay.headless.admin.site.dto.v1_0.UtilityPage;
 import com.liferay.headless.admin.site.dto.v1_0.UtilityPageSEOSettings;
 import com.liferay.headless.admin.site.dto.v1_0.UtilityPageSettings;
+import com.liferay.headless.admin.site.dto.v1_0.util.FileEntryUtil;
 import com.liferay.headless.admin.site.internal.dto.v1_0.util.DTOConverterContextUtil;
 import com.liferay.headless.admin.site.internal.odata.entity.v1_0.UtilityPageEntityModel;
-import com.liferay.headless.admin.site.internal.resource.v1_0.util.FileEntryUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.LayoutUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.ServiceContextUtil;
 import com.liferay.headless.admin.site.internal.util.EnabledUtil;
@@ -116,17 +117,22 @@ public class UtilityPageResourceImpl
 
 			@Override
 			public List<String> getNestedFields() {
-				return List.of("pageSpecifications", "thumbnail");
+				return List.of("pageSpecifications", "thumbnailURLReference");
 			}
 
 			@Override
 			public String getPortletId() {
-				return LayoutAdminPortletKeys.GROUP_PAGES;
+				return LayoutAdminPortletKeys.LAYOUT_UTILITY_PAGES;
 			}
 
 			@Override
 			public Scope getScope() {
 				return Scope.SITE;
+			}
+
+			@Override
+			public String getSectionKey() {
+				return ExportImportConstants.SECTION_KEY_SITE_BUILDER;
 			}
 
 			@Override
@@ -317,8 +323,8 @@ public class UtilityPageResourceImpl
 		}
 
 		long previewFileEntryId = FileEntryUtil.getPreviewFileEntryId(
-			groupId, getResourceName(), serviceContext,
-			utilityPage.getThumbnailURLReference());
+			groupId, LayoutAdminPortletKeys.GROUP_PAGES,
+			utilityPage.getThumbnailURLReference(), contextUser.getUserId());
 
 		if (previewFileEntryId !=
 				layoutUtilityPageEntry.getPreviewFileEntryId()) {
@@ -389,8 +395,9 @@ public class UtilityPageResourceImpl
 				utilityPage.getExternalReferenceCode(), groupId,
 				_getLayoutPlid(groupId, utilityPage, serviceContext),
 				FileEntryUtil.getPreviewFileEntryId(
-					groupId, getResourceName(), serviceContext,
-					utilityPage.getThumbnailURLReference()),
+					groupId, LayoutAdminPortletKeys.GROUP_PAGES,
+					utilityPage.getThumbnailURLReference(),
+					contextUser.getUserId()),
 				utilityPage.getMarkedAsDefault(), utilityPage.getName(),
 				_getType(utilityPage.getType()), null, serviceContext);
 

@@ -14,15 +14,12 @@ import com.liferay.commerce.pricing.model.impl.CommercePriceModifierModelImpl;
 import com.liferay.commerce.pricing.service.persistence.CommercePriceModifierPersistence;
 import com.liferay.commerce.pricing.service.persistence.CommercePriceModifierUtil;
 import com.liferay.commerce.pricing.service.persistence.impl.constants.CommercePersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
@@ -37,6 +34,7 @@ import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
+import com.liferay.portal.kernel.service.persistence.impl.ArrayableFinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
@@ -47,7 +45,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
@@ -103,62 +100,9 @@ public class CommercePriceModifierPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CommercePriceModifier>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the commerce price modifiers where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce price modifiers where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @return the range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce price modifiers where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CommercePriceModifier> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CommercePriceModifier, NoSuchPriceModifierException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the commerce price modifiers where uuid = &#63;.
@@ -180,14 +124,9 @@ public class CommercePriceModifierPersistenceImpl
 		OrderByComparator<CommercePriceModifier> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -204,16 +143,8 @@ public class CommercePriceModifierPersistenceImpl
 			OrderByComparator<CommercePriceModifier> orderByComparator)
 		throws NoSuchPriceModifierException {
 
-		CommercePriceModifier commercePriceModifier = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (commercePriceModifier != null) {
-			return commercePriceModifier;
-		}
-
-		throw new NoSuchPriceModifierException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -251,18 +182,13 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<CommercePriceModifier>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<CommercePriceModifier, NoSuchPriceModifierException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the commerce price modifier where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchPriceModifierException</code> if it could not be found.
@@ -276,34 +202,8 @@ public class CommercePriceModifierPersistenceImpl
 	public CommercePriceModifier findByUUID_G(String uuid, long groupId)
 		throws NoSuchPriceModifierException {
 
-		CommercePriceModifier commercePriceModifier = fetchByUUID_G(
-			uuid, groupId);
-
-		if (commercePriceModifier == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchPriceModifierException(message);
-		}
-
-		return commercePriceModifier;
-	}
-
-	/**
-	 * Returns the commerce price modifier where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching commerce price modifier, or <code>null</code> if a matching commerce price modifier could not be found
-	 */
-	@Override
-	public CommercePriceModifier fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -318,13 +218,8 @@ public class CommercePriceModifierPersistenceImpl
 	public CommercePriceModifier fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -357,69 +252,9 @@ public class CommercePriceModifierPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CommercePriceModifier>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the commerce price modifiers where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce price modifiers where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @return the range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce price modifiers where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CommercePriceModifier> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CommercePriceModifier, NoSuchPriceModifierException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the commerce price modifiers where uuid = &#63; and companyId = &#63;.
@@ -442,14 +277,9 @@ public class CommercePriceModifierPersistenceImpl
 		OrderByComparator<CommercePriceModifier> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -467,16 +297,8 @@ public class CommercePriceModifierPersistenceImpl
 			OrderByComparator<CommercePriceModifier> orderByComparator)
 		throws NoSuchPriceModifierException {
 
-		CommercePriceModifier commercePriceModifier = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (commercePriceModifier != null) {
-			return commercePriceModifier;
-		}
-
-		throw new NoSuchPriceModifierException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -517,72 +339,13 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<CommercePriceModifier>
-		_collectionPersistenceFinderByCompanyId;
-
-	/**
-	 * Returns all the commerce price modifiers where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce price modifiers where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @return the range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce price modifiers where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<CommercePriceModifier> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CommercePriceModifier, NoSuchPriceModifierException>
+			_collectionPersistenceFinderByCompanyId;
 
 	/**
 	 * Returns an ordered range of all the commerce price modifiers where companyId = &#63;.
@@ -604,14 +367,9 @@ public class CommercePriceModifierPersistenceImpl
 		OrderByComparator<CommercePriceModifier> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				finderCache, new Object[] {companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			finderCache, new Object[] {companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -628,16 +386,8 @@ public class CommercePriceModifierPersistenceImpl
 			OrderByComparator<CommercePriceModifier> orderByComparator)
 		throws NoSuchPriceModifierException {
 
-		CommercePriceModifier commercePriceModifier = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (commercePriceModifier != null) {
-			return commercePriceModifier;
-		}
-
-		throw new NoSuchPriceModifierException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -675,75 +425,13 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				finderCache, new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			finderCache, new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCommercePriceListId;
-	private FinderPath _finderPathWithoutPaginationFindByCommercePriceListId;
-	private FinderPath _finderPathCountByCommercePriceListId;
-	private CollectionPersistenceFinder<CommercePriceModifier>
-		_collectionPersistenceFinderByCommercePriceListId;
-
-	/**
-	 * Returns all the commerce price modifiers where commercePriceListId = &#63;.
-	 *
-	 * @param commercePriceListId the commerce price list ID
-	 * @return the matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByCommercePriceListId(
-		long commercePriceListId) {
-
-		return findByCommercePriceListId(
-			commercePriceListId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce price modifiers where commercePriceListId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commercePriceListId the commerce price list ID
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @return the range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByCommercePriceListId(
-		long commercePriceListId, int start, int end) {
-
-		return findByCommercePriceListId(commercePriceListId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce price modifiers where commercePriceListId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commercePriceListId the commerce price list ID
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByCommercePriceListId(
-		long commercePriceListId, int start, int end,
-		OrderByComparator<CommercePriceModifier> orderByComparator) {
-
-		return findByCommercePriceListId(
-			commercePriceListId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CommercePriceModifier, NoSuchPriceModifierException>
+			_collectionPersistenceFinderByCommercePriceListId;
 
 	/**
 	 * Returns an ordered range of all the commerce price modifiers where commercePriceListId = &#63;.
@@ -765,14 +453,9 @@ public class CommercePriceModifierPersistenceImpl
 		OrderByComparator<CommercePriceModifier> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByCommercePriceListId.find(
-				finderCache, new Object[] {commercePriceListId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCommercePriceListId.find(
+			finderCache, new Object[] {commercePriceListId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -789,19 +472,8 @@ public class CommercePriceModifierPersistenceImpl
 			OrderByComparator<CommercePriceModifier> orderByComparator)
 		throws NoSuchPriceModifierException {
 
-		CommercePriceModifier commercePriceModifier =
-			fetchByCommercePriceListId_First(
-				commercePriceListId, orderByComparator);
-
-		if (commercePriceModifier != null) {
-			return commercePriceModifier;
-		}
-
-		throw new NoSuchPriceModifierException(
-			_collectionPersistenceFinderByCommercePriceListId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {commercePriceListId}));
+		return _collectionPersistenceFinderByCommercePriceListId.findFirst(
+			finderCache, new Object[] {commercePriceListId}, orderByComparator);
 	}
 
 	/**
@@ -839,78 +511,13 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public int countByCommercePriceListId(long commercePriceListId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByCommercePriceListId.count(
-				finderCache, new Object[] {commercePriceListId});
-		}
+		return _collectionPersistenceFinderByCommercePriceListId.count(
+			finderCache, new Object[] {commercePriceListId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_T;
-	private FinderPath _finderPathWithoutPaginationFindByC_T;
-	private FinderPath _finderPathCountByC_T;
-	private CollectionPersistenceFinder<CommercePriceModifier>
-		_collectionPersistenceFinderByC_T;
-
-	/**
-	 * Returns all the commerce price modifiers where companyId = &#63; and target = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param target the target
-	 * @return the matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByC_T(
-		long companyId, String target) {
-
-		return findByC_T(
-			companyId, target, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce price modifiers where companyId = &#63; and target = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param target the target
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @return the range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByC_T(
-		long companyId, String target, int start, int end) {
-
-		return findByC_T(companyId, target, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce price modifiers where companyId = &#63; and target = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param target the target
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByC_T(
-		long companyId, String target, int start, int end,
-		OrderByComparator<CommercePriceModifier> orderByComparator) {
-
-		return findByC_T(
-			companyId, target, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CommercePriceModifier, NoSuchPriceModifierException>
+			_collectionPersistenceFinderByC_T;
 
 	/**
 	 * Returns an ordered range of all the commerce price modifiers where companyId = &#63; and target = &#63;.
@@ -933,14 +540,9 @@ public class CommercePriceModifierPersistenceImpl
 		OrderByComparator<CommercePriceModifier> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByC_T.find(
-				finderCache, new Object[] {companyId, target}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_T.find(
+			finderCache, new Object[] {companyId, target}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -958,16 +560,8 @@ public class CommercePriceModifierPersistenceImpl
 			OrderByComparator<CommercePriceModifier> orderByComparator)
 		throws NoSuchPriceModifierException {
 
-		CommercePriceModifier commercePriceModifier = fetchByC_T_First(
-			companyId, target, orderByComparator);
-
-		if (commercePriceModifier != null) {
-			return commercePriceModifier;
-		}
-
-		throw new NoSuchPriceModifierException(
-			_collectionPersistenceFinderByC_T.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, target}));
+		return _collectionPersistenceFinderByC_T.findFirst(
+			finderCache, new Object[] {companyId, target}, orderByComparator);
 	}
 
 	/**
@@ -1008,19 +602,13 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public int countByC_T(long companyId, String target) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByC_T.count(
-				finderCache, new Object[] {companyId, target});
-		}
+		return _collectionPersistenceFinderByC_T.count(
+			finderCache, new Object[] {companyId, target});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByLtD_S;
-	private FinderPath _finderPathWithPaginationCountByLtD_S;
-	private CollectionPersistenceFinder<CommercePriceModifier>
-		_collectionPersistenceFinderByLtD_S;
+	private CollectionPersistenceFinder
+		<CommercePriceModifier, NoSuchPriceModifierException>
+			_collectionPersistenceFinderByLtD_S;
 
 	/**
 	 * Returns all the commerce price modifiers where displayDate &lt; &#63; and status = &#63;.
@@ -1101,14 +689,9 @@ public class CommercePriceModifierPersistenceImpl
 		OrderByComparator<CommercePriceModifier> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByLtD_S.find(
-				finderCache, new Object[] {displayDate, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByLtD_S.find(
+			finderCache, new Object[] {displayDate, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1126,16 +709,8 @@ public class CommercePriceModifierPersistenceImpl
 			OrderByComparator<CommercePriceModifier> orderByComparator)
 		throws NoSuchPriceModifierException {
 
-		CommercePriceModifier commercePriceModifier = fetchByLtD_S_First(
-			displayDate, status, orderByComparator);
-
-		if (commercePriceModifier != null) {
-			return commercePriceModifier;
-		}
-
-		throw new NoSuchPriceModifierException(
-			_collectionPersistenceFinderByLtD_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {displayDate, status}));
+		return _collectionPersistenceFinderByLtD_S.findFirst(
+			finderCache, new Object[] {displayDate, status}, orderByComparator);
 	}
 
 	/**
@@ -1176,19 +751,13 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public int countByLtD_S(Date displayDate, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByLtD_S.count(
-				finderCache, new Object[] {displayDate, status});
-		}
+		return _collectionPersistenceFinderByLtD_S.count(
+			finderCache, new Object[] {displayDate, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByLtE_S;
-	private FinderPath _finderPathWithPaginationCountByLtE_S;
-	private CollectionPersistenceFinder<CommercePriceModifier>
-		_collectionPersistenceFinderByLtE_S;
+	private CollectionPersistenceFinder
+		<CommercePriceModifier, NoSuchPriceModifierException>
+			_collectionPersistenceFinderByLtE_S;
 
 	/**
 	 * Returns all the commerce price modifiers where expirationDate &lt; &#63; and status = &#63;.
@@ -1269,14 +838,9 @@ public class CommercePriceModifierPersistenceImpl
 		OrderByComparator<CommercePriceModifier> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByLtE_S.find(
-				finderCache, new Object[] {expirationDate, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByLtE_S.find(
+			finderCache, new Object[] {expirationDate, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1294,17 +858,9 @@ public class CommercePriceModifierPersistenceImpl
 			OrderByComparator<CommercePriceModifier> orderByComparator)
 		throws NoSuchPriceModifierException {
 
-		CommercePriceModifier commercePriceModifier = fetchByLtE_S_First(
-			expirationDate, status, orderByComparator);
-
-		if (commercePriceModifier != null) {
-			return commercePriceModifier;
-		}
-
-		throw new NoSuchPriceModifierException(
-			_collectionPersistenceFinderByLtE_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {expirationDate, status}));
+		return _collectionPersistenceFinderByLtE_S.findFirst(
+			finderCache, new Object[] {expirationDate, status},
+			orderByComparator);
 	}
 
 	/**
@@ -1346,81 +902,13 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public int countByLtE_S(Date expirationDate, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _collectionPersistenceFinderByLtE_S.count(
-				finderCache, new Object[] {expirationDate, status});
-		}
+		return _collectionPersistenceFinderByLtE_S.count(
+			finderCache, new Object[] {expirationDate, status});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_C_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_C_S;
-	private FinderPath _finderPathCountByG_C_S;
-	private FinderPath _finderPathWithPaginationCountByG_C_S;
-
-	/**
-	 * Returns all the commerce price modifiers where groupId = &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @return the matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByG_C_S(
-		long groupId, long companyId, int status) {
-
-		return findByG_C_S(
-			groupId, companyId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the commerce price modifiers where groupId = &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @return the range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByG_C_S(
-		long groupId, long companyId, int status, int start, int end) {
-
-		return findByG_C_S(groupId, companyId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce price modifiers where groupId = &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByG_C_S(
-		long groupId, long companyId, int status, int start, int end,
-		OrderByComparator<CommercePriceModifier> orderByComparator) {
-
-		return findByG_C_S(
-			groupId, companyId, status, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<CommercePriceModifier, NoSuchPriceModifierException>
+			_collectionPersistenceFinderByG_C_S;
 
 	/**
 	 * Returns an ordered range of all the commerce price modifiers where groupId = &#63; and companyId = &#63; and status = &#63;.
@@ -1444,112 +932,9 @@ public class CommercePriceModifierPersistenceImpl
 		OrderByComparator<CommercePriceModifier> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByG_C_S;
-					finderArgs = new Object[] {groupId, companyId, status};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByG_C_S;
-				finderArgs = new Object[] {
-					groupId, companyId, status, start, end, orderByComparator
-				};
-			}
-
-			List<CommercePriceModifier> list = null;
-
-			if (useFinderCache) {
-				list = (List<CommercePriceModifier>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CommercePriceModifier commercePriceModifier : list) {
-						if ((groupId != commercePriceModifier.getGroupId()) ||
-							(companyId !=
-								commercePriceModifier.getCompanyId()) ||
-							(status != commercePriceModifier.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						5 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(5);
-				}
-
-				sb.append(_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_C_S_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_STATUS_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CommercePriceModifierModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					list = (List<CommercePriceModifier>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_C_S.find(
+			finderCache, new Object[] {new long[] {groupId}, companyId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1607,80 +992,9 @@ public class CommercePriceModifierPersistenceImpl
 		long groupId, long companyId, int status,
 		OrderByComparator<CommercePriceModifier> orderByComparator) {
 
-		List<CommercePriceModifier> list = findByG_C_S(
-			groupId, companyId, status, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the commerce price modifiers where groupId = any &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @return the matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByG_C_S(
-		long[] groupIds, long companyId, int status) {
-
-		return findByG_C_S(
-			groupIds, companyId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the commerce price modifiers where groupId = any &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @return the range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByG_C_S(
-		long[] groupIds, long companyId, int status, int start, int end) {
-
-		return findByG_C_S(groupIds, companyId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce price modifiers where groupId = any &#63; and companyId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePriceModifierModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupIds the group IDs
-	 * @param companyId the company ID
-	 * @param status the status
-	 * @param start the lower bound of the range of commerce price modifiers
-	 * @param end the upper bound of the range of commerce price modifiers (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce price modifiers
-	 */
-	@Override
-	public List<CommercePriceModifier> findByG_C_S(
-		long[] groupIds, long companyId, int status, int start, int end,
-		OrderByComparator<CommercePriceModifier> orderByComparator) {
-
-		return findByG_C_S(
-			groupIds, companyId, status, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByG_C_S.fetchFirst(
+			finderCache, new Object[] {new long[] {groupId}, companyId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -1705,133 +1019,10 @@ public class CommercePriceModifierPersistenceImpl
 		OrderByComparator<CommercePriceModifier> orderByComparator,
 		boolean useFinderCache) {
 
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		if (groupIds.length == 1) {
-			return findByG_C_S(
-				groupIds[0], companyId, status, start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						StringUtil.merge(groupIds), companyId, status
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					StringUtil.merge(groupIds), companyId, status, start, end,
-					orderByComparator
-				};
-			}
-
-			List<CommercePriceModifier> list = null;
-
-			if (useFinderCache) {
-				list = (List<CommercePriceModifier>)finderCache.getResult(
-					_finderPathWithPaginationFindByG_C_S, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CommercePriceModifier commercePriceModifier : list) {
-						if (!ArrayUtil.contains(
-								groupIds, commercePriceModifier.getGroupId()) ||
-							(companyId !=
-								commercePriceModifier.getCompanyId()) ||
-							(status != commercePriceModifier.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_C_S_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_C_S_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_STATUS_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CommercePriceModifierModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					list = (List<CommercePriceModifier>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByG_C_S, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_C_S.find(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(groupIds), companyId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1843,13 +1034,9 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public void removeByG_C_S(long groupId, long companyId, int status) {
-		for (CommercePriceModifier commercePriceModifier :
-				findByG_C_S(
-					groupId, companyId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, null)) {
-
-			remove(commercePriceModifier);
-		}
+		_collectionPersistenceFinderByG_C_S.remove(
+			finderCache,
+			new Object[] {new long[] {groupId}, companyId, status});
 	}
 
 	/**
@@ -1862,59 +1049,9 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public int countByG_C_S(long groupId, long companyId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			FinderPath finderPath = _finderPathCountByG_C_S;
-
-			Object[] finderArgs = new Object[] {groupId, companyId, status};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(4);
-
-				sb.append(_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_C_S_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_STATUS_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_C_S.count(
+			finderCache,
+			new Object[] {new long[] {groupId}, companyId, status});
 	}
 
 	/**
@@ -1927,98 +1064,14 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public int countByG_C_S(long[] groupIds, long companyId, int status) {
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			Object[] finderArgs = new Object[] {
-				StringUtil.merge(groupIds), companyId, status
-			};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByG_C_S, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_C_S_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_C_S_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_S_STATUS_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByG_C_S, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_C_S.count(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(groupIds), companyId, status});
 	}
 
-	private static final String _FINDER_COLUMN_G_C_S_GROUPID_2 =
-		"commercePriceModifier.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_S_GROUPID_7 =
-		"commercePriceModifier.groupId IN (";
-
-	private static final String _FINDER_COLUMN_G_C_S_COMPANYID_2 =
-		"commercePriceModifier.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_S_STATUS_2 =
-		"commercePriceModifier.status = ?";
-
-	private FinderPath _finderPathWithPaginationFindByG_C_NotS;
-	private FinderPath _finderPathWithPaginationCountByG_C_NotS;
+	private CollectionPersistenceFinder
+		<CommercePriceModifier, NoSuchPriceModifierException>
+			_collectionPersistenceFinderByG_C_NotS;
 
 	/**
 	 * Returns all the commerce price modifiers where groupId = &#63; and companyId = &#63; and status &ne; &#63;.
@@ -2104,102 +1157,9 @@ public class CommercePriceModifierPersistenceImpl
 		OrderByComparator<CommercePriceModifier> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			finderPath = _finderPathWithPaginationFindByG_C_NotS;
-			finderArgs = new Object[] {
-				groupId, companyId, status, start, end, orderByComparator
-			};
-
-			List<CommercePriceModifier> list = null;
-
-			if (useFinderCache) {
-				list = (List<CommercePriceModifier>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CommercePriceModifier commercePriceModifier : list) {
-						if ((groupId != commercePriceModifier.getGroupId()) ||
-							(companyId !=
-								commercePriceModifier.getCompanyId()) ||
-							(status == commercePriceModifier.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						5 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(5);
-				}
-
-				sb.append(_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_STATUS_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CommercePriceModifierModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					list = (List<CommercePriceModifier>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_C_NotS.find(
+			finderCache, new Object[] {new long[] {groupId}, companyId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2257,14 +1217,9 @@ public class CommercePriceModifierPersistenceImpl
 		long groupId, long companyId, int status,
 		OrderByComparator<CommercePriceModifier> orderByComparator) {
 
-		List<CommercePriceModifier> list = findByG_C_NotS(
-			groupId, companyId, status, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		return _collectionPersistenceFinderByG_C_NotS.fetchFirst(
+			finderCache, new Object[] {new long[] {groupId}, companyId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -2355,133 +1310,10 @@ public class CommercePriceModifierPersistenceImpl
 		OrderByComparator<CommercePriceModifier> orderByComparator,
 		boolean useFinderCache) {
 
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		if (groupIds.length == 1) {
-			return findByG_C_NotS(
-				groupIds[0], companyId, status, start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						StringUtil.merge(groupIds), companyId, status
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					StringUtil.merge(groupIds), companyId, status, start, end,
-					orderByComparator
-				};
-			}
-
-			List<CommercePriceModifier> list = null;
-
-			if (useFinderCache) {
-				list = (List<CommercePriceModifier>)finderCache.getResult(
-					_finderPathWithPaginationFindByG_C_NotS, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CommercePriceModifier commercePriceModifier : list) {
-						if (!ArrayUtil.contains(
-								groupIds, commercePriceModifier.getGroupId()) ||
-							(companyId !=
-								commercePriceModifier.getCompanyId()) ||
-							(status == commercePriceModifier.getStatus())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_C_NOTS_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_STATUS_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CommercePriceModifierModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					list = (List<CommercePriceModifier>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByG_C_NotS, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByG_C_NotS.find(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(groupIds), companyId, status},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2493,13 +1325,9 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public void removeByG_C_NotS(long groupId, long companyId, int status) {
-		for (CommercePriceModifier commercePriceModifier :
-				findByG_C_NotS(
-					groupId, companyId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, null)) {
-
-			remove(commercePriceModifier);
-		}
+		_collectionPersistenceFinderByG_C_NotS.remove(
+			finderCache,
+			new Object[] {new long[] {groupId}, companyId, status});
 	}
 
 	/**
@@ -2512,59 +1340,9 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public int countByG_C_NotS(long groupId, long companyId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			FinderPath finderPath = _finderPathWithPaginationCountByG_C_NotS;
-
-			Object[] finderArgs = new Object[] {groupId, companyId, status};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(4);
-
-				sb.append(_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_GROUPID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_STATUS_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(groupId);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_C_NotS.count(
+			finderCache,
+			new Object[] {new long[] {groupId}, companyId, status});
 	}
 
 	/**
@@ -2577,99 +1355,14 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Override
 	public int countByG_C_NotS(long[] groupIds, long companyId, int status) {
-		if (groupIds == null) {
-			groupIds = new long[0];
-		}
-		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.sortedUnique(groupIds);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			Object[] finderArgs = new Object[] {
-				StringUtil.merge(groupIds), companyId, status
-			};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByG_C_NotS, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE);
-
-				if (groupIds.length > 0) {
-					sb.append("(");
-
-					sb.append(_FINDER_COLUMN_G_C_NOTS_GROUPID_7);
-
-					sb.append(StringUtil.merge(groupIds));
-
-					sb.append(")");
-
-					sb.append(")");
-
-					sb.append(WHERE_AND);
-				}
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_COMPANYID_2);
-
-				sb.append(_FINDER_COLUMN_G_C_NOTS_STATUS_2);
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(companyId);
-
-					queryPos.add(status);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByG_C_NotS, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByG_C_NotS.count(
+			finderCache,
+			new Object[] {ArrayUtil.sortedUnique(groupIds), companyId, status});
 	}
 
-	private static final String _FINDER_COLUMN_G_C_NOTS_GROUPID_2 =
-		"commercePriceModifier.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_NOTS_GROUPID_7 =
-		"commercePriceModifier.groupId IN (";
-
-	private static final String _FINDER_COLUMN_G_C_NOTS_COMPANYID_2 =
-		"commercePriceModifier.companyId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_C_NOTS_STATUS_2 =
-		"commercePriceModifier.status != ?";
-
-	private FinderPath _finderPathFetchByERC_C;
-	private UniquePersistenceFinder<CommercePriceModifier>
-		_uniquePersistenceFinderByERC_C;
+	private UniquePersistenceFinder
+		<CommercePriceModifier, NoSuchPriceModifierException>
+			_uniquePersistenceFinderByERC_C;
 
 	/**
 	 * Returns the commerce price modifier where externalReferenceCode = &#63; and companyId = &#63; or throws a <code>NoSuchPriceModifierException</code> if it could not be found.
@@ -2684,37 +1377,8 @@ public class CommercePriceModifierPersistenceImpl
 			String externalReferenceCode, long companyId)
 		throws NoSuchPriceModifierException {
 
-		CommercePriceModifier commercePriceModifier = fetchByERC_C(
-			externalReferenceCode, companyId);
-
-		if (commercePriceModifier == null) {
-			String message =
-				_uniquePersistenceFinderByERC_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, companyId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchPriceModifierException(message);
-		}
-
-		return commercePriceModifier;
-	}
-
-	/**
-	 * Returns the commerce price modifier where externalReferenceCode = &#63; and companyId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param companyId the company ID
-	 * @return the matching commerce price modifier, or <code>null</code> if a matching commerce price modifier could not be found
-	 */
-	@Override
-	public CommercePriceModifier fetchByERC_C(
-		String externalReferenceCode, long companyId) {
-
-		return fetchByERC_C(externalReferenceCode, companyId, true);
+		return _uniquePersistenceFinderByERC_C.find(
+			finderCache, new Object[] {externalReferenceCode, companyId});
 	}
 
 	/**
@@ -2729,14 +1393,9 @@ public class CommercePriceModifierPersistenceImpl
 	public CommercePriceModifier fetchByERC_C(
 		String externalReferenceCode, long companyId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CommercePriceModifier.class)) {
-
-			return _uniquePersistenceFinderByERC_C.fetch(
-				finderCache, new Object[] {externalReferenceCode, companyId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByERC_C.fetch(
+			finderCache, new Object[] {externalReferenceCode, companyId},
+			useFinderCache);
 	}
 
 	/**
@@ -3165,300 +1824,310 @@ public class CommercePriceModifierPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE,
 			_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE,
 			CommercePriceModifierModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
-				"commercePriceModifier.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, CommercePriceModifier::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			CommercePriceModifier::getUuid, CommercePriceModifier::getGroupId);
+				"commercePriceModifier.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CommercePriceModifier::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(CommercePriceModifier::getUuid),
+				CommercePriceModifier::getGroupId),
+			_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE, "",
 			new FinderColumn<>(
-				"commercePriceModifier.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, CommercePriceModifier::getUuid),
+				"commercePriceModifier.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				CommercePriceModifier::getUuid),
 			new FinderColumn<>(
 				"commercePriceModifier.", "groupId", FinderColumn.Type.LONG,
 				"=", true, true, CommercePriceModifier::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE,
 				_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE,
 				CommercePriceModifierModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"commercePriceModifier.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, CommercePriceModifier::getUuid),
+					"commercePriceModifier.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					CommercePriceModifier::getUuid),
 				new FinderColumn<>(
 					"commercePriceModifier.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommercePriceModifier::getCompanyId));
-
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
 
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
 				_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE,
 				_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE,
 				CommercePriceModifierModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commercePriceModifier.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommercePriceModifier::getCompanyId));
 
-		_finderPathWithPaginationFindByCommercePriceListId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCommercePriceListId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"commercePriceListId"}, true);
-
-		_finderPathWithoutPaginationFindByCommercePriceListId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByCommercePriceListId", new String[] {Long.class.getName()},
-			new String[] {"commercePriceListId"}, true);
-
-		_finderPathCountByCommercePriceListId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCommercePriceListId", new String[] {Long.class.getName()},
-			new String[] {"commercePriceListId"}, false);
-
 		_collectionPersistenceFinderByCommercePriceListId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCommercePriceListId,
-				_finderPathWithoutPaginationFindByCommercePriceListId,
-				_finderPathCountByCommercePriceListId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCommercePriceListId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"commercePriceListId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCommercePriceListId",
+					new String[] {Long.class.getName()},
+					new String[] {"commercePriceListId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCommercePriceListId",
+					new String[] {Long.class.getName()},
+					new String[] {"commercePriceListId"}, false),
 				_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE,
 				_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE,
 				CommercePriceModifierModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commercePriceModifier.", "commercePriceListId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommercePriceModifier::getCommercePriceListId));
 
-		_finderPathWithPaginationFindByC_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_T",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "target"}, true);
-
-		_finderPathWithoutPaginationFindByC_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_T",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "target"}, true);
-
-		_finderPathCountByC_T = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_T",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "target"}, false);
-
 		_collectionPersistenceFinderByC_T = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_T,
-			_finderPathWithoutPaginationFindByC_T, _finderPathCountByC_T,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_T",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "target"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_T",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "target"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_T",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "target"}, 0, 2, false, null),
 			_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE,
 			_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE,
 			CommercePriceModifierModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"commercePriceModifier.", "companyId", FinderColumn.Type.LONG,
-				"=", true, false, CommercePriceModifier::getCompanyId),
+				"=", true, true, CommercePriceModifier::getCompanyId),
 			new FinderColumn<>(
 				"commercePriceModifier.", "target", FinderColumn.Type.STRING,
 				"=", true, true, CommercePriceModifier::getTarget));
 
-		_finderPathWithPaginationFindByLtD_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtD_S",
-			new String[] {
-				Date.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"displayDate", "status"}, true);
-
-		_finderPathWithPaginationCountByLtD_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtD_S",
-			new String[] {Date.class.getName(), Integer.class.getName()},
-			new String[] {"displayDate", "status"}, false);
-
 		_collectionPersistenceFinderByLtD_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByLtD_S, null,
-			_finderPathWithPaginationCountByLtD_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtD_S",
+				new String[] {
+					Date.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"displayDate", "status"}, true),
+			null,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtD_S",
+				new String[] {Date.class.getName(), Integer.class.getName()},
+				new String[] {"displayDate", "status"}, false),
 			_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE,
 			_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE,
 			CommercePriceModifierModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"commercePriceModifier.", "displayDate", FinderColumn.Type.DATE,
-				"<", true, false, CommercePriceModifier::getDisplayDate),
+				"<", true, true, CommercePriceModifier::getDisplayDate),
 			new FinderColumn<>(
 				"commercePriceModifier.", "status", FinderColumn.Type.INTEGER,
 				"=", true, true, CommercePriceModifier::getStatus));
 
-		_finderPathWithPaginationFindByLtE_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtE_S",
-			new String[] {
-				Date.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"expirationDate", "status"}, true);
-
-		_finderPathWithPaginationCountByLtE_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtE_S",
-			new String[] {Date.class.getName(), Integer.class.getName()},
-			new String[] {"expirationDate", "status"}, false);
-
 		_collectionPersistenceFinderByLtE_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByLtE_S, null,
-			_finderPathWithPaginationCountByLtE_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtE_S",
+				new String[] {
+					Date.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"expirationDate", "status"}, true),
+			null,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtE_S",
+				new String[] {Date.class.getName(), Integer.class.getName()},
+				new String[] {"expirationDate", "status"}, false),
 			_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE,
 			_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE,
 			CommercePriceModifierModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"commercePriceModifier.", "expirationDate",
-				FinderColumn.Type.DATE, "<", true, false,
+				FinderColumn.Type.DATE, "<", true, true,
 				CommercePriceModifier::getExpirationDate),
 			new FinderColumn<>(
 				"commercePriceModifier.", "status", FinderColumn.Type.INTEGER,
 				"=", true, true, CommercePriceModifier::getStatus));
 
-		_finderPathWithPaginationFindByG_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, true);
+		_collectionPersistenceFinderByG_C_S = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "companyId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {"groupId", "companyId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName()
+				},
+				new String[] {"groupId", "companyId", "status"}, false),
+			_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE,
+			_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE,
+			CommercePriceModifierModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
+			new ArrayableFinderColumn<>(
+				"commercePriceModifier.", "groupId", FinderColumn.Type.LONG,
+				"=", false, true, true, CommercePriceModifier::getGroupId),
+			new FinderColumn<>(
+				"commercePriceModifier.", "companyId", FinderColumn.Type.LONG,
+				"=", true, true, CommercePriceModifier::getCompanyId),
+			new FinderColumn<>(
+				"commercePriceModifier.", "status", FinderColumn.Type.INTEGER,
+				"=", true, true, CommercePriceModifier::getStatus));
 
-		_finderPathWithoutPaginationFindByG_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, true);
-
-		_finderPathCountByG_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, false);
-
-		_finderPathWithPaginationCountByG_C_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, false);
-
-		_finderPathWithPaginationFindByG_C_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_NotS",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, true);
-
-		_finderPathWithPaginationCountByG_C_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C_NotS",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "companyId", "status"}, false);
-
-		_finderPathFetchByERC_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "companyId"}, false,
-			CommercePriceModifier::getExternalReferenceCode,
-			CommercePriceModifier::getCompanyId);
+		_collectionPersistenceFinderByG_C_NotS =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_NotS",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "companyId", "status"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_C_NotS",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "companyId", "status"}, false),
+				_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE,
+				_SQL_COUNT_COMMERCEPRICEMODIFIER_WHERE,
+				CommercePriceModifierModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX, "",
+				new ArrayableFinderColumn<>(
+					"commercePriceModifier.", "groupId", FinderColumn.Type.LONG,
+					"=", false, true, true, CommercePriceModifier::getGroupId),
+				new FinderColumn<>(
+					"commercePriceModifier.", "companyId",
+					FinderColumn.Type.LONG, "=", true, true,
+					CommercePriceModifier::getCompanyId),
+				new FinderColumn<>(
+					"commercePriceModifier.", "status",
+					FinderColumn.Type.INTEGER, "!=", true, true,
+					CommercePriceModifier::getStatus));
 
 		_uniquePersistenceFinderByERC_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_C,
-			_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_C",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "companyId"}, 0, 1,
+				false,
+				convertNullFunction(
+					CommercePriceModifier::getExternalReferenceCode),
+				CommercePriceModifier::getCompanyId),
+			_SQL_SELECT_COMMERCEPRICEMODIFIER_WHERE, "",
 			new FinderColumn<>(
 				"commercePriceModifier.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				CommercePriceModifier::getExternalReferenceCode),
 			new FinderColumn<>(
 				"commercePriceModifier.", "companyId", FinderColumn.Type.LONG,
@@ -3536,4 +2205,4 @@ public class CommercePriceModifierPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:790860236
+// LIFERAY-SERVICE-BUILDER-HASH:-1996262323

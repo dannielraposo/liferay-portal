@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -104,7 +105,8 @@ public abstract class BaseTestEntityAddressResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -236,7 +238,7 @@ public abstract class BaseTestEntityAddressResourceTestCase {
 						"JSONObject/data",
 						"Object/testEntityTestEntityAddress"))));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertTrue(
 			equals(
@@ -245,7 +247,7 @@ public abstract class BaseTestEntityAddressResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"test_v1_0",
+								"portalTools_v1_0",
 								new GraphQLField(
 									"testEntityTestEntityAddress",
 									new HashMap<String, Object>() {
@@ -256,7 +258,7 @@ public abstract class BaseTestEntityAddressResourceTestCase {
 										}
 									},
 									getGraphQLFields()))),
-						"JSONObject/data", "JSONObject/test_v1_0",
+						"JSONObject/data", "JSONObject/portalTools_v1_0",
 						"Object/testEntityTestEntityAddress"))));
 	}
 
@@ -290,14 +292,14 @@ public abstract class BaseTestEntityAddressResourceTestCase {
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"test_v1_0",
+						"portalTools_v1_0",
 						new GraphQLField(
 							"testEntityTestEntityAddress",
 							new HashMap<String, Object>() {
@@ -980,7 +982,9 @@ public abstract class BaseTestEntityAddressResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -1250,4 +1254,4 @@ public abstract class BaseTestEntityAddressResourceTestCase {
 		TestEntityAddressResource _testEntityAddressResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:110120704
+// LIFERAY-REST-BUILDER-HASH:185615214

@@ -17,6 +17,13 @@ variable "argocd_namespace" {
 	default="argocd-system"
 	type=string
 }
+variable "argocd_sso_config" {
+	default={}
+	type=object({
+		credentials_secret_name=optional(string, "liferay/credentials/argocd-sso")
+		enable_saml_sso=optional(bool, false)
+	})
+}
 variable "crossplane_namespace" {
 	default="crossplane-system"
 	type=string
@@ -61,12 +68,16 @@ variable "infrastructure_git_repo_config" {
 				base=optional(string, "liferay/projects/{{path[2]}}/base")
 				environments=optional(string, "liferay/projects/*/environments/*")
 				infrastructure_provider_values_filename=optional(string, "infrastructure-provider.yaml")
+				observability_values_filename=optional(string, "observability.yaml")
+				project_values_filename=optional(string, "project.yaml")
+				projects=optional(string, "liferay/projects/*")
 				system=optional(string, "liferay/system")
 				values_filename=optional(string, "infrastructure.yaml")
 			})
 			target=object({
 				name=optional(string, "{{path[2]}}-{{path[4]}}-infra")
 				namespaceSuffix=optional(string, "{{path[2]}}-{{path[4]}}")
+				resourcesName=optional(string, "{{path[2]}}-resources")
 				slugEnvironmentId=optional(string, "{{path[4]}}")
 				slugProjectId=optional(string, "{{path[2]}}")
 			})
@@ -103,6 +114,14 @@ variable "infrastructure_provider_helm_chart_config" {
 		})
 }
 variable "infrastructure_provider_helm_chart_version" {
+	type=string
+}
+variable "keda_enabled" {
+	default=false
+	type=bool
+}
+variable "keda_namespace" {
+	default="keda-system"
 	type=string
 }
 variable "liferay_git_repo_config" {
@@ -166,6 +185,28 @@ variable "liferay_helm_chart_name" {
 	}
 }
 variable "liferay_helm_chart_version" {
+	type=string
+}
+variable "observability_config" {
+	default={}
+	type=object(
+		{
+			enabled=optional(bool, false)
+			namespace=optional(string, "observability")
+		}
+	)
+}
+variable "observability_helm_chart_config" {
+	default={}
+	type=object(
+		{
+			chart_name=optional(string, "observability")
+			chart_url=optional(string, "oci://us-central1-docker.pkg.dev/external-assets-prd/liferay-helm-chart/observability")
+			path=optional(string, null)
+			version=optional(string, null)
+		})
+}
+variable "observability_helm_chart_version" {
 	type=string
 }
 variable "region" {

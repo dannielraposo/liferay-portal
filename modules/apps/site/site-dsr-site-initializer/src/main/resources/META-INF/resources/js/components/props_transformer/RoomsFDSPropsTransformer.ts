@@ -4,13 +4,17 @@
  */
 
 import {IInternalRenderer, IItemsActions} from '@liferay/frontend-data-set-web';
-import {openModal} from 'frontend-js-components-web';
+import {openModal, openToast} from 'frontend-js-components-web';
+import {sessionStorage} from 'frontend-js-web';
 
 import {openFDSDeleteConfirmationModal} from '../../common/utils/openModalUtil';
 import {IRoom} from '../../common/utils/types';
+import DuplicateRoom from '../DuplicateRoom';
 import RoomInitializer from '../RoomInitializer';
 import RoomShare from '../RoomShare';
 import RoomNameRenderer from './cell_renderers/RoomNameRenderer';
+import RoomStatusRenderer from './cell_renderers/RoomStatusRenderer';
+import RoomTrendRenderer from './cell_renderers/RoomTrendRenderer';
 
 export default function RoomsFDSPropsTransformer({
 	additionalProps,
@@ -23,6 +27,19 @@ export default function RoomsFDSPropsTransformer({
 	itemsActions: IItemsActions[];
 	otherProps: any;
 }) {
+	const successMessage = sessionStorage.getItem(
+		'com.liferay.site.dsr.site.initializer.roomSettingsSuccessMessage',
+		sessionStorage.TYPES.NECESSARY
+	);
+
+	if (successMessage) {
+		sessionStorage.removeItem(
+			'com.liferay.site.dsr.site.initializer.roomSettingsSuccessMessage'
+		);
+
+		openToast({message: successMessage, type: 'success'});
+	}
+
 	return {
 		...otherProps,
 		creationMenu: {
@@ -69,6 +86,16 @@ export default function RoomsFDSPropsTransformer({
 					name: 'roomNameTableCellRenderer',
 					type: 'internal',
 				} as IInternalRenderer,
+				{
+					component: RoomStatusRenderer,
+					name: 'roomStatusTableCellRenderer',
+					type: 'internal',
+				} as IInternalRenderer,
+				{
+					component: RoomTrendRenderer,
+					name: 'roomTrendTableCellRenderer',
+					type: 'internal',
+				} as IInternalRenderer,
 			],
 		},
 		itemsActions: itemsActions.map((action) => {
@@ -105,6 +132,28 @@ export default function RoomsFDSPropsTransformer({
 						'delete-digital-sales-room-confirmation-title'
 					),
 					url: itemData.actions?.delete?.href,
+				});
+			}
+			else if (action.data.id === 'duplicate') {
+				event?.preventDefault();
+
+				openModal({
+					containerProps: {
+						className: '',
+					},
+					contentComponent: ({
+						closeModal,
+					}: {
+						closeModal: () => void;
+					}) =>
+						DuplicateRoom({
+							closeModal,
+							loadData,
+							name: itemData.embedded.name,
+							roomId: itemData.embedded.id,
+							siteId: itemData.embedded.siteId,
+						}),
+					size: 'lg',
 				});
 			}
 			else if (action.data.id === 'share') {

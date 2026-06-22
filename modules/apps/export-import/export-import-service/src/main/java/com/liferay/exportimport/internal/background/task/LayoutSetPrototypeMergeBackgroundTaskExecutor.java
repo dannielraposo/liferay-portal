@@ -11,13 +11,13 @@ import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.service.ExportImportLocalService;
 import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
+import com.liferay.exportimport.report.service.ExportImportReportEntryLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskResult;
 import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -28,21 +28,15 @@ import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
-import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.sites.kernel.util.Sites;
 
 import java.io.File;
 import java.io.Serializable;
 
-import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -76,8 +70,6 @@ public class LayoutSetPrototypeMergeBackgroundTaskExecutor
 		Map<String, String[]> parameterMap =
 			(Map<String, String[]>)settingsMap.get("parameterMap");
 
-		boolean anyFailedLayoutModifiedSinceLastMerge = MapUtil.getBoolean(
-			parameterMap, "anyFailedLayoutModifiedSinceLastMerge");
 		long layoutSetId = MapUtil.getLong(parameterMap, "layoutSetId");
 		long layoutSetPrototypeId = MapUtil.getLong(
 			parameterMap, "layoutSetPrototypeId");
@@ -89,38 +81,6 @@ public class LayoutSetPrototypeMergeBackgroundTaskExecutor
 			LayoutSetPrototype layoutSetPrototype =
 				_layoutSetPrototypeLocalService.getLayoutSetPrototype(
 					layoutSetPrototypeId);
-
-			UnicodeProperties settingsUnicodeProperties =
-				layoutSet.getSettingsProperties();
-
-			long lastMergeTime = GetterUtil.getLong(
-				settingsUnicodeProperties.getProperty(Sites.LAST_MERGE_TIME));
-			long lastMergeVersion = GetterUtil.getLong(
-				settingsUnicodeProperties.getProperty(
-					Sites.LAST_MERGE_VERSION));
-
-			Date layoutSetPrototypeModifiedDate =
-				layoutSetPrototype.getModifiedDate();
-
-			if ((lastMergeVersion == layoutSetPrototype.getMvccVersion()) &&
-				(lastMergeTime >= layoutSetPrototypeModifiedDate.getTime()) &&
-				!anyFailedLayoutModifiedSinceLastMerge) {
-
-				if (_log.isDebugEnabled()) {
-					StringBundler sb = new StringBundler(5);
-
-					sb.append("Skipping background task ");
-					sb.append(backgroundTask.getBackgroundTaskId());
-					sb.append(", layoutSet ");
-					sb.append(layoutSetId);
-					sb.append(" is already up to date");
-
-					_log.debug(sb.toString());
-				}
-
-				return new BackgroundTaskResult(
-					BackgroundTaskConstants.STATUS_SUCCESSFUL);
-			}
 
 			boolean importData = MapUtil.getBoolean(parameterMap, "importData");
 
@@ -178,52 +138,43 @@ public class LayoutSetPrototypeMergeBackgroundTaskExecutor
 						layoutSet.isPrivateLayout(), null, parameterMap,
 						user.getLocale(), user.getTimeZone());
 
-			TransactionInvokerUtil.invoke(
-				transactionConfig,
-				new LayoutImportCallable(
-					_exportImportConfigurationLocalService.
-						addExportImportConfiguration(
-							user.getUserId(), layoutSet.getGroupId(),
-							StringPool.BLANK, StringPool.BLANK,
-							ExportImportConfigurationConstants.
-								TYPE_IMPORT_LAYOUT,
-							importLayoutSettingsMap,
-							WorkflowConstants.STATUS_DRAFT,
-							new ServiceContext()),
-					cacheFile, layoutSet));
+			ExportImportConfiguration importExportImportConfiguration =
+				_exportImportConfigurationLocalService.
+					addExportImportConfiguration(
+						user.getUserId(), layoutSet.getGroupId(),
+						StringPool.BLANK, StringPool.BLANK,
+						ExportImportConfigurationConstants.TYPE_IMPORT_LAYOUT,
+						importLayoutSettingsMap, WorkflowConstants.STATUS_DRAFT,
+						new ServiceContext());
+
+			MergeLayoutPrototypesThreadLocal.setInProgress(true);
+
+			_exportImportLocalService.importLayouts(
+				importExportImportConfiguration, cacheFile);
+
+			int count =
+				_exportImportReportEntryLocalService.
+					getExportImportReportEntriesCount(
+						importExportImportConfiguration.getCompanyId(),
+						importExportImportConfiguration.
+							getExportImportConfigurationId());
+
+			if (count > 0) {
+				return BackgroundTaskResult.COMPLETED_WITH_ERRORS;
+			}
 
 			return BackgroundTaskResult.SUCCESS;
 		}
 		catch (Throwable throwable) {
-			LayoutSetPrototype layoutSetPrototype =
-				_layoutSetPrototypeLocalService.getLayoutSetPrototype(
-					layoutSetPrototypeId);
-
-			LayoutSet layoutSetPrototypeLayoutSet =
-				layoutSetPrototype.getLayoutSet();
-
-			UnicodeProperties layoutSetPrototypeSettingsUnicodeProperties =
-				layoutSetPrototypeLayoutSet.getSettingsProperties();
-
-			int mergeFailCount = GetterUtil.getInteger(
-				layoutSetPrototypeSettingsUnicodeProperties.getProperty(
-					Sites.MERGE_FAIL_COUNT));
-
-			mergeFailCount++;
-
-			layoutSetPrototypeSettingsUnicodeProperties.setProperty(
-				Sites.MERGE_FAIL_COUNT, String.valueOf(mergeFailCount));
-
-			_layoutSetLocalService.updateLayoutSet(layoutSetPrototypeLayoutSet);
-
 			_log.error(
-				StringBundler.concat(
-					"Merge fail count increased to ", mergeFailCount,
-					" for layout set prototype ",
-					layoutSetPrototype.getLayoutSetPrototypeId()),
+				"The merge process failed for layout set prototype " +
+					layoutSetPrototypeId,
 				throwable);
 
 			throw new SystemException(throwable);
+		}
+		finally {
+			MergeLayoutPrototypesThreadLocal.setInProgress(false);
 		}
 	}
 
@@ -250,52 +201,16 @@ public class LayoutSetPrototypeMergeBackgroundTaskExecutor
 	private ExportImportLocalService _exportImportLocalService;
 
 	@Reference
+	private ExportImportReportEntryLocalService
+		_exportImportReportEntryLocalService;
+
+	@Reference
 	private LayoutSetLocalService _layoutSetLocalService;
 
 	@Reference
 	private LayoutSetPrototypeLocalService _layoutSetPrototypeLocalService;
 
 	@Reference
-	private Sites _sites;
-
-	@Reference
 	private UserLocalService _userLocalService;
-
-	private class LayoutImportCallable implements Callable<Void> {
-
-		public LayoutImportCallable(
-			ExportImportConfiguration exportImportConfiguration, File file,
-			LayoutSet layoutSet) {
-
-			_exportImportConfiguration = exportImportConfiguration;
-			_file = file;
-			_layoutSet = layoutSet;
-		}
-
-		@Override
-		public Void call() throws PortalException {
-			try {
-				MergeLayoutPrototypesThreadLocal.setInProgress(true);
-
-				_sites.removeMergeFailFriendlyURLLayouts(_layoutSet);
-
-				_exportImportLocalService.importLayoutsDataDeletions(
-					_exportImportConfiguration, _file);
-
-				_exportImportLocalService.importLayouts(
-					_exportImportConfiguration, _file);
-
-				return null;
-			}
-			finally {
-				MergeLayoutPrototypesThreadLocal.setInProgress(false);
-			}
-		}
-
-		private final ExportImportConfiguration _exportImportConfiguration;
-		private final File _file;
-		private final LayoutSet _layoutSet;
-
-	}
 
 }

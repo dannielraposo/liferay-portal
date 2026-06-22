@@ -10,11 +10,8 @@ import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchOrgLaborException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.OrgLabor;
 import com.liferay.portal.kernel.model.OrgLaborTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -63,70 +60,14 @@ public class OrgLaborPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByOrganizationId;
-	private FinderPath _finderPathWithoutPaginationFindByOrganizationId;
-	private FinderPath _finderPathCountByOrganizationId;
-	private CollectionPersistenceFinder<OrgLabor>
+	private CollectionPersistenceFinder<OrgLabor, NoSuchOrgLaborException>
 		_collectionPersistenceFinderByOrganizationId;
 
 	/**
-	 * Returns all the org labors where organizationId = &#63;.
-	 *
-	 * @param organizationId the organization ID
-	 * @return the matching org labors
-	 */
-	@Override
-	public List<OrgLabor> findByOrganizationId(long organizationId) {
-		return findByOrganizationId(
-			organizationId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the org labors where organizationId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OrgLaborModelImpl</code>.
-	 * </p>
-	 *
-	 * @param organizationId the organization ID
-	 * @param start the lower bound of the range of org labors
-	 * @param end the upper bound of the range of org labors (not inclusive)
-	 * @return the range of matching org labors
-	 */
-	@Override
-	public List<OrgLabor> findByOrganizationId(
-		long organizationId, int start, int end) {
-
-		return findByOrganizationId(organizationId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the org labors where organizationId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OrgLaborModelImpl</code>.
-	 * </p>
-	 *
-	 * @param organizationId the organization ID
-	 * @param start the lower bound of the range of org labors
-	 * @param end the upper bound of the range of org labors (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching org labors
-	 */
-	@Override
-	public List<OrgLabor> findByOrganizationId(
-		long organizationId, int start, int end,
-		OrderByComparator<OrgLabor> orderByComparator) {
-
-		return findByOrganizationId(
-			organizationId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the org labors where organizationId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OrgLaborModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OrgLaborModelImpl</code>.
 	 * </p>
 	 *
 	 * @param organizationId the organization ID
@@ -159,16 +100,9 @@ public class OrgLaborPersistenceImpl
 			long organizationId, OrderByComparator<OrgLabor> orderByComparator)
 		throws NoSuchOrgLaborException {
 
-		OrgLabor orgLabor = fetchByOrganizationId_First(
-			organizationId, orderByComparator);
-
-		if (orgLabor != null) {
-			return orgLabor;
-		}
-
-		throw new NoSuchOrgLaborException(
-			_collectionPersistenceFinderByOrganizationId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {organizationId}));
+		return _collectionPersistenceFinderByOrganizationId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {organizationId},
+			orderByComparator);
 	}
 
 	/**
@@ -380,31 +314,29 @@ public class OrgLaborPersistenceImpl
 	 * Initializes the org labor persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByOrganizationId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByOrganizationId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"organizationId"}, true);
-
-		_finderPathWithoutPaginationFindByOrganizationId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByOrganizationId",
-			new String[] {Long.class.getName()},
-			new String[] {"organizationId"}, true);
-
-		_finderPathCountByOrganizationId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByOrganizationId",
-			new String[] {Long.class.getName()},
-			new String[] {"organizationId"}, false);
-
 		_collectionPersistenceFinderByOrganizationId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByOrganizationId,
-				_finderPathWithoutPaginationFindByOrganizationId,
-				_finderPathCountByOrganizationId, _SQL_SELECT_ORGLABOR_WHERE,
-				_SQL_COUNT_ORGLABOR_WHERE, OrgLaborModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByOrganizationId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"organizationId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByOrganizationId", new String[] {Long.class.getName()},
+					new String[] {"organizationId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByOrganizationId",
+					new String[] {Long.class.getName()},
+					new String[] {"organizationId"}, false),
+				_SQL_SELECT_ORGLABOR_WHERE, _SQL_COUNT_ORGLABOR_WHERE,
+				OrgLaborModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"orgLabor.", "organizationId", FinderColumn.Type.LONG, "=",
 					true, true, OrgLabor::getOrganizationId));
@@ -433,13 +365,10 @@ public class OrgLaborPersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No OrgLabor exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		OrgLaborPersistenceImpl.class);
-
 	@Override
 	protected FinderCache getFinderCache() {
 		return FinderCacheUtil.getFinderCache();
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-85303373
+// LIFERAY-SERVICE-BUILDER-HASH:77901824

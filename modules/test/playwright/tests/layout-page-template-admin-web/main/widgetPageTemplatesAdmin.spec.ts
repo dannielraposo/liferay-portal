@@ -5,6 +5,7 @@
 
 import {expect, mergeTests} from '@playwright/test';
 
+import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
 import {isolatedSiteTest} from '../../../fixtures/isolatedSiteTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {pageViewModePagesTest} from '../../../fixtures/pageViewModePagesTest';
@@ -14,6 +15,9 @@ import {clickAndExpectToBeVisible} from '../../../utils/clickAndExpectToBeVisibl
 import getRandomString from '../../../utils/getRandomString';
 
 export const test = mergeTests(
+	featureFlagsTest({
+		'LPD-76864': {enabled: true},
+	}),
 	isolatedSiteTest,
 	loginTest(),
 	pageViewModePagesTest,
@@ -115,7 +119,7 @@ test('Add an active page template in global site and deactivate it', async ({
 test(
 	'Disable inherit changes and check it works',
 	{
-		tag: ['@LPS-54099', '@LPS-145264', '@LPS-154130'],
+		tag: ['@LPS-54099', '@LPS-145264', '@LPS-154130', '@LPD-92505'],
 	},
 	async ({
 		page,
@@ -159,6 +163,8 @@ test(
 		// Disable inherit changes
 
 		await page.getByLabel('Inherit Changes').uncheck();
+
+		await expect(page.locator('[id$="typeOptions"]')).toBeVisible();
 
 		await pagesAdminPage.saveConfiguration();
 
@@ -220,6 +226,8 @@ test(
 		await pagesAdminPage.clickOnAction('Configure', layoutTitle);
 
 		await page.getByLabel('Inherit Changes').check();
+
+		await expect(page.locator('[id$="typeOptions"]')).toBeHidden();
 
 		await pagesAdminPage.saveConfiguration();
 

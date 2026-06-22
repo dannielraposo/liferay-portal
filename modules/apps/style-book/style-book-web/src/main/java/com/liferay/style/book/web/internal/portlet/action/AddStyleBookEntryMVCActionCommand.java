@@ -13,6 +13,7 @@ import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.servlet.SessionErrors;
@@ -25,6 +26,7 @@ import com.liferay.style.book.web.internal.handler.StyleBookEntryExceptionReques
 
 import jakarta.portlet.ActionRequest;
 import jakarta.portlet.ActionResponse;
+import jakarta.portlet.PortletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -49,8 +51,15 @@ public class AddStyleBookEntryMVCActionCommand extends BaseMVCActionCommand {
 		try {
 			StyleBookEntry styleBookEntry = _addStyleBookEntry(actionRequest);
 
+			String backURLTitle = ParamUtil.getString(
+				actionRequest, "backURLTitle");
+			String redirect = _portal.escapeRedirect(
+				ParamUtil.getString(actionRequest, "redirect"));
+
 			JSONObject jsonObject = JSONUtil.put(
-				"redirectURL", _getRedirectURL(actionResponse, styleBookEntry));
+				"redirectURL",
+				_getRedirectURL(
+					actionRequest, backURLTitle, redirect, styleBookEntry));
 
 			if (SessionErrors.contains(
 					actionRequest, "styleBookEntryNameInvalid")) {
@@ -86,16 +95,29 @@ public class AddStyleBookEntryMVCActionCommand extends BaseMVCActionCommand {
 	}
 
 	private String _getRedirectURL(
-		ActionResponse actionResponse, StyleBookEntry styleBookEntry) {
+			ActionRequest actionRequest, String backURLTitle, String redirect,
+			StyleBookEntry styleBookEntry)
+		throws PortalException {
 
-		return PortletURLBuilder.createRenderURL(
-			_portal.getLiferayPortletResponse(actionResponse)
+		return PortletURLBuilder.create(
+			_portal.getControlPanelPortletURL(
+				_portal.getHttpServletRequest(actionRequest),
+				_groupLocalService.getGroup(styleBookEntry.getGroupId()),
+				StyleBookPortletKeys.STYLE_BOOK, 0, 0,
+				PortletRequest.RENDER_PHASE)
 		).setMVCRenderCommandName(
 			"/style_book/edit_style_book_entry"
+		).setRedirect(
+			redirect
+		).setParameter(
+			"backURLTitle", backURLTitle
 		).setParameter(
 			"styleBookEntryId", styleBookEntry.getStyleBookEntryId()
 		).buildString();
 	}
+
+	@Reference
+	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private Portal _portal;

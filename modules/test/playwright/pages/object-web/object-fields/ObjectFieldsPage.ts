@@ -24,8 +24,8 @@ export class ObjectFieldsPage {
 	readonly objectFieldLabelInput: Locator;
 	readonly objectFieldNameInput: Locator;
 	readonly objectFieldOptionsDropdown: Locator;
-	readonly prefixDropdown: Locator;
-	readonly prefixTypeDropdown: Locator;
+	readonly countryPicker: Locator;
+	readonly countrySourceDropdown: Locator;
 	readonly page: Page;
 	readonly saveButton: Locator;
 	readonly selectOptionButton: Locator;
@@ -64,20 +64,14 @@ export class ObjectFieldsPage {
 		this.objectFieldNameInput = page.locator('input[name="name"]');
 		this.objectFieldOptionsDropdown = page.getByText('Select an Option');
 		this.page = page;
-		this.prefixDropdown = this.iframeLocator
-			.locator('.form-group')
-			.filter({
-				has: this.iframeLocator.locator('label', {hasText: /^Prefix$/}),
-			})
-			.getByRole('combobox');
-		this.prefixTypeDropdown = this.iframeLocator
-			.locator('.form-group')
-			.filter({
-				has: this.iframeLocator.locator('label', {
-					hasText: /^Prefix Type$/,
-				}),
-			})
-			.getByRole('combobox');
+		this.countryPicker = this.iframeLocator.getByRole('combobox', {
+			exact: true,
+			name: 'Country',
+		});
+		this.countrySourceDropdown = this.iframeLocator.getByRole('combobox', {
+			exact: true,
+			name: 'Country Source',
+		});
 		this.saveButton = page.getByRole('button', {name: 'Save'});
 		this.selectOptionButton = this.iframeLocator.getByRole('combobox');
 		this.useDefaultValueToggle = this.iframeLocator.getByRole('switch', {

@@ -14,6 +14,7 @@ import React from 'react';
 
 import SpaceService from '../../../../src/main/resources/META-INF/resources/js/common/services/SpaceService';
 import {Space} from '../../../../src/main/resources/META-INF/resources/js/common/types/Space';
+import {ERC_MAX_LENGTH} from '../../../../src/main/resources/META-INF/resources/js/common/utils/constants';
 import SpaceGeneralSettings from '../../../../src/main/resources/META-INF/resources/js/main_view/spaces/SpaceGeneralSettings';
 
 jest.mock(
@@ -30,12 +31,13 @@ jest.mock(
 const SPACE: Partial<Space> = {
 	description: 'This is the description for Cool Space',
 	externalReferenceCode: 'space-external-reference-code',
+	friendlyURL: '/cool-space',
 	name: 'Cool Space',
 	settings: {
 		logoColor: 'outline-2',
 		sharingEnabled: true,
 		trashEnabled: true,
-		trashEntriesMaxAge: 0,
+		trashEntriesMaxAge: 2880,
 	},
 };
 
@@ -196,6 +198,65 @@ describe('SpaceGeneralSettings', () => {
 		await closeToast();
 	});
 
+	describe('Trash entries max age', () => {
+		it('displays the value in days converted from the stored minutes', () => {
+			renderComponent({
+				space: {
+					...SPACE,
+					settings: {
+						...SPACE.settings!,
+						trashEntriesMaxAge: 7200,
+					},
+				} as Partial<Space>,
+			});
+
+			expect(screen.getByLabelText('trash-entries-max-age')).toHaveValue(
+				5
+			);
+		});
+
+		it('converts the value to minutes on save', async () => {
+			renderComponent();
+
+			const trashEntriesMaxAgeField = screen.getByLabelText(
+				'trash-entries-max-age'
+			);
+
+			await userEvent.clear(trashEntriesMaxAgeField);
+			await userEvent.type(trashEntriesMaxAgeField, '5');
+
+			await userEvent.click(screen.getByRole('button', {name: 'save'}));
+
+			await waitFor(() => {
+				expect(SpaceService.updateSpace).toBeCalledWith(
+					expect.any(String),
+					expect.objectContaining({
+						settings: expect.objectContaining({
+							trashEntriesMaxAge: 7200,
+						}),
+					})
+				);
+			});
+
+			await closeToast();
+		});
+
+		it('does not save when the value is less than 1', async () => {
+			renderComponent();
+
+			const trashEntriesMaxAgeField = screen.getByLabelText(
+				'trash-entries-max-age'
+			);
+
+			await userEvent.clear(trashEntriesMaxAgeField);
+			await userEvent.type(trashEntriesMaxAgeField, '0');
+
+			await userEvent.click(screen.getByRole('button', {name: 'save'}));
+
+			expect(SpaceService.updateSpace).not.toHaveBeenCalled();
+		});
+	});
+
 	describe('Errors', () => {
 		it('does not save the name field when there is an error and the field is focused', async () => {
 			renderComponent();
@@ -228,6 +289,22 @@ describe('SpaceGeneralSettings', () => {
 			).toBeInTheDocument();
 
 			expect(nameInput).toHaveFocus();
+		});
+
+		it('rejects an ERC longer than the column length', async () => {
+			renderComponent();
+
+			const ercInput = screen.getByRole('textbox', {name: /erc/});
+
+			await userEvent.clear(ercInput);
+			await userEvent.type(ercInput, 'a'.repeat(ERC_MAX_LENGTH + 1));
+
+			await userEvent.click(screen.getByRole('button', {name: 'save'}));
+
+			expect(
+				screen.getByText(/please-enter-no-more-than/)
+			).toBeInTheDocument();
+			expect(SpaceService.updateSpace).not.toBeCalled();
 		});
 	});
 });

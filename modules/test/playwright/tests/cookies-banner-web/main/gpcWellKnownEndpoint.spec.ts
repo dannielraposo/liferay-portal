@@ -7,12 +7,16 @@ import {expect, mergeTests} from '@playwright/test';
 
 import {apiHelpersTest} from '../../../fixtures/apiHelpersTest';
 import {consentManagerConfigurationPageTest} from '../../../fixtures/consentManagerConfigurationPageTest';
-import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
+import {dataApiHelpersTest} from '../../../fixtures/dataApiHelpersTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {systemSettingsPageTest} from '../../../fixtures/systemSettingsPageTest';
+import {liferayConfig} from '../../../liferay.config';
+import {SiteSettingsPage} from '../../../pages/users-admin-web/site-admin-web/SiteSettingsPage';
+import getRandomString from '../../../utils/getRandomString';
 import {waitForAlert} from '../../../utils/waitForAlert';
 import {
 	resetAllConsentManagerConfigurations,
+	saveOrUpdateConfiguration,
 	updateConsentManagerConfiguration,
 } from './utils/consentManagerConfigurationHelper';
 
@@ -23,9 +27,7 @@ const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 export const test = mergeTests(
 	apiHelpersTest,
 	consentManagerConfigurationPageTest,
-	featureFlagsTest({
-		'LPD-75064': {enabled: true},
-	}),
+	dataApiHelpersTest,
 	loginTest(),
 	systemSettingsPageTest
 );
@@ -40,6 +42,53 @@ test.beforeEach(async ({page}) => {
 		forceReload: true,
 	});
 });
+
+test(
+	'GPC well-known endpoint is reachable when request matches a site virtual host',
+	{tag: '@LPD-89372'},
+	async ({apiHelpers, browser, page}) => {
+		const site = await apiHelpers.headlessAdminSite.postSite({
+			name: getRandomString(),
+		});
+
+		const siteSettingsPage = new SiteSettingsPage(page);
+
+		await siteSettingsPage.goto(site.friendlyUrlPath);
+
+		await siteSettingsPage.siteConfigurationLink.click();
+		await siteSettingsPage.siteURLLink.click();
+
+		await page.getByRole('button', {name: 'Decline All'}).click();
+
+		const virtualHostName = 'www.easy.com';
+
+		await siteSettingsPage.virtualHostInput.fill(virtualHostName);
+		await siteSettingsPage.saveButton.click();
+
+		await waitForAlert(page);
+
+		const context = await browser.newContext({
+			baseURL: `http://${virtualHostName}:${liferayConfig.environment.port}`,
+			storageState: undefined,
+		});
+
+		try {
+			const response = await context.request.get(GPC_ENDPOINT);
+
+			expect(response.status()).toBe(200);
+			expect(response.headers()['content-type']).toContain(
+				'application/json'
+			);
+
+			const body = await response.json();
+
+			expect(typeof body.gpc).toBe('boolean');
+		}
+		finally {
+			await context.close();
+		}
+	}
+);
 
 test(
 	'GPC well-known endpoint is reachable without authentication',
@@ -124,9 +173,7 @@ test(
 
 		await consentManagerConfigurationPage.globalPrivacyControlEnabledCheckbox.check();
 
-		await consentManagerConfigurationPage.updateButton.click();
-
-		await waitForAlert(page);
+		await saveOrUpdateConfiguration(page);
 
 		await expect(
 			consentManagerConfigurationPage.globalPrivacyControlEnabledCheckbox

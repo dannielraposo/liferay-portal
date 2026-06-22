@@ -1,9 +1,9 @@
 {
 	"dependencies": {
-		"@clayui/icon": "^3.161.0",
-		"@clayui/layout": "^3.161.0",
-		"@clayui/popover": "^3.161.0",
-		"@clayui/sticker": "^3.161.0",
+		"@clayui/icon": "^3.165.0",
+		"@clayui/layout": "^3.165.0",
+		"@clayui/popover": "^3.165.0",
+		"@clayui/sticker": "^3.165.0",
 		"classnames": "2.3.1",
 		"frontend-js-components-web": "*",
 		"frontend-js-web": "*",
@@ -17,5 +17,5 @@
 		"checkFormat": "node-scripts format --check",
 		"format": "node-scripts format"
 	},
-	"version": "5.0.16"
+	"version": "5.0.18"
 }

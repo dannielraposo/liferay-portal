@@ -1932,7 +1932,8 @@ public class LayoutLocalServiceWrapper
 			boolean hidden,
 			java.util.Map<java.util.Locale, String> friendlyURLMap,
 			boolean hasIconImage, byte[] iconBytes, String styleBookEntryERC,
-			String faviconFileEntryERC, String faviconFileEntryScopeERC,
+			String styleBookEntryScopeERC, String faviconFileEntryERC,
+			String faviconFileEntryScopeERC,
 			String masterLayoutPageTemplateEntryERC,
 			ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -1941,23 +1942,26 @@ public class LayoutLocalServiceWrapper
 			groupId, privateLayout, layoutId, parentLayoutId, nameMap, titleMap,
 			descriptionMap, keywordsMap, robotsMap, type, hidden,
 			friendlyURLMap, hasIconImage, iconBytes, styleBookEntryERC,
-			faviconFileEntryERC, faviconFileEntryScopeERC,
-			masterLayoutPageTemplateEntryERC, serviceContext);
+			styleBookEntryScopeERC, faviconFileEntryERC,
+			faviconFileEntryScopeERC, masterLayoutPageTemplateEntryERC,
+			serviceContext);
 	}
 
 	@Override
 	public Layout updateLayout(
 			long groupId, boolean privateLayout, long layoutId,
 			String typeSettings, byte[] iconBytes, String themeId,
-			String colorSchemeId, String styleBookEntryERC, String css,
+			String colorSchemeId, String styleBookEntryERC,
+			String styleBookEntryScopeERC, String css,
 			String faviconFileEntryERC, String faviconFileEntryScopeERC,
 			String masterLayoutPageTemplateEntryERC)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutLocalService.updateLayout(
 			groupId, privateLayout, layoutId, typeSettings, iconBytes, themeId,
-			colorSchemeId, styleBookEntryERC, css, faviconFileEntryERC,
-			faviconFileEntryScopeERC, masterLayoutPageTemplateEntryERC);
+			colorSchemeId, styleBookEntryERC, styleBookEntryScopeERC, css,
+			faviconFileEntryERC, faviconFileEntryScopeERC,
+			masterLayoutPageTemplateEntryERC);
 	}
 
 	@Override
@@ -2223,25 +2227,15 @@ public class LayoutLocalServiceWrapper
 			userId, plid, status, serviceContext);
 	}
 
-	/**
-	 * Updates the layout replacing its style book entry ID.
-	 *
-	 * @param groupId the primary key of the group
-	 * @param privateLayout whether the layout is private to the group
-	 * @param layoutId the layout ID of the layout
-	 * @param styleBookEntryERC the external reference code of the style book
-	 entry
-	 * @return the updated layout
-	 * @throws PortalException if a portal exception occurred
-	 */
 	@Override
-	public Layout updateStyleBookEntryERC(
+	public Layout updateStyleBookEntry(
 			long groupId, boolean privateLayout, long layoutId,
-			String styleBookEntryERC)
+			String styleBookEntryERC, String styleBookEntryScopeERC)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _layoutLocalService.updateStyleBookEntryERC(
-			groupId, privateLayout, layoutId, styleBookEntryERC);
+		return _layoutLocalService.updateStyleBookEntry(
+			groupId, privateLayout, layoutId, styleBookEntryERC,
+			styleBookEntryScopeERC);
 	}
 
 	@Override
@@ -2325,4 +2319,4 @@ public class LayoutLocalServiceWrapper
 	private LayoutLocalService _layoutLocalService;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:642695721
+// LIFERAY-SERVICE-BUILDER-HASH:1295318816

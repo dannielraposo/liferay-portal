@@ -6,7 +6,18 @@
 import ClaySticker from '@clayui/sticker';
 import React from 'react';
 
+import {SITE_TEMPLATE_TYPE} from '../../../common/utils/constants';
+
 const SiteRenderer = ({itemData, value}: {itemData: any; value: string}) => {
+	let label = value;
+
+	if (itemData.type === SITE_TEMPLATE_TYPE) {
+		label = `${value} (${Liferay.Language.get('site-template')})`;
+	}
+	else if (itemData.stagingType === 'STAGING') {
+		label = `${value} (${Liferay.Language.get('staging')})`;
+	}
+
 	return (
 		<span className="align-items-center d-flex">
 			<ClaySticker
@@ -15,10 +26,10 @@ const SiteRenderer = ({itemData, value}: {itemData: any; value: string}) => {
 				shape="circle"
 				size="lg"
 			>
-				<ClaySticker.Image alt={value} src={itemData.logo} />
+				<ClaySticker.Image alt={label} src={itemData.logo} />
 			</ClaySticker>
 
-			{value}
+			{label}
 		</span>
 	);
 };

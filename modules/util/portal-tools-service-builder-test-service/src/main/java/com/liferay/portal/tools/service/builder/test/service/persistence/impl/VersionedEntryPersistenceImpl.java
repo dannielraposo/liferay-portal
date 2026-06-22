@@ -8,7 +8,6 @@ package com.liferay.portal.tools.service.builder.test.service.persistence.impl;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -62,69 +61,15 @@ public class VersionedEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<VersionedEntry>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the versioned entries where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching versioned entries
-	 */
-	@Override
-	public List<VersionedEntry> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the versioned entries where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>VersionedEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of versioned entries
-	 * @param end the upper bound of the range of versioned entries (not inclusive)
-	 * @return the range of matching versioned entries
-	 */
-	@Override
-	public List<VersionedEntry> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<VersionedEntry, NoSuchVersionedEntryException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the versioned entries where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>VersionedEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of versioned entries
-	 * @param end the upper bound of the range of versioned entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching versioned entries
-	 */
-	@Override
-	public List<VersionedEntry> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<VersionedEntry> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the versioned entries where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>VersionedEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>VersionedEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -158,16 +103,8 @@ public class VersionedEntryPersistenceImpl
 			long groupId, OrderByComparator<VersionedEntry> orderByComparator)
 		throws NoSuchVersionedEntryException {
 
-		VersionedEntry versionedEntry = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (versionedEntry != null) {
-			return versionedEntry;
-		}
-
-		throw new NoSuchVersionedEntryException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -208,73 +145,15 @@ public class VersionedEntryPersistenceImpl
 			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId_Head;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId_Head;
-	private FinderPath _finderPathCountByGroupId_Head;
-	private CollectionPersistenceFinder<VersionedEntry>
-		_collectionPersistenceFinderByGroupId_Head;
-
-	/**
-	 * Returns all the versioned entries where groupId = &#63; and head = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param head the head
-	 * @return the matching versioned entries
-	 */
-	@Override
-	public List<VersionedEntry> findByGroupId_Head(long groupId, boolean head) {
-		return findByGroupId_Head(
-			groupId, head, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the versioned entries where groupId = &#63; and head = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>VersionedEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param head the head
-	 * @param start the lower bound of the range of versioned entries
-	 * @param end the upper bound of the range of versioned entries (not inclusive)
-	 * @return the range of matching versioned entries
-	 */
-	@Override
-	public List<VersionedEntry> findByGroupId_Head(
-		long groupId, boolean head, int start, int end) {
-
-		return findByGroupId_Head(groupId, head, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<VersionedEntry, NoSuchVersionedEntryException>
+			_collectionPersistenceFinderByGroupId_Head;
 
 	/**
 	 * Returns an ordered range of all the versioned entries where groupId = &#63; and head = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>VersionedEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param head the head
-	 * @param start the lower bound of the range of versioned entries
-	 * @param end the upper bound of the range of versioned entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching versioned entries
-	 */
-	@Override
-	public List<VersionedEntry> findByGroupId_Head(
-		long groupId, boolean head, int start, int end,
-		OrderByComparator<VersionedEntry> orderByComparator) {
-
-		return findByGroupId_Head(
-			groupId, head, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the versioned entries where groupId = &#63; and head = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>VersionedEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>VersionedEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -311,16 +190,8 @@ public class VersionedEntryPersistenceImpl
 			OrderByComparator<VersionedEntry> orderByComparator)
 		throws NoSuchVersionedEntryException {
 
-		VersionedEntry versionedEntry = fetchByGroupId_Head_First(
-			groupId, head, orderByComparator);
-
-		if (versionedEntry != null) {
-			return versionedEntry;
-		}
-
-		throw new NoSuchVersionedEntryException(
-			_collectionPersistenceFinderByGroupId_Head.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, head}));
+		return _collectionPersistenceFinderByGroupId_Head.findFirst(
+			finderCache, new Object[] {groupId, head}, orderByComparator);
 	}
 
 	/**
@@ -365,9 +236,9 @@ public class VersionedEntryPersistenceImpl
 			finderCache, new Object[] {groupId, head});
 	}
 
-	private FinderPath _finderPathFetchByHeadId;
-	private UniquePersistenceFinder<VersionedEntry>
-		_uniquePersistenceFinderByHeadId;
+	private UniquePersistenceFinder
+		<VersionedEntry, NoSuchVersionedEntryException>
+			_uniquePersistenceFinderByHeadId;
 
 	/**
 	 * Returns the versioned entry where headId = &#63; or throws a <code>NoSuchVersionedEntryException</code> if it could not be found.
@@ -380,32 +251,8 @@ public class VersionedEntryPersistenceImpl
 	public VersionedEntry findByHeadId(long headId)
 		throws NoSuchVersionedEntryException {
 
-		VersionedEntry versionedEntry = fetchByHeadId(headId);
-
-		if (versionedEntry == null) {
-			String message =
-				_uniquePersistenceFinderByHeadId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {headId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchVersionedEntryException(message);
-		}
-
-		return versionedEntry;
-	}
-
-	/**
-	 * Returns the versioned entry where headId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param headId the head ID
-	 * @return the matching versioned entry, or <code>null</code> if a matching versioned entry could not be found
-	 */
-	@Override
-	public VersionedEntry fetchByHeadId(long headId) {
-		return fetchByHeadId(headId, true);
+		return _uniquePersistenceFinderByHeadId.find(
+			finderCache, new Object[] {headId});
 	}
 
 	/**
@@ -621,76 +468,75 @@ public class VersionedEntryPersistenceImpl
 	 * Initializes the versioned entry persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_VERSIONEDENTRY_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_VERSIONEDENTRY_WHERE,
 				_SQL_COUNT_VERSIONEDENTRY_WHERE,
-				VersionedEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				VersionedEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"versionedEntry.", "groupId", FinderColumn.Type.LONG, "=",
 					true, true, VersionedEntry::getGroupId));
 
-		_finderPathWithPaginationFindByGroupId_Head = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId_Head",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "head"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId_Head = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId_Head",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"groupId", "head"}, true);
-
-		_finderPathCountByGroupId_Head = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId_Head",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"groupId", "head"}, false);
-
 		_collectionPersistenceFinderByGroupId_Head =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId_Head,
-				_finderPathWithoutPaginationFindByGroupId_Head,
-				_finderPathCountByGroupId_Head,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByGroupId_Head",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "head"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByGroupId_Head",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {"groupId", "head"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByGroupId_Head",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {"groupId", "head"}, false),
 				_SQL_SELECT_VERSIONEDENTRY_WHERE,
 				_SQL_COUNT_VERSIONEDENTRY_WHERE,
-				VersionedEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				VersionedEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"versionedEntry.", "groupId", FinderColumn.Type.LONG, "=",
-					true, false, VersionedEntry::getGroupId),
+					true, true, VersionedEntry::getGroupId),
 				new FinderColumn<>(
 					"versionedEntry.", "head", FinderColumn.Type.BOOLEAN, "=",
 					true, true, VersionedEntry::isHead));
 
-		_finderPathFetchByHeadId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByHeadId",
-			new String[] {Long.class.getName()}, new String[] {"headId"}, false,
-			VersionedEntry::getHeadId);
-
 		_uniquePersistenceFinderByHeadId = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByHeadId, _SQL_SELECT_VERSIONEDENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByHeadId",
+				new String[] {Long.class.getName()}, new String[] {"headId"}, 0,
+				0, false, VersionedEntry::getHeadId),
+			_SQL_SELECT_VERSIONEDENTRY_WHERE, "",
 			new FinderColumn<>(
 				"versionedEntry.", "headId", FinderColumn.Type.LONG, "=", true,
 				true, VersionedEntry::getHeadId));
@@ -734,4 +580,4 @@ public class VersionedEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-440368326
+// LIFERAY-SERVICE-BUILDER-HASH:1774090990

@@ -35,6 +35,7 @@ import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectFieldSetting;
+import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.service.ObjectActionLocalService;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
@@ -87,6 +88,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -269,17 +271,19 @@ public class ObjectEntryInfoItemFieldValuesProviderTest {
 		_testObjectEntryInfoItemFieldValuesProvider(
 			fileEntry, localDateTime, objectAction, objectEntry,
 			parentTextObjectFieldNameValue, null);
+
+		TimeZone timeZone = TimeZoneUtil.getTimeZone("Asia/Kolkata");
+
 		_testObjectEntryInfoItemFieldValuesProvider(
 			fileEntry,
 			localDateTime.atZone(
 				ZoneOffset.UTC
 			).withZoneSameInstant(
-				TimeZoneUtil.getTimeZone(
-					"Asia/Kolkata"
-				).toZoneId()
+				timeZone.toZoneId()
 			).toLocalDateTime(),
 			objectAction, objectEntry, parentTextObjectFieldNameValue,
 			_getThemeDisplay(StringPool.BLANK, "Asia/Kolkata"));
+
 		_testObjectEntryInfoItemFieldValuesProvider(
 			fileEntry, localDateTime, objectAction, objectEntry,
 			parentTextObjectFieldNameValue,
@@ -428,6 +432,108 @@ public class ObjectEntryInfoItemFieldValuesProviderTest {
 		finally {
 			ServiceContextThreadLocal.popServiceContext();
 		}
+	}
+
+	@FeatureFlag("LPD-17564")
+	@Test
+	public void testObjectEntryInfoItemFieldValuesProviderWithObjectRelationship()
+		throws Exception {
+
+		ObjectDefinition parentObjectDefinition = _addObjectDefinition(
+			new TextObjectFieldBuilder(
+			).labelMap(
+				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString())
+			).name(
+				"parentTitle"
+			).build());
+
+		parentObjectDefinition =
+			_objectDefinitionLocalService.publishCustomObjectDefinition(
+				TestPropsValues.getUserId(),
+				parentObjectDefinition.getObjectDefinitionId());
+
+		ObjectDefinition childObjectDefinition = _addObjectDefinition(
+			new TextObjectFieldBuilder(
+			).labelMap(
+				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString())
+			).name(
+				"childTitle"
+			).build());
+
+		childObjectDefinition =
+			_objectDefinitionLocalService.publishCustomObjectDefinition(
+				TestPropsValues.getUserId(),
+				childObjectDefinition.getObjectDefinitionId());
+
+		ObjectRelationship objectRelationship =
+			_objectRelationshipLocalService.addObjectRelationship(
+				null, TestPropsValues.getUserId(),
+				parentObjectDefinition.getObjectDefinitionId(),
+				childObjectDefinition.getObjectDefinitionId(), 0,
+				ObjectRelationshipConstants.DELETION_TYPE_CASCADE, true,
+				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
+				"oneToManyRelationshipName", false,
+				ObjectRelationshipConstants.TYPE_ONE_TO_MANY, null);
+
+		ObjectEntry parentObjectEntry = _objectEntryLocalService.addObjectEntry(
+			_group.getGroupId(), TestPropsValues.getUserId(),
+			parentObjectDefinition.getObjectDefinitionId(),
+			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+			null,
+			HashMapBuilder.<String, Serializable>put(
+				"parentTitle", RandomTestUtil.randomString()
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		String childTitleValue = RandomTestUtil.randomString();
+
+		ObjectEntry childObjectEntry = _objectEntryLocalService.addObjectEntry(
+			_group.getGroupId(), TestPropsValues.getUserId(),
+			childObjectDefinition.getObjectDefinitionId(),
+			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+			null,
+			HashMapBuilder.<String, Serializable>put(
+				"childTitle", childTitleValue
+			).put(
+				"r_oneToManyRelationshipName_" +
+					parentObjectDefinition.getPKObjectFieldName(),
+				parentObjectEntry.getObjectEntryId()
+			).build(),
+			ServiceContextTestUtil.getServiceContext());
+
+		_pushServiceContext(_getThemeDisplay(StringPool.BLANK, "UTC"));
+
+		InfoItemFieldValuesProvider<ObjectEntry> infoItemFieldValuesProvider =
+			_infoItemServiceRegistry.getFirstInfoItemService(
+				InfoItemFieldValuesProvider.class,
+				childObjectDefinition.getClassName());
+
+		InfoItemFieldValues infoItemFieldValues =
+			infoItemFieldValuesProvider.getInfoItemFieldValues(
+				childObjectEntry);
+
+		InfoFieldValue<Object> infoFieldValue =
+			infoItemFieldValues.getInfoFieldValue("childTitle");
+
+		Assert.assertEquals(childTitleValue, infoFieldValue.getValue());
+
+		ServiceContextThreadLocal.popServiceContext();
+
+		objectRelationship =
+			_objectRelationshipLocalService.updateObjectRelationship(
+				objectRelationship.getExternalReferenceCode(),
+				objectRelationship.getObjectRelationshipId(),
+				objectRelationship.getParameterObjectFieldId(),
+				objectRelationship.getDeletionType(), false,
+				objectRelationship.getLabelMap(), null);
+
+		_objectRelationshipLocalService.deleteObjectRelationship(
+			objectRelationship);
+
+		_objectDefinitionLocalService.deleteObjectDefinition(
+			childObjectDefinition);
+		_objectDefinitionLocalService.deleteObjectDefinition(
+			parentObjectDefinition);
 	}
 
 	private ObjectDefinition _addObjectDefinition(
@@ -586,21 +692,32 @@ public class ObjectEntryInfoItemFieldValuesProviderTest {
 				infoItemFieldValues.getInfoFieldValue(
 					objectField.getObjectFieldId() + "#downloadURL");
 
+			String downloadURL = String.valueOf(
+				downloadURLInfoFieldValue.getValue());
+
 			Assert.assertEquals(
-				HttpComponentsUtil.removeParameter(
-					_dlURLHelper.getDownloadURL(
-						fileEntry, fileEntry.getFileVersion(), themeDisplay,
-						StringPool.BLANK),
-					"t"),
-				HttpComponentsUtil.removeParameter(
-					String.valueOf(downloadURLInfoFieldValue.getValue()), "t"));
+				"true",
+				HttpComponentsUtil.getParameter(
+					downloadURL, "download", false));
+			Assert.assertEquals(
+				_childObjectDefinition.getExternalReferenceCode(),
+				HttpComponentsUtil.getParameter(
+					downloadURL, "objectDefinitionExternalReferenceCode",
+					false));
+			Assert.assertEquals(
+				objectEntry.getExternalReferenceCode(),
+				HttpComponentsUtil.getParameter(
+					downloadURL, "objectEntryExternalReferenceCode", false));
+			Assert.assertEquals(
+				objectField.getExternalReferenceCode(),
+				HttpComponentsUtil.getParameter(
+					downloadURL, "objectFieldExternalReferenceCode", false));
 
 			if (themeDisplay != null) {
 				Assert.assertEquals(
 					themeDisplay.getDoAsUserId(),
 					HttpComponentsUtil.getParameter(
-						String.valueOf(downloadURLInfoFieldValue.getValue()),
-						"doAsUserId", false));
+						downloadURL, "doAsUserId", false));
 			}
 
 			_assertWebImage(

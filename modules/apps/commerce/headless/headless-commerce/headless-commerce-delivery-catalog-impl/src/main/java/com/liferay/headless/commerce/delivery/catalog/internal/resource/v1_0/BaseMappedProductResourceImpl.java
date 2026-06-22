@@ -71,37 +71,48 @@ public abstract class BaseMappedProductResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/channels/{channelId}/products/{productId}/mapped-products'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists CSDiagramEntry shop-by-diagram mappings for /channels/{channelId}/products/{productId}/mapped-products. Resolves the active CPDefinition, the channel, and the account via AccountUtil, then enforces CommerceProductViewPermission. Builds a CommerceContext from the currencyCode and calls Vulcan SearchUtil.search on the CSDiagramEntry index filtered by CPField.CP_DEFINITION_ID. Validation -- NoSuchCPDefinitionException -> 404 when the productId does not resolve to an active CPDefinition; PrincipalException -> 403 when the caller lacks VIEW permission on the product. List query support — sortable fields -- indexed CSDiagramEntry fields; search fields -- indexed CSDiagramEntry fields; filterable fields -- none (no OData filter and no published entity model)."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CommerceChannel; raises 404 when no channel with this primary key exists.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CProduct (product head). The resource resolves the active CPDefinition through fetchCPDefinitionByCProductId; raises 404 when missing.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "productId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the AccountEntry the request is scoped to. When omitted, AccountUtil resolves the effective account from the authenticated user's commerce account assignments and channel eligibility; when the user has multiple accounts the explicit value is required (NoSuchEntryException otherwise).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "accountId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "ISO 4217 currency code applied to the request's CommerceContext for price resolution. When omitted, the channel's default currency is used; a non-active currency raises 422.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "currencyCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index for paginated results. Combine with pageSize to walk pages; when omitted the server returns page 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. When omitted the server applies the configured default page size; the maximum page size is bounded by the portal's PortalUtil.PROPS_REST_MAX_RETURN_SIZE.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Free-text keyword applied to the indexed entity. The corpus is sourced from the indexer -- AccountEntry indexes name and email; CommerceChannel indexes name; CPDefinition indexes title, description, SKU, GTIN, and expando custom fields registered via EntityFieldsUtil; CSDiagramEntry indexes the referenced product title.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 $orderby expression. Supported fields mirror the filterable entity-model columns -- AccountEntityModel (dateCreated, dateModified, name, type), ChannelEntityModel (siteGroupId, name), ProductEntityModel (the full set of indexed product fields). Endpoints without an entity model ignore sort.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -804,4 +815,4 @@ public abstract class BaseMappedProductResourceImpl
 		LogFactoryUtil.getLog(BaseMappedProductResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-2111810964
+// LIFERAY-REST-BUILDER-HASH:-1989001842

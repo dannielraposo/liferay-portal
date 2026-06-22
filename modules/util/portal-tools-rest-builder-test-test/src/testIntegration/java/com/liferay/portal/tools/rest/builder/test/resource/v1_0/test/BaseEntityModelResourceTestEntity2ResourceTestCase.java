@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -104,7 +105,8 @@ public abstract class BaseEntityModelResourceTestEntity2ResourceTestCase {
 				_testCompanyAdminUser.getEmailAddress(),
 				PropsValues.DEFAULT_ADMIN_PASSWORD
 			).endpoint(
-				testCompany.getVirtualHostname(), 8080, "http"
+				testCompany.getVirtualHostname(),
+				PortalUtil.getPortalServerPort(false), "http"
 			).locale(
 				LocaleUtil.getDefault()
 			).build();
@@ -244,7 +246,7 @@ public abstract class BaseEntityModelResourceTestEntity2ResourceTestCase {
 						"JSONObject/data",
 						"Object/entityModelResourceTestEntities2EntityModelResourceTestEntity2"))));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertTrue(
 			equals(
@@ -253,7 +255,7 @@ public abstract class BaseEntityModelResourceTestEntity2ResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"test_v1_0",
+								"portalTools_v1_0",
 								new GraphQLField(
 									"entityModelResourceTestEntities2EntityModelResourceTestEntity2",
 									new HashMap<String, Object>() {
@@ -265,7 +267,7 @@ public abstract class BaseEntityModelResourceTestEntity2ResourceTestCase {
 										}
 									},
 									getGraphQLFields()))),
-						"JSONObject/data", "JSONObject/test_v1_0",
+						"JSONObject/data", "JSONObject/portalTools_v1_0",
 						"Object/entityModelResourceTestEntities2EntityModelResourceTestEntity2"))));
 	}
 
@@ -295,14 +297,14 @@ public abstract class BaseEntityModelResourceTestEntity2ResourceTestCase {
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"test_v1_0",
+						"portalTools_v1_0",
 						new GraphQLField(
 							"entityModelResourceTestEntities2EntityModelResourceTestEntity2",
 							new HashMap<String, Object>() {
@@ -770,7 +772,9 @@ public abstract class BaseEntityModelResourceTestEntity2ResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -1042,4 +1046,4 @@ public abstract class BaseEntityModelResourceTestEntity2ResourceTestCase {
 			_entityModelResourceTestEntity2Resource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-586581110
+// LIFERAY-REST-BUILDER-HASH:-403321362

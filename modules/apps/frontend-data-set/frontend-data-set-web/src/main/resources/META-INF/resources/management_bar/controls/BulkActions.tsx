@@ -6,6 +6,7 @@
 import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import DropDown from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
+import classNames from 'classnames';
 import {ManagementToolbar} from 'frontend-js-components-web';
 
 // @ts-ignore
@@ -113,6 +114,11 @@ function BulkActions({
 		sidePanelId: string | undefined
 	) {
 		const {data, href, slug, target} = actionDefinition;
+
+		if (data?.disabled) {
+			return;
+		}
+
 		if (target === 'sidePanel') {
 			const sidePanelActionPayload = {
 				baseURL: href,
@@ -215,7 +221,7 @@ function BulkActions({
 	return showBulkActionsManagementBar && selectedItemsValue.length ? (
 		<FrontendDataSetContext.Consumer>
 			{({formId, formName, loadData, namespace, sidePanelId}) => (
-				<ManagementToolbar.ItemList
+				<div
 					className="container-fluid ml-2 navbar navbar-expand-md"
 					data-qa-id="selectionToolbar"
 				>
@@ -283,7 +289,14 @@ function BulkActions({
 												}
 											>
 												<ClayButton
-													className="bulk-action-btn nav-link"
+													className={classNames(
+														'bulk-action-btn nav-link',
+														highlightedBulkAction.className
+													)}
+													disabled={
+														highlightedBulkAction
+															.data?.disabled
+													}
 													displayType="unstyled"
 													onClick={() =>
 														handleActionClick(
@@ -338,6 +351,13 @@ function BulkActions({
 											{filteredBulkActions.map(
 												(actionDefinition) => (
 													<DropDown.Item
+														className={
+															actionDefinition.className
+														}
+														disabled={
+															actionDefinition
+																.data?.disabled
+														}
 														key={
 															actionDefinition.label
 														}
@@ -371,7 +391,7 @@ function BulkActions({
 							)}
 						</ManagementToolbar.ItemList>
 					)}
-				</ManagementToolbar.ItemList>
+				</div>
 			)}
 		</FrontendDataSetContext.Consumer>
 	) : null;

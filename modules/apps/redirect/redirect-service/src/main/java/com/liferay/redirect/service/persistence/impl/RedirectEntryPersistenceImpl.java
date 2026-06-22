@@ -5,14 +5,10 @@
 
 package com.liferay.redirect.service.persistence.impl;
 
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -23,11 +19,11 @@ import com.liferay.portal.kernel.sanitizer.SanitizerException;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -54,7 +50,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -93,66 +88,14 @@ public class RedirectEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<RedirectEntry>
+	private CollectionPersistenceFinder<RedirectEntry, NoSuchEntryException>
 		_collectionPersistenceFinderByUuid;
 
 	/**
-	 * Returns all the redirect entries where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the redirect entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of redirect entries
-	 * @param end the upper bound of the range of redirect entries (not inclusive)
-	 * @return the range of matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the redirect entries where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of redirect entries
-	 * @param end the upper bound of the range of redirect entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<RedirectEntry> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the redirect entries where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -186,16 +129,8 @@ public class RedirectEntryPersistenceImpl
 			String uuid, OrderByComparator<RedirectEntry> orderByComparator)
 		throws NoSuchEntryException {
 
-		RedirectEntry redirectEntry = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (redirectEntry != null) {
-			return redirectEntry;
-		}
-
-		throw new NoSuchEntryException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -236,8 +171,7 @@ public class RedirectEntryPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<RedirectEntry>
+	private UniquePersistenceFinder<RedirectEntry, NoSuchEntryException>
 		_uniquePersistenceFinderByUUID_G;
 
 	/**
@@ -252,33 +186,8 @@ public class RedirectEntryPersistenceImpl
 	public RedirectEntry findByUUID_G(String uuid, long groupId)
 		throws NoSuchEntryException {
 
-		RedirectEntry redirectEntry = fetchByUUID_G(uuid, groupId);
-
-		if (redirectEntry == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchEntryException(message);
-		}
-
-		return redirectEntry;
-	}
-
-	/**
-	 * Returns the redirect entry where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching redirect entry, or <code>null</code> if a matching redirect entry could not be found
-	 */
-	@Override
-	public RedirectEntry fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -326,73 +235,14 @@ public class RedirectEntryPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<RedirectEntry>
+	private CollectionPersistenceFinder<RedirectEntry, NoSuchEntryException>
 		_collectionPersistenceFinderByUuid_C;
 
 	/**
-	 * Returns all the redirect entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the redirect entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of redirect entries
-	 * @param end the upper bound of the range of redirect entries (not inclusive)
-	 * @return the range of matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the redirect entries where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of redirect entries
-	 * @param end the upper bound of the range of redirect entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<RedirectEntry> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the redirect entries where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -429,16 +279,8 @@ public class RedirectEntryPersistenceImpl
 			OrderByComparator<RedirectEntry> orderByComparator)
 		throws NoSuchEntryException {
 
-		RedirectEntry redirectEntry = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (redirectEntry != null) {
-			return redirectEntry;
-		}
-
-		throw new NoSuchEntryException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -483,67 +325,15 @@ public class RedirectEntryPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<RedirectEntry>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the redirect entries where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the redirect entries where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of redirect entries
-	 * @param end the upper bound of the range of redirect entries (not inclusive)
-	 * @return the range of matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByGroupId(long groupId, int start, int end) {
-		return findByGroupId(groupId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<RedirectEntry, NoSuchEntryException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the redirect entries where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of redirect entries
-	 * @param end the upper bound of the range of redirect entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<RedirectEntry> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the redirect entries where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -577,16 +367,8 @@ public class RedirectEntryPersistenceImpl
 			long groupId, OrderByComparator<RedirectEntry> orderByComparator)
 		throws NoSuchEntryException {
 
-		RedirectEntry redirectEntry = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (redirectEntry != null) {
-			return redirectEntry;
-		}
-
-		throw new NoSuchEntryException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -605,41 +387,10 @@ public class RedirectEntryPersistenceImpl
 	}
 
 	/**
-	 * Returns all the redirect entries that the user has permission to view where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching redirect entries that the user has permission to view
-	 */
-	@Override
-	public List<RedirectEntry> filterFindByGroupId(long groupId) {
-		return filterFindByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the redirect entries that the user has permission to view where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of redirect entries
-	 * @param end the upper bound of the range of redirect entries (not inclusive)
-	 * @return the range of matching redirect entries that the user has permission to view
-	 */
-	@Override
-	public List<RedirectEntry> filterFindByGroupId(
-		long groupId, int start, int end) {
-
-		return filterFindByGroupId(groupId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the redirect entries that the user has permissions to view where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -653,97 +404,9 @@ public class RedirectEntryPersistenceImpl
 		long groupId, int start, int end,
 		OrderByComparator<RedirectEntry> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByGroupId(groupId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByGroupId(
-					groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_REDIRECTENTRY_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_REDIRECTENTRY_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_REDIRECTENTRY_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(RedirectEntryModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(RedirectEntryModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), RedirectEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, RedirectEntryImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, RedirectEntryImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			return (List<RedirectEntry>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterFind(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			groupId);
 	}
 
 	/**
@@ -777,126 +440,18 @@ public class RedirectEntryPersistenceImpl
 	 */
 	@Override
 	public int filterCountByGroupId(long groupId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByGroupId(groupId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<RedirectEntry> redirectEntries = findByGroupId(groupId);
-
-			redirectEntries = InlineSQLHelperUtil.filter(
-				redirectEntries, groupId);
-
-			return redirectEntries.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_REDIRECTENTRY_WHERE);
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), RedirectEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterCount(
+			finderCache, new Object[] {groupId}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_GROUPID_GROUPID_2 =
-		"redirectEntry.groupId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByG_D;
-	private FinderPath _finderPathWithoutPaginationFindByG_D;
-	private FinderPath _finderPathCountByG_D;
-	private CollectionPersistenceFinder<RedirectEntry>
-		_collectionPersistenceFinderByG_D;
-
-	/**
-	 * Returns all the redirect entries where groupId = &#63; and destinationURL = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param destinationURL the destination url
-	 * @return the matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByG_D(long groupId, String destinationURL) {
-		return findByG_D(
-			groupId, destinationURL, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the redirect entries where groupId = &#63; and destinationURL = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param destinationURL the destination url
-	 * @param start the lower bound of the range of redirect entries
-	 * @param end the upper bound of the range of redirect entries (not inclusive)
-	 * @return the range of matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByG_D(
-		long groupId, String destinationURL, int start, int end) {
-
-		return findByG_D(groupId, destinationURL, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<RedirectEntry, NoSuchEntryException> _collectionPersistenceFinderByG_D;
 
 	/**
 	 * Returns an ordered range of all the redirect entries where groupId = &#63; and destinationURL = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param destinationURL the destination url
-	 * @param start the lower bound of the range of redirect entries
-	 * @param end the upper bound of the range of redirect entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching redirect entries
-	 */
-	@Override
-	public List<RedirectEntry> findByG_D(
-		long groupId, String destinationURL, int start, int end,
-		OrderByComparator<RedirectEntry> orderByComparator) {
-
-		return findByG_D(
-			groupId, destinationURL, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the redirect entries where groupId = &#63; and destinationURL = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -933,17 +488,9 @@ public class RedirectEntryPersistenceImpl
 			OrderByComparator<RedirectEntry> orderByComparator)
 		throws NoSuchEntryException {
 
-		RedirectEntry redirectEntry = fetchByG_D_First(
-			groupId, destinationURL, orderByComparator);
-
-		if (redirectEntry != null) {
-			return redirectEntry;
-		}
-
-		throw new NoSuchEntryException(
-			_collectionPersistenceFinderByG_D.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, destinationURL}));
+		return _collectionPersistenceFinderByG_D.findFirst(
+			finderCache, new Object[] {groupId, destinationURL},
+			orderByComparator);
 	}
 
 	/**
@@ -965,46 +512,10 @@ public class RedirectEntryPersistenceImpl
 	}
 
 	/**
-	 * Returns all the redirect entries that the user has permission to view where groupId = &#63; and destinationURL = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param destinationURL the destination url
-	 * @return the matching redirect entries that the user has permission to view
-	 */
-	@Override
-	public List<RedirectEntry> filterFindByG_D(
-		long groupId, String destinationURL) {
-
-		return filterFindByG_D(
-			groupId, destinationURL, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the redirect entries that the user has permission to view where groupId = &#63; and destinationURL = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param destinationURL the destination url
-	 * @param start the lower bound of the range of redirect entries
-	 * @param end the upper bound of the range of redirect entries (not inclusive)
-	 * @return the range of matching redirect entries that the user has permission to view
-	 */
-	@Override
-	public List<RedirectEntry> filterFindByG_D(
-		long groupId, String destinationURL, int start, int end) {
-
-		return filterFindByG_D(groupId, destinationURL, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the redirect entries that the user has permissions to view where groupId = &#63; and destinationURL = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RedirectEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1019,115 +530,9 @@ public class RedirectEntryPersistenceImpl
 		long groupId, String destinationURL, int start, int end,
 		OrderByComparator<RedirectEntry> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_D(
-				groupId, destinationURL, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_D(
-					groupId, destinationURL, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		destinationURL = Objects.toString(destinationURL, "");
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_REDIRECTENTRY_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_REDIRECTENTRY_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_D_GROUPID_2);
-
-		boolean bindDestinationURL = false;
-
-		if (destinationURL.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_D_DESTINATIONURL_3);
-		}
-		else {
-			bindDestinationURL = true;
-
-			sb.append(_FINDER_COLUMN_G_D_DESTINATIONURL_2);
-		}
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_REDIRECTENTRY_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(RedirectEntryModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(RedirectEntryModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), RedirectEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, RedirectEntryImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, RedirectEntryImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			if (bindDestinationURL) {
-				queryPos.add(destinationURL);
-			}
-
-			return (List<RedirectEntry>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_D.filterFind(
+			finderCache, new Object[] {groupId, destinationURL}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -1164,84 +569,11 @@ public class RedirectEntryPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_D(long groupId, String destinationURL) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_D(groupId, destinationURL);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<RedirectEntry> redirectEntries = findByG_D(
-				groupId, destinationURL);
-
-			redirectEntries = InlineSQLHelperUtil.filter(
-				redirectEntries, groupId);
-
-			return redirectEntries.size();
-		}
-
-		destinationURL = Objects.toString(destinationURL, "");
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_REDIRECTENTRY_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_D_GROUPID_2);
-
-		boolean bindDestinationURL = false;
-
-		if (destinationURL.isEmpty()) {
-			sb.append(_FINDER_COLUMN_G_D_DESTINATIONURL_3);
-		}
-		else {
-			bindDestinationURL = true;
-
-			sb.append(_FINDER_COLUMN_G_D_DESTINATIONURL_2);
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), RedirectEntry.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			if (bindDestinationURL) {
-				queryPos.add(destinationURL);
-			}
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_D.filterCount(
+			finderCache, new Object[] {groupId, destinationURL}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_D_GROUPID_2 =
-		"redirectEntry.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_D_DESTINATIONURL_2 =
-		"redirectEntry.destinationURL = ?";
-
-	private static final String _FINDER_COLUMN_G_D_DESTINATIONURL_3 =
-		"(redirectEntry.destinationURL IS NULL OR redirectEntry.destinationURL = '')";
-
-	private FinderPath _finderPathFetchByG_S;
-	private UniquePersistenceFinder<RedirectEntry>
+	private UniquePersistenceFinder<RedirectEntry, NoSuchEntryException>
 		_uniquePersistenceFinderByG_S;
 
 	/**
@@ -1256,34 +588,8 @@ public class RedirectEntryPersistenceImpl
 	public RedirectEntry findByG_S(long groupId, String sourceURL)
 		throws NoSuchEntryException {
 
-		RedirectEntry redirectEntry = fetchByG_S(groupId, sourceURL);
-
-		if (redirectEntry == null) {
-			String message =
-				_uniquePersistenceFinderByG_S.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, sourceURL});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchEntryException(message);
-		}
-
-		return redirectEntry;
-	}
-
-	/**
-	 * Returns the redirect entry where groupId = &#63; and sourceURL = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param sourceURL the source url
-	 * @return the matching redirect entry, or <code>null</code> if a matching redirect entry could not be found
-	 */
-	@Override
-	public RedirectEntry fetchByG_S(long groupId, String sourceURL) {
-		return fetchByG_S(groupId, sourceURL, true);
+		return _uniquePersistenceFinderByG_S.find(
+			finderCache, new Object[] {groupId, sourceURL});
 	}
 
 	/**
@@ -1585,152 +891,141 @@ public class RedirectEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_REDIRECTENTRY_WHERE, _SQL_COUNT_REDIRECTENTRY_WHERE,
-			RedirectEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			RedirectEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"redirectEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, RedirectEntry::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, RedirectEntry::getUuid,
-			RedirectEntry::getGroupId);
+				"redirectEntry.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, RedirectEntry::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_REDIRECTENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(RedirectEntry::getUuid),
+				RedirectEntry::getGroupId),
+			_SQL_SELECT_REDIRECTENTRY_WHERE, "",
 			new FinderColumn<>(
-				"redirectEntry.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, RedirectEntry::getUuid),
+				"redirectEntry.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, RedirectEntry::getUuid),
 			new FinderColumn<>(
 				"redirectEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, RedirectEntry::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_REDIRECTENTRY_WHERE,
-				_SQL_COUNT_REDIRECTENTRY_WHERE,
-				RedirectEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_REDIRECTENTRY_WHERE, _SQL_COUNT_REDIRECTENTRY_WHERE,
+				RedirectEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"redirectEntry.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, RedirectEntry::getUuid),
+					"redirectEntry.", "uuid", "uuid_", FinderColumn.Type.STRING,
+					"=", true, true, RedirectEntry::getUuid),
 				new FinderColumn<>(
 					"redirectEntry.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, RedirectEntry::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_REDIRECTENTRY_WHERE,
-				_SQL_COUNT_REDIRECTENTRY_WHERE,
-				RedirectEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_REDIRECTENTRY_WHERE, _SQL_COUNT_REDIRECTENTRY_WHERE,
+				RedirectEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"redirectEntry.", "groupId", FinderColumn.Type.LONG, "=",
 					true, true, RedirectEntry::getGroupId));
 
-		_finderPathWithPaginationFindByG_D = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_D",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "destinationURL"}, true);
-
-		_finderPathWithoutPaginationFindByG_D = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_D",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "destinationURL"}, true);
-
-		_finderPathCountByG_D = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_D",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "destinationURL"}, false);
-
-		_collectionPersistenceFinderByG_D = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_D,
-			_finderPathWithoutPaginationFindByG_D, _finderPathCountByG_D,
-			_SQL_SELECT_REDIRECTENTRY_WHERE, _SQL_COUNT_REDIRECTENTRY_WHERE,
-			RedirectEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"redirectEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, RedirectEntry::getGroupId),
-			new FinderColumn<>(
-				"redirectEntry.", "destinationURL", FinderColumn.Type.STRING,
-				"=", true, true, RedirectEntry::getDestinationURL));
-
-		_finderPathFetchByG_S = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_S",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "sourceURL"}, false,
-			RedirectEntry::getGroupId, RedirectEntry::getSourceURL);
+		_collectionPersistenceFinderByG_D =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_D",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "destinationURL"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_D",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"groupId", "destinationURL"}, 0, 2, true,
+					null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_D",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"groupId", "destinationURL"}, 0, 2, false,
+					null),
+				_SQL_SELECT_REDIRECTENTRY_WHERE, _SQL_COUNT_REDIRECTENTRY_WHERE,
+				RedirectEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"redirectEntry.", "groupId", FinderColumn.Type.LONG, "=",
+					true, true, RedirectEntry::getGroupId),
+				new FinderColumn<>(
+					"redirectEntry.", "destinationURL",
+					FinderColumn.Type.STRING, "=", true, true,
+					RedirectEntry::getDestinationURL));
 
 		_uniquePersistenceFinderByG_S = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_S, _SQL_SELECT_REDIRECTENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_S",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "sourceURL"}, 0, 2, false,
+				RedirectEntry::getGroupId,
+				convertNullFunction(RedirectEntry::getSourceURL)),
+			_SQL_SELECT_REDIRECTENTRY_WHERE, "",
 			new FinderColumn<>(
 				"redirectEntry.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, RedirectEntry::getGroupId),
+				true, RedirectEntry::getGroupId),
 			new FinderColumn<>(
 				"redirectEntry.", "sourceURL", FinderColumn.Type.STRING, "=",
 				true, true, RedirectEntry::getSourceURL));
@@ -1789,29 +1084,6 @@ public class RedirectEntryPersistenceImpl
 	private static final String _SQL_COUNT_REDIRECTENTRY_WHERE =
 		"SELECT COUNT(redirectEntry) FROM RedirectEntry redirectEntry WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"redirectEntry.redirectEntryId";
-
-	private static final String _FILTER_SQL_SELECT_REDIRECTENTRY_WHERE =
-		"SELECT DISTINCT {redirectEntry.*} FROM RedirectEntry redirectEntry WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_REDIRECTENTRY_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {RedirectEntry.*} FROM (SELECT DISTINCT redirectEntry.redirectEntryId FROM RedirectEntry redirectEntry WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_REDIRECTENTRY_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN RedirectEntry ON TEMP_TABLE.redirectEntryId = RedirectEntry.redirectEntryId";
-
-	private static final String _FILTER_SQL_COUNT_REDIRECTENTRY_WHERE =
-		"SELECT COUNT(DISTINCT redirectEntry.redirectEntryId) AS COUNT_VALUE FROM RedirectEntry redirectEntry WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "redirectEntry";
-
-	private static final String _FILTER_ENTITY_TABLE = "RedirectEntry";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "RedirectEntry.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No RedirectEntry exists with the key {";
 
@@ -1827,4 +1099,4 @@ public class RedirectEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-2068848180
+// LIFERAY-SERVICE-BUILDER-HASH:-1379697860

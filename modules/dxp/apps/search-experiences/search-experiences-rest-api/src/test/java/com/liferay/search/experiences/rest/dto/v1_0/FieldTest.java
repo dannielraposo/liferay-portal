@@ -6,7 +6,13 @@
 package com.liferay.search.experiences.rest.dto.v1_0;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -34,6 +40,31 @@ public class FieldTest {
 			"es\\\\ca\\\"pe\\\bES\\\fCA\\\nPE\\\rRO\\\tOM");
 	}
 
+	@Test
+	public void testToStringDefaultValueCollection() throws Exception {
+		_testToStringDefaultValue(_createMaps());
+	}
+
+	@Test
+	public void testToStringDefaultValueObjectArray() throws Exception {
+		List<Map<String, String>> maps = _createMaps();
+
+		_testToStringDefaultValue(maps.toArray());
+	}
+
+	private List<Map<String, String>> _createMaps() {
+		return Arrays.asList(
+			_createMap("label1", "value1"), _createMap("label2", "value2"));
+	}
+
+	private Map<String, String> _createMap(String label, String value) {
+		return HashMapBuilder.put(
+			"label", label
+		).put(
+			"value", value
+		).build();
+	}
+
 	private void _testEscape(String escaped, String unescaped) {
 		Field field1 = new Field();
 
@@ -52,6 +83,29 @@ public class FieldTest {
 		Assert.assertEquals(unescaped, field2.getName());
 
 		Assert.assertEquals(field1.toString(), field2.toString());
+	}
+
+	private void _testToStringDefaultValue(Object defaultValue) {
+		Field field1 = new Field();
+
+		field1.setDefaultValue(defaultValue);
+
+		Field field2 = Field.unsafeToDTO(field1.toString());
+
+		Object[] expectedDefaultValues = null;
+
+		if (defaultValue instanceof Collection) {
+			Collection<?> collection = (Collection<?>)defaultValue;
+
+			expectedDefaultValues = collection.toArray();
+		}
+		else {
+			expectedDefaultValues = (Object[])defaultValue;
+		}
+
+		Object[] defaultValues = (Object[])field2.getDefaultValue();
+
+		Assert.assertArrayEquals(expectedDefaultValues, defaultValues);
 	}
 
 }

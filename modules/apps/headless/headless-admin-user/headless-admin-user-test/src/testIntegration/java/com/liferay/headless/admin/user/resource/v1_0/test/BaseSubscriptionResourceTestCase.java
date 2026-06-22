@@ -35,6 +35,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -107,7 +108,8 @@ public abstract class BaseSubscriptionResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -214,6 +216,7 @@ public abstract class BaseSubscriptionResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Subscription subscription1 =
 			testGraphQLDeleteMyUserAccountSubscription_addSubscription();
 
@@ -245,6 +248,7 @@ public abstract class BaseSubscriptionResourceTestCase {
 
 		// Using the namespace headlessAdminUser_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Subscription subscription2 =
 			testGraphQLDeleteMyUserAccountSubscription_addSubscription();
 
@@ -1151,7 +1155,9 @@ public abstract class BaseSubscriptionResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -1417,4 +1423,4 @@ public abstract class BaseSubscriptionResourceTestCase {
 		_subscriptionResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1615025563
+// LIFERAY-REST-BUILDER-HASH:790745814

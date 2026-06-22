@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -31,6 +30,7 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
+import com.liferay.portal.kernel.service.persistence.impl.ArrayableFinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
@@ -95,68 +95,15 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<DEDataDefinitionFieldLink>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the de data definition field links where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the de data definition field links where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @return the range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DEDataDefinitionFieldLink, NoSuchDataDefinitionFieldLinkException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the de data definition field links where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data definition field links where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -172,14 +119,9 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -196,16 +138,8 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 			OrderByComparator<DEDataDefinitionFieldLink> orderByComparator)
 		throws NoSuchDataDefinitionFieldLinkException {
 
-		DEDataDefinitionFieldLink deDataDefinitionFieldLink = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (deDataDefinitionFieldLink != null) {
-			return deDataDefinitionFieldLink;
-		}
-
-		throw new NoSuchDataDefinitionFieldLinkException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -243,18 +177,13 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<DEDataDefinitionFieldLink>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<DEDataDefinitionFieldLink, NoSuchDataDefinitionFieldLinkException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the de data definition field link where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchDataDefinitionFieldLinkException</code> if it could not be found.
@@ -268,34 +197,8 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	public DEDataDefinitionFieldLink findByUUID_G(String uuid, long groupId)
 		throws NoSuchDataDefinitionFieldLinkException {
 
-		DEDataDefinitionFieldLink deDataDefinitionFieldLink = fetchByUUID_G(
-			uuid, groupId);
-
-		if (deDataDefinitionFieldLink == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchDataDefinitionFieldLinkException(message);
-		}
-
-		return deDataDefinitionFieldLink;
-	}
-
-	/**
-	 * Returns the de data definition field link where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching de data definition field link, or <code>null</code> if a matching de data definition field link could not be found
-	 */
-	@Override
-	public DEDataDefinitionFieldLink fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -310,13 +213,8 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	public DEDataDefinitionFieldLink fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -349,75 +247,15 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<DEDataDefinitionFieldLink>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the de data definition field links where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the de data definition field links where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @return the range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DEDataDefinitionFieldLink, NoSuchDataDefinitionFieldLinkException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the de data definition field links where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data definition field links where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -434,14 +272,9 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -459,16 +292,8 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 			OrderByComparator<DEDataDefinitionFieldLink> orderByComparator)
 		throws NoSuchDataDefinitionFieldLinkException {
 
-		DEDataDefinitionFieldLink deDataDefinitionFieldLink =
-			fetchByUuid_C_First(uuid, companyId, orderByComparator);
-
-		if (deDataDefinitionFieldLink != null) {
-			return deDataDefinitionFieldLink;
-		}
-
-		throw new NoSuchDataDefinitionFieldLinkException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -509,81 +334,19 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByDDMStructureId;
-	private FinderPath _finderPathWithoutPaginationFindByDDMStructureId;
-	private FinderPath _finderPathCountByDDMStructureId;
-	private CollectionPersistenceFinder<DEDataDefinitionFieldLink>
-		_collectionPersistenceFinderByDDMStructureId;
-
-	/**
-	 * Returns all the de data definition field links where ddmStructureId = &#63;.
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @return the matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByDDMStructureId(
-		long ddmStructureId) {
-
-		return findByDDMStructureId(
-			ddmStructureId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the de data definition field links where ddmStructureId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @return the range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByDDMStructureId(
-		long ddmStructureId, int start, int end) {
-
-		return findByDDMStructureId(ddmStructureId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DEDataDefinitionFieldLink, NoSuchDataDefinitionFieldLinkException>
+			_collectionPersistenceFinderByDDMStructureId;
 
 	/**
 	 * Returns an ordered range of all the de data definition field links where ddmStructureId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByDDMStructureId(
-		long ddmStructureId, int start, int end,
-		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
-
-		return findByDDMStructureId(
-			ddmStructureId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data definition field links where ddmStructureId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ddmStructureId the ddm structure ID
@@ -599,14 +362,9 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			return _collectionPersistenceFinderByDDMStructureId.find(
-				finderCache, new Object[] {ddmStructureId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByDDMStructureId.find(
+			finderCache, new Object[] {ddmStructureId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -623,16 +381,8 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 			OrderByComparator<DEDataDefinitionFieldLink> orderByComparator)
 		throws NoSuchDataDefinitionFieldLinkException {
 
-		DEDataDefinitionFieldLink deDataDefinitionFieldLink =
-			fetchByDDMStructureId_First(ddmStructureId, orderByComparator);
-
-		if (deDataDefinitionFieldLink != null) {
-			return deDataDefinitionFieldLink;
-		}
-
-		throw new NoSuchDataDefinitionFieldLinkException(
-			_collectionPersistenceFinderByDDMStructureId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {ddmStructureId}));
+		return _collectionPersistenceFinderByDDMStructureId.findFirst(
+			finderCache, new Object[] {ddmStructureId}, orderByComparator);
 	}
 
 	/**
@@ -670,84 +420,19 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	 */
 	@Override
 	public int countByDDMStructureId(long ddmStructureId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			return _collectionPersistenceFinderByDDMStructureId.count(
-				finderCache, new Object[] {ddmStructureId});
-		}
+		return _collectionPersistenceFinderByDDMStructureId.count(
+			finderCache, new Object[] {ddmStructureId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<DEDataDefinitionFieldLink>
-		_collectionPersistenceFinderByC_C;
-
-	/**
-	 * Returns all the de data definition field links where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_C(
-		long classNameId, long classPK) {
-
-		return findByC_C(
-			classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the de data definition field links where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @return the range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_C(
-		long classNameId, long classPK, int start, int end) {
-
-		return findByC_C(classNameId, classPK, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DEDataDefinitionFieldLink, NoSuchDataDefinitionFieldLinkException>
+			_collectionPersistenceFinderByC_C;
 
 	/**
 	 * Returns an ordered range of all the de data definition field links where classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_C(
-		long classNameId, long classPK, int start, int end,
-		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
-
-		return findByC_C(
-			classNameId, classPK, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data definition field links where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -764,14 +449,9 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			return _collectionPersistenceFinderByC_C.find(
-				finderCache, new Object[] {classNameId, classPK}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_C.find(
+			finderCache, new Object[] {classNameId, classPK}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -789,16 +469,9 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 			OrderByComparator<DEDataDefinitionFieldLink> orderByComparator)
 		throws NoSuchDataDefinitionFieldLinkException {
 
-		DEDataDefinitionFieldLink deDataDefinitionFieldLink = fetchByC_C_First(
-			classNameId, classPK, orderByComparator);
-
-		if (deDataDefinitionFieldLink != null) {
-			return deDataDefinitionFieldLink;
-		}
-
-		throw new NoSuchDataDefinitionFieldLinkException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {classNameId, classPK}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			finderCache, new Object[] {classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -840,85 +513,19 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	 */
 	@Override
 	public int countByC_C(long classNameId, long classPK) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			return _collectionPersistenceFinderByC_C.count(
-				finderCache, new Object[] {classNameId, classPK});
-		}
+		return _collectionPersistenceFinderByC_C.count(
+			finderCache, new Object[] {classNameId, classPK});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_DDMSI;
-	private FinderPath _finderPathWithoutPaginationFindByC_DDMSI;
-	private FinderPath _finderPathCountByC_DDMSI;
-	private CollectionPersistenceFinder<DEDataDefinitionFieldLink>
-		_collectionPersistenceFinderByC_DDMSI;
-
-	/**
-	 * Returns all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @return the matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_DDMSI(
-		long classNameId, long ddmStructureId) {
-
-		return findByC_DDMSI(
-			classNameId, ddmStructureId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @return the range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_DDMSI(
-		long classNameId, long ddmStructureId, int start, int end) {
-
-		return findByC_DDMSI(classNameId, ddmStructureId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DEDataDefinitionFieldLink, NoSuchDataDefinitionFieldLinkException>
+			_collectionPersistenceFinderByC_DDMSI;
 
 	/**
 	 * Returns an ordered range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_DDMSI(
-		long classNameId, long ddmStructureId, int start, int end,
-		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
-
-		return findByC_DDMSI(
-			classNameId, ddmStructureId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -935,14 +542,9 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			return _collectionPersistenceFinderByC_DDMSI.find(
-				finderCache, new Object[] {classNameId, ddmStructureId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_DDMSI.find(
+			finderCache, new Object[] {classNameId, ddmStructureId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -960,18 +562,9 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 			OrderByComparator<DEDataDefinitionFieldLink> orderByComparator)
 		throws NoSuchDataDefinitionFieldLinkException {
 
-		DEDataDefinitionFieldLink deDataDefinitionFieldLink =
-			fetchByC_DDMSI_First(
-				classNameId, ddmStructureId, orderByComparator);
-
-		if (deDataDefinitionFieldLink != null) {
-			return deDataDefinitionFieldLink;
-		}
-
-		throw new NoSuchDataDefinitionFieldLinkException(
-			_collectionPersistenceFinderByC_DDMSI.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {classNameId, ddmStructureId}));
+		return _collectionPersistenceFinderByC_DDMSI.findFirst(
+			finderCache, new Object[] {classNameId, ddmStructureId},
+			orderByComparator);
 	}
 
 	/**
@@ -1013,84 +606,19 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	 */
 	@Override
 	public int countByC_DDMSI(long classNameId, long ddmStructureId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			return _collectionPersistenceFinderByC_DDMSI.count(
-				finderCache, new Object[] {classNameId, ddmStructureId});
-		}
+		return _collectionPersistenceFinderByC_DDMSI.count(
+			finderCache, new Object[] {classNameId, ddmStructureId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByDDMSI_F;
-	private FinderPath _finderPathWithoutPaginationFindByDDMSI_F;
-	private FinderPath _finderPathCountByDDMSI_F;
-	private FinderPath _finderPathWithPaginationCountByDDMSI_F;
-
-	/**
-	 * Returns all the de data definition field links where ddmStructureId = &#63; and fieldName = &#63;.
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldName the field name
-	 * @return the matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByDDMSI_F(
-		long ddmStructureId, String fieldName) {
-
-		return findByDDMSI_F(
-			ddmStructureId, fieldName, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the de data definition field links where ddmStructureId = &#63; and fieldName = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldName the field name
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @return the range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByDDMSI_F(
-		long ddmStructureId, String fieldName, int start, int end) {
-
-		return findByDDMSI_F(ddmStructureId, fieldName, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DEDataDefinitionFieldLink, NoSuchDataDefinitionFieldLinkException>
+			_collectionPersistenceFinderByDDMSI_F;
 
 	/**
 	 * Returns an ordered range of all the de data definition field links where ddmStructureId = &#63; and fieldName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldName the field name
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByDDMSI_F(
-		long ddmStructureId, String fieldName, int start, int end,
-		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
-
-		return findByDDMSI_F(
-			ddmStructureId, fieldName, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data definition field links where ddmStructureId = &#63; and fieldName = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ddmStructureId the ddm structure ID
@@ -1107,124 +635,10 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			fieldName = Objects.toString(fieldName, "");
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByDDMSI_F;
-					finderArgs = new Object[] {ddmStructureId, fieldName};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByDDMSI_F;
-				finderArgs = new Object[] {
-					ddmStructureId, fieldName, start, end, orderByComparator
-				};
-			}
-
-			List<DEDataDefinitionFieldLink> list = null;
-
-			if (useFinderCache) {
-				list = (List<DEDataDefinitionFieldLink>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (DEDataDefinitionFieldLink deDataDefinitionFieldLink :
-							list) {
-
-						if ((ddmStructureId !=
-								deDataDefinitionFieldLink.
-									getDdmStructureId()) ||
-							!fieldName.equals(
-								deDataDefinitionFieldLink.getFieldName())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						4 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(4);
-				}
-
-				sb.append(_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE);
-
-				sb.append(_FINDER_COLUMN_DDMSI_F_DDMSTRUCTUREID_2);
-
-				boolean bindFieldName = false;
-
-				if (fieldName.isEmpty()) {
-					sb.append(_FINDER_COLUMN_DDMSI_F_FIELDNAME_3);
-				}
-				else {
-					bindFieldName = true;
-
-					sb.append(_FINDER_COLUMN_DDMSI_F_FIELDNAME_2);
-				}
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(ddmStructureId);
-
-					if (bindFieldName) {
-						queryPos.add(fieldName);
-					}
-
-					list = (List<DEDataDefinitionFieldLink>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByDDMSI_F.find(
+			finderCache,
+			new Object[] {ddmStructureId, new String[] {fieldName}}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1277,84 +691,17 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		long ddmStructureId, String fieldName,
 		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
 
-		List<DEDataDefinitionFieldLink> list = findByDDMSI_F(
-			ddmStructureId, fieldName, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the de data definition field links where ddmStructureId = &#63; and fieldName = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldNames the field names
-	 * @return the matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByDDMSI_F(
-		long ddmStructureId, String[] fieldNames) {
-
-		return findByDDMSI_F(
-			ddmStructureId, fieldNames, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the de data definition field links where ddmStructureId = &#63; and fieldName = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldNames the field names
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @return the range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByDDMSI_F(
-		long ddmStructureId, String[] fieldNames, int start, int end) {
-
-		return findByDDMSI_F(ddmStructureId, fieldNames, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data definition field links where ddmStructureId = &#63; and fieldName = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldNames the field names
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByDDMSI_F(
-		long ddmStructureId, String[] fieldNames, int start, int end,
-		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
-
-		return findByDDMSI_F(
-			ddmStructureId, fieldNames, start, end, orderByComparator, true);
+		return _collectionPersistenceFinderByDDMSI_F.fetchFirst(
+			finderCache,
+			new Object[] {ddmStructureId, new String[] {fieldName}},
+			orderByComparator);
 	}
 
 	/**
 	 * Returns an ordered range of all the de data definition field links where ddmStructureId = &#63; and fieldName = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ddmStructureId the ddm structure ID
@@ -1371,149 +718,10 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator,
 		boolean useFinderCache) {
 
-		if (fieldNames == null) {
-			fieldNames = new String[0];
-		}
-		else if (fieldNames.length > 1) {
-			for (int i = 0; i < fieldNames.length; i++) {
-				fieldNames[i] = Objects.toString(fieldNames[i], "");
-			}
-
-			fieldNames = ArrayUtil.sortedUnique(fieldNames);
-		}
-
-		if (fieldNames.length == 1) {
-			return findByDDMSI_F(
-				ddmStructureId, fieldNames[0], start, end, orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						ddmStructureId, StringUtil.merge(fieldNames)
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					ddmStructureId, StringUtil.merge(fieldNames), start, end,
-					orderByComparator
-				};
-			}
-
-			List<DEDataDefinitionFieldLink> list = null;
-
-			if (useFinderCache) {
-				list = (List<DEDataDefinitionFieldLink>)finderCache.getResult(
-					_finderPathWithPaginationFindByDDMSI_F, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (DEDataDefinitionFieldLink deDataDefinitionFieldLink :
-							list) {
-
-						if ((ddmStructureId !=
-								deDataDefinitionFieldLink.
-									getDdmStructureId()) ||
-							!ArrayUtil.contains(
-								fieldNames,
-								deDataDefinitionFieldLink.getFieldName())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE);
-
-				sb.append(_FINDER_COLUMN_DDMSI_F_DDMSTRUCTUREID_2);
-
-				if (fieldNames.length > 0) {
-					sb.append("(");
-
-					for (int i = 0; i < fieldNames.length; i++) {
-						String fieldName = fieldNames[i];
-
-						if (fieldName.isEmpty()) {
-							sb.append(_FINDER_COLUMN_DDMSI_F_FIELDNAME_3);
-						}
-						else {
-							sb.append(_FINDER_COLUMN_DDMSI_F_FIELDNAME_2);
-						}
-
-						if ((i + 1) < fieldNames.length) {
-							sb.append(WHERE_OR);
-						}
-					}
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(ddmStructureId);
-
-					for (String fieldName : fieldNames) {
-						if ((fieldName != null) && !fieldName.isEmpty()) {
-							queryPos.add(fieldName);
-						}
-					}
-
-					list = (List<DEDataDefinitionFieldLink>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByDDMSI_F, finderArgs,
-							list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByDDMSI_F.find(
+			finderCache,
+			new Object[] {ddmStructureId, ArrayUtil.sortedUnique(fieldNames)},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1524,13 +732,9 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	 */
 	@Override
 	public void removeByDDMSI_F(long ddmStructureId, String fieldName) {
-		for (DEDataDefinitionFieldLink deDataDefinitionFieldLink :
-				findByDDMSI_F(
-					ddmStructureId, fieldName, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, null)) {
-
-			remove(deDataDefinitionFieldLink);
-		}
+		_collectionPersistenceFinderByDDMSI_F.remove(
+			finderCache,
+			new Object[] {ddmStructureId, new String[] {fieldName}});
 	}
 
 	/**
@@ -1542,68 +746,9 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	 */
 	@Override
 	public int countByDDMSI_F(long ddmStructureId, String fieldName) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			fieldName = Objects.toString(fieldName, "");
-
-			FinderPath finderPath = _finderPathCountByDDMSI_F;
-
-			Object[] finderArgs = new Object[] {ddmStructureId, fieldName};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE);
-
-				sb.append(_FINDER_COLUMN_DDMSI_F_DDMSTRUCTUREID_2);
-
-				boolean bindFieldName = false;
-
-				if (fieldName.isEmpty()) {
-					sb.append(_FINDER_COLUMN_DDMSI_F_FIELDNAME_3);
-				}
-				else {
-					bindFieldName = true;
-
-					sb.append(_FINDER_COLUMN_DDMSI_F_FIELDNAME_2);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(ddmStructureId);
-
-					if (bindFieldName) {
-						queryPos.add(fieldName);
-					}
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByDDMSI_F.count(
+			finderCache,
+			new Object[] {ddmStructureId, new String[] {fieldName}});
 	}
 
 	/**
@@ -1615,182 +760,20 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	 */
 	@Override
 	public int countByDDMSI_F(long ddmStructureId, String[] fieldNames) {
-		if (fieldNames == null) {
-			fieldNames = new String[0];
-		}
-		else if (fieldNames.length > 1) {
-			for (int i = 0; i < fieldNames.length; i++) {
-				fieldNames[i] = Objects.toString(fieldNames[i], "");
-			}
-
-			fieldNames = ArrayUtil.sortedUnique(fieldNames);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			Object[] finderArgs = new Object[] {
-				ddmStructureId, StringUtil.merge(fieldNames)
-			};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByDDMSI_F, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE);
-
-				sb.append(_FINDER_COLUMN_DDMSI_F_DDMSTRUCTUREID_2);
-
-				if (fieldNames.length > 0) {
-					sb.append("(");
-
-					for (int i = 0; i < fieldNames.length; i++) {
-						String fieldName = fieldNames[i];
-
-						if (fieldName.isEmpty()) {
-							sb.append(_FINDER_COLUMN_DDMSI_F_FIELDNAME_3);
-						}
-						else {
-							sb.append(_FINDER_COLUMN_DDMSI_F_FIELDNAME_2);
-						}
-
-						if ((i + 1) < fieldNames.length) {
-							sb.append(WHERE_OR);
-						}
-					}
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(ddmStructureId);
-
-					for (String fieldName : fieldNames) {
-						if ((fieldName != null) && !fieldName.isEmpty()) {
-							queryPos.add(fieldName);
-						}
-					}
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByDDMSI_F, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByDDMSI_F.count(
+			finderCache,
+			new Object[] {ddmStructureId, ArrayUtil.sortedUnique(fieldNames)});
 	}
 
-	private static final String _FINDER_COLUMN_DDMSI_F_DDMSTRUCTUREID_2 =
-		"deDataDefinitionFieldLink.ddmStructureId = ? AND ";
-
-	private static final String _FINDER_COLUMN_DDMSI_F_FIELDNAME_2 =
-		"deDataDefinitionFieldLink.fieldName = ?";
-
-	private static final String _FINDER_COLUMN_DDMSI_F_FIELDNAME_3 =
-		"(deDataDefinitionFieldLink.fieldName IS NULL OR deDataDefinitionFieldLink.fieldName = '')";
-
-	private FinderPath _finderPathWithPaginationFindByC_DDMSI_F;
-	private FinderPath _finderPathWithoutPaginationFindByC_DDMSI_F;
-	private FinderPath _finderPathCountByC_DDMSI_F;
-	private FinderPath _finderPathWithPaginationCountByC_DDMSI_F;
-
-	/**
-	 * Returns all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63; and fieldName = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldName the field name
-	 * @return the matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_DDMSI_F(
-		long classNameId, long ddmStructureId, String fieldName) {
-
-		return findByC_DDMSI_F(
-			classNameId, ddmStructureId, fieldName, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63; and fieldName = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldName the field name
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @return the range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_DDMSI_F(
-		long classNameId, long ddmStructureId, String fieldName, int start,
-		int end) {
-
-		return findByC_DDMSI_F(
-			classNameId, ddmStructureId, fieldName, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DEDataDefinitionFieldLink, NoSuchDataDefinitionFieldLinkException>
+			_collectionPersistenceFinderByC_DDMSI_F;
 
 	/**
 	 * Returns an ordered range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63; and fieldName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldName the field name
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_DDMSI_F(
-		long classNameId, long ddmStructureId, String fieldName, int start,
-		int end,
-		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
-
-		return findByC_DDMSI_F(
-			classNameId, ddmStructureId, fieldName, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63; and fieldName = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -1808,133 +791,12 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		int end, OrderByComparator<DEDataDefinitionFieldLink> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			fieldName = Objects.toString(fieldName, "");
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByC_DDMSI_F;
-					finderArgs = new Object[] {
-						classNameId, ddmStructureId, fieldName
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByC_DDMSI_F;
-				finderArgs = new Object[] {
-					classNameId, ddmStructureId, fieldName, start, end,
-					orderByComparator
-				};
-			}
-
-			List<DEDataDefinitionFieldLink> list = null;
-
-			if (useFinderCache) {
-				list = (List<DEDataDefinitionFieldLink>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (DEDataDefinitionFieldLink deDataDefinitionFieldLink :
-							list) {
-
-						if ((classNameId !=
-								deDataDefinitionFieldLink.getClassNameId()) ||
-							(ddmStructureId !=
-								deDataDefinitionFieldLink.
-									getDdmStructureId()) ||
-							!fieldName.equals(
-								deDataDefinitionFieldLink.getFieldName())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						5 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(5);
-				}
-
-				sb.append(_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_DDMSI_F_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_C_DDMSI_F_DDMSTRUCTUREID_2);
-
-				boolean bindFieldName = false;
-
-				if (fieldName.isEmpty()) {
-					sb.append(_FINDER_COLUMN_C_DDMSI_F_FIELDNAME_3);
-				}
-				else {
-					bindFieldName = true;
-
-					sb.append(_FINDER_COLUMN_C_DDMSI_F_FIELDNAME_2);
-				}
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(ddmStructureId);
-
-					if (bindFieldName) {
-						queryPos.add(fieldName);
-					}
-
-					list = (List<DEDataDefinitionFieldLink>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByC_DDMSI_F.find(
+			finderCache,
+			new Object[] {
+				classNameId, ddmStructureId, new String[] {fieldName}
+			},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1993,91 +855,19 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		long classNameId, long ddmStructureId, String fieldName,
 		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
 
-		List<DEDataDefinitionFieldLink> list = findByC_DDMSI_F(
-			classNameId, ddmStructureId, fieldName, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63; and fieldName = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldNames the field names
-	 * @return the matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_DDMSI_F(
-		long classNameId, long ddmStructureId, String[] fieldNames) {
-
-		return findByC_DDMSI_F(
-			classNameId, ddmStructureId, fieldNames, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63; and fieldName = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldNames the field names
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @return the range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_DDMSI_F(
-		long classNameId, long ddmStructureId, String[] fieldNames, int start,
-		int end) {
-
-		return findByC_DDMSI_F(
-			classNameId, ddmStructureId, fieldNames, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63; and fieldName = any &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldNames the field names
-	 * @param start the lower bound of the range of de data definition field links
-	 * @param end the upper bound of the range of de data definition field links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching de data definition field links
-	 */
-	@Override
-	public List<DEDataDefinitionFieldLink> findByC_DDMSI_F(
-		long classNameId, long ddmStructureId, String[] fieldNames, int start,
-		int end,
-		OrderByComparator<DEDataDefinitionFieldLink> orderByComparator) {
-
-		return findByC_DDMSI_F(
-			classNameId, ddmStructureId, fieldNames, start, end,
-			orderByComparator, true);
+		return _collectionPersistenceFinderByC_DDMSI_F.fetchFirst(
+			finderCache,
+			new Object[] {
+				classNameId, ddmStructureId, new String[] {fieldName}
+			},
+			orderByComparator);
 	}
 
 	/**
 	 * Returns an ordered range of all the de data definition field links where classNameId = &#63; and ddmStructureId = &#63; and fieldName = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DEDataDefinitionFieldLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -2095,157 +885,12 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		int end, OrderByComparator<DEDataDefinitionFieldLink> orderByComparator,
 		boolean useFinderCache) {
 
-		if (fieldNames == null) {
-			fieldNames = new String[0];
-		}
-		else if (fieldNames.length > 1) {
-			for (int i = 0; i < fieldNames.length; i++) {
-				fieldNames[i] = Objects.toString(fieldNames[i], "");
-			}
-
-			fieldNames = ArrayUtil.sortedUnique(fieldNames);
-		}
-
-		if (fieldNames.length == 1) {
-			return findByC_DDMSI_F(
-				classNameId, ddmStructureId, fieldNames[0], start, end,
-				orderByComparator);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderArgs = new Object[] {
-						classNameId, ddmStructureId,
-						StringUtil.merge(fieldNames)
-					};
-				}
-			}
-			else if (useFinderCache) {
-				finderArgs = new Object[] {
-					classNameId, ddmStructureId, StringUtil.merge(fieldNames),
-					start, end, orderByComparator
-				};
-			}
-
-			List<DEDataDefinitionFieldLink> list = null;
-
-			if (useFinderCache) {
-				list = (List<DEDataDefinitionFieldLink>)finderCache.getResult(
-					_finderPathWithPaginationFindByC_DDMSI_F, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (DEDataDefinitionFieldLink deDataDefinitionFieldLink :
-							list) {
-
-						if ((classNameId !=
-								deDataDefinitionFieldLink.getClassNameId()) ||
-							(ddmStructureId !=
-								deDataDefinitionFieldLink.
-									getDdmStructureId()) ||
-							!ArrayUtil.contains(
-								fieldNames,
-								deDataDefinitionFieldLink.getFieldName())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_DDMSI_F_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_C_DDMSI_F_DDMSTRUCTUREID_2);
-
-				if (fieldNames.length > 0) {
-					sb.append("(");
-
-					for (int i = 0; i < fieldNames.length; i++) {
-						String fieldName = fieldNames[i];
-
-						if (fieldName.isEmpty()) {
-							sb.append(_FINDER_COLUMN_C_DDMSI_F_FIELDNAME_3);
-						}
-						else {
-							sb.append(_FINDER_COLUMN_C_DDMSI_F_FIELDNAME_2);
-						}
-
-						if ((i + 1) < fieldNames.length) {
-							sb.append(WHERE_OR);
-						}
-					}
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(ddmStructureId);
-
-					for (String fieldName : fieldNames) {
-						if ((fieldName != null) && !fieldName.isEmpty()) {
-							queryPos.add(fieldName);
-						}
-					}
-
-					list = (List<DEDataDefinitionFieldLink>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(
-							_finderPathWithPaginationFindByC_DDMSI_F,
-							finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByC_DDMSI_F.find(
+			finderCache,
+			new Object[] {
+				classNameId, ddmStructureId, ArrayUtil.sortedUnique(fieldNames)
+			},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2259,13 +904,11 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	public void removeByC_DDMSI_F(
 		long classNameId, long ddmStructureId, String fieldName) {
 
-		for (DEDataDefinitionFieldLink deDataDefinitionFieldLink :
-				findByC_DDMSI_F(
-					classNameId, ddmStructureId, fieldName, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, null)) {
-
-			remove(deDataDefinitionFieldLink);
-		}
+		_collectionPersistenceFinderByC_DDMSI_F.remove(
+			finderCache,
+			new Object[] {
+				classNameId, ddmStructureId, new String[] {fieldName}
+			});
 	}
 
 	/**
@@ -2280,74 +923,11 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	public int countByC_DDMSI_F(
 		long classNameId, long ddmStructureId, String fieldName) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			fieldName = Objects.toString(fieldName, "");
-
-			FinderPath finderPath = _finderPathCountByC_DDMSI_F;
-
-			Object[] finderArgs = new Object[] {
-				classNameId, ddmStructureId, fieldName
-			};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(4);
-
-				sb.append(_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_DDMSI_F_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_C_DDMSI_F_DDMSTRUCTUREID_2);
-
-				boolean bindFieldName = false;
-
-				if (fieldName.isEmpty()) {
-					sb.append(_FINDER_COLUMN_C_DDMSI_F_FIELDNAME_3);
-				}
-				else {
-					bindFieldName = true;
-
-					sb.append(_FINDER_COLUMN_C_DDMSI_F_FIELDNAME_2);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(ddmStructureId);
-
-					if (bindFieldName) {
-						queryPos.add(fieldName);
-					}
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByC_DDMSI_F.count(
+			finderCache,
+			new Object[] {
+				classNameId, ddmStructureId, new String[] {fieldName}
+			});
 	}
 
 	/**
@@ -2362,115 +942,17 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	public int countByC_DDMSI_F(
 		long classNameId, long ddmStructureId, String[] fieldNames) {
 
-		if (fieldNames == null) {
-			fieldNames = new String[0];
-		}
-		else if (fieldNames.length > 1) {
-			for (int i = 0; i < fieldNames.length; i++) {
-				fieldNames[i] = Objects.toString(fieldNames[i], "");
-			}
-
-			fieldNames = ArrayUtil.sortedUnique(fieldNames);
-		}
-
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			Object[] finderArgs = new Object[] {
-				classNameId, ddmStructureId, StringUtil.merge(fieldNames)
-			};
-
-			Long count = (Long)finderCache.getResult(
-				_finderPathWithPaginationCountByC_DDMSI_F, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler();
-
-				sb.append(_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_DDMSI_F_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_C_DDMSI_F_DDMSTRUCTUREID_2);
-
-				if (fieldNames.length > 0) {
-					sb.append("(");
-
-					for (int i = 0; i < fieldNames.length; i++) {
-						String fieldName = fieldNames[i];
-
-						if (fieldName.isEmpty()) {
-							sb.append(_FINDER_COLUMN_C_DDMSI_F_FIELDNAME_3);
-						}
-						else {
-							sb.append(_FINDER_COLUMN_C_DDMSI_F_FIELDNAME_2);
-						}
-
-						if ((i + 1) < fieldNames.length) {
-							sb.append(WHERE_OR);
-						}
-					}
-
-					sb.append(")");
-				}
-
-				sb.setStringAt(
-					removeConjunction(sb.stringAt(sb.index() - 1)),
-					sb.index() - 1);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(ddmStructureId);
-
-					for (String fieldName : fieldNames) {
-						if ((fieldName != null) && !fieldName.isEmpty()) {
-							queryPos.add(fieldName);
-						}
-					}
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(
-						_finderPathWithPaginationCountByC_DDMSI_F, finderArgs,
-						count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByC_DDMSI_F.count(
+			finderCache,
+			new Object[] {
+				classNameId, ddmStructureId, ArrayUtil.sortedUnique(fieldNames)
+			});
 	}
 
-	private static final String _FINDER_COLUMN_C_DDMSI_F_CLASSNAMEID_2 =
-		"deDataDefinitionFieldLink.classNameId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_DDMSI_F_DDMSTRUCTUREID_2 =
-		"deDataDefinitionFieldLink.ddmStructureId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_DDMSI_F_FIELDNAME_2 =
-		"deDataDefinitionFieldLink.fieldName = ?";
-
-	private static final String _FINDER_COLUMN_C_DDMSI_F_FIELDNAME_3 =
-		"(deDataDefinitionFieldLink.fieldName IS NULL OR deDataDefinitionFieldLink.fieldName = '')";
-
-	private FinderPath _finderPathFetchByC_C_DDMSI_F;
 	private FinderPath _finderPathWithPaginationCountByC_C_DDMSI_F;
+	private UniquePersistenceFinder
+		<DEDataDefinitionFieldLink, NoSuchDataDefinitionFieldLinkException>
+			_uniquePersistenceFinderByC_C_DDMSI_F;
 
 	/**
 	 * Returns the de data definition field link where classNameId = &#63; and classPK = &#63; and ddmStructureId = &#63; and fieldName = &#63; or throws a <code>NoSuchDataDefinitionFieldLinkException</code> if it could not be found.
@@ -2488,53 +970,9 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 			String fieldName)
 		throws NoSuchDataDefinitionFieldLinkException {
 
-		DEDataDefinitionFieldLink deDataDefinitionFieldLink =
-			fetchByC_C_DDMSI_F(classNameId, classPK, ddmStructureId, fieldName);
-
-		if (deDataDefinitionFieldLink == null) {
-			StringBundler sb = new StringBundler(10);
-
-			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-			sb.append("classNameId=");
-			sb.append(classNameId);
-
-			sb.append(", classPK=");
-			sb.append(classPK);
-
-			sb.append(", ddmStructureId=");
-			sb.append(ddmStructureId);
-
-			sb.append(", fieldName=");
-			sb.append(fieldName);
-
-			sb.append("}");
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(sb.toString());
-			}
-
-			throw new NoSuchDataDefinitionFieldLinkException(sb.toString());
-		}
-
-		return deDataDefinitionFieldLink;
-	}
-
-	/**
-	 * Returns the de data definition field link where classNameId = &#63; and classPK = &#63; and ddmStructureId = &#63; and fieldName = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param ddmStructureId the ddm structure ID
-	 * @param fieldName the field name
-	 * @return the matching de data definition field link, or <code>null</code> if a matching de data definition field link could not be found
-	 */
-	@Override
-	public DEDataDefinitionFieldLink fetchByC_C_DDMSI_F(
-		long classNameId, long classPK, long ddmStructureId, String fieldName) {
-
-		return fetchByC_C_DDMSI_F(
-			classNameId, classPK, ddmStructureId, fieldName, true);
+		return _uniquePersistenceFinderByC_C_DDMSI_F.find(
+			finderCache,
+			new Object[] {classNameId, classPK, ddmStructureId, fieldName});
 	}
 
 	/**
@@ -2552,119 +990,10 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		long classNameId, long classPK, long ddmStructureId, String fieldName,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					DEDataDefinitionFieldLink.class)) {
-
-			fieldName = Objects.toString(fieldName, "");
-
-			Object[] finderArgs = null;
-
-			if (useFinderCache) {
-				finderArgs = new Object[] {
-					classNameId, classPK, ddmStructureId, fieldName
-				};
-			}
-
-			Object result = null;
-
-			if (useFinderCache) {
-				result = finderCache.getResult(
-					_finderPathFetchByC_C_DDMSI_F, finderArgs, this);
-			}
-
-			if (result instanceof DEDataDefinitionFieldLink) {
-				DEDataDefinitionFieldLink deDataDefinitionFieldLink =
-					(DEDataDefinitionFieldLink)result;
-
-				if ((classNameId !=
-						deDataDefinitionFieldLink.getClassNameId()) ||
-					(classPK != deDataDefinitionFieldLink.getClassPK()) ||
-					(ddmStructureId !=
-						deDataDefinitionFieldLink.getDdmStructureId()) ||
-					!Objects.equals(
-						fieldName, deDataDefinitionFieldLink.getFieldName())) {
-
-					result = null;
-				}
-			}
-
-			if (result == null) {
-				StringBundler sb = new StringBundler(6);
-
-				sb.append(_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_C_DDMSI_F_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_C_C_DDMSI_F_CLASSPK_2);
-
-				sb.append(_FINDER_COLUMN_C_C_DDMSI_F_DDMSTRUCTUREID_2);
-
-				boolean bindFieldName = false;
-
-				if (fieldName.isEmpty()) {
-					sb.append(_FINDER_COLUMN_C_C_DDMSI_F_FIELDNAME_3);
-				}
-				else {
-					bindFieldName = true;
-
-					sb.append(_FINDER_COLUMN_C_C_DDMSI_F_FIELDNAME_2);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(classPK);
-
-					queryPos.add(ddmStructureId);
-
-					if (bindFieldName) {
-						queryPos.add(fieldName);
-					}
-
-					List<DEDataDefinitionFieldLink> list = query.list();
-
-					if (list.isEmpty()) {
-						if (useFinderCache) {
-							finderCache.putResult(
-								_finderPathFetchByC_C_DDMSI_F, finderArgs,
-								list);
-						}
-					}
-					else {
-						DEDataDefinitionFieldLink deDataDefinitionFieldLink =
-							list.get(0);
-
-						result = deDataDefinitionFieldLink;
-
-						cacheResult(deDataDefinitionFieldLink);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			if (result instanceof List<?>) {
-				return null;
-			}
-			else {
-				return (DEDataDefinitionFieldLink)result;
-			}
-		}
+		return _uniquePersistenceFinderByC_C_DDMSI_F.fetch(
+			finderCache,
+			new Object[] {classNameId, classPK, ddmStructureId, fieldName},
+			useFinderCache);
 	}
 
 	/**
@@ -2701,14 +1030,9 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	public int countByC_C_DDMSI_F(
 		long classNameId, long classPK, long ddmStructureId, String fieldName) {
 
-		DEDataDefinitionFieldLink deDataDefinitionFieldLink =
-			fetchByC_C_DDMSI_F(classNameId, classPK, ddmStructureId, fieldName);
-
-		if (deDataDefinitionFieldLink == null) {
-			return 0;
-		}
-
-		return 1;
+		return _uniquePersistenceFinderByC_C_DDMSI_F.count(
+			finderCache,
+			new Object[] {classNameId, classPK, ddmStructureId, fieldName});
 	}
 
 	/**
@@ -3158,262 +1482,253 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE,
 			_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE,
 			DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"deDataDefinitionFieldLink.", "uuid", FinderColumn.Type.STRING,
-				"=", true, true, DEDataDefinitionFieldLink::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			DEDataDefinitionFieldLink::getUuid,
-			DEDataDefinitionFieldLink::getGroupId);
+				"deDataDefinitionFieldLink.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				DEDataDefinitionFieldLink::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(DEDataDefinitionFieldLink::getUuid),
+				DEDataDefinitionFieldLink::getGroupId),
+			_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE, "",
 			new FinderColumn<>(
-				"deDataDefinitionFieldLink.", "uuid", FinderColumn.Type.STRING,
-				"=", true, false, DEDataDefinitionFieldLink::getUuid),
+				"deDataDefinitionFieldLink.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				DEDataDefinitionFieldLink::getUuid),
 			new FinderColumn<>(
 				"deDataDefinitionFieldLink.", "groupId", FinderColumn.Type.LONG,
 				"=", true, true, DEDataDefinitionFieldLink::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE,
 				_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE,
 				DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"deDataDefinitionFieldLink.", "uuid",
-					FinderColumn.Type.STRING, "=", true, false,
+					"deDataDefinitionFieldLink.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
 					DEDataDefinitionFieldLink::getUuid),
 				new FinderColumn<>(
 					"deDataDefinitionFieldLink.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					DEDataDefinitionFieldLink::getCompanyId));
 
-		_finderPathWithPaginationFindByDDMStructureId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByDDMStructureId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"ddmStructureId"}, true);
-
-		_finderPathWithoutPaginationFindByDDMStructureId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByDDMStructureId",
-			new String[] {Long.class.getName()},
-			new String[] {"ddmStructureId"}, true);
-
-		_finderPathCountByDDMStructureId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByDDMStructureId",
-			new String[] {Long.class.getName()},
-			new String[] {"ddmStructureId"}, false);
-
 		_collectionPersistenceFinderByDDMStructureId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByDDMStructureId,
-				_finderPathWithoutPaginationFindByDDMStructureId,
-				_finderPathCountByDDMStructureId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByDDMStructureId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"ddmStructureId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByDDMStructureId", new String[] {Long.class.getName()},
+					new String[] {"ddmStructureId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByDDMStructureId",
+					new String[] {Long.class.getName()},
+					new String[] {"ddmStructureId"}, false),
 				_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE,
 				_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE,
 				DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"deDataDefinitionFieldLink.", "ddmStructureId",
 					FinderColumn.Type.LONG, "=", true, true,
 					DEDataDefinitionFieldLink::getDdmStructureId));
 
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, false);
-
 		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "classPK"}, false),
 			_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE,
 			_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE,
 			DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"deDataDefinitionFieldLink.", "classNameId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				DEDataDefinitionFieldLink::getClassNameId),
 			new FinderColumn<>(
 				"deDataDefinitionFieldLink.", "classPK", FinderColumn.Type.LONG,
 				"=", true, true, DEDataDefinitionFieldLink::getClassPK));
 
-		_finderPathWithPaginationFindByC_DDMSI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_DDMSI",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "ddmStructureId"}, true);
-
-		_finderPathWithoutPaginationFindByC_DDMSI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_DDMSI",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "ddmStructureId"}, true);
-
-		_finderPathCountByC_DDMSI = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_DDMSI",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "ddmStructureId"}, false);
-
 		_collectionPersistenceFinderByC_DDMSI =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByC_DDMSI,
-				_finderPathWithoutPaginationFindByC_DDMSI,
-				_finderPathCountByC_DDMSI,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_DDMSI",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"classNameId", "ddmStructureId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_DDMSI",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"classNameId", "ddmStructureId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_DDMSI",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"classNameId", "ddmStructureId"}, false),
 				_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE,
 				_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE,
 				DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"deDataDefinitionFieldLink.", "classNameId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					DEDataDefinitionFieldLink::getClassNameId),
 				new FinderColumn<>(
 					"deDataDefinitionFieldLink.", "ddmStructureId",
 					FinderColumn.Type.LONG, "=", true, true,
 					DEDataDefinitionFieldLink::getDdmStructureId));
 
-		_finderPathWithPaginationFindByDDMSI_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByDDMSI_F",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"ddmStructureId", "fieldName"}, true);
+		_collectionPersistenceFinderByDDMSI_F =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByDDMSI_F",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"ddmStructureId", "fieldName"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByDDMSI_F",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"ddmStructureId", "fieldName"}, 0, 2, true,
+					null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByDDMSI_F",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"ddmStructureId", "fieldName"}, 0, 2, false,
+					null),
+				_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE,
+				_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE,
+				DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"deDataDefinitionFieldLink.", "ddmStructureId",
+					FinderColumn.Type.LONG, "=", true, true,
+					DEDataDefinitionFieldLink::getDdmStructureId),
+				new ArrayableFinderColumn<>(
+					"deDataDefinitionFieldLink.", "fieldName",
+					FinderColumn.Type.STRING, "=", false, true, true,
+					DEDataDefinitionFieldLink::getFieldName));
 
-		_finderPathWithoutPaginationFindByDDMSI_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByDDMSI_F",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"ddmStructureId", "fieldName"}, true);
-
-		_finderPathCountByDDMSI_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByDDMSI_F",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"ddmStructureId", "fieldName"}, false);
-
-		_finderPathWithPaginationCountByDDMSI_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByDDMSI_F",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"ddmStructureId", "fieldName"}, false);
-
-		_finderPathWithPaginationFindByC_DDMSI_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_DDMSI_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "ddmStructureId", "fieldName"}, true);
-
-		_finderPathWithoutPaginationFindByC_DDMSI_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_DDMSI_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"classNameId", "ddmStructureId", "fieldName"}, true);
-
-		_finderPathCountByC_DDMSI_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_DDMSI_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"classNameId", "ddmStructureId", "fieldName"}, false);
-
-		_finderPathWithPaginationCountByC_DDMSI_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_DDMSI_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"classNameId", "ddmStructureId", "fieldName"}, false);
-
-		_finderPathFetchByC_C_DDMSI_F = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C_DDMSI_F",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), String.class.getName()
-			},
-			new String[] {
-				"classNameId", "classPK", "ddmStructureId", "fieldName"
-			},
-			false, DEDataDefinitionFieldLink::getClassNameId,
-			DEDataDefinitionFieldLink::getClassPK,
-			DEDataDefinitionFieldLink::getDdmStructureId,
-			DEDataDefinitionFieldLink::getFieldName);
+		_collectionPersistenceFinderByC_DDMSI_F =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_DDMSI_F",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"classNameId", "ddmStructureId", "fieldName"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByC_DDMSI_F",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName()
+					},
+					new String[] {"classNameId", "ddmStructureId", "fieldName"},
+					0, 4, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_DDMSI_F",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						String.class.getName()
+					},
+					new String[] {"classNameId", "ddmStructureId", "fieldName"},
+					0, 4, false, null),
+				_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE,
+				_SQL_COUNT_DEDATADEFINITIONFIELDLINK_WHERE,
+				DEDataDefinitionFieldLinkModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"deDataDefinitionFieldLink.", "classNameId",
+					FinderColumn.Type.LONG, "=", true, true,
+					DEDataDefinitionFieldLink::getClassNameId),
+				new FinderColumn<>(
+					"deDataDefinitionFieldLink.", "ddmStructureId",
+					FinderColumn.Type.LONG, "=", true, true,
+					DEDataDefinitionFieldLink::getDdmStructureId),
+				new ArrayableFinderColumn<>(
+					"deDataDefinitionFieldLink.", "fieldName",
+					FinderColumn.Type.STRING, "=", false, true, true,
+					DEDataDefinitionFieldLink::getFieldName));
 
 		_finderPathWithPaginationCountByC_C_DDMSI_F = new FinderPath(
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_C_DDMSI_F",
@@ -3425,6 +1740,38 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 				"classNameId", "classPK", "ddmStructureId", "fieldName"
 			},
 			false);
+
+		_uniquePersistenceFinderByC_C_DDMSI_F = new UniquePersistenceFinder<>(
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C_DDMSI_F",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName(), String.class.getName()
+				},
+				new String[] {
+					"classNameId", "classPK", "ddmStructureId", "fieldName"
+				},
+				0, 8, false, DEDataDefinitionFieldLink::getClassNameId,
+				DEDataDefinitionFieldLink::getClassPK,
+				DEDataDefinitionFieldLink::getDdmStructureId,
+				convertNullFunction(DEDataDefinitionFieldLink::getFieldName)),
+			_SQL_SELECT_DEDATADEFINITIONFIELDLINK_WHERE, "",
+			new FinderColumn<>(
+				"deDataDefinitionFieldLink.", "classNameId",
+				FinderColumn.Type.LONG, "=", true, true,
+				DEDataDefinitionFieldLink::getClassNameId),
+			new FinderColumn<>(
+				"deDataDefinitionFieldLink.", "classPK", FinderColumn.Type.LONG,
+				"=", true, true, DEDataDefinitionFieldLink::getClassPK),
+			new FinderColumn<>(
+				"deDataDefinitionFieldLink.", "ddmStructureId",
+				FinderColumn.Type.LONG, "=", true, true,
+				DEDataDefinitionFieldLink::getDdmStructureId),
+			new FinderColumn<>(
+				"deDataDefinitionFieldLink.", "fieldName",
+				FinderColumn.Type.STRING, "=", true, true,
+				DEDataDefinitionFieldLink::getFieldName));
 
 		DEDataDefinitionFieldLinkUtil.setPersistence(this);
 	}
@@ -3498,4 +1845,4 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:81348444
+// LIFERAY-SERVICE-BUILDER-HASH:1311391270

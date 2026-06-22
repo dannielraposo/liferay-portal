@@ -35,6 +35,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -107,7 +108,8 @@ public abstract class BaseMappedProductResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -801,6 +803,16 @@ public abstract class BaseMappedProductResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"skuUnitOfMeasures", additionalAssertFieldName)) {
+
+				if (mappedProduct.getSkuUnitOfMeasures() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("thumbnail", additionalAssertFieldName)) {
 				if (mappedProduct.getThumbnail() == null) {
 					valid = false;
@@ -1160,6 +1172,19 @@ public abstract class BaseMappedProductResourceTestCase {
 				if (!Objects.deepEquals(
 						mappedProduct1.getSkuOptions(),
 						mappedProduct2.getSkuOptions())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"skuUnitOfMeasures", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						mappedProduct1.getSkuUnitOfMeasures(),
+						mappedProduct2.getSkuUnitOfMeasures())) {
 
 					return false;
 				}
@@ -1607,6 +1632,11 @@ public abstract class BaseMappedProductResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("skuUnitOfMeasures")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("thumbnail")) {
 			Object object = mappedProduct.getThumbnail();
 
@@ -1676,7 +1706,9 @@ public abstract class BaseMappedProductResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -1948,4 +1980,4 @@ public abstract class BaseMappedProductResourceTestCase {
 		MappedProductResource _mappedProductResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1433789598
+// LIFERAY-REST-BUILDER-HASH:11245515

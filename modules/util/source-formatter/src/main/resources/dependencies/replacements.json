@@ -3541,6 +3541,22 @@
 	},
 	{
 		"classNames": [
+			"MessageBus"
+		],
+		"from": "registerMessageListener(String paramName, MessageListener paramName)",
+		"hasMessage": true,
+		"issueKey": "LPD-34692"
+	},
+	{
+		"classNames": [
+			"MessageBus"
+		],
+		"from": "unregisterMessageListener(String paramName, MessageListener paramName)",
+		"hasMessage": true,
+		"issueKey": "LPD-34692"
+	},
+	{
+		"classNames": [
 			"MentionsUserFinder"
 		],
 		"classStructurePattern": true,
@@ -3664,6 +3680,22 @@
 			"com.liferay.portal.kernel.security.auth.CompanyThreadLocal"
 		],
 		"to": "addListType(CompanyThreadLocal.getCompanyId(), param#0#, param#1#)"
+	},
+	{
+		"classNames": [
+			"SoyDataFactory"
+		],
+		"from": "createSoyHTMLData(String paramName)",
+		"hasMessage": true,
+		"issueKey": "LPD-35240"
+	},
+	{
+		"classNames": [
+			"SoyDataFactory"
+		],
+		"from": "createSoyRawData(String paramName)",
+		"hasMessage": true,
+		"issueKey": "LPD-35240"
 	},
 	{
 		"classNames": [
@@ -5499,6 +5531,27 @@
 	},
 	{
 		"classNames": [
+			"ParamAndPropertyAncestorTagImpl"
+		],
+		"classStructurePattern": true,
+		"issueKey": "LPD-61579",
+		"methodsToFormat": [
+			{
+				"from": "regex:FileAvailabilityUtil\\.isAvailable\\(servletContext, (?<page>[^)]+)\\)",
+				"to": "FileAvailabilityUtil.isAvailable(getServletContext(), ${page})"
+			},
+			{
+				"from": "servletContext = ServletContextUtil.getServletContext()",
+				"to": "setServletContext(ServletContextUtil.getServletContext())"
+			},
+			{
+				"from": "setAttributes(request)",
+				"to": "setAttributes(getRequest())"
+			}
+		]
+	},
+	{
+		"classNames": [
 			"JournalArticleLocalService",
 			"JournalArticleLocalServiceUtil",
 			"JournalArticleService",
@@ -5718,6 +5771,27 @@
 	},
 	{
 		"classNames": [
+			"Language",
+			"LanguageUtil"
+		],
+		"from": "get(PageContext paramName, String paramName)",
+		"hasMessage": true,
+		"issueKey": "LPD-70233",
+		"validExtensions": [
+			"java"
+		]
+	},
+	{
+		"from": "regex:(?<class>Language(?:Util)?)\\.(?<method>format|get)\\(pageContext,",
+		"issueKey": "LPD-70233",
+		"to": "${class}.${method}(request,",
+		"validExtensions": [
+			"jsp",
+			"jspf"
+		]
+	},
+	{
+		"classNames": [
 			"FFDocumentLibraryDDMEditorConfigurationUtil"
 		],
 		"from": "useDataEngineEditor()",
@@ -5804,14 +5878,6 @@
 			"com.liferay.portal.kernel.cache.PortalCacheManagerNames"
 		],
 		"to": "PortalCacheHelperUtil.getPortalCache(PortalCacheManagerNames.MULTI_VM, ${prefixMethodName})"
-	},
-	{
-		"from": "CookieKeys.COMMERCE_CONTINUE_AS_GUEST",
-		"issueKey": "LPS-159679",
-		"newImports": [
-			"com.liferay.portal.kernel.cookies.constants.CookiesConstants"
-		],
-		"to": "CookiesConstants.NAME_COMMERCE_CONTINUE_AS_GUEST"
 	},
 	{
 		"from": "CookieKeys.getCookie(HttpServletRequest paramName, String paramName)",

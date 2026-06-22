@@ -9,11 +9,8 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
@@ -75,73 +72,14 @@ public class ViewCountEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByC_CN;
-	private FinderPath _finderPathWithoutPaginationFindByC_CN;
-	private FinderPath _finderPathCountByC_CN;
-	private CollectionPersistenceFinder<ViewCountEntry>
+	private CollectionPersistenceFinder<ViewCountEntry, NoSuchEntryException>
 		_collectionPersistenceFinderByC_CN;
 
 	/**
-	 * Returns all the view count entries where companyId = &#63; and classNameId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @return the matching view count entries
-	 */
-	@Override
-	public List<ViewCountEntry> findByC_CN(long companyId, long classNameId) {
-		return findByC_CN(
-			companyId, classNameId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the view count entries where companyId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ViewCountEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of view count entries
-	 * @param end the upper bound of the range of view count entries (not inclusive)
-	 * @return the range of matching view count entries
-	 */
-	@Override
-	public List<ViewCountEntry> findByC_CN(
-		long companyId, long classNameId, int start, int end) {
-
-		return findByC_CN(companyId, classNameId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the view count entries where companyId = &#63; and classNameId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ViewCountEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of view count entries
-	 * @param end the upper bound of the range of view count entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching view count entries
-	 */
-	@Override
-	public List<ViewCountEntry> findByC_CN(
-		long companyId, long classNameId, int start, int end,
-		OrderByComparator<ViewCountEntry> orderByComparator) {
-
-		return findByC_CN(
-			companyId, classNameId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the view count entries where companyId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ViewCountEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ViewCountEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -178,17 +116,9 @@ public class ViewCountEntryPersistenceImpl
 			OrderByComparator<ViewCountEntry> orderByComparator)
 		throws NoSuchEntryException {
 
-		ViewCountEntry viewCountEntry = fetchByC_CN_First(
-			companyId, classNameId, orderByComparator);
-
-		if (viewCountEntry != null) {
-			return viewCountEntry;
-		}
-
-		throw new NoSuchEntryException(
-			_collectionPersistenceFinderByC_CN.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, classNameId}));
+		return _collectionPersistenceFinderByC_CN.findFirst(
+			finderCache, new Object[] {companyId, classNameId},
+			orderByComparator);
 	}
 
 	/**
@@ -415,36 +345,34 @@ public class ViewCountEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByC_CN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_CN",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "classNameId"}, true);
-
-		_finderPathWithoutPaginationFindByC_CN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_CN",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "classNameId"}, true);
-
-		_finderPathCountByC_CN = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_CN",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "classNameId"}, false);
-
 		_collectionPersistenceFinderByC_CN = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_CN,
-			_finderPathWithoutPaginationFindByC_CN, _finderPathCountByC_CN,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_CN",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_CN",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_CN",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "classNameId"}, false),
 			_SQL_SELECT_VIEWCOUNTENTRY_WHERE, _SQL_COUNT_VIEWCOUNTENTRY_WHERE,
-			ViewCountEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			ViewCountEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"viewCountEntry.", "id.companyId", FinderColumn.Type.LONG, "=",
-				true, false, ViewCountEntry::getCompanyId),
+				"viewCountEntry.", "id.companyId", "companyId",
+				FinderColumn.Type.LONG, "=", true, true,
+				ViewCountEntry::getCompanyId),
 			new FinderColumn<>(
-				"viewCountEntry.", "id.classNameId", FinderColumn.Type.LONG,
-				"=", true, true, ViewCountEntry::getClassNameId));
+				"viewCountEntry.", "id.classNameId", "classNameId",
+				FinderColumn.Type.LONG, "=", true, true,
+				ViewCountEntry::getClassNameId));
 
 		ViewCountEntryUtil.setPersistence(this);
 	}
@@ -503,9 +431,6 @@ public class ViewCountEntryPersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No ViewCountEntry exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		ViewCountEntryPersistenceImpl.class);
-
 	private static final Set<String> _compoundPKColumnNames = SetUtil.fromArray(
 		new String[] {"companyId", "classNameId", "classPK"});
 
@@ -515,4 +440,4 @@ public class ViewCountEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-2147232512
+// LIFERAY-SERVICE-BUILDER-HASH:1970292107

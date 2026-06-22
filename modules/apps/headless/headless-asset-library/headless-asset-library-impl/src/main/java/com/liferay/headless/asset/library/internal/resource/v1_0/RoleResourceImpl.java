@@ -5,6 +5,7 @@
 
 package com.liferay.headless.asset.library.internal.resource.v1_0;
 
+import com.liferay.depot.util.DepotRoleUtil;
 import com.liferay.headless.asset.library.dto.v1_0.Role;
 import com.liferay.headless.asset.library.resource.v1_0.RoleResource;
 import com.liferay.petra.string.StringBundler;
@@ -12,11 +13,18 @@ import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.exception.NoSuchUserGroupException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserGroupGroupRole;
+import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupService;
+import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.RoleService;
 import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupGroupRoleService;
@@ -26,6 +34,10 @@ import com.liferay.portal.kernel.service.UserGroupService;
 import com.liferay.portal.kernel.service.UserService;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.vulcan.pagination.Page;
+import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.util.LocalizedMapUtil;
+
+import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -39,6 +51,39 @@ import org.osgi.service.component.annotations.ServiceScope;
 	scope = ServiceScope.PROTOTYPE, service = RoleResource.class
 )
 public class RoleResourceImpl extends BaseRoleResourceImpl {
+
+	@Override
+	public Page<Role> getAssetLibraryRolesPage(
+			String assetLibraryExternalReferenceCode, Pagination pagination)
+		throws Exception {
+
+		Group group = _getGroup(assetLibraryExternalReferenceCode);
+
+		_checkAssetLibraryAdminOrAssetLibraryMember(group.getGroupId());
+
+		List<com.liferay.portal.kernel.model.Role> roles =
+			_roleLocalService.getTypeRoles(RoleConstants.TYPE_DEPOT);
+
+		if (FeatureFlagManagerUtil.isEnabled(
+				contextCompany.getCompanyId(), "LPD-17564") ||
+			FeatureFlagManagerUtil.isEnabled(
+				contextCompany.getCompanyId(), "LPD-58677")) {
+
+			roles = DepotRoleUtil.filter(group.getGroupId(), roles);
+		}
+
+		if (pagination == null) {
+			return Page.of(transform(roles, this::_toRole));
+		}
+
+		return Page.of(
+			transform(
+				ListUtil.subList(
+					roles, pagination.getStartPosition(),
+					pagination.getEndPosition()),
+				this::_toRole),
+			pagination, roles.size());
+	}
 
 	@Override
 	public Page<Role> getAssetLibraryUserAccountRolesPage(
@@ -160,6 +205,22 @@ public class RoleResourceImpl extends BaseRoleResourceImpl {
 				userGroupGroupRole -> _toRole(userGroupGroupRole.getRole())));
 	}
 
+	private void _checkAssetLibraryAdminOrAssetLibraryMember(long groupId)
+		throws Exception {
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		if (permissionChecker.isGroupAdmin(groupId)) {
+			return;
+		}
+
+		if (!_groupService.hasUserGroup(contextUser.getUserId(), groupId)) {
+			throw new PrincipalException.MustHavePermission(
+				contextUser.getUserId(), ActionKeys.VIEW);
+		}
+	}
+
 	private Group _getGroup(String externalReferenceCode) throws Exception {
 		Group group = _groupService.fetchGroupByExternalReferenceCode(
 			externalReferenceCode, contextCompany.getCompanyId());
@@ -193,6 +254,8 @@ public class RoleResourceImpl extends BaseRoleResourceImpl {
 				setExternalReferenceCode(role::getExternalReferenceCode);
 				setId(role::getRoleId);
 				setName(role::getName);
+				setName_i18n(
+					() -> LocalizedMapUtil.getI18nMap(role.getTitleMap()));
 				setRoleType(role::getType);
 			}
 		};
@@ -200,6 +263,9 @@ public class RoleResourceImpl extends BaseRoleResourceImpl {
 
 	@Reference
 	private GroupService _groupService;
+
+	@Reference
+	private RoleLocalService _roleLocalService;
 
 	@Reference
 	private RoleService _roleService;

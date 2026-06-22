@@ -48,11 +48,13 @@ import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
+import com.liferay.portal.search.test.rule.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -139,7 +141,8 @@ public abstract class BaseCountryResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -149,7 +152,8 @@ public abstract class BaseCountryResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -213,6 +217,7 @@ public abstract class BaseCountryResourceTestCase {
 
 		country.setA2(regex);
 		country.setA3(regex);
+		country.setExternalReferenceCode(regex);
 		country.setName(regex);
 
 		String json = CountrySerDes.toJSON(country);
@@ -223,6 +228,7 @@ public abstract class BaseCountryResourceTestCase {
 
 		Assert.assertEquals(regex, country.getA2());
 		Assert.assertEquals(regex, country.getA3());
+		Assert.assertEquals(regex, country.getExternalReferenceCode());
 		Assert.assertEquals(regex, country.getName());
 	}
 
@@ -250,6 +256,7 @@ public abstract class BaseCountryResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Country country1 = testGraphQLDeleteCountry_addCountry();
 
 		Assert.assertTrue(
@@ -280,6 +287,7 @@ public abstract class BaseCountryResourceTestCase {
 
 		// Using the namespace headlessAdminAddress_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		Country country2 = testGraphQLDeleteCountry_addCountry();
 
 		Assert.assertTrue(
@@ -322,10 +330,35 @@ public abstract class BaseCountryResourceTestCase {
 	public void testDeleteCountryBatch() throws Exception {
 		Country country1 = testDeleteCountryBatch_addCountry();
 
+		testDeleteCountryBatch_deleteCountry(
+			202, country1.getExternalReferenceCode(), null);
+
+		assertHttpResponseStatusCode(
+			404, countryResource.getCountryHttpResponse(country1.getId()));
+
+		country1 = testDeleteCountryBatch_addCountry();
+
 		testDeleteCountryBatch_deleteCountry(202, null, country1.getId());
 
 		assertHttpResponseStatusCode(
 			404, countryResource.getCountryHttpResponse(country1.getId()));
+
+		country1 = testDeleteCountryBatch_addCountry();
+		Country country2 = testDeleteCountryBatch_addCountry();
+
+		testDeleteCountryBatch_deleteCountry(
+			202, country2.getExternalReferenceCode(), country1.getId());
+
+		assertHttpResponseStatusCode(
+			404, countryResource.getCountryHttpResponse(country1.getId()));
+		assertHttpResponseStatusCode(
+			200, countryResource.getCountryHttpResponse(country2.getId()));
+
+		testDeleteCountryBatch_deleteCountry(
+			202, country2.getExternalReferenceCode(), country1.getId());
+
+		assertHttpResponseStatusCode(
+			404, countryResource.getCountryHttpResponse(country2.getId()));
 	}
 
 	protected Country testDeleteCountryBatch_addCountry() throws Exception {
@@ -354,9 +387,131 @@ public abstract class BaseCountryResourceTestCase {
 	}
 
 	@Test
+	public void testDeleteCountryByExternalReferenceCode() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Country country = testDeleteCountryByExternalReferenceCode_addCountry();
+
+		assertHttpResponseStatusCode(
+			204,
+			countryResource.deleteCountryByExternalReferenceCodeHttpResponse(
+				country.getExternalReferenceCode()));
+
+		assertHttpResponseStatusCode(
+			404,
+			countryResource.getCountryByExternalReferenceCodeHttpResponse(
+				country.getExternalReferenceCode()));
+		assertHttpResponseStatusCode(
+			404,
+			countryResource.getCountryByExternalReferenceCodeHttpResponse("-"));
+	}
+
+	protected Country testDeleteCountryByExternalReferenceCode_addCountry()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLDeleteCountryByExternalReferenceCode()
+		throws Exception {
+
+		// No namespace
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Country country1 =
+			testGraphQLDeleteCountryByExternalReferenceCode_addCountry();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"deleteCountryByExternalReferenceCode",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"externalReferenceCode",
+									"\"" + country1.getExternalReferenceCode() +
+										"\"");
+							}
+						})),
+				"JSONObject/data",
+				"Object/deleteCountryByExternalReferenceCode"));
+
+		JSONArray errorsJSONArray1 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"countryByExternalReferenceCode",
+					new HashMap<String, Object>() {
+						{
+							put(
+								"externalReferenceCode",
+								"\"" + country1.getExternalReferenceCode() +
+									"\"");
+						}
+					},
+					getGraphQLFields())),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray1.length() > 0);
+
+		// Using the namespace headlessAdminAddress_v1_0
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Country country2 =
+			testGraphQLDeleteCountryByExternalReferenceCode_addCountry();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"headlessAdminAddress_v1_0",
+						new GraphQLField(
+							"deleteCountryByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										"\"" +
+											country2.
+												getExternalReferenceCode() +
+													"\"");
+								}
+							}))),
+				"JSONObject/data", "JSONObject/headlessAdminAddress_v1_0",
+				"Object/deleteCountryByExternalReferenceCode"));
+
+		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"headlessAdminAddress_v1_0",
+					new GraphQLField(
+						"countryByExternalReferenceCode",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"externalReferenceCode",
+									"\"" + country2.getExternalReferenceCode() +
+										"\"");
+							}
+						},
+						getGraphQLFields()))),
+			"JSONArray/errors");
+
+		Assert.assertTrue(errorsJSONArray2.length() > 0);
+	}
+
+	protected Country
+			testGraphQLDeleteCountryByExternalReferenceCode_addCountry()
+		throws Exception {
+
+		return testGraphQLCountry_addCountry();
+	}
+
+	@Test
 	public void testGetCountriesPage() throws Exception {
 		Page<Country> page = countryResource.getCountriesPage(
-			null, null, Pagination.of(1, 10), null);
+			null, null, null, Pagination.of(1, 10), null);
 
 		long totalCount = page.getTotalCount();
 
@@ -365,7 +520,7 @@ public abstract class BaseCountryResourceTestCase {
 		Country country2 = testGetCountriesPage_addCountry(randomCountry());
 
 		page = countryResource.getCountriesPage(
-			null, null, Pagination.of(1, 10), null);
+			null, null, null, Pagination.of(1, 10), null);
 
 		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
@@ -388,9 +543,85 @@ public abstract class BaseCountryResourceTestCase {
 	}
 
 	@Test
+	public void testGetCountriesPageWithFilterDateTimeEquals()
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(
+			EntityField.Type.DATE_TIME);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		Country country1 = randomCountry();
+
+		country1 = testGetCountriesPage_addCountry(country1);
+
+		for (EntityField entityField : entityFields) {
+			Page<Country> page = countryResource.getCountriesPage(
+				null, null, getFilterString(entityField, "between", country1),
+				Pagination.of(1, 2), null);
+
+			assertEquals(
+				Collections.singletonList(country1),
+				(List<Country>)page.getItems());
+		}
+	}
+
+	@Test
+	public void testGetCountriesPageWithFilterDoubleEquals() throws Exception {
+		testGetCountriesPageWithFilter("eq", EntityField.Type.DOUBLE);
+	}
+
+	@Test
+	public void testGetCountriesPageWithFilterStringContains()
+		throws Exception {
+
+		testGetCountriesPageWithFilter("contains", EntityField.Type.STRING);
+	}
+
+	@Test
+	public void testGetCountriesPageWithFilterStringEquals() throws Exception {
+		testGetCountriesPageWithFilter("eq", EntityField.Type.STRING);
+	}
+
+	@Test
+	public void testGetCountriesPageWithFilterStringStartsWith()
+		throws Exception {
+
+		testGetCountriesPageWithFilter("startswith", EntityField.Type.STRING);
+	}
+
+	protected void testGetCountriesPageWithFilter(
+			String operator, EntityField.Type type)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		Country country1 = testGetCountriesPage_addCountry(randomCountry());
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Country country2 = testGetCountriesPage_addCountry(randomCountry());
+
+		for (EntityField entityField : entityFields) {
+			Page<Country> page = countryResource.getCountriesPage(
+				null, null, getFilterString(entityField, operator, country1),
+				Pagination.of(1, 2), null);
+
+			assertEquals(
+				Collections.singletonList(country1),
+				(List<Country>)page.getItems());
+		}
+	}
+
+	@Test
 	public void testGetCountriesPageWithPagination() throws Exception {
 		Page<Country> countriesPage = countryResource.getCountriesPage(
-			null, null, null, null);
+			null, null, null, null, null);
 
 		int totalCount = GetterUtil.getInteger(countriesPage.getTotalCount());
 
@@ -406,7 +637,7 @@ public abstract class BaseCountryResourceTestCase {
 
 		if (totalCount >= (pageSizeLimit - 2)) {
 			Page<Country> page1 = countryResource.getCountriesPage(
-				null, null,
+				null, null, null,
 				Pagination.of(
 					(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
 					pageSizeLimit),
@@ -417,7 +648,7 @@ public abstract class BaseCountryResourceTestCase {
 			assertContains(country1, (List<Country>)page1.getItems());
 
 			Page<Country> page2 = countryResource.getCountriesPage(
-				null, null,
+				null, null, null,
 				Pagination.of(
 					(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
 					pageSizeLimit),
@@ -426,7 +657,7 @@ public abstract class BaseCountryResourceTestCase {
 			assertContains(country2, (List<Country>)page2.getItems());
 
 			Page<Country> page3 = countryResource.getCountriesPage(
-				null, null,
+				null, null, null,
 				Pagination.of(
 					(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
 					pageSizeLimit),
@@ -436,7 +667,7 @@ public abstract class BaseCountryResourceTestCase {
 		}
 		else {
 			Page<Country> page1 = countryResource.getCountriesPage(
-				null, null, Pagination.of(1, totalCount + 2), null);
+				null, null, null, Pagination.of(1, totalCount + 2), null);
 
 			List<Country> countries1 = (List<Country>)page1.getItems();
 
@@ -444,7 +675,7 @@ public abstract class BaseCountryResourceTestCase {
 				countries1.toString(), totalCount + 2, countries1.size());
 
 			Page<Country> page2 = countryResource.getCountriesPage(
-				null, null, Pagination.of(2, totalCount + 2), null);
+				null, null, null, Pagination.of(2, totalCount + 2), null);
 
 			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
 
@@ -453,7 +684,7 @@ public abstract class BaseCountryResourceTestCase {
 			Assert.assertEquals(countries2.toString(), 1, countries2.size());
 
 			Page<Country> page3 = countryResource.getCountriesPage(
-				null, null, Pagination.of(1, (int)totalCount + 3), null);
+				null, null, null, Pagination.of(1, (int)totalCount + 3), null);
 
 			assertContains(country1, (List<Country>)page3.getItems());
 			assertContains(country2, (List<Country>)page3.getItems());
@@ -567,18 +798,20 @@ public abstract class BaseCountryResourceTestCase {
 		country2 = testGetCountriesPage_addCountry(country2);
 
 		Page<Country> page = countryResource.getCountriesPage(
-			null, null, null, null);
+			null, null, null, null, null);
 
 		for (EntityField entityField : entityFields) {
 			Page<Country> ascPage = countryResource.getCountriesPage(
-				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
+				null, null, null,
+				Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":asc");
 
 			assertContains(country1, (List<Country>)ascPage.getItems());
 			assertContains(country2, (List<Country>)ascPage.getItems());
 
 			Page<Country> descPage = countryResource.getCountriesPage(
-				null, null, Pagination.of(1, (int)page.getTotalCount() + 1),
+				null, null, null,
+				Pagination.of(1, (int)page.getTotalCount() + 1),
 				entityField.getName() + ":desc");
 
 			assertContains(country2, (List<Country>)descPage.getItems());
@@ -729,8 +962,9 @@ public abstract class BaseCountryResourceTestCase {
 			public StringBuffer getRequestURL() {
 				return new StringBuffer(
 					StringBundler.concat(
-						"http://localhost:8080/o/v1.0/",
-						RandomTestUtil.randomString(), "/",
+						"http://localhost:",
+						String.valueOf(PortalUtil.getPortalServerPort(false)),
+						"/o/v1.0/", RandomTestUtil.randomString(), "/",
 						RandomTestUtil.randomString()));
 			}
 
@@ -766,8 +1000,10 @@ public abstract class BaseCountryResourceTestCase {
 			@Override
 			public URI getRequestUri() {
 				return URI.create(
-					"http://localhost:8080/o/" + applicationPath +
-						resourcePath);
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath, resourcePath));
 			}
 
 			@Override
@@ -787,7 +1023,11 @@ public abstract class BaseCountryResourceTestCase {
 
 			@Override
 			public URI getBaseUri() {
-				return URI.create("http://localhost:8080/o/" + applicationPath);
+				return URI.create(
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath));
 			}
 
 			@Override
@@ -1169,6 +1409,138 @@ public abstract class BaseCountryResourceTestCase {
 	}
 
 	@Test
+	public void testGetCountryByExternalReferenceCode() throws Exception {
+		Country postCountry =
+			testGetCountryByExternalReferenceCode_addCountry();
+
+		Country getCountry = countryResource.getCountryByExternalReferenceCode(
+			postCountry.getExternalReferenceCode());
+
+		assertEquals(postCountry, getCountry);
+		assertValid(getCountry);
+	}
+
+	protected Country testGetCountryByExternalReferenceCode_addCountry()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetCountryByExternalReferenceCode()
+		throws Exception {
+
+		Country country =
+			testGraphQLGetCountryByExternalReferenceCode_addCountry();
+
+		// No namespace
+
+		Assert.assertTrue(
+			equals(
+				country,
+				CountrySerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"countryByExternalReferenceCode",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"externalReferenceCode",
+											"\"" +
+												country.
+													getExternalReferenceCode() +
+														"\"");
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data",
+						"Object/countryByExternalReferenceCode"))));
+
+		// Using the namespace headlessAdminAddress_v1_0
+
+		Assert.assertTrue(
+			equals(
+				country,
+				CountrySerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"headlessAdminAddress_v1_0",
+								new GraphQLField(
+									"countryByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													country.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data",
+						"JSONObject/headlessAdminAddress_v1_0",
+						"Object/countryByExternalReferenceCode"))));
+	}
+
+	@Test
+	public void testGraphQLGetCountryByExternalReferenceCodeNotFound()
+		throws Exception {
+
+		String irrelevantExternalReferenceCode =
+			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"countryByExternalReferenceCode",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"externalReferenceCode",
+									irrelevantExternalReferenceCode);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace headlessAdminAddress_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"headlessAdminAddress_v1_0",
+						new GraphQLField(
+							"countryByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+	}
+
+	protected Country testGraphQLGetCountryByExternalReferenceCode_addCountry()
+		throws Exception {
+
+		return testGraphQLCountry_addCountry();
+	}
+
+	@Test
 	public void testGetCountryByName() throws Exception {
 		Country postCountry = testGetCountryByName_addCountry();
 
@@ -1415,6 +1787,36 @@ public abstract class BaseCountryResourceTestCase {
 	}
 
 	@Test
+	public void testPatchCountryByExternalReferenceCode() throws Exception {
+		Country postCountry =
+			testPatchCountryByExternalReferenceCode_addCountry();
+
+		Country randomPatchCountry = randomPatchCountry();
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Country patchCountry =
+			countryResource.patchCountryByExternalReferenceCode(
+				postCountry.getExternalReferenceCode(), randomPatchCountry);
+
+		Country expectedPatchCountry = postCountry.clone();
+
+		BeanTestUtil.copyProperties(randomPatchCountry, expectedPatchCountry);
+
+		Country getCountry = countryResource.getCountryByExternalReferenceCode(
+			patchCountry.getExternalReferenceCode());
+
+		assertEquals(expectedPatchCountry, getCountry);
+		assertValid(getCountry);
+	}
+
+	protected Country testPatchCountryByExternalReferenceCode_addCountry()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPostCountry() throws Exception {
 		Country randomCountry = randomCountry();
 
@@ -1464,14 +1866,90 @@ public abstract class BaseCountryResourceTestCase {
 	}
 
 	@Test
+	public void testPutCountryByExternalReferenceCode() throws Exception {
+		Country postCountry =
+			testPutCountryByExternalReferenceCode_addCountry();
+
+		Country randomCountry = randomCountry();
+
+		Country putCountry = countryResource.putCountryByExternalReferenceCode(
+			postCountry.getExternalReferenceCode(), randomCountry);
+
+		assertEquals(randomCountry, putCountry);
+		assertValid(putCountry);
+
+		Country getCountry = countryResource.getCountryByExternalReferenceCode(
+			putCountry.getExternalReferenceCode());
+
+		assertEquals(randomCountry, getCountry);
+		assertValid(getCountry);
+
+		Country newCountry =
+			testPutCountryByExternalReferenceCode_createCountry();
+
+		putCountry = countryResource.putCountryByExternalReferenceCode(
+			newCountry.getExternalReferenceCode(), newCountry);
+
+		assertEquals(newCountry, putCountry);
+		assertValid(putCountry);
+
+		getCountry = countryResource.getCountryByExternalReferenceCode(
+			putCountry.getExternalReferenceCode());
+
+		assertEquals(newCountry, getCountry);
+
+		Assert.assertEquals(
+			newCountry.getExternalReferenceCode(),
+			putCountry.getExternalReferenceCode());
+	}
+
+	protected Country testPutCountryByExternalReferenceCode_addCountry()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Country testPutCountryByExternalReferenceCode_createCountry()
+		throws Exception {
+
+		return randomCountry();
+	}
+
+	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		Country country1 = testBatchEngineDeleteImportTask_addCountry();
+
+		testBatchEngineDeleteImportTask_deleteCountry(
+			200, country1.getExternalReferenceCode(), null);
+
+		assertHttpResponseStatusCode(
+			404, countryResource.getCountryHttpResponse(country1.getId()));
+
+		country1 = testBatchEngineDeleteImportTask_addCountry();
 
 		testBatchEngineDeleteImportTask_deleteCountry(
 			200, null, country1.getId());
 
 		assertHttpResponseStatusCode(
 			404, countryResource.getCountryHttpResponse(country1.getId()));
+
+		country1 = testBatchEngineDeleteImportTask_addCountry();
+		Country country2 = testBatchEngineDeleteImportTask_addCountry();
+
+		testBatchEngineDeleteImportTask_deleteCountry(
+			200, country2.getExternalReferenceCode(), country1.getId());
+
+		assertHttpResponseStatusCode(
+			404, countryResource.getCountryHttpResponse(country1.getId()));
+		assertHttpResponseStatusCode(
+			200, countryResource.getCountryHttpResponse(country2.getId()));
+
+		testBatchEngineDeleteImportTask_deleteCountry(
+			200, country2.getExternalReferenceCode(), country1.getId());
+
+		assertHttpResponseStatusCode(
+			404, countryResource.getCountryHttpResponse(country2.getId()));
 	}
 
 	protected Country testBatchEngineDeleteImportTask_addCountry()
@@ -1490,7 +1968,8 @@ public abstract class BaseCountryResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).parameters(
 			parameters
 		).build();
@@ -1514,6 +1993,9 @@ public abstract class BaseCountryResourceTestCase {
 				JSONFactoryUtil.createJSONObject(httpResponse.getContent()));
 		}
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected Country testGraphQLCountry_addCountry() throws Exception {
 		return testGraphQLCountry_addCountry(randomCountry());
@@ -1565,16 +2047,22 @@ public abstract class BaseCountryResourceTestCase {
 		else if (value instanceof Boolean || value instanceof Number) {
 			return value.toString();
 		}
-		else if (value instanceof Date date) {
+		else if (value instanceof Date) {
+			Date date = (Date)value;
+
 			return "\"" +
 				DateUtil.getDate(
 					date, "yyyy-MM-dd'T'HH:mm:ss'Z'", LocaleUtil.getDefault(),
 					TimeZone.getTimeZone("UTC")) + "\"";
 		}
-		else if (value instanceof Enum<?> enm) {
+		else if (value instanceof Enum) {
+			Enum<?> enm = (Enum<?>)value;
+
 			return enm.name();
 		}
-		else if (value instanceof Map<?, ?> map) {
+		else if (value instanceof Map) {
+			Map<?, ?> map = (Map<?, ?>)value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -1587,7 +2075,9 @@ public abstract class BaseCountryResourceTestCase {
 
 			return "{" + String.join(", ", entries) + "}";
 		}
-		else if (value instanceof Object[] array) {
+		else if (value instanceof Object[]) {
+			Object[] array = (Object[])value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Object entry : array) {
@@ -1690,6 +2180,14 @@ public abstract class BaseCountryResourceTestCase {
 	protected void assertValid(Country country) throws Exception {
 		boolean valid = true;
 
+		if (country.getDateCreated() == null) {
+			valid = false;
+		}
+
+		if (country.getDateModified() == null) {
+			valid = false;
+		}
+
 		if (country.getId() == null) {
 			valid = false;
 		}
@@ -1723,6 +2221,24 @@ public abstract class BaseCountryResourceTestCase {
 
 			if (Objects.equals("billingAllowed", additionalAssertFieldName)) {
 				if (country.getBillingAllowed() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("creator", additionalAssertFieldName)) {
+				if (country.getCreator() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"externalReferenceCode", additionalAssertFieldName)) {
+
+				if (country.getExternalReferenceCode() == null) {
 					valid = false;
 				}
 
@@ -1868,6 +2384,8 @@ public abstract class BaseCountryResourceTestCase {
 	protected List<GraphQLField> getGraphQLFields() throws Exception {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
+		graphQLFields.add(new GraphQLField("externalReferenceCode"));
+
 		graphQLFields.add(new GraphQLField("id"));
 
 		for (java.lang.reflect.Field field :
@@ -1959,6 +2477,50 @@ public abstract class BaseCountryResourceTestCase {
 				if (!Objects.deepEquals(
 						country1.getBillingAllowed(),
 						country2.getBillingAllowed())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("creator", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						country1.getCreator(), country2.getCreator())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("dateCreated", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						country1.getDateCreated(), country2.getDateCreated())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("dateModified", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						country1.getDateModified(),
+						country2.getDateModified())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"externalReferenceCode", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						country1.getExternalReferenceCode(),
+						country2.getExternalReferenceCode())) {
 
 					return false;
 				}
@@ -2287,6 +2849,115 @@ public abstract class BaseCountryResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("creator")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("dateCreated")) {
+			if (operator.equals("between")) {
+				Date date = country.getDateCreated();
+
+				sb = new StringBundler();
+
+				sb.append("(");
+				sb.append(entityFieldName);
+				sb.append(" gt ");
+				sb.append(_format.format(date.getTime() - (2 * Time.SECOND)));
+				sb.append(" and ");
+				sb.append(entityFieldName);
+				sb.append(" lt ");
+				sb.append(_format.format(date.getTime() + (2 * Time.SECOND)));
+				sb.append(")");
+			}
+			else {
+				sb.append(entityFieldName);
+
+				sb.append(" ");
+				sb.append(operator);
+				sb.append(" ");
+
+				sb.append(_format.format(country.getDateCreated()));
+			}
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("dateModified")) {
+			if (operator.equals("between")) {
+				Date date = country.getDateModified();
+
+				sb = new StringBundler();
+
+				sb.append("(");
+				sb.append(entityFieldName);
+				sb.append(" gt ");
+				sb.append(_format.format(date.getTime() - (2 * Time.SECOND)));
+				sb.append(" and ");
+				sb.append(entityFieldName);
+				sb.append(" lt ");
+				sb.append(_format.format(date.getTime() + (2 * Time.SECOND)));
+				sb.append(")");
+			}
+			else {
+				sb.append(entityFieldName);
+
+				sb.append(" ");
+				sb.append(operator);
+				sb.append(" ");
+
+				sb.append(_format.format(country.getDateModified()));
+			}
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("externalReferenceCode")) {
+			Object object = country.getExternalReferenceCode();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("groupFilterEnabled")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -2399,7 +3070,9 @@ public abstract class BaseCountryResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -2435,6 +3108,10 @@ public abstract class BaseCountryResourceTestCase {
 				a3 = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				active = RandomTestUtil.randomBoolean();
 				billingAllowed = RandomTestUtil.randomBoolean();
+				dateCreated = RandomTestUtil.nextDate();
+				dateModified = RandomTestUtil.nextDate();
+				externalReferenceCode = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				groupFilterEnabled = RandomTestUtil.randomBoolean();
 				id = RandomTestUtil.randomLong();
 				idd = RandomTestUtil.randomInt();
@@ -2713,4 +3390,4 @@ public abstract class BaseCountryResourceTestCase {
 		_vulcanCRUDItemDelegateBuilderRegistry;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1900553384
+// LIFERAY-REST-BUILDER-HASH:884740839

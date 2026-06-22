@@ -1,18 +1,21 @@
 dependencies {
 	testIntegrationImplementation group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	testIntegrationImplementation project(":apps:asset:asset-entry-rel-api")
+	testIntegrationImplementation project(":apps:asset:asset-test-util")
 	testIntegrationImplementation project(":apps:change-tracking:change-tracking-test-util")
 	testIntegrationImplementation project(":apps:friendly-url:friendly-url-api")
 	testIntegrationImplementation project(":apps:friendly-url:friendly-url-taglib")
 	testIntegrationImplementation project(":apps:friendly-url:friendly-url-test-util")
 	testIntegrationImplementation project(":apps:journal:journal-api")
 	testIntegrationImplementation project(":apps:journal:journal-test-util")
+	testIntegrationImplementation project(":apps:layout:layout-api")
 	testIntegrationImplementation project(":apps:layout:layout-test-util")
 	testIntegrationImplementation project(":apps:layout:layout-utility-page-api")
 	testIntegrationImplementation project(":apps:portal-configuration:portal-configuration-module-configuration-api")
 	testIntegrationImplementation project(":apps:portal-configuration:portal-configuration-test-util")
 	testIntegrationImplementation project(":apps:portal:portal-upgrade-test-util")
 	testIntegrationImplementation project(":apps:redirect:redirect-api")
+	testIntegrationImplementation project(":apps:site:site-api")
 	testIntegrationImplementation project(":apps:static:portal:portal-upgrade-api")
 	testIntegrationImplementation project(":test:arquillian-extension-junit-bridge")
 }

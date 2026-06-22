@@ -5,6 +5,7 @@
 
 package com.liferay.site.cms.site.initializer.internal.display.context;
 
+import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.document.library.configuration.DLConfiguration;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
@@ -13,14 +14,18 @@ import com.liferay.object.constants.ObjectEntryFolderConstants;
 import com.liferay.object.constants.ObjectFolderConstants;
 import com.liferay.object.model.ObjectEntryFolder;
 import com.liferay.object.service.ObjectDefinitionService;
-import com.liferay.object.service.ObjectDefinitionSettingLocalService;
 import com.liferay.object.service.ObjectEntryFolderLocalService;
 import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -28,9 +33,12 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.sharing.security.permission.SharingEntryAction;
+import com.liferay.sharing.service.SharingEntryLocalService;
 import com.liferay.site.cms.site.initializer.internal.constants.CMSSiteInitializerFDSNames;
 import com.liferay.site.cms.site.initializer.internal.util.ActionUtil;
 import com.liferay.translation.exporter.TranslationInfoItemFieldValuesExporterRegistry;
+import com.liferay.trash.TrashHelper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -46,25 +54,25 @@ public class ViewFolderSectionDisplayContext extends BaseSectionDisplayContext {
 
 	public ViewFolderSectionDisplayContext(
 		DepotEntryLocalService depotEntryLocalService,
+		ModelResourcePermission<DepotEntry> depotEntryModelResourcePermission,
 		DLConfiguration dlConfiguration, GroupLocalService groupLocalService,
 		HttpServletRequest httpServletRequest, Language language,
 		ObjectDefinitionService objectDefinitionService,
-		ObjectDefinitionSettingLocalService objectDefinitionSettingLocalService,
 		ObjectEntryFolderLocalService objectEntryFolderLocalService,
-		ModelResourcePermission<ObjectEntryFolder>
-			objectEntryFolderModelResourcePermission,
-		Portal portal,
+		Portal portal, SharingEntryLocalService sharingEntryLocalService,
 		TranslationInfoItemFieldValuesExporterRegistry
-			translationInfoItemFieldValuesExporterRegistry) {
+			translationInfoItemFieldValuesExporterRegistry,
+		TrashHelper trashHelper) {
 
 		super(
 			depotEntryLocalService, dlConfiguration, groupLocalService,
-			httpServletRequest, language, objectDefinitionService,
-			objectDefinitionSettingLocalService,
-			objectEntryFolderModelResourcePermission, portal,
+			httpServletRequest, language, objectDefinitionService, portal,
 			translationInfoItemFieldValuesExporterRegistry);
 
+		_depotEntryModelResourcePermission = depotEntryModelResourcePermission;
 		_objectEntryFolderLocalService = objectEntryFolderLocalService;
+		_sharingEntryLocalService = sharingEntryLocalService;
+		_trashHelper = trashHelper;
 	}
 
 	@Override
@@ -92,6 +100,22 @@ public class ViewFolderSectionDisplayContext extends BaseSectionDisplayContext {
 		).put(
 			"rootObjectEntryFolderExternalReferenceCode",
 			getRootObjectEntryFolderExternalReferenceCode()
+		).put(
+			"trashEnabled",
+			() -> {
+				if (objectEntryFolder == null) {
+					return null;
+				}
+
+				Group group = groupLocalService.fetchGroup(
+					objectEntryFolder.getGroupId());
+
+				if ((group != null) && _trashHelper.isTrashEnabled(group)) {
+					return true;
+				}
+
+				return false;
+			}
 		).build();
 	}
 
@@ -100,35 +124,58 @@ public class ViewFolderSectionDisplayContext extends BaseSectionDisplayContext {
 			return Collections.emptyMap();
 		}
 
-		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
-
 		Group group = groupLocalService.fetchGroup(
 			objectEntryFolder.getGroupId());
 
-		addBreadcrumbItem(
-			jsonArray, false,
-			ActionUtil.getSpaceURL(group.getClassPK(), themeDisplay),
-			group.getName(themeDisplay.getLocale()));
+		if (group == null) {
+			return Collections.emptyMap();
+		}
+
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
 		String[] parts = StringUtil.split(
 			objectEntryFolder.getTreePath(), CharPool.SLASH);
 
-		if (parts.length > 2) {
-			for (int i = 1; i < (parts.length - 1); i++) {
-				ObjectEntryFolder objectEntryFolder =
-					_objectEntryFolderLocalService.fetchObjectEntryFolder(
-						GetterUtil.getLong(parts[i]));
+		int firstAncestorIndex = 1;
 
-				addBreadcrumbItem(
-					jsonArray, false,
-					ActionUtil.getViewFolderURL(
-						objectEntryFolder.getObjectEntryFolderId(),
-						themeDisplay),
-					objectEntryFolder.getName());
-			}
+		boolean hideSpace = true;
+
+		PermissionChecker permissionChecker =
+			themeDisplay.getPermissionChecker();
+
+		if (_hasViewPermission(group, permissionChecker)) {
+			hideSpace = false;
+
+			addBreadcrumbItem(
+				jsonArray, false,
+				ActionUtil.getSpaceURL(group.getClassPK(), themeDisplay),
+				group.getName(themeDisplay.getLocale()));
+		}
+		else {
+			firstAncestorIndex = _getFirstAncestorIndex(
+				parts, permissionChecker.getUserId());
 		}
 
-		addBreadcrumbItem(jsonArray, true, null, objectEntryFolder.getName());
+		for (int i = firstAncestorIndex; i < (parts.length - 1); i++) {
+			ObjectEntryFolder ancestorObjectEntryFolder =
+				_objectEntryFolderLocalService.fetchObjectEntryFolder(
+					GetterUtil.getLong(parts[i]));
+
+			if (ancestorObjectEntryFolder == null) {
+				continue;
+			}
+
+			addBreadcrumbItem(
+				jsonArray, false,
+				ActionUtil.getViewFolderURL(
+					ancestorObjectEntryFolder.getObjectEntryFolderId(),
+					themeDisplay),
+				ancestorObjectEntryFolder.getLabel(themeDisplay.getLocale()));
+		}
+
+		addBreadcrumbItem(
+			jsonArray, true, null,
+			objectEntryFolder.getLabel(themeDisplay.getLocale()));
 
 		return HashMapBuilder.<String, Object>put(
 			"breadcrumbItems", jsonArray
@@ -142,6 +189,8 @@ public class ViewFolderSectionDisplayContext extends BaseSectionDisplayContext {
 					unicodeProperties.get("logoColor"), "outline-0");
 			}
 		).put(
+			"hideSpace", hideSpace
+		).put(
 			"size", "sm"
 		).build();
 	}
@@ -149,11 +198,11 @@ public class ViewFolderSectionDisplayContext extends BaseSectionDisplayContext {
 	@Override
 	public List<DropdownItem> getBulkActionDropdownItems() {
 		if (_isContentsFolder()) {
-			return sectionDisplayContextHelper.
-				getContentsBulkActionDropdownItems(httpServletRequest);
+			return SectionDisplayContextUtil.getContentsBulkActionDropdownItems(
+				httpServletRequest);
 		}
 
-		return sectionDisplayContextHelper.getFilesBulkActionDropdownItems(
+		return SectionDisplayContextUtil.getFilesBulkActionDropdownItems(
 			httpServletRequest);
 	}
 
@@ -220,11 +269,11 @@ public class ViewFolderSectionDisplayContext extends BaseSectionDisplayContext {
 	@Override
 	public List<FDSActionDropdownItem> getFDSActionDropdownItems() {
 		if (_isContentsFolder()) {
-			return sectionDisplayContextHelper.
-				getContentsFDSActionDropdownItems(httpServletRequest);
+			return SectionDisplayContextUtil.getContentsFDSActionDropdownItems(
+				httpServletRequest);
 		}
 
-		return sectionDisplayContextHelper.getFilesFDSActionDropdownItems(
+		return SectionDisplayContextUtil.getFilesFDSActionDropdownItems(
 			httpServletRequest);
 	}
 
@@ -317,14 +366,60 @@ public class ViewFolderSectionDisplayContext extends BaseSectionDisplayContext {
 		return true;
 	}
 
+	private int _getFirstAncestorIndex(String[] parts, long userId) {
+		long classNameId = portal.getClassNameId(
+			ObjectEntryFolder.class.getName());
+
+		for (int i = 1; i < (parts.length - 1); i++) {
+			if (_sharingEntryLocalService.hasSharingPermission(
+					userId, classNameId, GetterUtil.getLong(parts[i]),
+					SharingEntryAction.VIEW)) {
+
+				return i;
+			}
+		}
+
+		return parts.length - 1;
+	}
+
+	private boolean _hasViewPermission(
+		Group group, PermissionChecker permissionChecker) {
+
+		DepotEntry depotEntry = depotEntryLocalService.fetchDepotEntry(
+			group.getClassPK());
+
+		if (depotEntry == null) {
+			return false;
+		}
+
+		try {
+			return _depotEntryModelResourcePermission.contains(
+				permissionChecker, depotEntry, ActionKeys.VIEW);
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException);
+			}
+
+			return false;
+		}
+	}
+
 	private boolean _isContentsFolder() {
 		return Objects.equals(
 			getRootObjectEntryFolderExternalReferenceCode(),
 			ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS);
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		ViewFolderSectionDisplayContext.class);
+
+	private final ModelResourcePermission<DepotEntry>
+		_depotEntryModelResourcePermission;
 	private final ObjectEntryFolderLocalService _objectEntryFolderLocalService;
 	private String _objectFolderExternalReferenceCode;
 	private String _rootObjectEntryFolderExternalReferenceCode;
+	private final SharingEntryLocalService _sharingEntryLocalService;
+	private final TrashHelper _trashHelper;
 
 }

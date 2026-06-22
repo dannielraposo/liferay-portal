@@ -1,0 +1,321 @@
+{
+	"configuration": {
+		"className": "com.liferay.object.admin.rest.dto.v1_0.ObjectDefinition",
+		"multiCompany": true,
+		"parameters": {
+			"containsHeaders": "true",
+			"createStrategy": "UPSERT",
+			"featureFlag": "LPD-85514",
+			"importStrategy": "ON_ERROR_FAIL",
+			"updateStrategy": "UPDATE"
+		},
+		"taskItemDelegateName": "DEFAULT"
+	},
+	"items": [
+		{
+			"active": true,
+			"className": "com.liferay.object.model.ObjectDefinition#G3I1",
+			"externalReferenceCode": "L_CSG_GENERATION_ITEM",
+			"label": {
+				"en_US": "CSG Generation Item"
+			},
+			"modifiable": true,
+			"name": "CSGGenerationItem",
+			"objectFields": [
+				{
+					"DBType": "Long",
+					"businessType": "Attachment",
+					"externalReferenceCode": "BATCH_FILE",
+					"indexed": false,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Batch File"
+					},
+					"name": "batchFile",
+					"objectFieldSettings": [
+						{
+							"name": "acceptedFileExtensions",
+							"value": "json"
+						},
+						{
+							"name": "fileSource",
+							"value": "userComputerToDocumentsAndMedia"
+						},
+						{
+							"name": "maximumFileSize",
+							"value": "20"
+						}
+					],
+					"required": true,
+					"state": false,
+					"system": true,
+					"type": "Long"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "FILE_NAME",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "File Name"
+					},
+					"name": "fileName",
+					"required": true,
+					"state": false,
+					"system": true,
+					"type": "String"
+				},
+				{
+					"DBType": "Integer",
+					"businessType": "Integer",
+					"externalReferenceCode": "ITEM_COUNT",
+					"indexed": false,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Item Count"
+					},
+					"name": "itemCount",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Integer"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "LANGUAGES",
+					"indexed": false,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Languages"
+					},
+					"localized": false,
+					"name": "languages",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "String"
+				},
+				{
+					"DBType": "Integer",
+					"businessType": "Integer",
+					"externalReferenceCode": "LOAD_ORDER",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Load Order"
+					},
+					"name": "loadOrder",
+					"required": true,
+					"state": false,
+					"system": true,
+					"type": "Integer"
+				},
+				{
+					"DBType": "Clob",
+					"businessType": "LongText",
+					"externalReferenceCode": "PREVIEW_ITEM",
+					"indexed": false,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Preview Item"
+					},
+					"localized": false,
+					"name": "previewItem",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "String"
+				}
+			],
+			"objectFolderExternalReferenceCode": "L_CSG_GENERATIONS_FOLDER",
+			"panelCategoryKey": "control_panel.object",
+			"pluralLabel": {
+				"en_US": "CSG Generation Items"
+			},
+			"scope": "company",
+			"status": {
+				"code": 0
+			},
+			"system": true,
+			"titleObjectFieldName": "externalReferenceCode"
+		},
+		{
+			"active": true,
+			"className": "com.liferay.object.model.ObjectDefinition#G3N1",
+			"externalReferenceCode": "L_CSG_GENERATION",
+			"label": {
+				"en_US": "CSG Generation"
+			},
+			"modifiable": true,
+			"name": "CSGGeneration",
+			"objectActions": [
+				{
+					"active": true,
+					"errorMessage": {
+						"en_US": "Unable to commit generation"
+					},
+					"externalReferenceCode": "COMMIT",
+					"label": {
+						"en_US": "Commit"
+					},
+					"name": "commit",
+					"objectActionExecutorKey": "commit-csg-generation",
+					"objectActionTriggerKey": "standalone",
+					"parameters": {
+					},
+					"system": true
+				}
+			],
+			"objectFields": [
+				{
+					"DBType": "DateTime",
+					"businessType": "DateTime",
+					"externalReferenceCode": "COMMIT_DATE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Commit Date"
+					},
+					"name": "commitDate",
+					"objectFieldSettings": [
+						{
+							"name": "timeStorage",
+							"value": "convertToUTC"
+						}
+					],
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "DateTime"
+				},
+				{
+					"DBType": "Clob",
+					"businessType": "LongText",
+					"externalReferenceCode": "FAILURE_REASON",
+					"indexed": false,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Failure Reason"
+					},
+					"name": "failureReason",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "GENERATED_SITE_ERC",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Generated Site ERC"
+					},
+					"name": "generatedSiteERC",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Picklist",
+					"defaultValue": "refining",
+					"externalReferenceCode": "GENERATION_STATUS",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Generation Status"
+					},
+					"listTypeDefinitionExternalReferenceCode": "L_CSG_GENERATION_STATUSES",
+					"name": "generationStatus",
+					"required": true,
+					"state": true,
+					"system": true,
+					"type": "String"
+				},
+				{
+					"DBType": "Clob",
+					"businessType": "LongText",
+					"externalReferenceCode": "PROMPT",
+					"indexed": false,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Prompt"
+					},
+					"name": "prompt",
+					"required": true,
+					"state": false,
+					"system": true,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "TARGET_LANGUAGES",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Target Languages"
+					},
+					"name": "targetLanguages",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "TITLE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Title"
+					},
+					"name": "title",
+					"required": true,
+					"state": false,
+					"system": true,
+					"type": "String"
+				}
+			],
+			"objectFolderExternalReferenceCode": "L_CSG_GENERATIONS_FOLDER",
+			"objectRelationships": [
+				{
+					"deletionType": "cascade",
+					"externalReferenceCode": "L_CSG_GENERATIONS_TO_L_CSG_GENERATION_ITEMS",
+					"label": {
+						"en_US": "Items"
+					},
+					"name": "items",
+					"objectDefinitionExternalReferenceCode1": "L_CSG_GENERATION",
+					"objectDefinitionExternalReferenceCode2": "L_CSG_GENERATION_ITEM",
+					"objectDefinitionName2": "CSGGenerationItem",
+					"parameterObjectFieldId": 0,
+					"parameterObjectFieldName": "",
+					"reverse": false,
+					"system": true,
+					"type": "oneToMany"
+				}
+			],
+			"panelCategoryKey": "control_panel.object",
+			"pluralLabel": {
+				"en_US": "CSG Generations"
+			},
+			"scope": "company",
+			"status": {
+				"code": 0
+			},
+			"system": true,
+			"titleObjectFieldName": "title"
+		}
+	]
+}

@@ -9,7 +9,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -77,69 +76,15 @@ public class SamlSpIdpConnectionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<SamlSpIdpConnection>
-		_collectionPersistenceFinderByCompanyId;
-
-	/**
-	 * Returns all the saml sp idp connections where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching saml sp idp connections
-	 */
-	@Override
-	public List<SamlSpIdpConnection> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the saml sp idp connections where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SamlSpIdpConnectionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of saml sp idp connections
-	 * @param end the upper bound of the range of saml sp idp connections (not inclusive)
-	 * @return the range of matching saml sp idp connections
-	 */
-	@Override
-	public List<SamlSpIdpConnection> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<SamlSpIdpConnection, NoSuchSpIdpConnectionException>
+			_collectionPersistenceFinderByCompanyId;
 
 	/**
 	 * Returns an ordered range of all the saml sp idp connections where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SamlSpIdpConnectionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of saml sp idp connections
-	 * @param end the upper bound of the range of saml sp idp connections (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching saml sp idp connections
-	 */
-	@Override
-	public List<SamlSpIdpConnection> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<SamlSpIdpConnection> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the saml sp idp connections where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SamlSpIdpConnectionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SamlSpIdpConnectionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -174,16 +119,8 @@ public class SamlSpIdpConnectionPersistenceImpl
 			OrderByComparator<SamlSpIdpConnection> orderByComparator)
 		throws NoSuchSpIdpConnectionException {
 
-		SamlSpIdpConnection samlSpIdpConnection = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (samlSpIdpConnection != null) {
-			return samlSpIdpConnection;
-		}
-
-		throw new NoSuchSpIdpConnectionException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -225,9 +162,9 @@ public class SamlSpIdpConnectionPersistenceImpl
 			finderCache, new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathFetchByC_SIEI;
-	private UniquePersistenceFinder<SamlSpIdpConnection>
-		_uniquePersistenceFinderByC_SIEI;
+	private UniquePersistenceFinder
+		<SamlSpIdpConnection, NoSuchSpIdpConnectionException>
+			_uniquePersistenceFinderByC_SIEI;
 
 	/**
 	 * Returns the saml sp idp connection where companyId = &#63; and samlIdpEntityId = &#63; or throws a <code>NoSuchSpIdpConnectionException</code> if it could not be found.
@@ -242,37 +179,8 @@ public class SamlSpIdpConnectionPersistenceImpl
 			long companyId, String samlIdpEntityId)
 		throws NoSuchSpIdpConnectionException {
 
-		SamlSpIdpConnection samlSpIdpConnection = fetchByC_SIEI(
-			companyId, samlIdpEntityId);
-
-		if (samlSpIdpConnection == null) {
-			String message =
-				_uniquePersistenceFinderByC_SIEI.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {companyId, samlIdpEntityId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchSpIdpConnectionException(message);
-		}
-
-		return samlSpIdpConnection;
-	}
-
-	/**
-	 * Returns the saml sp idp connection where companyId = &#63; and samlIdpEntityId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param companyId the company ID
-	 * @param samlIdpEntityId the saml idp entity ID
-	 * @return the matching saml sp idp connection, or <code>null</code> if a matching saml sp idp connection could not be found
-	 */
-	@Override
-	public SamlSpIdpConnection fetchByC_SIEI(
-		long companyId, String samlIdpEntityId) {
-
-		return fetchByC_SIEI(companyId, samlIdpEntityId, true);
+		return _uniquePersistenceFinderByC_SIEI.find(
+			finderCache, new Object[] {companyId, samlIdpEntityId});
 	}
 
 	/**
@@ -529,50 +437,45 @@ public class SamlSpIdpConnectionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
 				_SQL_SELECT_SAMLSPIDPCONNECTION_WHERE,
 				_SQL_COUNT_SAMLSPIDPCONNECTION_WHERE,
 				SamlSpIdpConnectionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"samlSpIdpConnection.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, SamlSpIdpConnection::getCompanyId));
 
-		_finderPathFetchByC_SIEI = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_SIEI",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "samlIdpEntityId"}, false,
-			SamlSpIdpConnection::getCompanyId,
-			SamlSpIdpConnection::getSamlIdpEntityId);
-
 		_uniquePersistenceFinderByC_SIEI = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_SIEI,
-			_SQL_SELECT_SAMLSPIDPCONNECTION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_SIEI",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "samlIdpEntityId"}, 0, 2, false,
+				SamlSpIdpConnection::getCompanyId,
+				convertNullFunction(SamlSpIdpConnection::getSamlIdpEntityId)),
+			_SQL_SELECT_SAMLSPIDPCONNECTION_WHERE, "",
 			new FinderColumn<>(
 				"samlSpIdpConnection.", "companyId", FinderColumn.Type.LONG,
-				"=", true, false, SamlSpIdpConnection::getCompanyId),
+				"=", true, true, SamlSpIdpConnection::getCompanyId),
 			new FinderColumn<>(
 				"samlSpIdpConnection.", "samlIdpEntityId",
 				FinderColumn.Type.STRING, "=", true, true,
@@ -644,4 +547,4 @@ public class SamlSpIdpConnectionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1902240629
+// LIFERAY-SERVICE-BUILDER-HASH:419411110

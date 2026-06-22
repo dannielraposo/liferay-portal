@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -83,68 +82,16 @@ public class ObjectValidationRuleSettingPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<ObjectValidationRuleSetting>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the object validation rule settings where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object validation rule settings where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object validation rule settings
-	 * @param end the upper bound of the range of object validation rule settings (not inclusive)
-	 * @return the range of matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectValidationRuleSetting,
+		 NoSuchObjectValidationRuleSettingException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the object validation rule settings where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of object validation rule settings
-	 * @param end the upper bound of the range of object validation rule settings (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<ObjectValidationRuleSetting> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object validation rule settings where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -179,16 +126,8 @@ public class ObjectValidationRuleSettingPersistenceImpl
 			OrderByComparator<ObjectValidationRuleSetting> orderByComparator)
 		throws NoSuchObjectValidationRuleSettingException {
 
-		ObjectValidationRuleSetting objectValidationRuleSetting =
-			fetchByUuid_First(uuid, orderByComparator);
-
-		if (objectValidationRuleSetting != null) {
-			return objectValidationRuleSetting;
-		}
-
-		throw new NoSuchObjectValidationRuleSettingException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -230,75 +169,16 @@ public class ObjectValidationRuleSettingPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<ObjectValidationRuleSetting>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the object validation rule settings where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByUuid_C(
-		String uuid, long companyId) {
-
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object validation rule settings where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object validation rule settings
-	 * @param end the upper bound of the range of object validation rule settings (not inclusive)
-	 * @return the range of matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectValidationRuleSetting,
+		 NoSuchObjectValidationRuleSettingException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the object validation rule settings where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of object validation rule settings
-	 * @param end the upper bound of the range of object validation rule settings (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<ObjectValidationRuleSetting> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object validation rule settings where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -335,16 +215,8 @@ public class ObjectValidationRuleSettingPersistenceImpl
 			OrderByComparator<ObjectValidationRuleSetting> orderByComparator)
 		throws NoSuchObjectValidationRuleSettingException {
 
-		ObjectValidationRuleSetting objectValidationRuleSetting =
-			fetchByUuid_C_First(uuid, companyId, orderByComparator);
-
-		if (objectValidationRuleSetting != null) {
-			return objectValidationRuleSetting;
-		}
-
-		throw new NoSuchObjectValidationRuleSettingException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -389,73 +261,16 @@ public class ObjectValidationRuleSettingPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByObjectValidationRuleId;
-	private FinderPath _finderPathWithoutPaginationFindByObjectValidationRuleId;
-	private FinderPath _finderPathCountByObjectValidationRuleId;
-	private CollectionPersistenceFinder<ObjectValidationRuleSetting>
-		_collectionPersistenceFinderByObjectValidationRuleId;
-
-	/**
-	 * Returns all the object validation rule settings where objectValidationRuleId = &#63;.
-	 *
-	 * @param objectValidationRuleId the object validation rule ID
-	 * @return the matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByObjectValidationRuleId(
-		long objectValidationRuleId) {
-
-		return findByObjectValidationRuleId(
-			objectValidationRuleId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the object validation rule settings where objectValidationRuleId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectValidationRuleId the object validation rule ID
-	 * @param start the lower bound of the range of object validation rule settings
-	 * @param end the upper bound of the range of object validation rule settings (not inclusive)
-	 * @return the range of matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByObjectValidationRuleId(
-		long objectValidationRuleId, int start, int end) {
-
-		return findByObjectValidationRuleId(
-			objectValidationRuleId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectValidationRuleSetting,
+		 NoSuchObjectValidationRuleSettingException>
+			_collectionPersistenceFinderByObjectValidationRuleId;
 
 	/**
 	 * Returns an ordered range of all the object validation rule settings where objectValidationRuleId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectValidationRuleId the object validation rule ID
-	 * @param start the lower bound of the range of object validation rule settings
-	 * @param end the upper bound of the range of object validation rule settings (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByObjectValidationRuleId(
-		long objectValidationRuleId, int start, int end,
-		OrderByComparator<ObjectValidationRuleSetting> orderByComparator) {
-
-		return findByObjectValidationRuleId(
-			objectValidationRuleId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object validation rule settings where objectValidationRuleId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectValidationRuleId the object validation rule ID
@@ -490,19 +305,9 @@ public class ObjectValidationRuleSettingPersistenceImpl
 			OrderByComparator<ObjectValidationRuleSetting> orderByComparator)
 		throws NoSuchObjectValidationRuleSettingException {
 
-		ObjectValidationRuleSetting objectValidationRuleSetting =
-			fetchByObjectValidationRuleId_First(
-				objectValidationRuleId, orderByComparator);
-
-		if (objectValidationRuleSetting != null) {
-			return objectValidationRuleSetting;
-		}
-
-		throw new NoSuchObjectValidationRuleSettingException(
-			_collectionPersistenceFinderByObjectValidationRuleId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {objectValidationRuleId}));
+		return _collectionPersistenceFinderByObjectValidationRuleId.findFirst(
+			finderCache, new Object[] {objectValidationRuleId},
+			orderByComparator);
 	}
 
 	/**
@@ -545,76 +350,16 @@ public class ObjectValidationRuleSettingPersistenceImpl
 			finderCache, new Object[] {objectValidationRuleId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByOVRI_N;
-	private FinderPath _finderPathWithoutPaginationFindByOVRI_N;
-	private FinderPath _finderPathCountByOVRI_N;
-	private CollectionPersistenceFinder<ObjectValidationRuleSetting>
-		_collectionPersistenceFinderByOVRI_N;
-
-	/**
-	 * Returns all the object validation rule settings where objectValidationRuleId = &#63; and name = &#63;.
-	 *
-	 * @param objectValidationRuleId the object validation rule ID
-	 * @param name the name
-	 * @return the matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByOVRI_N(
-		long objectValidationRuleId, String name) {
-
-		return findByOVRI_N(
-			objectValidationRuleId, name, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the object validation rule settings where objectValidationRuleId = &#63; and name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectValidationRuleId the object validation rule ID
-	 * @param name the name
-	 * @param start the lower bound of the range of object validation rule settings
-	 * @param end the upper bound of the range of object validation rule settings (not inclusive)
-	 * @return the range of matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByOVRI_N(
-		long objectValidationRuleId, String name, int start, int end) {
-
-		return findByOVRI_N(objectValidationRuleId, name, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<ObjectValidationRuleSetting,
+		 NoSuchObjectValidationRuleSettingException>
+			_collectionPersistenceFinderByOVRI_N;
 
 	/**
 	 * Returns an ordered range of all the object validation rule settings where objectValidationRuleId = &#63; and name = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
-	 * </p>
-	 *
-	 * @param objectValidationRuleId the object validation rule ID
-	 * @param name the name
-	 * @param start the lower bound of the range of object validation rule settings
-	 * @param end the upper bound of the range of object validation rule settings (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching object validation rule settings
-	 */
-	@Override
-	public List<ObjectValidationRuleSetting> findByOVRI_N(
-		long objectValidationRuleId, String name, int start, int end,
-		OrderByComparator<ObjectValidationRuleSetting> orderByComparator) {
-
-		return findByOVRI_N(
-			objectValidationRuleId, name, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the object validation rule settings where objectValidationRuleId = &#63; and name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ObjectValidationRuleSettingModelImpl</code>.
 	 * </p>
 	 *
 	 * @param objectValidationRuleId the object validation rule ID
@@ -651,18 +396,9 @@ public class ObjectValidationRuleSettingPersistenceImpl
 			OrderByComparator<ObjectValidationRuleSetting> orderByComparator)
 		throws NoSuchObjectValidationRuleSettingException {
 
-		ObjectValidationRuleSetting objectValidationRuleSetting =
-			fetchByOVRI_N_First(
-				objectValidationRuleId, name, orderByComparator);
-
-		if (objectValidationRuleSetting != null) {
-			return objectValidationRuleSetting;
-		}
-
-		throw new NoSuchObjectValidationRuleSettingException(
-			_collectionPersistenceFinderByOVRI_N.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {objectValidationRuleId, name}));
+		return _collectionPersistenceFinderByOVRI_N.findFirst(
+			finderCache, new Object[] {objectValidationRuleId, name},
+			orderByComparator);
 	}
 
 	/**
@@ -708,9 +444,10 @@ public class ObjectValidationRuleSettingPersistenceImpl
 			finderCache, new Object[] {objectValidationRuleId, name});
 	}
 
-	private FinderPath _finderPathFetchByN_V;
-	private UniquePersistenceFinder<ObjectValidationRuleSetting>
-		_uniquePersistenceFinderByN_V;
+	private UniquePersistenceFinder
+		<ObjectValidationRuleSetting,
+		 NoSuchObjectValidationRuleSettingException>
+			_uniquePersistenceFinderByN_V;
 
 	/**
 	 * Returns the object validation rule setting where name = &#63; and value = &#63; or throws a <code>NoSuchObjectValidationRuleSettingException</code> if it could not be found.
@@ -724,34 +461,8 @@ public class ObjectValidationRuleSettingPersistenceImpl
 	public ObjectValidationRuleSetting findByN_V(String name, String value)
 		throws NoSuchObjectValidationRuleSettingException {
 
-		ObjectValidationRuleSetting objectValidationRuleSetting = fetchByN_V(
-			name, value);
-
-		if (objectValidationRuleSetting == null) {
-			String message =
-				_uniquePersistenceFinderByN_V.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {name, value});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectValidationRuleSettingException(message);
-		}
-
-		return objectValidationRuleSetting;
-	}
-
-	/**
-	 * Returns the object validation rule setting where name = &#63; and value = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param name the name
-	 * @param value the value
-	 * @return the matching object validation rule setting, or <code>null</code> if a matching object validation rule setting could not be found
-	 */
-	@Override
-	public ObjectValidationRuleSetting fetchByN_V(String name, String value) {
-		return fetchByN_V(name, value, true);
+		return _uniquePersistenceFinderByN_V.find(
+			finderCache, new Object[] {name, value});
 	}
 
 	/**
@@ -800,9 +511,10 @@ public class ObjectValidationRuleSettingPersistenceImpl
 			finderCache, new Object[] {name, value});
 	}
 
-	private FinderPath _finderPathFetchByOVRI_N_V;
-	private UniquePersistenceFinder<ObjectValidationRuleSetting>
-		_uniquePersistenceFinderByOVRI_N_V;
+	private UniquePersistenceFinder
+		<ObjectValidationRuleSetting,
+		 NoSuchObjectValidationRuleSettingException>
+			_uniquePersistenceFinderByOVRI_N_V;
 
 	/**
 	 * Returns the object validation rule setting where objectValidationRuleId = &#63; and name = &#63; and value = &#63; or throws a <code>NoSuchObjectValidationRuleSettingException</code> if it could not be found.
@@ -818,38 +530,8 @@ public class ObjectValidationRuleSettingPersistenceImpl
 			long objectValidationRuleId, String name, String value)
 		throws NoSuchObjectValidationRuleSettingException {
 
-		ObjectValidationRuleSetting objectValidationRuleSetting =
-			fetchByOVRI_N_V(objectValidationRuleId, name, value);
-
-		if (objectValidationRuleSetting == null) {
-			String message =
-				_uniquePersistenceFinderByOVRI_N_V.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {objectValidationRuleId, name, value});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchObjectValidationRuleSettingException(message);
-		}
-
-		return objectValidationRuleSetting;
-	}
-
-	/**
-	 * Returns the object validation rule setting where objectValidationRuleId = &#63; and name = &#63; and value = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param objectValidationRuleId the object validation rule ID
-	 * @param name the name
-	 * @param value the value
-	 * @return the matching object validation rule setting, or <code>null</code> if a matching object validation rule setting could not be found
-	 */
-	@Override
-	public ObjectValidationRuleSetting fetchByOVRI_N_V(
-		long objectValidationRuleId, String name, String value) {
-
-		return fetchByOVRI_N_V(objectValidationRuleId, name, value, true);
+		return _uniquePersistenceFinderByOVRI_N_V.find(
+			finderCache, new Object[] {objectValidationRuleId, name, value});
 	}
 
 	/**
@@ -1150,186 +832,167 @@ public class ObjectValidationRuleSettingPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_OBJECTVALIDATIONRULESETTING_WHERE,
 			_SQL_COUNT_OBJECTVALIDATIONRULESETTING_WHERE,
 			ObjectValidationRuleSettingModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"objectValidationRuleSetting.", "uuid",
+				"objectValidationRuleSetting.", "uuid", "uuid_",
 				FinderColumn.Type.STRING, "=", true, true,
 				ObjectValidationRuleSetting::getUuid));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
 				_SQL_SELECT_OBJECTVALIDATIONRULESETTING_WHERE,
 				_SQL_COUNT_OBJECTVALIDATIONRULESETTING_WHERE,
 				ObjectValidationRuleSettingModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"objectValidationRuleSetting.", "uuid",
-					FinderColumn.Type.STRING, "=", true, false,
+					"objectValidationRuleSetting.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
 					ObjectValidationRuleSetting::getUuid),
 				new FinderColumn<>(
 					"objectValidationRuleSetting.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
 					ObjectValidationRuleSetting::getCompanyId));
 
-		_finderPathWithPaginationFindByObjectValidationRuleId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByObjectValidationRuleId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"objectValidationRuleId"}, true);
-
-		_finderPathWithoutPaginationFindByObjectValidationRuleId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByObjectValidationRuleId",
-				new String[] {Long.class.getName()},
-				new String[] {"objectValidationRuleId"}, true);
-
-		_finderPathCountByObjectValidationRuleId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByObjectValidationRuleId",
-			new String[] {Long.class.getName()},
-			new String[] {"objectValidationRuleId"}, false);
-
 		_collectionPersistenceFinderByObjectValidationRuleId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByObjectValidationRuleId,
-				_finderPathWithoutPaginationFindByObjectValidationRuleId,
-				_finderPathCountByObjectValidationRuleId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByObjectValidationRuleId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectValidationRuleId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByObjectValidationRuleId",
+					new String[] {Long.class.getName()},
+					new String[] {"objectValidationRuleId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByObjectValidationRuleId",
+					new String[] {Long.class.getName()},
+					new String[] {"objectValidationRuleId"}, false),
 				_SQL_SELECT_OBJECTVALIDATIONRULESETTING_WHERE,
 				_SQL_COUNT_OBJECTVALIDATIONRULESETTING_WHERE,
 				ObjectValidationRuleSettingModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"objectValidationRuleSetting.", "objectValidationRuleId",
 					FinderColumn.Type.LONG, "=", true, true,
 					ObjectValidationRuleSetting::getObjectValidationRuleId));
 
-		_finderPathWithPaginationFindByOVRI_N = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByOVRI_N",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"objectValidationRuleId", "name"}, true);
-
-		_finderPathWithoutPaginationFindByOVRI_N = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByOVRI_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"objectValidationRuleId", "name"}, true);
-
-		_finderPathCountByOVRI_N = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByOVRI_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"objectValidationRuleId", "name"}, false);
-
 		_collectionPersistenceFinderByOVRI_N =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByOVRI_N,
-				_finderPathWithoutPaginationFindByOVRI_N,
-				_finderPathCountByOVRI_N,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByOVRI_N",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"objectValidationRuleId", "name"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByOVRI_N",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"objectValidationRuleId", "name"}, 0, 2, true,
+					null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByOVRI_N",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"objectValidationRuleId", "name"}, 0, 2,
+					false, null),
 				_SQL_SELECT_OBJECTVALIDATIONRULESETTING_WHERE,
 				_SQL_COUNT_OBJECTVALIDATIONRULESETTING_WHERE,
 				ObjectValidationRuleSettingModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"objectValidationRuleSetting.", "objectValidationRuleId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					ObjectValidationRuleSetting::getObjectValidationRuleId),
 				new FinderColumn<>(
 					"objectValidationRuleSetting.", "name",
 					FinderColumn.Type.STRING, "=", true, true,
 					ObjectValidationRuleSetting::getName));
 
-		_finderPathFetchByN_V = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByN_V",
-			new String[] {String.class.getName(), String.class.getName()},
-			new String[] {"name", "value"}, false,
-			ObjectValidationRuleSetting::getName,
-			ObjectValidationRuleSetting::getValue);
-
 		_uniquePersistenceFinderByN_V = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByN_V,
-			_SQL_SELECT_OBJECTVALIDATIONRULESETTING_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByN_V",
+				new String[] {String.class.getName(), String.class.getName()},
+				new String[] {"name", "value"}, 0, 3, false,
+				convertNullFunction(ObjectValidationRuleSetting::getName),
+				convertNullFunction(ObjectValidationRuleSetting::getValue)),
+			_SQL_SELECT_OBJECTVALIDATIONRULESETTING_WHERE, "",
 			new FinderColumn<>(
 				"objectValidationRuleSetting.", "name",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				ObjectValidationRuleSetting::getName),
 			new FinderColumn<>(
 				"objectValidationRuleSetting.", "value",
 				FinderColumn.Type.STRING, "=", true, true,
 				ObjectValidationRuleSetting::getValue));
 
-		_finderPathFetchByOVRI_N_V = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByOVRI_N_V",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"objectValidationRuleId", "name", "value"}, false,
-			ObjectValidationRuleSetting::getObjectValidationRuleId,
-			ObjectValidationRuleSetting::getName,
-			ObjectValidationRuleSetting::getValue);
-
 		_uniquePersistenceFinderByOVRI_N_V = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByOVRI_N_V,
-			_SQL_SELECT_OBJECTVALIDATIONRULESETTING_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByOVRI_N_V",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"objectValidationRuleId", "name", "value"}, 0, 6,
+				false, ObjectValidationRuleSetting::getObjectValidationRuleId,
+				convertNullFunction(ObjectValidationRuleSetting::getName),
+				convertNullFunction(ObjectValidationRuleSetting::getValue)),
+			_SQL_SELECT_OBJECTVALIDATIONRULESETTING_WHERE, "",
 			new FinderColumn<>(
 				"objectValidationRuleSetting.", "objectValidationRuleId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				ObjectValidationRuleSetting::getObjectValidationRuleId),
 			new FinderColumn<>(
 				"objectValidationRuleSetting.", "name",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				ObjectValidationRuleSetting::getName),
 			new FinderColumn<>(
 				"objectValidationRuleSetting.", "value",
@@ -1406,4 +1069,4 @@ public class ObjectValidationRuleSettingPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1762500764
+// LIFERAY-SERVICE-BUILDER-HASH:-467017358

@@ -389,11 +389,9 @@ export async function completedVirtualOrderItemSetUp(
 	apiHelpers: DataApiHelpers,
 	orderItemQuantity: number
 ) {
-	const site = await apiHelpers.headlessSite.createSite({
+	const site = await apiHelpers.headlessAdminSite.postSite({
 		name: getRandomString(),
 	});
-
-	apiHelpers.data.push({id: site.externalReferenceCode, type: 'site'});
 
 	const channel = await apiHelpers.headlessCommerceAdminChannel.postChannel({
 		name: getRandomString(),
@@ -492,13 +490,11 @@ export async function initializerSetUp(
 	catalogName = catalogName || siteName;
 	channelName = channelName || siteName;
 
-	const site = await apiHelpers.headlessSite.createSite({
+	const site = await apiHelpers.headlessAdminSite.postSite({
 		name: siteName,
 		templateKey,
 		templateType: 'site-initializer',
 	});
-
-	apiHelpers.data.push({id: site.externalReferenceCode, type: 'site'});
 
 	const channels =
 		await apiHelpers.headlessCommerceAdminChannel.getChannelsPage(
@@ -578,7 +574,8 @@ export async function guestCheckoutSetUp(
 	commerceAdminChannelDetailsPage: CommerceAdminChannelDetailsPage,
 	commerceAdminChannelsPage: CommerceAdminChannelsPage,
 	page: Page,
-	site: Site
+	site: Site,
+	childPages?: Array<{pageName: string; parentPageName: string}>
 ): Promise<void> {
 	const siteURL = `/web${site.friendlyUrlPath}`;
 
@@ -620,6 +617,55 @@ export async function guestCheckoutSetUp(
 		page.frameLocator('iframe[title="Permissions"]'),
 		'success'
 	);
+
+	if (childPages && childPages.length) {
+		const permissionsDialog = page.getByRole('dialog', {
+			name: 'Permissions',
+		});
+
+		await permissionsDialog.getByRole('button', {name: 'Close'}).click();
+
+		await expect(permissionsDialog).toBeHidden();
+
+		for (const {pageName, parentPageName} of childPages) {
+			await page
+				.getByRole('menuitem', {
+					exact: true,
+					name: `${parentPageName} Content Page`,
+				})
+				.click({force: true});
+
+			await page
+				.getByRole('checkbox', {
+					exact: true,
+					name: `Select ${pageName}`,
+				})
+				.click();
+
+			await page.getByRole('button', {name: 'Permissions'}).click();
+
+			const permissionsFrame = page.frameLocator(
+				'iframe[title="Permissions"]'
+			);
+
+			const childGuestActionViewCheckbox =
+				permissionsFrame.locator('#guest_ACTION_VIEW');
+
+			await expect(childGuestActionViewCheckbox).toBeVisible();
+
+			await childGuestActionViewCheckbox.check();
+
+			await permissionsFrame.getByRole('button', {name: 'Save'}).click();
+
+			await waitForAlert(permissionsFrame, 'success');
+
+			await permissionsDialog
+				.getByRole('button', {name: 'Close'})
+				.click();
+
+			await expect(permissionsDialog).toBeHidden();
+		}
+	}
 
 	await page.reload();
 
@@ -728,6 +774,77 @@ export async function createAccountWithBuyerUser(
 	};
 
 	return {account, buyerUser};
+}
+
+export async function createAccountWithSupplierUser(
+	apiHelpers: DataApiHelpers,
+	siteId: number | string,
+	options?: {
+		accountName?: string;
+		userEmailAddress?: string;
+		userFirstName?: string;
+		userLastName?: string;
+		userScreenName?: string;
+	}
+) {
+	const randomSuffix = getRandomString();
+	const accountName =
+		options?.accountName || `Supplier Account ${randomSuffix}`;
+	const userScreenName = options?.userScreenName || `supplier${randomSuffix}`;
+	const userEmailAddress =
+		options?.userEmailAddress || `${userScreenName}@liferay.com`;
+	const userFirstName = options?.userFirstName || `Supplier${randomSuffix}`;
+	const userLastName = options?.userLastName || 'User';
+
+	const account = await apiHelpers.headlessAdminUser.postAccount({
+		name: accountName,
+		type: 'supplier',
+	});
+
+	const supplierUser = await apiHelpers.headlessAdminUser.postUserAccount({
+		alternateName: userScreenName,
+		emailAddress: userEmailAddress,
+		familyName: userLastName,
+		givenName: userFirstName,
+	});
+
+	await apiHelpers.headlessAdminUser.assignUserToAccountByEmailAddress(
+		account.id,
+		[supplierUser.emailAddress]
+	);
+
+	const rolesResponse = await apiHelpers.headlessAdminUser.getAccountRoles(
+		account.id
+	);
+
+	const supplierRole = rolesResponse?.items?.find(
+		(role: {name: string}) => role.name === 'Account Supplier'
+	);
+
+	if (supplierRole) {
+		await apiHelpers.headlessAdminUser.assignAccountRoles(
+			account.externalReferenceCode,
+			supplierRole.id,
+			supplierUser.emailAddress
+		);
+	}
+
+	const siteRole =
+		await apiHelpers.headlessAdminUser.getRoleByName('Site Member');
+
+	await apiHelpers.headlessAdminUser.assignUserToSite(
+		siteRole.id,
+		siteId,
+		supplierUser.id
+	);
+
+	userData[supplierUser.alternateName] = {
+		name: supplierUser.givenName,
+		password: 'test',
+		surname: supplierUser.familyName,
+	};
+
+	return {account, supplierUser};
 }
 
 export async function createChannelAccountManagerUser(

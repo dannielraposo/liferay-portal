@@ -5,6 +5,12 @@
 
 import DateFilter from './DateFilter';
 
-export {DateFilterValues, FilterType, ModifiedLastType} from './types';
+export {
+	DateFilterValues,
+	Range,
+	LastRange,
+	NormalizedDateFilter,
+} from './types';
+export {normalizeDateFilter} from './utils';
 
 export default DateFilter;

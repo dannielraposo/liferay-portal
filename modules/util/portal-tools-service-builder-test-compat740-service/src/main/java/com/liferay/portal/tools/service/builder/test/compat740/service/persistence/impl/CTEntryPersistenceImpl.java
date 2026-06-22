@@ -5,13 +5,11 @@
 
 package com.liferay.portal.tools.service.builder.test.compat740.service.persistence.impl;
 
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -81,67 +79,14 @@ public class CTEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<CTEntry>
+	private CollectionPersistenceFinder<CTEntry, NoSuchCTEntryException>
 		_collectionPersistenceFinderByCompanyId;
 
 	/**
-	 * Returns all the ct entries where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching ct entries
-	 */
-	@Override
-	public List<CTEntry> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the ct entries where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of ct entries
-	 * @param end the upper bound of the range of ct entries (not inclusive)
-	 * @return the range of matching ct entries
-	 */
-	@Override
-	public List<CTEntry> findByCompanyId(long companyId, int start, int end) {
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the ct entries where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of ct entries
-	 * @param end the upper bound of the range of ct entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching ct entries
-	 */
-	@Override
-	public List<CTEntry> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<CTEntry> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the ct entries where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CTEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -156,14 +101,9 @@ public class CTEntryPersistenceImpl
 		long companyId, int start, int end,
 		OrderByComparator<CTEntry> orderByComparator, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CTEntry.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				dummyFinderCache, new Object[] {companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			dummyFinderCache, new Object[] {companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -179,15 +119,8 @@ public class CTEntryPersistenceImpl
 			long companyId, OrderByComparator<CTEntry> orderByComparator)
 		throws NoSuchCTEntryException {
 
-		CTEntry ctEntry = fetchByCompanyId_First(companyId, orderByComparator);
-
-		if (ctEntry != null) {
-			return ctEntry;
-		}
-
-		throw new NoSuchCTEntryException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			dummyFinderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -224,17 +157,12 @@ public class CTEntryPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CTEntry.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				dummyFinderCache, new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			dummyFinderCache, new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathFetchByC_N;
-	private UniquePersistenceFinder<CTEntry> _uniquePersistenceFinderByC_N;
+	private UniquePersistenceFinder<CTEntry, NoSuchCTEntryException>
+		_uniquePersistenceFinderByC_N;
 
 	/**
 	 * Returns the ct entry where companyId = &#63; and name = &#63; or throws a <code>NoSuchCTEntryException</code> if it could not be found.
@@ -248,33 +176,8 @@ public class CTEntryPersistenceImpl
 	public CTEntry findByC_N(long companyId, String name)
 		throws NoSuchCTEntryException {
 
-		CTEntry ctEntry = fetchByC_N(companyId, name);
-
-		if (ctEntry == null) {
-			String message =
-				_uniquePersistenceFinderByC_N.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCTEntryException(message);
-		}
-
-		return ctEntry;
-	}
-
-	/**
-	 * Returns the ct entry where companyId = &#63; and name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param companyId the company ID
-	 * @param name the name
-	 * @return the matching ct entry, or <code>null</code> if a matching ct entry could not be found
-	 */
-	@Override
-	public CTEntry fetchByC_N(long companyId, String name) {
-		return fetchByC_N(companyId, name, true);
+		return _uniquePersistenceFinderByC_N.find(
+			dummyFinderCache, new Object[] {companyId, name});
 	}
 
 	/**
@@ -289,14 +192,8 @@ public class CTEntryPersistenceImpl
 	public CTEntry fetchByC_N(
 		long companyId, String name, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CTEntry.class)) {
-
-			return _uniquePersistenceFinderByC_N.fetch(
-				dummyFinderCache, new Object[] {companyId, name},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByC_N.fetch(
+			dummyFinderCache, new Object[] {companyId, name}, useFinderCache);
 	}
 
 	/**
@@ -561,46 +458,42 @@ public class CTEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId, _SQL_SELECT_CTENTRY_WHERE,
-				_SQL_COUNT_CTENTRY_WHERE, CTEntryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_CTENTRY_WHERE, _SQL_COUNT_CTENTRY_WHERE,
+				CTEntryModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"ctEntry.", "companyId", FinderColumn.Type.LONG, "=", true,
 					true, CTEntry::getCompanyId));
 
-		_finderPathFetchByC_N = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "name"}, false, CTEntry::getCompanyId,
-			CTEntry::getName);
-
 		_uniquePersistenceFinderByC_N = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_N, _SQL_SELECT_CTENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_N",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "name"}, 0, 2, false,
+				CTEntry::getCompanyId, convertNullFunction(CTEntry::getName)),
+			_SQL_SELECT_CTENTRY_WHERE, "",
 			new FinderColumn<>(
 				"ctEntry.", "companyId", FinderColumn.Type.LONG, "=", true,
-				false, CTEntry::getCompanyId),
+				true, CTEntry::getCompanyId),
 			new FinderColumn<>(
 				"ctEntry.", "name", FinderColumn.Type.STRING, "=", true, true,
 				CTEntry::getName));
@@ -668,4 +561,4 @@ public class CTEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:367009711
+// LIFERAY-SERVICE-BUILDER-HASH:1452393232

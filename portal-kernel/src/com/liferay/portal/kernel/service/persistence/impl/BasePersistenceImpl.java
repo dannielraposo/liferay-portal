@@ -79,12 +79,14 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.Serializable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 
 import java.math.BigDecimal;
@@ -657,9 +659,29 @@ public class BasePersistenceImpl
 		return _db;
 	}
 
+	public String getDefaultOrderBySQL() {
+		return _defaultOrderBySQL;
+	}
+
+	public String getDefaultOrderBySQLInlineDistinct() {
+		return _defaultOrderBySQLInlineDistinct;
+	}
+
 	@Override
 	public Dialect getDialect() {
 		return _sessionFactory.getDialect();
+	}
+
+	public String getEntityAlias() {
+		return _entityAlias;
+	}
+
+	public String getEntityAliasPrefix() {
+		return _entityAliasPrefix;
+	}
+
+	public String getFilterPKColumnName() {
+		return _filterPKColumnName;
 	}
 
 	@Override
@@ -670,6 +692,37 @@ public class BasePersistenceImpl
 	@Override
 	public Class<T> getModelClass() {
 		return _modelClass;
+	}
+
+	public Class<? extends T> getModelImplClass() {
+		return _modelImplClass;
+	}
+
+	public String getNoSuchEntityWithKeyPrefix() {
+		if (_noSuchEntityWithKeyPrefix == null) {
+			_noSuchEntityWithKeyPrefix = StringBundler.concat(
+				"No ", _modelClass.getSimpleName(), " exists with the key {");
+		}
+
+		return _noSuchEntityWithKeyPrefix;
+	}
+
+	public String getPKColumnName() {
+		if (_pkColumnName == null) {
+			for (Column<?, ?> column : _table.getColumns()) {
+				if (column.isPrimaryKey()) {
+					_pkColumnName = column.getName();
+
+					break;
+				}
+			}
+		}
+
+		return _pkColumnName;
+	}
+
+	public String getTableName() {
+		return _table.getTableName();
 	}
 
 	@Override
@@ -692,6 +745,14 @@ public class BasePersistenceImpl
 		}
 
 		return new SystemException(exception);
+	}
+
+	@Override
+	public void reassociateIfAbsent(T model) {
+		Session session = getCurrentSession();
+
+		session.reassociateIfAbsent(
+			_modelImplClass, model.getPrimaryKeyObj(), model);
 	}
 
 	@Override
@@ -903,6 +964,34 @@ public class BasePersistenceImpl
 		}
 	}
 
+	protected static <T> Function<T, Object> convertCaseFunction(
+		Function<T, String> stringFunction) {
+
+		return baseModel -> Objects.toString(
+			StringUtil.toLowerCase(stringFunction.apply(baseModel)), "");
+	}
+
+	protected static <T> Function<T, Object> convertDateFunction(
+		Function<T, Date> dateFunction) {
+
+		return baseModel -> {
+			Date date = dateFunction.apply(baseModel);
+
+			if (date == null) {
+				return null;
+			}
+
+			return date.getTime();
+		};
+	}
+
+	protected static <T> Function<T, Object> convertNullFunction(
+		Function<T, String> stringFunction) {
+
+		return baseModel -> Objects.toString(
+			stringFunction.apply(baseModel), "");
+	}
+
 	protected static String removeConjunction(String sql) {
 		int pos = sql.indexOf(" AND ");
 
@@ -978,11 +1067,13 @@ public class BasePersistenceImpl
 	@SafeVarargs
 	protected final FinderPath createUniqueFinderPath(
 		String cacheName, String methodName, String[] params,
-		String[] columnNames, boolean pretouch,
+		String[] columnNames, int caseInsensitiveBitmask,
+		int convertNullBitmask, boolean pretouch,
 		Function<? super T, ?>... argsExtractors) {
 
 		FinderPath finderPath = new FinderPath(
-			cacheName, methodName, params, columnNames, true,
+			cacheName, methodName, params, columnNames, caseInsensitiveBitmask,
+			convertNullBitmask, true,
 			baseModel -> {
 				Object[] args = new Object[argsExtractors.length];
 
@@ -1148,17 +1239,35 @@ public class BasePersistenceImpl
 				null
 			);
 
-			String entityAlias = (String)modelImplClass.getField(
+			_entityAlias = (String)modelImplClass.getField(
 				"ENTITY_ALIAS"
 			).get(
 				null
 			);
 
-			_entityAliasPrefix = entityAlias.concat(".");
+			_entityAliasPrefix = _entityAlias.concat(".");
 
 			_countSQL = StringBundler.concat(
-				"SELECT COUNT(", entityAlias, ") FROM ",
-				_modelClass.getSimpleName(), " ", entityAlias);
+				"SELECT COUNT(", _entityAlias, ") FROM ",
+				_modelClass.getSimpleName(), " ", _entityAlias);
+
+			Field filterPKColumnNameField = ReflectionUtil.fetchField(
+				modelImplClass, "FILTER_PK_COLUMN_NAME");
+
+			if (filterPKColumnNameField != null) {
+				_filterPKColumnName = (String)filterPKColumnNameField.get(null);
+
+				Field defaultOrderBySQLField = modelImplClass.getField(
+					"ORDER_BY_SQL");
+
+				_defaultOrderBySQL = (String)defaultOrderBySQLField.get(null);
+
+				Field defaultOrderBySQLInlineDistinctField =
+					modelImplClass.getField("ORDER_BY_SQL_INLINE_DISTINCT");
+
+				_defaultOrderBySQLInlineDistinct =
+					(String)defaultOrderBySQLInlineDistinctField.get(null);
+			}
 		}
 		catch (ReflectiveOperationException reflectiveOperationException) {
 			ReflectionUtil.throwException(reflectiveOperationException);
@@ -1801,15 +1910,21 @@ public class BasePersistenceImpl
 	private DB _db;
 	private Map<String, String> _dbColumnNames = Collections.emptyMap();
 	private String _defaultOrderByJPQL;
+	private String _defaultOrderBySQL;
+	private String _defaultOrderBySQLInlineDistinct;
+	private String _entityAlias;
 	private String _entityAliasPrefix;
+	private String _filterPKColumnName;
 	private FinderPath _finderPathCountAll;
 	private FinderPath _finderPathWithoutPaginationFindAll;
 	private FinderPath _finderPathWithPaginationFindAll;
 	private Class<T> _modelClass;
 	private Class<? extends T> _modelImplClass;
 	private ModelPKType _modelPKType = ModelPKType.COMPOUND;
+	private String _noSuchEntityWithKeyPrefix;
 	private final MethodHandle _noSuchModelExceptionMethodHandle;
 	private Boolean _permissionsInMemoryFilterEnabled;
+	private String _pkColumnName;
 	private SessionFactory _sessionFactory;
 	private Table<?> _table;
 	private final List<FinderPath> _uniqueFinderPaths = new ArrayList<>();

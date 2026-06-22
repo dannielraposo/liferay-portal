@@ -41,6 +41,7 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.servlet.DummyHttpServletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -307,7 +308,8 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 
 	@Override
 	protected Page<Site> doGetSitesPage(
-			Boolean active, String search, Pagination pagination)
+			Boolean active, String[] excludedExternalReferenceCodes,
+			String search, Pagination pagination)
 		throws Exception {
 
 		long[] classNameIds = {
@@ -331,6 +333,14 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 			).build(),
 			true, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 			new GroupNameComparator());
+
+		if (ArrayUtil.isNotEmpty(excludedExternalReferenceCodes)) {
+			groups = ListUtil.filter(
+				groups,
+				group -> !ArrayUtil.contains(
+					excludedExternalReferenceCodes,
+					group.getExternalReferenceCode()));
+		}
 
 		return Page.of(
 			HashMapBuilder.put(
@@ -1001,6 +1011,17 @@ public class SiteResourceImpl extends BaseSiteResourceImpl {
 					() -> LocaleUtil.toW3cLanguageIds(
 						StringUtil.split(
 							group.getTypeSettingsProperty("locales"))));
+				setLogo(
+					() -> {
+						ThemeDisplay themeDisplay = new ThemeDisplay() {
+							{
+								setCompany(contextCompany);
+								setPathImage(_portal.getPathImage());
+							}
+						};
+
+						return group.getLogoURL(themeDisplay, true);
+					});
 				setManualMembership(group::getManualMembership);
 				setMapProviderKey(
 					() -> MapProviderKey.create(

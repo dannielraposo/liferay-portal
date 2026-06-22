@@ -8,7 +8,6 @@ package com.liferay.portal.tools.service.builder.test.service.persistence.impl;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -66,9 +65,9 @@ public class DefinedDefaultOrderEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByName;
-	private UniquePersistenceFinder<DefinedDefaultOrderEntry>
-		_uniquePersistenceFinderByName;
+	private UniquePersistenceFinder
+		<DefinedDefaultOrderEntry, NoSuchDefinedDefaultOrderEntryException>
+			_uniquePersistenceFinderByName;
 
 	/**
 	 * Returns the defined default order entry where name = &#63; or throws a <code>NoSuchDefinedDefaultOrderEntryException</code> if it could not be found.
@@ -81,32 +80,8 @@ public class DefinedDefaultOrderEntryPersistenceImpl
 	public DefinedDefaultOrderEntry findByName(String name)
 		throws NoSuchDefinedDefaultOrderEntryException {
 
-		DefinedDefaultOrderEntry definedDefaultOrderEntry = fetchByName(name);
-
-		if (definedDefaultOrderEntry == null) {
-			String message =
-				_uniquePersistenceFinderByName.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchDefinedDefaultOrderEntryException(message);
-		}
-
-		return definedDefaultOrderEntry;
-	}
-
-	/**
-	 * Returns the defined default order entry where name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param name the name
-	 * @return the matching defined default order entry, or <code>null</code> if a matching defined default order entry could not be found
-	 */
-	@Override
-	public DefinedDefaultOrderEntry fetchByName(String name) {
-		return fetchByName(name, true);
+		return _uniquePersistenceFinderByName.find(
+			finderCache, new Object[] {name});
 	}
 
 	/**
@@ -151,69 +126,15 @@ public class DefinedDefaultOrderEntryPersistenceImpl
 			finderCache, new Object[] {name});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByName_Collection;
-	private FinderPath _finderPathWithoutPaginationFindByName_Collection;
-	private FinderPath _finderPathCountByName_Collection;
-	private CollectionPersistenceFinder<DefinedDefaultOrderEntry>
-		_collectionPersistenceFinderByName_Collection;
-
-	/**
-	 * Returns all the defined default order entries where name = &#63;.
-	 *
-	 * @param name the name
-	 * @return the matching defined default order entries
-	 */
-	@Override
-	public List<DefinedDefaultOrderEntry> findByName_Collection(String name) {
-		return findByName_Collection(
-			name, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the defined default order entries where name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DefinedDefaultOrderEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param name the name
-	 * @param start the lower bound of the range of defined default order entries
-	 * @param end the upper bound of the range of defined default order entries (not inclusive)
-	 * @return the range of matching defined default order entries
-	 */
-	@Override
-	public List<DefinedDefaultOrderEntry> findByName_Collection(
-		String name, int start, int end) {
-
-		return findByName_Collection(name, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<DefinedDefaultOrderEntry, NoSuchDefinedDefaultOrderEntryException>
+			_collectionPersistenceFinderByName_Collection;
 
 	/**
 	 * Returns an ordered range of all the defined default order entries where name = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DefinedDefaultOrderEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param name the name
-	 * @param start the lower bound of the range of defined default order entries
-	 * @param end the upper bound of the range of defined default order entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching defined default order entries
-	 */
-	@Override
-	public List<DefinedDefaultOrderEntry> findByName_Collection(
-		String name, int start, int end,
-		OrderByComparator<DefinedDefaultOrderEntry> orderByComparator) {
-
-		return findByName_Collection(name, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the defined default order entries where name = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DefinedDefaultOrderEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DefinedDefaultOrderEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param name the name
@@ -248,16 +169,8 @@ public class DefinedDefaultOrderEntryPersistenceImpl
 			OrderByComparator<DefinedDefaultOrderEntry> orderByComparator)
 		throws NoSuchDefinedDefaultOrderEntryException {
 
-		DefinedDefaultOrderEntry definedDefaultOrderEntry =
-			fetchByName_Collection_First(name, orderByComparator);
-
-		if (definedDefaultOrderEntry != null) {
-			return definedDefaultOrderEntry;
-		}
-
-		throw new NoSuchDefinedDefaultOrderEntryException(
-			_collectionPersistenceFinderByName_Collection.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {name}));
+		return _collectionPersistenceFinderByName_Collection.findFirst(
+			finderCache, new Object[] {name}, orderByComparator);
 	}
 
 	/**
@@ -500,44 +413,44 @@ public class DefinedDefaultOrderEntryPersistenceImpl
 	 * Initializes the defined default order entry persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathFetchByName = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByName",
-			new String[] {String.class.getName()}, new String[] {"name"}, false,
-			DefinedDefaultOrderEntry::getName);
-
 		_uniquePersistenceFinderByName = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByName,
-			_SQL_SELECT_DEFINEDDEFAULTORDERENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByName",
+				new String[] {String.class.getName()}, new String[] {"name"}, 0,
+				1, false,
+				convertNullFunction(DefinedDefaultOrderEntry::getName)),
+			_SQL_SELECT_DEFINEDDEFAULTORDERENTRY_WHERE, "",
 			new FinderColumn<>(
 				"definedDefaultOrderEntry.", "name", FinderColumn.Type.STRING,
 				"=", true, true, DefinedDefaultOrderEntry::getName));
 
-		_finderPathWithPaginationFindByName_Collection = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByName_Collection",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"name"}, true);
-
-		_finderPathWithoutPaginationFindByName_Collection = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByName_Collection",
-			new String[] {String.class.getName()}, new String[] {"name"}, true);
-
-		_finderPathCountByName_Collection = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByName_Collection",
-			new String[] {String.class.getName()}, new String[] {"name"},
-			false);
-
 		_collectionPersistenceFinderByName_Collection =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByName_Collection,
-				_finderPathWithoutPaginationFindByName_Collection,
-				_finderPathCountByName_Collection,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByName_Collection",
+					new String[] {
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"name"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByName_Collection",
+					new String[] {String.class.getName()},
+					new String[] {"name"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByName_Collection",
+					new String[] {String.class.getName()},
+					new String[] {"name"}, 0, 1, false, null),
 				_SQL_SELECT_DEFINEDDEFAULTORDERENTRY_WHERE,
 				_SQL_COUNT_DEFINEDDEFAULTORDERENTRY_WHERE,
 				DefinedDefaultOrderEntryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"definedDefaultOrderEntry.", "name",
 					FinderColumn.Type.STRING, "=", true, true,
@@ -582,4 +495,4 @@ public class DefinedDefaultOrderEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:872517575
+// LIFERAY-SERVICE-BUILDER-HASH:197930462

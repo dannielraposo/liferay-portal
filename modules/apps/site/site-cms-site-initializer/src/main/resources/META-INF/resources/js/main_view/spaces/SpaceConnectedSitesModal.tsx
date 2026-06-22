@@ -10,10 +10,22 @@ import ClaySticker from '@clayui/sticker';
 import {ItemSelector} from '@liferay/frontend-js-item-selector-web';
 import {openToast} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
-import React, {useEffect, useId, useState} from 'react';
+import React, {useEffect, useId, useMemo, useState} from 'react';
 
+import {InputGroupWithSelect} from '../../common/components/InputGroupWithSelect';
 import ConnectedSiteService from '../../common/services/ConnectedSiteService';
 import {Site} from '../../common/types/Site';
+import {SiteTemplate} from '../../common/types/SiteTemplate';
+import {SITE_TEMPLATE_TYPE} from '../../common/utils/constants';
+
+enum ConnectableKind {
+	SITES = 'sites',
+	SITE_TEMPLATES = 'site-templates',
+}
+
+const SITES_API_URL = `${location.origin}/o/headless-admin-site/v1.0/sites`;
+
+const SITE_TEMPLATES_API_URL = `${location.origin}/o/headless-admin-site/v1.0/site-templates`;
 
 const showErrorMessage = (message: string) => {
 	openToast({
@@ -29,20 +41,32 @@ const showSuccessMessage = (message: string) => {
 	});
 };
 
-const ConnectedSiteActions = ({
+const isSiteTemplate = (site: Site) => site.type === SITE_TEMPLATE_TYPE;
+
+const getConnectionLabel = (site: Site) => {
+	if (isSiteTemplate(site)) {
+		return `${site.descriptiveName} (${Liferay.Language.get('site-template')})`;
+	}
+
+	if (site.stagingType === 'STAGING') {
+		return `${site.descriptiveName} (${Liferay.Language.get('staging')})`;
+	}
+
+	return site.descriptiveName;
+};
+
+const ConnectableActions = ({
 	externalReferenceCode,
-	onSiteChange,
-	onSiteDisconnected,
+	onConnectionChange,
+	onConnectionDisconnected,
 	site,
 }: {
 	externalReferenceCode: string;
-	onSiteChange: (site: Site) => void;
-	onSiteDisconnected: (site: Site) => void;
+	onConnectionChange: (site: Site) => void;
+	onConnectionDisconnected: (site: Site) => void;
 	site: Site;
 }) => {
-	const {searchable} = site;
-
-	const disconnectSite = async () => {
+	const disconnect = async () => {
 		const {error} = await ConnectedSiteService.disconnectSiteFromSpace(
 			externalReferenceCode,
 			site.externalReferenceCode
@@ -54,12 +78,19 @@ const ConnectedSiteActions = ({
 			return;
 		}
 
-		onSiteDisconnected?.(site);
+		onConnectionDisconnected(site);
+
+		const successMessage = isSiteTemplate(site)
+			? Liferay.Language.get(
+					'site-template-x-was-successfully-disconnected-from-the-space'
+				)
+			: Liferay.Language.get(
+					'site-x-was-successfully-disconnected-from-the-space'
+				);
+
 		showSuccessMessage(
 			sub(
-				Liferay.Language.get(
-					'site-x-was-successfully-disconnected-from-the-space'
-				),
+				successMessage,
 				`<strong>${Liferay.Util.escapeHTML(site.descriptiveName)}</strong>`
 			)
 		);
@@ -69,18 +100,31 @@ const ConnectedSiteActions = ({
 		const {data, error} = await ConnectedSiteService.connectSiteToSpace(
 			externalReferenceCode,
 			site.externalReferenceCode,
-			String(!searchable)
+			{searchable: !site.searchable}
 		);
 
 		if (data) {
-			onSiteChange(data);
+			onConnectionChange(data);
 		}
 		else if (error) {
 			showErrorMessage(error);
 		}
 	};
 
-	const isSearchableLabel = searchable
+	const items = [
+		{
+			label: site.searchable
+				? Liferay.Language.get('make-unsearchable')
+				: Liferay.Language.get('make-searchable'),
+			onClick: changeSearchable,
+		},
+		{
+			label: Liferay.Language.get('disconnect'),
+			onClick: disconnect,
+		},
+	];
+
+	const isSearchableLabel = site.searchable
 		? Liferay.Language.get('yes')
 		: Liferay.Language.get('no');
 
@@ -91,18 +135,7 @@ const ConnectedSiteActions = ({
 			</span>
 
 			<ClayDropDownWithItems
-				items={[
-					{
-						label: searchable
-							? Liferay.Language.get('make-unsearchable')
-							: Liferay.Language.get('make-searchable'),
-						onClick: changeSearchable,
-					},
-					{
-						label: Liferay.Language.get('disconnect'),
-						onClick: disconnectSite,
-					},
-				]}
+				items={items}
 				trigger={
 					<ClayButtonWithIcon
 						aria-label={Liferay.Language.get('site-actions')}
@@ -118,28 +151,78 @@ const ConnectedSiteActions = ({
 	);
 };
 
-const SitesSelector = ({
-	connectedSites,
+const ConnectableSelector = ({
+	connections,
 	externalReferenceCode,
-	onSiteConnected,
+	onConnectionAdded,
 }: {
-	connectedSites: Site[];
+	connections: Site[];
 	externalReferenceCode: string;
-	onSiteConnected: (site: Site) => void;
+	onConnectionAdded: (site: Site) => void;
 }) => {
+	const [kind, setKind] = useState<ConnectableKind>(ConnectableKind.SITES);
 	const [site, setSite] = useState<Site>();
+	const [siteTemplate, setSiteTemplate] = useState<SiteTemplate>();
 	const [disableConnectButton, setDisableConnectButton] =
 		useState<boolean>(true);
 
-	const connectSiteToSpace = async () => {
-		if (site) {
+	const isAlreadyConnected = (id: string) =>
+		connections.some(
+			(connection) =>
+				connection.externalReferenceCode === id &&
+				isSiteTemplate(connection) ===
+					(kind === ConnectableKind.SITE_TEMPLATES)
+		);
+
+	const sitesAPIURL = useMemo(() => {
+		const url = new URL(SITES_API_URL);
+
+		url.searchParams.set('active', 'true');
+
+		connections
+			.filter((connection) => !isSiteTemplate(connection))
+			.forEach((connection) =>
+				url.searchParams.append(
+					'excludedExternalReferenceCodes',
+					connection.externalReferenceCode
+				)
+			);
+
+		return url.toString();
+	}, [connections]);
+
+	const siteTemplatesAPIURL = useMemo(() => {
+		const url = new URL(SITE_TEMPLATES_API_URL);
+
+		url.searchParams.set('active', 'true');
+
+		connections
+			.filter((connection) => isSiteTemplate(connection))
+			.forEach((connection) =>
+				url.searchParams.append(
+					'excludedSiteExternalReferenceCodes',
+					connection.externalReferenceCode
+				)
+			);
+
+		return url.toString();
+	}, [connections]);
+
+	const resetSelection = () => {
+		setSite(undefined);
+		setSiteTemplate(undefined);
+		setDisableConnectButton(true);
+	};
+
+	const connect = async () => {
+		if (kind === ConnectableKind.SITES && site) {
 			const {data, error} = await ConnectedSiteService.connectSiteToSpace(
 				externalReferenceCode,
 				site.externalReferenceCode
 			);
 
 			if (data) {
-				onSiteConnected(data);
+				onConnectionAdded(data);
 				showSuccessMessage(
 					sub(
 						Liferay.Language.get(
@@ -150,73 +233,172 @@ const SitesSelector = ({
 				);
 			}
 			else if (error) {
-				showErrorMessage(
-					error ||
-						Liferay.Language.get('unable-to-connect-site-to-space')
+				showErrorMessage(error);
+			}
+
+			resetSelection();
+
+			return;
+		}
+
+		if (
+			kind === ConnectableKind.SITE_TEMPLATES &&
+			siteTemplate?.siteExternalReferenceCode
+		) {
+			const {data, error} = await ConnectedSiteService.connectSiteToSpace(
+				externalReferenceCode,
+				siteTemplate.siteExternalReferenceCode,
+				{}
+			);
+
+			if (data) {
+				onConnectionAdded(data);
+				showSuccessMessage(
+					sub(
+						Liferay.Language.get(
+							'site-template-x-was-successfully-connected-to-the-space'
+						),
+						`<strong>${Liferay.Util.escapeHTML(siteTemplate.name)}</strong>`
+					)
 				);
 			}
-			setDisableConnectButton(true);
-			setSite(undefined);
+			else if (error) {
+				showErrorMessage(error);
+			}
+
+			resetSelection();
 		}
 	};
 
-	const controlConnectSiteButton = (
-		selectedSite: Site,
-		connectedSites: Site[]
-	) => {
-		const alreadyConnected = connectedSites.some(
-			(connectedSite) =>
-				connectedSite.externalReferenceCode ===
-				selectedSite.externalReferenceCode
-		);
-		setDisableConnectButton(alreadyConnected);
-	};
-
 	return (
-		<div className="p-4">
-			<div className="align-items-end autofit-row c-gap-3">
-				<div className="autofit-col autofit-col-expand">
-					<label htmlFor="siteSelector">
-						{Liferay.Language.get('site')}
-					</label>
+		<div className="align-items-end autofit-row c-gap-3 c-mb-4">
+			<div className="autofit-col autofit-col-expand">
+				<InputGroupWithSelect
+					className="mb-0"
+					label={Liferay.Language.get('sites')}
+					onSelectChange={(value) => {
+						setKind(value as ConnectableKind);
+						resetSelection();
+					}}
+					options={[
+						{
+							label: Liferay.Language.get('sites'),
+							value: ConnectableKind.SITES,
+						},
+						{
+							label: Liferay.Language.get('site-templates'),
+							value: ConnectableKind.SITE_TEMPLATES,
+						},
+					]}
+					selectValue={kind}
+				>
+					{kind === ConnectableKind.SITES ? (
+						<ItemSelector
+							apiURL={sitesAPIURL}
+							id="connectableSelector"
+							items={site ? [site] : []}
+							key={sitesAPIURL}
+							onItemsChange={(items: Site[]) => {
+								if (items.length) {
+									const item = items[0];
+									setSite(item);
+									setDisableConnectButton(
+										isAlreadyConnected(
+											item.externalReferenceCode
+										)
+									);
+								}
+								else {
+									setSite(undefined);
+									setDisableConnectButton(true);
+								}
+							}}
+							placeholder={Liferay.Language.get('select-a-site')}
+						>
+							{(item: Site) => (
+								<ItemSelector.Item
+									className="align-items-center d-flex"
+									key={item.id}
+									textValue={Liferay.Util.escapeHTML(
+										item.descriptiveName
+									)}
+								>
+									<ClaySticker
+										className="c-mr-2"
+										displayType="secondary"
+										shape="circle"
+										size="sm"
+									>
+										<ClaySticker.Image
+											alt=""
+											src={item.logo}
+										/>
+									</ClaySticker>
 
-					<ItemSelector
-						apiURL={`${location.origin}/o/headless-admin-site/v1.0/sites?active=true`}
-						id="siteSelector"
-						items={site ? [site] : []}
-						onItemsChange={(items: Site[]) => {
-							if (items.length) {
-								const item = items[0];
-								controlConnectSiteButton(item, connectedSites);
-								setSite(item);
-							}
-							else {
-								setSite(undefined);
-							}
-						}}
-						placeholder={Liferay.Language.get('select-a-site')}
-					>
-						{(item: Site) => (
-							<ItemSelector.Item
-								key={item.id}
-								textValue={Liferay.Util.escapeHTML(
-									item.descriptiveName
-								)}
-							>
-								{Liferay.Util.escapeHTML(item.descriptiveName)}
-							</ItemSelector.Item>
-						)}
-					</ItemSelector>
-				</div>
+									{Liferay.Util.escapeHTML(
+										item.descriptiveName
+									)}
+								</ItemSelector.Item>
+							)}
+						</ItemSelector>
+					) : (
+						<ItemSelector
+							apiURL={siteTemplatesAPIURL}
+							id="connectableSelector"
+							items={siteTemplate ? [siteTemplate] : []}
+							key={siteTemplatesAPIURL}
+							onItemsChange={(items: SiteTemplate[]) => {
+								if (items.length) {
+									const item = items[0];
+									setSiteTemplate(item);
+									setDisableConnectButton(
+										!item.siteExternalReferenceCode ||
+											isAlreadyConnected(
+												item.siteExternalReferenceCode
+											)
+									);
+								}
+								else {
+									setSiteTemplate(undefined);
+									setDisableConnectButton(true);
+								}
+							}}
+							placeholder={Liferay.Language.get(
+								'select-a-site-template'
+							)}
+						>
+							{(item: SiteTemplate) => (
+								<ItemSelector.Item
+									className="align-items-center d-flex"
+									key={item.id}
+									textValue={Liferay.Util.escapeHTML(
+										item.name
+									)}
+								>
+									<ClaySticker
+										className="c-mr-2"
+										displayType="secondary"
+										shape="circle"
+										size="sm"
+									>
+										<ClaySticker.Image
+											alt=""
+											src={item.logo}
+										/>
+									</ClaySticker>
 
-				<div className="autofit-col">
-					<ClayButton
-						disabled={disableConnectButton}
-						onClick={connectSiteToSpace}
-					>
-						{Liferay.Language.get('connect')}
-					</ClayButton>
-				</div>
+									{Liferay.Util.escapeHTML(item.name)}
+								</ItemSelector.Item>
+							)}
+						</ItemSelector>
+					)}
+				</InputGroupWithSelect>
+			</div>
+
+			<div className="autofit-col">
+				<ClayButton disabled={disableConnectButton} onClick={connect}>
+					{Liferay.Language.get('connect')}
+				</ClayButton>
 			</div>
 		</div>
 	);
@@ -229,50 +411,71 @@ export default function SpaceConnectedSitesModal({
 	externalReferenceCode: string;
 	hasConnectSitesPermission?: boolean;
 }) {
-	const [connectedSites, setConnectedSites] = useState<Site[]>([]);
+	const [connections, setConnections] = useState<Site[]>([]);
 	const listLabelId = useId();
 
 	useEffect(() => {
-		const fetchConnectedSitesToSpace = async () => {
+		const fetchConnections = async () => {
 			const {data} =
 				await ConnectedSiteService.getConnectedSitesFromSpace(
 					externalReferenceCode
 				);
 
 			if (data) {
-				setConnectedSites(data.items);
+				const sorted = [...data.items].sort((a, b) =>
+					a.descriptiveName.localeCompare(b.descriptiveName)
+				);
+
+				setConnections(sorted);
 			}
 		};
 
-		fetchConnectedSitesToSpace();
+		fetchConnections();
 	}, [externalReferenceCode]);
 
-	const onSiteConnected = (site: Site) => {
-		setConnectedSites((currentConnectedSites) => {
+	const onConnectionAdded = (site: Site) => {
+		setConnections((current) => {
 			if (
-				currentConnectedSites.some(
-					(prevSite) => prevSite.id === site.id
+				current.some(
+					(existing) =>
+						existing.externalReferenceCode ===
+							site.externalReferenceCode &&
+						isSiteTemplate(existing) === isSiteTemplate(site)
 				)
 			) {
-				return currentConnectedSites;
+				return current;
 			}
 
-			return [...currentConnectedSites, site];
+			const next = [...current, site];
+
+			next.sort((a, b) =>
+				a.descriptiveName.localeCompare(b.descriptiveName)
+			);
+
+			return next;
 		});
 	};
 
-	const onSiteDisconnected = (site: Site) => {
-		setConnectedSites((currentConnectedSites) =>
-			currentConnectedSites.filter(
-				(currentSite) => currentSite.id !== site.id
+	const onConnectionDisconnected = (site: Site) => {
+		setConnections((current) =>
+			current.filter(
+				(existing) =>
+					!(
+						existing.externalReferenceCode ===
+							site.externalReferenceCode &&
+						isSiteTemplate(existing) === isSiteTemplate(site)
+					)
 			)
 		);
 	};
 
-	const onSiteChange = (site: Site) => {
-		setConnectedSites((currentConnectedSites) =>
-			currentConnectedSites.map((currentSite) =>
-				currentSite.id === site.id ? site : currentSite
+	const onConnectionChange = (site: Site) => {
+		setConnections((current) =>
+			current.map((existing) =>
+				existing.externalReferenceCode === site.externalReferenceCode &&
+				isSiteTemplate(existing) === isSiteTemplate(site)
+					? site
+					: existing
 			)
 		);
 	};
@@ -285,30 +488,28 @@ export default function SpaceConnectedSitesModal({
 				{Liferay.Language.get('all-sites')}
 			</ClayModal.Header>
 
-			{hasConnectSitesPermission && (
-				<ClayModal.Item>
-					<SitesSelector
-						connectedSites={connectedSites}
-						externalReferenceCode={externalReferenceCode}
-						onSiteConnected={onSiteConnected}
-					/>
-				</ClayModal.Item>
-			)}
-
 			<ClayModal.Body>
-				{!connectedSites.length ? (
+				{hasConnectSitesPermission && (
+					<>
+						<p className="c-mb-4 text-secondary">
+							{Liferay.Language.get(
+								'connect-sites-and-site-templates-to-this-space'
+							)}
+						</p>
+
+						<ConnectableSelector
+							connections={connections}
+							externalReferenceCode={externalReferenceCode}
+							onConnectionAdded={onConnectionAdded}
+						/>
+					</>
+				)}
+
+				{!connections.length ? (
 					<div className="text-center">
 						<h2 className="font-weight-semi-bold text-4">
 							{Liferay.Language.get('no-sites-are-connected-yet')}
 						</h2>
-
-						{hasConnectSitesPermission && (
-							<p className="text-3">
-								{Liferay.Language.get(
-									'connect-sites-to-this-space'
-								)}
-							</p>
-						)}
 					</div>
 				) : (
 					<>
@@ -325,43 +526,43 @@ export default function SpaceConnectedSitesModal({
 							aria-labelledby={listLabelId}
 							className="list-unstyled mb-0"
 						>
-							{connectedSites.map((site) => {
-								return (
-									<li
-										className="align-items-center c-py-2 d-flex font-weight-semi-bold justify-content-between text-3"
-										key={site.id}
-									>
-										<div className="align-items-center d-flex">
-											<ClaySticker
-												className="c-mr-2"
-												displayType="secondary"
-												shape="circle"
-												size="sm"
-											>
-												<ClaySticker.Image
-													alt=""
-													src={site.logo}
-												/>
-											</ClaySticker>
-
-											{site.descriptiveName}
-										</div>
-
-										{hasConnectSitesPermission && (
-											<ConnectedSiteActions
-												externalReferenceCode={
-													externalReferenceCode
-												}
-												onSiteChange={onSiteChange}
-												onSiteDisconnected={
-													onSiteDisconnected
-												}
-												site={site}
+							{connections.map((connection) => (
+								<li
+									className="align-items-center c-py-2 d-flex font-weight-semi-bold justify-content-between text-3"
+									key={`${isSiteTemplate(connection) ? 'st' : 's'}:${connection.externalReferenceCode}`}
+								>
+									<div className="align-items-center d-flex">
+										<ClaySticker
+											className="c-mr-2"
+											displayType="secondary"
+											shape="circle"
+											size="sm"
+										>
+											<ClaySticker.Image
+												alt=""
+												src={connection.logo}
 											/>
-										)}
-									</li>
-								);
-							})}
+										</ClaySticker>
+
+										{getConnectionLabel(connection)}
+									</div>
+
+									{hasConnectSitesPermission && (
+										<ConnectableActions
+											externalReferenceCode={
+												externalReferenceCode
+											}
+											onConnectionChange={
+												onConnectionChange
+											}
+											onConnectionDisconnected={
+												onConnectionDisconnected
+											}
+											site={connection}
+										/>
+									)}
+								</li>
+							))}
 						</ul>
 					</>
 				)}

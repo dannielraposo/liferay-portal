@@ -25,6 +25,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +41,10 @@ import java.util.function.Supplier;
 @GraphQLName(
 	description = "Deprecated as of Athanasius (7.3.x), replaced by backgroundFragmentImage",
 	value = "BackgroundImage"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	deprecated = true,
+	description = "Deprecated as of Athanasius (7.3.x), replaced by backgroundFragmentImage"
 )
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "BackgroundImage")
@@ -212,9 +218,19 @@ public class BackgroundImage implements Serializable {
 
 			sb.append("\"description\": ");
 
-			if (description instanceof Map) {
+			if (description instanceof Collection) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						(Collection<?>)description));
+			}
+			else if (description instanceof Map) {
 				sb.append(
 					JSONFactoryUtil.createJSONObject((Map<?, ?>)description));
+			}
+			else if (description instanceof Object[]) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						Arrays.asList((Object[])description)));
 			}
 			else if (description instanceof String) {
 				sb.append("\"");
@@ -235,8 +251,17 @@ public class BackgroundImage implements Serializable {
 
 			sb.append("\"title\": ");
 
-			if (title instanceof Map) {
+			if (title instanceof Collection) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray((Collection<?>)title));
+			}
+			else if (title instanceof Map) {
 				sb.append(JSONFactoryUtil.createJSONObject((Map<?, ?>)title));
+			}
+			else if (title instanceof Object[]) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						Arrays.asList((Object[])title)));
 			}
 			else if (title instanceof String) {
 				sb.append("\"");
@@ -257,8 +282,16 @@ public class BackgroundImage implements Serializable {
 
 			sb.append("\"url\": ");
 
-			if (url instanceof Map) {
+			if (url instanceof Collection) {
+				sb.append(JSONFactoryUtil.createJSONArray((Collection<?>)url));
+			}
+			else if (url instanceof Map) {
 				sb.append(JSONFactoryUtil.createJSONObject((Map<?, ?>)url));
+			}
+			else if (url instanceof Object[]) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						Arrays.asList((Object[])url)));
 			}
 			else if (url instanceof String) {
 				sb.append("\"");
@@ -371,4 +404,4 @@ public class BackgroundImage implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1228619100
+// LIFERAY-REST-BUILDER-HASH:131650908

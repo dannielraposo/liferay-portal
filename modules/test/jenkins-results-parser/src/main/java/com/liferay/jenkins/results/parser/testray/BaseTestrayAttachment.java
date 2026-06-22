@@ -13,10 +13,24 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.json.JSONObject;
+
 /**
  * @author Michael Hashimoto
  */
 public abstract class BaseTestrayAttachment implements TestrayAttachment {
+
+	@Override
+	public JSONObject getJSONObject() {
+		return new JSONObject(
+		).put(
+			"name", getName()
+		).put(
+			"url", String.valueOf(getURL())
+		).put(
+			"value", getKey()
+		);
+	}
 
 	@Override
 	public String getKey() {

@@ -7,28 +7,27 @@ import React, {useEffect, useState} from 'react';
 
 import useAnalyticsQuery from '../../../common/hooks/useAnalyticsQuery';
 import {IEngagementChartItem} from '../../../common/utils/types';
-import TimelineEngagementChartQuery from '../queries/TimelineEngagementChartQuery';
 import AnalyticsFrame from './AnalyticsFrame';
 import EngagementChart from './EngagementChart';
 import Loader from './Loader';
 
-function TimelineEngagementChart({
-	dsrDevEnvEnabled: useDevEnvData,
+const TimelineEngagementChart = ({
+	isAnalyticsEnabled,
 }: {
-	dsrDevEnvEnabled: boolean;
-}) {
+	isAnalyticsEnabled: boolean;
+}) => {
 	const [data, setData] = useState<IEngagementChartItem[]>([]);
 	const [element, setElement] = useState<HTMLElement | null>(null);
 
 	const {isLoading, response} = useAnalyticsQuery({
 		element,
-		query: TimelineEngagementChartQuery,
-		settings: {
-			checkViewportVisibility: true,
-			useDevEnvData,
+		query: {
+			paths: [
+				{key: 'siteSessions', path: '/sessions-site-histogram-metric'},
+			],
 		},
+		settings: {isAnalyticsEnabled},
 		variables: {
-			channelId: '',
 			devices: 'Any',
 			emailAddresses: [],
 			interval: 'D',
@@ -41,7 +40,16 @@ function TimelineEngagementChart({
 
 	useEffect(() => {
 		if (response) {
-			setData(response);
+			const histogramMetrics =
+				response.siteSessions?.histogram?.histogramMetrics ?? [];
+
+			setData(
+				histogramMetrics.map((histogramMetric: any) => ({
+					date: histogramMetric.key,
+					numberOfVisits: histogramMetric.value ?? 0,
+					timeSpent: 0,
+				}))
+			);
 		}
 	}, [response]);
 
@@ -51,18 +59,28 @@ function TimelineEngagementChart({
 			title={Liferay.Language.get('engagement-timeline')}
 		>
 			<div ref={setElement}>
-				{isLoading ? (
-					<Loader />
-				) : !data?.length ? (
-					<p className="mt-3 text-center text-muted">
-						{Liferay.Language.get('no-data-available')}
-					</p>
+				{isAnalyticsEnabled ? (
+					isLoading ? (
+						<Loader />
+					) : !data?.length ? (
+						<p className="mt-3 text-center text-muted">
+							{Liferay.Language.get('no-data-available')}
+						</p>
+					) : (
+						<EngagementChart data={data} />
+					)
 				) : (
-					<EngagementChart data={data} />
+					<div className="dsr-analytics-empty-message">
+						<p className="mb-0 text-center text-muted">
+							{Liferay.Language.get(
+								'analytics-cloud-is-not-configured'
+							)}
+						</p>
+					</div>
 				)}
 			</div>
 		</AnalyticsFrame>
 	);
-}
+};
 
 export default TimelineEngagementChart;

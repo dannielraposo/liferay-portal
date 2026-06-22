@@ -7,39 +7,11 @@
 	"externalReferenceCode": "L_AI_HUB_INSTRUCTION_DEFINITION",
 	"friendlyURLSeparator": "l",
 	"label": {
-		"en_US": "Instruction Definition"
+		"en_US": "AI Hub Instruction Definition"
 	},
 	"modifiable": true,
 	"name": "AIHubInstructionDefinition",
 	"objectFields": [
-		{
-			"DBType": "Long",
-			"businessType": "Relationship",
-			"externalReferenceCode": "ACCOUNT_TO_AI_HUB_INSTRUCTION_DEFINITIONS",
-			"indexed": true,
-			"indexedLanguageId": "en_US",
-			"label": {
-				"en_US": "Account to Instruction Definitions"
-			},
-			"name": "r_accountToAIHubInstructionDefinitions_accountEntryId",
-			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
-			"objectFieldSettings": [
-				{
-					"name": "objectDefinition1ShortName",
-					"value": "AccountEntry"
-				},
-				{
-					"name": "objectRelationshipERCObjectFieldName",
-					"value": "r_accountToAIHubInstructionDefinitions_accountEntryERC"
-				}
-			],
-			"objectRelationshipExternalReferenceCode": "L_ACCOUNT_TO_L_AI_HUB_INSTRUCTION_DEFINITIONS",
-			"readOnly": "false",
-			"relationshipType": "oneToMany",
-			"required": true,
-			"system": true,
-			"type": "Long"
-		},
 		{
 			"DBType": "Boolean",
 			"businessType": "Boolean",
@@ -64,7 +36,7 @@
 				"en_US": "Description"
 			},
 			"name": "description",
-			"readOnly": "false",
+			"readOnly": false,
 			"readOnlyConditionExpression": "",
 			"system": true,
 			"type": "Clob"
@@ -112,6 +84,19 @@
 			"type": "String"
 		},
 		{
+			"DBType": "Boolean",
+			"businessType": "Boolean",
+			"defaultValue": false,
+			"externalReferenceCode": "SYSTEM",
+			"indexed": true,
+			"label": {
+				"en_US": "System"
+			},
+			"name": "system",
+			"system": true,
+			"type": "Boolean"
+		},
+		{
 			"DBType": "String",
 			"businessType": "Text",
 			"externalReferenceCode": "TITLE",
@@ -125,12 +110,40 @@
 			"required": true,
 			"system": true,
 			"type": "String"
+		},
+		{
+			"DBType": "Long",
+			"businessType": "Relationship",
+			"externalReferenceCode": "ACCOUNT_TO_AI_HUB_INSTRUCTION_DEFINITIONS",
+			"indexed": true,
+			"indexedLanguageId": "en_US",
+			"label": {
+				"en_US": "Account to AI Hub Instruction Definitions"
+			},
+			"name": "r_accountToAIHubInstructionDefinitions_accountEntryId",
+			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
+			"objectFieldSettings": [
+				{
+					"name": "objectDefinition1ShortName",
+					"value": "AccountEntry"
+				},
+				{
+					"name": "objectRelationshipERCObjectFieldName",
+					"value": "r_accountToAIHubInstructionDefinitions_accountEntryERC"
+				}
+			],
+			"objectRelationshipExternalReferenceCode": "L_ACCOUNT_TO_L_AI_HUB_INSTRUCTION_DEFINITIONS",
+			"readOnly": false,
+			"relationshipType": "oneToMany",
+			"required": true,
+			"system": true,
+			"type": "Long"
 		}
 	],
 	"objectFolderExternalReferenceCode": "default",
 	"panelCategoryKey": "control_panel.object",
 	"pluralLabel": {
-		"en_US": "Instruction Definitions"
+		"en_US": "AI Hub Instruction Definitions"
 	},
 	"portlet": true,
 	"scope": "company",

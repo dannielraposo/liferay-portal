@@ -11,10 +11,7 @@ import HeadlessDSRRequest from '../../../services/rest/HeadlessDSRRequest';
 import {getSiteURL} from '../../../utils/site';
 import ProductPurchase from './ProductPurchase';
 
-type DSRForm = z.infer<typeof zodSchema.dsrLicenseKey> & {
-	productKey?: string;
-	productPurchaseKey?: string;
-};
+type DSRForm = z.infer<typeof zodSchema.dsrLicenseKey>;
 
 const digitalSalesRoomERC = crypto.randomUUID();
 
@@ -71,7 +68,7 @@ export default class ProductPurchaseDSR extends ProductPurchase {
 			digitalSalesRoomERC
 		).catch(console.error);
 
-		await provisioningOAuth2.provisionDSR({
+		await provisioningOAuth2.provisionDSRBeta({
 			analyticsForm,
 			licenseEntry: {
 				description: 'Beta Access DSR',
@@ -80,8 +77,6 @@ export default class ProductPurchaseDSR extends ProductPurchase {
 				macAddresses: dsrForm.macAddresses?.replaceAll('\n', ','),
 				orderId: String(order.id),
 			},
-			productKey: this.form.productKey,
-			productPurchaseKey: this.form.productPurchaseKey,
 		});
 
 		return order;
@@ -112,7 +107,6 @@ export default class ProductPurchaseDSR extends ProductPurchase {
 
 	private getDSRForm() {
 		return {
-			acceptEulaAgreement: this.form?.acceptEulaAgreement ?? false,
 			acceptTermsAndConditions:
 				this.form?.acceptTermsAndConditions ?? false,
 			dataCenterLocation: this.form?.dataCenterLocation ?? '',

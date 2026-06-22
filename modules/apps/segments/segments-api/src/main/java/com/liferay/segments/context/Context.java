@@ -23,7 +23,13 @@ public class Context
 
 	public static final String BROWSER = "browser";
 
+	public static final String BROWSER_VERSION = "browserVersion";
+
 	public static final String COOKIES = "cookies";
+
+	public static final String DEVICE_TYPE = "deviceType";
+
+	public static final String GEOLOCATION = "geolocation";
 
 	public static final String HOSTNAME = "hostname";
 
@@ -33,11 +39,17 @@ public class Context
 
 	public static final String LOCAL_DATE = "localDate";
 
+	public static final String LOCAL_TIME = "localTime";
+
+	public static final String PATHNAME = "pathname";
+
 	public static final String REFERRER_URL = "referrerURL";
 
 	public static final String REQUEST_PARAMETERS = "requestParameters";
 
 	public static final String SIGNED_IN = "signedIn";
+
+	public static final String TIME_ZONE = "timeZone";
 
 	public static final String URL = "url";
 

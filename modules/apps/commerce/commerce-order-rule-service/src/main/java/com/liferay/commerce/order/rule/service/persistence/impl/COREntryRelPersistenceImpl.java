@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -76,70 +75,14 @@ public class COREntryRelPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCOREntryId;
-	private FinderPath _finderPathWithoutPaginationFindByCOREntryId;
-	private FinderPath _finderPathCountByCOREntryId;
-	private CollectionPersistenceFinder<COREntryRel>
+	private CollectionPersistenceFinder<COREntryRel, NoSuchCOREntryRelException>
 		_collectionPersistenceFinderByCOREntryId;
 
 	/**
-	 * Returns all the cor entry rels where COREntryId = &#63;.
-	 *
-	 * @param COREntryId the cor entry ID
-	 * @return the matching cor entry rels
-	 */
-	@Override
-	public List<COREntryRel> findByCOREntryId(long COREntryId) {
-		return findByCOREntryId(
-			COREntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cor entry rels where COREntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>COREntryRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param COREntryId the cor entry ID
-	 * @param start the lower bound of the range of cor entry rels
-	 * @param end the upper bound of the range of cor entry rels (not inclusive)
-	 * @return the range of matching cor entry rels
-	 */
-	@Override
-	public List<COREntryRel> findByCOREntryId(
-		long COREntryId, int start, int end) {
-
-		return findByCOREntryId(COREntryId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the cor entry rels where COREntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>COREntryRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param COREntryId the cor entry ID
-	 * @param start the lower bound of the range of cor entry rels
-	 * @param end the upper bound of the range of cor entry rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cor entry rels
-	 */
-	@Override
-	public List<COREntryRel> findByCOREntryId(
-		long COREntryId, int start, int end,
-		OrderByComparator<COREntryRel> orderByComparator) {
-
-		return findByCOREntryId(
-			COREntryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cor entry rels where COREntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>COREntryRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>COREntryRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param COREntryId the cor entry ID
@@ -173,16 +116,8 @@ public class COREntryRelPersistenceImpl
 			long COREntryId, OrderByComparator<COREntryRel> orderByComparator)
 		throws NoSuchCOREntryRelException {
 
-		COREntryRel corEntryRel = fetchByCOREntryId_First(
-			COREntryId, orderByComparator);
-
-		if (corEntryRel != null) {
-			return corEntryRel;
-		}
-
-		throw new NoSuchCOREntryRelException(
-			_collectionPersistenceFinderByCOREntryId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {COREntryId}));
+		return _collectionPersistenceFinderByCOREntryId.findFirst(
+			finderCache, new Object[] {COREntryId}, orderByComparator);
 	}
 
 	/**
@@ -223,74 +158,14 @@ public class COREntryRelPersistenceImpl
 			finderCache, new Object[] {COREntryId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<COREntryRel>
+	private CollectionPersistenceFinder<COREntryRel, NoSuchCOREntryRelException>
 		_collectionPersistenceFinderByC_C;
 
 	/**
-	 * Returns all the cor entry rels where classNameId = &#63; and COREntryId = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param COREntryId the cor entry ID
-	 * @return the matching cor entry rels
-	 */
-	@Override
-	public List<COREntryRel> findByC_C(long classNameId, long COREntryId) {
-		return findByC_C(
-			classNameId, COREntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the cor entry rels where classNameId = &#63; and COREntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>COREntryRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param COREntryId the cor entry ID
-	 * @param start the lower bound of the range of cor entry rels
-	 * @param end the upper bound of the range of cor entry rels (not inclusive)
-	 * @return the range of matching cor entry rels
-	 */
-	@Override
-	public List<COREntryRel> findByC_C(
-		long classNameId, long COREntryId, int start, int end) {
-
-		return findByC_C(classNameId, COREntryId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the cor entry rels where classNameId = &#63; and COREntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>COREntryRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param COREntryId the cor entry ID
-	 * @param start the lower bound of the range of cor entry rels
-	 * @param end the upper bound of the range of cor entry rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cor entry rels
-	 */
-	@Override
-	public List<COREntryRel> findByC_C(
-		long classNameId, long COREntryId, int start, int end,
-		OrderByComparator<COREntryRel> orderByComparator) {
-
-		return findByC_C(
-			classNameId, COREntryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cor entry rels where classNameId = &#63; and COREntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>COREntryRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>COREntryRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -327,17 +202,9 @@ public class COREntryRelPersistenceImpl
 			OrderByComparator<COREntryRel> orderByComparator)
 		throws NoSuchCOREntryRelException {
 
-		COREntryRel corEntryRel = fetchByC_C_First(
-			classNameId, COREntryId, orderByComparator);
-
-		if (corEntryRel != null) {
-			return corEntryRel;
-		}
-
-		throw new NoSuchCOREntryRelException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {classNameId, COREntryId}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			finderCache, new Object[] {classNameId, COREntryId},
+			orderByComparator);
 	}
 
 	/**
@@ -383,8 +250,7 @@ public class COREntryRelPersistenceImpl
 			finderCache, new Object[] {classNameId, COREntryId});
 	}
 
-	private FinderPath _finderPathFetchByC_C_C;
-	private UniquePersistenceFinder<COREntryRel>
+	private UniquePersistenceFinder<COREntryRel, NoSuchCOREntryRelException>
 		_uniquePersistenceFinderByC_C_C;
 
 	/**
@@ -401,38 +267,8 @@ public class COREntryRelPersistenceImpl
 			long classNameId, long classPK, long COREntryId)
 		throws NoSuchCOREntryRelException {
 
-		COREntryRel corEntryRel = fetchByC_C_C(
-			classNameId, classPK, COREntryId);
-
-		if (corEntryRel == null) {
-			String message =
-				_uniquePersistenceFinderByC_C_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {classNameId, classPK, COREntryId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCOREntryRelException(message);
-		}
-
-		return corEntryRel;
-	}
-
-	/**
-	 * Returns the cor entry rel where classNameId = &#63; and classPK = &#63; and COREntryId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param COREntryId the cor entry ID
-	 * @return the matching cor entry rel, or <code>null</code> if a matching cor entry rel could not be found
-	 */
-	@Override
-	public COREntryRel fetchByC_C_C(
-		long classNameId, long classPK, long COREntryId) {
-
-		return fetchByC_C_C(classNameId, classPK, COREntryId, true);
+		return _uniquePersistenceFinderByC_C_C.find(
+			finderCache, new Object[] {classNameId, classPK, COREntryId});
 	}
 
 	/**
@@ -684,83 +520,76 @@ public class COREntryRelPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByCOREntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCOREntryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"COREntryId"}, true);
-
-		_finderPathWithoutPaginationFindByCOREntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCOREntryId",
-			new String[] {Long.class.getName()}, new String[] {"COREntryId"},
-			true);
-
-		_finderPathCountByCOREntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCOREntryId",
-			new String[] {Long.class.getName()}, new String[] {"COREntryId"},
-			false);
-
 		_collectionPersistenceFinderByCOREntryId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCOREntryId,
-				_finderPathWithoutPaginationFindByCOREntryId,
-				_finderPathCountByCOREntryId, _SQL_SELECT_CORENTRYREL_WHERE,
-				_SQL_COUNT_CORENTRYREL_WHERE,
-				COREntryRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCOREntryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"COREntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCOREntryId", new String[] {Long.class.getName()},
+					new String[] {"COREntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCOREntryId", new String[] {Long.class.getName()},
+					new String[] {"COREntryId"}, false),
+				_SQL_SELECT_CORENTRYREL_WHERE, _SQL_COUNT_CORENTRYREL_WHERE,
+				COREntryRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"corEntryRel.", "COREntryId", FinderColumn.Type.LONG, "=",
 					true, true, COREntryRel::getCOREntryId));
 
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "COREntryId"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "COREntryId"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "COREntryId"}, false);
-
 		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"classNameId", "COREntryId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "COREntryId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "COREntryId"}, false),
 			_SQL_SELECT_CORENTRYREL_WHERE, _SQL_COUNT_CORENTRYREL_WHERE,
-			COREntryRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			COREntryRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"corEntryRel.", "classNameId", FinderColumn.Type.LONG, "=",
-				true, false, COREntryRel::getClassNameId),
+				true, true, COREntryRel::getClassNameId),
 			new FinderColumn<>(
 				"corEntryRel.", "COREntryId", FinderColumn.Type.LONG, "=", true,
 				true, COREntryRel::getCOREntryId));
 
-		_finderPathFetchByC_C_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"classNameId", "classPK", "COREntryId"}, false,
-			COREntryRel::getClassNameId, COREntryRel::getClassPK,
-			COREntryRel::getCOREntryId);
-
 		_uniquePersistenceFinderByC_C_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_C_C, _SQL_SELECT_CORENTRYREL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"classNameId", "classPK", "COREntryId"}, 0, 0,
+				false, COREntryRel::getClassNameId, COREntryRel::getClassPK,
+				COREntryRel::getCOREntryId),
+			_SQL_SELECT_CORENTRYREL_WHERE, "",
 			new FinderColumn<>(
 				"corEntryRel.", "classNameId", FinderColumn.Type.LONG, "=",
-				true, false, COREntryRel::getClassNameId),
+				true, true, COREntryRel::getClassNameId),
 			new FinderColumn<>(
 				"corEntryRel.", "classPK", FinderColumn.Type.LONG, "=", true,
-				false, COREntryRel::getClassPK),
+				true, COREntryRel::getClassPK),
 			new FinderColumn<>(
 				"corEntryRel.", "COREntryId", FinderColumn.Type.LONG, "=", true,
 				true, COREntryRel::getCOREntryId));
@@ -831,4 +660,4 @@ public class COREntryRelPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1889044259
+// LIFERAY-SERVICE-BUILDER-HASH:566236237

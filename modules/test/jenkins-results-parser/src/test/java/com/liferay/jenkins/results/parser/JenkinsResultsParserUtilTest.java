@@ -15,8 +15,11 @@ import java.util.Properties;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.mockito.Mockito;
 
 /**
  * @author Peter Yoo
@@ -36,6 +39,11 @@ public class JenkinsResultsParserUtilTest
 		downloadSample(
 			"job-1", null, "267",
 			"test-portal-acceptance-pullrequest-source(ee-6.2.x)", "test-1-1");
+	}
+
+	@After
+	public void tearDown() {
+		Environment.setInstance(new Environment());
 	}
 
 	@Test
@@ -84,6 +92,19 @@ public class JenkinsResultsParserUtilTest
 			_fixURLMultipleTimes(
 				"https://test-1-1.liferay.com/job(master)?" +
 					"AXIS_VARIABLE=0 1&label_exp=!master&job=test(7.2.x)"));
+	}
+
+	@Test
+	public void testGetCohortName() {
+		Environment environment = mockEnvironment();
+
+		Mockito.when(
+			environment.doGet("JENKINS_URL")
+		).thenReturn(
+			"https://test-1-1.liferay.com"
+		);
+
+		testEquals("test-1", JenkinsResultsParserUtil.getCohortName());
 	}
 
 	@Test
@@ -437,6 +458,14 @@ public class JenkinsResultsParserUtilTest
 		throws Exception {
 
 		downloadSampleURL(testSample.getSampleDir(), url, "/api/json");
+	}
+
+	protected Environment mockEnvironment() {
+		Environment environment = Mockito.mock(Environment.class);
+
+		Environment.setInstance(environment);
+
+		return environment;
 	}
 
 	protected void testToJSONObject(File file) throws Exception {

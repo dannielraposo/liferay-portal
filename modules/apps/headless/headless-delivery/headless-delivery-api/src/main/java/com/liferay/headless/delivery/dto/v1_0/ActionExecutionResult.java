@@ -28,6 +28,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -42,6 +44,9 @@ import java.util.function.Supplier;
 @GraphQLName(
 	description = "Represents a definition of an action execution result.",
 	value = "ActionExecutionResult"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Represents a definition of an action execution result."
 )
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "ActionExecutionResult")
@@ -203,8 +208,17 @@ public class ActionExecutionResult implements Serializable {
 
 			sb.append("\"value\": ");
 
-			if (value instanceof Map) {
+			if (value instanceof Collection) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray((Collection<?>)value));
+			}
+			else if (value instanceof Map) {
 				sb.append(JSONFactoryUtil.createJSONObject((Map<?, ?>)value));
+			}
+			else if (value instanceof Object[]) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						Arrays.asList((Object[])value)));
 			}
 			else if (value instanceof String) {
 				sb.append("\"");
@@ -356,4 +370,4 @@ public class ActionExecutionResult implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1975416426
+// LIFERAY-REST-BUILDER-HASH:-716805878

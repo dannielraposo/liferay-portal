@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -80,69 +79,15 @@ public class CommerceShippingMethodPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<CommerceShippingMethod>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the commerce shipping methods where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching commerce shipping methods
-	 */
-	@Override
-	public List<CommerceShippingMethod> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce shipping methods where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceShippingMethodModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of commerce shipping methods
-	 * @param end the upper bound of the range of commerce shipping methods (not inclusive)
-	 * @return the range of matching commerce shipping methods
-	 */
-	@Override
-	public List<CommerceShippingMethod> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceShippingMethod, NoSuchShippingMethodException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the commerce shipping methods where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceShippingMethodModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of commerce shipping methods
-	 * @param end the upper bound of the range of commerce shipping methods (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce shipping methods
-	 */
-	@Override
-	public List<CommerceShippingMethod> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<CommerceShippingMethod> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce shipping methods where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceShippingMethodModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceShippingMethodModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -177,16 +122,8 @@ public class CommerceShippingMethodPersistenceImpl
 			OrderByComparator<CommerceShippingMethod> orderByComparator)
 		throws NoSuchShippingMethodException {
 
-		CommerceShippingMethod commerceShippingMethod = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (commerceShippingMethod != null) {
-			return commerceShippingMethod;
-		}
-
-		throw new NoSuchShippingMethodException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -228,74 +165,15 @@ public class CommerceShippingMethodPersistenceImpl
 			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_A;
-	private FinderPath _finderPathWithoutPaginationFindByG_A;
-	private FinderPath _finderPathCountByG_A;
-	private CollectionPersistenceFinder<CommerceShippingMethod>
-		_collectionPersistenceFinderByG_A;
-
-	/**
-	 * Returns all the commerce shipping methods where groupId = &#63; and active = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param active the active
-	 * @return the matching commerce shipping methods
-	 */
-	@Override
-	public List<CommerceShippingMethod> findByG_A(
-		long groupId, boolean active) {
-
-		return findByG_A(
-			groupId, active, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce shipping methods where groupId = &#63; and active = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceShippingMethodModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param active the active
-	 * @param start the lower bound of the range of commerce shipping methods
-	 * @param end the upper bound of the range of commerce shipping methods (not inclusive)
-	 * @return the range of matching commerce shipping methods
-	 */
-	@Override
-	public List<CommerceShippingMethod> findByG_A(
-		long groupId, boolean active, int start, int end) {
-
-		return findByG_A(groupId, active, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceShippingMethod, NoSuchShippingMethodException>
+			_collectionPersistenceFinderByG_A;
 
 	/**
 	 * Returns an ordered range of all the commerce shipping methods where groupId = &#63; and active = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceShippingMethodModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param active the active
-	 * @param start the lower bound of the range of commerce shipping methods
-	 * @param end the upper bound of the range of commerce shipping methods (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce shipping methods
-	 */
-	@Override
-	public List<CommerceShippingMethod> findByG_A(
-		long groupId, boolean active, int start, int end,
-		OrderByComparator<CommerceShippingMethod> orderByComparator) {
-
-		return findByG_A(groupId, active, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce shipping methods where groupId = &#63; and active = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceShippingMethodModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceShippingMethodModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -332,16 +210,8 @@ public class CommerceShippingMethodPersistenceImpl
 			OrderByComparator<CommerceShippingMethod> orderByComparator)
 		throws NoSuchShippingMethodException {
 
-		CommerceShippingMethod commerceShippingMethod = fetchByG_A_First(
-			groupId, active, orderByComparator);
-
-		if (commerceShippingMethod != null) {
-			return commerceShippingMethod;
-		}
-
-		throw new NoSuchShippingMethodException(
-			_collectionPersistenceFinderByG_A.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, active}));
+		return _collectionPersistenceFinderByG_A.findFirst(
+			finderCache, new Object[] {groupId, active}, orderByComparator);
 	}
 
 	/**
@@ -386,9 +256,9 @@ public class CommerceShippingMethodPersistenceImpl
 			finderCache, new Object[] {groupId, active});
 	}
 
-	private FinderPath _finderPathFetchByG_E;
-	private UniquePersistenceFinder<CommerceShippingMethod>
-		_uniquePersistenceFinderByG_E;
+	private UniquePersistenceFinder
+		<CommerceShippingMethod, NoSuchShippingMethodException>
+			_uniquePersistenceFinderByG_E;
 
 	/**
 	 * Returns the commerce shipping method where groupId = &#63; and engineKey = &#63; or throws a <code>NoSuchShippingMethodException</code> if it could not be found.
@@ -402,35 +272,8 @@ public class CommerceShippingMethodPersistenceImpl
 	public CommerceShippingMethod findByG_E(long groupId, String engineKey)
 		throws NoSuchShippingMethodException {
 
-		CommerceShippingMethod commerceShippingMethod = fetchByG_E(
-			groupId, engineKey);
-
-		if (commerceShippingMethod == null) {
-			String message =
-				_uniquePersistenceFinderByG_E.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, engineKey});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchShippingMethodException(message);
-		}
-
-		return commerceShippingMethod;
-	}
-
-	/**
-	 * Returns the commerce shipping method where groupId = &#63; and engineKey = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param engineKey the engine key
-	 * @return the matching commerce shipping method, or <code>null</code> if a matching commerce shipping method could not be found
-	 */
-	@Override
-	public CommerceShippingMethod fetchByG_E(long groupId, String engineKey) {
-		return fetchByG_E(groupId, engineKey, true);
+		return _uniquePersistenceFinderByG_E.find(
+			finderCache, new Object[] {groupId, engineKey});
 	}
 
 	/**
@@ -702,83 +545,76 @@ public class CommerceShippingMethodPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
 				_SQL_SELECT_COMMERCESHIPPINGMETHOD_WHERE,
 				_SQL_COUNT_COMMERCESHIPPINGMETHOD_WHERE,
 				CommerceShippingMethodModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commerceShippingMethod.", "groupId",
 					FinderColumn.Type.LONG, "=", true, true,
 					CommerceShippingMethod::getGroupId));
 
-		_finderPathWithPaginationFindByG_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_A",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "active_"}, true);
-
-		_finderPathWithoutPaginationFindByG_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"groupId", "active_"}, true);
-
-		_finderPathCountByG_A = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_A",
-			new String[] {Long.class.getName(), Boolean.class.getName()},
-			new String[] {"groupId", "active_"}, false);
-
 		_collectionPersistenceFinderByG_A = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_A,
-			_finderPathWithoutPaginationFindByG_A, _finderPathCountByG_A,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_A",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "active_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_A",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"groupId", "active_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_A",
+				new String[] {Long.class.getName(), Boolean.class.getName()},
+				new String[] {"groupId", "active_"}, false),
 			_SQL_SELECT_COMMERCESHIPPINGMETHOD_WHERE,
 			_SQL_COUNT_COMMERCESHIPPINGMETHOD_WHERE,
 			CommerceShippingMethodModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"commerceShippingMethod.", "groupId", FinderColumn.Type.LONG,
-				"=", true, false, CommerceShippingMethod::getGroupId),
+				"=", true, true, CommerceShippingMethod::getGroupId),
 			new FinderColumn<>(
-				"commerceShippingMethod.", "active", FinderColumn.Type.BOOLEAN,
-				"=", true, true, CommerceShippingMethod::isActive));
-
-		_finderPathFetchByG_E = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_E",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "engineKey"}, false,
-			CommerceShippingMethod::getGroupId,
-			CommerceShippingMethod::getEngineKey);
+				"commerceShippingMethod.", "active", "active_",
+				FinderColumn.Type.BOOLEAN, "=", true, true,
+				CommerceShippingMethod::isActive));
 
 		_uniquePersistenceFinderByG_E = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_E,
-			_SQL_SELECT_COMMERCESHIPPINGMETHOD_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_E",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "engineKey"}, 0, 2, false,
+				CommerceShippingMethod::getGroupId,
+				convertNullFunction(CommerceShippingMethod::getEngineKey)),
+			_SQL_SELECT_COMMERCESHIPPINGMETHOD_WHERE, "",
 			new FinderColumn<>(
 				"commerceShippingMethod.", "groupId", FinderColumn.Type.LONG,
-				"=", true, false, CommerceShippingMethod::getGroupId),
+				"=", true, true, CommerceShippingMethod::getGroupId),
 			new FinderColumn<>(
 				"commerceShippingMethod.", "engineKey",
 				FinderColumn.Type.STRING, "=", true, true,
@@ -853,4 +689,4 @@ public class CommerceShippingMethodPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-566872100
+// LIFERAY-SERVICE-BUILDER-HASH:-55730207

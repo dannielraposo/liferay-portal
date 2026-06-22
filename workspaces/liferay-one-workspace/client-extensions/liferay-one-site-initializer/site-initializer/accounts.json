@@ -1,0 +1,112 @@
+[
+	{
+		"externalReferenceCode": "ACCNT-001",
+		"name": "Omni Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-002",
+		"name": "SaaS Experience Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-003",
+		"name": "SaaS Legacy Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-004",
+		"name": "PaaS Experience Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-005",
+		"name": "PaaS Legacy Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-006",
+		"name": "DXP Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-007",
+		"name": "Cloud Native Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-008",
+		"name": "Business Plan Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-009",
+		"name": "Pro Plan Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-010",
+		"name": "Enterprise Plan Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-011",
+		"name": "Self-Hosted Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-012",
+		"name": "Commerce Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-013",
+		"name": "Analytics Cloud Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-014",
+		"name": "Enterprise Search Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-015",
+		"name": "Portal Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-016",
+		"name": "Partner Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-017",
+		"name": "Partner FLS Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-018",
+		"name": "Partner OEM Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-019",
+		"name": "EWSA Test Account",
+		"type": "business"
+	},
+	{
+		"externalReferenceCode": "ACCNT-020",
+		"name": "Liferay, Inc.",
+		"type": "supplier"
+	},
+	{
+		"externalReferenceCode": "ACCNT-021",
+		"name": "Test Supplier",
+		"type": "supplier"
+	},
+	{
+		"externalReferenceCode": "ACCNT-022",
+		"name": "No Project Test Account",
+		"type": "business"
+	}
+]

@@ -7,20 +7,44 @@ package com.liferay.gradle.plugins.node.task;
 
 import com.liferay.gradle.plugins.node.internal.util.FileUtil;
 import com.liferay.gradle.plugins.node.internal.util.GradleUtil;
+import com.liferay.gradle.util.Validator;
 
 import java.io.File;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Optional;
 
 /**
  * @author Peter Shin
  * @author David Truong
  */
 public class YarnInstallTask extends ExecutePackageManagerTask {
+
+	public YarnInstallTask() {
+		String installArgs = GradleUtil.getProperty(
+			getProject(), "nodejs.yarn.install.args", "");
+
+		if (Validator.isNotNull(installArgs)) {
+			installArgs = installArgs.trim();
+
+			setInstallArgs(installArgs.split("\\s+"));
+		}
+
+		String networkTimeout = GradleUtil.getProperty(
+			getProject(), "nodejs.yarn.install.network.timeout", (String)null);
+
+		if (Validator.isNotNull(networkTimeout)) {
+			_networkTimeout = Long.parseLong(networkTimeout);
+		}
+
+		_preferOffline = GradleUtil.getProperty(
+			getProject(), "nodejs.yarn.install.prefer.offline", true);
+	}
 
 	@Override
 	public synchronized void executeNode() throws Exception {
@@ -34,6 +58,12 @@ public class YarnInstallTask extends ExecutePackageManagerTask {
 	}
 
 	@Input
+	@Optional
+	public List<String> getInstallArgs() {
+		return GradleUtil.toStringList(_installArgs);
+	}
+
+	@Input
 	public long getNetworkTimeout() {
 		return _networkTimeout;
 	}
@@ -43,18 +73,47 @@ public class YarnInstallTask extends ExecutePackageManagerTask {
 		return GradleUtil.toBoolean(_frozenLockFile);
 	}
 
+	@Input
+	public boolean isPreferOffline() {
+		return _preferOffline;
+	}
+
 	public void setFrozenLockFile(Object frozenLockFile) {
 		_frozenLockFile = frozenLockFile;
+	}
+
+	public void setInstallArgs(Iterable<?> installArgs) {
+		_installArgs.clear();
+
+		for (Object installArg : installArgs) {
+			_installArgs.add(installArg);
+		}
+	}
+
+	public void setInstallArgs(Object... installArgs) {
+		setInstallArgs(Arrays.asList(installArgs));
 	}
 
 	public void setNetworkTimeout(long networkTimeout) {
 		_networkTimeout = networkTimeout;
 	}
 
+	public void setPreferOffline(boolean preferOffline) {
+		_preferOffline = preferOffline;
+	}
+
 	@Internal
 	@Override
 	protected List<String> getCompleteArgs() {
 		List<String> completeArgs = super.getCompleteArgs();
+
+		List<String> installArgs = getInstallArgs();
+
+		if (!installArgs.isEmpty()) {
+			completeArgs.addAll(installArgs);
+
+			return completeArgs;
+		}
 
 		completeArgs.add("install");
 
@@ -71,7 +130,9 @@ public class YarnInstallTask extends ExecutePackageManagerTask {
 			completeArgs.add(String.valueOf(networkTimeout));
 		}
 
-		completeArgs.add("--prefer-offline");
+		if (isPreferOffline()) {
+			completeArgs.add("--prefer-offline");
+		}
 
 		return completeArgs;
 	}
@@ -91,6 +152,8 @@ public class YarnInstallTask extends ExecutePackageManagerTask {
 	}
 
 	private Object _frozenLockFile;
+	private final List<Object> _installArgs = new ArrayList<>();
 	private long _networkTimeout = 120000;
+	private boolean _preferOffline;
 
 }

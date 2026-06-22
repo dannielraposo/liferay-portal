@@ -73,31 +73,37 @@ public abstract class BaseSkuForecastResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-machine-learning/v1.0/skuForecasts/by-monthlyDemand'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Get the forecast points"
+		description = "Returns a page of monthly demand forecast points broken down by SKU. Calls SkuCommerceMLForecastManager.getMonthlyQuantitySkuCommerceMLForecasts in SkuForecastResourceImpl. Validation -- None (defaults to 3 forecast months and 8 history months from CommerceMLForecastConstants when omitted; forecastStartDate defaults to the current server date; the optional skus filter restricts the result to the supplied SKU strings, otherwise every trained SKU is returned). List query support -- None (no filter, search, or sort exposed). Side effects -- None (read-only). Naming caveat -- the operationId is published as getSkuForecastsByMonthlyRevenuePage for backward client compatibility but the response carries demand quantity, not revenue; consult the path (/by-monthlyDemand) and the SkuForecast.unit field (`quantity`) to confirm the response dimension."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of forward months to include in the response. Defaults to 3 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "forecastLength"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Anchor date for the forecast window in ISO 8601 date format (yyyy-MM-dd). Defaults to the current server date when omitted. The response covers historyLength months before this date and forecastLength months from this date forward.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "forecastStartDate"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of historical months to include in the response. Defaults to 8 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "historyLength"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Defaults to 1 when omitted. Combined with pageSize to slice the result set.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Maximum number of items per page. Defaults to the portal-wide Vulcan default when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Restricts the response to the supplied SKU strings. Repeat the parameter for each SKU. When omitted, forecast points across every trained SKU are returned.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "skus"
 			)
@@ -788,4 +794,4 @@ public abstract class BaseSkuForecastResourceImpl
 		LogFactoryUtil.getLog(BaseSkuForecastResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1263110663
+// LIFERAY-REST-BUILDER-HASH:884688432

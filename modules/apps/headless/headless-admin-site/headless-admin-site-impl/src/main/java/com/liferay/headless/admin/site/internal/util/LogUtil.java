@@ -5,6 +5,7 @@
 
 package com.liferay.headless.admin.site.internal.util;
 
+import com.liferay.exportimport.kernel.empty.model.EmptyModelManagerUtil;
 import com.liferay.headless.admin.site.dto.v1_0.ItemExternalReference;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
@@ -32,6 +33,9 @@ public class LogUtil {
 
 			_log.warn(sb.toString());
 		}
+
+		EmptyModelManagerUtil.reportMissingReference(
+			modelClass.getName(), modelExternalReferenceCode, scopeId);
 	}
 
 	public static void logOptionalReference(
@@ -52,6 +56,8 @@ public class LogUtil {
 
 			_log.warn(sb.toString());
 		}
+
+		EmptyModelManagerUtil.reportMissingReference(className, null, 0);
 	}
 
 	public static void logOptionalReference(
@@ -80,6 +86,9 @@ public class LogUtil {
 
 			_log.warn(sb.toString());
 		}
+
+		EmptyModelManagerUtil.reportMissingReference(
+			className, externalReferenceCode, scopeId);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(LogUtil.class);

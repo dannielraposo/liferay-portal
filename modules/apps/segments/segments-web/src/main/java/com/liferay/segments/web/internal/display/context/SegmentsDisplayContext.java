@@ -7,8 +7,6 @@ package com.liferay.segments.web.internal.display.context;
 
 import com.liferay.analytics.settings.configuration.AnalyticsConfiguration;
 import com.liferay.analytics.settings.rest.manager.AnalyticsSettingsManager;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
 import com.liferay.petra.string.StringPool;
@@ -59,6 +57,7 @@ import jakarta.portlet.RenderResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -135,18 +134,6 @@ public class SegmentsDisplayContext {
 		}
 
 		return StringPool.BLANK;
-	}
-
-	public CreationMenu getCreationMenu() {
-		return CreationMenuBuilder.addPrimaryDropdownItem(
-			dropdownItem -> {
-				dropdownItem.setHref(
-					_renderResponse.createRenderURL(), "mvcRenderCommandName",
-					"/segments/edit_segments_entry");
-				dropdownItem.setLabel(
-					_language.get(_httpServletRequest, "add-new-user-segment"));
-			}
-		).build();
 	}
 
 	public String getDeleteURL(SegmentsEntry segmentsEntry) {
@@ -266,8 +253,8 @@ public class SegmentsDisplayContext {
 				_segmentsEntryService.searchSegmentsEntries(
 					_themeDisplay.getCompanyId(),
 					_themeDisplay.getScopeGroupId(), _getKeywords(),
-					searchContainer.getStart(), searchContainer.getEnd(),
-					_getSort()));
+					new LinkedHashMap<>(), searchContainer.getStart(),
+					searchContainer.getEnd(), _getSort()));
 		}
 		else if (!FeatureFlagManagerUtil.isEnabled(
 					CompanyConstants.SYSTEM, "LPD-78863")) {
@@ -275,21 +262,35 @@ public class SegmentsDisplayContext {
 			searchContainer.setResultsAndTotal(
 				() -> _segmentsEntryService.getSegmentsEntries(
 					_themeDisplay.getScopeGroupId(),
-					SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
+					new String[] {
+						SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND
+					},
 					searchContainer.getStart(), searchContainer.getEnd(),
 					searchContainer.getOrderByComparator()),
 				_segmentsEntryService.getSegmentsEntriesCount(
 					_themeDisplay.getScopeGroupId(),
-					SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND));
+					new String[] {
+						SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND
+					}));
 		}
 		else {
 			searchContainer.setResultsAndTotal(
 				() -> _segmentsEntryService.getSegmentsEntries(
-					_themeDisplay.getScopeGroupId(), searchContainer.getStart(),
-					searchContainer.getEnd(),
+					_themeDisplay.getScopeGroupId(),
+					new String[] {
+						SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
+						SegmentsEntryConstants.SOURCE_DEFAULT,
+						SegmentsEntryConstants.SOURCE_REFERRED
+					},
+					searchContainer.getStart(), searchContainer.getEnd(),
 					searchContainer.getOrderByComparator()),
 				_segmentsEntryService.getSegmentsEntriesCount(
-					_themeDisplay.getScopeGroupId()));
+					_themeDisplay.getScopeGroupId(),
+					new String[] {
+						SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
+						SegmentsEntryConstants.SOURCE_DEFAULT,
+						SegmentsEntryConstants.SOURCE_REFERRED
+					}));
 		}
 
 		if (!FeatureFlagManagerUtil.isEnabled(

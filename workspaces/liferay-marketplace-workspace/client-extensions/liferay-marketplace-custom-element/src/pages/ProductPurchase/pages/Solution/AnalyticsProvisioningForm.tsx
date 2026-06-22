@@ -4,7 +4,6 @@
  */
 
 import ClayForm, {ClayCheckbox} from '@clayui/form';
-import ClayIcon from '@clayui/icon';
 import ClayMultiSelect from '@clayui/multi-select';
 import {zodResolver} from '@hookform/resolvers/zod';
 import classNames from 'classnames';
@@ -23,6 +22,7 @@ import {Liferay} from '../../../../liferay/liferay';
 import zodSchema from '../../../../schema/zod';
 import analyticsOAuth2 from '../../../../services/oauth/Analytics';
 import {useProductPurchaseOutletContext} from '../../ProductPurchaseOutlet';
+import KnockoutEmptyState from '../../components/KnockoutEmptyState';
 import ProductPurchaseAnalytics from '../../services/ProductPurchaseAnalytics';
 
 type MultiSelectValue = {
@@ -215,22 +215,10 @@ const AnalyticsProvisioning = () => {
 
 	if (emptyState) {
 		return (
-			<div
-				className="align-items-center d-flex flex-column justify-content-center px-2 text-center"
-				id="analytics-form-empty-state"
-			>
-				<div className="analytics-form-alert">
-					<ClayIcon
-						color="#0B5FFF"
-						fontSize={32}
-						symbol="warning-full"
-					/>
-				</div>
-
-				<h3 className="mb-4">{emptyState.title}</h3>
-
-				<small>{emptyState.description}</small>
-			</div>
+			<KnockoutEmptyState
+				description={emptyState.description}
+				title={emptyState.title}
+			/>
 		);
 	}
 

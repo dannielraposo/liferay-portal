@@ -366,7 +366,7 @@ public class RoleLocalServiceTest {
 		excludedRoleNames.add(RoleConstants.GUEST);
 
 		List<Role> actualRoles = _roleLocalService.getGroupRolesAndTeamRoles(
-			companyId, null, excludedRoleNames, null, null, roleTypes, 0,
+			companyId, null, excludedRoleNames, null, null, roleTypes, null, 0,
 			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 		List<Role> expectedRoles = ListUtil.filter(
@@ -401,8 +401,8 @@ public class RoleLocalServiceTest {
 		Assert.assertEquals(
 			expectedRoles.size(),
 			_roleLocalService.getGroupRolesAndTeamRolesCount(
-				companyId, null, excludedRoleNames, null, null, roleTypes, 0,
-				groupId));
+				companyId, null, excludedRoleNames, null, null, roleTypes, null,
+				0, groupId));
 
 		actualRoles = new ArrayList(actualRoles);
 		expectedRoles = new ArrayList(expectedRoles);
@@ -445,11 +445,11 @@ public class RoleLocalServiceTest {
 			1,
 			_roleLocalService.getGroupRolesAndTeamRolesCount(
 				companyId, keyword, excludedRoleNames, keyword, null, roleTypes,
-				0, groupId));
+				null, 0, groupId));
 
 		List<Role> roles = _roleLocalService.getGroupRolesAndTeamRoles(
-			companyId, keyword, excludedRoleNames, keyword, null, roleTypes, 0,
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+			companyId, keyword, excludedRoleNames, keyword, null, roleTypes,
+			null, 0, groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 		Assert.assertEquals(role1, roles.get(0));
 
@@ -459,11 +459,11 @@ public class RoleLocalServiceTest {
 			0,
 			_roleLocalService.getGroupRolesAndTeamRolesCount(
 				companyId, keyword, excludedRoleNames, keyword, null, roleTypes,
-				0, groupId));
+				null, 0, groupId));
 
 		roles = _roleLocalService.getGroupRolesAndTeamRoles(
-			companyId, keyword, excludedRoleNames, keyword, null, roleTypes, 0,
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+			companyId, keyword, excludedRoleNames, keyword, null, roleTypes,
+			null, 0, groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 		Assert.assertTrue(roles.toString(), roles.isEmpty());
 
@@ -471,11 +471,11 @@ public class RoleLocalServiceTest {
 			1,
 			_roleLocalService.getGroupRolesAndTeamRolesCount(
 				companyId, keyword, excludedRoleNames, keyword, keyword,
-				roleTypes, 0, groupId));
+				roleTypes, null, 0, groupId));
 
 		roles = _roleLocalService.getGroupRolesAndTeamRoles(
 			companyId, keyword, excludedRoleNames, keyword, keyword, roleTypes,
-			0, groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+			null, 0, groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 		Assert.assertEquals(role2, roles.get(0));
 
@@ -492,11 +492,11 @@ public class RoleLocalServiceTest {
 			1,
 			_roleLocalService.getGroupRolesAndTeamRolesCount(
 				companyId, keyword, excludedRoleNames, keyword, null, roleTypes,
-				0, groupId));
+				null, 0, groupId));
 
 		roles = _roleLocalService.getGroupRolesAndTeamRoles(
-			companyId, keyword, excludedRoleNames, keyword, null, roleTypes, 0,
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+			companyId, keyword, excludedRoleNames, keyword, null, roleTypes,
+			null, 0, groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 		_role = roles.get(0);
 
@@ -506,11 +506,11 @@ public class RoleLocalServiceTest {
 			2,
 			_roleLocalService.getGroupRolesAndTeamRolesCount(
 				companyId, keyword, excludedRoleNames, keyword, keyword,
-				roleTypes, 0, groupId));
+				roleTypes, null, 0, groupId));
 
 		roles = _roleLocalService.getGroupRolesAndTeamRoles(
 			companyId, keyword, excludedRoleNames, keyword, keyword, roleTypes,
-			0, groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+			null, 0, groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 		_role = roles.get(0);
 
@@ -801,6 +801,30 @@ public class RoleLocalServiceTest {
 	}
 
 	@Test
+	public void testUpdateRole() throws Exception {
+		Role role1 = _roleLocalService.fetchRole(
+			TestPropsValues.getCompanyId(), RoleConstants.CMS_ADMINISTRATOR);
+
+		if (role1 == null) {
+			role1 = _roleLocalService.addRole(
+				null, TestPropsValues.getUserId(), null, 0,
+				RoleConstants.CMS_ADMINISTRATOR, null, null,
+				RoleConstants.TYPE_REGULAR, null, null);
+		}
+
+		String description = RandomTestUtil.randomString();
+
+		Role role2 = _roleLocalService.updateRole(
+			role1.getExternalReferenceCode(), role1.getRoleId(),
+			RandomTestUtil.randomString(), role1.getTitleMap(),
+			Collections.singletonMap(LocaleUtil.US, description),
+			role1.getSubtype(), null);
+
+		Assert.assertEquals(description, role2.getDescription(LocaleUtil.US));
+		Assert.assertEquals(role1.getName(), role2.getName());
+	}
+
+	@Test
 	public void testUpdateRoleWithLazyReferencingEnabled() throws Exception {
 		try (SafeCloseable safeCloseable =
 				LazyReferencingThreadLocal.setEnabledWithSafeCloseable(true)) {
@@ -989,12 +1013,6 @@ public class RoleLocalServiceTest {
 	private static Role _arbitraryRole;
 
 	@Inject
-	private static GroupLocalService _groupLocalService;
-
-	@Inject
-	private static OrganizationLocalService _organizationLocalService;
-
-	@Inject
 	private static ResourceActionLocalService _resourceActionLocalService;
 
 	private static ResourcePermission _resourcePermission;
@@ -1006,24 +1024,17 @@ public class RoleLocalServiceTest {
 	@Inject
 	private static RoleLocalService _roleLocalService;
 
-	@Inject
-	private static TeamLocalService _teamLocalService;
-
-	@Inject
-	private static UserGroupGroupRoleLocalService
-		_userGroupGroupRoleLocalService;
-
-	@Inject
-	private static UserGroupRoleLocalService _userGroupRoleLocalService;
-
-	@Inject
-	private static UserLocalService _userLocalService;
-
 	@DeleteAfterTestRun
 	private Group _group;
 
+	@Inject
+	private GroupLocalService _groupLocalService;
+
 	@DeleteAfterTestRun
 	private Organization _organization;
+
+	@Inject
+	private OrganizationLocalService _organizationLocalService;
 
 	@Inject
 	private Portal _portal;
@@ -1036,10 +1047,22 @@ public class RoleLocalServiceTest {
 
 	private Team _team;
 
+	@Inject
+	private TeamLocalService _teamLocalService;
+
 	@DeleteAfterTestRun
 	private User _user;
 
 	@DeleteAfterTestRun
 	private UserGroup _userGroup;
+
+	@Inject
+	private UserGroupGroupRoleLocalService _userGroupGroupRoleLocalService;
+
+	@Inject
+	private UserGroupRoleLocalService _userGroupRoleLocalService;
+
+	@Inject
+	private UserLocalService _userLocalService;
 
 }

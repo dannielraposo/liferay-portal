@@ -11,15 +11,14 @@ import VisitorStickerRenderer from './cell_renderers/VisitorStickerRenderer';
 import './../../../../css/components/MostActiveVisitors.scss';
 import useAnalyticsQuery from '../../../common/hooks/useAnalyticsQuery';
 import {TVisitor} from '../../../common/utils/types';
-import MostActiveVisitorsQuery from '../queries/MostActiveVisitorsQuery';
 import AnalyticsFrame from './AnalyticsFrame';
 import Loader from './Loader';
 
 const MostActiveVisitors = ({
-	dsrDevEnvEnabled: useDevEnvData,
+	isAnalyticsEnabled,
 	namespace,
 }: {
-	dsrDevEnvEnabled: boolean;
+	isAnalyticsEnabled: boolean;
 	namespace: string;
 }) => {
 	const [data, setData] = useState<TVisitor[]>([]);
@@ -27,13 +26,11 @@ const MostActiveVisitors = ({
 
 	const {isLoading, response} = useAnalyticsQuery({
 		element,
-		query: MostActiveVisitorsQuery,
-		settings: {
-			checkViewportVisibility: true,
-			useDevEnvData,
+		query: {
+			paths: [{key: 'mostActiveVisitors', path: '/most-active-visitors'}],
 		},
+		settings: {isAnalyticsEnabled},
 		variables: {
-			channelId: '',
 			rangeKey: 7,
 			size: 10,
 			start: 0,
@@ -42,7 +39,7 @@ const MostActiveVisitors = ({
 
 	useEffect(() => {
 		if (response) {
-			setData(response);
+			setData(response.mostActiveVisitors?.mostActiveVisitors ?? []);
 		}
 	}, [response]);
 
@@ -52,49 +49,59 @@ const MostActiveVisitors = ({
 			title={Liferay.Language.get('most-active-visitors')}
 		>
 			<div className="most-active-visitors-container" ref={setElement}>
-				{isLoading ? (
-					<Loader />
-				) : !data?.length ? (
-					<p className="mt-3 text-center text-muted">
-						{Liferay.Language.get('no-data-available')}
-					</p>
-				) : (
-					<div className="most-active-visitors-fds">
-						<FrontendDataSet
-							customRenderers={{
-								tableCell: [
+				{isAnalyticsEnabled ? (
+					isLoading ? (
+						<Loader />
+					) : !data?.length ? (
+						<p className="mt-3 text-center text-muted">
+							{Liferay.Language.get('no-data-available')}
+						</p>
+					) : (
+						<div className="most-active-visitors-fds">
+							<FrontendDataSet
+								customRenderers={{
+									tableCell: [
+										{
+											component: VisitorStickerRenderer,
+											name: 'visitorSticker',
+											type: 'internal',
+										},
+									],
+								}}
+								id={namespace}
+								items={data}
+								showManagementBar={false}
+								showPagination={false}
+								showSearch={false}
+								showSelectAll={false}
+								views={[
 									{
-										component: VisitorStickerRenderer,
-										name: 'visitorSticker',
-										type: 'internal',
+										contentRenderer: 'table',
+										label: Liferay.Language.get('table'),
+										name: 'table',
+										schema: {
+											fields: [
+												{
+													contentRenderer:
+														'visitorSticker',
+													fieldName: 'title',
+													label: '',
+												},
+											],
+										},
+										thumbnail: 'table',
 									},
-								],
-							}}
-							id={namespace}
-							items={data}
-							showManagementBar={false}
-							showPagination={false}
-							showSearch={false}
-							showSelectAll={false}
-							views={[
-								{
-									contentRenderer: 'table',
-									label: Liferay.Language.get('table'),
-									name: 'table',
-									schema: {
-										fields: [
-											{
-												contentRenderer:
-													'visitorSticker',
-												fieldName: 'title',
-												label: '',
-											},
-										],
-									},
-									thumbnail: 'table',
-								},
-							]}
-						/>
+								]}
+							/>
+						</div>
+					)
+				) : (
+					<div className="dsr-analytics-empty-message">
+						<p className="mb-0 text-center text-muted">
+							{Liferay.Language.get(
+								'analytics-cloud-is-not-configured'
+							)}
+						</p>
 					</div>
 				)}
 			</div>

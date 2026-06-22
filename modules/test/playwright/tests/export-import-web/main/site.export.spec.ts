@@ -41,6 +41,7 @@ export const test = mergeTests(
 	baseTest,
 	featureFlagsTest({
 		'LPD-35443': {enabled: false},
+		'LPD-76864': {enabled: true},
 	})
 );
 
@@ -376,7 +377,7 @@ test(
 			await exportImportPage.deletionsLabel.check();
 
 			await exportImportPage.expectPortletCounts('Pages', {
-				counts: {deletions: 6},
+				counts: {deletions: 5},
 				registrations: [
 					{
 						counts: {deletions: 1},
@@ -392,7 +393,6 @@ test(
 						label: /^\s*Page Templates\s*/,
 					},
 					{counts: {deletions: 1}, label: 'Page Template Sets'},
-					{counts: {deletions: 1}, label: 'Utility Pages'},
 				],
 			});
 		});

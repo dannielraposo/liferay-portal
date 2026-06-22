@@ -49,11 +49,10 @@ function formatTimeZoneOffset(timeZoneOffset?: string, region?: string) {
 }
 
 interface IContextualInfoProps {
-	children?: React.ReactNode;
 	contactId?: string;
 	contextData: Map<string, any>;
 	email?: string;
-	showEmptyState?: boolean;
+	loading?: boolean;
 	userId?: string;
 	uuid?: string;
 }
@@ -76,11 +75,10 @@ const CONTEXTUAL_INFO_LABEL_MAP: Record<string, string> = {
 };
 
 const ContextualInformation: React.FC<IContextualInfoProps> = ({
-	children: emptyState,
 	contactId,
 	contextData,
 	email,
-	showEmptyState = false,
+	loading = false,
 	userId,
 	uuid
 }) => {
@@ -110,15 +108,12 @@ const ContextualInformation: React.FC<IContextualInfoProps> = ({
 				title={Liferay.Language.get('contextual-information')}
 			/>
 
-			{showEmptyState ? (
-				emptyState
-			) : (
-				<GeneralInfoSection
-					config={contextualInfoConfig}
-					getValue={getValue}
-					languageMap={CONTEXTUAL_INFO_LABEL_MAP}
-				/>
-			)}
+			<GeneralInfoSection
+				config={contextualInfoConfig}
+				getValue={getValue}
+				languageMap={CONTEXTUAL_INFO_LABEL_MAP}
+				loading={loading}
+			/>
 		</>
 	);
 };

@@ -65,6 +65,10 @@ public class CommerceOrderModelResourcePermissionLogic
 			CommerceOrder commerceOrder, String actionId)
 		throws PortalException {
 
+		if (permissionChecker.getCompanyId() != commerceOrder.getCompanyId()) {
+			return false;
+		}
+
 		AccountEntry accountEntry = commerceOrder.getAccountEntry();
 
 		if ((accountEntry.getAccountEntryId() ==
@@ -79,6 +83,12 @@ public class CommerceOrderModelResourcePermissionLogic
 		if ((accountEntry.getAccountEntryId() ==
 				AccountConstants.ACCOUNT_ENTRY_ID_GUEST) &&
 			permissionChecker.isSignedIn()) {
+
+			if (permissionChecker.getCompanyId() !=
+					commerceOrder.getCompanyId()) {
+
+				return false;
+			}
 
 			return _hasPermission(
 				permissionChecker, 0,

@@ -5,18 +5,29 @@
 
 import React from 'react';
 
+import ChatbotAvatar from './ChatbotAvatar';
 import {CloseIcon} from './Icons';
 import Logo from './Logo';
 
 interface ChatbotHeaderProps {
+	avatar?: string;
 	onClose: () => void;
 	title: string;
 }
 
-export default function ChatbotHeader({onClose, title}: ChatbotHeaderProps) {
+export default function ChatbotHeader({
+	avatar,
+	onClose,
+	title,
+}: ChatbotHeaderProps) {
 	return (
 		<div className="aihub-header">
-			<Logo className="aihub-header-logo" />
+			<ChatbotAvatar
+				avatar={avatar}
+				className="aihub-header-logo"
+				fallback={<Logo className="aihub-header-logo" />}
+				title={title}
+			/>
 
 			<div className="aihub-header-info">
 				<div className="aihub-header-title">{title}</div>

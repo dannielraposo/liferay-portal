@@ -87,60 +87,9 @@ public class LayoutFriendlyURLPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<LayoutFriendlyURL>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the layout friendly urls where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout friendly urls where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @return the range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout friendly urls where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<LayoutFriendlyURL> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<LayoutFriendlyURL, NoSuchLayoutFriendlyURLException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the layout friendly urls where uuid = &#63;.
@@ -162,14 +111,9 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -185,16 +129,9 @@ public class LayoutFriendlyURLPersistenceImpl
 			String uuid, OrderByComparator<LayoutFriendlyURL> orderByComparator)
 		throws NoSuchLayoutFriendlyURLException {
 
-		LayoutFriendlyURL layoutFriendlyURL = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (layoutFriendlyURL != null) {
-			return layoutFriendlyURL;
-		}
-
-		throw new NoSuchLayoutFriendlyURLException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid},
+			orderByComparator);
 	}
 
 	/**
@@ -232,18 +169,13 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<LayoutFriendlyURL>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<LayoutFriendlyURL, NoSuchLayoutFriendlyURLException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the layout friendly url where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchLayoutFriendlyURLException</code> if it could not be found.
@@ -257,33 +189,8 @@ public class LayoutFriendlyURLPersistenceImpl
 	public LayoutFriendlyURL findByUUID_G(String uuid, long groupId)
 		throws NoSuchLayoutFriendlyURLException {
 
-		LayoutFriendlyURL layoutFriendlyURL = fetchByUUID_G(uuid, groupId);
-
-		if (layoutFriendlyURL == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchLayoutFriendlyURLException(message);
-		}
-
-		return layoutFriendlyURL;
-	}
-
-	/**
-	 * Returns the layout friendly url where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching layout friendly url, or <code>null</code> if a matching layout friendly url could not be found
-	 */
-	@Override
-	public LayoutFriendlyURL fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -298,14 +205,9 @@ public class LayoutFriendlyURLPersistenceImpl
 	public LayoutFriendlyURL fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId},
+			useFinderCache);
 	}
 
 	/**
@@ -337,67 +239,9 @@ public class LayoutFriendlyURLPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<LayoutFriendlyURL>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the layout friendly urls where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout friendly urls where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @return the range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout friendly urls where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<LayoutFriendlyURL> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<LayoutFriendlyURL, NoSuchLayoutFriendlyURLException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the layout friendly urls where uuid = &#63; and companyId = &#63;.
@@ -420,15 +264,9 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {uuid, companyId}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -446,16 +284,9 @@ public class LayoutFriendlyURLPersistenceImpl
 			OrderByComparator<LayoutFriendlyURL> orderByComparator)
 		throws NoSuchLayoutFriendlyURLException {
 
-		LayoutFriendlyURL layoutFriendlyURL = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (layoutFriendlyURL != null) {
-			return layoutFriendlyURL;
-		}
-
-		throw new NoSuchLayoutFriendlyURLException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId},
+			orderByComparator);
 	}
 
 	/**
@@ -497,73 +328,13 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<LayoutFriendlyURL>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the layout friendly urls where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout friendly urls where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @return the range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout friendly urls where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<LayoutFriendlyURL> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<LayoutFriendlyURL, NoSuchLayoutFriendlyURLException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the layout friendly urls where groupId = &#63;.
@@ -585,14 +356,9 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {groupId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -609,16 +375,9 @@ public class LayoutFriendlyURLPersistenceImpl
 			OrderByComparator<LayoutFriendlyURL> orderByComparator)
 		throws NoSuchLayoutFriendlyURLException {
 
-		LayoutFriendlyURL layoutFriendlyURL = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (layoutFriendlyURL != null) {
-			return layoutFriendlyURL;
-		}
-
-		throw new NoSuchLayoutFriendlyURLException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId},
+			orderByComparator);
 	}
 
 	/**
@@ -656,72 +415,13 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<LayoutFriendlyURL>
-		_collectionPersistenceFinderByCompanyId;
-
-	/**
-	 * Returns all the layout friendly urls where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout friendly urls where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @return the range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout friendly urls where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<LayoutFriendlyURL> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<LayoutFriendlyURL, NoSuchLayoutFriendlyURLException>
+			_collectionPersistenceFinderByCompanyId;
 
 	/**
 	 * Returns an ordered range of all the layout friendly urls where companyId = &#63;.
@@ -743,14 +443,9 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {companyId},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {companyId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -767,16 +462,9 @@ public class LayoutFriendlyURLPersistenceImpl
 			OrderByComparator<LayoutFriendlyURL> orderByComparator)
 		throws NoSuchLayoutFriendlyURLException {
 
-		LayoutFriendlyURL layoutFriendlyURL = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (layoutFriendlyURL != null) {
-			return layoutFriendlyURL;
-		}
-
-		throw new NoSuchLayoutFriendlyURLException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {companyId},
+			orderByComparator);
 	}
 
 	/**
@@ -815,69 +503,13 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByPlid;
-	private FinderPath _finderPathWithoutPaginationFindByPlid;
-	private FinderPath _finderPathCountByPlid;
-	private CollectionPersistenceFinder<LayoutFriendlyURL>
-		_collectionPersistenceFinderByPlid;
-
-	/**
-	 * Returns all the layout friendly urls where plid = &#63;.
-	 *
-	 * @param plid the plid
-	 * @return the matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByPlid(long plid) {
-		return findByPlid(plid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout friendly urls where plid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @return the range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByPlid(long plid, int start, int end) {
-		return findByPlid(plid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout friendly urls where plid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByPlid(
-		long plid, int start, int end,
-		OrderByComparator<LayoutFriendlyURL> orderByComparator) {
-
-		return findByPlid(plid, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<LayoutFriendlyURL, NoSuchLayoutFriendlyURLException>
+			_collectionPersistenceFinderByPlid;
 
 	/**
 	 * Returns an ordered range of all the layout friendly urls where plid = &#63;.
@@ -899,14 +531,9 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByPlid.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {plid}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByPlid.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {plid}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -922,16 +549,9 @@ public class LayoutFriendlyURLPersistenceImpl
 			long plid, OrderByComparator<LayoutFriendlyURL> orderByComparator)
 		throws NoSuchLayoutFriendlyURLException {
 
-		LayoutFriendlyURL layoutFriendlyURL = fetchByPlid_First(
-			plid, orderByComparator);
-
-		if (layoutFriendlyURL != null) {
-			return layoutFriendlyURL;
-		}
-
-		throw new NoSuchLayoutFriendlyURLException(
-			_collectionPersistenceFinderByPlid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {plid}));
+		return _collectionPersistenceFinderByPlid.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {plid},
+			orderByComparator);
 	}
 
 	/**
@@ -969,78 +589,13 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public int countByPlid(long plid) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByPlid.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {plid});
-		}
+		return _collectionPersistenceFinderByPlid.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {plid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_F;
-	private FinderPath _finderPathWithoutPaginationFindByC_F;
-	private FinderPath _finderPathCountByC_F;
-	private CollectionPersistenceFinder<LayoutFriendlyURL>
-		_collectionPersistenceFinderByC_F;
-
-	/**
-	 * Returns all the layout friendly urls where companyId = &#63; and friendlyURL = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param friendlyURL the friendly url
-	 * @return the matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByC_F(
-		long companyId, String friendlyURL) {
-
-		return findByC_F(
-			companyId, friendlyURL, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout friendly urls where companyId = &#63; and friendlyURL = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param friendlyURL the friendly url
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @return the range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByC_F(
-		long companyId, String friendlyURL, int start, int end) {
-
-		return findByC_F(companyId, friendlyURL, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout friendly urls where companyId = &#63; and friendlyURL = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param friendlyURL the friendly url
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByC_F(
-		long companyId, String friendlyURL, int start, int end,
-		OrderByComparator<LayoutFriendlyURL> orderByComparator) {
-
-		return findByC_F(
-			companyId, friendlyURL, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<LayoutFriendlyURL, NoSuchLayoutFriendlyURLException>
+			_collectionPersistenceFinderByC_F;
 
 	/**
 	 * Returns an ordered range of all the layout friendly urls where companyId = &#63; and friendlyURL = &#63;.
@@ -1063,15 +618,10 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByC_F.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {companyId, friendlyURL}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_F.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {companyId, friendlyURL}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1089,17 +639,9 @@ public class LayoutFriendlyURLPersistenceImpl
 			OrderByComparator<LayoutFriendlyURL> orderByComparator)
 		throws NoSuchLayoutFriendlyURLException {
 
-		LayoutFriendlyURL layoutFriendlyURL = fetchByC_F_First(
-			companyId, friendlyURL, orderByComparator);
-
-		if (layoutFriendlyURL != null) {
-			return layoutFriendlyURL;
-		}
-
-		throw new NoSuchLayoutFriendlyURLException(
-			_collectionPersistenceFinderByC_F.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, friendlyURL}));
+		return _collectionPersistenceFinderByC_F.findFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {companyId, friendlyURL}, orderByComparator);
 	}
 
 	/**
@@ -1142,77 +684,14 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public int countByC_F(long companyId, String friendlyURL) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByC_F.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {companyId, friendlyURL});
-		}
+		return _collectionPersistenceFinderByC_F.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {companyId, friendlyURL});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByP_F;
-	private FinderPath _finderPathWithoutPaginationFindByP_F;
-	private FinderPath _finderPathCountByP_F;
-	private CollectionPersistenceFinder<LayoutFriendlyURL>
-		_collectionPersistenceFinderByP_F;
-
-	/**
-	 * Returns all the layout friendly urls where plid = &#63; and friendlyURL = &#63;.
-	 *
-	 * @param plid the plid
-	 * @param friendlyURL the friendly url
-	 * @return the matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByP_F(long plid, String friendlyURL) {
-		return findByP_F(
-			plid, friendlyURL, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout friendly urls where plid = &#63; and friendlyURL = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param friendlyURL the friendly url
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @return the range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByP_F(
-		long plid, String friendlyURL, int start, int end) {
-
-		return findByP_F(plid, friendlyURL, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout friendly urls where plid = &#63; and friendlyURL = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param friendlyURL the friendly url
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByP_F(
-		long plid, String friendlyURL, int start, int end,
-		OrderByComparator<LayoutFriendlyURL> orderByComparator) {
-
-		return findByP_F(
-			plid, friendlyURL, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<LayoutFriendlyURL, NoSuchLayoutFriendlyURLException>
+			_collectionPersistenceFinderByP_F;
 
 	/**
 	 * Returns an ordered range of all the layout friendly urls where plid = &#63; and friendlyURL = &#63;.
@@ -1235,15 +714,9 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByP_F.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {plid, friendlyURL}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByP_F.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {plid, friendlyURL},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1261,16 +734,9 @@ public class LayoutFriendlyURLPersistenceImpl
 			OrderByComparator<LayoutFriendlyURL> orderByComparator)
 		throws NoSuchLayoutFriendlyURLException {
 
-		LayoutFriendlyURL layoutFriendlyURL = fetchByP_F_First(
-			plid, friendlyURL, orderByComparator);
-
-		if (layoutFriendlyURL != null) {
-			return layoutFriendlyURL;
-		}
-
-		throw new NoSuchLayoutFriendlyURLException(
-			_collectionPersistenceFinderByP_F.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {plid, friendlyURL}));
+		return _collectionPersistenceFinderByP_F.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {plid, friendlyURL},
+			orderByComparator);
 	}
 
 	/**
@@ -1312,14 +778,8 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public int countByP_F(long plid, String friendlyURL) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByP_F.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {plid, friendlyURL});
-		}
+		return _collectionPersistenceFinderByP_F.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {plid, friendlyURL});
 	}
 
 	private FinderPath _finderPathWithPaginationFindByP_L;
@@ -1627,18 +1087,6 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		return layoutFriendlyURL;
-	}
-
-	/**
-	 * Returns the layout friendly url where plid = &#63; and languageId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param plid the plid
-	 * @param languageId the language ID
-	 * @return the matching layout friendly url, or <code>null</code> if a matching layout friendly url could not be found
-	 */
-	@Override
-	public LayoutFriendlyURL fetchByP_L(long plid, String languageId) {
-		return fetchByP_L(plid, languageId, true);
 	}
 
 	/**
@@ -1974,76 +1422,9 @@ public class LayoutFriendlyURLPersistenceImpl
 	private static final String _FINDER_COLUMN_P_L_LANGUAGEID_3 =
 		"(layoutFriendlyURL.languageId IS NULL OR layoutFriendlyURL.languageId = '')";
 
-	private FinderPath _finderPathWithPaginationFindByG_P_F;
-	private FinderPath _finderPathWithoutPaginationFindByG_P_F;
-	private FinderPath _finderPathCountByG_P_F;
-	private CollectionPersistenceFinder<LayoutFriendlyURL>
-		_collectionPersistenceFinderByG_P_F;
-
-	/**
-	 * Returns all the layout friendly urls where groupId = &#63; and privateLayout = &#63; and friendlyURL = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param privateLayout the private layout
-	 * @param friendlyURL the friendly url
-	 * @return the matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByG_P_F(
-		long groupId, boolean privateLayout, String friendlyURL) {
-
-		return findByG_P_F(
-			groupId, privateLayout, friendlyURL, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout friendly urls where groupId = &#63; and privateLayout = &#63; and friendlyURL = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param privateLayout the private layout
-	 * @param friendlyURL the friendly url
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @return the range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByG_P_F(
-		long groupId, boolean privateLayout, String friendlyURL, int start,
-		int end) {
-
-		return findByG_P_F(
-			groupId, privateLayout, friendlyURL, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout friendly urls where groupId = &#63; and privateLayout = &#63; and friendlyURL = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param privateLayout the private layout
-	 * @param friendlyURL the friendly url
-	 * @param start the lower bound of the range of layout friendly urls
-	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout friendly urls
-	 */
-	@Override
-	public List<LayoutFriendlyURL> findByG_P_F(
-		long groupId, boolean privateLayout, String friendlyURL, int start,
-		int end, OrderByComparator<LayoutFriendlyURL> orderByComparator) {
-
-		return findByG_P_F(
-			groupId, privateLayout, friendlyURL, start, end, orderByComparator,
-			true);
-	}
+	private CollectionPersistenceFinder
+		<LayoutFriendlyURL, NoSuchLayoutFriendlyURLException>
+			_collectionPersistenceFinderByG_P_F;
 
 	/**
 	 * Returns an ordered range of all the layout friendly urls where groupId = &#63; and privateLayout = &#63; and friendlyURL = &#63;.
@@ -2067,15 +1448,10 @@ public class LayoutFriendlyURLPersistenceImpl
 		int end, OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByG_P_F.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, privateLayout, friendlyURL}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_P_F.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, privateLayout, friendlyURL}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2094,17 +1470,10 @@ public class LayoutFriendlyURLPersistenceImpl
 			OrderByComparator<LayoutFriendlyURL> orderByComparator)
 		throws NoSuchLayoutFriendlyURLException {
 
-		LayoutFriendlyURL layoutFriendlyURL = fetchByG_P_F_First(
-			groupId, privateLayout, friendlyURL, orderByComparator);
-
-		if (layoutFriendlyURL != null) {
-			return layoutFriendlyURL;
-		}
-
-		throw new NoSuchLayoutFriendlyURLException(
-			_collectionPersistenceFinderByG_P_F.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, privateLayout, friendlyURL}));
+		return _collectionPersistenceFinderByG_P_F.findFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, privateLayout, friendlyURL},
+			orderByComparator);
 	}
 
 	/**
@@ -2155,19 +1524,14 @@ public class LayoutFriendlyURLPersistenceImpl
 	public int countByG_P_F(
 		long groupId, boolean privateLayout, String friendlyURL) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _collectionPersistenceFinderByG_P_F.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, privateLayout, friendlyURL});
-		}
+		return _collectionPersistenceFinderByG_P_F.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, privateLayout, friendlyURL});
 	}
 
-	private FinderPath _finderPathFetchByG_P_F_L;
-	private UniquePersistenceFinder<LayoutFriendlyURL>
-		_uniquePersistenceFinderByG_P_F_L;
+	private UniquePersistenceFinder
+		<LayoutFriendlyURL, NoSuchLayoutFriendlyURLException>
+			_uniquePersistenceFinderByG_P_F_L;
 
 	/**
 	 * Returns the layout friendly url where groupId = &#63; and privateLayout = &#63; and friendlyURL = &#63; and languageId = &#63; or throws a <code>NoSuchLayoutFriendlyURLException</code> if it could not be found.
@@ -2185,43 +1549,9 @@ public class LayoutFriendlyURLPersistenceImpl
 			String languageId)
 		throws NoSuchLayoutFriendlyURLException {
 
-		LayoutFriendlyURL layoutFriendlyURL = fetchByG_P_F_L(
-			groupId, privateLayout, friendlyURL, languageId);
-
-		if (layoutFriendlyURL == null) {
-			String message =
-				_uniquePersistenceFinderByG_P_F_L.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {
-						groupId, privateLayout, friendlyURL, languageId
-					});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchLayoutFriendlyURLException(message);
-		}
-
-		return layoutFriendlyURL;
-	}
-
-	/**
-	 * Returns the layout friendly url where groupId = &#63; and privateLayout = &#63; and friendlyURL = &#63; and languageId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param privateLayout the private layout
-	 * @param friendlyURL the friendly url
-	 * @param languageId the language ID
-	 * @return the matching layout friendly url, or <code>null</code> if a matching layout friendly url could not be found
-	 */
-	@Override
-	public LayoutFriendlyURL fetchByG_P_F_L(
-		long groupId, boolean privateLayout, String friendlyURL,
-		String languageId) {
-
-		return fetchByG_P_F_L(
-			groupId, privateLayout, friendlyURL, languageId, true);
+		return _uniquePersistenceFinderByG_P_F_L.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, privateLayout, friendlyURL, languageId});
 	}
 
 	/**
@@ -2239,15 +1569,10 @@ public class LayoutFriendlyURLPersistenceImpl
 		long groupId, boolean privateLayout, String friendlyURL,
 		String languageId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					LayoutFriendlyURL.class)) {
-
-			return _uniquePersistenceFinderByG_P_F_L.fetch(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, privateLayout, friendlyURL, languageId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_P_F_L.fetch(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, privateLayout, friendlyURL, languageId},
+			useFinderCache);
 	}
 
 	/**
@@ -2600,227 +1925,207 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Initializes the layout friendly url persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
 			_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE,
-			LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"layoutFriendlyURL.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, LayoutFriendlyURL::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			LayoutFriendlyURL::getUuid, LayoutFriendlyURL::getGroupId);
+				"layoutFriendlyURL.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, LayoutFriendlyURL::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(LayoutFriendlyURL::getUuid),
+				LayoutFriendlyURL::getGroupId),
+			_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE, "",
 			new FinderColumn<>(
-				"layoutFriendlyURL.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, LayoutFriendlyURL::getUuid),
+				"layoutFriendlyURL.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, LayoutFriendlyURL::getUuid),
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, LayoutFriendlyURL::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
 				_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE,
 				LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"layoutFriendlyURL.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, LayoutFriendlyURL::getUuid),
+					"layoutFriendlyURL.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					LayoutFriendlyURL::getUuid),
 				new FinderColumn<>(
 					"layoutFriendlyURL.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, LayoutFriendlyURL::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
 				_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE,
 				LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"layoutFriendlyURL.", "groupId", FinderColumn.Type.LONG,
 					"=", true, true, LayoutFriendlyURL::getGroupId));
 
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
 				_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
 				_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE,
 				LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"layoutFriendlyURL.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, LayoutFriendlyURL::getCompanyId));
 
-		_finderPathWithPaginationFindByPlid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByPlid",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"plid"}, true);
-
-		_finderPathWithoutPaginationFindByPlid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByPlid",
-			new String[] {Long.class.getName()}, new String[] {"plid"}, true);
-
-		_finderPathCountByPlid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByPlid",
-			new String[] {Long.class.getName()}, new String[] {"plid"}, false);
-
 		_collectionPersistenceFinderByPlid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByPlid,
-			_finderPathWithoutPaginationFindByPlid, _finderPathCountByPlid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByPlid",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"plid"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByPlid",
+				new String[] {Long.class.getName()}, new String[] {"plid"},
+				true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByPlid",
+				new String[] {Long.class.getName()}, new String[] {"plid"},
+				false),
 			_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
 			_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE,
-			LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "plid", FinderColumn.Type.LONG, "=", true,
 				true, LayoutFriendlyURL::getPlid));
 
-		_finderPathWithPaginationFindByC_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_F",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "friendlyURL"}, true);
-
-		_finderPathWithoutPaginationFindByC_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_F",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "friendlyURL"}, true);
-
-		_finderPathCountByC_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_F",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "friendlyURL"}, false);
-
 		_collectionPersistenceFinderByC_F = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_F,
-			_finderPathWithoutPaginationFindByC_F, _finderPathCountByC_F,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_F",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "friendlyURL"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_F",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "friendlyURL"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_F",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "friendlyURL"}, 0, 2, false, null),
 			_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
 			_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE,
-			LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, LayoutFriendlyURL::getCompanyId),
+				true, true, LayoutFriendlyURL::getCompanyId),
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "friendlyURL", FinderColumn.Type.STRING,
 				"=", true, true, LayoutFriendlyURL::getFriendlyURL));
 
-		_finderPathWithPaginationFindByP_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByP_F",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"plid", "friendlyURL"}, true);
-
-		_finderPathWithoutPaginationFindByP_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_F",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"plid", "friendlyURL"}, true);
-
-		_finderPathCountByP_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_F",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"plid", "friendlyURL"}, false);
-
 		_collectionPersistenceFinderByP_F = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByP_F,
-			_finderPathWithoutPaginationFindByP_F, _finderPathCountByP_F,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByP_F",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"plid", "friendlyURL"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_F",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"plid", "friendlyURL"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_F",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"plid", "friendlyURL"}, 0, 2, false, null),
 			_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
 			_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE,
-			LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "plid", FinderColumn.Type.LONG, "=", true,
-				false, LayoutFriendlyURL::getPlid),
+				true, LayoutFriendlyURL::getPlid),
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "friendlyURL", FinderColumn.Type.STRING,
 				"=", true, true, LayoutFriendlyURL::getFriendlyURL));
@@ -2837,93 +2142,91 @@ public class LayoutFriendlyURLPersistenceImpl
 		_finderPathWithoutPaginationFindByP_L = new FinderPath(
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_L",
 			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"plid", "languageId"}, true);
+			new String[] {"plid", "languageId"}, 0, 2, true, null);
 
 		_finderPathFetchByP_L = createUniqueFinderPath(
 			FINDER_CLASS_NAME_ENTITY, "fetchByP_L",
 			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"plid", "languageId"}, false,
-			LayoutFriendlyURL::getPlid, LayoutFriendlyURL::getLanguageId);
+			new String[] {"plid", "languageId"}, 0, 2, false,
+			LayoutFriendlyURL::getPlid,
+			convertNullFunction(LayoutFriendlyURL::getLanguageId));
 
 		_finderPathCountByP_L = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_L",
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByP_L",
 			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"plid", "languageId"}, false);
+			new String[] {"plid", "languageId"}, 0, 2, false, null);
 
 		_finderPathWithPaginationCountByP_L = new FinderPath(
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByP_L",
 			new String[] {Long.class.getName(), String.class.getName()},
 			new String[] {"plid", "languageId"}, false);
 
-		_finderPathWithPaginationFindByG_P_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P_F",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "privateLayout", "friendlyURL"}, true);
-
-		_finderPathWithoutPaginationFindByG_P_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P_F",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "privateLayout", "friendlyURL"}, true);
-
-		_finderPathCountByG_P_F = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P_F",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "privateLayout", "friendlyURL"}, false);
-
 		_collectionPersistenceFinderByG_P_F = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_P_F,
-			_finderPathWithoutPaginationFindByG_P_F, _finderPathCountByG_P_F,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P_F",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "privateLayout", "friendlyURL"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P_F",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"groupId", "privateLayout", "friendlyURL"}, 0, 4,
+				true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P_F",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"groupId", "privateLayout", "friendlyURL"}, 0, 4,
+				false, null),
 			_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
 			_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE,
-			LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			LayoutFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, LayoutFriendlyURL::getGroupId),
+				true, true, LayoutFriendlyURL::getGroupId),
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "privateLayout",
-				FinderColumn.Type.BOOLEAN, "=", true, false,
+				FinderColumn.Type.BOOLEAN, "=", true, true,
 				LayoutFriendlyURL::isPrivateLayout),
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "friendlyURL", FinderColumn.Type.STRING,
 				"=", true, true, LayoutFriendlyURL::getFriendlyURL));
 
-		_finderPathFetchByG_P_F_L = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_P_F_L",
-			new String[] {
-				Long.class.getName(), Boolean.class.getName(),
-				String.class.getName(), String.class.getName()
-			},
-			new String[] {
-				"groupId", "privateLayout", "friendlyURL", "languageId"
-			},
-			false, LayoutFriendlyURL::getGroupId,
-			LayoutFriendlyURL::isPrivateLayout,
-			LayoutFriendlyURL::getFriendlyURL,
-			LayoutFriendlyURL::getLanguageId);
-
 		_uniquePersistenceFinderByG_P_F_L = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_P_F_L,
-			_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_P_F_L",
+				new String[] {
+					Long.class.getName(), Boolean.class.getName(),
+					String.class.getName(), String.class.getName()
+				},
+				new String[] {
+					"groupId", "privateLayout", "friendlyURL", "languageId"
+				},
+				0, 12, false, LayoutFriendlyURL::getGroupId,
+				LayoutFriendlyURL::isPrivateLayout,
+				convertNullFunction(LayoutFriendlyURL::getFriendlyURL),
+				convertNullFunction(LayoutFriendlyURL::getLanguageId)),
+			_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE, "",
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, LayoutFriendlyURL::getGroupId),
+				true, true, LayoutFriendlyURL::getGroupId),
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "privateLayout",
-				FinderColumn.Type.BOOLEAN, "=", true, false,
+				FinderColumn.Type.BOOLEAN, "=", true, true,
 				LayoutFriendlyURL::isPrivateLayout),
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "friendlyURL", FinderColumn.Type.STRING,
-				"=", true, false, LayoutFriendlyURL::getFriendlyURL),
+				"=", true, true, LayoutFriendlyURL::getFriendlyURL),
 			new FinderColumn<>(
 				"layoutFriendlyURL.", "languageId", FinderColumn.Type.STRING,
 				"=", true, true, LayoutFriendlyURL::getLanguageId));
@@ -2964,4 +2267,4 @@ public class LayoutFriendlyURLPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1886330042
+// LIFERAY-SERVICE-BUILDER-HASH:971985324

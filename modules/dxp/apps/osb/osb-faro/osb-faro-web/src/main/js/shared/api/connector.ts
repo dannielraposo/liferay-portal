@@ -14,6 +14,7 @@ interface UpdateConnectorParams {
 	groupId: string;
 	id: string;
 	name?: string;
+	status?: string;
 }
 
 export function createConnector(
@@ -44,13 +45,15 @@ export function updateConnector(
 		credentials,
 		groupId,
 		id,
-		name
+		name,
+		status
 	}: UpdateConnectorParams
 ) {
 	const data = pickBy(
 		{
 			channelsConfiguration,
-			credentials
+			credentials,
+			status
 		},
 		Boolean
 	);
@@ -66,13 +69,12 @@ export function updateConnector(
 }
 
 export function fetchConnectorEntityCount(
-	slug: string,
 	entity: string,
 	{groupId, id}: {groupId: string; id: string}
 ) {
 	return sendRequest({
 		method: 'GET',
-		path: `contacts/${groupId}/${slug}/${entity}_count?dataSourceId=${id}`
+		path: `contacts/${groupId}/data-source-metrics/${id}/${entity}_count`
 	});
 }
 
@@ -82,6 +84,6 @@ export function generateConnectorToken({
 }: RESTParams & {type: string}) {
 	return sendRequest({
 		method: 'POST',
-		path: `main/${groupId}/oauth2/tokens/new?type=${type}&expiresIn=`
+		path: `main/${groupId}/oauth2/tokens/new?type=${type}`
 	});
 }

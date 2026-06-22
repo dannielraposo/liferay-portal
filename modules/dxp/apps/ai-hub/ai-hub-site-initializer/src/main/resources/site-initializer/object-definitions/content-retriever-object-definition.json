@@ -7,7 +7,7 @@
 	"externalReferenceCode": "L_AI_HUB_CONTENT_RETRIEVER",
 	"friendlyURLSeparator": "l",
 	"label": {
-		"en_US": "Content Retriever"
+		"en_US": "AI Hub Content Retriever"
 	},
 	"modifiable": true,
 	"name": "AIHubContentRetriever",
@@ -43,7 +43,7 @@
 			},
 			"localized": true,
 			"name": "description",
-			"readOnly": "false",
+			"readOnly": false,
 			"readOnlyConditionExpression": "",
 			"system": true,
 			"type": "Clob"
@@ -59,7 +59,7 @@
 				"en_US": "Index Name"
 			},
 			"name": "indexName",
-			"readOnly": "false",
+			"readOnly": false,
 			"system": true,
 			"type": "String"
 		},
@@ -75,7 +75,7 @@
 			},
 			"localized": true,
 			"name": "title",
-			"readOnly": "false",
+			"readOnly": false,
 			"system": true,
 			"type": "String"
 		},
@@ -90,7 +90,7 @@
 				"en_US": "Type"
 			},
 			"name": "type",
-			"readOnly": "false",
+			"readOnly": false,
 			"system": true,
 			"type": "String"
 		},
@@ -105,7 +105,7 @@
 				"en_US": "URL"
 			},
 			"name": "url",
-			"readOnly": "false",
+			"readOnly": false,
 			"system": true,
 			"type": "String"
 		},
@@ -117,7 +117,7 @@
 			"indexed": true,
 			"indexedLanguageId": "en_US",
 			"label": {
-				"en_US": "Account to Content Retrievers"
+				"en_US": "Account to AI Hub Content Retrievers"
 			},
 			"name": "r_accountToAIHubContentRetrievers_accountEntryId",
 			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
@@ -132,7 +132,7 @@
 				}
 			],
 			"objectRelationshipExternalReferenceCode": "L_ACCOUNT_TO_L_AI_HUB_CONTENT_RETRIEVERS",
-			"readOnly": "false",
+			"readOnly": false,
 			"relationshipType": "oneToMany",
 			"required": true,
 			"system": true,
@@ -142,7 +142,7 @@
 	"objectFolderExternalReferenceCode": "default",
 	"panelCategoryKey": "control_panel.object",
 	"pluralLabel": {
-		"en_US": "Content Retrievers"
+		"en_US": "AI Hub Content Retrievers"
 	},
 	"portlet": true,
 	"scope": "company",

@@ -9,7 +9,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -81,66 +80,15 @@ public class SiteFriendlyURLPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<SiteFriendlyURL>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the site friendly urls where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching site friendly urls
-	 */
-	@Override
-	public List<SiteFriendlyURL> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site friendly urls where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of site friendly urls
-	 * @param end the upper bound of the range of site friendly urls (not inclusive)
-	 * @return the range of matching site friendly urls
-	 */
-	@Override
-	public List<SiteFriendlyURL> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<SiteFriendlyURL, NoSuchFriendlyURLException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the site friendly urls where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of site friendly urls
-	 * @param end the upper bound of the range of site friendly urls (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching site friendly urls
-	 */
-	@Override
-	public List<SiteFriendlyURL> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<SiteFriendlyURL> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the site friendly urls where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -174,16 +122,8 @@ public class SiteFriendlyURLPersistenceImpl
 			String uuid, OrderByComparator<SiteFriendlyURL> orderByComparator)
 		throws NoSuchFriendlyURLException {
 
-		SiteFriendlyURL siteFriendlyURL = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (siteFriendlyURL != null) {
-			return siteFriendlyURL;
-		}
-
-		throw new NoSuchFriendlyURLException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -224,8 +164,7 @@ public class SiteFriendlyURLPersistenceImpl
 			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<SiteFriendlyURL>
+	private UniquePersistenceFinder<SiteFriendlyURL, NoSuchFriendlyURLException>
 		_uniquePersistenceFinderByUUID_G;
 
 	/**
@@ -240,33 +179,8 @@ public class SiteFriendlyURLPersistenceImpl
 	public SiteFriendlyURL findByUUID_G(String uuid, long groupId)
 		throws NoSuchFriendlyURLException {
 
-		SiteFriendlyURL siteFriendlyURL = fetchByUUID_G(uuid, groupId);
-
-		if (siteFriendlyURL == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFriendlyURLException(message);
-		}
-
-		return siteFriendlyURL;
-	}
-
-	/**
-	 * Returns the site friendly url where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching site friendly url, or <code>null</code> if a matching site friendly url could not be found
-	 */
-	@Override
-	public SiteFriendlyURL fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -314,73 +228,15 @@ public class SiteFriendlyURLPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<SiteFriendlyURL>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the site friendly urls where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching site friendly urls
-	 */
-	@Override
-	public List<SiteFriendlyURL> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site friendly urls where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of site friendly urls
-	 * @param end the upper bound of the range of site friendly urls (not inclusive)
-	 * @return the range of matching site friendly urls
-	 */
-	@Override
-	public List<SiteFriendlyURL> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<SiteFriendlyURL, NoSuchFriendlyURLException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the site friendly urls where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of site friendly urls
-	 * @param end the upper bound of the range of site friendly urls (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching site friendly urls
-	 */
-	@Override
-	public List<SiteFriendlyURL> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<SiteFriendlyURL> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the site friendly urls where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -417,16 +273,8 @@ public class SiteFriendlyURLPersistenceImpl
 			OrderByComparator<SiteFriendlyURL> orderByComparator)
 		throws NoSuchFriendlyURLException {
 
-		SiteFriendlyURL siteFriendlyURL = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (siteFriendlyURL != null) {
-			return siteFriendlyURL;
-		}
-
-		throw new NoSuchFriendlyURLException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -471,73 +319,15 @@ public class SiteFriendlyURLPersistenceImpl
 			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_C;
-	private FinderPath _finderPathWithoutPaginationFindByG_C;
-	private FinderPath _finderPathCountByG_C;
-	private CollectionPersistenceFinder<SiteFriendlyURL>
-		_collectionPersistenceFinderByG_C;
-
-	/**
-	 * Returns all the site friendly urls where groupId = &#63; and companyId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @return the matching site friendly urls
-	 */
-	@Override
-	public List<SiteFriendlyURL> findByG_C(long groupId, long companyId) {
-		return findByG_C(
-			groupId, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the site friendly urls where groupId = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of site friendly urls
-	 * @param end the upper bound of the range of site friendly urls (not inclusive)
-	 * @return the range of matching site friendly urls
-	 */
-	@Override
-	public List<SiteFriendlyURL> findByG_C(
-		long groupId, long companyId, int start, int end) {
-
-		return findByG_C(groupId, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<SiteFriendlyURL, NoSuchFriendlyURLException>
+			_collectionPersistenceFinderByG_C;
 
 	/**
 	 * Returns an ordered range of all the site friendly urls where groupId = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of site friendly urls
-	 * @param end the upper bound of the range of site friendly urls (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching site friendly urls
-	 */
-	@Override
-	public List<SiteFriendlyURL> findByG_C(
-		long groupId, long companyId, int start, int end,
-		OrderByComparator<SiteFriendlyURL> orderByComparator) {
-
-		return findByG_C(
-			groupId, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the site friendly urls where groupId = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SiteFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -574,16 +364,8 @@ public class SiteFriendlyURLPersistenceImpl
 			OrderByComparator<SiteFriendlyURL> orderByComparator)
 		throws NoSuchFriendlyURLException {
 
-		SiteFriendlyURL siteFriendlyURL = fetchByG_C_First(
-			groupId, companyId, orderByComparator);
-
-		if (siteFriendlyURL != null) {
-			return siteFriendlyURL;
-		}
-
-		throw new NoSuchFriendlyURLException(
-			_collectionPersistenceFinderByG_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, companyId}));
+		return _collectionPersistenceFinderByG_C.findFirst(
+			finderCache, new Object[] {groupId, companyId}, orderByComparator);
 	}
 
 	/**
@@ -628,8 +410,7 @@ public class SiteFriendlyURLPersistenceImpl
 			finderCache, new Object[] {groupId, companyId});
 	}
 
-	private FinderPath _finderPathFetchByC_F;
-	private UniquePersistenceFinder<SiteFriendlyURL>
+	private UniquePersistenceFinder<SiteFriendlyURL, NoSuchFriendlyURLException>
 		_uniquePersistenceFinderByC_F;
 
 	/**
@@ -644,34 +425,8 @@ public class SiteFriendlyURLPersistenceImpl
 	public SiteFriendlyURL findByC_F(long companyId, String friendlyURL)
 		throws NoSuchFriendlyURLException {
 
-		SiteFriendlyURL siteFriendlyURL = fetchByC_F(companyId, friendlyURL);
-
-		if (siteFriendlyURL == null) {
-			String message =
-				_uniquePersistenceFinderByC_F.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {companyId, friendlyURL});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFriendlyURLException(message);
-		}
-
-		return siteFriendlyURL;
-	}
-
-	/**
-	 * Returns the site friendly url where companyId = &#63; and friendlyURL = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param companyId the company ID
-	 * @param friendlyURL the friendly url
-	 * @return the matching site friendly url, or <code>null</code> if a matching site friendly url could not be found
-	 */
-	@Override
-	public SiteFriendlyURL fetchByC_F(long companyId, String friendlyURL) {
-		return fetchByC_F(companyId, friendlyURL, true);
+		return _uniquePersistenceFinderByC_F.find(
+			finderCache, new Object[] {companyId, friendlyURL});
 	}
 
 	/**
@@ -719,8 +474,7 @@ public class SiteFriendlyURLPersistenceImpl
 			finderCache, new Object[] {companyId, friendlyURL});
 	}
 
-	private FinderPath _finderPathFetchByG_C_L;
-	private UniquePersistenceFinder<SiteFriendlyURL>
+	private UniquePersistenceFinder<SiteFriendlyURL, NoSuchFriendlyURLException>
 		_uniquePersistenceFinderByG_C_L;
 
 	/**
@@ -737,38 +491,8 @@ public class SiteFriendlyURLPersistenceImpl
 			long groupId, long companyId, String languageId)
 		throws NoSuchFriendlyURLException {
 
-		SiteFriendlyURL siteFriendlyURL = fetchByG_C_L(
-			groupId, companyId, languageId);
-
-		if (siteFriendlyURL == null) {
-			String message =
-				_uniquePersistenceFinderByG_C_L.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, companyId, languageId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFriendlyURLException(message);
-		}
-
-		return siteFriendlyURL;
-	}
-
-	/**
-	 * Returns the site friendly url where groupId = &#63; and companyId = &#63; and languageId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param languageId the language ID
-	 * @return the matching site friendly url, or <code>null</code> if a matching site friendly url could not be found
-	 */
-	@Override
-	public SiteFriendlyURL fetchByG_C_L(
-		long groupId, long companyId, String languageId) {
-
-		return fetchByG_C_L(groupId, companyId, languageId, true);
+		return _uniquePersistenceFinderByG_C_L.find(
+			finderCache, new Object[] {groupId, companyId, languageId});
 	}
 
 	/**
@@ -823,8 +547,7 @@ public class SiteFriendlyURLPersistenceImpl
 			finderCache, new Object[] {groupId, companyId, languageId});
 	}
 
-	private FinderPath _finderPathFetchByC_F_L;
-	private UniquePersistenceFinder<SiteFriendlyURL>
+	private UniquePersistenceFinder<SiteFriendlyURL, NoSuchFriendlyURLException>
 		_uniquePersistenceFinderByC_F_L;
 
 	/**
@@ -841,38 +564,8 @@ public class SiteFriendlyURLPersistenceImpl
 			long companyId, String friendlyURL, String languageId)
 		throws NoSuchFriendlyURLException {
 
-		SiteFriendlyURL siteFriendlyURL = fetchByC_F_L(
-			companyId, friendlyURL, languageId);
-
-		if (siteFriendlyURL == null) {
-			String message =
-				_uniquePersistenceFinderByC_F_L.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {companyId, friendlyURL, languageId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFriendlyURLException(message);
-		}
-
-		return siteFriendlyURL;
-	}
-
-	/**
-	 * Returns the site friendly url where companyId = &#63; and friendlyURL = &#63; and languageId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param companyId the company ID
-	 * @param friendlyURL the friendly url
-	 * @param languageId the language ID
-	 * @return the matching site friendly url, or <code>null</code> if a matching site friendly url could not be found
-	 */
-	@Override
-	public SiteFriendlyURL fetchByC_F_L(
-		long companyId, String friendlyURL, String languageId) {
-
-		return fetchByC_F_L(companyId, friendlyURL, languageId, true);
+		return _uniquePersistenceFinderByC_F_L.find(
+			finderCache, new Object[] {companyId, friendlyURL, languageId});
 	}
 
 	/**
@@ -1152,167 +845,161 @@ public class SiteFriendlyURLPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_SITEFRIENDLYURL_WHERE, _SQL_COUNT_SITEFRIENDLYURL_WHERE,
-			SiteFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			SiteFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"siteFriendlyURL.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, SiteFriendlyURL::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, SiteFriendlyURL::getUuid,
-			SiteFriendlyURL::getGroupId);
+				"siteFriendlyURL.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, SiteFriendlyURL::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_SITEFRIENDLYURL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(SiteFriendlyURL::getUuid),
+				SiteFriendlyURL::getGroupId),
+			_SQL_SELECT_SITEFRIENDLYURL_WHERE, "",
 			new FinderColumn<>(
-				"siteFriendlyURL.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, SiteFriendlyURL::getUuid),
+				"siteFriendlyURL.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, SiteFriendlyURL::getUuid),
 			new FinderColumn<>(
 				"siteFriendlyURL.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, SiteFriendlyURL::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_SITEFRIENDLYURL_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_SITEFRIENDLYURL_WHERE,
 				_SQL_COUNT_SITEFRIENDLYURL_WHERE,
 				SiteFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"siteFriendlyURL.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, SiteFriendlyURL::getUuid),
+					"siteFriendlyURL.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					SiteFriendlyURL::getUuid),
 				new FinderColumn<>(
 					"siteFriendlyURL.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, SiteFriendlyURL::getCompanyId));
 
-		_finderPathWithPaginationFindByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "companyId"}, true);
-
-		_finderPathCountByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "companyId"}, false);
-
 		_collectionPersistenceFinderByG_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_C,
-			_finderPathWithoutPaginationFindByG_C, _finderPathCountByG_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "companyId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "companyId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "companyId"}, false),
 			_SQL_SELECT_SITEFRIENDLYURL_WHERE, _SQL_COUNT_SITEFRIENDLYURL_WHERE,
-			SiteFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			SiteFriendlyURLModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"siteFriendlyURL.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, SiteFriendlyURL::getGroupId),
+				true, true, SiteFriendlyURL::getGroupId),
 			new FinderColumn<>(
 				"siteFriendlyURL.", "companyId", FinderColumn.Type.LONG, "=",
 				true, true, SiteFriendlyURL::getCompanyId));
 
-		_finderPathFetchByC_F = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_F",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "friendlyURL"}, false,
-			SiteFriendlyURL::getCompanyId, SiteFriendlyURL::getFriendlyURL);
-
 		_uniquePersistenceFinderByC_F = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_F, _SQL_SELECT_SITEFRIENDLYURL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_F",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "friendlyURL"}, 0, 2, false,
+				SiteFriendlyURL::getCompanyId,
+				convertNullFunction(SiteFriendlyURL::getFriendlyURL)),
+			_SQL_SELECT_SITEFRIENDLYURL_WHERE, "",
 			new FinderColumn<>(
 				"siteFriendlyURL.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, SiteFriendlyURL::getCompanyId),
+				true, true, SiteFriendlyURL::getCompanyId),
 			new FinderColumn<>(
 				"siteFriendlyURL.", "friendlyURL", FinderColumn.Type.STRING,
 				"=", true, true, SiteFriendlyURL::getFriendlyURL));
 
-		_finderPathFetchByG_C_L = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_C_L",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "companyId", "languageId"}, false,
-			SiteFriendlyURL::getGroupId, SiteFriendlyURL::getCompanyId,
-			SiteFriendlyURL::getLanguageId);
-
 		_uniquePersistenceFinderByG_C_L = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_C_L, _SQL_SELECT_SITEFRIENDLYURL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_C_L",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"groupId", "companyId", "languageId"}, 0, 4,
+				false, SiteFriendlyURL::getGroupId,
+				SiteFriendlyURL::getCompanyId,
+				convertNullFunction(SiteFriendlyURL::getLanguageId)),
+			_SQL_SELECT_SITEFRIENDLYURL_WHERE, "",
 			new FinderColumn<>(
 				"siteFriendlyURL.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, SiteFriendlyURL::getGroupId),
+				true, true, SiteFriendlyURL::getGroupId),
 			new FinderColumn<>(
 				"siteFriendlyURL.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, SiteFriendlyURL::getCompanyId),
+				true, true, SiteFriendlyURL::getCompanyId),
 			new FinderColumn<>(
 				"siteFriendlyURL.", "languageId", FinderColumn.Type.STRING, "=",
 				true, true, SiteFriendlyURL::getLanguageId));
 
-		_finderPathFetchByC_F_L = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_F_L",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"companyId", "friendlyURL", "languageId"}, false,
-			SiteFriendlyURL::getCompanyId, SiteFriendlyURL::getFriendlyURL,
-			SiteFriendlyURL::getLanguageId);
-
 		_uniquePersistenceFinderByC_F_L = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_F_L, _SQL_SELECT_SITEFRIENDLYURL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_F_L",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"companyId", "friendlyURL", "languageId"}, 0, 6,
+				false, SiteFriendlyURL::getCompanyId,
+				convertNullFunction(SiteFriendlyURL::getFriendlyURL),
+				convertNullFunction(SiteFriendlyURL::getLanguageId)),
+			_SQL_SELECT_SITEFRIENDLYURL_WHERE, "",
 			new FinderColumn<>(
 				"siteFriendlyURL.", "companyId", FinderColumn.Type.LONG, "=",
-				true, false, SiteFriendlyURL::getCompanyId),
+				true, true, SiteFriendlyURL::getCompanyId),
 			new FinderColumn<>(
 				"siteFriendlyURL.", "friendlyURL", FinderColumn.Type.STRING,
-				"=", true, false, SiteFriendlyURL::getFriendlyURL),
+				"=", true, true, SiteFriendlyURL::getFriendlyURL),
 			new FinderColumn<>(
 				"siteFriendlyURL.", "languageId", FinderColumn.Type.STRING, "=",
 				true, true, SiteFriendlyURL::getLanguageId));
@@ -1386,4 +1073,4 @@ public class SiteFriendlyURLPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-2092095747
+// LIFERAY-SERVICE-BUILDER-HASH:73458047

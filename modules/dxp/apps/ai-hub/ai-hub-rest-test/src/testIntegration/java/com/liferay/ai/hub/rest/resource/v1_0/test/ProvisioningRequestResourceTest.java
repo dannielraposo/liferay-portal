@@ -6,33 +6,45 @@
 package com.liferay.ai.hub.rest.resource.v1_0.test;
 
 import com.liferay.account.model.AccountEntry;
+import com.liferay.account.model.AccountRole;
 import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.account.service.AccountEntryUserRelLocalService;
+import com.liferay.account.service.AccountRoleLocalService;
 import com.liferay.ai.hub.rest.client.dto.v1_0.ProvisioningRequest;
+import com.liferay.ai.hub.rest.client.dto.v1_0.UserAccount;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.oauth2.provider.constants.GrantType;
+import com.liferay.oauth2.provider.model.OAuth2Application;
+import com.liferay.oauth2.provider.service.OAuth2ApplicationLocalService;
 import com.liferay.object.model.ObjectDefinition;
-import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
+import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
+import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.site.initializer.SiteInitializer;
 import com.liferay.site.initializer.SiteInitializerRegistry;
 
-import java.io.Serializable;
-
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -60,6 +72,10 @@ public class ProvisioningRequestResourceTest
 
 		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 
+		_group = GroupTestUtil.addGroup(
+			GroupConstants.DEFAULT_PARENT_GROUP_ID, "AI Hub",
+			ServiceContextTestUtil.getServiceContext());
+
 		ServiceContextThreadLocal.pushServiceContext(
 			ServiceContextTestUtil.getServiceContext(
 				TestPropsValues.getGroupId(), TestPropsValues.getUserId()));
@@ -68,11 +84,12 @@ public class ProvisioningRequestResourceTest
 			_siteInitializerRegistry.getSiteInitializer(
 				"com.liferay.ai.hub.site.initializer");
 
-		siteInitializer.initialize(TestPropsValues.getGroupId());
+		siteInitializer.initialize(_group.getGroupId());
 	}
 
 	@AfterClass
-	public static void tearDownClass() {
+	public static void tearDownClass() throws Exception {
+		GroupLocalServiceUtil.deleteGroup(_group);
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
 		PrincipalThreadLocal.setName(_originalName);
 		ServiceContextThreadLocal.popServiceContext();
@@ -81,62 +98,229 @@ public class ProvisioningRequestResourceTest
 	@Override
 	@Test
 	public void testPostProvisioning() throws Exception {
-		ProvisioningRequest provisioningRequest = randomProvisioningRequest();
+		UserAccount[] userAccounts = {
+			new UserAccount() {
+				{
+					emailAddress =
+						StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+							"@liferay.com";
+					firstName = RandomTestUtil.randomString();
+					lastName = RandomTestUtil.randomString();
+					screenName = StringUtil.toLowerCase(
+						RandomTestUtil.randomString());
+				}
+			},
+			new UserAccount() {
+				{
+					emailAddress = "test@liferay.com";
+				}
+			}
+		};
 
-		String customerName = provisioningRequest.getCustomerName();
+		ProvisioningRequest provisioningRequest1 = randomProvisioningRequest(
+			userAccounts);
 
-		provisioningRequestResource.postProvisioning(provisioningRequest);
+		ProvisioningRequest postProvisioningRequest =
+			provisioningRequestResource.postProvisioning(provisioningRequest1);
 
-		AccountEntry accountEntry =
+		assertEquals(provisioningRequest1, postProvisioningRequest);
+
+		AccountEntry customerAccountEntry =
+			_accountEntryLocalService.getAccountEntry(
+				postProvisioningRequest.getAccountEntryId());
+
+		_assertAccountEntry(customerAccountEntry, provisioningRequest1);
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				fetchObjectDefinitionByExternalReferenceCode(
+					"L_AI_HUB_CONFIGURATION", TestPropsValues.getCompanyId());
+
+		Assert.assertNotNull(
+			_objectEntryLocalService.fetchObjectEntry(
+				customerAccountEntry.getAccountEntryId() +
+					"-ai-hub-configuration",
+				0, objectDefinition.getObjectDefinitionId()));
+
+		AccountEntry aiHubAccountEntry =
 			_accountEntryLocalService.getAccountEntryByExternalReferenceCode(
-				customerName, TestPropsValues.getCompanyId());
+				"L_AI_HUB", TestPropsValues.getCompanyId());
 
-		Assert.assertEquals(customerName, accountEntry.getName());
+		_assertServiceAccountUsers(aiHubAccountEntry, customerAccountEntry);
+
+		_assertOAuth2Application(customerAccountEntry, provisioningRequest1);
+
+		_assertUserAccounts(
+			aiHubAccountEntry, customerAccountEntry,
+			provisioningRequest1.getUserAccounts(),
+			postProvisioningRequest.getUserAccounts());
+
+		ProvisioningRequest provisioningRequest2 =
+			provisioningRequestResource.postProvisioning(provisioningRequest1);
+
+		assertEquals(provisioningRequest1, provisioningRequest2);
+
+		Assert.assertEquals(
+			Long.valueOf(customerAccountEntry.getAccountEntryId()),
+			provisioningRequest2.getAccountEntryId());
+
+		Assert.assertNotNull(
+			_objectEntryLocalService.fetchObjectEntry(
+				customerAccountEntry.getAccountEntryId() +
+					"-ai-hub-configuration",
+				0, objectDefinition.getObjectDefinitionId()));
+	}
+
+	@Override
+	protected String[] getAdditionalAssertFieldNames() {
+		return new String[] {
+			"accountEntryExternalReferenceCode", "accountEntryName"
+		};
+	}
+
+	protected ProvisioningRequest randomProvisioningRequest(
+			UserAccount[] userAccounts)
+		throws Exception {
+
+		ProvisioningRequest provisioningRequest =
+			super.randomProvisioningRequest();
+
+		provisioningRequest.setUserAccounts(userAccounts);
+
+		return provisioningRequest;
+	}
+
+	private void _assertAccountEntry(
+		AccountEntry accountEntry, ProvisioningRequest provisioningRequest) {
+
+		Assert.assertEquals(
+			provisioningRequest.getAccountEntryExternalReferenceCode(),
+			accountEntry.getExternalReferenceCode());
+		Assert.assertEquals(
+			provisioningRequest.getAccountEntryName(), accountEntry.getName());
+	}
+
+	private void _assertOAuth2Application(
+			AccountEntry accountEntry, ProvisioningRequest provisioningRequest)
+		throws Exception {
+
+		OAuth2Application oAuth2Application =
+			_oAuth2ApplicationLocalService.
+				fetchOAuth2ApplicationByExternalReferenceCode(
+					accountEntry.getAccountEntryId() +
+						"-ai-hub-oauth2-application",
+					TestPropsValues.getCompanyId());
+
+		Assert.assertEquals(
+			Collections.singletonList(GrantType.CLIENT_CREDENTIALS),
+			oAuth2Application.getAllowedGrantTypesList());
+		Assert.assertEquals(
+			provisioningRequest.getAccountEntryName(),
+			oAuth2Application.getName());
+	}
+
+	private void _assertServiceAccountUser(
+			AccountEntry aiHubAccountEntry, AccountEntry customerAccountEntry,
+			String screenName)
+		throws Exception {
 
 		User user = _userLocalService.getUserByScreenName(
-			TestPropsValues.getCompanyId(), customerName + "-service-account");
+			TestPropsValues.getCompanyId(), screenName);
 
 		Assert.assertEquals(UserConstants.TYPE_SERVICE_ACCOUNT, user.getType());
 
 		Assert.assertNotNull(
 			_accountEntryUserRelLocalService.fetchAccountEntryUserRel(
-				accountEntry.getAccountEntryId(), user.getUserId()));
-
-		ObjectDefinition objectDefinition =
-			_objectDefinitionLocalService.
-				getObjectDefinitionByExternalReferenceCode(
-					"L_AI_HUB_QUOTA", TestPropsValues.getCompanyId());
-
-		long accountEntryId = accountEntry.getAccountEntryId();
-
-		_assertQuotaObjectEntry(
-			objectDefinition, "guest-quota-" + accountEntryId);
-		_assertQuotaObjectEntry(objectDefinition, "quota-" + accountEntryId);
-
-		accountEntry =
-			_accountEntryLocalService.getAccountEntryByExternalReferenceCode(
-				"L_AI_HUB", TestPropsValues.getCompanyId());
-
+				aiHubAccountEntry.getAccountEntryId(), user.getUserId()));
 		Assert.assertNotNull(
 			_accountEntryUserRelLocalService.fetchAccountEntryUserRel(
-				accountEntry.getAccountEntryId(), user.getUserId()));
+				customerAccountEntry.getAccountEntryId(), user.getUserId()));
 	}
 
-	private void _assertQuotaObjectEntry(
-		ObjectDefinition objectDefinition, String externalReferenceCode) {
+	private void _assertServiceAccountUsers(
+			AccountEntry aiHubAccountEntry, AccountEntry customerAccountEntry)
+		throws Exception {
 
-		ObjectEntry objectEntry = _objectEntryLocalService.fetchObjectEntry(
-			externalReferenceCode, 0, objectDefinition.getObjectDefinitionId());
+		_assertServiceAccountUser(
+			aiHubAccountEntry, customerAccountEntry,
+			customerAccountEntry.getAccountEntryId() + "-service-account");
+		_assertServiceAccountUser(
+			aiHubAccountEntry, customerAccountEntry,
+			customerAccountEntry.getAccountEntryId() +
+				"-guest-service-account");
+	}
 
-		Assert.assertNotNull(externalReferenceCode, objectEntry);
-
-		Map<String, Serializable> values = objectEntry.getValues();
+	private void _assertUserAccounts(
+			AccountEntry aiHubAccountEntry, AccountEntry customerAccountEntry,
+			UserAccount[] expectedUserAccounts,
+			UserAccount[] actualUserAccounts)
+		throws Exception {
 
 		Assert.assertEquals(
-			33333333, GetterUtil.getInteger(values.get("limit")));
-		Assert.assertEquals(0, GetterUtil.getInteger(values.get("usage")));
+			Arrays.toString(actualUserAccounts), expectedUserAccounts.length,
+			actualUserAccounts.length);
+
+		Role role = _roleLocalService.getRole(
+			aiHubAccountEntry.getCompanyId(), "AI Hub Agent Manager");
+
+		AccountRole accountRole =
+			_accountRoleLocalService.getAccountRoleByRoleId(role.getRoleId());
+
+		for (int i = 0; i < actualUserAccounts.length; i++) {
+			UserAccount actualUserAccount = actualUserAccounts[i];
+			UserAccount expectedUserAccount = expectedUserAccounts[i];
+
+			Assert.assertEquals(
+				expectedUserAccount.getEmailAddress(),
+				actualUserAccount.getEmailAddress());
+
+			if (Validator.isNull(expectedUserAccount.getScreenName())) {
+				Assert.assertNotNull(actualUserAccount.getFirstName());
+				Assert.assertNotNull(actualUserAccount.getLastName());
+				Assert.assertNotNull(actualUserAccount.getScreenName());
+			}
+			else {
+				Assert.assertEquals(
+					expectedUserAccount.getFirstName(),
+					actualUserAccount.getFirstName());
+				Assert.assertEquals(
+					expectedUserAccount.getLastName(),
+					actualUserAccount.getLastName());
+				Assert.assertEquals(
+					expectedUserAccount.getScreenName(),
+					actualUserAccount.getScreenName());
+			}
+
+			User user = _userLocalService.getUserByEmailAddress(
+				TestPropsValues.getCompanyId(),
+				actualUserAccount.getEmailAddress());
+
+			Assert.assertEquals(UserConstants.TYPE_REGULAR, user.getType());
+
+			Assert.assertTrue(
+				_accountEntryUserRelLocalService.hasAccountEntryUserRel(
+					aiHubAccountEntry.getAccountEntryId(), user.getUserId()));
+			Assert.assertTrue(
+				_accountEntryUserRelLocalService.hasAccountEntryUserRel(
+					customerAccountEntry.getAccountEntryId(),
+					user.getUserId()));
+
+			Assert.assertTrue(
+				_accountRoleLocalService.hasUserAccountRole(
+					customerAccountEntry.getAccountEntryId(),
+					accountRole.getAccountRoleId(), user.getUserId()));
+			Assert.assertTrue(
+				_accountRoleLocalService.hasUserAccountRole(
+					customerAccountEntry.getAccountEntryId(),
+					accountRole.getAccountRoleId(), user.getUserId()));
+
+			Assert.assertTrue(
+				_userLocalService.hasGroupUser(
+					_group.getGroupId(), user.getUserId()));
+		}
 	}
 
+	private static Group _group;
 	private static String _originalName;
 	private static PermissionChecker _originalPermissionChecker;
 
@@ -150,10 +334,19 @@ public class ProvisioningRequestResourceTest
 	private AccountEntryUserRelLocalService _accountEntryUserRelLocalService;
 
 	@Inject
+	private AccountRoleLocalService _accountRoleLocalService;
+
+	@Inject
+	private OAuth2ApplicationLocalService _oAuth2ApplicationLocalService;
+
+	@Inject
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Inject
 	private ObjectEntryLocalService _objectEntryLocalService;
+
+	@Inject
+	private RoleLocalService _roleLocalService;
 
 	@Inject
 	private UserLocalService _userLocalService;

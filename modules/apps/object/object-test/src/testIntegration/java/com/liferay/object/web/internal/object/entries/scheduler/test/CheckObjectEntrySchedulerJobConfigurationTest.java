@@ -19,7 +19,6 @@ import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectEntryVersionLocalService;
 import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.petra.function.UnsafeRunnable;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -49,6 +48,7 @@ import java.io.Serializable;
 
 import java.time.LocalDate;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -201,13 +201,35 @@ public class CheckObjectEntrySchedulerJobConfigurationTest {
 			objectEntry2.getObjectEntryId());
 
 		Assert.assertTrue(objectEntry2.isExpired());
+
+		ObjectEntry objectEntry3 = ObjectEntryTestUtil.addObjectEntry(
+			0, _objectDefinition.getObjectDefinitionId(),
+			HashMapBuilder.<String, Serializable>put(
+				_OBJECT_FIELD_NAME, RandomTestUtil.randomString()
+			).build());
+
+		objectEntry3 = _objectEntryLocalService.moveObjectEntryToTrash(
+			TestPropsValues.getUserId(), objectEntry3,
+			ServiceContextTestUtil.getServiceContext());
+
+		Assert.assertTrue(objectEntry3.isInTrash());
+
+		_updateExpirationDate(new Date(), objectEntry3);
+
+		_jobExecutorUnsafeRunnable.run();
+
+		objectEntry3 = _objectEntryLocalService.getObjectEntry(
+			objectEntry3.getObjectEntryId());
+
+		Assert.assertFalse(objectEntry3.isExpired());
+		Assert.assertTrue(objectEntry3.isInTrash());
 	}
 
 	@Test
 	public void testCheckObjectEntryReviewDate() throws Exception {
 		Date date = new Date();
 
-		ObjectEntry objectEntry = ObjectEntryTestUtil.addObjectEntry(
+		ObjectEntry objectEntry1 = ObjectEntryTestUtil.addObjectEntry(
 			0, _objectDefinition.getObjectDefinitionId(),
 			HashMapBuilder.<String, Serializable>put(
 				_OBJECT_FIELD_NAME, RandomTestUtil.randomString()
@@ -215,7 +237,7 @@ public class CheckObjectEntrySchedulerJobConfigurationTest {
 				"reviewDate", date
 			).build());
 
-		ObjectEntryTestUtil.addObjectEntry(
+		ObjectEntry objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
 			0, _objectDefinition.getObjectDefinitionId(),
 			HashMapBuilder.<String, Serializable>put(
 				_OBJECT_FIELD_NAME, RandomTestUtil.randomString()
@@ -226,25 +248,40 @@ public class CheckObjectEntrySchedulerJobConfigurationTest {
 
 		_jobExecutorUnsafeRunnable.run();
 
-		List<UserNotificationEvent> userNotificationEvents =
-			_userNotificationEventLocalService.getUserNotificationEvents(
-				objectEntry.getUserId());
+		JSONObject payloadJSONObject = null;
+		List<UserNotificationEvent> testUserNotificationEvents =
+			new ArrayList<>();
+
+		for (UserNotificationEvent userNotificationEvent :
+				_userNotificationEventLocalService.getUserNotificationEvents(
+					objectEntry1.getUserId())) {
+
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+				userNotificationEvent.getPayload());
+
+			long classPK = jsonObject.getLong("classPK");
+
+			if ((classPK == objectEntry1.getObjectEntryId()) ||
+				(classPK == objectEntry2.getObjectEntryId())) {
+
+				payloadJSONObject = jsonObject;
+				testUserNotificationEvents.add(userNotificationEvent);
+			}
+		}
 
 		Assert.assertEquals(
-			userNotificationEvents.toString(), 1,
-			userNotificationEvents.size());
-
-		UserNotificationEvent userNotificationEvent =
-			userNotificationEvents.get(0);
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-			userNotificationEvent.getPayload());
+			testUserNotificationEvents.toString(), 1,
+			testUserNotificationEvents.size());
 
 		Assert.assertEquals(
-			StringBundler.concat(
-				"The object entry ", objectEntry.getTitleValue(),
-				" has reached its review date."),
-			jsonObject.get("notificationMessage"));
+			objectEntry1.getObjectEntryId(),
+			payloadJSONObject.getLong("classPK"));
+		Assert.assertEquals(
+			objectEntry1.getTitleValue(),
+			payloadJSONObject.getString("notificationMessageArg"));
+		Assert.assertEquals(
+			"x-has-reached-its-review-date",
+			payloadJSONObject.getString("notificationMessageKey"));
 	}
 
 	@Test

@@ -32,6 +32,7 @@ import com.liferay.object.related.models.ObjectRelatedModelsProvider;
 import com.liferay.object.related.models.ObjectRelatedModelsProviderRegistry;
 import com.liferay.object.rest.dto.v1_0.AuditEvent;
 import com.liferay.object.rest.dto.v1_0.AuditFieldChange;
+import com.liferay.object.rest.dto.v1_0.CollaboratorBrief;
 import com.liferay.object.rest.dto.v1_0.ObjectDefinitionBrief;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.dto.v1_0.Status;
@@ -47,6 +48,7 @@ import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryFolderLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectEntryService;
+import com.liferay.object.service.ObjectEntryVersionLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.object.system.SystemObjectDefinitionManager;
@@ -103,6 +105,9 @@ import com.liferay.portal.vulcan.jaxrs.extension.ExtendedEntity;
 import com.liferay.portal.vulcan.permission.Permission;
 import com.liferay.portal.vulcan.permission.PermissionUtil;
 import com.liferay.portal.vulcan.scope.Scope;
+import com.liferay.sharing.model.SharingEntry;
+import com.liferay.sharing.security.permission.SharingEntryAction;
+import com.liferay.sharing.service.SharingEntryLocalService;
 import com.liferay.trash.model.TrashEntry;
 import com.liferay.trash.service.TrashEntryLocalService;
 
@@ -264,8 +269,6 @@ public class ObjectEntryDTOConverter
 			() -> _toAuditEvents(
 				dtoConverterContext, objectDefinition,
 				serviceBuilderObjectEntry));
-		objectEntry.setComments(
-			() -> _toComments(objectDefinition, serviceBuilderObjectEntry));
 		objectEntry.setCreator(
 			() -> {
 				long userId = _getAttribute(
@@ -329,6 +332,35 @@ public class ObjectEntryDTOConverter
 						serviceBuilderObjectEntry.getObjectEntryId()),
 					AssetTag.NAME_ACCESSOR);
 			});
+		objectEntry.setModifiedBy(
+			() -> NestedFieldsSupplier.supply(
+				"modifiedBy",
+				nestedFieldNames -> {
+					if (objectEntryVersion != null) {
+						return CreatorUtil.toCreator(
+							_portal, dtoConverterContext.getUriInfo(),
+							_userLocalService.fetchUser(
+								objectEntryVersion.getUserId()));
+					}
+
+					if (!objectDefinition.isEnableObjectEntryVersioning()) {
+						return null;
+					}
+
+					ObjectEntryVersion latestObjectEntryVersion =
+						_objectEntryVersionLocalService.
+							fetchLatestObjectEntryVersion(
+								serviceBuilderObjectEntry.getObjectEntryId());
+
+					if (latestObjectEntryVersion == null) {
+						return null;
+					}
+
+					return CreatorUtil.toCreator(
+						_portal, dtoConverterContext.getUriInfo(),
+						_userLocalService.fetchUser(
+							latestObjectEntryVersion.getUserId()));
+				}));
 		objectEntry.setObjectEntryFolderExternalReferenceCode(
 			() -> {
 				ObjectEntryFolder objectEntryFolder =
@@ -413,12 +445,17 @@ public class ObjectEntryDTOConverter
 					return _toSystemProperties(
 						serviceBuilderObjectEntry.getGroupId(),
 						dtoConverterContext.getLocale(), objectDefinition,
+						serviceBuilderObjectEntry.getObjectEntryId(),
+						serviceBuilderObjectEntry,
+						dtoConverterContext.getUserId(),
 						objectEntryVersion.getVersion());
 				}
 
 				return _toSystemProperties(
 					serviceBuilderObjectEntry.getGroupId(),
 					dtoConverterContext.getLocale(), objectDefinition,
+					serviceBuilderObjectEntry.getObjectEntryId(),
+					serviceBuilderObjectEntry, dtoConverterContext.getUserId(),
 					serviceBuilderObjectEntry.getVersion());
 			});
 		objectEntry.setTaxonomyCategoryBriefs(
@@ -711,6 +748,50 @@ public class ObjectEntryDTOConverter
 			String.valueOf(_portal.getSiteDefaultLocale(groupId)));
 	}
 
+	private Comment[] _getNestedComments(
+			ObjectDefinition objectDefinition,
+			com.liferay.object.model.ObjectEntry objectEntry)
+		throws Exception {
+
+		return NestedFieldsSupplier.supply(
+			"systemProperties.comments",
+			nestedFieldNames -> {
+				if ((!Objects.equals(
+						objectDefinition.getScope(),
+						ObjectDefinitionConstants.SCOPE_SITE) &&
+					 !FeatureFlagManagerUtil.isEnabled(
+						 objectDefinition.getCompanyId(), "LPD-43996")) ||
+					!objectDefinition.isEnableComments() ||
+					!_discussionPermission.hasViewPermission(
+						PermissionThreadLocal.getPermissionChecker(),
+						objectDefinition.getCompanyId(),
+						objectEntry.getGroupId(),
+						objectDefinition.getClassName(),
+						objectEntry.getObjectEntryId())) {
+
+					return null;
+				}
+
+				return TransformUtil.transformToArray(
+					_commentManager.getComments(
+						objectDefinition.getClassName(),
+						objectEntry.getObjectEntryId(),
+						WorkflowConstants.STATUS_APPROVED, QueryUtil.ALL_POS,
+						QueryUtil.ALL_POS),
+					comment -> {
+						if (comment.isRoot() &&
+							!LazyReferencingThreadLocal.isEnabled()) {
+
+							return null;
+						}
+
+						return CommentUtil.toComment(
+							comment, _commentManager, PortalUtil.getPortal());
+					},
+					Comment.class);
+			});
+	}
+
 	private Map<String, UnsafeSupplier<Object, Exception>>
 			_getNestedFieldsRelatedProperties(
 				DTOConverterContext dtoConverterContext, long groupId,
@@ -905,8 +986,8 @@ public class ObjectEntryDTOConverter
 					_auditEventLocalService.getAuditEvents(
 						0, 0, 0, null, null, null, null, null,
 						String.valueOf(objectEntry.getObjectEntryId()), null,
-						null, null, 0, null, false, QueryUtil.ALL_POS,
-						QueryUtil.ALL_POS),
+						null, null, null, null, 0, null, false,
+						QueryUtil.ALL_POS, QueryUtil.ALL_POS),
 					auditEvent -> {
 						AuditEvent newAuditEvent = new AuditEvent();
 
@@ -960,48 +1041,18 @@ public class ObjectEntryDTOConverter
 			AuditFieldChange.class);
 	}
 
-	private Comment[] _toComments(
-			ObjectDefinition objectDefinition,
-			com.liferay.object.model.ObjectEntry objectEntry)
-		throws Exception {
-
-		return NestedFieldsSupplier.supply(
-			"comments",
-			nestedFieldNames -> {
-				if ((!Objects.equals(
-						objectDefinition.getScope(),
-						ObjectDefinitionConstants.SCOPE_SITE) &&
-					 !FeatureFlagManagerUtil.isEnabled(
-						 objectDefinition.getCompanyId(), "LPD-43996")) ||
-					!objectDefinition.isEnableComments() ||
-					!_discussionPermission.hasViewPermission(
-						PermissionThreadLocal.getPermissionChecker(),
-						objectDefinition.getCompanyId(),
-						objectEntry.getGroupId(),
-						objectDefinition.getClassName(),
-						objectEntry.getObjectEntryId())) {
-
-					return null;
-				}
-
-				return TransformUtil.transformToArray(
-					_commentManager.getComments(
-						objectDefinition.getClassName(),
-						objectEntry.getObjectEntryId(),
-						WorkflowConstants.STATUS_APPROVED, QueryUtil.ALL_POS,
-						QueryUtil.ALL_POS),
-					comment -> {
-						if (comment.isRoot() &&
-							!LazyReferencingThreadLocal.isEnabled()) {
-
-							return null;
-						}
-
-						return CommentUtil.toComment(
-							comment, _commentManager, PortalUtil.getPortal());
-					},
-					Comment.class);
-			});
+	private CollaboratorBrief _toCollaboratorBrief(SharingEntry sharingEntry) {
+		return new CollaboratorBrief() {
+			{
+				setActionIds(
+					() -> TransformUtil.transformToArray(
+						SharingEntryAction.getSharingEntryActions(
+							sharingEntry.getActionIds()),
+						SharingEntryAction::getActionId, String.class));
+				setDateExpired(sharingEntry::getExpirationDate);
+				setShare(sharingEntry::isShareable);
+			}
+		};
 	}
 
 	private ExtendedEntity _toExtendedEntity(
@@ -1249,25 +1300,46 @@ public class ObjectEntryDTOConverter
 
 	private SystemProperties _toSystemProperties(
 			long groupId, Locale locale, ObjectDefinition objectDefinition,
-			int versionInt)
+			long objectEntryId,
+			com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry,
+			long userId, int versionInt)
 		throws Exception {
 
 		Group group = _groupLocalService.fetchGroup(groupId);
-
+		Comment[] nestedComments = _getNestedComments(
+			objectDefinition, serviceBuilderObjectEntry);
 		ObjectDefinitionBrief nestedObjectDefinitionBrief =
 			NestedFieldsSupplier.supply(
 				"systemProperties.objectDefinitionBrief",
 				nestedField -> _toObjectDefinitionBrief(
 					locale, objectDefinition));
+		SharingEntry nestedSharingEntry = NestedFieldsSupplier.supply(
+			"systemProperties.collaboratorBrief",
+			nestedField -> _sharingEntryLocalService.fetchSharingEntry(
+				userId,
+				_classNameLocalService.getClassNameId(
+					objectDefinition.getClassName()),
+				objectEntryId));
 
 		if (!objectDefinition.isEnableObjectEntryVersioning() &&
-			(group == null) && (nestedObjectDefinitionBrief == null)) {
+			(group == null) && (nestedComments == null) &&
+			(nestedObjectDefinitionBrief == null) &&
+			(nestedSharingEntry == null)) {
 
 			return null;
 		}
 
 		return new SystemProperties() {
 			{
+				setCollaboratorBrief(
+					() -> {
+						if (nestedSharingEntry == null) {
+							return null;
+						}
+
+						return _toCollaboratorBrief(nestedSharingEntry);
+					});
+				setComments(() -> nestedComments);
 				setObjectDefinitionBrief(() -> nestedObjectDefinitionBrief);
 				setScope(
 					() -> {
@@ -1341,6 +1413,9 @@ public class ObjectEntryDTOConverter
 	private ObjectEntryService _objectEntryService;
 
 	@Reference
+	private ObjectEntryVersionLocalService _objectEntryVersionLocalService;
+
+	@Reference
 	private ObjectFieldBusinessTypeRegistry _objectFieldBusinessTypeRegistry;
 
 	@Reference
@@ -1364,6 +1439,9 @@ public class ObjectEntryDTOConverter
 
 	@Reference
 	private ResourceActionLocalService _resourceActionLocalService;
+
+	@Reference
+	private SharingEntryLocalService _sharingEntryLocalService;
 
 	@Reference
 	private SystemObjectDefinitionManagerRegistry

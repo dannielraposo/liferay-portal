@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -77,68 +76,15 @@ public class MFAFIDO2CredentialEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUserId;
-	private FinderPath _finderPathWithoutPaginationFindByUserId;
-	private FinderPath _finderPathCountByUserId;
-	private CollectionPersistenceFinder<MFAFIDO2CredentialEntry>
-		_collectionPersistenceFinderByUserId;
-
-	/**
-	 * Returns all the mfafido2 credential entries where userId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @return the matching mfafido2 credential entries
-	 */
-	@Override
-	public List<MFAFIDO2CredentialEntry> findByUserId(long userId) {
-		return findByUserId(userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the mfafido2 credential entries where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MFAFIDO2CredentialEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of mfafido2 credential entries
-	 * @param end the upper bound of the range of mfafido2 credential entries (not inclusive)
-	 * @return the range of matching mfafido2 credential entries
-	 */
-	@Override
-	public List<MFAFIDO2CredentialEntry> findByUserId(
-		long userId, int start, int end) {
-
-		return findByUserId(userId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MFAFIDO2CredentialEntry, NoSuchMFAFIDO2CredentialEntryException>
+			_collectionPersistenceFinderByUserId;
 
 	/**
 	 * Returns an ordered range of all the mfafido2 credential entries where userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MFAFIDO2CredentialEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of mfafido2 credential entries
-	 * @param end the upper bound of the range of mfafido2 credential entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching mfafido2 credential entries
-	 */
-	@Override
-	public List<MFAFIDO2CredentialEntry> findByUserId(
-		long userId, int start, int end,
-		OrderByComparator<MFAFIDO2CredentialEntry> orderByComparator) {
-
-		return findByUserId(userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the mfafido2 credential entries where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MFAFIDO2CredentialEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MFAFIDO2CredentialEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -173,16 +119,8 @@ public class MFAFIDO2CredentialEntryPersistenceImpl
 			OrderByComparator<MFAFIDO2CredentialEntry> orderByComparator)
 		throws NoSuchMFAFIDO2CredentialEntryException {
 
-		MFAFIDO2CredentialEntry mfaFIDO2CredentialEntry = fetchByUserId_First(
-			userId, orderByComparator);
-
-		if (mfaFIDO2CredentialEntry != null) {
-			return mfaFIDO2CredentialEntry;
-		}
-
-		throw new NoSuchMFAFIDO2CredentialEntryException(
-			_collectionPersistenceFinderByUserId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId}));
+		return _collectionPersistenceFinderByUserId.findFirst(
+			finderCache, new Object[] {userId}, orderByComparator);
 	}
 
 	/**
@@ -224,72 +162,15 @@ public class MFAFIDO2CredentialEntryPersistenceImpl
 			finderCache, new Object[] {userId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByCredentialKeyHash;
-	private FinderPath _finderPathWithoutPaginationFindByCredentialKeyHash;
-	private FinderPath _finderPathCountByCredentialKeyHash;
-	private CollectionPersistenceFinder<MFAFIDO2CredentialEntry>
-		_collectionPersistenceFinderByCredentialKeyHash;
-
-	/**
-	 * Returns all the mfafido2 credential entries where credentialKeyHash = &#63;.
-	 *
-	 * @param credentialKeyHash the credential key hash
-	 * @return the matching mfafido2 credential entries
-	 */
-	@Override
-	public List<MFAFIDO2CredentialEntry> findByCredentialKeyHash(
-		long credentialKeyHash) {
-
-		return findByCredentialKeyHash(
-			credentialKeyHash, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the mfafido2 credential entries where credentialKeyHash = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MFAFIDO2CredentialEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param credentialKeyHash the credential key hash
-	 * @param start the lower bound of the range of mfafido2 credential entries
-	 * @param end the upper bound of the range of mfafido2 credential entries (not inclusive)
-	 * @return the range of matching mfafido2 credential entries
-	 */
-	@Override
-	public List<MFAFIDO2CredentialEntry> findByCredentialKeyHash(
-		long credentialKeyHash, int start, int end) {
-
-		return findByCredentialKeyHash(credentialKeyHash, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MFAFIDO2CredentialEntry, NoSuchMFAFIDO2CredentialEntryException>
+			_collectionPersistenceFinderByCredentialKeyHash;
 
 	/**
 	 * Returns an ordered range of all the mfafido2 credential entries where credentialKeyHash = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MFAFIDO2CredentialEntryModelImpl</code>.
-	 * </p>
-	 *
-	 * @param credentialKeyHash the credential key hash
-	 * @param start the lower bound of the range of mfafido2 credential entries
-	 * @param end the upper bound of the range of mfafido2 credential entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching mfafido2 credential entries
-	 */
-	@Override
-	public List<MFAFIDO2CredentialEntry> findByCredentialKeyHash(
-		long credentialKeyHash, int start, int end,
-		OrderByComparator<MFAFIDO2CredentialEntry> orderByComparator) {
-
-		return findByCredentialKeyHash(
-			credentialKeyHash, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the mfafido2 credential entries where credentialKeyHash = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MFAFIDO2CredentialEntryModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MFAFIDO2CredentialEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param credentialKeyHash the credential key hash
@@ -324,19 +205,8 @@ public class MFAFIDO2CredentialEntryPersistenceImpl
 			OrderByComparator<MFAFIDO2CredentialEntry> orderByComparator)
 		throws NoSuchMFAFIDO2CredentialEntryException {
 
-		MFAFIDO2CredentialEntry mfaFIDO2CredentialEntry =
-			fetchByCredentialKeyHash_First(
-				credentialKeyHash, orderByComparator);
-
-		if (mfaFIDO2CredentialEntry != null) {
-			return mfaFIDO2CredentialEntry;
-		}
-
-		throw new NoSuchMFAFIDO2CredentialEntryException(
-			_collectionPersistenceFinderByCredentialKeyHash.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {credentialKeyHash}));
+		return _collectionPersistenceFinderByCredentialKeyHash.findFirst(
+			finderCache, new Object[] {credentialKeyHash}, orderByComparator);
 	}
 
 	/**
@@ -378,9 +248,9 @@ public class MFAFIDO2CredentialEntryPersistenceImpl
 			finderCache, new Object[] {credentialKeyHash});
 	}
 
-	private FinderPath _finderPathFetchByU_C;
-	private UniquePersistenceFinder<MFAFIDO2CredentialEntry>
-		_uniquePersistenceFinderByU_C;
+	private UniquePersistenceFinder
+		<MFAFIDO2CredentialEntry, NoSuchMFAFIDO2CredentialEntryException>
+			_uniquePersistenceFinderByU_C;
 
 	/**
 	 * Returns the mfafido2 credential entry where userId = &#63; and credentialKeyHash = &#63; or throws a <code>NoSuchMFAFIDO2CredentialEntryException</code> if it could not be found.
@@ -395,37 +265,8 @@ public class MFAFIDO2CredentialEntryPersistenceImpl
 			long userId, long credentialKeyHash)
 		throws NoSuchMFAFIDO2CredentialEntryException {
 
-		MFAFIDO2CredentialEntry mfaFIDO2CredentialEntry = fetchByU_C(
-			userId, credentialKeyHash);
-
-		if (mfaFIDO2CredentialEntry == null) {
-			String message =
-				_uniquePersistenceFinderByU_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {userId, credentialKeyHash});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMFAFIDO2CredentialEntryException(message);
-		}
-
-		return mfaFIDO2CredentialEntry;
-	}
-
-	/**
-	 * Returns the mfafido2 credential entry where userId = &#63; and credentialKeyHash = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param userId the user ID
-	 * @param credentialKeyHash the credential key hash
-	 * @return the matching mfafido2 credential entry, or <code>null</code> if a matching mfafido2 credential entry could not be found
-	 */
-	@Override
-	public MFAFIDO2CredentialEntry fetchByU_C(
-		long userId, long credentialKeyHash) {
-
-		return fetchByU_C(userId, credentialKeyHash, true);
+		return _uniquePersistenceFinderByU_C.find(
+			finderCache, new Object[] {userId, credentialKeyHash});
 	}
 
 	/**
@@ -689,82 +530,77 @@ public class MFAFIDO2CredentialEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId"}, true);
-
-		_finderPathWithoutPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, true);
-
-		_finderPathCountByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"},
-			false);
-
 		_collectionPersistenceFinderByUserId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUserId,
-				_finderPathWithoutPaginationFindByUserId,
-				_finderPathCountByUserId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, false),
 				_SQL_SELECT_MFAFIDO2CREDENTIALENTRY_WHERE,
 				_SQL_COUNT_MFAFIDO2CREDENTIALENTRY_WHERE,
 				MFAFIDO2CredentialEntryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mfafido2CredentialEntry.", "userId",
 					FinderColumn.Type.LONG, "=", true, true,
 					MFAFIDO2CredentialEntry::getUserId));
 
-		_finderPathWithPaginationFindByCredentialKeyHash = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCredentialKeyHash",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"credentialKeyHash"}, true);
-
-		_finderPathWithoutPaginationFindByCredentialKeyHash = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByCredentialKeyHash", new String[] {Long.class.getName()},
-			new String[] {"credentialKeyHash"}, true);
-
-		_finderPathCountByCredentialKeyHash = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCredentialKeyHash", new String[] {Long.class.getName()},
-			new String[] {"credentialKeyHash"}, false);
-
 		_collectionPersistenceFinderByCredentialKeyHash =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCredentialKeyHash,
-				_finderPathWithoutPaginationFindByCredentialKeyHash,
-				_finderPathCountByCredentialKeyHash,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCredentialKeyHash",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"credentialKeyHash"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCredentialKeyHash",
+					new String[] {Long.class.getName()},
+					new String[] {"credentialKeyHash"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCredentialKeyHash",
+					new String[] {Long.class.getName()},
+					new String[] {"credentialKeyHash"}, false),
 				_SQL_SELECT_MFAFIDO2CREDENTIALENTRY_WHERE,
 				_SQL_COUNT_MFAFIDO2CREDENTIALENTRY_WHERE,
 				MFAFIDO2CredentialEntryModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"mfafido2CredentialEntry.", "credentialKeyHash",
 					FinderColumn.Type.LONG, "=", true, true,
 					MFAFIDO2CredentialEntry::getCredentialKeyHash));
 
-		_finderPathFetchByU_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByU_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"userId", "credentialKeyHash"}, false,
-			MFAFIDO2CredentialEntry::getUserId,
-			MFAFIDO2CredentialEntry::getCredentialKeyHash);
-
 		_uniquePersistenceFinderByU_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByU_C,
-			_SQL_SELECT_MFAFIDO2CREDENTIALENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByU_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"userId", "credentialKeyHash"}, 0, 0, false,
+				MFAFIDO2CredentialEntry::getUserId,
+				MFAFIDO2CredentialEntry::getCredentialKeyHash),
+			_SQL_SELECT_MFAFIDO2CREDENTIALENTRY_WHERE, "",
 			new FinderColumn<>(
 				"mfafido2CredentialEntry.", "userId", FinderColumn.Type.LONG,
-				"=", true, false, MFAFIDO2CredentialEntry::getUserId),
+				"=", true, true, MFAFIDO2CredentialEntry::getUserId),
 			new FinderColumn<>(
 				"mfafido2CredentialEntry.", "credentialKeyHash",
 				FinderColumn.Type.LONG, "=", true, true,
@@ -836,4 +672,4 @@ public class MFAFIDO2CredentialEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:555506426
+// LIFERAY-SERVICE-BUILDER-HASH:-1623881887

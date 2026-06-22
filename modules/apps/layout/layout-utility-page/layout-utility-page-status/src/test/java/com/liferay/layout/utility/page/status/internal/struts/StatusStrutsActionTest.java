@@ -70,19 +70,62 @@ public class StatusStrutsActionTest {
 	}
 
 	@Test
+	@TestInfo("LPD-85590")
+	public void testExecuteWithPortalStatusException() throws Exception {
+		String htmlStart = _HTML_START + RandomTestUtil.randomString();
+		String htmlEnd = RandomTestUtil.randomString() + _HTML_END;
+
+		String expected = StringBundler.concat(
+			htmlStart, "\n  <div id=\"content\">\n   ", _STATUS_PAGE_CONTENT,
+			"\n  </div>", htmlEnd);
+		String html = StringBundler.concat(
+			htmlStart, "<div id=\"content\">", RandomTestUtil.randomString(),
+			"</div>", htmlEnd);
+
+		_sessionErrorsMockedStatic.clearInvocations();
+
+		_testExecute(expected, html);
+
+		_sessionErrorsMockedStatic.verifyNoInteractions();
+
+		Exception exception = new Exception();
+
+		Mockito.when(
+			_httpServletRequest.getAttribute(WebKeys.PORTAL_STATUS_EXCEPTION)
+		).thenReturn(
+			exception
+		);
+
+		_sessionErrorsMockedStatic.clearInvocations();
+
+		try {
+			_testExecute(expected, html);
+
+			_sessionErrorsMockedStatic.verify(
+				() -> SessionErrors.remove(
+					_httpServletRequest, Exception.class));
+		}
+		finally {
+			Mockito.reset(_httpServletRequest);
+
+			_setUpHttpServletRequest();
+		}
+	}
+
+	@Test
 	public void testExecuteWithThemeContainingElementWithIdContent()
 		throws Exception {
 
-		String bodyContentInit = _HTML_INIT + RandomTestUtil.randomString();
-		String bodyContentEnd = RandomTestUtil.randomString() + _HTML_END;
+		String htmlStart = _HTML_START + RandomTestUtil.randomString();
+		String htmlEnd = RandomTestUtil.randomString() + _HTML_END;
 
 		_testExecute(
 			StringBundler.concat(
-				bodyContentInit, "\n  <div id=\"content\">\n   ",
-				_STATUS_PAGE_CONTENT, "\n  </div>", bodyContentEnd),
+				htmlStart, "\n  <div id=\"content\">\n   ",
+				_STATUS_PAGE_CONTENT, "\n  </div>", htmlEnd),
 			StringBundler.concat(
-				bodyContentInit, "<div id=\"content\">",
-				RandomTestUtil.randomString(), "</div>", bodyContentEnd));
+				htmlStart, "<div id=\"content\">",
+				RandomTestUtil.randomString(), "</div>", htmlEnd));
 	}
 
 	@Test
@@ -98,9 +141,9 @@ public class StatusStrutsActionTest {
 		);
 
 		String expected = StringBundler.concat(
-			_HTML_INIT, _STATUS_PAGE_CONTENT, _HTML_END);
+			_HTML_START, _STATUS_PAGE_CONTENT, _HTML_END);
 		String html = StringBundler.concat(
-			_HTML_INIT + RandomTestUtil.randomString(), "<div id=\"",
+			_HTML_START + RandomTestUtil.randomString(), "<div id=\"",
 			RandomTestUtil.randomString(), "\">", RandomTestUtil.randomString(),
 			"</div>", RandomTestUtil.randomString() + _HTML_END);
 
@@ -222,7 +265,7 @@ public class StatusStrutsActionTest {
 
 	private static final String _HTML_END = "\n </body>\n</html>";
 
-	private static final String _HTML_INIT = StringBundler.concat(
+	private static final String _HTML_START = StringBundler.concat(
 		"<html>\n <head>\n  <script>var ", RandomTestUtil.randomString(), " = ",
 		RandomTestUtil.randomString(), ";</script>\n </head>\n <body>\n  ");
 

@@ -34,6 +34,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -105,7 +106,8 @@ public abstract class BaseSiteTemplateResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -169,6 +171,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 
 		siteTemplate.setDefaultLanguageId(regex);
 		siteTemplate.setDescription(regex);
+		siteTemplate.setLogo(regex);
 		siteTemplate.setName(regex);
 		siteTemplate.setSiteExternalReferenceCode(regex);
 
@@ -180,6 +183,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 
 		Assert.assertEquals(regex, siteTemplate.getDefaultLanguageId());
 		Assert.assertEquals(regex, siteTemplate.getDescription());
+		Assert.assertEquals(regex, siteTemplate.getLogo());
 		Assert.assertEquals(regex, siteTemplate.getName());
 		Assert.assertEquals(regex, siteTemplate.getSiteExternalReferenceCode());
 	}
@@ -187,7 +191,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 	@Test
 	public void testGetSiteTemplatesPage() throws Exception {
 		Page<SiteTemplate> page = siteTemplateResource.getSiteTemplatesPage(
-			null, Pagination.of(1, 10));
+			null, null, Pagination.of(1, 10));
 
 		long totalCount = page.getTotalCount();
 
@@ -198,7 +202,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 			randomSiteTemplate());
 
 		page = siteTemplateResource.getSiteTemplatesPage(
-			null, Pagination.of(1, 10));
+			null, null, Pagination.of(1, 10));
 
 		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
@@ -219,7 +223,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 	@Test
 	public void testGetSiteTemplatesPageWithPagination() throws Exception {
 		Page<SiteTemplate> siteTemplatesPage =
-			siteTemplateResource.getSiteTemplatesPage(null, null);
+			siteTemplateResource.getSiteTemplatesPage(null, null, null);
 
 		int totalCount = GetterUtil.getInteger(
 			siteTemplatesPage.getTotalCount());
@@ -240,7 +244,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 		if (totalCount >= (pageSizeLimit - 2)) {
 			Page<SiteTemplate> page1 =
 				siteTemplateResource.getSiteTemplatesPage(
-					null,
+					null, null,
 					Pagination.of(
 						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
 						pageSizeLimit));
@@ -251,7 +255,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 
 			Page<SiteTemplate> page2 =
 				siteTemplateResource.getSiteTemplatesPage(
-					null,
+					null, null,
 					Pagination.of(
 						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
 						pageSizeLimit));
@@ -260,7 +264,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 
 			Page<SiteTemplate> page3 =
 				siteTemplateResource.getSiteTemplatesPage(
-					null,
+					null, null,
 					Pagination.of(
 						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
 						pageSizeLimit));
@@ -270,7 +274,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 		else {
 			Page<SiteTemplate> page1 =
 				siteTemplateResource.getSiteTemplatesPage(
-					null, Pagination.of(1, totalCount + 2));
+					null, null, Pagination.of(1, totalCount + 2));
 
 			List<SiteTemplate> siteTemplates1 =
 				(List<SiteTemplate>)page1.getItems();
@@ -281,7 +285,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 
 			Page<SiteTemplate> page2 =
 				siteTemplateResource.getSiteTemplatesPage(
-					null, Pagination.of(2, totalCount + 2));
+					null, null, Pagination.of(2, totalCount + 2));
 
 			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
 
@@ -293,7 +297,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 
 			Page<SiteTemplate> page3 =
 				siteTemplateResource.getSiteTemplatesPage(
-					null, Pagination.of(1, (int)totalCount + 3));
+					null, null, Pagination.of(1, (int)totalCount + 3));
 
 			assertContains(siteTemplate1, (List<SiteTemplate>)page3.getItems());
 			assertContains(siteTemplate2, (List<SiteTemplate>)page3.getItems());
@@ -420,6 +424,14 @@ public abstract class BaseSiteTemplateResourceTestCase {
 
 			if (Objects.equals("description_i18n", additionalAssertFieldName)) {
 				if (siteTemplate.getDescription_i18n() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("logo", additionalAssertFieldName)) {
+				if (siteTemplate.getLogo() == null) {
 					valid = false;
 				}
 
@@ -637,6 +649,16 @@ public abstract class BaseSiteTemplateResourceTestCase {
 			if (Objects.equals("id", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						siteTemplate1.getId(), siteTemplate2.getId())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("logo", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						siteTemplate1.getLogo(), siteTemplate2.getLogo())) {
 
 					return false;
 				}
@@ -914,6 +936,52 @@ public abstract class BaseSiteTemplateResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("logo")) {
+			Object object = siteTemplate.getLogo();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("name")) {
 			Object object = siteTemplate.getName();
 
@@ -1034,7 +1102,9 @@ public abstract class BaseSiteTemplateResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -1072,6 +1142,7 @@ public abstract class BaseSiteTemplateResourceTestCase {
 				description = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
+				logo = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				pagesUpdateable = RandomTestUtil.randomBoolean();
 				siteExternalReferenceCode =
@@ -1303,4 +1374,4 @@ public abstract class BaseSiteTemplateResourceTestCase {
 		_siteTemplateResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:780663091
+// LIFERAY-REST-BUILDER-HASH:1518444496

@@ -297,6 +297,46 @@ public class AgentDefinition implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
+	public Model getModel() {
+		if (_modelSupplier != null) {
+			model = _modelSupplier.get();
+
+			_modelSupplier = null;
+		}
+
+		return model;
+	}
+
+	public void setModel(Model model) {
+		this.model = model;
+
+		_modelSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setModel(UnsafeSupplier<Model, Exception> modelUnsafeSupplier) {
+		_modelSupplier = () -> {
+			try {
+				return modelUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Model model;
+
+	@JsonIgnore
+	private Supplier<Model> _modelSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	@Valid
 	public Variable getOutputVariable() {
 		if (_outputVariableSupplier != null) {
 			outputVariable = _outputVariableSupplier.get();
@@ -378,6 +418,47 @@ public class AgentDefinition implements Serializable {
 
 	@JsonIgnore
 	private Supplier<Status> _statusSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	public Boolean getSystem() {
+		if (_systemSupplier != null) {
+			system = _systemSupplier.get();
+
+			_systemSupplier = null;
+		}
+
+		return system;
+	}
+
+	public void setSystem(Boolean system) {
+		this.system = system;
+
+		_systemSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setSystem(
+		UnsafeSupplier<Boolean, Exception> systemUnsafeSupplier) {
+
+		_systemSupplier = () -> {
+			try {
+				return systemUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Boolean system;
+
+	@JsonIgnore
+	private Supplier<Boolean> _systemSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
 	public String getTitle() {
@@ -620,6 +701,18 @@ public class AgentDefinition implements Serializable {
 			sb.append("]");
 		}
 
+		Model model = getModel();
+
+		if (model != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"model\": ");
+
+			sb.append(String.valueOf(model));
+		}
+
 		Variable outputVariable = getOutputVariable();
 
 		if (outputVariable != null) {
@@ -642,6 +735,18 @@ public class AgentDefinition implements Serializable {
 			sb.append("\"status\": ");
 
 			sb.append(String.valueOf(status));
+		}
+
+		Boolean system = getSystem();
+
+		if (system != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"system\": ");
+
+			sb.append(system);
 		}
 
 		String title = getTitle();
@@ -789,4 +894,4 @@ public class AgentDefinition implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:921415686
+// LIFERAY-REST-BUILDER-HASH:-1369896785

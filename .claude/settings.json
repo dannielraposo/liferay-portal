@@ -9,6 +9,7 @@
 				"hooks": [
 					{
 						"command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/worktree-create.sh",
+						"timeout": 1800,
 						"type": "command"
 					}
 				]
@@ -18,7 +19,7 @@
 			{
 				"hooks": [
 					{
-						"command": "git worktree remove \"$(jq --raw-output '.worktree_path')\"",
+						"command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/worktree-remove.sh",
 						"type": "command"
 					}
 				]

@@ -10,6 +10,7 @@ import {dataApiHelpersTest} from '../../../fixtures/dataApiHelpersTest';
 import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {addCMSAdministrator} from '../../../utils/addCMSAdministrator';
+import {applyFDSSelectionFilter} from '../../../utils/applyFDSSelectionFilter';
 import {clickAndExpectToBeHidden} from '../../../utils/clickAndExpectToBeHidden';
 import {getRandomInt} from '../../../utils/getRandomInt';
 import getRandomString from '../../../utils/getRandomString';
@@ -28,6 +29,17 @@ const test = mergeTests(
 		'LPD-17564': {enabled: true},
 	}),
 	loginTest()
+);
+
+const testWithModalExportImport = mergeTests(
+	cmsPagesTest,
+	dataApiHelpersTest,
+	featureFlagsTest({
+		'LPD-17564': {enabled: true},
+		'LPD-57655': {enabled: false},
+	}),
+	loginTest(),
+	structureBuilderPagesTest
 );
 
 test(
@@ -74,6 +86,10 @@ test(
 			action: 'Delete',
 			filter: structureName,
 		});
+
+		await expect(page.locator('.liferay-modal .modal-dialog')).toHaveClass(
+			/modal-dialog-centered/
+		);
 
 		await page
 			.getByPlaceholder('Confirm Content Structure Name')
@@ -127,6 +143,10 @@ test(
 		await expect(
 			page.getByRole('heading', {name: 'Deletion Not Allowed'})
 		).toBeVisible();
+
+		await expect(page.locator('.liferay-modal .modal-dialog')).toHaveClass(
+			/modal-dialog-centered/
+		);
 
 		await clickAndExpectToBeHidden({
 			target: page.getByRole('button', {name: 'OK'}),
@@ -451,7 +471,7 @@ test(
 	}
 );
 
-test(
+testWithModalExportImport(
 	'Export and Import Content Structures actions open the export modal from the breadcrumb',
 	{tag: '@LPD-78381'},
 	async ({page, structuresPage}) => {
@@ -469,7 +489,7 @@ test(
 	}
 );
 
-test(
+testWithModalExportImport(
 	'CMS Administrator can export and import content structures',
 	{tag: '@LPD-87533'},
 	async ({apiHelpers, page, structuresPage}) => {
@@ -544,7 +564,7 @@ test(
 	}
 );
 
-test(
+testWithModalExportImport(
 	'Export Content Structures list includes only object definitions from CMS folders',
 	{tag: '@LPD-78381'},
 	async ({apiHelpers, page, structuresPage}) => {
@@ -589,5 +609,356 @@ test(
 		await structuresPage.openMenuItem('Export');
 
 		await expect(contentCountBadge).toHaveText(String(initialCount + 1));
+	}
+);
+
+test(
+	'Content Structure can be exported as JSON and imported back to override changes',
+	{tag: '@LPD-89302'},
+	async ({page, structureBuilderPage, structuresPage}) => {
+		const structureLabel = `Structure${getRandomInt()}`;
+
+		await structureBuilderPage.createStructureFromData({
+			label: structureLabel,
+			name: structureLabel,
+			page: structureBuilderPage,
+		});
+
+		await structuresPage.goto();
+
+		const downloadPromise = page.waitForEvent('download');
+
+		await structuresPage.execItemAction({
+			action: 'Export as JSON',
+			filter: structureLabel,
+		});
+
+		const download = await downloadPromise;
+
+		const jsonFilePath = `${getTempDir()}/${download.suggestedFilename()}`;
+
+		await download.saveAs(jsonFilePath);
+
+		await page.getByRole('link', {name: structureLabel}).click();
+
+		await structureBuilderPage.addField('Long Text');
+
+		await expect(
+			page.locator('.treeview-link', {hasText: 'Long Text'})
+		).toBeVisible();
+
+		await structureBuilderPage.publishStructure();
+
+		await structuresPage.goto();
+
+		await structuresPage.execItemAction({
+			action: 'Import and Override',
+			filter: structureLabel,
+		});
+
+		const importDialog = page.getByRole('dialog', {
+			name: 'Import and Override Content Structure',
+		});
+
+		const fileChooserPromise = page.waitForEvent('filechooser');
+
+		await importDialog.getByRole('button', {name: 'Add'}).click();
+
+		const fileChooser = await fileChooserPromise;
+
+		await fileChooser.setFiles(jsonFilePath);
+
+		const importButton = importDialog.getByRole('button', {
+			name: 'Import and Override',
+		});
+
+		await expect(importButton).toBeEnabled();
+
+		await importButton.click();
+
+		await expect(importDialog).not.toBeAttached();
+
+		await page.getByRole('link', {name: structureLabel}).click();
+
+		await expect(
+			page.getByRole('heading', {name: structureLabel})
+		).toBeVisible();
+
+		await expect(
+			page.locator('.treeview-link', {hasText: 'Long Text'})
+		).not.toBeVisible();
+	}
+);
+
+test(
+	'New fields can be added and removed on Basic Web Content but existing fields are locked',
+	{tag: '@LPD-89302'},
+	async ({page, structureBuilderPage, structuresPage}) => {
+		await structuresPage.goto();
+
+		await page.getByRole('link', {name: 'Basic Web Content'}).click();
+
+		const contentTreeItem = page.locator('.treeview-link', {
+			hasText: 'Content',
+		});
+		const titleTreeItem = page.locator('.treeview-link', {
+			hasText: 'Title',
+		});
+
+		await structureBuilderPage.selectFields([{label: 'Content'}]);
+
+		await expect(
+			contentTreeItem.getByLabel('Field Options')
+		).not.toBeVisible();
+
+		await structureBuilderPage.selectFields([{label: 'Title'}]);
+
+		await expect(
+			titleTreeItem.getByLabel('Field Options')
+		).not.toBeVisible();
+
+		await structureBuilderPage.addField('Long Text');
+
+		const longTextTreeItem = page.locator('.treeview-link', {
+			hasText: 'Long Text',
+		});
+
+		await expect(longTextTreeItem).toBeVisible();
+
+		await structureBuilderPage.deleteFields([{label: 'Long Text'}]);
+
+		await expect(longTextTreeItem).not.toBeVisible();
+	}
+);
+
+test(
+	'View Usages lists the assets using the structure and deletes them with the CMS confirmation modal',
+	{tag: ['@LPD-89302', '@LPD-89560']},
+	async ({apiHelpers, page, structuresPage}) => {
+		const applicationName = 'cms/basic-web-contents';
+		const title = `Content ${getRandomString()}`;
+
+		await apiHelpers.objectEntry.postObjectEntry(
+			{
+				objectEntryFolderExternalReferenceCode: 'L_CONTENTS',
+				title,
+			},
+			applicationName,
+			'Default'
+		);
+
+		// Open the usages list of the structure
+
+		await structuresPage.goto();
+
+		await structuresPage.execItemAction({
+			action: 'View Usages',
+			filter: 'Basic Web Content',
+		});
+
+		await test.step('Usages list includes the asset', async () => {
+			await page.locator('.fds').waitFor();
+
+			await expect(page.getByRole('row', {name: title})).toBeVisible();
+		});
+
+		await test.step('Delete shows the CMS confirmation modal', async () => {
+
+			// Open the delete action of the usage entry
+
+			await structuresPage.dataSetFragmentPage.execItemAction({
+				action: 'Delete',
+				filter: title,
+			});
+
+			// The CMS confirmation modal must appear instead of a native
+			// confirm dialog
+
+			await expect(
+				page.getByText('Are you sure you want to delete this entry?')
+			).toBeVisible();
+
+			// Confirm the deletion
+
+			await page
+				.locator('.liferay-modal')
+				.getByRole('button', {exact: true, name: 'Delete'})
+				.click();
+
+			await waitForAlert(page, `${title} was successfully deleted`, {
+				type: 'success',
+			});
+		});
+	}
+);
+
+test(
+	'Permissions of a Content Structure can be modified',
+	{tag: '@LPD-89302'},
+	async ({apiHelpers, page, structuresPage}) => {
+		const objectDefinition =
+			(await apiHelpers.objectAdmin.postRandomObjectDefinition({
+				objectFolderExternalReferenceCode: 'L_CMS_CONTENT_STRUCTURES',
+				scope: 'depot',
+				status: {code: 0},
+			})) as ObjectDefinition;
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		const structureName = objectDefinition.name;
+
+		await structuresPage.goto();
+
+		await structuresPage.execItemAction({
+			action: 'Permissions',
+			filter: structureName,
+		});
+
+		const permissionsDialog = page.getByRole('dialog', {
+			name: 'Permissions',
+		});
+		const permissionsFrame = permissionsDialog.frameLocator('iframe');
+
+		const siteMemberDeleteCheckbox = permissionsFrame.getByLabel(
+			'Give Delete permission to users with the Site Member role.'
+		);
+		const siteMemberPermissionsCheckbox = permissionsFrame.getByLabel(
+			'Give Permissions permission to users with the Site Member role.'
+		);
+		const siteMemberUpdateCheckbox = permissionsFrame.getByLabel(
+			'Give Update permission to users with the Site Member role.'
+		);
+		const siteMemberViewCheckbox = permissionsFrame.getByLabel(
+			'Give View permission to users with the Site Member role.'
+		);
+
+		await siteMemberDeleteCheckbox.check();
+		await siteMemberPermissionsCheckbox.check();
+		await siteMemberUpdateCheckbox.check();
+		await siteMemberViewCheckbox.check();
+
+		await permissionsFrame.getByRole('button', {name: 'Save'}).click();
+
+		await waitForAlert(permissionsFrame);
+
+		await permissionsDialog.getByLabel('Close', {exact: true}).click();
+
+		await expect(permissionsDialog).not.toBeAttached();
+
+		await structuresPage.execItemAction({
+			action: 'Permissions',
+			filter: structureName,
+		});
+
+		await expect(siteMemberDeleteCheckbox).toBeChecked();
+		await expect(siteMemberPermissionsCheckbox).toBeChecked();
+		await expect(siteMemberUpdateCheckbox).toBeChecked();
+		await expect(siteMemberViewCheckbox).toBeChecked();
+	}
+);
+
+test(
+	'Content Structure can be scoped to specific spaces',
+	{tag: '@LPD-89302'},
+	async ({apiHelpers, page, structureBuilderPage, structuresPage}) => {
+		const spaceName1 = `Space ${getRandomString()}`;
+		const spaceName2 = `Space ${getRandomString()}`;
+		const structureLabel = `Structure${getRandomInt()}`;
+
+		await apiHelpers.headlessAssetLibrary.createAssetLibrary({
+			name: spaceName1,
+			settings: {},
+			type: 'Space',
+		});
+
+		await apiHelpers.headlessAssetLibrary.createAssetLibrary({
+			name: spaceName2,
+			settings: {},
+			type: 'Space',
+		});
+
+		await structureBuilderPage.createStructureFromData({
+			label: structureLabel,
+			name: structureLabel,
+			page: structureBuilderPage,
+			spaces: [spaceName1, spaceName2],
+		});
+
+		await structuresPage.goto();
+
+		const row = page.getByRole('row', {name: structureLabel});
+
+		await expect(row).toBeVisible();
+		await expect(row.getByText('All Spaces')).not.toBeVisible();
+
+		await page.getByRole('link', {name: structureLabel}).click();
+
+		await expect(
+			page.locator('.label-secondary', {hasText: spaceName1})
+		).toBeVisible();
+		await expect(
+			page.locator('.label-secondary', {hasText: spaceName2})
+		).toBeVisible();
+	}
+);
+
+test(
+	'Content Structures list can be filtered by space with include and exclude',
+	{tag: ['@LPD-89342', '@LPD-91933']},
+	async ({apiHelpers, page, structureBuilderPage, structuresPage}) => {
+		const spaceName1 = `Space ${getRandomString()}`;
+		const spaceName2 = `Space ${getRandomString()}`;
+		const structureLabel = `Structure${getRandomString()}`;
+
+		await apiHelpers.headlessAssetLibrary.createAssetLibrary({
+			name: spaceName1,
+			settings: {},
+		});
+
+		await apiHelpers.headlessAssetLibrary.createAssetLibrary({
+			name: spaceName2,
+			settings: {},
+		});
+
+		await structureBuilderPage.createStructureFromData({
+			label: structureLabel,
+			page: structureBuilderPage,
+			spaces: [spaceName1],
+		});
+
+		const row = structuresPage.getItem(structureLabel);
+
+		await structuresPage.goto();
+		await applyFDSSelectionFilter(page, {
+			filter: 'Space',
+			value: spaceName1,
+		});
+		await expect(row).toBeVisible();
+
+		await structuresPage.goto();
+		await applyFDSSelectionFilter(page, {
+			filter: 'Space',
+			value: spaceName2,
+		});
+		await expect(row).toBeHidden();
+
+		await structuresPage.goto();
+		await applyFDSSelectionFilter(page, {
+			exclude: true,
+			filter: 'Space',
+			value: spaceName1,
+		});
+		await expect(row).toBeHidden();
+
+		await structuresPage.goto();
+		await applyFDSSelectionFilter(page, {
+			exclude: true,
+			filter: 'Space',
+			value: spaceName2,
+		});
+		await expect(row).toBeVisible();
 	}
 );

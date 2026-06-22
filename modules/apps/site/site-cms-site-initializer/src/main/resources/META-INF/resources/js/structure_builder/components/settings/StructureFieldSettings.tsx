@@ -45,7 +45,7 @@ export default function StructureFieldSettings({
 					</ClayTabs.Item>
 
 					<ClayTabs.Item>
-						{Liferay.Language.get('search')}
+						{Liferay.Language.get('advanced')}
 					</ClayTabs.Item>
 				</ClayTabs.List>
 
@@ -55,7 +55,10 @@ export default function StructureFieldSettings({
 					</ClayTabs.TabPane>
 
 					<ClayTabs.TabPane className="px-0">
-						<SearchTab field={field} isReferenced={isReferenced} />
+						<AdvancedTab
+							field={field}
+							isReferenced={isReferenced}
+						/>
 					</ClayTabs.TabPane>
 				</ClayTabs.Panels>
 			</ClayTabs>
@@ -90,7 +93,7 @@ function GeneralTab({
 					{Liferay.Language.get('field-type')}
 				</p>
 
-				<ClayLabel displayType="info">
+				<ClayLabel displayType="info" inverse>
 					{FIELD_TYPE_LABEL[field.type]}
 				</ClayLabel>
 			</div>
@@ -182,7 +185,7 @@ function GeneralTab({
 	);
 }
 
-function SearchTab({
+function AdvancedTab({
 	field,
 	isReferenced,
 }: {
@@ -190,6 +193,8 @@ function SearchTab({
 	isReferenced?: boolean;
 }) {
 	const dispatch = useStateDispatch();
+
+	const {AdvancedTabComponent} = getFieldComponents(field.type);
 
 	const languageLabels = useMemo(
 		() =>
@@ -307,6 +312,8 @@ function SearchTab({
 					) : null}
 				</>
 			) : null}
+
+			<AdvancedTabComponent disabled={isReferenced} field={field} />
 		</>
 	);
 }

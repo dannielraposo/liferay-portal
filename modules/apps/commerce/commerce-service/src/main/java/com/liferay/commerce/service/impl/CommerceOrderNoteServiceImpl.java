@@ -63,7 +63,23 @@ public class CommerceOrderNoteServiceImpl
 
 		String actionId = CommerceOrderActionKeys.MANAGE_COMMERCE_ORDER_NOTES;
 
-		if (restricted) {
+		CommerceOrderNote commerceOrderNote = null;
+
+		if (commerceOrderNoteId > 0) {
+			commerceOrderNote =
+				commerceOrderNoteLocalService.fetchCommerceOrderNote(
+					commerceOrderNoteId);
+		}
+		else {
+			commerceOrderNote =
+				commerceOrderNoteLocalService.
+					fetchCommerceOrderNoteByExternalReferenceCode(
+						externalReferenceCode, serviceContext.getCompanyId());
+		}
+
+		if (((commerceOrderNote != null) && commerceOrderNote.isRestricted()) ||
+			restricted) {
+
 			actionId =
 				CommerceOrderActionKeys.MANAGE_COMMERCE_ORDER_RESTRICTED_NOTES;
 		}
@@ -242,7 +258,7 @@ public class CommerceOrderNoteServiceImpl
 
 		String actionId = CommerceOrderActionKeys.MANAGE_COMMERCE_ORDER_NOTES;
 
-		if (restricted) {
+		if (commerceOrderNote.isRestricted() || restricted) {
 			actionId =
 				CommerceOrderActionKeys.MANAGE_COMMERCE_ORDER_RESTRICTED_NOTES;
 		}

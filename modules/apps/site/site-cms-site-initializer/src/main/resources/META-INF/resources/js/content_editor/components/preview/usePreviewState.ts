@@ -3,10 +3,16 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {useSessionState} from 'frontend-js-components-web';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 
 import {Status} from '../../../common/components/AsyncPicker';
 import ApiHelper from '../../../common/services/ApiHelper';
+import {
+	PREVIEW_CHANNEL_SESSION_KEY,
+	PREVIEW_DISPLAY_PAGE_SESSION_KEY,
+	PREVIEW_EXTERNAL_URL_SESSION_KEY,
+} from './sessionKeys';
 
 export type Site = {
 	displayPageTemplates: {
@@ -19,31 +25,25 @@ export type Site = {
 	name: string;
 };
 
-export default function usePreviewState(getPreviewDataURL: string) {
-	const [languageId, setLanguageId] = useState<string>(
-		Liferay.ThemeDisplay.getDefaultLanguageId()
+const EXTERNAL_URL_CHANNEL_ID = 1;
+
+export default function usePreviewState(
+	getPreviewDataURL: string,
+	languageId: Liferay.Language.Locale
+) {
+	const [externalURL = '', setExternalURL] = useSessionState<string>(
+		PREVIEW_EXTERNAL_URL_SESSION_KEY,
+		''
 	);
-	const [selectedChannelKey, setSelectedChannelKey] = useState<React.Key>('');
+	const [selectedChannelKey, setSelectedChannelKey] =
+		useSessionState<React.Key>(PREVIEW_CHANNEL_SESSION_KEY, '');
 	const [selectedDisplayPageKey, setSelectedDisplayPageKey] =
-		useState<React.Key>('');
+		useSessionState<React.Key>(PREVIEW_DISPLAY_PAGE_SESSION_KEY, '');
 	const [sites, setSites] = useState<Site[]>([]);
 	const [sitesStatus, setSitesStatus] = useState<Status>('saving');
 
-	useEffect(() => {
-		const handleLocaleChanged = ({
-			languageId,
-		}: {
-			languageId: Liferay.Language.Locale;
-		}) => setLanguageId(languageId);
-
-		Liferay.on('localizationSelect:localeChanged', handleLocaleChanged);
-
-		return () =>
-			Liferay.detach(
-				'localizationSelect:localeChanged',
-				handleLocaleChanged
-			);
-	}, []);
+	const isExternalURL =
+		Number(selectedChannelKey) === EXTERNAL_URL_CHANNEL_ID;
 
 	const loadSites = useCallback(async () => {
 		setSitesStatus('saving');
@@ -74,7 +74,7 @@ export default function usePreviewState(getPreviewDataURL: string) {
 			})),
 			{
 				icon: 'chain-broken',
-				id: 1,
+				id: EXTERNAL_URL_CHANNEL_ID,
 				name: Liferay.Language.get('external-url'),
 			},
 		],
@@ -89,6 +89,10 @@ export default function usePreviewState(getPreviewDataURL: string) {
 	);
 
 	const previewURL = useMemo(() => {
+		if (isExternalURL) {
+			return externalURL || undefined;
+		}
+
 		const url = displayPageTemplates?.find(
 			({plid}) => plid === selectedDisplayPageKey
 		)?.url;
@@ -105,26 +109,39 @@ export default function usePreviewState(getPreviewDataURL: string) {
 		localizedURL.searchParams.set('languageId', languageId);
 
 		return localizedURL.toString();
-	}, [displayPageTemplates, languageId, selectedDisplayPageKey]);
+	}, [
+		displayPageTemplates,
+		externalURL,
+		isExternalURL,
+		languageId,
+		selectedDisplayPageKey,
+	]);
 
-	const selectChannel = useCallback((key: React.Key) => {
-		setSelectedChannelKey(key);
-		setSelectedDisplayPageKey('');
-	}, []);
+	const selectChannel = useCallback(
+		(key: React.Key) => {
+			setSelectedChannelKey(key);
+			setSelectedDisplayPageKey('');
+			setExternalURL('');
+		},
+		[setExternalURL, setSelectedChannelKey, setSelectedDisplayPageKey]
+	);
 
-	const showDisplayPageTemplateAlert =
+	const isDisplayPageTemplatesListEmpty =
 		displayPageTemplates !== undefined && !displayPageTemplates.length;
 
 	return {
 		channels,
 		displayPageTemplates,
+		externalURL,
+		isDisplayPageTemplatesListEmpty,
+		isExternalURL,
 		loadSites,
 		previewURL,
 		selectChannel,
 		selectedChannelKey,
 		selectedDisplayPageKey,
+		setExternalURL,
 		setSelectedDisplayPageKey,
-		showDisplayPageTemplateAlert,
 		sitesStatus,
 	};
 }

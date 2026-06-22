@@ -21,7 +21,10 @@ import org.osgi.service.component.annotations.Reference;
  * @author Gabriel Albuquerque
  */
 @Component(
-	property = "frontend.data.set.name=" + CMPSiteInitializerFDSNames.CMP_TASK,
+	property = {
+		"frontend.data.set.name=" + CMPSiteInitializerFDSNames.CMP_ALL_TASKS,
+		"frontend.data.set.name=" + CMPSiteInitializerFDSNames.CMP_PROJECT_TASKS
+	},
 	service = FDSView.class
 )
 public class TaskSectionTableFDSView extends BaseTableFDSView {
@@ -51,7 +54,7 @@ public class TaskSectionTableFDSView extends BaseTableFDSView {
 			fdsTableSchemaField -> fdsTableSchemaField.setContentRenderer(
 				"dueDateTableCellRenderer")
 		).add(
-			"state", "state-status",
+			"state", "state",
 			fdsTableSchemaField -> fdsTableSchemaField.setContentRenderer(
 				"stateTableCellRenderer")
 		).build();

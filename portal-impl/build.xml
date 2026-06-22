@@ -178,7 +178,7 @@
 		<delete dir="${project.dir}/tmp/license-reports" quiet="true" />
 
 		<gradle-execute dir="${project.dir}/modules" task="generateLicenseReport">
-			<arg value="-Dbuild.profile=dxp" />
+			<arg value="-Dbuild.profile=portal" />
 			<arg value="-Dlicense.report.enabled=true" />
 			<arg value="-Dlicense.report.output.dir=${project.dir}/tmp/license-reports" />
 			<arg value="-Dlicense.report.override.properties.file=${project.dir}/lib/license-override.properties" />
@@ -237,6 +237,13 @@
 	</target>
 
 	<target name="build-rests">
+		<if>
+			<available file="${project.dir}/modules/util/portal-tools-rest-builder" />
+			<then>
+				<gradle-execute dir="${project.dir}/modules/util/portal-tools-rest-builder" task="deploy" />
+			</then>
+		</if>
+
 		<tstamp>
 			<format pattern="yyyyMMddkkmmssSSS" property="build.rests.tstamp.value" />
 		</tstamp>
@@ -381,6 +388,13 @@
 	</target>
 
 	<target name="build-services">
+		<if>
+			<available file="${project.dir}/modules/util/portal-tools-service-builder" />
+			<then>
+				<gradle-execute dir="${project.dir}/modules/util/portal-tools-service-builder" task="deploy" />
+			</then>
+		</if>
+
 		<build-service
 			hbm.file="counter-hbm.xml"
 			service.file="${basedir}/src/com/liferay/counter/service.xml"
@@ -728,12 +742,9 @@
 						</if>
 
 						<if>
-							<or>
-								<matches pattern="modules/test/poshi" string="${baseline.current.branch.file.names}" />
-								<not>
-									<matches pattern="\.(js|json|jsp|jspf|scss|ts|tsx)(${line.separator}|$)" string="${baseline.current.branch.file.names}" />
-								</not>
-							</or>
+							<not>
+								<matches pattern="${source.formatter.frontend.file.regex}" string="${baseline.current.branch.file.names}" />
+							</not>
 							<then>
 								<property name="skip.node.task" value="true" />
 							</then>

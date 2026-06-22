@@ -13,16 +13,11 @@ import com.liferay.commerce.product.model.impl.CPDisplayLayoutModelImpl;
 import com.liferay.commerce.product.service.persistence.CPDisplayLayoutPersistence;
 import com.liferay.commerce.product.service.persistence.CPDisplayLayoutUtil;
 import com.liferay.commerce.product.service.persistence.impl.constants.CommercePersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.Query;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -91,66 +86,15 @@ public class CPDisplayLayoutPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<CPDisplayLayout>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the cp display layouts where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp display layouts where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @return the range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDisplayLayout, NoSuchCPDisplayLayoutException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the cp display layouts where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<CPDisplayLayout> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp display layouts where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -166,14 +110,9 @@ public class CPDisplayLayoutPersistenceImpl
 		OrderByComparator<CPDisplayLayout> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -189,16 +128,8 @@ public class CPDisplayLayoutPersistenceImpl
 			String uuid, OrderByComparator<CPDisplayLayout> orderByComparator)
 		throws NoSuchCPDisplayLayoutException {
 
-		CPDisplayLayout cpDisplayLayout = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (cpDisplayLayout != null) {
-			return cpDisplayLayout;
-		}
-
-		throw new NoSuchCPDisplayLayoutException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -235,18 +166,13 @@ public class CPDisplayLayoutPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<CPDisplayLayout>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<CPDisplayLayout, NoSuchCPDisplayLayoutException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the cp display layout where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchCPDisplayLayoutException</code> if it could not be found.
@@ -260,33 +186,8 @@ public class CPDisplayLayoutPersistenceImpl
 	public CPDisplayLayout findByUUID_G(String uuid, long groupId)
 		throws NoSuchCPDisplayLayoutException {
 
-		CPDisplayLayout cpDisplayLayout = fetchByUUID_G(uuid, groupId);
-
-		if (cpDisplayLayout == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPDisplayLayoutException(message);
-		}
-
-		return cpDisplayLayout;
-	}
-
-	/**
-	 * Returns the cp display layout where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching cp display layout, or <code>null</code> if a matching cp display layout could not be found
-	 */
-	@Override
-	public CPDisplayLayout fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -301,13 +202,8 @@ public class CPDisplayLayoutPersistenceImpl
 	public CPDisplayLayout fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -339,73 +235,15 @@ public class CPDisplayLayoutPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<CPDisplayLayout>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the cp display layouts where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp display layouts where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @return the range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDisplayLayout, NoSuchCPDisplayLayoutException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the cp display layouts where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<CPDisplayLayout> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp display layouts where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -422,14 +260,9 @@ public class CPDisplayLayoutPersistenceImpl
 		OrderByComparator<CPDisplayLayout> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -447,16 +280,8 @@ public class CPDisplayLayoutPersistenceImpl
 			OrderByComparator<CPDisplayLayout> orderByComparator)
 		throws NoSuchCPDisplayLayoutException {
 
-		CPDisplayLayout cpDisplayLayout = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (cpDisplayLayout != null) {
-			return cpDisplayLayout;
-		}
-
-		throw new NoSuchCPDisplayLayoutException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -497,78 +322,19 @@ public class CPDisplayLayoutPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<CPDisplayLayout>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the cp display layouts where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp display layouts where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @return the range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDisplayLayout, NoSuchCPDisplayLayoutException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the cp display layouts where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<CPDisplayLayout> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp display layouts where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -584,14 +350,9 @@ public class CPDisplayLayoutPersistenceImpl
 		OrderByComparator<CPDisplayLayout> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				finderCache, new Object[] {groupId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -607,16 +368,8 @@ public class CPDisplayLayoutPersistenceImpl
 			long groupId, OrderByComparator<CPDisplayLayout> orderByComparator)
 		throws NoSuchCPDisplayLayoutException {
 
-		CPDisplayLayout cpDisplayLayout = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (cpDisplayLayout != null) {
-			return cpDisplayLayout;
-		}
-
-		throw new NoSuchCPDisplayLayoutException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -653,82 +406,19 @@ public class CPDisplayLayoutPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				finderCache, new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_C;
-	private FinderPath _finderPathWithoutPaginationFindByG_C;
-	private FinderPath _finderPathCountByG_C;
-	private CollectionPersistenceFinder<CPDisplayLayout>
-		_collectionPersistenceFinderByG_C;
-
-	/**
-	 * Returns all the cp display layouts where groupId = &#63; and classNameId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param classNameId the class name ID
-	 * @return the matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByG_C(long groupId, long classNameId) {
-		return findByG_C(
-			groupId, classNameId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp display layouts where groupId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @return the range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByG_C(
-		long groupId, long classNameId, int start, int end) {
-
-		return findByG_C(groupId, classNameId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDisplayLayout, NoSuchCPDisplayLayoutException>
+			_collectionPersistenceFinderByG_C;
 
 	/**
 	 * Returns an ordered range of all the cp display layouts where groupId = &#63; and classNameId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByG_C(
-		long groupId, long classNameId, int start, int end,
-		OrderByComparator<CPDisplayLayout> orderByComparator) {
-
-		return findByG_C(
-			groupId, classNameId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp display layouts where groupId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -745,14 +435,9 @@ public class CPDisplayLayoutPersistenceImpl
 		OrderByComparator<CPDisplayLayout> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByG_C.find(
-				finderCache, new Object[] {groupId, classNameId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_C.find(
+			finderCache, new Object[] {groupId, classNameId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -770,16 +455,9 @@ public class CPDisplayLayoutPersistenceImpl
 			OrderByComparator<CPDisplayLayout> orderByComparator)
 		throws NoSuchCPDisplayLayoutException {
 
-		CPDisplayLayout cpDisplayLayout = fetchByG_C_First(
-			groupId, classNameId, orderByComparator);
-
-		if (cpDisplayLayout != null) {
-			return cpDisplayLayout;
-		}
-
-		throw new NoSuchCPDisplayLayoutException(
-			_collectionPersistenceFinderByG_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, classNameId}));
+		return _collectionPersistenceFinderByG_C.findFirst(
+			finderCache, new Object[] {groupId, classNameId},
+			orderByComparator);
 	}
 
 	/**
@@ -821,87 +499,19 @@ public class CPDisplayLayoutPersistenceImpl
 	 */
 	@Override
 	public int countByG_C(long groupId, long classNameId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByG_C.count(
-				finderCache, new Object[] {groupId, classNameId});
-		}
+		return _collectionPersistenceFinderByG_C.count(
+			finderCache, new Object[] {groupId, classNameId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_LPTEU;
-	private FinderPath _finderPathWithoutPaginationFindByG_LPTEU;
-	private FinderPath _finderPathCountByG_LPTEU;
-	private CollectionPersistenceFinder<CPDisplayLayout>
-		_collectionPersistenceFinderByG_LPTEU;
-
-	/**
-	 * Returns all the cp display layouts where groupId = &#63; and layoutPageTemplateEntryUuid = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param layoutPageTemplateEntryUuid the layout page template entry uuid
-	 * @return the matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByG_LPTEU(
-		long groupId, String layoutPageTemplateEntryUuid) {
-
-		return findByG_LPTEU(
-			groupId, layoutPageTemplateEntryUuid, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp display layouts where groupId = &#63; and layoutPageTemplateEntryUuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param layoutPageTemplateEntryUuid the layout page template entry uuid
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @return the range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByG_LPTEU(
-		long groupId, String layoutPageTemplateEntryUuid, int start, int end) {
-
-		return findByG_LPTEU(
-			groupId, layoutPageTemplateEntryUuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDisplayLayout, NoSuchCPDisplayLayoutException>
+			_collectionPersistenceFinderByG_LPTEU;
 
 	/**
 	 * Returns an ordered range of all the cp display layouts where groupId = &#63; and layoutPageTemplateEntryUuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param layoutPageTemplateEntryUuid the layout page template entry uuid
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByG_LPTEU(
-		long groupId, String layoutPageTemplateEntryUuid, int start, int end,
-		OrderByComparator<CPDisplayLayout> orderByComparator) {
-
-		return findByG_LPTEU(
-			groupId, layoutPageTemplateEntryUuid, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp display layouts where groupId = &#63; and layoutPageTemplateEntryUuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -918,15 +528,9 @@ public class CPDisplayLayoutPersistenceImpl
 		OrderByComparator<CPDisplayLayout> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByG_LPTEU.find(
-				finderCache,
-				new Object[] {groupId, layoutPageTemplateEntryUuid}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_LPTEU.find(
+			finderCache, new Object[] {groupId, layoutPageTemplateEntryUuid},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -944,17 +548,9 @@ public class CPDisplayLayoutPersistenceImpl
 			OrderByComparator<CPDisplayLayout> orderByComparator)
 		throws NoSuchCPDisplayLayoutException {
 
-		CPDisplayLayout cpDisplayLayout = fetchByG_LPTEU_First(
-			groupId, layoutPageTemplateEntryUuid, orderByComparator);
-
-		if (cpDisplayLayout != null) {
-			return cpDisplayLayout;
-		}
-
-		throw new NoSuchCPDisplayLayoutException(
-			_collectionPersistenceFinderByG_LPTEU.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, layoutPageTemplateEntryUuid}));
+		return _collectionPersistenceFinderByG_LPTEU.findFirst(
+			finderCache, new Object[] {groupId, layoutPageTemplateEntryUuid},
+			orderByComparator);
 	}
 
 	/**
@@ -1000,83 +596,19 @@ public class CPDisplayLayoutPersistenceImpl
 	public int countByG_LPTEU(
 		long groupId, String layoutPageTemplateEntryUuid) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByG_LPTEU.count(
-				finderCache,
-				new Object[] {groupId, layoutPageTemplateEntryUuid});
-		}
+		return _collectionPersistenceFinderByG_LPTEU.count(
+			finderCache, new Object[] {groupId, layoutPageTemplateEntryUuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_L;
-	private FinderPath _finderPathWithoutPaginationFindByG_L;
-	private FinderPath _finderPathCountByG_L;
-	private CollectionPersistenceFinder<CPDisplayLayout>
-		_collectionPersistenceFinderByG_L;
-
-	/**
-	 * Returns all the cp display layouts where groupId = &#63; and layoutUuid = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param layoutUuid the layout uuid
-	 * @return the matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByG_L(long groupId, String layoutUuid) {
-		return findByG_L(
-			groupId, layoutUuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp display layouts where groupId = &#63; and layoutUuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param layoutUuid the layout uuid
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @return the range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByG_L(
-		long groupId, String layoutUuid, int start, int end) {
-
-		return findByG_L(groupId, layoutUuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDisplayLayout, NoSuchCPDisplayLayoutException>
+			_collectionPersistenceFinderByG_L;
 
 	/**
 	 * Returns an ordered range of all the cp display layouts where groupId = &#63; and layoutUuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param layoutUuid the layout uuid
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByG_L(
-		long groupId, String layoutUuid, int start, int end,
-		OrderByComparator<CPDisplayLayout> orderByComparator) {
-
-		return findByG_L(
-			groupId, layoutUuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp display layouts where groupId = &#63; and layoutUuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1093,14 +625,9 @@ public class CPDisplayLayoutPersistenceImpl
 		OrderByComparator<CPDisplayLayout> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByG_L.find(
-				finderCache, new Object[] {groupId, layoutUuid}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_L.find(
+			finderCache, new Object[] {groupId, layoutUuid}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1118,16 +645,8 @@ public class CPDisplayLayoutPersistenceImpl
 			OrderByComparator<CPDisplayLayout> orderByComparator)
 		throws NoSuchCPDisplayLayoutException {
 
-		CPDisplayLayout cpDisplayLayout = fetchByG_L_First(
-			groupId, layoutUuid, orderByComparator);
-
-		if (cpDisplayLayout != null) {
-			return cpDisplayLayout;
-		}
-
-		throw new NoSuchCPDisplayLayoutException(
-			_collectionPersistenceFinderByG_L.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, layoutUuid}));
+		return _collectionPersistenceFinderByG_L.findFirst(
+			finderCache, new Object[] {groupId, layoutUuid}, orderByComparator);
 	}
 
 	/**
@@ -1168,82 +687,19 @@ public class CPDisplayLayoutPersistenceImpl
 	 */
 	@Override
 	public int countByG_L(long groupId, String layoutUuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByG_L.count(
-				finderCache, new Object[] {groupId, layoutUuid});
-		}
+		return _collectionPersistenceFinderByG_L.count(
+			finderCache, new Object[] {groupId, layoutUuid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<CPDisplayLayout>
-		_collectionPersistenceFinderByC_C;
-
-	/**
-	 * Returns all the cp display layouts where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByC_C(long classNameId, long classPK) {
-		return findByC_C(
-			classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp display layouts where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @return the range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByC_C(
-		long classNameId, long classPK, int start, int end) {
-
-		return findByC_C(classNameId, classPK, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDisplayLayout, NoSuchCPDisplayLayoutException>
+			_collectionPersistenceFinderByC_C;
 
 	/**
 	 * Returns an ordered range of all the cp display layouts where classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByC_C(
-		long classNameId, long classPK, int start, int end,
-		OrderByComparator<CPDisplayLayout> orderByComparator) {
-
-		return findByC_C(
-			classNameId, classPK, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp display layouts where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -1260,14 +716,9 @@ public class CPDisplayLayoutPersistenceImpl
 		OrderByComparator<CPDisplayLayout> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByC_C.find(
-				finderCache, new Object[] {classNameId, classPK}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_C.find(
+			finderCache, new Object[] {classNameId, classPK}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1285,16 +736,9 @@ public class CPDisplayLayoutPersistenceImpl
 			OrderByComparator<CPDisplayLayout> orderByComparator)
 		throws NoSuchCPDisplayLayoutException {
 
-		CPDisplayLayout cpDisplayLayout = fetchByC_C_First(
-			classNameId, classPK, orderByComparator);
-
-		if (cpDisplayLayout != null) {
-			return cpDisplayLayout;
-		}
-
-		throw new NoSuchCPDisplayLayoutException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {classNameId, classPK}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			finderCache, new Object[] {classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -1336,82 +780,19 @@ public class CPDisplayLayoutPersistenceImpl
 	 */
 	@Override
 	public int countByC_C(long classNameId, long classPK) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _collectionPersistenceFinderByC_C.count(
-				finderCache, new Object[] {classNameId, classPK});
-		}
+		return _collectionPersistenceFinderByC_C.count(
+			finderCache, new Object[] {classNameId, classPK});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C_LPTEU;
-	private FinderPath _finderPathWithoutPaginationFindByC_C_LPTEU;
-	private FinderPath _finderPathCountByC_C_LPTEU;
-
-	/**
-	 * Returns all the cp display layouts where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByC_C_LPTEU(
-		long classNameId, long classPK) {
-
-		return findByC_C_LPTEU(
-			classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp display layouts where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @return the range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByC_C_LPTEU(
-		long classNameId, long classPK, int start, int end) {
-
-		return findByC_C_LPTEU(classNameId, classPK, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDisplayLayout, NoSuchCPDisplayLayoutException>
+			_collectionPersistenceFinderByC_C_LPTEU;
 
 	/**
 	 * Returns an ordered range of all the cp display layouts where classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByC_C_LPTEU(
-		long classNameId, long classPK, int start, int end,
-		OrderByComparator<CPDisplayLayout> orderByComparator) {
-
-		return findByC_C_LPTEU(
-			classNameId, classPK, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp display layouts where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -1428,106 +809,9 @@ public class CPDisplayLayoutPersistenceImpl
 		OrderByComparator<CPDisplayLayout> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByC_C_LPTEU;
-					finderArgs = new Object[] {classNameId, classPK};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByC_C_LPTEU;
-				finderArgs = new Object[] {
-					classNameId, classPK, start, end, orderByComparator
-				};
-			}
-
-			List<CPDisplayLayout> list = null;
-
-			if (useFinderCache) {
-				list = (List<CPDisplayLayout>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CPDisplayLayout cpDisplayLayout : list) {
-						if ((classNameId != cpDisplayLayout.getClassNameId()) ||
-							(classPK != cpDisplayLayout.getClassPK())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						4 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(4);
-				}
-
-				sb.append(_SQL_SELECT_CPDISPLAYLAYOUT_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_C_LPTEU_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_C_C_LPTEU_CLASSPK_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CPDisplayLayoutModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(classPK);
-
-					list = (List<CPDisplayLayout>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByC_C_LPTEU.find(
+			finderCache, new Object[] {classNameId, classPK}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1545,26 +829,9 @@ public class CPDisplayLayoutPersistenceImpl
 			OrderByComparator<CPDisplayLayout> orderByComparator)
 		throws NoSuchCPDisplayLayoutException {
 
-		CPDisplayLayout cpDisplayLayout = fetchByC_C_LPTEU_First(
-			classNameId, classPK, orderByComparator);
-
-		if (cpDisplayLayout != null) {
-			return cpDisplayLayout;
-		}
-
-		StringBundler sb = new StringBundler(6);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("classNameId=");
-		sb.append(classNameId);
-
-		sb.append(", classPK=");
-		sb.append(classPK);
-
-		sb.append("}");
-
-		throw new NoSuchCPDisplayLayoutException(sb.toString());
+		return _collectionPersistenceFinderByC_C_LPTEU.findFirst(
+			finderCache, new Object[] {classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -1580,14 +847,9 @@ public class CPDisplayLayoutPersistenceImpl
 		long classNameId, long classPK,
 		OrderByComparator<CPDisplayLayout> orderByComparator) {
 
-		List<CPDisplayLayout> list = findByC_C_LPTEU(
-			classNameId, classPK, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		return _collectionPersistenceFinderByC_C_LPTEU.fetchFirst(
+			finderCache, new Object[] {classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -1598,13 +860,8 @@ public class CPDisplayLayoutPersistenceImpl
 	 */
 	@Override
 	public void removeByC_C_LPTEU(long classNameId, long classPK) {
-		for (CPDisplayLayout cpDisplayLayout :
-				findByC_C_LPTEU(
-					classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(cpDisplayLayout);
-		}
+		_collectionPersistenceFinderByC_C_LPTEU.remove(
+			finderCache, new Object[] {classNameId, classPK});
 	}
 
 	/**
@@ -1616,128 +873,19 @@ public class CPDisplayLayoutPersistenceImpl
 	 */
 	@Override
 	public int countByC_C_LPTEU(long classNameId, long classPK) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			FinderPath finderPath = _finderPathCountByC_C_LPTEU;
-
-			Object[] finderArgs = new Object[] {classNameId, classPK};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_CPDISPLAYLAYOUT_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_C_LPTEU_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_C_C_LPTEU_CLASSPK_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(classPK);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByC_C_LPTEU.count(
+			finderCache, new Object[] {classNameId, classPK});
 	}
 
-	private static final String _FINDER_COLUMN_C_C_LPTEU_CLASSNAMEID_2 =
-		"cpDisplayLayout.classNameId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_C_LPTEU_CLASSPK_2 =
-		"cpDisplayLayout.classPK = ? AND cpDisplayLayout.layoutPageTemplateEntryUuid IS NOT NULL";
-
-	private FinderPath _finderPathWithPaginationFindByC_C_L;
-	private FinderPath _finderPathWithoutPaginationFindByC_C_L;
-	private FinderPath _finderPathCountByC_C_L;
-
-	/**
-	 * Returns all the cp display layouts where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByC_C_L(long classNameId, long classPK) {
-		return findByC_C_L(
-			classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the cp display layouts where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @return the range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByC_C_L(
-		long classNameId, long classPK, int start, int end) {
-
-		return findByC_C_L(classNameId, classPK, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CPDisplayLayout, NoSuchCPDisplayLayoutException>
+			_collectionPersistenceFinderByC_C_L;
 
 	/**
 	 * Returns an ordered range of all the cp display layouts where classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of cp display layouts
-	 * @param end the upper bound of the range of cp display layouts (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching cp display layouts
-	 */
-	@Override
-	public List<CPDisplayLayout> findByC_C_L(
-		long classNameId, long classPK, int start, int end,
-		OrderByComparator<CPDisplayLayout> orderByComparator) {
-
-		return findByC_C_L(
-			classNameId, classPK, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the cp display layouts where classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CPDisplayLayoutModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -1754,106 +902,9 @@ public class CPDisplayLayoutPersistenceImpl
 		OrderByComparator<CPDisplayLayout> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			FinderPath finderPath = null;
-			Object[] finderArgs = null;
-
-			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-
-				if (useFinderCache) {
-					finderPath = _finderPathWithoutPaginationFindByC_C_L;
-					finderArgs = new Object[] {classNameId, classPK};
-				}
-			}
-			else if (useFinderCache) {
-				finderPath = _finderPathWithPaginationFindByC_C_L;
-				finderArgs = new Object[] {
-					classNameId, classPK, start, end, orderByComparator
-				};
-			}
-
-			List<CPDisplayLayout> list = null;
-
-			if (useFinderCache) {
-				list = (List<CPDisplayLayout>)finderCache.getResult(
-					finderPath, finderArgs, this);
-
-				if ((list != null) && !list.isEmpty()) {
-					for (CPDisplayLayout cpDisplayLayout : list) {
-						if ((classNameId != cpDisplayLayout.getClassNameId()) ||
-							(classPK != cpDisplayLayout.getClassPK())) {
-
-							list = null;
-
-							break;
-						}
-					}
-				}
-			}
-
-			if (list == null) {
-				StringBundler sb = null;
-
-				if (orderByComparator != null) {
-					sb = new StringBundler(
-						4 + (orderByComparator.getOrderByFields().length * 2));
-				}
-				else {
-					sb = new StringBundler(4);
-				}
-
-				sb.append(_SQL_SELECT_CPDISPLAYLAYOUT_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_C_L_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_C_C_L_CLASSPK_2);
-
-				if (orderByComparator != null) {
-					appendOrderByComparator(
-						sb, _ENTITY_ALIAS_PREFIX, orderByComparator);
-				}
-				else {
-					sb.append(CPDisplayLayoutModelImpl.ORDER_BY_JPQL);
-				}
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(classPK);
-
-					list = (List<CPDisplayLayout>)QueryUtil.list(
-						query, getDialect(), start, end);
-
-					cacheResult(list);
-
-					if (useFinderCache) {
-						finderCache.putResult(finderPath, finderArgs, list);
-					}
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return list;
-		}
+		return _collectionPersistenceFinderByC_C_L.find(
+			finderCache, new Object[] {classNameId, classPK}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1871,26 +922,9 @@ public class CPDisplayLayoutPersistenceImpl
 			OrderByComparator<CPDisplayLayout> orderByComparator)
 		throws NoSuchCPDisplayLayoutException {
 
-		CPDisplayLayout cpDisplayLayout = fetchByC_C_L_First(
-			classNameId, classPK, orderByComparator);
-
-		if (cpDisplayLayout != null) {
-			return cpDisplayLayout;
-		}
-
-		StringBundler sb = new StringBundler(6);
-
-		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
-
-		sb.append("classNameId=");
-		sb.append(classNameId);
-
-		sb.append(", classPK=");
-		sb.append(classPK);
-
-		sb.append("}");
-
-		throw new NoSuchCPDisplayLayoutException(sb.toString());
+		return _collectionPersistenceFinderByC_C_L.findFirst(
+			finderCache, new Object[] {classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -1906,14 +940,9 @@ public class CPDisplayLayoutPersistenceImpl
 		long classNameId, long classPK,
 		OrderByComparator<CPDisplayLayout> orderByComparator) {
 
-		List<CPDisplayLayout> list = findByC_C_L(
-			classNameId, classPK, 0, 1, orderByComparator);
-
-		if (!list.isEmpty()) {
-			return list.get(0);
-		}
-
-		return null;
+		return _collectionPersistenceFinderByC_C_L.fetchFirst(
+			finderCache, new Object[] {classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -1924,13 +953,8 @@ public class CPDisplayLayoutPersistenceImpl
 	 */
 	@Override
 	public void removeByC_C_L(long classNameId, long classPK) {
-		for (CPDisplayLayout cpDisplayLayout :
-				findByC_C_L(
-					classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					null)) {
-
-			remove(cpDisplayLayout);
-		}
+		_collectionPersistenceFinderByC_C_L.remove(
+			finderCache, new Object[] {classNameId, classPK});
 	}
 
 	/**
@@ -1942,66 +966,13 @@ public class CPDisplayLayoutPersistenceImpl
 	 */
 	@Override
 	public int countByC_C_L(long classNameId, long classPK) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			FinderPath finderPath = _finderPathCountByC_C_L;
-
-			Object[] finderArgs = new Object[] {classNameId, classPK};
-
-			Long count = (Long)finderCache.getResult(
-				finderPath, finderArgs, this);
-
-			if (count == null) {
-				StringBundler sb = new StringBundler(3);
-
-				sb.append(_SQL_COUNT_CPDISPLAYLAYOUT_WHERE);
-
-				sb.append(_FINDER_COLUMN_C_C_L_CLASSNAMEID_2);
-
-				sb.append(_FINDER_COLUMN_C_C_L_CLASSPK_2);
-
-				String sql = sb.toString();
-
-				Session session = null;
-
-				try {
-					session = openSession();
-
-					Query query = session.createQuery(sql);
-
-					QueryPos queryPos = QueryPos.getInstance(query);
-
-					queryPos.add(classNameId);
-
-					queryPos.add(classPK);
-
-					count = (Long)query.uniqueResult();
-
-					finderCache.putResult(finderPath, finderArgs, count);
-				}
-				catch (Exception exception) {
-					throw processException(exception);
-				}
-				finally {
-					closeSession(session);
-				}
-			}
-
-			return count.intValue();
-		}
+		return _collectionPersistenceFinderByC_C_L.count(
+			finderCache, new Object[] {classNameId, classPK});
 	}
 
-	private static final String _FINDER_COLUMN_C_C_L_CLASSNAMEID_2 =
-		"cpDisplayLayout.classNameId = ? AND ";
-
-	private static final String _FINDER_COLUMN_C_C_L_CLASSPK_2 =
-		"cpDisplayLayout.classPK = ? AND cpDisplayLayout.layoutUuid IS NOT NULL";
-
-	private FinderPath _finderPathFetchByG_C_C;
-	private UniquePersistenceFinder<CPDisplayLayout>
-		_uniquePersistenceFinderByG_C_C;
+	private UniquePersistenceFinder
+		<CPDisplayLayout, NoSuchCPDisplayLayoutException>
+			_uniquePersistenceFinderByG_C_C;
 
 	/**
 	 * Returns the cp display layout where groupId = &#63; and classNameId = &#63; and classPK = &#63; or throws a <code>NoSuchCPDisplayLayoutException</code> if it could not be found.
@@ -2017,38 +988,8 @@ public class CPDisplayLayoutPersistenceImpl
 			long groupId, long classNameId, long classPK)
 		throws NoSuchCPDisplayLayoutException {
 
-		CPDisplayLayout cpDisplayLayout = fetchByG_C_C(
-			groupId, classNameId, classPK);
-
-		if (cpDisplayLayout == null) {
-			String message =
-				_uniquePersistenceFinderByG_C_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, classNameId, classPK});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCPDisplayLayoutException(message);
-		}
-
-		return cpDisplayLayout;
-	}
-
-	/**
-	 * Returns the cp display layout where groupId = &#63; and classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching cp display layout, or <code>null</code> if a matching cp display layout could not be found
-	 */
-	@Override
-	public CPDisplayLayout fetchByG_C_C(
-		long groupId, long classNameId, long classPK) {
-
-		return fetchByG_C_C(groupId, classNameId, classPK, true);
+		return _uniquePersistenceFinderByG_C_C.find(
+			finderCache, new Object[] {groupId, classNameId, classPK});
 	}
 
 	/**
@@ -2064,14 +1005,9 @@ public class CPDisplayLayoutPersistenceImpl
 	public CPDisplayLayout fetchByG_C_C(
 		long groupId, long classNameId, long classPK, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					CPDisplayLayout.class)) {
-
-			return _uniquePersistenceFinderByG_C_C.fetch(
-				finderCache, new Object[] {groupId, classNameId, classPK},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_C_C.fetch(
+			finderCache, new Object[] {groupId, classNameId, classPK},
+			useFinderCache);
 	}
 
 	/**
@@ -2411,292 +1347,296 @@ public class CPDisplayLayoutPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_CPDISPLAYLAYOUT_WHERE, _SQL_COUNT_CPDISPLAYLAYOUT_WHERE,
-			CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"cpDisplayLayout.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, CPDisplayLayout::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, CPDisplayLayout::getUuid,
-			CPDisplayLayout::getGroupId);
+				"cpDisplayLayout.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, CPDisplayLayout::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_CPDISPLAYLAYOUT_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(CPDisplayLayout::getUuid),
+				CPDisplayLayout::getGroupId),
+			_SQL_SELECT_CPDISPLAYLAYOUT_WHERE, "",
 			new FinderColumn<>(
-				"cpDisplayLayout.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, CPDisplayLayout::getUuid),
+				"cpDisplayLayout.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, CPDisplayLayout::getUuid),
 			new FinderColumn<>(
 				"cpDisplayLayout.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, CPDisplayLayout::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_CPDISPLAYLAYOUT_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_CPDISPLAYLAYOUT_WHERE,
 				_SQL_COUNT_CPDISPLAYLAYOUT_WHERE,
 				CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"cpDisplayLayout.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, CPDisplayLayout::getUuid),
+					"cpDisplayLayout.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					CPDisplayLayout::getUuid),
 				new FinderColumn<>(
 					"cpDisplayLayout.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, CPDisplayLayout::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_CPDISPLAYLAYOUT_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_CPDISPLAYLAYOUT_WHERE,
 				_SQL_COUNT_CPDISPLAYLAYOUT_WHERE,
 				CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"cpDisplayLayout.", "groupId", FinderColumn.Type.LONG, "=",
 					true, true, CPDisplayLayout::getGroupId));
 
-		_finderPathWithPaginationFindByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "classNameId"}, true);
-
-		_finderPathWithoutPaginationFindByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "classNameId"}, true);
-
-		_finderPathCountByG_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "classNameId"}, false);
-
 		_collectionPersistenceFinderByG_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_C,
-			_finderPathWithoutPaginationFindByG_C, _finderPathCountByG_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "classNameId"}, false),
 			_SQL_SELECT_CPDISPLAYLAYOUT_WHERE, _SQL_COUNT_CPDISPLAYLAYOUT_WHERE,
-			CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"cpDisplayLayout.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, CPDisplayLayout::getGroupId),
+				true, true, CPDisplayLayout::getGroupId),
 			new FinderColumn<>(
 				"cpDisplayLayout.", "classNameId", FinderColumn.Type.LONG, "=",
 				true, true, CPDisplayLayout::getClassNameId));
 
-		_finderPathWithPaginationFindByG_LPTEU = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_LPTEU",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "layoutPageTemplateEntryUuid"}, true);
-
-		_finderPathWithoutPaginationFindByG_LPTEU = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_LPTEU",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "layoutPageTemplateEntryUuid"}, true);
-
-		_finderPathCountByG_LPTEU = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_LPTEU",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "layoutPageTemplateEntryUuid"}, false);
-
 		_collectionPersistenceFinderByG_LPTEU =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_LPTEU,
-				_finderPathWithoutPaginationFindByG_LPTEU,
-				_finderPathCountByG_LPTEU, _SQL_SELECT_CPDISPLAYLAYOUT_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_LPTEU",
+					new String[] {
+						Long.class.getName(), String.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "layoutPageTemplateEntryUuid"},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_LPTEU",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"groupId", "layoutPageTemplateEntryUuid"}, 0,
+					2, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_LPTEU",
+					new String[] {Long.class.getName(), String.class.getName()},
+					new String[] {"groupId", "layoutPageTemplateEntryUuid"}, 0,
+					2, false, null),
+				_SQL_SELECT_CPDISPLAYLAYOUT_WHERE,
 				_SQL_COUNT_CPDISPLAYLAYOUT_WHERE,
 				CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"cpDisplayLayout.", "groupId", FinderColumn.Type.LONG, "=",
-					true, false, CPDisplayLayout::getGroupId),
+					true, true, CPDisplayLayout::getGroupId),
 				new FinderColumn<>(
 					"cpDisplayLayout.", "layoutPageTemplateEntryUuid",
 					FinderColumn.Type.STRING, "=", true, true,
 					CPDisplayLayout::getLayoutPageTemplateEntryUuid));
 
-		_finderPathWithPaginationFindByG_L = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_L",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "layoutUuid"}, true);
-
-		_finderPathWithoutPaginationFindByG_L = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_L",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "layoutUuid"}, true);
-
-		_finderPathCountByG_L = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_L",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "layoutUuid"}, false);
-
 		_collectionPersistenceFinderByG_L = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_L,
-			_finderPathWithoutPaginationFindByG_L, _finderPathCountByG_L,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_L",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "layoutUuid"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_L",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "layoutUuid"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_L",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "layoutUuid"}, 0, 2, false, null),
 			_SQL_SELECT_CPDISPLAYLAYOUT_WHERE, _SQL_COUNT_CPDISPLAYLAYOUT_WHERE,
-			CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"cpDisplayLayout.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, CPDisplayLayout::getGroupId),
+				true, true, CPDisplayLayout::getGroupId),
 			new FinderColumn<>(
 				"cpDisplayLayout.", "layoutUuid", FinderColumn.Type.STRING, "=",
 				true, true, CPDisplayLayout::getLayoutUuid));
 
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, false);
-
 		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "classPK"}, false),
 			_SQL_SELECT_CPDISPLAYLAYOUT_WHERE, _SQL_COUNT_CPDISPLAYLAYOUT_WHERE,
-			CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"cpDisplayLayout.", "classNameId", FinderColumn.Type.LONG, "=",
-				true, false, CPDisplayLayout::getClassNameId),
+				true, true, CPDisplayLayout::getClassNameId),
 			new FinderColumn<>(
 				"cpDisplayLayout.", "classPK", FinderColumn.Type.LONG, "=",
 				true, true, CPDisplayLayout::getClassPK));
 
-		_finderPathWithPaginationFindByC_C_LPTEU = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_LPTEU",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "classPK"}, true);
+		_collectionPersistenceFinderByC_C_LPTEU =
+			new CollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_LPTEU",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"classNameId", "classPK"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByC_C_LPTEU",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"classNameId", "classPK"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByC_C_LPTEU",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"classNameId", "classPK"}, false),
+				_SQL_SELECT_CPDISPLAYLAYOUT_WHERE,
+				_SQL_COUNT_CPDISPLAYLAYOUT_WHERE,
+				CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"cpDisplayLayout.layoutPageTemplateEntryUuid IS NOT NULL",
+				new FinderColumn<>(
+					"cpDisplayLayout.", "classNameId", FinderColumn.Type.LONG,
+					"=", true, true, CPDisplayLayout::getClassNameId),
+				new FinderColumn<>(
+					"cpDisplayLayout.", "classPK", FinderColumn.Type.LONG, "=",
+					true, true, CPDisplayLayout::getClassPK));
 
-		_finderPathWithoutPaginationFindByC_C_LPTEU = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C_LPTEU",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathCountByC_C_LPTEU = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C_LPTEU",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, false);
-
-		_finderPathWithPaginationFindByC_C_L = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_L",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathWithoutPaginationFindByC_C_L = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C_L",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, true);
-
-		_finderPathCountByC_C_L = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C_L",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "classPK"}, false);
-
-		_finderPathFetchByG_C_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "classNameId", "classPK"}, false,
-			CPDisplayLayout::getGroupId, CPDisplayLayout::getClassNameId,
-			CPDisplayLayout::getClassPK);
-
-		_uniquePersistenceFinderByG_C_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_C_C, _SQL_SELECT_CPDISPLAYLAYOUT_WHERE,
-			new FinderColumn<>(
-				"cpDisplayLayout.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, CPDisplayLayout::getGroupId),
+		_collectionPersistenceFinderByC_C_L = new CollectionPersistenceFinder<>(
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C_L",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C_L",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "classPK"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C_L",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "classPK"}, false),
+			_SQL_SELECT_CPDISPLAYLAYOUT_WHERE, _SQL_COUNT_CPDISPLAYLAYOUT_WHERE,
+			CPDisplayLayoutModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"cpDisplayLayout.layoutUuid IS NOT NULL",
 			new FinderColumn<>(
 				"cpDisplayLayout.", "classNameId", FinderColumn.Type.LONG, "=",
-				true, false, CPDisplayLayout::getClassNameId),
+				true, true, CPDisplayLayout::getClassNameId),
+			new FinderColumn<>(
+				"cpDisplayLayout.", "classPK", FinderColumn.Type.LONG, "=",
+				true, true, CPDisplayLayout::getClassPK));
+
+		_uniquePersistenceFinderByG_C_C = new UniquePersistenceFinder<>(
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"groupId", "classNameId", "classPK"}, 0, 0, false,
+				CPDisplayLayout::getGroupId, CPDisplayLayout::getClassNameId,
+				CPDisplayLayout::getClassPK),
+			_SQL_SELECT_CPDISPLAYLAYOUT_WHERE, "",
+			new FinderColumn<>(
+				"cpDisplayLayout.", "groupId", FinderColumn.Type.LONG, "=",
+				true, true, CPDisplayLayout::getGroupId),
+			new FinderColumn<>(
+				"cpDisplayLayout.", "classNameId", FinderColumn.Type.LONG, "=",
+				true, true, CPDisplayLayout::getClassNameId),
 			new FinderColumn<>(
 				"cpDisplayLayout.", "classPK", FinderColumn.Type.LONG, "=",
 				true, true, CPDisplayLayout::getClassPK));
@@ -2773,4 +1713,4 @@ public class CPDisplayLayoutPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-204063337
+// LIFERAY-SERVICE-BUILDER-HASH:-1551342938

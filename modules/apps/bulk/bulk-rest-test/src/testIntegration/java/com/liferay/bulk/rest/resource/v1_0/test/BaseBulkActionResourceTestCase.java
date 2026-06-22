@@ -23,6 +23,7 @@ import com.liferay.bulk.rest.client.dto.v1_0.DeleteObjectAssetVersionBulkSelecti
 import com.liferay.bulk.rest.client.dto.v1_0.DeleteObjectBulkSelectionAction;
 import com.liferay.bulk.rest.client.dto.v1_0.DeleteObjectEntryBulkSelectionAction;
 import com.liferay.bulk.rest.client.dto.v1_0.DueDateObjectBulkSelectionAction;
+import com.liferay.bulk.rest.client.dto.v1_0.DuplicateObjectBulkSelectionAction;
 import com.liferay.bulk.rest.client.dto.v1_0.EditObjectCategoriesBulkSelectionAction;
 import com.liferay.bulk.rest.client.dto.v1_0.EditObjectTagsBulkSelectionAction;
 import com.liferay.bulk.rest.client.dto.v1_0.ExpireObjectBulkSelectionAction;
@@ -50,6 +51,7 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
@@ -122,7 +124,8 @@ public abstract class BaseBulkActionResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -1766,7 +1769,9 @@ public abstract class BaseBulkActionResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -1900,6 +1905,16 @@ public abstract class BaseBulkActionResourceTestCase {
 
 				bulkAction.setType(
 					BulkAction.Type.create("DueDateObjectBulkSelectionAction"));
+
+				return bulkAction;
+			},
+			() -> {
+				DuplicateObjectBulkSelectionAction bulkAction =
+					new DuplicateObjectBulkSelectionAction();
+
+				bulkAction.setType(
+					BulkAction.Type.create(
+						"DuplicateObjectBulkSelectionAction"));
 
 				return bulkAction;
 			},
@@ -2246,4 +2261,4 @@ public abstract class BaseBulkActionResourceTestCase {
 		_bulkActionResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1463695251
+// LIFERAY-REST-BUILDER-HASH:2125287309

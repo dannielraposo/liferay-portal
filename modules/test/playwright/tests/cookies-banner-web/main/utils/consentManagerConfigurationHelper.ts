@@ -12,10 +12,13 @@ import {reloadUntilVisible} from '../../../../utils/reloadUntilVisible';
 import {waitForAlert} from '../../../../utils/waitForAlert';
 
 interface ConsentManagerConfiguration {
+	active?: boolean;
 	consentRenewalPeriod?: string;
 	enabled?: boolean;
 	explicitCookieConsentMode?: boolean;
+	floatingIconEnabled?: boolean;
 	forceReload?: boolean;
+	globalPrivacyControlEnabled?: boolean;
 	storeConsent?: boolean;
 }
 
@@ -90,13 +93,7 @@ export async function resetConsentManagerConfiguration(systemSettingsPage) {
 	await resetConfiguration(true, systemSettingsPage);
 }
 
-export async function saveOrUpdateConfiguration(dialog: boolean, page) {
-	if (dialog) {
-		page.once('dialog', async (dialogWindow) => {
-			await dialogWindow.accept();
-		});
-	}
-
+export async function saveOrUpdateConfiguration(page) {
 	const saveButton = page.getByRole('button', {
 		name: 'Save',
 	});
@@ -110,6 +107,22 @@ export async function saveOrUpdateConfiguration(dialog: boolean, page) {
 	}
 	else if (await updateButton.isVisible()) {
 		await updateButton.dispatchEvent('click');
+	}
+
+	const modal = page.getByRole('alertdialog');
+
+	try {
+		await modal.waitFor({state: 'visible', timeout: 2000});
+
+		await modal.getByRole('button', {name: 'OK'}).click();
+
+		await modal.waitFor({state: 'hidden'});
+	}
+	catch {
+
+		// No confirmation modal: either nothing changed or the configuration
+		// is not active.
+
 	}
 
 	try {
@@ -132,10 +145,13 @@ export async function saveOrUpdateConfiguration(dialog: boolean, page) {
 export async function updateConsentManagerConfiguration(
 	page: Page,
 	{
+		active,
 		consentRenewalPeriod,
 		enabled,
 		explicitCookieConsentMode,
+		floatingIconEnabled,
 		forceReload,
+		globalPrivacyControlEnabled,
 		storeConsent,
 	}: ConsentManagerConfiguration
 ) {
@@ -151,28 +167,20 @@ export async function updateConsentManagerConfiguration(
 		state: 'visible',
 	});
 
-	let dialog = false;
+	let desiredActive: boolean | undefined;
+
+	if (active !== undefined) {
+		desiredActive = active;
+	}
+	else if (enabled === true) {
+		desiredActive = true;
+	}
 
 	if (enabled === false) {
 		await consentManagerConfigurationPage.enabledCheckbox.setChecked(false);
 	}
-	else {
-		if (
-			(await consentManagerConfigurationPage.enabledCheckbox.isChecked()) &&
-			consentRenewalPeriod &&
-			consentRenewalPeriod !==
-				(await consentManagerConfigurationPage.consentRenewalPeriodInput.getAttribute(
-					'value'
-				))
-		) {
-			dialog = true;
-		}
-
-		if (enabled === true) {
-			await consentManagerConfigurationPage.enabledCheckbox.setChecked(
-				true
-			);
-		}
+	else if (enabled === true) {
+		await consentManagerConfigurationPage.enabledCheckbox.setChecked(true);
 	}
 
 	if (await consentManagerConfigurationPage.enabledCheckbox.isChecked()) {
@@ -194,6 +202,18 @@ export async function updateConsentManagerConfiguration(
 			);
 		}
 
+		if (floatingIconEnabled !== undefined) {
+			await consentManagerConfigurationPage.floatingIconEnabledCheckbox.setChecked(
+				floatingIconEnabled
+			);
+		}
+
+		if (globalPrivacyControlEnabled !== undefined) {
+			await consentManagerConfigurationPage.globalPrivacyControlEnabledCheckbox.setChecked(
+				globalPrivacyControlEnabled
+			);
+		}
+
 		if (storeConsent !== undefined) {
 			await consentManagerConfigurationPage.storeConsentCheckbox.setChecked(
 				storeConsent
@@ -201,5 +221,41 @@ export async function updateConsentManagerConfiguration(
 		}
 	}
 
-	await saveOrUpdateConfiguration(dialog, page);
+	if (desiredActive === true) {
+		const activeInput =
+			consentManagerConfigurationPage.systemSettingsPortletForm.locator(
+				'input[name$="active"]'
+			);
+
+		if ((await activeInput.count()) > 0) {
+			await activeInput.evaluate((element: HTMLInputElement) => {
+				element.value = 'true';
+			});
+		}
+	}
+
+	await saveOrUpdateConfiguration(page);
+
+	if (desiredActive !== undefined && enabled !== false) {
+		const {toggleActivateButton, toggleDeactivateButton} =
+			consentManagerConfigurationPage;
+
+		const isCurrentlyActive = await toggleDeactivateButton.isVisible();
+
+		if (desiredActive !== isCurrentlyActive) {
+			const toggleButton = isCurrentlyActive
+				? toggleDeactivateButton
+				: toggleActivateButton;
+
+			if (isCurrentlyActive) {
+				page.once('dialog', async (dialogWindow) => {
+					await dialogWindow.accept();
+				});
+			}
+
+			await toggleButton.click();
+
+			await waitForAlert(page);
+		}
+	}
 }

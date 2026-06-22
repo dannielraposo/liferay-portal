@@ -105,11 +105,10 @@ describe('MetricCard', () => {
 		).toBeNull();
 	});
 
-	it('should apply className, bodyClassName, and trendClassName', () => {
+	it('should apply className and trendClassName', () => {
 		const {container} = render(
 			<MetricCard
 				{...defaultProps}
-				bodyClassName='custom-body'
 				className='custom-card'
 				trend={{
 					percentage: 10,
@@ -120,7 +119,6 @@ describe('MetricCard', () => {
 		);
 
 		expect(container.querySelector('.custom-card')).toBeTruthy();
-		expect(container.querySelector('.custom-body')).toBeTruthy();
 		expect(container.querySelector('.custom-trend')).toBeTruthy();
 	});
 
@@ -135,7 +133,7 @@ describe('MetricCard', () => {
 		expect(getByTestId('custom-value')).toBeTruthy();
 	});
 
-	it('should round the percentage to two decimals', () => {
+	it('should round the percentage to one decimal', () => {
 		const {getByText} = render(
 			<MetricCard
 				{...defaultProps}
@@ -146,6 +144,6 @@ describe('MetricCard', () => {
 			/>
 		);
 
-		expect(getByText('12.35%')).toBeTruthy();
+		expect(getByText('12.3%')).toBeTruthy();
 	});
 });

@@ -7,6 +7,7 @@ package com.liferay.jenkins.results.parser.persistent.resource;
 
 import com.liferay.jenkins.results.parser.BuildDatabase;
 import com.liferay.jenkins.results.parser.CloudBucketUtil;
+import com.liferay.jenkins.results.parser.Environment;
 import com.liferay.jenkins.results.parser.JenkinsAPIUtil;
 import com.liferay.jenkins.results.parser.JenkinsMaster;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
@@ -265,7 +266,7 @@ public abstract class BasePersistentResource implements PersistentResource {
 				_buildDatabase.getProperties("start.properties"));
 		}
 
-		String jobVariant = System.getenv("JOB_VARIANT");
+		String jobVariant = Environment.get("JOB_VARIANT");
 
 		if (_buildDatabase.hasProperties(jobVariant + "/start.properties")) {
 			_startProperties.putAll(
@@ -346,6 +347,9 @@ public abstract class BasePersistentResource implements PersistentResource {
 			apiJSONObject.optString("result"));
 	}
 
+	protected void populateDataJSONObject(JSONObject dataJSONObject) {
+	}
+
 	protected void print(String message) {
 		System.out.println("[" + getType() + "] " + message);
 	}
@@ -379,6 +383,8 @@ public abstract class BasePersistentResource implements PersistentResource {
 		).put(
 			"status", String.valueOf(getStatus())
 		);
+
+		populateDataJSONObject(dataJSONObject);
 
 		if (!isBuildCachingEnabled()) {
 			_dataJSONObject = dataJSONObject;

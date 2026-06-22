@@ -84,7 +84,7 @@ $data-multi-step-icon-before-content: unquote(
 
 $multi-step-divider-bg: var(--multi-step-divider-bg, $gray-200) !default;
 $multi-step-divider-height: var(--multi-step-divider-height, 4px) !default;
-$multi-step-divider-spacer-x: var(--multi-step-divider-spacer-x, 0) !default;
+$multi-step-divider-spacer-x: var(--multi-step-divider-spacer-x, 0px) !default;
 $multi-step-divider-top: var(
 	--multi-step-divider-top,
 	calc(#{$multi-step-divider-height} * 0.5 + #{$multi-step-icon-size} * 0.5)
@@ -230,10 +230,7 @@ $multi-step-item-error: map-deep-merge(
 					$danger
 				),
 			background-image:
-				var(
-					--multi-step-item-error-multi-step-icon-background-image,
-					clay-icon(times, #fff)
-				),
+				var(--multi-step-item-error-icon, clay-icon(times, #fff)),
 			color: var(--multi-step-item-error-multi-step-icon-color, $white),
 			text-indent: -100px,
 
@@ -261,7 +258,7 @@ $multi-step-icon-complete-bg: var(
 	$gray-600
 ) !default;
 $multi-step-icon-complete-bg-image: var(
-	--multi-step-icon-complete-bg-image,
+	--multi-step-icon-complete-icon,
 	clay-icon(check, #fff)
 ) !default;
 $multi-step-icon-complete-bg-position: var(

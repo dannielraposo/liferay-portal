@@ -14,16 +14,12 @@ import com.liferay.journal.model.impl.JournalFolderModelImpl;
 import com.liferay.journal.service.persistence.JournalFolderPersistence;
 import com.liferay.journal.service.persistence.JournalFolderUtil;
 import com.liferay.journal.service.persistence.impl.constants.JournalPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -34,12 +30,12 @@ import com.liferay.portal.kernel.sanitizer.SanitizerException;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -101,60 +97,8 @@ public class JournalFolderPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<JournalFolder>
+	private CollectionPersistenceFinder<JournalFolder, NoSuchFolderException>
 		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the journal folders where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the journal folders where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @return the range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the journal folders where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<JournalFolder> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the journal folders where uuid = &#63;.
@@ -176,14 +120,9 @@ public class JournalFolderPersistenceImpl
 		OrderByComparator<JournalFolder> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -199,16 +138,8 @@ public class JournalFolderPersistenceImpl
 			String uuid, OrderByComparator<JournalFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (journalFolder != null) {
-			return journalFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -245,17 +176,11 @@ public class JournalFolderPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<JournalFolder>
+	private UniquePersistenceFinder<JournalFolder, NoSuchFolderException>
 		_uniquePersistenceFinderByUUID_G;
 
 	/**
@@ -270,33 +195,8 @@ public class JournalFolderPersistenceImpl
 	public JournalFolder findByUUID_G(String uuid, long groupId)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByUUID_G(uuid, groupId);
-
-		if (journalFolder == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFolderException(message);
-		}
-
-		return journalFolder;
-	}
-
-	/**
-	 * Returns the journal folder where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching journal folder, or <code>null</code> if a matching journal folder could not be found
-	 */
-	@Override
-	public JournalFolder fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -311,13 +211,8 @@ public class JournalFolderPersistenceImpl
 	public JournalFolder fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -349,67 +244,8 @@ public class JournalFolderPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<JournalFolder>
+	private CollectionPersistenceFinder<JournalFolder, NoSuchFolderException>
 		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the journal folders where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the journal folders where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @return the range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the journal folders where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<JournalFolder> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the journal folders where uuid = &#63; and companyId = &#63;.
@@ -432,14 +268,9 @@ public class JournalFolderPersistenceImpl
 		OrderByComparator<JournalFolder> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -457,16 +288,8 @@ public class JournalFolderPersistenceImpl
 			OrderByComparator<JournalFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (journalFolder != null) {
-			return journalFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -507,70 +330,13 @@ public class JournalFolderPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<JournalFolder>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the journal folders where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the journal folders where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @return the range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByGroupId(long groupId, int start, int end) {
-		return findByGroupId(groupId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the journal folders where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<JournalFolder> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder
+		<JournalFolder, NoSuchFolderException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the journal folders where groupId = &#63;.
@@ -592,14 +358,9 @@ public class JournalFolderPersistenceImpl
 		OrderByComparator<JournalFolder> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				finderCache, new Object[] {groupId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -615,16 +376,8 @@ public class JournalFolderPersistenceImpl
 			long groupId, OrderByComparator<JournalFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (journalFolder != null) {
-			return journalFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -640,37 +393,6 @@ public class JournalFolderPersistenceImpl
 
 		return _collectionPersistenceFinderByGroupId.fetchFirst(
 			finderCache, new Object[] {groupId}, orderByComparator);
-	}
-
-	/**
-	 * Returns all the journal folders that the user has permission to view where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching journal folders that the user has permission to view
-	 */
-	@Override
-	public List<JournalFolder> filterFindByGroupId(long groupId) {
-		return filterFindByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the journal folders that the user has permission to view where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @return the range of matching journal folders that the user has permission to view
-	 */
-	@Override
-	public List<JournalFolder> filterFindByGroupId(
-		long groupId, int start, int end) {
-
-		return filterFindByGroupId(groupId, start, end, null);
 	}
 
 	/**
@@ -691,97 +413,9 @@ public class JournalFolderPersistenceImpl
 		long groupId, int start, int end,
 		OrderByComparator<JournalFolder> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByGroupId(groupId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByGroupId(
-					groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_JOURNALFOLDER_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_JOURNALFOLDER_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_JOURNALFOLDER_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(JournalFolderModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(JournalFolderModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), JournalFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, JournalFolderImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, JournalFolderImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			return (List<JournalFolder>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterFind(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			groupId);
 	}
 
 	/**
@@ -803,13 +437,8 @@ public class JournalFolderPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				finderCache, new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {groupId});
 	}
 
 	/**
@@ -820,115 +449,12 @@ public class JournalFolderPersistenceImpl
 	 */
 	@Override
 	public int filterCountByGroupId(long groupId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByGroupId(groupId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<JournalFolder> journalFolders = findByGroupId(groupId);
-
-			journalFolders = InlineSQLHelperUtil.filter(
-				journalFolders, groupId);
-
-			return journalFolders.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_JOURNALFOLDER_WHERE);
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), JournalFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterCount(
+			finderCache, new Object[] {groupId}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_GROUPID_GROUPID_2 =
-		"journalFolder.groupId = ?";
-
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<JournalFolder>
+	private CollectionPersistenceFinder<JournalFolder, NoSuchFolderException>
 		_collectionPersistenceFinderByCompanyId;
-
-	/**
-	 * Returns all the journal folders where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the journal folders where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @return the range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByCompanyId(
-		long companyId, int start, int end) {
-
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the journal folders where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<JournalFolder> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
 
 	/**
 	 * Returns an ordered range of all the journal folders where companyId = &#63;.
@@ -950,14 +476,9 @@ public class JournalFolderPersistenceImpl
 		OrderByComparator<JournalFolder> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.find(
-				finderCache, new Object[] {companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByCompanyId.find(
+			finderCache, new Object[] {companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -973,16 +494,8 @@ public class JournalFolderPersistenceImpl
 			long companyId, OrderByComparator<JournalFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByCompanyId_First(
-			companyId, orderByComparator);
-
-		if (journalFolder != null) {
-			return journalFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			finderCache, new Object[] {companyId}, orderByComparator);
 	}
 
 	/**
@@ -1019,77 +532,13 @@ public class JournalFolderPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByCompanyId.count(
-				finderCache, new Object[] {companyId});
-		}
+		return _collectionPersistenceFinderByCompanyId.count(
+			finderCache, new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_P;
-	private FinderPath _finderPathWithoutPaginationFindByG_P;
-	private FinderPath _finderPathCountByG_P;
-	private CollectionPersistenceFinder<JournalFolder>
-		_collectionPersistenceFinderByG_P;
-
-	/**
-	 * Returns all the journal folders where groupId = &#63; and parentFolderId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param parentFolderId the parent folder ID
-	 * @return the matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByG_P(long groupId, long parentFolderId) {
-		return findByG_P(
-			groupId, parentFolderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the journal folders where groupId = &#63; and parentFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentFolderId the parent folder ID
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @return the range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByG_P(
-		long groupId, long parentFolderId, int start, int end) {
-
-		return findByG_P(groupId, parentFolderId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the journal folders where groupId = &#63; and parentFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentFolderId the parent folder ID
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByG_P(
-		long groupId, long parentFolderId, int start, int end,
-		OrderByComparator<JournalFolder> orderByComparator) {
-
-		return findByG_P(
-			groupId, parentFolderId, start, end, orderByComparator, true);
-	}
+	private FilterCollectionPersistenceFinder
+		<JournalFolder, NoSuchFolderException>
+			_collectionPersistenceFinderByG_P;
 
 	/**
 	 * Returns an ordered range of all the journal folders where groupId = &#63; and parentFolderId = &#63;.
@@ -1112,14 +561,9 @@ public class JournalFolderPersistenceImpl
 		OrderByComparator<JournalFolder> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByG_P.find(
-				finderCache, new Object[] {groupId, parentFolderId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_P.find(
+			finderCache, new Object[] {groupId, parentFolderId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1137,17 +581,9 @@ public class JournalFolderPersistenceImpl
 			OrderByComparator<JournalFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByG_P_First(
-			groupId, parentFolderId, orderByComparator);
-
-		if (journalFolder != null) {
-			return journalFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByG_P.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, parentFolderId}));
+		return _collectionPersistenceFinderByG_P.findFirst(
+			finderCache, new Object[] {groupId, parentFolderId},
+			orderByComparator);
 	}
 
 	/**
@@ -1169,42 +605,6 @@ public class JournalFolderPersistenceImpl
 	}
 
 	/**
-	 * Returns all the journal folders that the user has permission to view where groupId = &#63; and parentFolderId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param parentFolderId the parent folder ID
-	 * @return the matching journal folders that the user has permission to view
-	 */
-	@Override
-	public List<JournalFolder> filterFindByG_P(
-		long groupId, long parentFolderId) {
-
-		return filterFindByG_P(
-			groupId, parentFolderId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the journal folders that the user has permission to view where groupId = &#63; and parentFolderId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentFolderId the parent folder ID
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @return the range of matching journal folders that the user has permission to view
-	 */
-	@Override
-	public List<JournalFolder> filterFindByG_P(
-		long groupId, long parentFolderId, int start, int end) {
-
-		return filterFindByG_P(groupId, parentFolderId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the journal folders that the user has permissions to view where groupId = &#63; and parentFolderId = &#63;.
 	 *
 	 * <p>
@@ -1223,102 +623,9 @@ public class JournalFolderPersistenceImpl
 		long groupId, long parentFolderId, int start, int end,
 		OrderByComparator<JournalFolder> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_P(
-				groupId, parentFolderId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_P(
-					groupId, parentFolderId, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				4 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(5);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_JOURNALFOLDER_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_JOURNALFOLDER_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_P_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_PARENTFOLDERID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_JOURNALFOLDER_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(JournalFolderModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(JournalFolderModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), JournalFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, JournalFolderImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, JournalFolderImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(parentFolderId);
-
-			return (List<JournalFolder>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_P.filterFind(
+			finderCache, new Object[] {groupId, parentFolderId}, start, end,
+			orderByComparator, groupId);
 	}
 
 	/**
@@ -1342,13 +649,8 @@ public class JournalFolderPersistenceImpl
 	 */
 	@Override
 	public int countByG_P(long groupId, long parentFolderId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByG_P.count(
-				finderCache, new Object[] {groupId, parentFolderId});
-		}
+		return _collectionPersistenceFinderByG_P.count(
+			finderCache, new Object[] {groupId, parentFolderId});
 	}
 
 	/**
@@ -1360,68 +662,11 @@ public class JournalFolderPersistenceImpl
 	 */
 	@Override
 	public int filterCountByG_P(long groupId, long parentFolderId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_P(groupId, parentFolderId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<JournalFolder> journalFolders = findByG_P(
-				groupId, parentFolderId);
-
-			journalFolders = InlineSQLHelperUtil.filter(
-				journalFolders, groupId);
-
-			return journalFolders.size();
-		}
-
-		StringBundler sb = new StringBundler(3);
-
-		sb.append(_FILTER_SQL_COUNT_JOURNALFOLDER_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_P_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_PARENTFOLDERID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), JournalFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(parentFolderId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_P.filterCount(
+			finderCache, new Object[] {groupId, parentFolderId}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_P_GROUPID_2 =
-		"journalFolder.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_P_PARENTFOLDERID_2 =
-		"journalFolder.parentFolderId = ?";
-
-	private FinderPath _finderPathFetchByG_N;
-	private UniquePersistenceFinder<JournalFolder>
+	private UniquePersistenceFinder<JournalFolder, NoSuchFolderException>
 		_uniquePersistenceFinderByG_N;
 
 	/**
@@ -1436,33 +681,8 @@ public class JournalFolderPersistenceImpl
 	public JournalFolder findByG_N(long groupId, String name)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByG_N(groupId, name);
-
-		if (journalFolder == null) {
-			String message =
-				_uniquePersistenceFinderByG_N.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFolderException(message);
-		}
-
-		return journalFolder;
-	}
-
-	/**
-	 * Returns the journal folder where groupId = &#63; and name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param name the name
-	 * @return the matching journal folder, or <code>null</code> if a matching journal folder could not be found
-	 */
-	@Override
-	public JournalFolder fetchByG_N(long groupId, String name) {
-		return fetchByG_N(groupId, name, true);
+		return _uniquePersistenceFinderByG_N.find(
+			finderCache, new Object[] {groupId, name});
 	}
 
 	/**
@@ -1477,13 +697,8 @@ public class JournalFolderPersistenceImpl
 	public JournalFolder fetchByG_N(
 		long groupId, String name, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _uniquePersistenceFinderByG_N.fetch(
-				finderCache, new Object[] {groupId, name}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_N.fetch(
+			finderCache, new Object[] {groupId, name}, useFinderCache);
 	}
 
 	/**
@@ -1515,9 +730,7 @@ public class JournalFolderPersistenceImpl
 			finderCache, new Object[] {groupId, name});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_NotS;
-	private FinderPath _finderPathWithPaginationCountByC_NotS;
-	private CollectionPersistenceFinder<JournalFolder>
+	private CollectionPersistenceFinder<JournalFolder, NoSuchFolderException>
 		_collectionPersistenceFinderByC_NotS;
 
 	/**
@@ -1597,14 +810,9 @@ public class JournalFolderPersistenceImpl
 		OrderByComparator<JournalFolder> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByC_NotS.find(
-				finderCache, new Object[] {companyId, status}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_NotS.find(
+			finderCache, new Object[] {companyId, status}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1622,16 +830,8 @@ public class JournalFolderPersistenceImpl
 			OrderByComparator<JournalFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByC_NotS_First(
-			companyId, status, orderByComparator);
-
-		if (journalFolder != null) {
-			return journalFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByC_NotS.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId, status}));
+		return _collectionPersistenceFinderByC_NotS.findFirst(
+			finderCache, new Object[] {companyId, status}, orderByComparator);
 	}
 
 	/**
@@ -1672,17 +872,11 @@ public class JournalFolderPersistenceImpl
 	 */
 	@Override
 	public int countByC_NotS(long companyId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByC_NotS.count(
-				finderCache, new Object[] {companyId, status});
-		}
+		return _collectionPersistenceFinderByC_NotS.count(
+			finderCache, new Object[] {companyId, status});
 	}
 
-	private FinderPath _finderPathFetchByG_P_N;
-	private UniquePersistenceFinder<JournalFolder>
+	private UniquePersistenceFinder<JournalFolder, NoSuchFolderException>
 		_uniquePersistenceFinderByG_P_N;
 
 	/**
@@ -1699,38 +893,8 @@ public class JournalFolderPersistenceImpl
 			long groupId, long parentFolderId, String name)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByG_P_N(
-			groupId, parentFolderId, name);
-
-		if (journalFolder == null) {
-			String message =
-				_uniquePersistenceFinderByG_P_N.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, parentFolderId, name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFolderException(message);
-		}
-
-		return journalFolder;
-	}
-
-	/**
-	 * Returns the journal folder where groupId = &#63; and parentFolderId = &#63; and name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param parentFolderId the parent folder ID
-	 * @param name the name
-	 * @return the matching journal folder, or <code>null</code> if a matching journal folder could not be found
-	 */
-	@Override
-	public JournalFolder fetchByG_P_N(
-		long groupId, long parentFolderId, String name) {
-
-		return fetchByG_P_N(groupId, parentFolderId, name, true);
+		return _uniquePersistenceFinderByG_P_N.find(
+			finderCache, new Object[] {groupId, parentFolderId, name});
 	}
 
 	/**
@@ -1747,14 +911,9 @@ public class JournalFolderPersistenceImpl
 		long groupId, long parentFolderId, String name,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _uniquePersistenceFinderByG_P_N.fetch(
-				finderCache, new Object[] {groupId, parentFolderId, name},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_P_N.fetch(
+			finderCache, new Object[] {groupId, parentFolderId, name},
+			useFinderCache);
 	}
 
 	/**
@@ -1790,74 +949,9 @@ public class JournalFolderPersistenceImpl
 			finderCache, new Object[] {groupId, parentFolderId, name});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_P_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_P_S;
-	private FinderPath _finderPathCountByG_P_S;
-	private CollectionPersistenceFinder<JournalFolder>
-		_collectionPersistenceFinderByG_P_S;
-
-	/**
-	 * Returns all the journal folders where groupId = &#63; and parentFolderId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param parentFolderId the parent folder ID
-	 * @param status the status
-	 * @return the matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByG_P_S(
-		long groupId, long parentFolderId, int status) {
-
-		return findByG_P_S(
-			groupId, parentFolderId, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the journal folders where groupId = &#63; and parentFolderId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentFolderId the parent folder ID
-	 * @param status the status
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @return the range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByG_P_S(
-		long groupId, long parentFolderId, int status, int start, int end) {
-
-		return findByG_P_S(groupId, parentFolderId, status, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the journal folders where groupId = &#63; and parentFolderId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentFolderId the parent folder ID
-	 * @param status the status
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching journal folders
-	 */
-	@Override
-	public List<JournalFolder> findByG_P_S(
-		long groupId, long parentFolderId, int status, int start, int end,
-		OrderByComparator<JournalFolder> orderByComparator) {
-
-		return findByG_P_S(
-			groupId, parentFolderId, status, start, end, orderByComparator,
-			true);
-	}
+	private FilterCollectionPersistenceFinder
+		<JournalFolder, NoSuchFolderException>
+			_collectionPersistenceFinderByG_P_S;
 
 	/**
 	 * Returns an ordered range of all the journal folders where groupId = &#63; and parentFolderId = &#63; and status = &#63;.
@@ -1881,14 +975,9 @@ public class JournalFolderPersistenceImpl
 		OrderByComparator<JournalFolder> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByG_P_S.find(
-				finderCache, new Object[] {groupId, parentFolderId, status},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_P_S.find(
+			finderCache, new Object[] {groupId, parentFolderId, status}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1907,17 +996,9 @@ public class JournalFolderPersistenceImpl
 			OrderByComparator<JournalFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByG_P_S_First(
-			groupId, parentFolderId, status, orderByComparator);
-
-		if (journalFolder != null) {
-			return journalFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByG_P_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, parentFolderId, status}));
+		return _collectionPersistenceFinderByG_P_S.findFirst(
+			finderCache, new Object[] {groupId, parentFolderId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -1940,45 +1021,6 @@ public class JournalFolderPersistenceImpl
 	}
 
 	/**
-	 * Returns all the journal folders that the user has permission to view where groupId = &#63; and parentFolderId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param parentFolderId the parent folder ID
-	 * @param status the status
-	 * @return the matching journal folders that the user has permission to view
-	 */
-	@Override
-	public List<JournalFolder> filterFindByG_P_S(
-		long groupId, long parentFolderId, int status) {
-
-		return filterFindByG_P_S(
-			groupId, parentFolderId, status, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the journal folders that the user has permission to view where groupId = &#63; and parentFolderId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>JournalFolderModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param parentFolderId the parent folder ID
-	 * @param status the status
-	 * @param start the lower bound of the range of journal folders
-	 * @param end the upper bound of the range of journal folders (not inclusive)
-	 * @return the range of matching journal folders that the user has permission to view
-	 */
-	@Override
-	public List<JournalFolder> filterFindByG_P_S(
-		long groupId, long parentFolderId, int status, int start, int end) {
-
-		return filterFindByG_P_S(
-			groupId, parentFolderId, status, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the journal folders that the user has permissions to view where groupId = &#63; and parentFolderId = &#63; and status = &#63;.
 	 *
 	 * <p>
@@ -1998,106 +1040,9 @@ public class JournalFolderPersistenceImpl
 		long groupId, long parentFolderId, int status, int start, int end,
 		OrderByComparator<JournalFolder> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_P_S(
-				groupId, parentFolderId, status, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_P_S(
-					groupId, parentFolderId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_JOURNALFOLDER_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_JOURNALFOLDER_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_P_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_S_PARENTFOLDERID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_S_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_JOURNALFOLDER_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(JournalFolderModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(JournalFolderModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), JournalFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, JournalFolderImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, JournalFolderImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(parentFolderId);
-
-			queryPos.add(status);
-
-			return (List<JournalFolder>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_P_S.filterFind(
+			finderCache, new Object[] {groupId, parentFolderId, status}, start,
+			end, orderByComparator, groupId);
 	}
 
 	/**
@@ -2123,13 +1068,8 @@ public class JournalFolderPersistenceImpl
 	 */
 	@Override
 	public int countByG_P_S(long groupId, long parentFolderId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByG_P_S.count(
-				finderCache, new Object[] {groupId, parentFolderId, status});
-		}
+		return _collectionPersistenceFinderByG_P_S.count(
+			finderCache, new Object[] {groupId, parentFolderId, status});
 	}
 
 	/**
@@ -2144,77 +1084,14 @@ public class JournalFolderPersistenceImpl
 	public int filterCountByG_P_S(
 		long groupId, long parentFolderId, int status) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_P_S(groupId, parentFolderId, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<JournalFolder> journalFolders = findByG_P_S(
-				groupId, parentFolderId, status);
-
-			journalFolders = InlineSQLHelperUtil.filter(
-				journalFolders, groupId);
-
-			return journalFolders.size();
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_JOURNALFOLDER_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_P_S_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_S_PARENTFOLDERID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_S_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), JournalFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(parentFolderId);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_P_S.filterCount(
+			finderCache, new Object[] {groupId, parentFolderId, status},
+			groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_P_S_GROUPID_2 =
-		"journalFolder.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_P_S_PARENTFOLDERID_2 =
-		"journalFolder.parentFolderId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_P_S_STATUS_2 =
-		"journalFolder.status = ?";
-
-	private FinderPath _finderPathWithPaginationFindByG_P_NotS;
-	private FinderPath _finderPathWithPaginationCountByG_P_NotS;
-	private CollectionPersistenceFinder<JournalFolder>
-		_collectionPersistenceFinderByG_P_NotS;
+	private FilterCollectionPersistenceFinder
+		<JournalFolder, NoSuchFolderException>
+			_collectionPersistenceFinderByG_P_NotS;
 
 	/**
 	 * Returns all the journal folders where groupId = &#63; and parentFolderId = &#63; and status &ne; &#63;.
@@ -2302,14 +1179,9 @@ public class JournalFolderPersistenceImpl
 		OrderByComparator<JournalFolder> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByG_P_NotS.find(
-				finderCache, new Object[] {groupId, parentFolderId, status},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_P_NotS.find(
+			finderCache, new Object[] {groupId, parentFolderId, status}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2328,17 +1200,9 @@ public class JournalFolderPersistenceImpl
 			OrderByComparator<JournalFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByG_P_NotS_First(
-			groupId, parentFolderId, status, orderByComparator);
-
-		if (journalFolder != null) {
-			return journalFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByG_P_NotS.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, parentFolderId, status}));
+		return _collectionPersistenceFinderByG_P_NotS.findFirst(
+			finderCache, new Object[] {groupId, parentFolderId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -2419,106 +1283,9 @@ public class JournalFolderPersistenceImpl
 		long groupId, long parentFolderId, int status, int start, int end,
 		OrderByComparator<JournalFolder> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByG_P_NotS(
-				groupId, parentFolderId, status, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByG_P_NotS(
-					groupId, parentFolderId, status, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				5 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(6);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_JOURNALFOLDER_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_JOURNALFOLDER_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_G_P_NOTS_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_NOTS_PARENTFOLDERID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_NOTS_STATUS_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_JOURNALFOLDER_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(JournalFolderModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(JournalFolderModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), JournalFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, JournalFolderImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, JournalFolderImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(parentFolderId);
-
-			queryPos.add(status);
-
-			return (List<JournalFolder>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_P_NotS.filterFind(
+			finderCache, new Object[] {groupId, parentFolderId, status}, start,
+			end, orderByComparator, groupId);
 	}
 
 	/**
@@ -2546,13 +1313,8 @@ public class JournalFolderPersistenceImpl
 	 */
 	@Override
 	public int countByG_P_NotS(long groupId, long parentFolderId, int status) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByG_P_NotS.count(
-				finderCache, new Object[] {groupId, parentFolderId, status});
-		}
+		return _collectionPersistenceFinderByG_P_NotS.count(
+			finderCache, new Object[] {groupId, parentFolderId, status});
 	}
 
 	/**
@@ -2567,76 +1329,12 @@ public class JournalFolderPersistenceImpl
 	public int filterCountByG_P_NotS(
 		long groupId, long parentFolderId, int status) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByG_P_NotS(groupId, parentFolderId, status);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<JournalFolder> journalFolders = findByG_P_NotS(
-				groupId, parentFolderId, status);
-
-			journalFolders = InlineSQLHelperUtil.filter(
-				journalFolders, groupId);
-
-			return journalFolders.size();
-		}
-
-		StringBundler sb = new StringBundler(4);
-
-		sb.append(_FILTER_SQL_COUNT_JOURNALFOLDER_WHERE);
-
-		sb.append(_FINDER_COLUMN_G_P_NOTS_GROUPID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_NOTS_PARENTFOLDERID_2);
-
-		sb.append(_FINDER_COLUMN_G_P_NOTS_STATUS_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), JournalFolder.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			queryPos.add(parentFolderId);
-
-			queryPos.add(status);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByG_P_NotS.filterCount(
+			finderCache, new Object[] {groupId, parentFolderId, status},
+			groupId);
 	}
 
-	private static final String _FINDER_COLUMN_G_P_NOTS_GROUPID_2 =
-		"journalFolder.groupId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_P_NOTS_PARENTFOLDERID_2 =
-		"journalFolder.parentFolderId = ? AND ";
-
-	private static final String _FINDER_COLUMN_G_P_NOTS_STATUS_2 =
-		"journalFolder.status != ?";
-
-	private FinderPath _finderPathWithPaginationFindByGtF_C_P_NotS;
-	private FinderPath _finderPathWithPaginationCountByGtF_C_P_NotS;
-	private CollectionPersistenceFinder<JournalFolder>
+	private CollectionPersistenceFinder<JournalFolder, NoSuchFolderException>
 		_collectionPersistenceFinderByGtF_C_P_NotS;
 
 	/**
@@ -2731,15 +1429,10 @@ public class JournalFolderPersistenceImpl
 		int start, int end, OrderByComparator<JournalFolder> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByGtF_C_P_NotS.find(
-				finderCache,
-				new Object[] {folderId, companyId, parentFolderId, status},
-				start, end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGtF_C_P_NotS.find(
+			finderCache,
+			new Object[] {folderId, companyId, parentFolderId, status}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -2759,17 +1452,10 @@ public class JournalFolderPersistenceImpl
 			OrderByComparator<JournalFolder> orderByComparator)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByGtF_C_P_NotS_First(
-			folderId, companyId, parentFolderId, status, orderByComparator);
-
-		if (journalFolder != null) {
-			return journalFolder;
-		}
-
-		throw new NoSuchFolderException(
-			_collectionPersistenceFinderByGtF_C_P_NotS.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {folderId, companyId, parentFolderId, status}));
+		return _collectionPersistenceFinderByGtF_C_P_NotS.findFirst(
+			finderCache,
+			new Object[] {folderId, companyId, parentFolderId, status},
+			orderByComparator);
 	}
 
 	/**
@@ -2823,18 +1509,12 @@ public class JournalFolderPersistenceImpl
 	public int countByGtF_C_P_NotS(
 		long folderId, long companyId, long parentFolderId, int status) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _collectionPersistenceFinderByGtF_C_P_NotS.count(
-				finderCache,
-				new Object[] {folderId, companyId, parentFolderId, status});
-		}
+		return _collectionPersistenceFinderByGtF_C_P_NotS.count(
+			finderCache,
+			new Object[] {folderId, companyId, parentFolderId, status});
 	}
 
-	private FinderPath _finderPathFetchByERC_G;
-	private UniquePersistenceFinder<JournalFolder>
+	private UniquePersistenceFinder<JournalFolder, NoSuchFolderException>
 		_uniquePersistenceFinderByERC_G;
 
 	/**
@@ -2849,37 +1529,8 @@ public class JournalFolderPersistenceImpl
 	public JournalFolder findByERC_G(String externalReferenceCode, long groupId)
 		throws NoSuchFolderException {
 
-		JournalFolder journalFolder = fetchByERC_G(
-			externalReferenceCode, groupId);
-
-		if (journalFolder == null) {
-			String message =
-				_uniquePersistenceFinderByERC_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchFolderException(message);
-		}
-
-		return journalFolder;
-	}
-
-	/**
-	 * Returns the journal folder where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param groupId the group ID
-	 * @return the matching journal folder, or <code>null</code> if a matching journal folder could not be found
-	 */
-	@Override
-	public JournalFolder fetchByERC_G(
-		String externalReferenceCode, long groupId) {
-
-		return fetchByERC_G(externalReferenceCode, groupId, true);
+		return _uniquePersistenceFinderByERC_G.find(
+			finderCache, new Object[] {externalReferenceCode, groupId});
 	}
 
 	/**
@@ -2894,14 +1545,9 @@ public class JournalFolderPersistenceImpl
 	public JournalFolder fetchByERC_G(
 		String externalReferenceCode, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					JournalFolder.class)) {
-
-			return _uniquePersistenceFinderByERC_G.fetch(
-				finderCache, new Object[] {externalReferenceCode, groupId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByERC_G.fetch(
+			finderCache, new Object[] {externalReferenceCode, groupId},
+			useFinderCache);
 	}
 
 	/**
@@ -3306,357 +1952,343 @@ public class JournalFolderPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_JOURNALFOLDER_WHERE, _SQL_COUNT_JOURNALFOLDER_WHERE,
-			JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"journalFolder.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, JournalFolder::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, JournalFolder::getUuid,
-			JournalFolder::getGroupId);
+				"journalFolder.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, JournalFolder::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_JOURNALFOLDER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(JournalFolder::getUuid),
+				JournalFolder::getGroupId),
+			_SQL_SELECT_JOURNALFOLDER_WHERE, "",
 			new FinderColumn<>(
-				"journalFolder.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, JournalFolder::getUuid),
+				"journalFolder.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, JournalFolder::getUuid),
 			new FinderColumn<>(
 				"journalFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, JournalFolder::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_JOURNALFOLDER_WHERE,
-				_SQL_COUNT_JOURNALFOLDER_WHERE,
-				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_JOURNALFOLDER_WHERE, _SQL_COUNT_JOURNALFOLDER_WHERE,
+				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"journalFolder.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, JournalFolder::getUuid),
+					"journalFolder.", "uuid", "uuid_", FinderColumn.Type.STRING,
+					"=", true, true, JournalFolder::getUuid),
 				new FinderColumn<>(
 					"journalFolder.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, JournalFolder::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_JOURNALFOLDER_WHERE,
-				_SQL_COUNT_JOURNALFOLDER_WHERE,
-				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_JOURNALFOLDER_WHERE, _SQL_COUNT_JOURNALFOLDER_WHERE,
+				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"journalFolder.", "groupId", FinderColumn.Type.LONG, "=",
 					true, true, JournalFolder::getGroupId));
 
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId, _SQL_SELECT_JOURNALFOLDER_WHERE,
-				_SQL_COUNT_JOURNALFOLDER_WHERE,
-				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_JOURNALFOLDER_WHERE, _SQL_COUNT_JOURNALFOLDER_WHERE,
+				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"journalFolder.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, JournalFolder::getCompanyId));
 
-		_finderPathWithPaginationFindByG_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "parentFolderId"}, true);
-
-		_finderPathWithoutPaginationFindByG_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "parentFolderId"}, true);
-
-		_finderPathCountByG_P = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "parentFolderId"}, false);
-
-		_collectionPersistenceFinderByG_P = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_P,
-			_finderPathWithoutPaginationFindByG_P, _finderPathCountByG_P,
-			_SQL_SELECT_JOURNALFOLDER_WHERE, _SQL_COUNT_JOURNALFOLDER_WHERE,
-			JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"journalFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, JournalFolder::getGroupId),
-			new FinderColumn<>(
-				"journalFolder.", "parentFolderId", FinderColumn.Type.LONG, "=",
-				true, true, JournalFolder::getParentFolderId));
-
-		_finderPathFetchByG_N = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_N",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "name"}, false, JournalFolder::getGroupId,
-			JournalFolder::getName);
+		_collectionPersistenceFinderByG_P =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "parentFolderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "parentFolderId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P",
+					new String[] {Long.class.getName(), Long.class.getName()},
+					new String[] {"groupId", "parentFolderId"}, false),
+				_SQL_SELECT_JOURNALFOLDER_WHERE, _SQL_COUNT_JOURNALFOLDER_WHERE,
+				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"journalFolder.", "groupId", FinderColumn.Type.LONG, "=",
+					true, true, JournalFolder::getGroupId),
+				new FinderColumn<>(
+					"journalFolder.", "parentFolderId", FinderColumn.Type.LONG,
+					"=", true, true, JournalFolder::getParentFolderId));
 
 		_uniquePersistenceFinderByG_N = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_N, _SQL_SELECT_JOURNALFOLDER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_N",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "name"}, 0, 2, false,
+				JournalFolder::getGroupId,
+				convertNullFunction(JournalFolder::getName)),
+			_SQL_SELECT_JOURNALFOLDER_WHERE, "",
 			new FinderColumn<>(
 				"journalFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, JournalFolder::getGroupId),
+				true, JournalFolder::getGroupId),
 			new FinderColumn<>(
 				"journalFolder.", "name", FinderColumn.Type.STRING, "=", true,
 				true, JournalFolder::getName));
-
-		_finderPathWithPaginationFindByC_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_NotS",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "status"}, true);
-
-		_finderPathWithPaginationCountByC_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_NotS",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"companyId", "status"}, false);
 
 		_collectionPersistenceFinderByC_NotS =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByC_NotS, null,
-				_finderPathWithPaginationCountByC_NotS,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_NotS",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId", "status"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_NotS",
+					new String[] {
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {"companyId", "status"}, false),
 				_SQL_SELECT_JOURNALFOLDER_WHERE, _SQL_COUNT_JOURNALFOLDER_WHERE,
-				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"journalFolder.", "companyId", FinderColumn.Type.LONG, "=",
-					true, false, JournalFolder::getCompanyId),
+					true, true, JournalFolder::getCompanyId),
 				new FinderColumn<>(
 					"journalFolder.", "status", FinderColumn.Type.INTEGER, "!=",
 					true, true, JournalFolder::getStatus));
 
-		_finderPathFetchByG_P_N = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_P_N",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				String.class.getName()
-			},
-			new String[] {"groupId", "parentFolderId", "name"}, false,
-			JournalFolder::getGroupId, JournalFolder::getParentFolderId,
-			JournalFolder::getName);
-
 		_uniquePersistenceFinderByG_P_N = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_P_N, _SQL_SELECT_JOURNALFOLDER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_P_N",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					String.class.getName()
+				},
+				new String[] {"groupId", "parentFolderId", "name"}, 0, 4, false,
+				JournalFolder::getGroupId, JournalFolder::getParentFolderId,
+				convertNullFunction(JournalFolder::getName)),
+			_SQL_SELECT_JOURNALFOLDER_WHERE, "",
 			new FinderColumn<>(
 				"journalFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, JournalFolder::getGroupId),
+				true, JournalFolder::getGroupId),
 			new FinderColumn<>(
 				"journalFolder.", "parentFolderId", FinderColumn.Type.LONG, "=",
-				true, false, JournalFolder::getParentFolderId),
+				true, true, JournalFolder::getParentFolderId),
 			new FinderColumn<>(
 				"journalFolder.", "name", FinderColumn.Type.STRING, "=", true,
 				true, JournalFolder::getName));
 
-		_finderPathWithPaginationFindByG_P_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "parentFolderId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByG_P_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "parentFolderId", "status"}, true);
-
-		_finderPathCountByG_P_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "parentFolderId", "status"}, false);
-
-		_collectionPersistenceFinderByG_P_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_P_S,
-			_finderPathWithoutPaginationFindByG_P_S, _finderPathCountByG_P_S,
-			_SQL_SELECT_JOURNALFOLDER_WHERE, _SQL_COUNT_JOURNALFOLDER_WHERE,
-			JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
-			new FinderColumn<>(
-				"journalFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, JournalFolder::getGroupId),
-			new FinderColumn<>(
-				"journalFolder.", "parentFolderId", FinderColumn.Type.LONG, "=",
-				true, false, JournalFolder::getParentFolderId),
-			new FinderColumn<>(
-				"journalFolder.", "status", FinderColumn.Type.INTEGER, "=",
-				true, true, JournalFolder::getStatus));
-
-		_finderPathWithPaginationFindByG_P_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P_NotS",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "parentFolderId", "status"}, true);
-
-		_finderPathWithPaginationCountByG_P_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_P_NotS",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			new String[] {"groupId", "parentFolderId", "status"}, false);
-
-		_collectionPersistenceFinderByG_P_NotS =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_P_NotS, null,
-				_finderPathWithPaginationCountByG_P_NotS,
+		_collectionPersistenceFinderByG_P_S =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "parentFolderId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "parentFolderId", "status"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P_S",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "parentFolderId", "status"},
+					false),
 				_SQL_SELECT_JOURNALFOLDER_WHERE, _SQL_COUNT_JOURNALFOLDER_WHERE,
-				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"journalFolder.", "groupId", FinderColumn.Type.LONG, "=",
-					true, false, JournalFolder::getGroupId),
+					true, true, JournalFolder::getGroupId),
 				new FinderColumn<>(
 					"journalFolder.", "parentFolderId", FinderColumn.Type.LONG,
-					"=", true, false, JournalFolder::getParentFolderId),
+					"=", true, true, JournalFolder::getParentFolderId),
+				new FinderColumn<>(
+					"journalFolder.", "status", FinderColumn.Type.INTEGER, "=",
+					true, true, JournalFolder::getStatus));
+
+		_collectionPersistenceFinderByG_P_NotS =
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_P_NotS",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId", "parentFolderId", "status"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_P_NotS",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName()
+					},
+					new String[] {"groupId", "parentFolderId", "status"},
+					false),
+				_SQL_SELECT_JOURNALFOLDER_WHERE, _SQL_COUNT_JOURNALFOLDER_WHERE,
+				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
+				new FinderColumn<>(
+					"journalFolder.", "groupId", FinderColumn.Type.LONG, "=",
+					true, true, JournalFolder::getGroupId),
+				new FinderColumn<>(
+					"journalFolder.", "parentFolderId", FinderColumn.Type.LONG,
+					"=", true, true, JournalFolder::getParentFolderId),
 				new FinderColumn<>(
 					"journalFolder.", "status", FinderColumn.Type.INTEGER, "!=",
 					true, true, JournalFolder::getStatus));
-
-		_finderPathWithPaginationFindByGtF_C_P_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGtF_C_P_NotS",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"folderId", "companyId", "parentFolderId", "status"},
-			true);
-
-		_finderPathWithPaginationCountByGtF_C_P_NotS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByGtF_C_P_NotS",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName()
-			},
-			new String[] {"folderId", "companyId", "parentFolderId", "status"},
-			false);
 
 		_collectionPersistenceFinderByGtF_C_P_NotS =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGtF_C_P_NotS, null,
-				_finderPathWithPaginationCountByGtF_C_P_NotS,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByGtF_C_P_NotS",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"folderId", "companyId", "parentFolderId", "status"
+					},
+					true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByGtF_C_P_NotS",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Integer.class.getName()
+					},
+					new String[] {
+						"folderId", "companyId", "parentFolderId", "status"
+					},
+					false),
 				_SQL_SELECT_JOURNALFOLDER_WHERE, _SQL_COUNT_JOURNALFOLDER_WHERE,
-				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				JournalFolderModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"journalFolder.", "folderId", FinderColumn.Type.LONG, ">",
-					true, false, JournalFolder::getFolderId),
+					true, true, JournalFolder::getFolderId),
 				new FinderColumn<>(
 					"journalFolder.", "companyId", FinderColumn.Type.LONG, "=",
-					true, false, JournalFolder::getCompanyId),
+					true, true, JournalFolder::getCompanyId),
 				new FinderColumn<>(
 					"journalFolder.", "parentFolderId", FinderColumn.Type.LONG,
-					"=", true, false, JournalFolder::getParentFolderId),
+					"=", true, true, JournalFolder::getParentFolderId),
 				new FinderColumn<>(
 					"journalFolder.", "status", FinderColumn.Type.INTEGER, "!=",
 					true, true, JournalFolder::getStatus));
 
-		_finderPathFetchByERC_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "groupId"}, false,
-			JournalFolder::getExternalReferenceCode, JournalFolder::getGroupId);
-
 		_uniquePersistenceFinderByERC_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_G, _SQL_SELECT_JOURNALFOLDER_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "groupId"}, 0, 1, false,
+				convertNullFunction(JournalFolder::getExternalReferenceCode),
+				JournalFolder::getGroupId),
+			_SQL_SELECT_JOURNALFOLDER_WHERE, "",
 			new FinderColumn<>(
 				"journalFolder.", "externalReferenceCode",
-				FinderColumn.Type.STRING, "=", true, false,
+				FinderColumn.Type.STRING, "=", true, true,
 				JournalFolder::getExternalReferenceCode),
 			new FinderColumn<>(
 				"journalFolder.", "groupId", FinderColumn.Type.LONG, "=", true,
@@ -3719,29 +2351,6 @@ public class JournalFolderPersistenceImpl
 	private static final String _SQL_COUNT_JOURNALFOLDER_WHERE =
 		"SELECT COUNT(journalFolder) FROM JournalFolder journalFolder WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"journalFolder.folderId";
-
-	private static final String _FILTER_SQL_SELECT_JOURNALFOLDER_WHERE =
-		"SELECT DISTINCT {journalFolder.*} FROM JournalFolder journalFolder WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_JOURNALFOLDER_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {JournalFolder.*} FROM (SELECT DISTINCT journalFolder.folderId FROM JournalFolder journalFolder WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_JOURNALFOLDER_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN JournalFolder ON TEMP_TABLE.folderId = JournalFolder.folderId";
-
-	private static final String _FILTER_SQL_COUNT_JOURNALFOLDER_WHERE =
-		"SELECT COUNT(DISTINCT journalFolder.folderId) AS COUNT_VALUE FROM JournalFolder journalFolder WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "journalFolder";
-
-	private static final String _FILTER_ENTITY_TABLE = "JournalFolder";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "JournalFolder.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No JournalFolder exists with the key {";
 
@@ -3757,4 +2366,4 @@ public class JournalFolderPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-145608866
+// LIFERAY-SERVICE-BUILDER-HASH:-257099583

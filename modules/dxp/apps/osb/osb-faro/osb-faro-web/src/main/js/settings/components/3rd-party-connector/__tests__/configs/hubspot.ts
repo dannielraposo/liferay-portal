@@ -1,5 +1,6 @@
 import hubspotConfig from '../../configs/hubspot';
 import {DataSourceTypes} from 'shared/util/constants';
+import {Entity} from '../../types';
 import {fetchConnectorEntityCount} from 'shared/api/connector';
 
 jest.mock('shared/api/connector', () => ({
@@ -27,38 +28,32 @@ describe('hubspot config', () => {
 		expect(hubspotConfig.singleton).toBe(true);
 	});
 
-	it('exposes a contacts entity with the expected metadata', () => {
+	it('exposes the Events entity', () => {
 		expect(hubspotConfig.entities).toHaveLength(1);
 
-		const [contacts] = hubspotConfig.entities;
+		const [events] = hubspotConfig.entities;
 
-		expect(contacts).toEqual(
-			expect.objectContaining({
-				accessor: 'contacts',
-				icon: 'users'
-			})
-		);
-		expect(typeof contacts.fetchCount).toBe('function');
+		expect(events.entity).toBe(Entity.Events);
+		expect(typeof events.fetchCount).toBe('function');
 	});
 
-	it('delegates fetchCount to fetchConnectorEntityCount with the slug and entity', async () => {
+	it('delegates fetchCount to fetchConnectorEntityCount with the entity', async () => {
 		await hubspotConfig.entities[0].fetchCount!({
 			groupId: '23',
 			id: 'data-source-1'
 		});
 
-		expect(fetchConnectorEntityCount).toHaveBeenCalledWith(
-			'hubspot',
-			'contacts',
-			{groupId: '23', id: 'data-source-1'}
-		);
+		expect(fetchConnectorEntityCount).toHaveBeenCalledWith(Entity.Events, {
+			groupId: '23',
+			id: 'data-source-1'
+		});
 	});
 
 	it('builds the language strings from the configured display name', () => {
 		expect(hubspotConfig.languages.connectTitle).toContain(
 			hubspotConfig.displayName
 		);
-		expect(hubspotConfig.languages.disconnectedAlert).toContain(
+		expect(hubspotConfig.languages.tokenLabel).toContain(
 			hubspotConfig.displayName
 		);
 	});

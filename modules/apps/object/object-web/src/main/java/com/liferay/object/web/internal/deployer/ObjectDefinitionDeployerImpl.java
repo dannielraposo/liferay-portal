@@ -129,6 +129,7 @@ import com.liferay.petra.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
@@ -361,7 +362,8 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 					_listTypeEntryLocalService, _objectActionLocalService,
 					objectDefinition, _objectDefinitionLocalService,
 					objectFieldInfoFieldConverter, _objectEntryLocalService,
-					_objectEntryManagerRegistry, _objectFieldLocalService,
+					_objectEntryManagerRegistry, _objectEntryService,
+					_objectFieldLocalService,
 					_objectRelatedModelsProviderRegistry,
 					_objectRelationshipLocalService,
 					_objectScopeProviderRegistry, _portal,
@@ -525,6 +527,13 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 				).put(
 					"com.liferay.portlet.display-category",
 					() -> {
+						if (FeatureFlagManagerUtil.isEnabled(
+								objectDefinition.getCompanyId(), "LPD-69877") &&
+							!objectDefinition.isAllowStandaloneObjectEntry()) {
+
+							return "category.hidden";
+						}
+
 						if (objectDefinition.isPortlet()) {
 							return "category.object";
 						}
@@ -678,28 +687,39 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 		// Register ObjectEntriesPanelApp after ObjectEntriesPortlet. See
 		// LPS-140379.
 
-		serviceRegistrations.add(
-			_bundleContext.registerService(
-				PanelApp.class,
-				new ObjectEntriesPanelApp(
-					objectDefinition,
-					() -> {
-						com.liferay.portal.kernel.model.Portlet portlet =
-							_portletLocalService.getPortletById(
-								objectDefinition.getCompanyId(),
-								objectDefinition.getPortletId());
+		if (objectDefinition.isPortlet()) {
+			String panelCategoryKey = objectDefinition.getPanelCategoryKey();
 
-						portlet.setControlPanelEntryCategory(
-							objectDefinition.getPanelCategoryKey());
+			if (FeatureFlagManagerUtil.isEnabled(
+					objectDefinition.getCompanyId(), "LPD-69877") &&
+				!objectDefinition.isAllowStandaloneObjectEntry()) {
 
-						return portlet;
-					}),
-				HashMapDictionaryBuilder.<String, Object>put(
-					"panel.app.order:Integer",
-					objectDefinition.getPanelAppOrder()
-				).put(
-					"panel.category.key", objectDefinition.getPanelCategoryKey()
-				).build()));
+				panelCategoryKey = StringPool.BLANK;
+			}
+
+			serviceRegistrations.add(
+				_bundleContext.registerService(
+					PanelApp.class,
+					new ObjectEntriesPanelApp(
+						objectDefinition,
+						() -> {
+							com.liferay.portal.kernel.model.Portlet portlet =
+								_portletLocalService.getPortletById(
+									objectDefinition.getCompanyId(),
+									objectDefinition.getPortletId());
+
+							portlet.setControlPanelEntryCategory(
+								objectDefinition.getPanelCategoryKey());
+
+							return portlet;
+						}),
+					HashMapDictionaryBuilder.<String, Object>put(
+						"panel.app.order:Integer",
+						objectDefinition.getPanelAppOrder()
+					).put(
+						"panel.category.key", panelCategoryKey
+					).build()));
+		}
 
 		if (objectDefinition.isCMS() &&
 			Objects.equals(

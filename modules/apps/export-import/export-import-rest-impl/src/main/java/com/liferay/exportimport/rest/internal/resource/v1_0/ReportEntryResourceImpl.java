@@ -73,7 +73,7 @@ public class ReportEntryResourceImpl extends BaseReportEntryResourceImpl {
 		BackgroundTask backgroundTask =
 			_backgroundTaskLocalService.getBackgroundTask(importProcessId);
 
-		PermissionUtil.checkPermission(
+		PermissionUtil.checkImportPermission(
 			contextCompany.getCompanyId(), backgroundTask.getGroupId());
 
 		Map<String, Serializable> taskContextMap =
@@ -112,7 +112,7 @@ public class ReportEntryResourceImpl extends BaseReportEntryResourceImpl {
 			_exportImportReportEntryLocalService.getExportImportReportEntry(
 				reportEntryId);
 
-		PermissionUtil.checkPermission(
+		PermissionUtil.checkImportPermission(
 			contextCompany.getCompanyId(),
 			exportImportReportEntry.getGroupId());
 
@@ -140,19 +140,6 @@ public class ReportEntryResourceImpl extends BaseReportEntryResourceImpl {
 		else if (status == ExportImportReportEntryConstants.STATUS_UNRESOLVED) {
 			return _language.get(
 				contextAcceptLanguage.getPreferredLocale(), "not-resolved");
-		}
-
-		return null;
-	}
-
-	private String _getTypeLabel(int type) {
-		if (type == ExportImportReportEntryConstants.TYPE_EMPTY) {
-			return _language.get(
-				contextAcceptLanguage.getPreferredLocale(), "empty");
-		}
-		else if (type == ExportImportReportEntryConstants.TYPE_ERROR) {
-			return _language.get(
-				contextAcceptLanguage.getPreferredLocale(), "error");
 		}
 
 		return null;
@@ -230,7 +217,7 @@ public class ReportEntryResourceImpl extends BaseReportEntryResourceImpl {
 				setLabel(
 					() -> _language.get(
 						contextAcceptLanguage.getPreferredLocale(),
-						_getTypeLabel(type)));
+						ExportImportReportEntryConstants.getTypeLabel(type)));
 			}
 		};
 	}

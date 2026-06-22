@@ -6,6 +6,7 @@
 package com.liferay.jenkins.results.parser.testray;
 
 import com.liferay.jenkins.results.parser.BuildReport;
+import com.liferay.jenkins.results.parser.Environment;
 import com.liferay.jenkins.results.parser.JenkinsMaster;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.TopLevelBuildReport;
@@ -64,7 +65,7 @@ public abstract class BuildTestrayCaseResult extends TestrayCaseResult {
 
 		_topLevelBuildReport = topLevelBuildReport;
 
-		String workspace = System.getenv("WORKSPACE");
+		String workspace = Environment.get("WORKSPACE");
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(workspace)) {
 			throw new RuntimeException("Please set WORKSPACE");
@@ -77,6 +78,33 @@ public abstract class BuildTestrayCaseResult extends TestrayCaseResult {
 
 	protected BuildReport getBuildReport() {
 		return _buildReport;
+	}
+
+	protected TestrayAttachment getParentTestrayCaseResultTestrayAttachment() {
+		TestrayCaseResult parentTestrayCaseResult =
+			getParentTestrayCaseResult();
+
+		if (parentTestrayCaseResult == null) {
+			return null;
+		}
+
+		URL parentTestrayCaseResultURL =
+			parentTestrayCaseResult.getTestrayCaseResultURL();
+
+		if (parentTestrayCaseResultURL == null) {
+			return null;
+		}
+
+		String testrayCaseResultURL = String.valueOf(
+			parentTestrayCaseResultURL);
+
+		TestrayServer testrayServer = getTestrayServer();
+
+		return new DefaultTestrayAttachment(
+			this, parentTestrayCaseResult.getName(),
+			testrayCaseResultURL.replace(
+				String.valueOf(testrayServer.getURL()), ""),
+			parentTestrayCaseResultURL);
 	}
 
 	protected TestrayAttachment getTestrayAttachment(
@@ -94,39 +122,35 @@ public abstract class BuildTestrayCaseResult extends TestrayCaseResult {
 			return null;
 		}
 
-		for (URL testrayAttachmentURL :
-				buildReport.getTestrayAttachmentURLs()) {
+		URL testrayAttachmentURL = buildReport.getTestrayAttachmentURLBySuffix(
+			key);
 
+		if (testrayAttachmentURL == null) {
+			return null;
+		}
+
+		String cloudObjectPath;
+
+		try {
+			String buildBaseArtifactURL =
+				JenkinsResultsParserUtil.getBuildProperty(
+					"build.base.artifact.url");
 			String testrayAttachmentURLString = String.valueOf(
 				testrayAttachmentURL);
 
-			if (!testrayAttachmentURLString.endsWith(key)) {
-				continue;
-			}
-
-			String cloudObjectPath = null;
-
-			try {
-				String buildBaseArtifactURL =
-					JenkinsResultsParserUtil.getBuildProperty(
-						"build.base.artifact.url");
-
-				cloudObjectPath = testrayAttachmentURLString.replace(
-					buildBaseArtifactURL + "/", "");
-			}
-			catch (IOException ioException) {
-				continue;
-			}
-
-			TestrayAttachment testrayAttachment =
-				new CloudObjectTestrayAttachment(this, name, cloudObjectPath);
-
-			_testrayAttachments.put(key, testrayAttachment);
-
-			return _testrayAttachments.get(key);
+			cloudObjectPath = testrayAttachmentURLString.replace(
+				buildBaseArtifactURL + "/", "");
+		}
+		catch (IOException ioException) {
+			return null;
 		}
 
-		return null;
+		TestrayAttachment testrayAttachment = new CloudObjectTestrayAttachment(
+			this, name, cloudObjectPath);
+
+		_testrayAttachments.put(key, testrayAttachment);
+
+		return testrayAttachment;
 	}
 
 	protected File getTestrayUploadBaseDir() {

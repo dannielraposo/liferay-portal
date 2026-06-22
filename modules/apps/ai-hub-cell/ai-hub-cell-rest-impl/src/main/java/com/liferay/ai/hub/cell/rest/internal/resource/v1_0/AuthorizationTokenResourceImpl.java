@@ -7,15 +7,16 @@ package com.liferay.ai.hub.cell.rest.internal.resource.v1_0;
 
 import com.liferay.ai.hub.cell.configuration.AIHubCellConfiguration;
 import com.liferay.ai.hub.cell.rest.dto.v1_0.AuthorizationToken;
+import com.liferay.ai.hub.cell.rest.internal.web.cache.AIHubCellAccessTokenWebCacheItem;
+import com.liferay.ai.hub.cell.rest.internal.web.cache.AIHubCellUserTokenWebCacheItem;
 import com.liferay.ai.hub.cell.rest.resource.v1_0.AuthorizationTokenResource;
-import com.liferay.ai.hub.cell.security.JWTTokenUtil;
+import com.liferay.oauth.client.LocalOAuthClient;
+import com.liferay.oauth2.provider.model.OAuth2Application;
+import com.liferay.oauth2.provider.service.OAuth2ApplicationLocalService;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
-import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.util.Http;
-
-import java.util.concurrent.TimeUnit;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -39,22 +40,16 @@ public class AuthorizationTokenResourceImpl
 			throw new UnsupportedOperationException();
 		}
 
-		Http.Options options = new Http.Options();
-
 		AIHubCellConfiguration aiHubCellConfiguration =
 			_configurationProvider.getCompanyConfiguration(
 				AIHubCellConfiguration.class, contextCompany.getCompanyId());
 
-		options.addPart("client_id", aiHubCellConfiguration.clientId());
-		options.addPart("client_secret", aiHubCellConfiguration.clientSecret());
+		JSONObject jsonObject = AIHubCellAccessTokenWebCacheItem.get(
+			aiHubCellConfiguration, contextCompany.getCompanyId());
 
-		options.addPart("grant_type", "client_credentials");
-		options.setLocation(
-			aiHubCellConfiguration.serviceURL() + "/o/oauth2/token");
-		options.setMethod(Http.Method.POST);
-
-		JSONObject jsonObject = _jsonFactory.createJSONObject(
-			_http.URLtoString(options));
+		if (jsonObject == null) {
+			throw new PortalException("Unable to get an access token");
+		}
 
 		return new AuthorizationToken() {
 			{
@@ -62,10 +57,17 @@ public class AuthorizationTokenResourceImpl
 				setScope(() -> jsonObject.getString("scope"));
 				setServiceURL(aiHubCellConfiguration::serviceURL);
 				setUserToken(
-					() -> JWTTokenUtil.generateToken(
-						TimeUnit.MINUTES.toMillis(10),
-						contextCompany.getVirtualHostname(),
-						contextUser.getUserId()));
+					() -> {
+						OAuth2Application oAuth2Application =
+							_oAuth2ApplicationLocalService.
+								getOAuth2ApplicationByExternalReferenceCode(
+									"AI-HUB-CELL",
+									contextCompany.getCompanyId());
+
+						return AIHubCellUserTokenWebCacheItem.get(
+							_localOAuthClient, oAuth2Application,
+							contextUser.getUserId());
+					});
 			}
 		};
 	}
@@ -74,9 +76,9 @@ public class AuthorizationTokenResourceImpl
 	private ConfigurationProvider _configurationProvider;
 
 	@Reference
-	private Http _http;
+	private LocalOAuthClient _localOAuthClient;
 
 	@Reference
-	private JSONFactory _jsonFactory;
+	private OAuth2ApplicationLocalService _oAuth2ApplicationLocalService;
 
 }

@@ -22,6 +22,14 @@ export interface IAccounts {
 	totalCount: number;
 }
 
+export interface IDuplicateRoomProps {
+	closeModal: () => void;
+	loadData: () => void;
+	name: string;
+	roomId: number;
+	siteId: number;
+}
+
 export interface IEngagementChartItem {
 	date: string;
 	numberOfVisits: number;
@@ -45,6 +53,7 @@ export interface IFrequencyChartProps {
 export interface IInvitedMember {
 	emailAddress: string;
 	id: number;
+	ownerId?: number;
 	roleKey?: string;
 }
 
@@ -191,6 +200,7 @@ export interface IUserAccount {
 	image?: string;
 	isInvitedMember?: boolean;
 	name: string;
+	ownerId?: number;
 	roleKey?: string;
 }
 
@@ -216,7 +226,7 @@ export type TRoomDocumentsStatistics = {
 	totalTimeViewingAsset: number;
 	totalViews: number;
 	type: string;
-	userInvolved: string[];
+	userInvolved: number;
 };
 
 export type TRoomDocumentsStatisticsProps = TRoomDocumentsStatistics[];

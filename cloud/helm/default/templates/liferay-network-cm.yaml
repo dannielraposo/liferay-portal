@@ -1,0 +1,14 @@
+{{- $network := .Values.network | default dict -}}
+{{- if and $network.enabled $network.hostnames }}
+apiVersion: v1
+data:
+    LIFERAY_COMPANY_PERIOD_DEFAULT_PERIOD_VIRTUAL_PERIOD_HOST_PERIOD_NAME: {{ index $network.hostnames 0 | quote }}
+    LIFERAY_COMPANY_PERIOD_DEFAULT_PERIOD_WEB_PERIOD_ID: {{ index $network.hostnames 0 | quote }}
+    LIFERAY_VIRTUAL_PERIOD_HOSTS_PERIOD_VALID_PERIOD_HOSTS: {{ concat $network.hostnames (list "localhost" "${env.POD_IP}") | join "," | quote }}
+kind: ConfigMap
+metadata:
+    labels:
+        {{- include "liferay.labels" . | nindent 8 }}
+    name: {{ include "liferay.name" . }}-network
+    namespace: {{ include "liferay.namespace" . }}
+{{- end }}

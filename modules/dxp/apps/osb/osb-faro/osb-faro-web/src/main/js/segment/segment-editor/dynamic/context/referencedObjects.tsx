@@ -89,6 +89,10 @@ export const referencedPropertiesReducer = (
 					[payload.propertyKey, payload.name],
 					payload
 				);
+			} else if (payload.propertyKey === 'vocabulary') {
+				return state.setIn(['vocabulary', payload.name], payload);
+			} else if (payload.propertyKey === 'tag') {
+				return state.setIn(['tag', payload.name], payload);
 			}
 
 			return state;

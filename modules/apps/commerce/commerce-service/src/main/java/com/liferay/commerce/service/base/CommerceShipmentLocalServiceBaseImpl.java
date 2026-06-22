@@ -7,7 +7,6 @@ package com.liferay.commerce.service.base;
 
 import com.liferay.commerce.model.CommerceShipment;
 import com.liferay.commerce.service.CommerceShipmentLocalService;
-import com.liferay.commerce.service.persistence.CommerceShipmentFinder;
 import com.liferay.commerce.service.persistence.CommerceShipmentPersistence;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
@@ -134,11 +133,13 @@ public abstract class CommerceShipmentLocalServiceBaseImpl
 	 *
 	 * @param commerceShipment the commerce shipment
 	 * @return the commerce shipment that was removed
+	 * @throws PortalException
 	 */
 	@Indexable(type = IndexableType.DELETE)
 	@Override
 	public CommerceShipment deleteCommerceShipment(
-		CommerceShipment commerceShipment) {
+			CommerceShipment commerceShipment)
+		throws PortalException {
 
 		return commerceShipmentPersistence.remove(commerceShipment);
 	}
@@ -608,9 +609,6 @@ public abstract class CommerceShipmentLocalServiceBaseImpl
 	protected CommerceShipmentPersistence commerceShipmentPersistence;
 
 	@Reference
-	protected CommerceShipmentFinder commerceShipmentFinder;
-
-	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 
@@ -618,4 +616,4 @@ public abstract class CommerceShipmentLocalServiceBaseImpl
 		CommerceShipmentLocalServiceBaseImpl.class);
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:846911284
+// LIFERAY-SERVICE-BUILDER-HASH:1027816701

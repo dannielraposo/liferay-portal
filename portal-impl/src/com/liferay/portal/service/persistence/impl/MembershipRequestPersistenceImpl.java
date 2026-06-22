@@ -10,11 +10,8 @@ import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchMembershipRequestException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.MembershipRequest;
 import com.liferay.portal.kernel.model.MembershipRequestTable;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -67,69 +64,15 @@ public class MembershipRequestPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<MembershipRequest>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the membership requests where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the membership requests where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of membership requests
-	 * @param end the upper bound of the range of membership requests (not inclusive)
-	 * @return the range of matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MembershipRequest, NoSuchMembershipRequestException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the membership requests where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of membership requests
-	 * @param end the upper bound of the range of membership requests (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<MembershipRequest> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the membership requests where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -164,16 +107,9 @@ public class MembershipRequestPersistenceImpl
 			OrderByComparator<MembershipRequest> orderByComparator)
 		throws NoSuchMembershipRequestException {
 
-		MembershipRequest membershipRequest = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (membershipRequest != null) {
-			return membershipRequest;
-		}
-
-		throw new NoSuchMembershipRequestException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId},
+			orderByComparator);
 	}
 
 	/**
@@ -215,68 +151,15 @@ public class MembershipRequestPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUserId;
-	private FinderPath _finderPathWithoutPaginationFindByUserId;
-	private FinderPath _finderPathCountByUserId;
-	private CollectionPersistenceFinder<MembershipRequest>
-		_collectionPersistenceFinderByUserId;
-
-	/**
-	 * Returns all the membership requests where userId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @return the matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByUserId(long userId) {
-		return findByUserId(userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the membership requests where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of membership requests
-	 * @param end the upper bound of the range of membership requests (not inclusive)
-	 * @return the range of matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByUserId(
-		long userId, int start, int end) {
-
-		return findByUserId(userId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MembershipRequest, NoSuchMembershipRequestException>
+			_collectionPersistenceFinderByUserId;
 
 	/**
 	 * Returns an ordered range of all the membership requests where userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of membership requests
-	 * @param end the upper bound of the range of membership requests (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByUserId(
-		long userId, int start, int end,
-		OrderByComparator<MembershipRequest> orderByComparator) {
-
-		return findByUserId(userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the membership requests where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -310,16 +193,9 @@ public class MembershipRequestPersistenceImpl
 			long userId, OrderByComparator<MembershipRequest> orderByComparator)
 		throws NoSuchMembershipRequestException {
 
-		MembershipRequest membershipRequest = fetchByUserId_First(
-			userId, orderByComparator);
-
-		if (membershipRequest != null) {
-			return membershipRequest;
-		}
-
-		throw new NoSuchMembershipRequestException(
-			_collectionPersistenceFinderByUserId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId}));
+		return _collectionPersistenceFinderByUserId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {userId},
+			orderByComparator);
 	}
 
 	/**
@@ -361,73 +237,15 @@ public class MembershipRequestPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {userId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_S;
-	private FinderPath _finderPathCountByG_S;
-	private CollectionPersistenceFinder<MembershipRequest>
-		_collectionPersistenceFinderByG_S;
-
-	/**
-	 * Returns all the membership requests where groupId = &#63; and statusId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param statusId the status ID
-	 * @return the matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByG_S(long groupId, long statusId) {
-		return findByG_S(
-			groupId, statusId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the membership requests where groupId = &#63; and statusId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param statusId the status ID
-	 * @param start the lower bound of the range of membership requests
-	 * @param end the upper bound of the range of membership requests (not inclusive)
-	 * @return the range of matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByG_S(
-		long groupId, long statusId, int start, int end) {
-
-		return findByG_S(groupId, statusId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MembershipRequest, NoSuchMembershipRequestException>
+			_collectionPersistenceFinderByG_S;
 
 	/**
 	 * Returns an ordered range of all the membership requests where groupId = &#63; and statusId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param statusId the status ID
-	 * @param start the lower bound of the range of membership requests
-	 * @param end the upper bound of the range of membership requests (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByG_S(
-		long groupId, long statusId, int start, int end,
-		OrderByComparator<MembershipRequest> orderByComparator) {
-
-		return findByG_S(
-			groupId, statusId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the membership requests where groupId = &#63; and statusId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -464,16 +282,9 @@ public class MembershipRequestPersistenceImpl
 			OrderByComparator<MembershipRequest> orderByComparator)
 		throws NoSuchMembershipRequestException {
 
-		MembershipRequest membershipRequest = fetchByG_S_First(
-			groupId, statusId, orderByComparator);
-
-		if (membershipRequest != null) {
-			return membershipRequest;
-		}
-
-		throw new NoSuchMembershipRequestException(
-			_collectionPersistenceFinderByG_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, statusId}));
+		return _collectionPersistenceFinderByG_S.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId, statusId},
+			orderByComparator);
 	}
 
 	/**
@@ -519,79 +330,15 @@ public class MembershipRequestPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {groupId, statusId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_U_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_U_S;
-	private FinderPath _finderPathCountByG_U_S;
-	private CollectionPersistenceFinder<MembershipRequest>
-		_collectionPersistenceFinderByG_U_S;
-
-	/**
-	 * Returns all the membership requests where groupId = &#63; and userId = &#63; and statusId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param statusId the status ID
-	 * @return the matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByG_U_S(
-		long groupId, long userId, long statusId) {
-
-		return findByG_U_S(
-			groupId, userId, statusId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the membership requests where groupId = &#63; and userId = &#63; and statusId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param statusId the status ID
-	 * @param start the lower bound of the range of membership requests
-	 * @param end the upper bound of the range of membership requests (not inclusive)
-	 * @return the range of matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByG_U_S(
-		long groupId, long userId, long statusId, int start, int end) {
-
-		return findByG_U_S(groupId, userId, statusId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MembershipRequest, NoSuchMembershipRequestException>
+			_collectionPersistenceFinderByG_U_S;
 
 	/**
 	 * Returns an ordered range of all the membership requests where groupId = &#63; and userId = &#63; and statusId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param userId the user ID
-	 * @param statusId the status ID
-	 * @param start the lower bound of the range of membership requests
-	 * @param end the upper bound of the range of membership requests (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching membership requests
-	 */
-	@Override
-	public List<MembershipRequest> findByG_U_S(
-		long groupId, long userId, long statusId, int start, int end,
-		OrderByComparator<MembershipRequest> orderByComparator) {
-
-		return findByG_U_S(
-			groupId, userId, statusId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the membership requests where groupId = &#63; and userId = &#63; and statusId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MembershipRequestModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -631,17 +378,9 @@ public class MembershipRequestPersistenceImpl
 			OrderByComparator<MembershipRequest> orderByComparator)
 		throws NoSuchMembershipRequestException {
 
-		MembershipRequest membershipRequest = fetchByG_U_S_First(
-			groupId, userId, statusId, orderByComparator);
-
-		if (membershipRequest != null) {
-			return membershipRequest;
-		}
-
-		throw new NoSuchMembershipRequestException(
-			_collectionPersistenceFinderByG_U_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, userId, statusId}));
+		return _collectionPersistenceFinderByG_U_S.findFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, userId, statusId}, orderByComparator);
 	}
 
 	/**
@@ -885,130 +624,121 @@ public class MembershipRequestPersistenceImpl
 	 * Initializes the membership request persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_MEMBERSHIPREQUEST_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_MEMBERSHIPREQUEST_WHERE,
 				_SQL_COUNT_MEMBERSHIPREQUEST_WHERE,
 				MembershipRequestModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"membershipRequest.", "groupId", FinderColumn.Type.LONG,
 					"=", true, true, MembershipRequest::getGroupId));
 
-		_finderPathWithPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId"}, true);
-
-		_finderPathWithoutPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, true);
-
-		_finderPathCountByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"},
-			false);
-
 		_collectionPersistenceFinderByUserId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUserId,
-				_finderPathWithoutPaginationFindByUserId,
-				_finderPathCountByUserId, _SQL_SELECT_MEMBERSHIPREQUEST_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, false),
+				_SQL_SELECT_MEMBERSHIPREQUEST_WHERE,
 				_SQL_COUNT_MEMBERSHIPREQUEST_WHERE,
 				MembershipRequestModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"membershipRequest.", "userId", FinderColumn.Type.LONG, "=",
 					true, true, MembershipRequest::getUserId));
 
-		_finderPathWithPaginationFindByG_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "statusId"}, true);
-
-		_finderPathWithoutPaginationFindByG_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_S",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "statusId"}, true);
-
-		_finderPathCountByG_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_S",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "statusId"}, false);
-
 		_collectionPersistenceFinderByG_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_S,
-			_finderPathWithoutPaginationFindByG_S, _finderPathCountByG_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "statusId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_S",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "statusId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_S",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "statusId"}, false),
 			_SQL_SELECT_MEMBERSHIPREQUEST_WHERE,
 			_SQL_COUNT_MEMBERSHIPREQUEST_WHERE,
-			MembershipRequestModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MembershipRequestModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"membershipRequest.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, MembershipRequest::getGroupId),
+				true, true, MembershipRequest::getGroupId),
 			new FinderColumn<>(
 				"membershipRequest.", "statusId", FinderColumn.Type.LONG, "=",
 				true, true, MembershipRequest::getStatusId));
 
-		_finderPathWithPaginationFindByG_U_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "userId", "statusId"}, true);
-
-		_finderPathWithoutPaginationFindByG_U_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "userId", "statusId"}, true);
-
-		_finderPathCountByG_U_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "userId", "statusId"}, false);
-
 		_collectionPersistenceFinderByG_U_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_U_S,
-			_finderPathWithoutPaginationFindByG_U_S, _finderPathCountByG_U_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "userId", "statusId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"groupId", "userId", "statusId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U_S",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"groupId", "userId", "statusId"}, false),
 			_SQL_SELECT_MEMBERSHIPREQUEST_WHERE,
 			_SQL_COUNT_MEMBERSHIPREQUEST_WHERE,
-			MembershipRequestModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MembershipRequestModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"membershipRequest.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, MembershipRequest::getGroupId),
+				true, true, MembershipRequest::getGroupId),
 			new FinderColumn<>(
 				"membershipRequest.", "userId", FinderColumn.Type.LONG, "=",
-				true, false, MembershipRequest::getUserId),
+				true, true, MembershipRequest::getUserId),
 			new FinderColumn<>(
 				"membershipRequest.", "statusId", FinderColumn.Type.LONG, "=",
 				true, true, MembershipRequest::getStatusId));
@@ -1037,13 +767,10 @@ public class MembershipRequestPersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No MembershipRequest exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		MembershipRequestPersistenceImpl.class);
-
 	@Override
 	protected FinderCache getFinderCache() {
 		return FinderCacheUtil.getFinderCache();
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:555012841
+// LIFERAY-SERVICE-BUILDER-HASH:-1329543077

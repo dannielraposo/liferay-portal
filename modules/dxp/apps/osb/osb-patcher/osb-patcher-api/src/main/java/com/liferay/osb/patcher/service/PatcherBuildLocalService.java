@@ -27,6 +27,7 @@ import java.io.Serializable;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -418,6 +419,12 @@ public interface PatcherBuildLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public boolean hasPatcherFixPatcherBuilds(long patcherFixId);
 
+	public PatcherBuild preparePatcherBuild(
+			long userId, long patcherProductVersionId,
+			long patcherProjectVersionId, String accountEntryCode, int type,
+			Locale locale, String patcherBuildName, boolean useExistingHotfix)
+		throws Exception;
+
 	public void setPatcherAccountPatcherBuilds(
 		long patcherAccountId, long[] patcherBuildIds);
 
@@ -488,4 +495,4 @@ public interface PatcherBuildLocalService
 		throws Exception;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1430662012
+// LIFERAY-SERVICE-BUILDER-HASH:-906455652

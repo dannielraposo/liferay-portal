@@ -30,8 +30,10 @@ import com.liferay.layout.content.page.editor.web.internal.configuration.PageEdi
 import com.liferay.layout.content.page.editor.web.internal.manager.FragmentCollectionManager;
 import com.liferay.layout.content.page.editor.web.internal.manager.FragmentEntryLinkManager;
 import com.liferay.layout.content.page.editor.web.internal.util.MappingContentUtil;
+import com.liferay.layout.content.page.editor.web.internal.util.MappingTypesUtil;
 import com.liferay.layout.manager.ContentManager;
 import com.liferay.layout.manager.LayoutLockManager;
+import com.liferay.layout.page.template.info.item.capability.EditPageInfoItemCapability;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
@@ -58,7 +60,6 @@ import com.liferay.segments.service.SegmentsEntryService;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.segments.service.SegmentsExperimentRelLocalService;
 import com.liferay.staging.StagingGroupHelper;
-import com.liferay.style.book.service.StyleBookEntryLocalService;
 
 import jakarta.portlet.PortletRequest;
 import jakarta.portlet.PortletURL;
@@ -105,7 +106,6 @@ public class ContentPageEditorLayoutPageTemplateDisplayContext
 		SegmentsExperimentRelLocalService segmentsExperimentRelLocalService,
 		SegmentsEntryService segmentsEntryService, Staging staging,
 		StagingGroupHelper stagingGroupHelper,
-		StyleBookEntryLocalService styleBookEntryLocalService,
 		WorkflowDefinitionLinkLocalService workflowDefinitionLinkLocalService) {
 
 		super(
@@ -121,8 +121,7 @@ public class ContentPageEditorLayoutPageTemplateDisplayContext
 			portletURLFactory, renderResponse, segmentsConfigurationProvider,
 			segmentsExperienceManager, segmentsExperienceLocalService,
 			segmentsExperimentRelLocalService, segmentsEntryService, staging,
-			stagingGroupHelper, styleBookEntryLocalService,
-			workflowDefinitionLinkLocalService);
+			stagingGroupHelper, workflowDefinitionLinkLocalService);
 
 		_itemSelector = itemSelector;
 		_pageIsDisplayPage = pageIsDisplayPage;
@@ -388,6 +387,11 @@ public class ContentPageEditorLayoutPageTemplateDisplayContext
 		}
 
 		return HashMapBuilder.<String, Object>put(
+			"formEnabled",
+			MappingTypesUtil.hasInfoItemCapability(
+				portal.getClassName(layoutPageTemplateEntry.getClassNameId()),
+				infoItemServiceRegistry, EditPageInfoItemCapability.KEY)
+		).put(
 			"mappingDescription",
 			language.get(
 				httpServletRequest,

@@ -10,7 +10,6 @@ import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchCompanyException;
 import com.liferay.portal.kernel.log.Log;
@@ -69,8 +68,8 @@ public class CompanyPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByWebId;
-	private UniquePersistenceFinder<Company> _uniquePersistenceFinderByWebId;
+	private UniquePersistenceFinder<Company, NoSuchCompanyException>
+		_uniquePersistenceFinderByWebId;
 
 	/**
 	 * Returns the company where webId = &#63; or throws a <code>NoSuchCompanyException</code> if it could not be found.
@@ -81,32 +80,8 @@ public class CompanyPersistenceImpl
 	 */
 	@Override
 	public Company findByWebId(String webId) throws NoSuchCompanyException {
-		Company company = fetchByWebId(webId);
-
-		if (company == null) {
-			String message =
-				_uniquePersistenceFinderByWebId.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {webId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchCompanyException(message);
-		}
-
-		return company;
-	}
-
-	/**
-	 * Returns the company where webId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param webId the web ID
-	 * @return the matching company, or <code>null</code> if a matching company could not be found
-	 */
-	@Override
-	public Company fetchByWebId(String webId) {
-		return fetchByWebId(webId, true);
+		return _uniquePersistenceFinderByWebId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {webId});
 	}
 
 	/**
@@ -148,66 +123,14 @@ public class CompanyPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {webId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByLogoId;
-	private FinderPath _finderPathWithoutPaginationFindByLogoId;
-	private FinderPath _finderPathCountByLogoId;
-	private CollectionPersistenceFinder<Company>
+	private CollectionPersistenceFinder<Company, NoSuchCompanyException>
 		_collectionPersistenceFinderByLogoId;
 
 	/**
-	 * Returns all the companies where logoId = &#63;.
-	 *
-	 * @param logoId the logo ID
-	 * @return the matching companies
-	 */
-	@Override
-	public List<Company> findByLogoId(long logoId) {
-		return findByLogoId(logoId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the companies where logoId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CompanyModelImpl</code>.
-	 * </p>
-	 *
-	 * @param logoId the logo ID
-	 * @param start the lower bound of the range of companies
-	 * @param end the upper bound of the range of companies (not inclusive)
-	 * @return the range of matching companies
-	 */
-	@Override
-	public List<Company> findByLogoId(long logoId, int start, int end) {
-		return findByLogoId(logoId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the companies where logoId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CompanyModelImpl</code>.
-	 * </p>
-	 *
-	 * @param logoId the logo ID
-	 * @param start the lower bound of the range of companies
-	 * @param end the upper bound of the range of companies (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching companies
-	 */
-	@Override
-	public List<Company> findByLogoId(
-		long logoId, int start, int end,
-		OrderByComparator<Company> orderByComparator) {
-
-		return findByLogoId(logoId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the companies where logoId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CompanyModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CompanyModelImpl</code>.
 	 * </p>
 	 *
 	 * @param logoId the logo ID
@@ -240,15 +163,9 @@ public class CompanyPersistenceImpl
 			long logoId, OrderByComparator<Company> orderByComparator)
 		throws NoSuchCompanyException {
 
-		Company company = fetchByLogoId_First(logoId, orderByComparator);
-
-		if (company != null) {
-			return company;
-		}
-
-		throw new NoSuchCompanyException(
-			_collectionPersistenceFinderByLogoId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {logoId}));
+		return _collectionPersistenceFinderByLogoId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {logoId},
+			orderByComparator);
 	}
 
 	/**
@@ -494,41 +411,38 @@ public class CompanyPersistenceImpl
 	 * Initializes the company persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathFetchByWebId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByWebId",
-			new String[] {String.class.getName()}, new String[] {"webId"},
-			false, Company::getWebId);
-
 		_uniquePersistenceFinderByWebId = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByWebId, _SQL_SELECT_COMPANY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByWebId",
+				new String[] {String.class.getName()}, new String[] {"webId"},
+				0, 1, false, convertNullFunction(Company::getWebId)),
+			_SQL_SELECT_COMPANY_WHERE, "",
 			new FinderColumn<>(
 				"company.", "webId", FinderColumn.Type.STRING, "=", true, true,
 				Company::getWebId));
 
-		_finderPathWithPaginationFindByLogoId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLogoId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"logoId"}, true);
-
-		_finderPathWithoutPaginationFindByLogoId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByLogoId",
-			new String[] {Long.class.getName()}, new String[] {"logoId"}, true);
-
-		_finderPathCountByLogoId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByLogoId",
-			new String[] {Long.class.getName()}, new String[] {"logoId"},
-			false);
-
 		_collectionPersistenceFinderByLogoId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLogoId,
-				_finderPathWithoutPaginationFindByLogoId,
-				_finderPathCountByLogoId, _SQL_SELECT_COMPANY_WHERE,
-				_SQL_COUNT_COMPANY_WHERE, CompanyModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLogoId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"logoId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByLogoId",
+					new String[] {Long.class.getName()},
+					new String[] {"logoId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByLogoId",
+					new String[] {Long.class.getName()},
+					new String[] {"logoId"}, false),
+				_SQL_SELECT_COMPANY_WHERE, _SQL_COUNT_COMPANY_WHERE,
+				CompanyModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"company.", "logoId", FinderColumn.Type.LONG, "=", true,
 					true, Company::getLogoId));
@@ -569,4 +483,4 @@ public class CompanyPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1540732871
+// LIFERAY-SERVICE-BUILDER-HASH:439470793

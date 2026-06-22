@@ -10,7 +10,7 @@ import {IFrontendDataSetProps, IView} from '@liferay/frontend-data-set-web';
 import {ItemSelectorModal} from '@liferay/frontend-js-item-selector-web';
 import {openToast} from 'frontend-js-components-web';
 import {sub} from 'frontend-js-web';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import ApiHelper, {RequestResult} from '../../common/services/ApiHelper';
 import FolderService from '../../common/services/FolderService';
@@ -316,38 +316,81 @@ function FolderItemSelectorModalContent({
 	const [schemaKey, setSchemaKey] = useState(0);
 	const [currentSpace, setCurrentSpace] = useState<Space | undefined>();
 	const [folderStructure, setFolderStructure] = useState<FolderNode[]>([]);
+	const [rootFolder, setRootFolder] = useState<Folder | null>(null);
 
 	const {observer, onOpenChange, open} = useModal();
 
+	const abortControllerRef = useRef<AbortController | null>(null);
+
 	const excludedERCs = useMemo(() => {
+		const rootExcluded = rootObjectEntryFolderExternalReferenceCode
+			? [rootObjectEntryFolderExternalReferenceCode]
+			: [];
+
 		if (isBulk && selectedData?.items) {
-			return selectedData.items
-				.filter(
-					(item: any) =>
-						item.entryClassName === OBJECT_ENTRY_FOLDER_CLASS_NAME
-				)
-				.map((item: any) => item.embedded.externalReferenceCode);
+			return [
+				...rootExcluded,
+				...selectedData.items
+					.filter(
+						(item: any) =>
+							item.entryClassName ===
+							OBJECT_ENTRY_FOLDER_CLASS_NAME
+					)
+					.map((item: any) => item.embedded.externalReferenceCode),
+			];
 		}
 
 		if (
 			itemData?.entryClassName === OBJECT_ENTRY_FOLDER_CLASS_NAME &&
 			itemData.embedded?.externalReferenceCode
 		) {
-			return [itemData.embedded.externalReferenceCode];
+			return [...rootExcluded, itemData.embedded.externalReferenceCode];
 		}
 
-		return [];
-	}, [isBulk, itemData, selectedData]);
+		return rootExcluded;
+	}, [
+		isBulk,
+		itemData,
+		rootObjectEntryFolderExternalReferenceCode,
+		selectedData,
+	]);
 
 	const handleSpaceClick = useCallback(
-		(space: Space) => {
+		async (space: Space) => {
+			abortControllerRef.current?.abort();
+
+			const controller = new AbortController();
+			abortControllerRef.current = controller;
+
+			setRootFolder(null);
 			setCurrentSpace(space);
 			setFolderStructure([]);
-			setSchemaKey((prev) => prev + 1);
 			setSelectedItemType(ITEM_SELECTOR_ITEM_TYPE.FOLDER);
 			setURL(getSpaceFoldersURL(cmsSection, space.scopeId));
+			setSchemaKey((prev) => prev + 1);
+
+			if (rootObjectEntryFolderExternalReferenceCode) {
+				const {data} = await ApiHelper.get<any>(
+					`/o/search/v1.0/search?emptySearch=true&entryClassNames=${OBJECT_ENTRY_FOLDER_CLASS_NAME}&filter=title eq '${cmsSection}' and folderId eq 0 and status in (0, 2, 3)&nestedFields=embedded&scope=${space.scopeId}&pageSize=1`,
+					controller.signal
+				);
+
+				if (controller.signal.aborted) {
+					return;
+				}
+
+				if (data?.items?.length) {
+					const folder = data.items[0];
+
+					setRootFolder({
+						id: folder.embedded.id,
+						scopeId: String(space.scopeId),
+						title: space.name,
+					});
+				}
+			}
 		},
-		[cmsSection]
+		[cmsSection, rootObjectEntryFolderExternalReferenceCode]
 	);
 
 	const navigateToFolders = useCallback(
@@ -665,10 +708,20 @@ function FolderItemSelectorModalContent({
 		onOpenChange(true);
 	}, [onOpenChange]);
 
+	useEffect(() => {
+		return () => {
+			abortControllerRef.current?.abort();
+		};
+	}, []);
+
 	return (
 		<>
 			{open && (
 				<ItemSelectorModal<Folder>
+					allowEmptySelection={
+						selectedItemType === ITEM_SELECTOR_ITEM_TYPE.FOLDER &&
+						!!rootFolder
+					}
 					apiURL={url}
 					breadcrumbs={[
 						{
@@ -711,6 +764,7 @@ function FolderItemSelectorModalContent({
 						})),
 					]}
 					breadcrumbsLabel={false}
+					emptySelectionLabel={currentSpace?.name}
 					fdsProps={{
 						...FDS_DEFAULT_PROPS,
 						customRenderers,
@@ -719,6 +773,8 @@ function FolderItemSelectorModalContent({
 								? itemData.embedded.id
 								: itemData.id
 						}`,
+
+						// eslint-disable-next-line react-compiler/react-compiler
 						views: [
 							{
 								contentRenderer: 'cards',
@@ -837,6 +893,13 @@ function FolderItemSelectorModalContent({
 								},
 								name
 							);
+						}
+						else if (
+							selectedItemType ===
+								ITEM_SELECTOR_ITEM_TYPE.FOLDER &&
+							rootFolder
+						) {
+							handleOnItemsChange(rootFolder, rootFolder.title);
 						}
 					}}
 					onOpenChange={onOpenChange}

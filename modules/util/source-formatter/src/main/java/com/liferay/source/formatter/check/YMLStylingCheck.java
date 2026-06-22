@@ -9,12 +9,17 @@ import com.liferay.petra.io.unsync.UnsyncBufferedReader;
 import com.liferay.petra.io.unsync.UnsyncStringReader;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.source.formatter.check.util.SourceUtil;
 import com.liferay.source.formatter.check.util.YMLSourceUtil;
 
 import java.io.IOException;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Alan Huang
@@ -37,11 +42,8 @@ public class YMLStylingCheck extends BaseFileCheck {
 		}
 
 		content = content.replaceAll(
-			"(\\A|\n)( *)(description:) (?!\\|-)(.+)(\\Z|\n)",
-			"$1$2$3\n    $2$4$5");
-		content = content.replaceAll("(\\A|\n) *description:\n +\"\"", "");
-		content = content.replaceAll(
 			"(\\A|\n)( *#)@? ?(review)(\\Z|\n)", "$1$2 @$3$4");
+		content = _formatDescription(fileName, absolutePath, content);
 
 		return _formatQuotes(content);
 	}
@@ -122,6 +124,80 @@ public class YMLStylingCheck extends BaseFileCheck {
 		}
 
 		return s;
+	}
+
+	private String _formatDescription(
+		String fileName, String absolutePath, String content) {
+
+		content = content.replaceAll(
+			"(\\A|\n)( *)(description:) (?!\\|-)(.+)(\\Z|\n)",
+			"$1$2$3\n    $2$4$5");
+		content = content.replaceAll("(\\A|\n) *description:\n +\"\"", "");
+
+		int maxLineLength = 0;
+
+		try {
+			maxLineLength = Integer.parseInt(
+				getAttributeValue(_MAX_LINE_LENGTH, absolutePath));
+		}
+		catch (NumberFormatException numberFormatException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(numberFormatException);
+			}
+
+			return content;
+		}
+
+		StringBuffer sb = new StringBuffer();
+
+		Matcher matcher = _descriptionPattern.matcher(content);
+
+		while (matcher.find()) {
+			String description = matcher.group(3);
+
+			String trimmedDescription = StringUtil.trim(
+				description.replaceAll("\n +", StringPool.SPACE));
+
+			if (!trimmedDescription.startsWith("\"") &&
+				!trimmedDescription.startsWith("'") &&
+				trimmedDescription.contains(": ")) {
+
+				continue;
+			}
+
+			String newDescription = StringPool.BLANK;
+
+			int index = fileName.lastIndexOf(StringPool.SLASH);
+
+			String shortFileName = fileName.substring(index + 1);
+
+			if (shortFileName.matches("rest-openapi(-v\\d+\\.\\d+)?\\.yaml")) {
+				newDescription =
+					matcher.group(2) + StringPool.FOUR_SPACES +
+						trimmedDescription;
+			}
+			else {
+				newDescription = _splitDescription(
+					matcher.group(2) + StringPool.FOUR_SPACES,
+					trimmedDescription, maxLineLength);
+			}
+
+			newDescription = StringPool.NEW_LINE + newDescription;
+
+			if (description.equals(newDescription)) {
+				continue;
+			}
+
+			String replacement = StringUtil.replaceFirst(
+				matcher.group(), description, newDescription);
+
+			matcher.appendReplacement(
+				sb, Matcher.quoteReplacement(replacement));
+		}
+
+		matcher.appendTail(sb);
+
+		return sb.toString();
 	}
 
 	private String _formatQuotes(String content) throws IOException {
@@ -231,5 +307,47 @@ public class YMLStylingCheck extends BaseFileCheck {
 
 		return false;
 	}
+
+	private String _splitDescription(
+		String indent, String description, int maxLineLength) {
+
+		if (Validator.isNull(description)) {
+			return StringPool.BLANK;
+		}
+
+		if ((indent.length() + description.length()) <= maxLineLength) {
+			return indent + description;
+		}
+
+		description = indent + description;
+
+		int x = description.indexOf(CharPool.SPACE, indent.length());
+
+		if (x == -1) {
+			return description;
+		}
+
+		if (x > maxLineLength) {
+			String s = description.substring(x + 1);
+
+			return description.substring(0, x) + "\n" +
+				_splitDescription(indent, s, maxLineLength);
+		}
+
+		x = description.lastIndexOf(CharPool.SPACE, maxLineLength);
+
+		String s = description.substring(x + 1);
+
+		return description.substring(0, x) + "\n" +
+			_splitDescription(indent, s, maxLineLength);
+	}
+
+	private static final String _MAX_LINE_LENGTH = "maxLineLength";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		YMLStylingCheck.class);
+
+	private static final Pattern _descriptionPattern = Pattern.compile(
+		"(\\A|\n)( *)description:((?!\n.+:\n)(\n\\2 +.+)+)");
 
 }

@@ -25,6 +25,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +41,9 @@ import java.util.function.Supplier;
 @GraphQLName(
 	description = "Represents a fragment field with an action.",
 	value = "FragmentFieldAction"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Represents a fragment field with an action."
 )
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "FragmentFieldAction")
@@ -271,8 +276,17 @@ public class FragmentFieldAction implements Serializable {
 
 			sb.append("\"action\": ");
 
-			if (action instanceof Map) {
+			if (action instanceof Collection) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray((Collection<?>)action));
+			}
+			else if (action instanceof Map) {
 				sb.append(JSONFactoryUtil.createJSONObject((Map<?, ?>)action));
+			}
+			else if (action instanceof Object[]) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						Arrays.asList((Object[])action)));
 			}
 			else if (action instanceof String) {
 				sb.append("\"");
@@ -317,8 +331,16 @@ public class FragmentFieldAction implements Serializable {
 
 			sb.append("\"text\": ");
 
-			if (text instanceof Map) {
+			if (text instanceof Collection) {
+				sb.append(JSONFactoryUtil.createJSONArray((Collection<?>)text));
+			}
+			else if (text instanceof Map) {
 				sb.append(JSONFactoryUtil.createJSONObject((Map<?, ?>)text));
+			}
+			else if (text instanceof Object[]) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						Arrays.asList((Object[])text)));
 			}
 			else if (text instanceof String) {
 				sb.append("\"");
@@ -431,4 +453,4 @@ public class FragmentFieldAction implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1367468567
+// LIFERAY-REST-BUILDER-HASH:518743182

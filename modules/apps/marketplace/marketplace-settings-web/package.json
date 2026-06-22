@@ -1,10 +1,10 @@
 {
 	"dependencies": {
-		"@clayui/alert": "^3.161.0",
-		"@clayui/button": "^3.161.0",
-		"@clayui/form": "^3.161.0",
-		"@clayui/loading-indicator": "^3.161.0",
-		"@clayui/multi-step-nav": "^3.161.0",
+		"@clayui/alert": "^3.165.0",
+		"@clayui/button": "^3.165.0",
+		"@clayui/form": "^3.165.0",
+		"@clayui/loading-indicator": "^3.165.0",
+		"@clayui/multi-step-nav": "^3.165.0",
 		"frontend-js-components-web": "*",
 		"frontend-js-web": "*",
 		"jest-fetch-mock": "3.0.3",
@@ -19,5 +19,5 @@
 		"format": "node-scripts format",
 		"test": "node-scripts test"
 	},
-	"version": "1.0.24"
+	"version": "1.0.26"
 }

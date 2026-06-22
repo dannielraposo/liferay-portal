@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.criteria.Criteria;
@@ -96,9 +97,12 @@ public class UpdateSegmentsEntryMVCActionCommand extends BaseMVCActionCommand {
 				serviceContext.setScopeGroupId(
 					_getGroupId(actionRequest, serviceContext));
 
+				String source = null;
+
 				segmentsEntry = _segmentsEntryService.addSegmentsEntry(
 					segmentsEntryKey, nameMap, descriptionMap, active,
-					CriteriaSerializer.serialize(criteria), serviceContext);
+					CriteriaSerializer.serialize(criteria), source,
+					serviceContext);
 			}
 			else {
 				segmentsEntry = _segmentsEntryService.updateSegmentsEntry(
@@ -181,7 +185,7 @@ public class UpdateSegmentsEntryMVCActionCommand extends BaseMVCActionCommand {
 
 		return PortletURLBuilder.create(
 			requestBackedPortletURLFactory.createRenderURL(
-				SegmentsPortletKeys.SEGMENTS)
+				_portal.getPortletId(actionRequest))
 		).setMVCRenderCommandName(
 			"/segments/edit_segments_entry"
 		).setCMD(
@@ -213,6 +217,9 @@ public class UpdateSegmentsEntryMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private Localization _localization;
+
+	@Reference
+	private Portal _portal;
 
 	@Reference
 	private SegmentsCriteriaContributorRegistry

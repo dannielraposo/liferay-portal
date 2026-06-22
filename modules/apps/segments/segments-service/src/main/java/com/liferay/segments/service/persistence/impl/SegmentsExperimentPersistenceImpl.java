@@ -5,27 +5,22 @@
 
 package com.liferay.segments.service.persistence.impl;
 
-import com.liferay.petra.lang.SafeCloseable;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -92,68 +87,15 @@ public class SegmentsExperimentPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<SegmentsExperiment>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the segments experiments where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the segments experiments where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of segments experiments
-	 * @param end the upper bound of the range of segments experiments (not inclusive)
-	 * @return the range of matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findByUuid(
-		String uuid, int start, int end) {
-
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<SegmentsExperiment, NoSuchExperimentException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the segments experiments where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of segments experiments
-	 * @param end the upper bound of the range of segments experiments (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<SegmentsExperiment> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the segments experiments where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -169,14 +111,9 @@ public class SegmentsExperimentPersistenceImpl
 		OrderByComparator<SegmentsExperiment> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsExperiment.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -193,16 +130,8 @@ public class SegmentsExperimentPersistenceImpl
 			OrderByComparator<SegmentsExperiment> orderByComparator)
 		throws NoSuchExperimentException {
 
-		SegmentsExperiment segmentsExperiment = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (segmentsExperiment != null) {
-			return segmentsExperiment;
-		}
-
-		throw new NoSuchExperimentException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -239,18 +168,13 @@ public class SegmentsExperimentPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsExperiment.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<SegmentsExperiment>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<SegmentsExperiment, NoSuchExperimentException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the segments experiment where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchExperimentException</code> if it could not be found.
@@ -264,33 +188,8 @@ public class SegmentsExperimentPersistenceImpl
 	public SegmentsExperiment findByUUID_G(String uuid, long groupId)
 		throws NoSuchExperimentException {
 
-		SegmentsExperiment segmentsExperiment = fetchByUUID_G(uuid, groupId);
-
-		if (segmentsExperiment == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchExperimentException(message);
-		}
-
-		return segmentsExperiment;
-	}
-
-	/**
-	 * Returns the segments experiment where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching segments experiment, or <code>null</code> if a matching segments experiment could not be found
-	 */
-	@Override
-	public SegmentsExperiment fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -305,13 +204,8 @@ public class SegmentsExperimentPersistenceImpl
 	public SegmentsExperiment fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsExperiment.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -343,73 +237,15 @@ public class SegmentsExperimentPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<SegmentsExperiment>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the segments experiments where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the segments experiments where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of segments experiments
-	 * @param end the upper bound of the range of segments experiments (not inclusive)
-	 * @return the range of matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<SegmentsExperiment, NoSuchExperimentException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the segments experiments where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of segments experiments
-	 * @param end the upper bound of the range of segments experiments (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<SegmentsExperiment> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the segments experiments where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -426,14 +262,9 @@ public class SegmentsExperimentPersistenceImpl
 		OrderByComparator<SegmentsExperiment> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsExperiment.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -451,16 +282,8 @@ public class SegmentsExperimentPersistenceImpl
 			OrderByComparator<SegmentsExperiment> orderByComparator)
 		throws NoSuchExperimentException {
 
-		SegmentsExperiment segmentsExperiment = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (segmentsExperiment != null) {
-			return segmentsExperiment;
-		}
-
-		throw new NoSuchExperimentException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -501,78 +324,19 @@ public class SegmentsExperimentPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsExperiment.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<SegmentsExperiment>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the segments experiments where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the segments experiments where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of segments experiments
-	 * @param end the upper bound of the range of segments experiments (not inclusive)
-	 * @return the range of matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<SegmentsExperiment, NoSuchExperimentException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the segments experiments where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of segments experiments
-	 * @param end the upper bound of the range of segments experiments (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<SegmentsExperiment> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the segments experiments where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -588,14 +352,9 @@ public class SegmentsExperimentPersistenceImpl
 		OrderByComparator<SegmentsExperiment> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsExperiment.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				finderCache, new Object[] {groupId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -612,16 +371,8 @@ public class SegmentsExperimentPersistenceImpl
 			OrderByComparator<SegmentsExperiment> orderByComparator)
 		throws NoSuchExperimentException {
 
-		SegmentsExperiment segmentsExperiment = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (segmentsExperiment != null) {
-			return segmentsExperiment;
-		}
-
-		throw new NoSuchExperimentException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			finderCache, new Object[] {groupId}, orderByComparator);
 	}
 
 	/**
@@ -640,41 +391,10 @@ public class SegmentsExperimentPersistenceImpl
 	}
 
 	/**
-	 * Returns all the segments experiments that the user has permission to view where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching segments experiments that the user has permission to view
-	 */
-	@Override
-	public List<SegmentsExperiment> filterFindByGroupId(long groupId) {
-		return filterFindByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the segments experiments that the user has permission to view where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of segments experiments
-	 * @param end the upper bound of the range of segments experiments (not inclusive)
-	 * @return the range of matching segments experiments that the user has permission to view
-	 */
-	@Override
-	public List<SegmentsExperiment> filterFindByGroupId(
-		long groupId, int start, int end) {
-
-		return filterFindByGroupId(groupId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the segments experiments that the user has permissions to view where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -688,98 +408,9 @@ public class SegmentsExperimentPersistenceImpl
 		long groupId, int start, int end,
 		OrderByComparator<SegmentsExperiment> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return findByGroupId(groupId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByGroupId(
-					groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator),
-				groupId);
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_SEGMENTSEXPERIMENT_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_SEGMENTSEXPERIMENT_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_SEGMENTSEXPERIMENT_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					SegmentsExperimentModelImpl.ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(SegmentsExperimentModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SegmentsExperiment.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, SegmentsExperimentImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, SegmentsExperimentImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			return (List<SegmentsExperiment>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterFind(
+			finderCache, new Object[] {groupId}, start, end, orderByComparator,
+			groupId);
 	}
 
 	/**
@@ -801,13 +432,8 @@ public class SegmentsExperimentPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsExperiment.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				finderCache, new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			finderCache, new Object[] {groupId});
 	}
 
 	/**
@@ -818,126 +444,19 @@ public class SegmentsExperimentPersistenceImpl
 	 */
 	@Override
 	public int filterCountByGroupId(long groupId) {
-		if (!InlineSQLHelperUtil.isEnabled(groupId)) {
-			return countByGroupId(groupId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<SegmentsExperiment> segmentsExperiments = findByGroupId(
-				groupId);
-
-			segmentsExperiments = InlineSQLHelperUtil.filter(
-				segmentsExperiments, groupId);
-
-			return segmentsExperiments.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_SEGMENTSEXPERIMENT_WHERE);
-
-		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), SegmentsExperiment.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, groupId);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(groupId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByGroupId.filterCount(
+			finderCache, new Object[] {groupId}, groupId);
 	}
 
-	private static final String _FINDER_COLUMN_GROUPID_GROUPID_2 =
-		"segmentsExperiment.groupId = ?";
-
-	private FinderPath _finderPathWithPaginationFindBySegmentsExperimentKey;
-	private FinderPath _finderPathWithoutPaginationFindBySegmentsExperimentKey;
-	private FinderPath _finderPathCountBySegmentsExperimentKey;
-	private CollectionPersistenceFinder<SegmentsExperiment>
-		_collectionPersistenceFinderBySegmentsExperimentKey;
-
-	/**
-	 * Returns all the segments experiments where segmentsExperimentKey = &#63;.
-	 *
-	 * @param segmentsExperimentKey the segments experiment key
-	 * @return the matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findBySegmentsExperimentKey(
-		String segmentsExperimentKey) {
-
-		return findBySegmentsExperimentKey(
-			segmentsExperimentKey, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the segments experiments where segmentsExperimentKey = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param segmentsExperimentKey the segments experiment key
-	 * @param start the lower bound of the range of segments experiments
-	 * @param end the upper bound of the range of segments experiments (not inclusive)
-	 * @return the range of matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findBySegmentsExperimentKey(
-		String segmentsExperimentKey, int start, int end) {
-
-		return findBySegmentsExperimentKey(
-			segmentsExperimentKey, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<SegmentsExperiment, NoSuchExperimentException>
+			_collectionPersistenceFinderBySegmentsExperimentKey;
 
 	/**
 	 * Returns an ordered range of all the segments experiments where segmentsExperimentKey = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
-	 * </p>
-	 *
-	 * @param segmentsExperimentKey the segments experiment key
-	 * @param start the lower bound of the range of segments experiments
-	 * @param end the upper bound of the range of segments experiments (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching segments experiments
-	 */
-	@Override
-	public List<SegmentsExperiment> findBySegmentsExperimentKey(
-		String segmentsExperimentKey, int start, int end,
-		OrderByComparator<SegmentsExperiment> orderByComparator) {
-
-		return findBySegmentsExperimentKey(
-			segmentsExperimentKey, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the segments experiments where segmentsExperimentKey = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SegmentsExperimentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param segmentsExperimentKey the segments experiment key
@@ -953,14 +472,9 @@ public class SegmentsExperimentPersistenceImpl
 		OrderByComparator<SegmentsExperiment> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsExperiment.class)) {
-
-			return _collectionPersistenceFinderBySegmentsExperimentKey.find(
-				finderCache, new Object[] {segmentsExperimentKey}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderBySegmentsExperimentKey.find(
+			finderCache, new Object[] {segmentsExperimentKey}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -977,19 +491,9 @@ public class SegmentsExperimentPersistenceImpl
 			OrderByComparator<SegmentsExperiment> orderByComparator)
 		throws NoSuchExperimentException {
 
-		SegmentsExperiment segmentsExperiment =
-			fetchBySegmentsExperimentKey_First(
-				segmentsExperimentKey, orderByComparator);
-
-		if (segmentsExperiment != null) {
-			return segmentsExperiment;
-		}
-
-		throw new NoSuchExperimentException(
-			_collectionPersistenceFinderBySegmentsExperimentKey.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {segmentsExperimentKey}));
+		return _collectionPersistenceFinderBySegmentsExperimentKey.findFirst(
+			finderCache, new Object[] {segmentsExperimentKey},
+			orderByComparator);
 	}
 
 	/**
@@ -1028,18 +532,13 @@ public class SegmentsExperimentPersistenceImpl
 	 */
 	@Override
 	public int countBySegmentsExperimentKey(String segmentsExperimentKey) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsExperiment.class)) {
-
-			return _collectionPersistenceFinderBySegmentsExperimentKey.count(
-				finderCache, new Object[] {segmentsExperimentKey});
-		}
+		return _collectionPersistenceFinderBySegmentsExperimentKey.count(
+			finderCache, new Object[] {segmentsExperimentKey});
 	}
 
-	private FinderPath _finderPathFetchByG_S;
-	private UniquePersistenceFinder<SegmentsExperiment>
-		_uniquePersistenceFinderByG_S;
+	private UniquePersistenceFinder
+		<SegmentsExperiment, NoSuchExperimentException>
+			_uniquePersistenceFinderByG_S;
 
 	/**
 	 * Returns the segments experiment where groupId = &#63; and segmentsExperimentKey = &#63; or throws a <code>NoSuchExperimentException</code> if it could not be found.
@@ -1054,37 +553,8 @@ public class SegmentsExperimentPersistenceImpl
 			long groupId, String segmentsExperimentKey)
 		throws NoSuchExperimentException {
 
-		SegmentsExperiment segmentsExperiment = fetchByG_S(
-			groupId, segmentsExperimentKey);
-
-		if (segmentsExperiment == null) {
-			String message =
-				_uniquePersistenceFinderByG_S.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, segmentsExperimentKey});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchExperimentException(message);
-		}
-
-		return segmentsExperiment;
-	}
-
-	/**
-	 * Returns the segments experiment where groupId = &#63; and segmentsExperimentKey = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param segmentsExperimentKey the segments experiment key
-	 * @return the matching segments experiment, or <code>null</code> if a matching segments experiment could not be found
-	 */
-	@Override
-	public SegmentsExperiment fetchByG_S(
-		long groupId, String segmentsExperimentKey) {
-
-		return fetchByG_S(groupId, segmentsExperimentKey, true);
+		return _uniquePersistenceFinderByG_S.find(
+			finderCache, new Object[] {groupId, segmentsExperimentKey});
 	}
 
 	/**
@@ -1099,14 +569,9 @@ public class SegmentsExperimentPersistenceImpl
 	public SegmentsExperiment fetchByG_S(
 		long groupId, String segmentsExperimentKey, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsExperiment.class)) {
-
-			return _uniquePersistenceFinderByG_S.fetch(
-				finderCache, new Object[] {groupId, segmentsExperimentKey},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_S.fetch(
+			finderCache, new Object[] {groupId, segmentsExperimentKey},
+			useFinderCache);
 	}
 
 	/**
@@ -1140,9 +605,9 @@ public class SegmentsExperimentPersistenceImpl
 			finderCache, new Object[] {groupId, segmentsExperimentKey});
 	}
 
-	private FinderPath _finderPathFetchByG_S_P;
-	private UniquePersistenceFinder<SegmentsExperiment>
-		_uniquePersistenceFinderByG_S_P;
+	private UniquePersistenceFinder
+		<SegmentsExperiment, NoSuchExperimentException>
+			_uniquePersistenceFinderByG_S_P;
 
 	/**
 	 * Returns the segments experiment where groupId = &#63; and segmentsExperienceId = &#63; and plid = &#63; or throws a <code>NoSuchExperimentException</code> if it could not be found.
@@ -1158,38 +623,8 @@ public class SegmentsExperimentPersistenceImpl
 			long groupId, long segmentsExperienceId, long plid)
 		throws NoSuchExperimentException {
 
-		SegmentsExperiment segmentsExperiment = fetchByG_S_P(
-			groupId, segmentsExperienceId, plid);
-
-		if (segmentsExperiment == null) {
-			String message =
-				_uniquePersistenceFinderByG_S_P.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, segmentsExperienceId, plid});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchExperimentException(message);
-		}
-
-		return segmentsExperiment;
-	}
-
-	/**
-	 * Returns the segments experiment where groupId = &#63; and segmentsExperienceId = &#63; and plid = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param segmentsExperienceId the segments experience ID
-	 * @param plid the plid
-	 * @return the matching segments experiment, or <code>null</code> if a matching segments experiment could not be found
-	 */
-	@Override
-	public SegmentsExperiment fetchByG_S_P(
-		long groupId, long segmentsExperienceId, long plid) {
-
-		return fetchByG_S_P(groupId, segmentsExperienceId, plid, true);
+		return _uniquePersistenceFinderByG_S_P.find(
+			finderCache, new Object[] {groupId, segmentsExperienceId, plid});
 	}
 
 	/**
@@ -1206,14 +641,9 @@ public class SegmentsExperimentPersistenceImpl
 		long groupId, long segmentsExperienceId, long plid,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					SegmentsExperiment.class)) {
-
-			return _uniquePersistenceFinderByG_S_P.fetch(
-				finderCache, new Object[] {groupId, segmentsExperienceId, plid},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_S_P.fetch(
+			finderCache, new Object[] {groupId, segmentsExperienceId, plid},
+			useFinderCache);
 	}
 
 	/**
@@ -1566,182 +996,174 @@ public class SegmentsExperimentPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_SEGMENTSEXPERIMENT_WHERE,
 			_SQL_COUNT_SEGMENTSEXPERIMENT_WHERE,
-			SegmentsExperimentModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			SegmentsExperimentModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"segmentsExperiment.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, SegmentsExperiment::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false,
-			SegmentsExperiment::getUuid, SegmentsExperiment::getGroupId);
+				"segmentsExperiment.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				SegmentsExperiment::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G,
-			_SQL_SELECT_SEGMENTSEXPERIMENT_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(SegmentsExperiment::getUuid),
+				SegmentsExperiment::getGroupId),
+			_SQL_SELECT_SEGMENTSEXPERIMENT_WHERE, "",
 			new FinderColumn<>(
-				"segmentsExperiment.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, SegmentsExperiment::getUuid),
+				"segmentsExperiment.", "uuid", "uuid_",
+				FinderColumn.Type.STRING, "=", true, true,
+				SegmentsExperiment::getUuid),
 			new FinderColumn<>(
 				"segmentsExperiment.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, SegmentsExperiment::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_SEGMENTSEXPERIMENT_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_SEGMENTSEXPERIMENT_WHERE,
 				_SQL_COUNT_SEGMENTSEXPERIMENT_WHERE,
 				SegmentsExperimentModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"segmentsExperiment.", "uuid", FinderColumn.Type.STRING,
-					"=", true, false, SegmentsExperiment::getUuid),
+					"segmentsExperiment.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					SegmentsExperiment::getUuid),
 				new FinderColumn<>(
 					"segmentsExperiment.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, SegmentsExperiment::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_SEGMENTSEXPERIMENT_WHERE,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_SEGMENTSEXPERIMENT_WHERE,
 				_SQL_COUNT_SEGMENTSEXPERIMENT_WHERE,
 				SegmentsExperimentModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"segmentsExperiment.", "groupId", FinderColumn.Type.LONG,
 					"=", true, true, SegmentsExperiment::getGroupId));
 
-		_finderPathWithPaginationFindBySegmentsExperimentKey = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findBySegmentsExperimentKey",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"segmentsExperimentKey"}, true);
-
-		_finderPathWithoutPaginationFindBySegmentsExperimentKey =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findBySegmentsExperimentKey",
-				new String[] {String.class.getName()},
-				new String[] {"segmentsExperimentKey"}, true);
-
-		_finderPathCountBySegmentsExperimentKey = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countBySegmentsExperimentKey",
-			new String[] {String.class.getName()},
-			new String[] {"segmentsExperimentKey"}, false);
-
 		_collectionPersistenceFinderBySegmentsExperimentKey =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindBySegmentsExperimentKey,
-				_finderPathWithoutPaginationFindBySegmentsExperimentKey,
-				_finderPathCountBySegmentsExperimentKey,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findBySegmentsExperimentKey",
+					new String[] {
+						String.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"segmentsExperimentKey"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findBySegmentsExperimentKey",
+					new String[] {String.class.getName()},
+					new String[] {"segmentsExperimentKey"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countBySegmentsExperimentKey",
+					new String[] {String.class.getName()},
+					new String[] {"segmentsExperimentKey"}, 0, 1, false, null),
 				_SQL_SELECT_SEGMENTSEXPERIMENT_WHERE,
 				_SQL_COUNT_SEGMENTSEXPERIMENT_WHERE,
 				SegmentsExperimentModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"segmentsExperiment.", "segmentsExperimentKey",
 					FinderColumn.Type.STRING, "=", true, true,
 					SegmentsExperiment::getSegmentsExperimentKey));
 
-		_finderPathFetchByG_S = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_S",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "segmentsExperimentKey"}, false,
-			SegmentsExperiment::getGroupId,
-			SegmentsExperiment::getSegmentsExperimentKey);
-
 		_uniquePersistenceFinderByG_S = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_S, _SQL_SELECT_SEGMENTSEXPERIMENT_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_S",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "segmentsExperimentKey"}, 0, 2, false,
+				SegmentsExperiment::getGroupId,
+				convertNullFunction(
+					SegmentsExperiment::getSegmentsExperimentKey)),
+			_SQL_SELECT_SEGMENTSEXPERIMENT_WHERE, "",
 			new FinderColumn<>(
 				"segmentsExperiment.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, SegmentsExperiment::getGroupId),
+				true, true, SegmentsExperiment::getGroupId),
 			new FinderColumn<>(
 				"segmentsExperiment.", "segmentsExperimentKey",
 				FinderColumn.Type.STRING, "=", true, true,
 				SegmentsExperiment::getSegmentsExperimentKey));
 
-		_finderPathFetchByG_S_P = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_S_P",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "segmentsExperienceId", "plid"}, false,
-			SegmentsExperiment::getGroupId,
-			SegmentsExperiment::getSegmentsExperienceId,
-			SegmentsExperiment::getPlid);
-
 		_uniquePersistenceFinderByG_S_P = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_S_P, _SQL_SELECT_SEGMENTSEXPERIMENT_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_S_P",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"groupId", "segmentsExperienceId", "plid"}, 0, 0,
+				false, SegmentsExperiment::getGroupId,
+				SegmentsExperiment::getSegmentsExperienceId,
+				SegmentsExperiment::getPlid),
+			_SQL_SELECT_SEGMENTSEXPERIMENT_WHERE, "",
 			new FinderColumn<>(
 				"segmentsExperiment.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, SegmentsExperiment::getGroupId),
+				true, true, SegmentsExperiment::getGroupId),
 			new FinderColumn<>(
 				"segmentsExperiment.", "segmentsExperienceId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				SegmentsExperiment::getSegmentsExperienceId),
 			new FinderColumn<>(
 				"segmentsExperiment.", "plid", FinderColumn.Type.LONG, "=",
@@ -1804,29 +1226,6 @@ public class SegmentsExperimentPersistenceImpl
 	private static final String _SQL_COUNT_SEGMENTSEXPERIMENT_WHERE =
 		"SELECT COUNT(segmentsExperiment) FROM SegmentsExperiment segmentsExperiment WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"segmentsExperiment.segmentsExperimentId";
-
-	private static final String _FILTER_SQL_SELECT_SEGMENTSEXPERIMENT_WHERE =
-		"SELECT DISTINCT {segmentsExperiment.*} FROM SegmentsExperiment segmentsExperiment WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_SEGMENTSEXPERIMENT_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {SegmentsExperiment.*} FROM (SELECT DISTINCT segmentsExperiment.segmentsExperimentId FROM SegmentsExperiment segmentsExperiment WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_SEGMENTSEXPERIMENT_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN SegmentsExperiment ON TEMP_TABLE.segmentsExperimentId = SegmentsExperiment.segmentsExperimentId";
-
-	private static final String _FILTER_SQL_COUNT_SEGMENTSEXPERIMENT_WHERE =
-		"SELECT COUNT(DISTINCT segmentsExperiment.segmentsExperimentId) AS COUNT_VALUE FROM SegmentsExperiment segmentsExperiment WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "segmentsExperiment";
-
-	private static final String _FILTER_ENTITY_TABLE = "SegmentsExperiment";
-
-	private static final String _ORDER_BY_ENTITY_TABLE = "SegmentsExperiment.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No SegmentsExperiment exists with the key {";
 
@@ -1842,4 +1241,4 @@ public class SegmentsExperimentPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:843230815
+// LIFERAY-SERVICE-BUILDER-HASH:1459361274

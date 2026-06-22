@@ -5,18 +5,17 @@
 
 import React from 'react';
 
-export default function ChatbotFooter() {
+const DEFAULT_DISCLAIMER_MESSAGE =
+	'AI generated responses may be inaccurate. Please review carefully.';
+
+interface ChatbotFooterProps {
+	disclaimerMessage: string;
+}
+
+export default function ChatbotFooter({disclaimerMessage}: ChatbotFooterProps) {
 	return (
 		<div className="aihub-footer">
-			By messaging, you agree that this chat may be monitored and recorded
-			per our{' '}
-			<a
-				href="https://www.liferay.com/privacy-policy"
-				rel="noopener noreferrer"
-				target="_blank"
-			>
-				Privacy Policy
-			</a>
+			{disclaimerMessage || DEFAULT_DISCLAIMER_MESSAGE}
 		</div>
 	);
 }

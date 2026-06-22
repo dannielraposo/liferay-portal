@@ -62,6 +62,10 @@ components:
                     description:
                         The asset library's external reference code.
                     type: string
+                friendlyURL:
+                    description:
+                        The asset library's friendly URL.
+                    type: string
                 id:
                     description:
                         The asset library's ID.
@@ -168,11 +172,20 @@ components:
                 searchable:
                     default: true
                     type: boolean
+                stagingType:
+                    description:
+                        The connected site's staging type.
+                    enum: [LIVE, STAGING]
+                    readOnly: true
+                    type: string
+                type:
+                    enum: [Site, SiteTemplate]
+                    readOnly: true
+                    type: string
             type: object
         Creator:
             description:
-                Represents the user who created/authored the content. Properties follow the
-                [creator](https://schema.org/creator) specification.
+                Represents the user who created/authored the content. Properties follow the [creator](https://schema.org/creator) specification.
             properties:
                 additionalName:
                     description:
@@ -366,8 +379,7 @@ components:
                     type: array
 info:
     description:
-        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.headless.asset.library.client', and version '1.0.15'."
+        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.headless.asset.library.client', and version '1.0.17'."
     license:
         name: Apache 2.0
         url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -534,8 +546,7 @@ paths:
             tags: ["AssetLibrary"]
         patch:
             description:
-                Updates the asset library using only the fields received in the request body with the given external
-                reference code. Any other fields are left untouched.
+                Updates the asset library using only the fields received in the request body with the given external reference code. Any other fields are left untouched.
             operationId: patchAssetLibrary
             parameters:
                 -   in: path
@@ -565,8 +576,7 @@ paths:
             tags: ["AssetLibrary"]
         put:
             description:
-                Replaces the asset library with information sent in the request body with the given external reference
-                code. Any missing fields are deleted unless they are required.
+                Replaces the asset library with information sent in the request body with the given external reference code. Any missing fields are deleted unless they are required.
             operationId: putAssetLibrary
             parameters:
                 -   in: path
@@ -597,8 +607,7 @@ paths:
     "/asset-libraries/{assetLibraryExternalReferenceCode}/connected-sites":
         get:
             description:
-                Get the asset library's with the provided external reference code connected sites. Results can be
-                paginated.
+                Get the asset library's with the provided external reference code connected sites. Results can be paginated.
             operationId: getAssetLibraryConnectedSitesPage
             parameters:
                 -   in: path
@@ -806,11 +815,57 @@ paths:
                     description:
                         default response
             tags: ["AssetLibrary"]
+    "/asset-libraries/{assetLibraryExternalReferenceCode}/roles":
+        get:
+            description:
+                Get the asset library scoped roles that can be assigned to its members. Accessible to any asset library administrator or member.
+            operationId: getAssetLibraryRolesPage
+            parameters:
+                -   in: path
+                    name: assetLibraryExternalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+                -   in: query
+                    name: fields
+                    schema:
+                        type: string
+                -   in: query
+                    name: nestedFields
+                    schema:
+                        type: string
+                -   in: query
+                    name: page
+                    schema:
+                        type: integer
+                -   in: query
+                    name: pageSize
+                    schema:
+                        type: integer
+                -   in: query
+                    name: restrictFields
+                    schema:
+                        type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/Role"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/Role"
+                                type: array
+                    description:
+                        default response
+            tags: ["Role"]
     "/asset-libraries/{assetLibraryExternalReferenceCode}/user-accounts":
         get:
             description:
-                Get the asset library with the provided external reference code associated user accounts. Results can be
-                paginated, filtered, searched, and sorted.
+                Get the asset library with the provided external reference code associated user accounts. Results can be paginated, filtered, searched, and sorted.
             operationId: getAssetLibraryUserAccountsPage
             parameters:
                 -   in: path
@@ -1006,8 +1061,7 @@ paths:
     "/asset-libraries/{assetLibraryExternalReferenceCode}/user-groups":
         get:
             description:
-                Get the asset library associated with the provided external reference code user groups. Results can be
-                paginated, filtered, searched, and sorted.
+                Get the asset library associated with the provided external reference code user groups. Results can be paginated, filtered, searched, and sorted.
             operationId: getAssetLibraryUserGroupsPage
             parameters:
                 -   in: path

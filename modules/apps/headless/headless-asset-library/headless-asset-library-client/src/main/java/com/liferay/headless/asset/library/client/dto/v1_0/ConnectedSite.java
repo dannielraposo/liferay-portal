@@ -192,6 +192,62 @@ public class ConnectedSite implements Cloneable, Serializable {
 
 	protected Boolean searchable;
 
+	public StagingType getStagingType() {
+		return stagingType;
+	}
+
+	public String getStagingTypeAsString() {
+		if (stagingType == null) {
+			return null;
+		}
+
+		return stagingType.toString();
+	}
+
+	public void setStagingType(StagingType stagingType) {
+		this.stagingType = stagingType;
+	}
+
+	public void setStagingType(
+		UnsafeSupplier<StagingType, Exception> stagingTypeUnsafeSupplier) {
+
+		try {
+			stagingType = stagingTypeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected StagingType stagingType;
+
+	public Type getType() {
+		return type;
+	}
+
+	public String getTypeAsString() {
+		if (type == null) {
+			return null;
+		}
+
+		return type.toString();
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+	}
+
+	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
+		try {
+			type = typeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Type type;
+
 	@Override
 	public ConnectedSite clone() throws CloneNotSupportedException {
 		return (ConnectedSite)super.clone();
@@ -223,5 +279,71 @@ public class ConnectedSite implements Cloneable, Serializable {
 		return ConnectedSiteSerDes.toJSON(this);
 	}
 
+	public static enum StagingType {
+
+		LIVE("LIVE"), STAGING("STAGING");
+
+		public static StagingType create(String value) {
+			for (StagingType stagingType : values()) {
+				if (Objects.equals(stagingType.getValue(), value) ||
+					Objects.equals(stagingType.name(), value)) {
+
+					return stagingType;
+				}
+			}
+
+			return null;
+		}
+
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private StagingType(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
+
+	public static enum Type {
+
+		SITE("Site"), SITE_TEMPLATE("SiteTemplate");
+
+		public static Type create(String value) {
+			for (Type type : values()) {
+				if (Objects.equals(type.getValue(), value) ||
+					Objects.equals(type.name(), value)) {
+
+					return type;
+				}
+			}
+
+			return null;
+		}
+
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private Type(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
+
 }
-// LIFERAY-REST-BUILDER-HASH:1122600106
+// LIFERAY-REST-BUILDER-HASH:787305991

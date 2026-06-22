@@ -413,7 +413,7 @@ public class CustomFDSSerializerTest extends BaseFDSSerializerTestCase {
 					"clientExtensionFilterURL",
 					"/o/" + cetExternalReferenceCode + "/index.js"
 				).put(
-					"entityFieldType", "string"
+					"entityFieldType", FDSEntityFieldTypes.STRING
 				).put(
 					"id", FIELD_NAMES[0]
 				).put(
@@ -478,6 +478,76 @@ public class CustomFDSSerializerTest extends BaseFDSSerializerTestCase {
 					)
 				).put(
 					"type", "dateRange"
+				)
+			).toString(),
+			_customFDSSerializer.serializeFilters(
+				FDS_NAMES[0], httpServletRequest
+			).toString(),
+			JSONCompareMode.STRICT);
+
+		_resetFDSSerializer();
+
+		// Date time range filter
+
+		_mockSerializeFilters(
+			FDS_NAMES[0],
+			HashMapBuilder.<String, Object>put(
+				"fieldName", FIELD_NAMES[0]
+			).put(
+				"from", "2000-12-31T09:15:00.000Z"
+			).put(
+				"label", LABELS[0]
+			).put(
+				"to", "2025-10-03T18:33:56.000Z"
+			).put(
+				"type", FDSEntityFieldTypes.DATE_TIME
+			).build());
+
+		JSONAssert.assertEquals(
+			JSONUtil.putAll(
+				JSONUtil.put(
+					"active", true
+				).put(
+					"entityFieldType", FDSEntityFieldTypes.DATE_TIME
+				).put(
+					"id", FIELD_NAMES[0]
+				).put(
+					"label", LABELS[0]
+				).put(
+					"preloadedData",
+					JSONUtil.put(
+						"from",
+						JSONUtil.put(
+							"day", 31
+						).put(
+							"hour", 9
+						).put(
+							"minute", 15
+						).put(
+							"month", 12
+						).put(
+							"second", 0
+						).put(
+							"year", 2000
+						)
+					).put(
+						"to",
+						JSONUtil.put(
+							"day", 3
+						).put(
+							"hour", 18
+						).put(
+							"minute", 33
+						).put(
+							"month", 10
+						).put(
+							"second", 56
+						).put(
+							"year", 2025
+						)
+					)
+				).put(
+					"type", "dateTimeRange"
 				)
 			).toString(),
 			_customFDSSerializer.serializeFilters(
@@ -570,6 +640,10 @@ public class CustomFDSSerializerTest extends BaseFDSSerializerTestCase {
 		_mockSerializeFilters(
 			FDS_NAMES[0],
 			HashMapBuilder.<String, Object>put(
+				"autocompleteEnabled", true
+			).put(
+				"entityFieldType", FDSEntityFieldTypes.STRING
+			).put(
 				"fieldName", FIELD_NAMES[0]
 			).put(
 				"include", true
@@ -609,7 +683,7 @@ public class CustomFDSSerializerTest extends BaseFDSSerializerTestCase {
 				).put(
 					"autocompleteEnabled", true
 				).put(
-					"entityFieldType", "string"
+					"entityFieldType", FDSEntityFieldTypes.STRING
 				).put(
 					"id", FIELD_NAMES[0]
 				).put(
@@ -1369,8 +1443,9 @@ public class CustomFDSSerializerTest extends BaseFDSSerializerTestCase {
 			});
 
 		Mockito.when(
-			_customFDSSerializer.getSortedRelatedObjectEntries(
-				fdsName, httpServletRequest, null, "tableSectionsOrder",
+			_customFDSSerializer.getRelatedObjectEntries(
+				fdsName, httpServletRequest, null,
+				"dataSetToDataSetCardsSections", "dataSetToDataSetListSections",
 				"dataSetToDataSetTableSections")
 		).thenReturn(
 			objectEntries
@@ -1777,6 +1852,6 @@ public class CustomFDSSerializerTest extends BaseFDSSerializerTestCase {
 	private static final Log _log = LogFactoryUtil.getLog(
 		CustomFDSSerializerTest.class);
 
-	private static CustomFDSSerializer _customFDSSerializer;
+	private CustomFDSSerializer _customFDSSerializer;
 
 }

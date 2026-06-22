@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsValues;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import jakarta.servlet.Servlet;
@@ -74,9 +75,18 @@ public class DDMFormContextProviderServlet extends HttpServlet {
 			 uploadException.isExceededLiferayFileItemSizeLimit() ||
 			 uploadException.isExceededUploadRequestSizeLimit())) {
 
-			httpServletResponse.sendError(
-				HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
+			httpServletResponse.setContentType(ContentTypes.APPLICATION_JSON);
+			httpServletResponse.setStatus(
+				HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE);
+
+			JSONObject jsonObject = _jsonFactory.createJSONObject();
+
+			jsonObject.put(
+				"error",
 				_language.get(httpServletRequest, "upload-size-is-too-large"));
+
+			ServletResponseUtil.write(
+				httpServletResponse, jsonObject.toString());
 
 			return;
 		}
@@ -137,8 +147,7 @@ public class DDMFormContextProviderServlet extends HttpServlet {
 		HttpServletResponse httpServletResponse, String portletNamespace) {
 
 		try {
-			Locale locale = LocaleUtil.fromLanguageId(
-				_language.getLanguageId(httpServletRequest));
+			Locale locale = _getLocale(httpServletRequest);
 
 			DDMFormRenderingContext ddmFormRenderingContext =
 				_createDDMFormRenderingContext(
@@ -215,6 +224,18 @@ public class DDMFormContextProviderServlet extends HttpServlet {
 
 		return new DDMFormTemplateContextProcessor(
 			jsonObject, ParamUtil.getString(httpServletRequest, "languageId"));
+	}
+
+	private Locale _getLocale(HttpServletRequest httpServletRequest) {
+		String languageId = ParamUtil.getString(
+			httpServletRequest, "languageId");
+
+		if (Validator.isNotNull(languageId)) {
+			return LocaleUtil.fromLanguageId(languageId);
+		}
+
+		return LocaleUtil.fromLanguageId(
+			_language.getLanguageId(httpServletRequest));
 	}
 
 	private void _prepareThreadLocal(Locale locale)

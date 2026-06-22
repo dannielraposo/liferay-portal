@@ -6,7 +6,6 @@
 package com.liferay.portal.service.impl;
 
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
-import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -285,22 +284,14 @@ public class LayoutSetLocalServiceImpl extends LayoutSetLocalServiceBaseImpl {
 
 		LayoutSetBranch layoutSetBranch = _getLayoutSetBranch(layoutSet);
 
+		String previousLayoutSetPrototypeUuid = null;
+
 		if (layoutSetBranch == null) {
+			previousLayoutSetPrototypeUuid =
+				layoutSet.getLayoutSetPrototypeUuid();
+
 			if (Validator.isNull(layoutSetPrototypeUuid)) {
 				layoutSetPrototypeUuid = layoutSet.getLayoutSetPrototypeUuid();
-			}
-
-			if (!layoutSetPrototypeUuid.equals(
-					layoutSet.getLayoutSetPrototypeUuid())) {
-
-				UnicodeProperties unicodeProperties =
-					layoutSet.getSettingsProperties();
-
-				unicodeProperties.remove(Sites.LAST_MERGE_TIME);
-				unicodeProperties.remove(Sites.LAST_RESET_TIME);
-				unicodeProperties.remove(Sites.LAST_MERGE_VERSION);
-
-				layoutSet.setSettingsProperties(unicodeProperties);
 			}
 
 			layoutSet.setLayoutSetPrototypeUuid(layoutSetPrototypeUuid);
@@ -315,6 +306,9 @@ public class LayoutSetLocalServiceImpl extends LayoutSetLocalServiceBaseImpl {
 			layoutSet = layoutSetPersistence.update(layoutSet);
 		}
 		else {
+			previousLayoutSetPrototypeUuid =
+				layoutSetBranch.getLayoutSetPrototypeUuid();
+
 			if (Validator.isNull(layoutSetPrototypeUuid)) {
 				layoutSetPrototypeUuid =
 					layoutSetBranch.getLayoutSetPrototypeUuid();
@@ -335,9 +329,14 @@ public class LayoutSetLocalServiceImpl extends LayoutSetLocalServiceBaseImpl {
 			_layoutSetBranchPersistence.update(layoutSetBranch);
 		}
 
-		try {
-			MergeLayoutPrototypesThreadLocal.setSkipMerge(false);
+		if (!layoutSetPrototypeLinkEnabled ||
+			Validator.isNotNull(previousLayoutSetPrototypeUuid) ||
+			Validator.isNull(layoutSetPrototypeUuid)) {
 
+			return;
+		}
+
+		try {
 			Sites sites = _sitesSnapshot.get();
 
 			sites.mergeLayoutSetPrototypeLayouts(

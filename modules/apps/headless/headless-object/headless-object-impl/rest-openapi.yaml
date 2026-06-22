@@ -64,6 +64,29 @@ components:
                 -   actionIds
                 -   type
             type: object
+        CollaboratorBrief:
+            description:
+                Brief of the collaborator record for the user making the request, present only when this asset is shared with them.
+            properties:
+                actionIds:
+                    description:
+                        The sharing actions granted to the user making the request (e.g. VIEW, UPDATE).
+                    items:
+                        type: string
+                    readOnly: true
+                    type: array
+                dateExpired:
+                    description:
+                        The date when the sharing access expires, or null if it never expires.
+                    format: date-time
+                    readOnly: true
+                    type: string
+                share:
+                    description:
+                        Whether the user making the request can reshare this asset with others.
+                    readOnly: true
+                    type: boolean
+            type: object
         ObjectEntryFolder:
             description:
                 Represents a object entry folder that contains objects entries and other object entry folders.
@@ -175,6 +198,8 @@ components:
                     type: string
                 status:
                     $ref: "#/components/schemas/Status"
+                systemProperties:
+                    $ref: "#/components/schemas/SystemProperties"
                 title:
                     description:
                         The object entry folder's main title/name.
@@ -228,6 +253,11 @@ components:
                     type: string
             required:
                 -   code
+            type: object
+        SystemProperties:
+            properties:
+                collaboratorBrief:
+                    $ref: "#/components/schemas/CollaboratorBrief"
             type: object
 info:
     license:
@@ -495,9 +525,7 @@ paths:
                                 type: array
         post:
             description:
-                Add or update all the collaborators received in the request. Delete existing collaborators that are not
-                included in the request. Send a notification for the new collaborators and those whose permissions are
-                different.
+                Add or update all the collaborators received in the request. Delete existing collaborators that are not included in the request. Send a notification for the new collaborators and those whose permissions are different.
             operationId: postObjectEntryFolderCollaboratorsPage
             parameters:
                 -   in: path
@@ -955,9 +983,7 @@ paths:
                                 type: array
         post:
             description:
-                Add or update all the collaborators received in the request. Delete existing collaborators that are not
-                included in the request. Send a notification for the new collaborators and those whose permissions are
-                different.
+                Add or update all the collaborators received in the request. Delete existing collaborators that are not included in the request. Send a notification for the new collaborators and those whose permissions are different.
             operationId: postScopeScopeKeyObjectEntryFolderByExternalReferenceCodeCollaboratorsPage
             parameters:
                 -   in: path

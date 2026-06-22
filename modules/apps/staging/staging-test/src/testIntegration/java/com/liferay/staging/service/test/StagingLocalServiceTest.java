@@ -24,9 +24,11 @@ import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -34,8 +36,14 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.service.impl.LayoutRevisionLocalServiceImpl;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.style.book.model.StyleBookEntry;
+import com.liferay.style.book.service.StyleBookEntryLocalService;
 
 import java.util.List;
 import java.util.Locale;
@@ -96,6 +104,7 @@ public class StagingLocalServiceTest {
 				stagingLayout.getType(), stagingLayout.isHidden(),
 				stagingLayout.getFriendlyURLMap(), false, null,
 				stagingLayout.getStyleBookEntryERC(),
+				stagingLayout.getStyleBookEntryScopeERC(),
 				stagingLayout.getFaviconFileEntryERC(),
 				stagingLayout.getFaviconFileEntryScopeERC(),
 				stagingLayout.getMasterLayoutPageTemplateEntryERC(),
@@ -113,6 +122,7 @@ public class StagingLocalServiceTest {
 				stagingLayout.getType(), stagingLayout.isHidden(),
 				stagingLayout.getFriendlyURLMap(), false, null,
 				stagingLayout.getStyleBookEntryERC(),
+				stagingLayout.getStyleBookEntryScopeERC(),
 				stagingLayout.getFaviconFileEntryERC(),
 				stagingLayout.getFaviconFileEntryScopeERC(),
 				stagingLayout.getMasterLayoutPageTemplateEntryERC(),
@@ -524,11 +534,117 @@ public class StagingLocalServiceTest {
 		}
 	}
 
+	@FeatureFlag("LPD-57283")
+	@Test
+	@TestInfo("LPD-89203")
+	public void testEnableLocalStagingWithStyleBookEntryScopeERC()
+		throws Exception {
+
+		Group group = GroupTestUtil.addGroup();
+		Group scopeGroup = GroupTestUtil.addGroup();
+
+		try {
+			Layout layout = LayoutTestUtil.addTypePortletLayout(group);
+
+			StyleBookEntry styleBookEntry =
+				_styleBookEntryLocalService.addStyleBookEntry(
+					null, TestPropsValues.getUserId(), scopeGroup.getGroupId(),
+					false, null, RandomTestUtil.randomString(), null,
+					RandomTestUtil.randomString(),
+					ServiceContextTestUtil.getServiceContext(
+						scopeGroup.getGroupId(), TestPropsValues.getUserId()));
+
+			layout.setStyleBookEntryERC(
+				styleBookEntry.getExternalReferenceCode());
+
+			layout.setStyleBookEntryScopeERC(
+				scopeGroup.getExternalReferenceCode());
+
+			layout = _layoutLocalService.updateLayout(layout);
+
+			StagingLocalServiceUtil.enableLocalStaging(
+				_user.getUserId(), group, true, false, new ServiceContext());
+
+			Group stagingGroup = group.getStagingGroup();
+
+			Layout stagingLayout =
+				_layoutLocalService.getLayoutByUuidAndGroupId(
+					layout.getUuid(), stagingGroup.getGroupId(), false);
+
+			Assert.assertEquals(
+				styleBookEntry.getExternalReferenceCode(),
+				stagingLayout.getStyleBookEntryERC());
+			Assert.assertEquals(
+				scopeGroup.getExternalReferenceCode(),
+				stagingLayout.getStyleBookEntryScopeERC());
+		}
+		finally {
+			GroupLocalServiceUtil.deleteGroup(group.getGroupId());
+			GroupLocalServiceUtil.deleteGroup(scopeGroup.getGroupId());
+		}
+	}
+
+	@Test
+	@TestInfo("LPD-89203")
+	public void testEnableLocalStagingWithStyleBookEntryScopeERCAndFeatureFlagDisabled()
+		throws Exception {
+
+		Group group = GroupTestUtil.addGroup();
+
+		try {
+			Layout layout = LayoutTestUtil.addTypePortletLayout(group);
+
+			layout.setStyleBookEntryERC(RandomTestUtil.randomString());
+			layout.setStyleBookEntryScopeERC(RandomTestUtil.randomString());
+
+			layout = _layoutLocalService.updateLayout(layout);
+
+			try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+					"com.liferay.batch.engine.internal." +
+						"BatchEngineImportTaskExecutorImpl",
+					LoggerTestUtil.ERROR)) {
+
+				StagingLocalServiceUtil.enableLocalStaging(
+					_user.getUserId(), group, true, false,
+					new ServiceContext());
+
+				List<LogEntry> logEntries = logCapture.getLogEntries();
+
+				Assert.assertEquals(
+					logEntries.toString(), 1, logEntries.size());
+
+				LogEntry logEntry = logEntries.get(0);
+
+				String message = logEntry.getMessage();
+
+				Assert.assertTrue(
+					message,
+					message.contains(
+						"Feature flag LPD-57283 is disabled for company " +
+							group.getCompanyId()));
+			}
+
+			Group stagingGroup = group.getStagingGroup();
+
+			Layout stagingLayout =
+				_layoutLocalService.fetchLayoutByUuidAndGroupId(
+					layout.getUuid(), stagingGroup.getGroupId(), false);
+
+			Assert.assertNull(stagingLayout);
+		}
+		finally {
+			GroupLocalServiceUtil.deleteGroup(group.getGroupId());
+		}
+	}
+
 	@Inject
 	private LayoutLocalService _layoutLocalService;
 
 	@Inject
 	private PortletLocalService _portletLocalService;
+
+	@Inject
+	private StyleBookEntryLocalService _styleBookEntryLocalService;
 
 	private User _user;
 

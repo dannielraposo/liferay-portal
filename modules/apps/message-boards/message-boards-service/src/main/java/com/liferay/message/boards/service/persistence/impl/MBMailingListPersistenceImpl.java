@@ -13,13 +13,11 @@ import com.liferay.message.boards.model.impl.MBMailingListModelImpl;
 import com.liferay.message.boards.service.persistence.MBMailingListPersistence;
 import com.liferay.message.boards.service.persistence.MBMailingListUtil;
 import com.liferay.message.boards.service.persistence.impl.constants.MBPersistenceConstants;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -88,66 +86,15 @@ public class MBMailingListPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<MBMailingList>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the message boards mailing lists where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching message boards mailing lists
-	 */
-	@Override
-	public List<MBMailingList> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards mailing lists where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of message boards mailing lists
-	 * @param end the upper bound of the range of message boards mailing lists (not inclusive)
-	 * @return the range of matching message boards mailing lists
-	 */
-	@Override
-	public List<MBMailingList> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MBMailingList, NoSuchMailingListException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the message boards mailing lists where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of message boards mailing lists
-	 * @param end the upper bound of the range of message boards mailing lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards mailing lists
-	 */
-	@Override
-	public List<MBMailingList> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<MBMailingList> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards mailing lists where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -163,14 +110,9 @@ public class MBMailingListPersistenceImpl
 		OrderByComparator<MBMailingList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMailingList.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				finderCache, new Object[] {uuid}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			finderCache, new Object[] {uuid}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -186,16 +128,8 @@ public class MBMailingListPersistenceImpl
 			String uuid, OrderByComparator<MBMailingList> orderByComparator)
 		throws NoSuchMailingListException {
 
-		MBMailingList mbMailingList = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (mbMailingList != null) {
-			return mbMailingList;
-		}
-
-		throw new NoSuchMailingListException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			finderCache, new Object[] {uuid}, orderByComparator);
 	}
 
 	/**
@@ -232,17 +166,11 @@ public class MBMailingListPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMailingList.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				finderCache, new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			finderCache, new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<MBMailingList>
+	private UniquePersistenceFinder<MBMailingList, NoSuchMailingListException>
 		_uniquePersistenceFinderByUUID_G;
 
 	/**
@@ -257,33 +185,8 @@ public class MBMailingListPersistenceImpl
 	public MBMailingList findByUUID_G(String uuid, long groupId)
 		throws NoSuchMailingListException {
 
-		MBMailingList mbMailingList = fetchByUUID_G(uuid, groupId);
-
-		if (mbMailingList == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMailingListException(message);
-		}
-
-		return mbMailingList;
-	}
-
-	/**
-	 * Returns the message boards mailing list where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching message boards mailing list, or <code>null</code> if a matching message boards mailing list could not be found
-	 */
-	@Override
-	public MBMailingList fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			finderCache, new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -298,13 +201,8 @@ public class MBMailingListPersistenceImpl
 	public MBMailingList fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMailingList.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				finderCache, new Object[] {uuid, groupId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			finderCache, new Object[] {uuid, groupId}, useFinderCache);
 	}
 
 	/**
@@ -336,73 +234,15 @@ public class MBMailingListPersistenceImpl
 			finderCache, new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<MBMailingList>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the message boards mailing lists where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching message boards mailing lists
-	 */
-	@Override
-	public List<MBMailingList> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards mailing lists where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message boards mailing lists
-	 * @param end the upper bound of the range of message boards mailing lists (not inclusive)
-	 * @return the range of matching message boards mailing lists
-	 */
-	@Override
-	public List<MBMailingList> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MBMailingList, NoSuchMailingListException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the message boards mailing lists where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of message boards mailing lists
-	 * @param end the upper bound of the range of message boards mailing lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards mailing lists
-	 */
-	@Override
-	public List<MBMailingList> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<MBMailingList> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards mailing lists where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -419,14 +259,9 @@ public class MBMailingListPersistenceImpl
 		OrderByComparator<MBMailingList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMailingList.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				finderCache, new Object[] {uuid, companyId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			finderCache, new Object[] {uuid, companyId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -444,16 +279,8 @@ public class MBMailingListPersistenceImpl
 			OrderByComparator<MBMailingList> orderByComparator)
 		throws NoSuchMailingListException {
 
-		MBMailingList mbMailingList = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (mbMailingList != null) {
-			return mbMailingList;
-		}
-
-		throw new NoSuchMailingListException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			finderCache, new Object[] {uuid, companyId}, orderByComparator);
 	}
 
 	/**
@@ -494,77 +321,19 @@ public class MBMailingListPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMailingList.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				finderCache, new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			finderCache, new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByActive;
-	private FinderPath _finderPathWithoutPaginationFindByActive;
-	private FinderPath _finderPathCountByActive;
-	private CollectionPersistenceFinder<MBMailingList>
-		_collectionPersistenceFinderByActive;
-
-	/**
-	 * Returns all the message boards mailing lists where active = &#63;.
-	 *
-	 * @param active the active
-	 * @return the matching message boards mailing lists
-	 */
-	@Override
-	public List<MBMailingList> findByActive(boolean active) {
-		return findByActive(active, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the message boards mailing lists where active = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param active the active
-	 * @param start the lower bound of the range of message boards mailing lists
-	 * @param end the upper bound of the range of message boards mailing lists (not inclusive)
-	 * @return the range of matching message boards mailing lists
-	 */
-	@Override
-	public List<MBMailingList> findByActive(
-		boolean active, int start, int end) {
-
-		return findByActive(active, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<MBMailingList, NoSuchMailingListException>
+			_collectionPersistenceFinderByActive;
 
 	/**
 	 * Returns an ordered range of all the message boards mailing lists where active = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
-	 * </p>
-	 *
-	 * @param active the active
-	 * @param start the lower bound of the range of message boards mailing lists
-	 * @param end the upper bound of the range of message boards mailing lists (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching message boards mailing lists
-	 */
-	@Override
-	public List<MBMailingList> findByActive(
-		boolean active, int start, int end,
-		OrderByComparator<MBMailingList> orderByComparator) {
-
-		return findByActive(active, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the message boards mailing lists where active = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>MBMailingListModelImpl</code>.
 	 * </p>
 	 *
 	 * @param active the active
@@ -580,14 +349,9 @@ public class MBMailingListPersistenceImpl
 		OrderByComparator<MBMailingList> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMailingList.class)) {
-
-			return _collectionPersistenceFinderByActive.find(
-				finderCache, new Object[] {active}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByActive.find(
+			finderCache, new Object[] {active}, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
@@ -603,16 +367,8 @@ public class MBMailingListPersistenceImpl
 			boolean active, OrderByComparator<MBMailingList> orderByComparator)
 		throws NoSuchMailingListException {
 
-		MBMailingList mbMailingList = fetchByActive_First(
-			active, orderByComparator);
-
-		if (mbMailingList != null) {
-			return mbMailingList;
-		}
-
-		throw new NoSuchMailingListException(
-			_collectionPersistenceFinderByActive.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {active}));
+		return _collectionPersistenceFinderByActive.findFirst(
+			finderCache, new Object[] {active}, orderByComparator);
 	}
 
 	/**
@@ -649,17 +405,11 @@ public class MBMailingListPersistenceImpl
 	 */
 	@Override
 	public int countByActive(boolean active) {
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMailingList.class)) {
-
-			return _collectionPersistenceFinderByActive.count(
-				finderCache, new Object[] {active});
-		}
+		return _collectionPersistenceFinderByActive.count(
+			finderCache, new Object[] {active});
 	}
 
-	private FinderPath _finderPathFetchByG_C;
-	private UniquePersistenceFinder<MBMailingList>
+	private UniquePersistenceFinder<MBMailingList, NoSuchMailingListException>
 		_uniquePersistenceFinderByG_C;
 
 	/**
@@ -674,34 +424,8 @@ public class MBMailingListPersistenceImpl
 	public MBMailingList findByG_C(long groupId, long categoryId)
 		throws NoSuchMailingListException {
 
-		MBMailingList mbMailingList = fetchByG_C(groupId, categoryId);
-
-		if (mbMailingList == null) {
-			String message =
-				_uniquePersistenceFinderByG_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {groupId, categoryId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchMailingListException(message);
-		}
-
-		return mbMailingList;
-	}
-
-	/**
-	 * Returns the message boards mailing list where groupId = &#63; and categoryId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param categoryId the category ID
-	 * @return the matching message boards mailing list, or <code>null</code> if a matching message boards mailing list could not be found
-	 */
-	@Override
-	public MBMailingList fetchByG_C(long groupId, long categoryId) {
-		return fetchByG_C(groupId, categoryId, true);
+		return _uniquePersistenceFinderByG_C.find(
+			finderCache, new Object[] {groupId, categoryId});
 	}
 
 	/**
@@ -716,14 +440,8 @@ public class MBMailingListPersistenceImpl
 	public MBMailingList fetchByG_C(
 		long groupId, long categoryId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				ctPersistenceHelper.setCTCollectionIdWithSafeCloseable(
-					MBMailingList.class)) {
-
-			return _uniquePersistenceFinderByG_C.fetch(
-				finderCache, new Object[] {groupId, categoryId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_C.fetch(
+			finderCache, new Object[] {groupId, categoryId}, useFinderCache);
 	}
 
 	/**
@@ -1069,121 +787,110 @@ public class MBMailingListPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_MBMAILINGLIST_WHERE, _SQL_COUNT_MBMAILINGLIST_WHERE,
-			MBMailingListModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			MBMailingListModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"mbMailingList.", "uuid", FinderColumn.Type.STRING, "=", true,
-				true, MBMailingList::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, MBMailingList::getUuid,
-			MBMailingList::getGroupId);
+				"mbMailingList.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, MBMailingList::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_MBMAILINGLIST_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(MBMailingList::getUuid),
+				MBMailingList::getGroupId),
+			_SQL_SELECT_MBMAILINGLIST_WHERE, "",
 			new FinderColumn<>(
-				"mbMailingList.", "uuid", FinderColumn.Type.STRING, "=", true,
-				false, MBMailingList::getUuid),
+				"mbMailingList.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, MBMailingList::getUuid),
 			new FinderColumn<>(
 				"mbMailingList.", "groupId", FinderColumn.Type.LONG, "=", true,
 				true, MBMailingList::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_MBMAILINGLIST_WHERE,
-				_SQL_COUNT_MBMAILINGLIST_WHERE,
-				MBMailingListModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_MBMAILINGLIST_WHERE, _SQL_COUNT_MBMAILINGLIST_WHERE,
+				MBMailingListModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"mbMailingList.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, MBMailingList::getUuid),
+					"mbMailingList.", "uuid", "uuid_", FinderColumn.Type.STRING,
+					"=", true, true, MBMailingList::getUuid),
 				new FinderColumn<>(
 					"mbMailingList.", "companyId", FinderColumn.Type.LONG, "=",
 					true, true, MBMailingList::getCompanyId));
 
-		_finderPathWithPaginationFindByActive = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByActive",
-			new String[] {
-				Boolean.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"active_"}, true);
-
-		_finderPathWithoutPaginationFindByActive = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByActive",
-			new String[] {Boolean.class.getName()}, new String[] {"active_"},
-			true);
-
-		_finderPathCountByActive = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByActive",
-			new String[] {Boolean.class.getName()}, new String[] {"active_"},
-			false);
-
 		_collectionPersistenceFinderByActive =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByActive,
-				_finderPathWithoutPaginationFindByActive,
-				_finderPathCountByActive, _SQL_SELECT_MBMAILINGLIST_WHERE,
-				_SQL_COUNT_MBMAILINGLIST_WHERE,
-				MBMailingListModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByActive",
+					new String[] {
+						Boolean.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"active_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByActive",
+					new String[] {Boolean.class.getName()},
+					new String[] {"active_"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByActive",
+					new String[] {Boolean.class.getName()},
+					new String[] {"active_"}, false),
+				_SQL_SELECT_MBMAILINGLIST_WHERE, _SQL_COUNT_MBMAILINGLIST_WHERE,
+				MBMailingListModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
-					"mbMailingList.", "active", FinderColumn.Type.BOOLEAN, "=",
-					true, true, MBMailingList::isActive));
-
-		_finderPathFetchByG_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "categoryId"}, false,
-			MBMailingList::getGroupId, MBMailingList::getCategoryId);
+					"mbMailingList.", "active", "active_",
+					FinderColumn.Type.BOOLEAN, "=", true, true,
+					MBMailingList::isActive));
 
 		_uniquePersistenceFinderByG_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_C, _SQL_SELECT_MBMAILINGLIST_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "categoryId"}, 0, 0, false,
+				MBMailingList::getGroupId, MBMailingList::getCategoryId),
+			_SQL_SELECT_MBMAILINGLIST_WHERE, "",
 			new FinderColumn<>(
 				"mbMailingList.", "groupId", FinderColumn.Type.LONG, "=", true,
-				false, MBMailingList::getGroupId),
+				true, MBMailingList::getGroupId),
 			new FinderColumn<>(
 				"mbMailingList.", "categoryId", FinderColumn.Type.LONG, "=",
 				true, true, MBMailingList::getCategoryId));
@@ -1260,4 +967,4 @@ public class MBMailingListPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-2099879853
+// LIFERAY-SERVICE-BUILDER-HASH:1828019309

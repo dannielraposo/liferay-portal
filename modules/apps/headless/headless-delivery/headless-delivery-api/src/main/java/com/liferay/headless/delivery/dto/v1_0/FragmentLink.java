@@ -28,6 +28,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -41,6 +43,9 @@ import java.util.function.Supplier;
 @Generated("")
 @GraphQLName(
 	description = "Represents a fragment link.", value = "FragmentLink"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Represents a fragment link."
 )
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "FragmentLink")
@@ -275,8 +280,16 @@ public class FragmentLink implements Serializable {
 
 			sb.append("\"href\": ");
 
-			if (href instanceof Map) {
+			if (href instanceof Collection) {
+				sb.append(JSONFactoryUtil.createJSONArray((Collection<?>)href));
+			}
+			else if (href instanceof Map) {
 				sb.append(JSONFactoryUtil.createJSONObject((Map<?, ?>)href));
+			}
+			else if (href instanceof Object[]) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						Arrays.asList((Object[])href)));
 			}
 			else if (href instanceof String) {
 				sb.append("\"");
@@ -465,4 +478,4 @@ public class FragmentLink implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:506016058
+// LIFERAY-REST-BUILDER-HASH:-1261717482

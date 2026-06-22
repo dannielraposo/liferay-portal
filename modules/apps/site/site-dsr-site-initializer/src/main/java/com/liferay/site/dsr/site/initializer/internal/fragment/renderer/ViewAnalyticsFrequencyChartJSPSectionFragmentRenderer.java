@@ -26,6 +26,11 @@ public class ViewAnalyticsFrequencyChartJSPSectionFragmentRenderer
 		<ViewAnalyticsFrequencyChartAnalyticsSectionDisplayContext> {
 
 	@Override
+	public String getCollectionKey() {
+		return "digital-sales-room-analytics";
+	}
+
+	@Override
 	public String getLabelKey() {
 		return "frequency-chart";
 	}
@@ -41,7 +46,7 @@ public class ViewAnalyticsFrequencyChartJSPSectionFragmentRenderer
 				WebKeys.THEME_DISPLAY);
 
 		return new ViewAnalyticsFrequencyChartAnalyticsSectionDisplayContext(
-			httpServletRequest,
+			analyticsSettingsManager, httpServletRequest,
 			_objectDefinitionLocalService.
 				fetchObjectDefinitionByExternalReferenceCode(
 					"L_DSR_ROOM", themeDisplay.getCompanyId()));

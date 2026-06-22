@@ -11,7 +11,6 @@ import {consentManagerConfigurationPageTest} from '../../../fixtures/consentMana
 import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {systemSettingsPageTest} from '../../../fixtures/systemSettingsPageTest';
-import {waitForAlert} from '../../../utils/waitForAlert';
 import {
 	clearConsentCookies,
 	resetAllConsentManagerConfigurations,
@@ -36,7 +35,6 @@ export const test = mergeTests(
 	consentManagerConfigurationPageTest,
 	featureFlagsTest({
 		'LPD-51356': {enabled: true},
-		'LPD-75064': {enabled: true},
 	}),
 	loginTest(),
 	systemSettingsPageTest
@@ -80,9 +78,7 @@ test(
 		await page.getByLabel('Privacy Policy Link').fill(script);
 		await page.getByLabel('Link Display Text', {exact: true}).fill(script);
 
-		await page.getByRole('button', {name: 'Save'}).dispatchEvent('click');
-
-		await waitForAlert(page);
+		await saveOrUpdateConfiguration(page);
 	}
 );
 
@@ -119,13 +115,11 @@ test(
 			.getByLabel('Personalization Cookies Description', {exact: true})
 			.fill(script);
 
-		await page.getByRole('button', {name: 'Save'}).dispatchEvent('click');
+		await saveOrUpdateConfiguration(page);
 
-		await waitForAlert(page);
-
-		const cookiesBanner = page.getByRole('dialog', {
-			name: 'banner cookies',
-		});
+		const cookiesBanner = page.locator(
+			'div[role="dialog"][aria-modal="true"]'
+		);
 
 		await cookiesBanner.waitFor();
 
@@ -209,9 +203,9 @@ test(
 		await test.step('Open the Cookie Banner Consent Panel', async () => {
 			await page.goto('/');
 
-			const cookiesBanner = page.getByRole('dialog', {
-				name: 'banner cookies',
-			});
+			const cookiesBanner = page.locator(
+				'div[role="dialog"][aria-modal="true"]'
+			);
 
 			await cookiesBanner.waitFor();
 
@@ -318,14 +312,8 @@ test(
 			})
 			.click();
 
-		await systemSettingsPage.page
-			.getByRole('button', {name: 'Update'})
-			.click();
+		await saveOrUpdateConfiguration(systemSettingsPage.page);
 
-		await waitForAlert(
-			systemSettingsPage.page,
-			`Success:Your request completed successfully.`
-		);
 		const imageButton = systemSettingsPage.page.locator(
 			'#_com_liferay_cookies_banner_web_portlet_CookiesBannerPortlet_floatingIconButton'
 		);
@@ -533,37 +521,64 @@ test(
 );
 
 test(
-	'Verify Global Privacy Control is visible and can be enabled',
-	{tag: '@LPD-86511'},
-	async ({consentManagerConfigurationPage}) => {
-		await consentManagerConfigurationPage.goTo();
+	'Verify Force Re-Consent request succeeds when saving Cookie Banner configuration',
+	{tag: '@LPD-92457'},
+	async ({page, systemSettingsPage}) => {
+		await systemSettingsPage.goToSystemSetting('Privacy', 'Cookie Banner');
 
-		await consentManagerConfigurationPage.globalPrivacyControlEnabledCheckbox.waitFor(
-			{state: 'visible'}
+		// Wait for the DDM form to mount before submitting
+
+		await page.getByLabel('Title', {exact: true}).waitFor();
+
+		// Mark the form as dirty so the save triggers the confirmation modal.
+		// A direct input event on the SystemSettingsPortlet form is the
+		// simplest way to flip the formChanged flag the dynamic include
+		// listens for; DDM-rendered inputs do not always bubble input events
+		// out of the React form when driven by Playwright.
+
+		await page.evaluate(() => {
+			const form = document.querySelector<HTMLFormElement>(
+				'form[name="_com_liferay_configuration_admin_web_portlet_SystemSettingsPortlet_fm"]'
+			);
+
+			form?.dispatchEvent(new Event('input', {bubbles: true}));
+		});
+
+		const saveButton = page.getByRole('button', {name: 'Save'});
+
+		if (await saveButton.isVisible()) {
+			await saveButton.dispatchEvent('click');
+		}
+		else {
+			await page
+				.getByRole('button', {name: 'Update'})
+				.dispatchEvent('click');
+		}
+
+		// The confirmation modal opens; check the Force Re-Consent box so the
+		// dynamic include fires the force-reconsent fetch before submitting
+
+		const modal = page.getByRole('alertdialog');
+
+		await modal.waitFor({state: 'visible', timeout: 10000});
+
+		await modal.getByLabel('Force re-consent for all users.').check();
+
+		// Catch the force-reconsent fetch the OK button triggers. On the
+		// original bug the URL fell back to "" and the browser resolved it to
+		// /o/ with a 404; the fix populates the resource URL so this returns
+		// 200.
+
+		const reconsentResponsePromise = page.waitForResponse(
+			(response) => response.url().includes('force_reconsent'),
+			{timeout: 10000}
 		);
 
-		await expect(
-			consentManagerConfigurationPage.globalPrivacyControlEnabledCheckbox
-		).not.toBeChecked();
+		await modal.getByRole('button', {name: 'OK'}).click();
 
-		const acceptAllButton = consentManagerConfigurationPage.page.getByRole(
-			'button',
-			{
-				name: 'Accept All',
-			}
-		);
+		const reconsentResponse = await reconsentResponsePromise;
 
-		await acceptAllButton.click();
-
-		await expect(acceptAllButton).not.toBeVisible();
-
-		await consentManagerConfigurationPage.globalPrivacyControlEnabledCheckbox.check();
-
-		await consentManagerConfigurationPage.updateButton.click();
-
-		await expect(
-			consentManagerConfigurationPage.globalPrivacyControlEnabledCheckbox
-		).toBeChecked();
+		expect(reconsentResponse.status()).toBe(200);
 	}
 );
 
@@ -599,6 +614,77 @@ test(
 );
 
 test(
+	'Verify Global Privacy Control is visible and can be enabled',
+	{tag: '@LPD-86511'},
+	async ({consentManagerConfigurationPage}) => {
+		await consentManagerConfigurationPage.goTo();
+
+		await consentManagerConfigurationPage.globalPrivacyControlEnabledCheckbox.waitFor(
+			{state: 'visible'}
+		);
+
+		await expect(
+			consentManagerConfigurationPage.globalPrivacyControlEnabledCheckbox
+		).not.toBeChecked();
+
+		const acceptAllButton = consentManagerConfigurationPage.page.getByRole(
+			'button',
+			{
+				name: 'Accept All',
+			}
+		);
+
+		await acceptAllButton.click();
+
+		await expect(acceptAllButton).not.toBeVisible();
+
+		await consentManagerConfigurationPage.globalPrivacyControlEnabledCheckbox.check();
+
+		await consentManagerConfigurationPage.updateButton.click();
+
+		await expect(
+			consentManagerConfigurationPage.globalPrivacyControlEnabledCheckbox
+		).toBeChecked();
+	}
+);
+
+test(
+	'Verify optional cookie toggles default to unchecked in the Consent Panel',
+	{tag: '@LPD-92457'},
+	async ({page}) => {
+		await page.goto('/');
+
+		const cookiesBanner = page.locator(
+			'div[role="dialog"][aria-modal="true"]'
+		);
+
+		await cookiesBanner.waitFor();
+
+		await cookiesBanner
+			.getByRole('button', {name: 'Configuration'})
+			.click();
+
+		const configurationFrame = page.frameLocator(
+			'#cookiesBannerConfiguration iframe'
+		);
+
+		for (const cookieKey of cookieKeys) {
+			const toggle = configurationFrame.locator(
+				`[data-cookie-key="${cookieKey}"]`
+			);
+
+			await expect(toggle).not.toBeChecked();
+		}
+
+		// Dismiss the Configuration modal so afterEach can navigate
+
+		await page
+			.getByRole('button', {name: 'Use Necessary Cookies Only'})
+			.click();
+	}
+);
+
+test(
 	'Verify selected Floating Icon appears in button',
 	{tag: '@LPD-78593'},
 	async ({consentManagerConfigurationPage, page}) => {
@@ -621,10 +707,7 @@ test(
 
 		await controlPanelIcon.click();
 
-		await saveOrUpdateConfiguration(
-			true,
-			consentManagerConfigurationPage.page
-		);
+		await saveOrUpdateConfiguration(consentManagerConfigurationPage.page);
 
 		await expect(controlPanelIcon).toBeChecked();
 

@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -143,7 +144,8 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 				_testCompanyAdminUser.getEmailAddress(),
 				PropsValues.DEFAULT_ADMIN_PASSWORD
 			).endpoint(
-				testCompany.getVirtualHostname(), 8080, "http"
+				testCompany.getVirtualHostname(),
+				PortalUtil.getPortalServerPort(false), "http"
 			).locale(
 				LocaleUtil.getDefault()
 			).build();
@@ -153,7 +155,8 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -164,7 +167,8 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 				_testCompanyAdminUser.getEmailAddress(),
 				PropsValues.DEFAULT_ADMIN_PASSWORD
 			).endpoint(
-				testCompany.getVirtualHostname(), 8080, "http"
+				testCompany.getVirtualHostname(),
+				PortalUtil.getPortalServerPort(false), "http"
 			).locale(
 				LocaleUtil.getDefault()
 			).parameter(
@@ -306,6 +310,7 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ERCAssetLibraryTestEntity ercAssetLibraryTestEntity1 =
 			testGraphQLDeleteAssetLibraryERCAssetLibraryTestEntity_addERCAssetLibraryTestEntity();
 
@@ -356,8 +361,9 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 
 		Assert.assertTrue(errorsJSONArray1.length() > 0);
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		ERCAssetLibraryTestEntity ercAssetLibraryTestEntity2 =
 			testGraphQLDeleteAssetLibraryERCAssetLibraryTestEntity_addERCAssetLibraryTestEntity();
 
@@ -365,7 +371,7 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 			JSONUtil.getValueAsBoolean(
 				invokeGraphQLMutation(
 					new GraphQLField(
-						"test_v1_0",
+						"portalTools_v1_0",
 						new GraphQLField(
 							"deleteAssetLibraryERCAssetLibraryTestEntity",
 							new HashMap<String, Object>() {
@@ -384,13 +390,13 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 													"\"");
 								}
 							}))),
-				"JSONObject/data", "JSONObject/test_v1_0",
+				"JSONObject/data", "JSONObject/portalTools_v1_0",
 				"Object/deleteAssetLibraryERCAssetLibraryTestEntity"));
 
 		JSONArray errorsJSONArray2 = JSONUtil.getValueAsJSONArray(
 			invokeGraphQLQuery(
 				new GraphQLField(
-					"test_v1_0",
+					"portalTools_v1_0",
 					new GraphQLField(
 						"assetLibraryERCAssetLibraryTestEntity",
 						new HashMap<String, Object>() {
@@ -516,10 +522,11 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 		createBatchAction.put("method", "POST");
 		createBatchAction.put(
 			"href",
-			"http://localhost:8080/o/test/v1.0/asset-libraries/{assetLibraryExternalReferenceCode}/erc-asset-library-test-entities/batch".
-				replace(
-					"{assetLibraryExternalReferenceCode}",
-					String.valueOf(assetLibraryExternalReferenceCode)));
+			("http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/portal-tools-rest-builder-test/v1.0/asset-libraries/{assetLibraryExternalReferenceCode}/erc-asset-library-test-entities/batch").
+					replace(
+						"{assetLibraryExternalReferenceCode}",
+						String.valueOf(assetLibraryExternalReferenceCode)));
 
 		expectedActions.put("createBatch", createBatchAction);
 
@@ -614,12 +621,13 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 					assetLibraryERCAssetLibraryTestEntitiesJSONObject.getString(
 						"items"))));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		assetLibraryERCAssetLibraryTestEntitiesJSONObject =
 			JSONUtil.getValueAsJSONObject(
-				invokeGraphQLQuery(new GraphQLField("test_v1_0", graphQLField)),
-				"JSONObject/data", "JSONObject/test_v1_0",
+				invokeGraphQLQuery(
+					new GraphQLField("portalTools_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/portalTools_v1_0",
 				"JSONObject/assetLibraryERCAssetLibraryTestEntities");
 
 		Assert.assertEquals(
@@ -718,7 +726,7 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 						"JSONObject/data",
 						"Object/assetLibraryERCAssetLibraryTestEntity"))));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertTrue(
 			equals(
@@ -727,7 +735,7 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 					JSONUtil.getValueAsString(
 						invokeGraphQLQuery(
 							new GraphQLField(
-								"test_v1_0",
+								"portalTools_v1_0",
 								new GraphQLField(
 									"assetLibraryERCAssetLibraryTestEntity",
 									new HashMap<String, Object>() {
@@ -747,7 +755,7 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 										}
 									},
 									getGraphQLFields()))),
-						"JSONObject/data", "JSONObject/test_v1_0",
+						"JSONObject/data", "JSONObject/portalTools_v1_0",
 						"Object/assetLibraryERCAssetLibraryTestEntity"))));
 	}
 
@@ -782,14 +790,14 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 				"JSONArray/errors", "Object/0", "JSONObject/extensions",
 				"Object/code"));
 
-		// Using the namespace test_v1_0
+		// Using the namespace portalTools_v1_0
 
 		Assert.assertEquals(
 			"Not Found",
 			JSONUtil.getValueAsString(
 				invokeGraphQLQuery(
 					new GraphQLField(
-						"test_v1_0",
+						"portalTools_v1_0",
 						new GraphQLField(
 							"assetLibraryERCAssetLibraryTestEntity",
 							new HashMap<String, Object>() {
@@ -1123,7 +1131,8 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).parameters(
 			parameters
 		).build();
@@ -1211,16 +1220,22 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 		else if (value instanceof Boolean || value instanceof Number) {
 			return value.toString();
 		}
-		else if (value instanceof Date date) {
+		else if (value instanceof Date) {
+			Date date = (Date)value;
+
 			return "\"" +
 				DateUtil.getDate(
 					date, "yyyy-MM-dd'T'HH:mm:ss'Z'", LocaleUtil.getDefault(),
 					TimeZone.getTimeZone("UTC")) + "\"";
 		}
-		else if (value instanceof Enum<?> enm) {
+		else if (value instanceof Enum) {
+			Enum<?> enm = (Enum<?>)value;
+
 			return enm.name();
 		}
-		else if (value instanceof Map<?, ?> map) {
+		else if (value instanceof Map) {
+			Map<?, ?> map = (Map<?, ?>)value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -1233,7 +1248,9 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 
 			return "{" + String.join(", ", entries) + "}";
 		}
-		else if (value instanceof Object[] array) {
+		else if (value instanceof Object[]) {
+			Object[] array = (Object[])value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Object entry : array) {
@@ -1946,7 +1963,9 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -2276,4 +2295,4 @@ public abstract class BaseERCAssetLibraryTestEntityResourceTestCase {
 		ERCAssetLibraryTestEntityResource _ercAssetLibraryTestEntityResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1852772072
+// LIFERAY-REST-BUILDER-HASH:-2019162337

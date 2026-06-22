@@ -1,0 +1,471 @@
+[
+	{
+		"accountBriefs": [
+			{
+				"externalReferenceCode": "ACCNT-001",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-002",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-003",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-004",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-005",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-006",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-007",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-008",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-009",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-010",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-011",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-012",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-013",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-014",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-015",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-016",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-017",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-018",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-019",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-020",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-021",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-022",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			}
+		],
+		"alternateName": "customeradmin",
+		"emailAddress": "admin@customer.com",
+		"externalReferenceCode": "USER_CUSTOMER_ADMIN",
+		"familyName": "Admin",
+		"givenName": "Customer",
+		"name": "Customer Admin",
+		"password": "test",
+		"status": "Active"
+	},
+	{
+		"accountBriefs": [
+			{
+				"externalReferenceCode": "ACCNT-001",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-002",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-003",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-004",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-005",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-006",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-007",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-008",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-009",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-010",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-011",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-012",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-013",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-014",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-015",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-016",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-017",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-018",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-019",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-020",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-021",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-022",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			}
+		],
+		"alternateName": "customermember",
+		"emailAddress": "member@customer.com",
+		"externalReferenceCode": "USER_CUSTOMER_MEMBER",
+		"familyName": "Member",
+		"givenName": "Customer",
+		"name": "Customer Member",
+		"password": "test",
+		"status": "Active"
+	},
+	{
+		"accountBriefs": [
+			{
+				"externalReferenceCode": "ACCNT-001",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-016",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			}
+		],
+		"alternateName": "partneradmin",
+		"emailAddress": "admin@partner.com",
+		"externalReferenceCode": "USER_PARTNER_ADMIN",
+		"familyName": "Admin",
+		"givenName": "Partner",
+		"name": "Partner Admin",
+		"password": "test",
+		"status": "Active"
+	},
+	{
+		"accountBriefs": [
+			{
+				"externalReferenceCode": "ACCNT-001",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			},
+			{
+				"externalReferenceCode": "ACCNT-016",
+				"roleBriefs": [
+					{
+						"name": "Account Member"
+					}
+				]
+			}
+		],
+		"alternateName": "partnermember",
+		"emailAddress": "member@partner.com",
+		"externalReferenceCode": "USER_PARTNER_MEMBER",
+		"familyName": "Member",
+		"givenName": "Partner",
+		"name": "Partner Member",
+		"password": "test",
+		"status": "Active"
+	},
+	{
+		"accountBriefs": [
+			{
+				"externalReferenceCode": "ACCNT-021",
+				"roleBriefs": [
+				]
+			}
+		],
+		"alternateName": "publisheradmin",
+		"emailAddress": "admin@publisher.com",
+		"externalReferenceCode": "USER_PUBLISHER_ADMIN",
+		"familyName": "Admin",
+		"givenName": "Publisher",
+		"name": "Publisher Admin",
+		"password": "test",
+		"status": "Active"
+	},
+	{
+		"accountBriefs": [
+			{
+				"externalReferenceCode": "ACCNT-001",
+				"roleBriefs": [
+					{
+						"name": "Account Administrator"
+					}
+				]
+			}
+		],
+		"alternateName": "staff",
+		"emailAddress": "staff@liferay.com",
+		"externalReferenceCode": "USER_STAFF",
+		"familyName": "Staff",
+		"givenName": "Liferay",
+		"name": "Liferay Staff",
+		"password": "test",
+		"status": "Active"
+	}
+]

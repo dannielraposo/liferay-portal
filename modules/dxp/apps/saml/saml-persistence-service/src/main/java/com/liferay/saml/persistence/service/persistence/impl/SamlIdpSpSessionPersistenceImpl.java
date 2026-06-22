@@ -12,8 +12,6 @@ import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -75,10 +73,9 @@ public class SamlIdpSpSessionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByLtCreateDate;
-	private FinderPath _finderPathWithPaginationCountByLtCreateDate;
-	private CollectionPersistenceFinder<SamlIdpSpSession>
-		_collectionPersistenceFinderByLtCreateDate;
+	private CollectionPersistenceFinder
+		<SamlIdpSpSession, NoSuchIdpSpSessionException>
+			_collectionPersistenceFinderByLtCreateDate;
 
 	/**
 	 * Returns all the saml idp sp sessions where createDate &lt; &#63;.
@@ -172,16 +169,8 @@ public class SamlIdpSpSessionPersistenceImpl
 			OrderByComparator<SamlIdpSpSession> orderByComparator)
 		throws NoSuchIdpSpSessionException {
 
-		SamlIdpSpSession samlIdpSpSession = fetchByLtCreateDate_First(
-			createDate, orderByComparator);
-
-		if (samlIdpSpSession != null) {
-			return samlIdpSpSession;
-		}
-
-		throw new NoSuchIdpSpSessionException(
-			_collectionPersistenceFinderByLtCreateDate.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {createDate}));
+		return _collectionPersistenceFinderByLtCreateDate.findFirst(
+			finderCache, new Object[] {createDate}, orderByComparator);
 	}
 
 	/**
@@ -223,66 +212,9 @@ public class SamlIdpSpSessionPersistenceImpl
 			finderCache, new Object[] {createDate});
 	}
 
-	private FinderPath _finderPathWithPaginationFindBySamlIdpSsoSessionId;
-	private FinderPath _finderPathWithoutPaginationFindBySamlIdpSsoSessionId;
-	private FinderPath _finderPathCountBySamlIdpSsoSessionId;
-	private CollectionPersistenceFinder<SamlIdpSpSession>
-		_collectionPersistenceFinderBySamlIdpSsoSessionId;
-
-	/**
-	 * Returns all the saml idp sp sessions where samlIdpSsoSessionId = &#63;.
-	 *
-	 * @param samlIdpSsoSessionId the saml idp sso session ID
-	 * @return the matching saml idp sp sessions
-	 */
-	@Override
-	public List<SamlIdpSpSession> findBySamlIdpSsoSessionId(
-		long samlIdpSsoSessionId) {
-
-		return findBySamlIdpSsoSessionId(
-			samlIdpSsoSessionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the saml idp sp sessions where samlIdpSsoSessionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SamlIdpSpSessionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param samlIdpSsoSessionId the saml idp sso session ID
-	 * @param start the lower bound of the range of saml idp sp sessions
-	 * @param end the upper bound of the range of saml idp sp sessions (not inclusive)
-	 * @return the range of matching saml idp sp sessions
-	 */
-	@Override
-	public List<SamlIdpSpSession> findBySamlIdpSsoSessionId(
-		long samlIdpSsoSessionId, int start, int end) {
-
-		return findBySamlIdpSsoSessionId(samlIdpSsoSessionId, start, end, null);
-	}
-
-	/**
-	 * Returns an ordered range of all the saml idp sp sessions where samlIdpSsoSessionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SamlIdpSpSessionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param samlIdpSsoSessionId the saml idp sso session ID
-	 * @param start the lower bound of the range of saml idp sp sessions
-	 * @param end the upper bound of the range of saml idp sp sessions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching saml idp sp sessions
-	 */
-	@Override
-	public List<SamlIdpSpSession> findBySamlIdpSsoSessionId(
-		long samlIdpSsoSessionId, int start, int end,
-		OrderByComparator<SamlIdpSpSession> orderByComparator) {
-
-		return findBySamlIdpSsoSessionId(
-			samlIdpSsoSessionId, start, end, orderByComparator, true);
-	}
+	private CollectionPersistenceFinder
+		<SamlIdpSpSession, NoSuchIdpSpSessionException>
+			_collectionPersistenceFinderBySamlIdpSsoSessionId;
 
 	/**
 	 * Returns an ordered range of all the saml idp sp sessions where samlIdpSsoSessionId = &#63;.
@@ -323,18 +255,8 @@ public class SamlIdpSpSessionPersistenceImpl
 			OrderByComparator<SamlIdpSpSession> orderByComparator)
 		throws NoSuchIdpSpSessionException {
 
-		SamlIdpSpSession samlIdpSpSession = fetchBySamlIdpSsoSessionId_First(
-			samlIdpSsoSessionId, orderByComparator);
-
-		if (samlIdpSpSession != null) {
-			return samlIdpSpSession;
-		}
-
-		throw new NoSuchIdpSpSessionException(
-			_collectionPersistenceFinderBySamlIdpSsoSessionId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {samlIdpSsoSessionId}));
+		return _collectionPersistenceFinderBySamlIdpSsoSessionId.findFirst(
+			finderCache, new Object[] {samlIdpSsoSessionId}, orderByComparator);
 	}
 
 	/**
@@ -578,56 +500,57 @@ public class SamlIdpSpSessionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByLtCreateDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtCreateDate",
-			new String[] {
-				Date.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"createDate"}, true);
-
-		_finderPathWithPaginationCountByLtCreateDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtCreateDate",
-			new String[] {Date.class.getName()}, new String[] {"createDate"},
-			false);
-
 		_collectionPersistenceFinderByLtCreateDate =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLtCreateDate, null,
-				_finderPathWithPaginationCountByLtCreateDate,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByLtCreateDate",
+					new String[] {
+						Date.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"createDate"}, true),
+				null,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"countByLtCreateDate", new String[] {Date.class.getName()},
+					new String[] {"createDate"}, false),
 				_SQL_SELECT_SAMLIDPSPSESSION_WHERE,
 				_SQL_COUNT_SAMLIDPSPSESSION_WHERE,
 				SamlIdpSpSessionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"samlIdpSpSession.", "createDate", FinderColumn.Type.DATE,
 					"<", true, true, SamlIdpSpSession::getCreateDate));
 
-		_finderPathWithPaginationFindBySamlIdpSsoSessionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findBySamlIdpSsoSessionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"samlIdpSsoSessionId"}, true);
-
-		_finderPathWithoutPaginationFindBySamlIdpSsoSessionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findBySamlIdpSsoSessionId", new String[] {Long.class.getName()},
-			new String[] {"samlIdpSsoSessionId"}, true);
-
-		_finderPathCountBySamlIdpSsoSessionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countBySamlIdpSsoSessionId", new String[] {Long.class.getName()},
-			new String[] {"samlIdpSsoSessionId"}, false);
-
 		_collectionPersistenceFinderBySamlIdpSsoSessionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindBySamlIdpSsoSessionId,
-				_finderPathWithoutPaginationFindBySamlIdpSsoSessionId,
-				_finderPathCountBySamlIdpSsoSessionId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findBySamlIdpSsoSessionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"samlIdpSsoSessionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findBySamlIdpSsoSessionId",
+					new String[] {Long.class.getName()},
+					new String[] {"samlIdpSsoSessionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countBySamlIdpSsoSessionId",
+					new String[] {Long.class.getName()},
+					new String[] {"samlIdpSsoSessionId"}, false),
 				_SQL_SELECT_SAMLIDPSPSESSION_WHERE,
 				_SQL_COUNT_SAMLIDPSPSESSION_WHERE,
 				SamlIdpSpSessionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"samlIdpSpSession.", "samlIdpSsoSessionId",
 					FinderColumn.Type.LONG, "=", true, true,
@@ -690,13 +613,10 @@ public class SamlIdpSpSessionPersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No SamlIdpSpSession exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		SamlIdpSpSessionPersistenceImpl.class);
-
 	@Override
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:196960773
+// LIFERAY-SERVICE-BUILDER-HASH:1413155888

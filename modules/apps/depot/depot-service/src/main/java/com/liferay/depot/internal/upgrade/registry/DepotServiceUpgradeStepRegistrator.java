@@ -56,6 +56,11 @@ public class DepotServiceUpgradeStepRegistrator
 			UpgradeProcessFactory.runSQL(
 				"update DepotEntryGroupRel set type_ = " +
 					DepotConstants.TYPE_ASSET_LIBRARY));
+
+		registry.register(
+			"2.3.0", "2.4.0",
+			new com.liferay.depot.internal.upgrade.v2_4_0.
+				TrashEntriesMaxAgeUpgradeProcess());
 	}
 
 }

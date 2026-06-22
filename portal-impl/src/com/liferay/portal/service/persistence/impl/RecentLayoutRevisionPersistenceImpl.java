@@ -10,7 +10,6 @@ import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchRecentLayoutRevisionException;
 import com.liferay.portal.kernel.log.Log;
@@ -65,69 +64,15 @@ public class RecentLayoutRevisionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<RecentLayoutRevision>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the recent layout revisions where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching recent layout revisions
-	 */
-	@Override
-	public List<RecentLayoutRevision> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the recent layout revisions where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of recent layout revisions
-	 * @param end the upper bound of the range of recent layout revisions (not inclusive)
-	 * @return the range of matching recent layout revisions
-	 */
-	@Override
-	public List<RecentLayoutRevision> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<RecentLayoutRevision, NoSuchRecentLayoutRevisionException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the recent layout revisions where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of recent layout revisions
-	 * @param end the upper bound of the range of recent layout revisions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching recent layout revisions
-	 */
-	@Override
-	public List<RecentLayoutRevision> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<RecentLayoutRevision> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the recent layout revisions where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -162,16 +107,9 @@ public class RecentLayoutRevisionPersistenceImpl
 			OrderByComparator<RecentLayoutRevision> orderByComparator)
 		throws NoSuchRecentLayoutRevisionException {
 
-		RecentLayoutRevision recentLayoutRevision = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (recentLayoutRevision != null) {
-			return recentLayoutRevision;
-		}
-
-		throw new NoSuchRecentLayoutRevisionException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId},
+			orderByComparator);
 	}
 
 	/**
@@ -214,68 +152,15 @@ public class RecentLayoutRevisionPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUserId;
-	private FinderPath _finderPathWithoutPaginationFindByUserId;
-	private FinderPath _finderPathCountByUserId;
-	private CollectionPersistenceFinder<RecentLayoutRevision>
-		_collectionPersistenceFinderByUserId;
-
-	/**
-	 * Returns all the recent layout revisions where userId = &#63;.
-	 *
-	 * @param userId the user ID
-	 * @return the matching recent layout revisions
-	 */
-	@Override
-	public List<RecentLayoutRevision> findByUserId(long userId) {
-		return findByUserId(userId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the recent layout revisions where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of recent layout revisions
-	 * @param end the upper bound of the range of recent layout revisions (not inclusive)
-	 * @return the range of matching recent layout revisions
-	 */
-	@Override
-	public List<RecentLayoutRevision> findByUserId(
-		long userId, int start, int end) {
-
-		return findByUserId(userId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<RecentLayoutRevision, NoSuchRecentLayoutRevisionException>
+			_collectionPersistenceFinderByUserId;
 
 	/**
 	 * Returns an ordered range of all the recent layout revisions where userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param userId the user ID
-	 * @param start the lower bound of the range of recent layout revisions
-	 * @param end the upper bound of the range of recent layout revisions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching recent layout revisions
-	 */
-	@Override
-	public List<RecentLayoutRevision> findByUserId(
-		long userId, int start, int end,
-		OrderByComparator<RecentLayoutRevision> orderByComparator) {
-
-		return findByUserId(userId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the recent layout revisions where userId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -310,16 +195,9 @@ public class RecentLayoutRevisionPersistenceImpl
 			OrderByComparator<RecentLayoutRevision> orderByComparator)
 		throws NoSuchRecentLayoutRevisionException {
 
-		RecentLayoutRevision recentLayoutRevision = fetchByUserId_First(
-			userId, orderByComparator);
-
-		if (recentLayoutRevision != null) {
-			return recentLayoutRevision;
-		}
-
-		throw new NoSuchRecentLayoutRevisionException(
-			_collectionPersistenceFinderByUserId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {userId}));
+		return _collectionPersistenceFinderByUserId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {userId},
+			orderByComparator);
 	}
 
 	/**
@@ -362,72 +240,15 @@ public class RecentLayoutRevisionPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {userId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByLayoutRevisionId;
-	private FinderPath _finderPathWithoutPaginationFindByLayoutRevisionId;
-	private FinderPath _finderPathCountByLayoutRevisionId;
-	private CollectionPersistenceFinder<RecentLayoutRevision>
-		_collectionPersistenceFinderByLayoutRevisionId;
-
-	/**
-	 * Returns all the recent layout revisions where layoutRevisionId = &#63;.
-	 *
-	 * @param layoutRevisionId the layout revision ID
-	 * @return the matching recent layout revisions
-	 */
-	@Override
-	public List<RecentLayoutRevision> findByLayoutRevisionId(
-		long layoutRevisionId) {
-
-		return findByLayoutRevisionId(
-			layoutRevisionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the recent layout revisions where layoutRevisionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param layoutRevisionId the layout revision ID
-	 * @param start the lower bound of the range of recent layout revisions
-	 * @param end the upper bound of the range of recent layout revisions (not inclusive)
-	 * @return the range of matching recent layout revisions
-	 */
-	@Override
-	public List<RecentLayoutRevision> findByLayoutRevisionId(
-		long layoutRevisionId, int start, int end) {
-
-		return findByLayoutRevisionId(layoutRevisionId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<RecentLayoutRevision, NoSuchRecentLayoutRevisionException>
+			_collectionPersistenceFinderByLayoutRevisionId;
 
 	/**
 	 * Returns an ordered range of all the recent layout revisions where layoutRevisionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param layoutRevisionId the layout revision ID
-	 * @param start the lower bound of the range of recent layout revisions
-	 * @param end the upper bound of the range of recent layout revisions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching recent layout revisions
-	 */
-	@Override
-	public List<RecentLayoutRevision> findByLayoutRevisionId(
-		long layoutRevisionId, int start, int end,
-		OrderByComparator<RecentLayoutRevision> orderByComparator) {
-
-		return findByLayoutRevisionId(
-			layoutRevisionId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the recent layout revisions where layoutRevisionId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>RecentLayoutRevisionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param layoutRevisionId the layout revision ID
@@ -462,17 +283,9 @@ public class RecentLayoutRevisionPersistenceImpl
 			OrderByComparator<RecentLayoutRevision> orderByComparator)
 		throws NoSuchRecentLayoutRevisionException {
 
-		RecentLayoutRevision recentLayoutRevision =
-			fetchByLayoutRevisionId_First(layoutRevisionId, orderByComparator);
-
-		if (recentLayoutRevision != null) {
-			return recentLayoutRevision;
-		}
-
-		throw new NoSuchRecentLayoutRevisionException(
-			_collectionPersistenceFinderByLayoutRevisionId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {layoutRevisionId}));
+		return _collectionPersistenceFinderByLayoutRevisionId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {layoutRevisionId},
+			orderByComparator);
 	}
 
 	/**
@@ -515,9 +328,9 @@ public class RecentLayoutRevisionPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {layoutRevisionId});
 	}
 
-	private FinderPath _finderPathFetchByU_L_P;
-	private UniquePersistenceFinder<RecentLayoutRevision>
-		_uniquePersistenceFinderByU_L_P;
+	private UniquePersistenceFinder
+		<RecentLayoutRevision, NoSuchRecentLayoutRevisionException>
+			_uniquePersistenceFinderByU_L_P;
 
 	/**
 	 * Returns the recent layout revision where userId = &#63; and layoutSetBranchId = &#63; and plid = &#63; or throws a <code>NoSuchRecentLayoutRevisionException</code> if it could not be found.
@@ -533,38 +346,9 @@ public class RecentLayoutRevisionPersistenceImpl
 			long userId, long layoutSetBranchId, long plid)
 		throws NoSuchRecentLayoutRevisionException {
 
-		RecentLayoutRevision recentLayoutRevision = fetchByU_L_P(
-			userId, layoutSetBranchId, plid);
-
-		if (recentLayoutRevision == null) {
-			String message =
-				_uniquePersistenceFinderByU_L_P.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {userId, layoutSetBranchId, plid});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchRecentLayoutRevisionException(message);
-		}
-
-		return recentLayoutRevision;
-	}
-
-	/**
-	 * Returns the recent layout revision where userId = &#63; and layoutSetBranchId = &#63; and plid = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param userId the user ID
-	 * @param layoutSetBranchId the layout set branch ID
-	 * @param plid the plid
-	 * @return the matching recent layout revision, or <code>null</code> if a matching recent layout revision could not be found
-	 */
-	@Override
-	public RecentLayoutRevision fetchByU_L_P(
-		long userId, long layoutSetBranchId, long plid) {
-
-		return fetchByU_L_P(userId, layoutSetBranchId, plid, true);
+		return _uniquePersistenceFinderByU_L_P.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {userId, layoutSetBranchId, plid});
 	}
 
 	/**
@@ -801,118 +585,110 @@ public class RecentLayoutRevisionPersistenceImpl
 	 * Initializes the recent layout revision persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
 				_SQL_SELECT_RECENTLAYOUTREVISION_WHERE,
 				_SQL_COUNT_RECENTLAYOUTREVISION_WHERE,
 				RecentLayoutRevisionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"recentLayoutRevision.", "groupId", FinderColumn.Type.LONG,
 					"=", true, true, RecentLayoutRevision::getGroupId));
 
-		_finderPathWithPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"userId"}, true);
-
-		_finderPathWithoutPaginationFindByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"}, true);
-
-		_finderPathCountByUserId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
-			new String[] {Long.class.getName()}, new String[] {"userId"},
-			false);
-
 		_collectionPersistenceFinderByUserId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUserId,
-				_finderPathWithoutPaginationFindByUserId,
-				_finderPathCountByUserId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, false),
 				_SQL_SELECT_RECENTLAYOUTREVISION_WHERE,
 				_SQL_COUNT_RECENTLAYOUTREVISION_WHERE,
 				RecentLayoutRevisionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"recentLayoutRevision.", "userId", FinderColumn.Type.LONG,
 					"=", true, true, RecentLayoutRevision::getUserId));
 
-		_finderPathWithPaginationFindByLayoutRevisionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLayoutRevisionId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"layoutRevisionId"}, true);
-
-		_finderPathWithoutPaginationFindByLayoutRevisionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByLayoutRevisionId",
-			new String[] {Long.class.getName()},
-			new String[] {"layoutRevisionId"}, true);
-
-		_finderPathCountByLayoutRevisionId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByLayoutRevisionId", new String[] {Long.class.getName()},
-			new String[] {"layoutRevisionId"}, false);
-
 		_collectionPersistenceFinderByLayoutRevisionId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByLayoutRevisionId,
-				_finderPathWithoutPaginationFindByLayoutRevisionId,
-				_finderPathCountByLayoutRevisionId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByLayoutRevisionId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"layoutRevisionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByLayoutRevisionId",
+					new String[] {Long.class.getName()},
+					new String[] {"layoutRevisionId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByLayoutRevisionId",
+					new String[] {Long.class.getName()},
+					new String[] {"layoutRevisionId"}, false),
 				_SQL_SELECT_RECENTLAYOUTREVISION_WHERE,
 				_SQL_COUNT_RECENTLAYOUTREVISION_WHERE,
 				RecentLayoutRevisionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"recentLayoutRevision.", "layoutRevisionId",
 					FinderColumn.Type.LONG, "=", true, true,
 					RecentLayoutRevision::getLayoutRevisionId));
 
-		_finderPathFetchByU_L_P = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByU_L_P",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"userId", "layoutSetBranchId", "plid"}, false,
-			RecentLayoutRevision::getUserId,
-			RecentLayoutRevision::getLayoutSetBranchId,
-			RecentLayoutRevision::getPlid);
-
 		_uniquePersistenceFinderByU_L_P = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByU_L_P,
-			_SQL_SELECT_RECENTLAYOUTREVISION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByU_L_P",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"userId", "layoutSetBranchId", "plid"}, 0, 0,
+				false, RecentLayoutRevision::getUserId,
+				RecentLayoutRevision::getLayoutSetBranchId,
+				RecentLayoutRevision::getPlid),
+			_SQL_SELECT_RECENTLAYOUTREVISION_WHERE, "",
 			new FinderColumn<>(
 				"recentLayoutRevision.", "userId", FinderColumn.Type.LONG, "=",
-				true, false, RecentLayoutRevision::getUserId),
+				true, true, RecentLayoutRevision::getUserId),
 			new FinderColumn<>(
 				"recentLayoutRevision.", "layoutSetBranchId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				RecentLayoutRevision::getLayoutSetBranchId),
 			new FinderColumn<>(
 				"recentLayoutRevision.", "plid", FinderColumn.Type.LONG, "=",
@@ -951,4 +727,4 @@ public class RecentLayoutRevisionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1449574813
+// LIFERAY-SERVICE-BUILDER-HASH:1662825162

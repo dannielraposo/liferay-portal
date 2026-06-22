@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayBadge from '@clayui/badge';
 import ClayDropDown from '@clayui/drop-down';
 import classNames from 'classnames';
 import {sub, unescapeHTML} from 'frontend-js-web';
@@ -23,7 +24,20 @@ const Item = ({item, onClick}) => {
 			symbolLeft={item.icon}
 			{...getDataAttributes(item.data)}
 		>
-			{unescapeHTML(item.label)}
+			{item.deprecated ? (
+				<span className="creation-menu-item-deprecated">
+					{unescapeHTML(item.label)}
+
+					<ClayBadge
+						className="text-uppercase"
+						displayType="warning"
+						label={Liferay.Language.get('deprecated')}
+						translucent
+					/>
+				</span>
+			) : (
+				unescapeHTML(item.label)
+			)}
 		</ClayDropDown.Item>
 	);
 };
@@ -168,6 +182,7 @@ const CreationMenu = ({
 				<ClayDropDown
 					active={active}
 					className="creation-menu"
+					menuElementAttrs={{className: 'creation-menu-dropdown'}}
 					onActiveChange={setActive}
 					trigger={
 						<LinkOrButton

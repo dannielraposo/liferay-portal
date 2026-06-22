@@ -5,6 +5,7 @@
 
 package com.liferay.ai.hub.web.internal.display.context;
 
+import com.liferay.ai.hub.web.internal.util.DisplayContextUtil;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
@@ -65,16 +66,22 @@ public class ViewContentRetrieversDisplayContext {
 			new FDSActionDropdownItem(
 				getAPIURL() +
 					"/by-external-reference-code/{externalReferenceCode}" +
-						"/object-actions/crawl",
+						"/object-actions/crawler",
 				"reload", "put",
 				LanguageUtil.get(_httpServletRequest, "sync-now"), "put", null,
 				"async"),
 			new FDSActionDropdownItem(
-				getAPIURL() +
-					"/by-external-reference-code/{externalReferenceCode}",
+				"/o/ai-hub/v1.0/content-retrievers/by-external-reference-code" +
+					"/{externalReferenceCode}",
 				"trash", "delete",
 				LanguageUtil.get(_httpServletRequest, "delete"), "delete",
-				"delete", "async"));
+				"delete", "async"),
+			new FDSActionDropdownItem(
+				DisplayContextUtil.getPermissionsURL(
+					"L_AI_HUB_CONTENT_RETRIEVER", _httpServletRequest),
+				"password-policies", "permissions",
+				LanguageUtil.get(_httpServletRequest, "permissions"), "get",
+				"permissions", "modal-permissions"));
 	}
 
 	private String _getContentRetrieverURL() throws Exception {

@@ -10,7 +10,6 @@ import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchPortletException;
 import com.liferay.portal.kernel.log.Log;
@@ -67,67 +66,14 @@ public class PortletPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCompanyId;
-	private FinderPath _finderPathWithoutPaginationFindByCompanyId;
-	private FinderPath _finderPathCountByCompanyId;
-	private CollectionPersistenceFinder<Portlet>
+	private CollectionPersistenceFinder<Portlet, NoSuchPortletException>
 		_collectionPersistenceFinderByCompanyId;
 
 	/**
-	 * Returns all the portlets where companyId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @return the matching portlets
-	 */
-	@Override
-	public List<Portlet> findByCompanyId(long companyId) {
-		return findByCompanyId(
-			companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the portlets where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of portlets
-	 * @param end the upper bound of the range of portlets (not inclusive)
-	 * @return the range of matching portlets
-	 */
-	@Override
-	public List<Portlet> findByCompanyId(long companyId, int start, int end) {
-		return findByCompanyId(companyId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the portlets where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of portlets
-	 * @param end the upper bound of the range of portlets (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching portlets
-	 */
-	@Override
-	public List<Portlet> findByCompanyId(
-		long companyId, int start, int end,
-		OrderByComparator<Portlet> orderByComparator) {
-
-		return findByCompanyId(companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the portlets where companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -160,15 +106,9 @@ public class PortletPersistenceImpl
 			long companyId, OrderByComparator<Portlet> orderByComparator)
 		throws NoSuchPortletException {
 
-		Portlet portlet = fetchByCompanyId_First(companyId, orderByComparator);
-
-		if (portlet != null) {
-			return portlet;
-		}
-
-		throw new NoSuchPortletException(
-			_collectionPersistenceFinderByCompanyId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {companyId}));
+		return _collectionPersistenceFinderByCompanyId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {companyId},
+			orderByComparator);
 	}
 
 	/**
@@ -210,8 +150,8 @@ public class PortletPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {companyId});
 	}
 
-	private FinderPath _finderPathFetchByC_P;
-	private UniquePersistenceFinder<Portlet> _uniquePersistenceFinderByC_P;
+	private UniquePersistenceFinder<Portlet, NoSuchPortletException>
+		_uniquePersistenceFinderByC_P;
 
 	/**
 	 * Returns the portlet where companyId = &#63; and portletId = &#63; or throws a <code>NoSuchPortletException</code> if it could not be found.
@@ -225,34 +165,9 @@ public class PortletPersistenceImpl
 	public Portlet findByC_P(long companyId, String portletId)
 		throws NoSuchPortletException {
 
-		Portlet portlet = fetchByC_P(companyId, portletId);
-
-		if (portlet == null) {
-			String message =
-				_uniquePersistenceFinderByC_P.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {companyId, portletId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchPortletException(message);
-		}
-
-		return portlet;
-	}
-
-	/**
-	 * Returns the portlet where companyId = &#63; and portletId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param companyId the company ID
-	 * @param portletId the portlet ID
-	 * @return the matching portlet, or <code>null</code> if a matching portlet could not be found
-	 */
-	@Override
-	public Portlet fetchByC_P(long companyId, String portletId) {
-		return fetchByC_P(companyId, portletId, true);
+		return _uniquePersistenceFinderByC_P.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {companyId, portletId});
 	}
 
 	/**
@@ -482,46 +397,43 @@ public class PortletPersistenceImpl
 	 * Initializes the portlet persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"companyId"}, true);
-
-		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			true);
-
-		_finderPathCountByCompanyId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()}, new String[] {"companyId"},
-			false);
-
 		_collectionPersistenceFinderByCompanyId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCompanyId,
-				_finderPathWithoutPaginationFindByCompanyId,
-				_finderPathCountByCompanyId, _SQL_SELECT_PORTLET_WHERE,
-				_SQL_COUNT_PORTLET_WHERE, PortletModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				_SQL_SELECT_PORTLET_WHERE, _SQL_COUNT_PORTLET_WHERE,
+				PortletModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"portlet.", "companyId", FinderColumn.Type.LONG, "=", true,
 					true, Portlet::getCompanyId));
 
-		_finderPathFetchByC_P = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_P",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"companyId", "portletId"}, true,
-			Portlet::getCompanyId, Portlet::getPortletId);
-
 		_uniquePersistenceFinderByC_P = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_P, _SQL_SELECT_PORTLET_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_P",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"companyId", "portletId"}, 0, 2, true,
+				Portlet::getCompanyId,
+				convertNullFunction(Portlet::getPortletId)),
+			_SQL_SELECT_PORTLET_WHERE, "",
 			new FinderColumn<>(
 				"portlet.", "companyId", FinderColumn.Type.LONG, "=", true,
-				false, Portlet::getCompanyId),
+				true, Portlet::getCompanyId),
 			new FinderColumn<>(
 				"portlet.", "portletId", FinderColumn.Type.STRING, "=", true,
 				true, Portlet::getPortletId));
@@ -562,4 +474,4 @@ public class PortletPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-36232271
+// LIFERAY-SERVICE-BUILDER-HASH:-1891217430

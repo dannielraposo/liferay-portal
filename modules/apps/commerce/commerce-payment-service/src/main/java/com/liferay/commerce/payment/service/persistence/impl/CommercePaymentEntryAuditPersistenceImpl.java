@@ -13,24 +13,17 @@ import com.liferay.commerce.payment.model.impl.CommercePaymentEntryAuditModelImp
 import com.liferay.commerce.payment.service.persistence.CommercePaymentEntryAuditPersistence;
 import com.liferay.commerce.payment.service.persistence.CommercePaymentEntryAuditUtil;
 import com.liferay.commerce.payment.service.persistence.impl.constants.CommercePersistenceConstants;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -80,73 +73,15 @@ public class CommercePaymentEntryAuditPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByCommercePaymentEntryId;
-	private FinderPath _finderPathWithoutPaginationFindByCommercePaymentEntryId;
-	private FinderPath _finderPathCountByCommercePaymentEntryId;
-	private CollectionPersistenceFinder<CommercePaymentEntryAudit>
-		_collectionPersistenceFinderByCommercePaymentEntryId;
-
-	/**
-	 * Returns all the commerce payment entry audits where commercePaymentEntryId = &#63;.
-	 *
-	 * @param commercePaymentEntryId the commerce payment entry ID
-	 * @return the matching commerce payment entry audits
-	 */
-	@Override
-	public List<CommercePaymentEntryAudit> findByCommercePaymentEntryId(
-		long commercePaymentEntryId) {
-
-		return findByCommercePaymentEntryId(
-			commercePaymentEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce payment entry audits where commercePaymentEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePaymentEntryAuditModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commercePaymentEntryId the commerce payment entry ID
-	 * @param start the lower bound of the range of commerce payment entry audits
-	 * @param end the upper bound of the range of commerce payment entry audits (not inclusive)
-	 * @return the range of matching commerce payment entry audits
-	 */
-	@Override
-	public List<CommercePaymentEntryAudit> findByCommercePaymentEntryId(
-		long commercePaymentEntryId, int start, int end) {
-
-		return findByCommercePaymentEntryId(
-			commercePaymentEntryId, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<CommercePaymentEntryAudit, NoSuchPaymentEntryAuditException>
+			_collectionPersistenceFinderByCommercePaymentEntryId;
 
 	/**
 	 * Returns an ordered range of all the commerce payment entry audits where commercePaymentEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePaymentEntryAuditModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commercePaymentEntryId the commerce payment entry ID
-	 * @param start the lower bound of the range of commerce payment entry audits
-	 * @param end the upper bound of the range of commerce payment entry audits (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce payment entry audits
-	 */
-	@Override
-	public List<CommercePaymentEntryAudit> findByCommercePaymentEntryId(
-		long commercePaymentEntryId, int start, int end,
-		OrderByComparator<CommercePaymentEntryAudit> orderByComparator) {
-
-		return findByCommercePaymentEntryId(
-			commercePaymentEntryId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce payment entry audits where commercePaymentEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePaymentEntryAuditModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePaymentEntryAuditModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commercePaymentEntryId the commerce payment entry ID
@@ -181,19 +116,9 @@ public class CommercePaymentEntryAuditPersistenceImpl
 			OrderByComparator<CommercePaymentEntryAudit> orderByComparator)
 		throws NoSuchPaymentEntryAuditException {
 
-		CommercePaymentEntryAudit commercePaymentEntryAudit =
-			fetchByCommercePaymentEntryId_First(
-				commercePaymentEntryId, orderByComparator);
-
-		if (commercePaymentEntryAudit != null) {
-			return commercePaymentEntryAudit;
-		}
-
-		throw new NoSuchPaymentEntryAuditException(
-			_collectionPersistenceFinderByCommercePaymentEntryId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {commercePaymentEntryId}));
+		return _collectionPersistenceFinderByCommercePaymentEntryId.findFirst(
+			finderCache, new Object[] {commercePaymentEntryId},
+			orderByComparator);
 	}
 
 	/**
@@ -214,44 +139,10 @@ public class CommercePaymentEntryAuditPersistenceImpl
 	}
 
 	/**
-	 * Returns all the commerce payment entry audits that the user has permission to view where commercePaymentEntryId = &#63;.
-	 *
-	 * @param commercePaymentEntryId the commerce payment entry ID
-	 * @return the matching commerce payment entry audits that the user has permission to view
-	 */
-	@Override
-	public List<CommercePaymentEntryAudit> filterFindByCommercePaymentEntryId(
-		long commercePaymentEntryId) {
-
-		return filterFindByCommercePaymentEntryId(
-			commercePaymentEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce payment entry audits that the user has permission to view where commercePaymentEntryId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePaymentEntryAuditModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commercePaymentEntryId the commerce payment entry ID
-	 * @param start the lower bound of the range of commerce payment entry audits
-	 * @param end the upper bound of the range of commerce payment entry audits (not inclusive)
-	 * @return the range of matching commerce payment entry audits that the user has permission to view
-	 */
-	@Override
-	public List<CommercePaymentEntryAudit> filterFindByCommercePaymentEntryId(
-		long commercePaymentEntryId, int start, int end) {
-
-		return filterFindByCommercePaymentEntryId(
-			commercePaymentEntryId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the commerce payment entry audits that the user has permissions to view where commercePaymentEntryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePaymentEntryAuditModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommercePaymentEntryAuditModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commercePaymentEntryId the commerce payment entry ID
@@ -265,100 +156,9 @@ public class CommercePaymentEntryAuditPersistenceImpl
 		long commercePaymentEntryId, int start, int end,
 		OrderByComparator<CommercePaymentEntryAudit> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return findByCommercePaymentEntryId(
-				commercePaymentEntryId, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByCommercePaymentEntryId(
-					commercePaymentEntryId, QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_COMMERCEPAYMENTENTRYAUDIT_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEPAYMENTENTRYAUDIT_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(
-			_FINDER_COLUMN_COMMERCEPAYMENTENTRYID_COMMERCEPAYMENTENTRYID_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_COMMERCEPAYMENTENTRYAUDIT_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					CommercePaymentEntryAuditModelImpl.
-						ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(CommercePaymentEntryAuditModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommercePaymentEntryAudit.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, CommercePaymentEntryAuditImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, CommercePaymentEntryAuditImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(commercePaymentEntryId);
-
-			return (List<CommercePaymentEntryAudit>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByCommercePaymentEntryId.filterFind(
+			finderCache, new Object[] {commercePaymentEntryId}, start, end,
+			orderByComparator);
 	}
 
 	/**
@@ -394,60 +194,9 @@ public class CommercePaymentEntryAuditPersistenceImpl
 	public int filterCountByCommercePaymentEntryId(
 		long commercePaymentEntryId) {
 
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return countByCommercePaymentEntryId(commercePaymentEntryId);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<CommercePaymentEntryAudit> commercePaymentEntryAudits =
-				findByCommercePaymentEntryId(commercePaymentEntryId);
-
-			commercePaymentEntryAudits = InlineSQLHelperUtil.filter(
-				commercePaymentEntryAudits);
-
-			return commercePaymentEntryAudits.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_COMMERCEPAYMENTENTRYAUDIT_WHERE);
-
-		sb.append(
-			_FINDER_COLUMN_COMMERCEPAYMENTENTRYID_COMMERCEPAYMENTENTRYID_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), CommercePaymentEntryAudit.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(commercePaymentEntryId);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByCommercePaymentEntryId.filterCount(
+			finderCache, new Object[] {commercePaymentEntryId});
 	}
-
-	private static final String
-		_FINDER_COLUMN_COMMERCEPAYMENTENTRYID_COMMERCEPAYMENTENTRYID_2 =
-			"commercePaymentEntryAudit.commercePaymentEntryId = ?";
 
 	public CommercePaymentEntryAuditPersistenceImpl() {
 		setModelClass(CommercePaymentEntryAudit.class);
@@ -664,37 +413,32 @@ public class CommercePaymentEntryAuditPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByCommercePaymentEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByCommercePaymentEntryId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"commercePaymentEntryId"}, true);
-
-		_finderPathWithoutPaginationFindByCommercePaymentEntryId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByCommercePaymentEntryId",
-				new String[] {Long.class.getName()},
-				new String[] {"commercePaymentEntryId"}, true);
-
-		_finderPathCountByCommercePaymentEntryId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCommercePaymentEntryId",
-			new String[] {Long.class.getName()},
-			new String[] {"commercePaymentEntryId"}, false);
-
 		_collectionPersistenceFinderByCommercePaymentEntryId =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByCommercePaymentEntryId,
-				_finderPathWithoutPaginationFindByCommercePaymentEntryId,
-				_finderPathCountByCommercePaymentEntryId,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCommercePaymentEntryId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"commercePaymentEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCommercePaymentEntryId",
+					new String[] {Long.class.getName()},
+					new String[] {"commercePaymentEntryId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCommercePaymentEntryId",
+					new String[] {Long.class.getName()},
+					new String[] {"commercePaymentEntryId"}, false),
 				_SQL_SELECT_COMMERCEPAYMENTENTRYAUDIT_WHERE,
 				_SQL_COUNT_COMMERCEPAYMENTENTRYAUDIT_WHERE,
 				CommercePaymentEntryAuditModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commercePaymentEntryAudit.", "commercePaymentEntryId",
 					FinderColumn.Type.LONG, "=", true, true,
@@ -754,39 +498,8 @@ public class CommercePaymentEntryAuditPersistenceImpl
 	private static final String _SQL_COUNT_COMMERCEPAYMENTENTRYAUDIT_WHERE =
 		"SELECT COUNT(commercePaymentEntryAudit) FROM CommercePaymentEntryAudit commercePaymentEntryAudit WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"commercePaymentEntryAudit.commercePaymentEntryAuditId";
-
-	private static final String
-		_FILTER_SQL_SELECT_COMMERCEPAYMENTENTRYAUDIT_WHERE =
-			"SELECT DISTINCT {commercePaymentEntryAudit.*} FROM CommercePaymentEntryAudit commercePaymentEntryAudit WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_COMMERCEPAYMENTENTRYAUDIT_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {CommercePaymentEntryAudit.*} FROM (SELECT DISTINCT commercePaymentEntryAudit.commercePaymentEntryAuditId FROM CommercePaymentEntryAudit commercePaymentEntryAudit WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_COMMERCEPAYMENTENTRYAUDIT_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN CommercePaymentEntryAudit ON TEMP_TABLE.commercePaymentEntryAuditId = CommercePaymentEntryAudit.commercePaymentEntryAuditId";
-
-	private static final String
-		_FILTER_SQL_COUNT_COMMERCEPAYMENTENTRYAUDIT_WHERE =
-			"SELECT COUNT(DISTINCT commercePaymentEntryAudit.commercePaymentEntryAuditId) AS COUNT_VALUE FROM CommercePaymentEntryAudit commercePaymentEntryAudit WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS =
-		"commercePaymentEntryAudit";
-
-	private static final String _FILTER_ENTITY_TABLE =
-		"CommercePaymentEntryAudit";
-
-	private static final String _ORDER_BY_ENTITY_TABLE =
-		"CommercePaymentEntryAudit.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No CommercePaymentEntryAudit exists with the key {";
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		CommercePaymentEntryAuditPersistenceImpl.class);
 
 	@Override
 	protected FinderCache getFinderCache() {
@@ -794,4 +507,4 @@ public class CommercePaymentEntryAuditPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1453848068
+// LIFERAY-SERVICE-BUILDER-HASH:1483028564

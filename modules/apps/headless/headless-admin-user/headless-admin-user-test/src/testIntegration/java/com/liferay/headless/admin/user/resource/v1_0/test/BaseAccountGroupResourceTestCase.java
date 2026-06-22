@@ -48,6 +48,7 @@ import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -140,7 +141,8 @@ public abstract class BaseAccountGroupResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -150,7 +152,8 @@ public abstract class BaseAccountGroupResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -257,6 +260,7 @@ public abstract class BaseAccountGroupResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountGroup accountGroup1 =
 			testGraphQLDeleteAccountGroup_addAccountGroup();
 
@@ -288,6 +292,7 @@ public abstract class BaseAccountGroupResourceTestCase {
 
 		// Using the namespace headlessAdminUser_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountGroup accountGroup2 =
 			testGraphQLDeleteAccountGroup_addAccountGroup();
 
@@ -447,6 +452,7 @@ public abstract class BaseAccountGroupResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountGroup accountGroup1 =
 			testGraphQLDeleteAccountGroupByExternalReferenceCode_addAccountGroup();
 
@@ -487,6 +493,7 @@ public abstract class BaseAccountGroupResourceTestCase {
 
 		// Using the namespace headlessAdminUser_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountGroup accountGroup2 =
 			testGraphQLDeleteAccountGroupByExternalReferenceCode_addAccountGroup();
 
@@ -576,6 +583,7 @@ public abstract class BaseAccountGroupResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountGroup accountGroup1 =
 			testGraphQLDeleteAccountGroupByExternalReferenceCodeAccountByExternalReferenceCode_addAccountGroup();
 
@@ -603,6 +611,7 @@ public abstract class BaseAccountGroupResourceTestCase {
 
 		// Using the namespace headlessAdminUser_v1_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		AccountGroup accountGroup2 =
 			testGraphQLDeleteAccountGroupByExternalReferenceCodeAccountByExternalReferenceCode_addAccountGroup();
 
@@ -1102,8 +1111,9 @@ public abstract class BaseAccountGroupResourceTestCase {
 			public StringBuffer getRequestURL() {
 				return new StringBuffer(
 					StringBundler.concat(
-						"http://localhost:8080/o/v1.0/",
-						RandomTestUtil.randomString(), "/",
+						"http://localhost:",
+						String.valueOf(PortalUtil.getPortalServerPort(false)),
+						"/o/v1.0/", RandomTestUtil.randomString(), "/",
 						RandomTestUtil.randomString()));
 			}
 
@@ -1139,8 +1149,10 @@ public abstract class BaseAccountGroupResourceTestCase {
 			@Override
 			public URI getRequestUri() {
 				return URI.create(
-					"http://localhost:8080/o/" + applicationPath +
-						resourcePath);
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath, resourcePath));
 			}
 
 			@Override
@@ -1160,7 +1172,11 @@ public abstract class BaseAccountGroupResourceTestCase {
 
 			@Override
 			public URI getBaseUri() {
-				return URI.create("http://localhost:8080/o/" + applicationPath);
+				return URI.create(
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath));
 			}
 
 			@Override
@@ -2168,7 +2184,8 @@ public abstract class BaseAccountGroupResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).parameters(
 			parameters
 		).build();
@@ -2251,16 +2268,22 @@ public abstract class BaseAccountGroupResourceTestCase {
 		else if (value instanceof Boolean || value instanceof Number) {
 			return value.toString();
 		}
-		else if (value instanceof Date date) {
+		else if (value instanceof Date) {
+			Date date = (Date)value;
+
 			return "\"" +
 				DateUtil.getDate(
 					date, "yyyy-MM-dd'T'HH:mm:ss'Z'", LocaleUtil.getDefault(),
 					TimeZone.getTimeZone("UTC")) + "\"";
 		}
-		else if (value instanceof Enum<?> enm) {
+		else if (value instanceof Enum) {
+			Enum<?> enm = (Enum<?>)value;
+
 			return enm.name();
 		}
-		else if (value instanceof Map<?, ?> map) {
+		else if (value instanceof Map) {
+			Map<?, ?> map = (Map<?, ?>)value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
@@ -2273,7 +2296,9 @@ public abstract class BaseAccountGroupResourceTestCase {
 
 			return "{" + String.join(", ", entries) + "}";
 		}
-		else if (value instanceof Object[] array) {
+		else if (value instanceof Object[]) {
+			Object[] array = (Object[])value;
+
 			List<String> entries = new ArrayList<>();
 
 			for (Object entry : array) {
@@ -3053,7 +3078,9 @@ public abstract class BaseAccountGroupResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -3362,4 +3389,4 @@ public abstract class BaseAccountGroupResourceTestCase {
 		_vulcanCRUDItemDelegateBuilderRegistry;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-788715659
+// LIFERAY-REST-BUILDER-HASH:1271294540

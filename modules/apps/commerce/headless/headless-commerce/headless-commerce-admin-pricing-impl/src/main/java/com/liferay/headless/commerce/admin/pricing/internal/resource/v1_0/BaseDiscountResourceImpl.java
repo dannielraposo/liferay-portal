@@ -77,9 +77,13 @@ public abstract class BaseDiscountResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/discounts/{id}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes a discount by internal ID. Delegates to the service. Side effects -- cascades the deletion of discount account group link, discount link (account, category, product, channel, order-type), and discount rule rows."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -153,9 +157,13 @@ public abstract class BaseDiscountResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/discounts/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes a discount addressed by externalReferenceCode. Same cascade semantics as deleteDiscount; 404 when the ERC is unknown."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -187,9 +195,13 @@ public abstract class BaseDiscountResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/discounts/{id}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Fetches a discount by internal ID. Delegates to the service and returns a Discount DTO including its account-group, category, product, and rule rels. Validation -- a not-found error for discount -> 404 when the ID is unknown."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -217,9 +229,13 @@ public abstract class BaseDiscountResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/discounts/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Fetches a discount by externalReferenceCode (ERC). Delegates to the service. Validation -- 404 when no discount with that ERC exists in the company scope."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -249,13 +265,18 @@ public abstract class BaseDiscountResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/discounts'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists active discount entries scoped to the current company. Delegates to the service with Pagination. No OData filter or sort surface is exposed; results follow the service default ordering."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index. Combined with pageSize to paginate the result set; defaults to 1 when omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. Defaults to the portal's configured page size when omitted; capped by the portal configuration to prevent unbounded reads.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			)
@@ -280,9 +301,13 @@ public abstract class BaseDiscountResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/discounts/{id}' -d $'{"active": ___, "couponCode": ___, "customFields": ___, "discountAccountGroups": ___, "discountCategories": ___, "discountProducts": ___, "discountRules": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "id": ___, "limitationTimes": ___, "limitationType": ___, "maximumDiscountAmount": ___, "neverExpire": ___, "numberOfUse": ___, "percentageLevel1": ___, "percentageLevel2": ___, "percentageLevel3": ___, "percentageLevel4": ___, "target": ___, "title": ___, "useCouponCode": ___, "usePercentage": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates a discount by internal ID. Applies JSON Merge Patch over the supplied fields, then cascades any supplied nested rel collections. Validation -- a not-found error for discount -> 404 when the ID is unknown."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -314,9 +339,13 @@ public abstract class BaseDiscountResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/discounts/by-externalReferenceCode/{externalReferenceCode}' -d $'{"active": ___, "couponCode": ___, "customFields": ___, "discountAccountGroups": ___, "discountCategories": ___, "discountProducts": ___, "discountRules": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "id": ___, "limitationTimes": ___, "limitationType": ___, "maximumDiscountAmount": ___, "neverExpire": ___, "numberOfUse": ___, "percentageLevel1": ___, "percentageLevel2": ___, "percentageLevel3": ___, "percentageLevel4": ___, "target": ___, "title": ___, "useCouponCode": ___, "usePercentage": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates a discount addressed by externalReferenceCode. JSON Merge Patch semantics; 404 when the ERC is unknown."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -350,6 +379,9 @@ public abstract class BaseDiscountResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/discounts' -d $'{"active": ___, "couponCode": ___, "customFields": ___, "discountAccountGroups": ___, "discountCategories": ___, "discountProducts": ___, "discountRules": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "id": ___, "limitationTimes": ___, "limitationType": ___, "maximumDiscountAmount": ___, "neverExpire": ___, "numberOfUse": ___, "percentageLevel1": ___, "percentageLevel2": ___, "percentageLevel3": ___, "percentageLevel4": ___, "target": ___, "title": ___, "useCouponCode": ___, "usePercentage": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates or updates a discount via upsert-by-ERC. Delegates to the service with the supplied DTO and cascades the nested discountAccountGroups, discountCategories, discountProducts, and discountRules collections through the matching `add` helpers. Validation -- a title validation error, a target validation error, a coupon-code validation error, DiscountLimitationTypeException, DiscountMaxPriceValueException, DiscountMinPriceValueException, DiscountDisplayDateException, and DiscountExpirationDateException all map to 400 Bad Request via module-local exception mappers."
+	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "Discount")}
 	)
@@ -471,9 +503,13 @@ public abstract class BaseDiscountResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/discounts/by-externalReferenceCode/{externalReferenceCode}' -d $'{"active": ___, "couponCode": ___, "customFields": ___, "discountAccountGroups": ___, "discountCategories": ___, "discountProducts": ___, "discountRules": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "id": ___, "limitationTimes": ___, "limitationType": ___, "maximumDiscountAmount": ___, "neverExpire": ___, "numberOfUse": ___, "percentageLevel1": ___, "percentageLevel2": ___, "percentageLevel3": ___, "percentageLevel4": ___, "target": ___, "title": ___, "useCouponCode": ___, "usePercentage": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates or replaces a discount addressed by externalReferenceCode. Same upsert pipeline as postDiscount -- delegates to the service and cascades the nested rel collections."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -1294,4 +1330,4 @@ public abstract class BaseDiscountResourceImpl
 		LogFactoryUtil.getLog(BaseDiscountResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1535198977
+// LIFERAY-REST-BUILDER-HASH:-624074934

@@ -1697,6 +1697,34 @@ public class ObjectRelationshipLocalServiceImpl
 					"these-ongoing-workflow-instances-must-be-completed-to-" +
 						"disable-inheritance-x-(x-object-entries)");
 			}
+
+			if (FeatureFlagManagerUtil.isEnabled(
+					objectDefinition2.getCompanyId(), "LPD-69877") &&
+				!objectDefinition2.isAllowStandaloneObjectEntry() &&
+				objectDefinition2.isApproved() &&
+				objectDefinition2.isRootDescendantNode()) {
+
+				long objectRelationshipsCount =
+					objectRelationshipPersistence.countByODI2_E(
+						objectDefinition2.getObjectDefinitionId(), true);
+
+				int relatedRootDescendantNodeObjectEntriesCount =
+					_getRelatedRootDescendantNodeObjectEntriesCount(
+						objectDefinition2,
+						objectRelationship.getObjectFieldId2());
+
+				if ((objectRelationshipsCount > 1) &&
+					(relatedRootDescendantNodeObjectEntriesCount > 0)) {
+
+					throw new ObjectRelationshipEdgeException(
+						StringBundler.concat(
+							"This object requires all entries to have a ",
+							"parent. To disable inheritance, you must first ",
+							"delete linked entries or enable standalone ",
+							"entries for this object."),
+						"this-object-requires-all-entries-to-have-a-parent");
+				}
+			}
 		}
 
 		if (!edge ||
@@ -1725,19 +1753,8 @@ public class ObjectRelationshipLocalServiceImpl
 					"an-edge-of-a-root-context");
 		}
 
-		if ((objectDefinition1.isModifiableAndSystem() &&
-			 !objectDefinition2.isSystem()) ||
-			(objectDefinition2.isModifiableAndSystem() &&
-			 !objectDefinition1.isSystem())) {
-
-			throw new ObjectRelationshipEdgeException(
-				"Inheritance between modifiable system and custom object " +
-					"definitions is not allowed",
-				"inheritance-between-modifiable-system-and-custom-object-" +
-					"definitions-is-not-allowed");
-		}
-		else if (objectDefinition1.isUnmodifiableSystemObject() ||
-				 objectDefinition2.isUnmodifiableSystemObject()) {
+		if (objectDefinition1.isUnmodifiableSystemObject() ||
+			objectDefinition2.isUnmodifiableSystemObject()) {
 
 			throw new ObjectRelationshipEdgeException(
 				"System object definitions cannot inherit configurations",

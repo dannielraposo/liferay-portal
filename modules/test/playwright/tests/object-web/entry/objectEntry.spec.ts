@@ -63,6 +63,7 @@ const test = mergeTests(
 	isolatedSiteTest,
 	editObjectDefinitionPagesTest,
 	featureFlagsTest({
+		'LPD-70673': {enabled: true}, // Email Address field
 		'LPD-83570': {enabled: true}, // Phone Number field
 		'LPS-178052': {enabled: true},
 	}),
@@ -1115,6 +1116,85 @@ cmsTest.describe('Manage object entries schedule properties', () => {
 			await expect(page.getByText('Approved')).toBeVisible();
 
 			await expect(page.getByText('Scheduled')).toBeVisible();
+		}
+	);
+
+	cmsTest(
+		'can submit an object entry with scheduling dates via a custom layout',
+		{tag: ['@LPP-63890']},
+		async ({objectLayoutsPage, page, viewObjectEntriesPage}) => {
+			const objectLayoutName = getRandomString();
+
+			await objectLayoutsPage.goto(_objectDefinition.label['en_US']);
+
+			await objectLayoutsPage.createObjectLayout(objectLayoutName);
+
+			await page.getByRole('link', {name: objectLayoutName}).click();
+
+			await objectLayoutsPage.setObjectLayoutAsDefault();
+
+			await objectLayoutsPage.createObjectLayoutContent({
+				objectFieldNames: [
+					'Display Date',
+					'Expiration Date',
+					'Review Date',
+				],
+				objectLayoutName,
+				objectLayoutRegularBlockName: getRandomString(),
+				objectLayoutTabName: getRandomString(),
+			});
+
+			await objectLayoutsPage.saveUpdateLayoutButton.click();
+
+			await viewObjectEntriesPage.goto(_objectDefinition.className);
+
+			await viewObjectEntriesPage.clickAddObjectEntry(
+				_objectDefinition.label['en_US']
+			);
+
+			const date = new Date();
+
+			date.setDate(date.getDate() + 1);
+
+			await page
+				.locator('[data-field-name*="displayDate"]')
+				.getByLabel('Display Date', {exact: true})
+				.fill(getObjectEntryUIDateTimeFormat(date));
+
+			await page
+				.locator('[data-field-name*="expirationDate"]')
+				.getByLabel('Expiration Date', {exact: true})
+				.fill(getObjectEntryUIDateTimeFormat(date));
+
+			await page
+				.locator('[data-field-name*="reviewDate"]')
+				.getByLabel('Review Date', {exact: true})
+				.fill(getObjectEntryUIDateTimeFormat(date));
+
+			const objectEntryRequestPromise = page.waitForRequest(
+				(request) =>
+					request.method() === 'POST' &&
+					request.url().includes('/o/c/')
+			);
+
+			await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+			const objectEntryRequest = await objectEntryRequestPromise;
+
+			const objectEntryRequestPayload =
+				objectEntryRequest.postDataJSON() as Record<string, string>;
+
+			for (const fieldName of [
+				'displayDate',
+				'expirationDate',
+				'reviewDate',
+			]) {
+				expect(objectEntryRequestPayload[fieldName]).toMatch(
+					/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?Z$/
+				);
+			}
+
+			await waitForAlert(page);
 		}
 	);
 
@@ -2702,6 +2782,152 @@ test.describe('Manage object entries through View Object Entries', () => {
 		).toHaveText('Jun 1, 2023, 12:00:00 PM');
 	});
 
+	test(
+		'can create an object entry with email address field',
+		{tag: ['@LPD-70673']},
+		async ({apiHelpers, page, viewObjectEntriesPage}) => {
+			const email = 'user@example.com';
+
+			let objectDefinition: ObjectDefinition;
+			let objectFields: ObjectField[];
+
+			await test.step('Create an object definition with an Email Address field', async () => {
+				objectFields = generateObjectFields({
+					objectFieldBusinessTypes: [
+						{
+							businessType: 'EmailAddress',
+						},
+					],
+				});
+
+				objectDefinition =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						objectFields,
+						status: {code: 0},
+					});
+
+				apiHelpers.data.push({
+					id: objectDefinition.id,
+					type: 'objectDefinition',
+				});
+			});
+
+			await test.step('Navigate to the object definition and add an entry', async () => {
+				await viewObjectEntriesPage.goto(objectDefinition.className);
+
+				await viewObjectEntriesPage.clickAddObjectEntry(
+					objectDefinition.label.en_US
+				);
+			});
+
+			await test.step('Fill the email address field and save the entry', async () => {
+				await page.getByLabel(objectFields[0].label.en_US).fill(email);
+
+				await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+				await expect(
+					viewObjectEntriesPage.successMessage
+				).toBeVisible();
+			});
+
+			await test.step('Verify the email address field value is saved', async () => {
+				await viewObjectEntriesPage.backButton.click();
+
+				await viewObjectEntriesPage.frontendDatasetItems
+					.first()
+					.click();
+
+				await expect(
+					page.getByLabel(objectFields[0].label.en_US)
+				).toHaveValue(email);
+			});
+		}
+	);
+
+	test(
+		'can create an object entry with email address field and autocomplete enabled',
+		{tag: ['@LPD-70673']},
+		async ({apiHelpers, page, viewObjectEntriesPage}) => {
+			const autocompleteDomain = '@liferay.com';
+
+			let objectDefinition: ObjectDefinition;
+			let objectFields: ObjectField[];
+
+			await test.step('Create an object definition with autocomplete enabled', async () => {
+				objectFields = generateObjectFields({
+					objectFieldBusinessTypes: [
+						{
+							businessType: 'EmailAddress',
+							objectFieldSettings: [
+								{
+									name: 'autocompleteEnabled',
+									value: 'true',
+								},
+								{
+									name: 'autocompleteDomains',
+									value: '@liferay.com,@gmail.com',
+								},
+							],
+						},
+					],
+				});
+
+				objectDefinition =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						objectFields,
+						status: {code: 0},
+					});
+
+				apiHelpers.data.push({
+					id: objectDefinition.id,
+					type: 'objectDefinition',
+				});
+			});
+
+			await test.step('Navigate to the object definition and add an entry', async () => {
+				await viewObjectEntriesPage.goto(objectDefinition.className);
+
+				await viewObjectEntriesPage.clickAddObjectEntry(
+					objectDefinition.label['en_US']
+				);
+			});
+
+			await test.step('Type a partial email and select a domain suggestion', async () => {
+				await page
+					.getByLabel(objectFields[0].label.en_US)
+					.fill('user@li');
+
+				await expect(page.getByText(autocompleteDomain)).toBeVisible();
+
+				await expect(page.getByText('@gmail.com')).not.toBeVisible();
+
+				await page.getByText(autocompleteDomain).click();
+
+				await expect(
+					page.getByLabel(objectFields[0].label.en_US)
+				).toHaveValue('user@liferay.com');
+			});
+
+			await test.step('Save the entry and verify the stored value', async () => {
+				await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+				await expect(
+					viewObjectEntriesPage.successMessage
+				).toBeVisible();
+
+				await viewObjectEntriesPage.backButton.click();
+
+				await viewObjectEntriesPage.frontendDatasetItems
+					.first()
+					.click();
+
+				await expect(
+					page.getByLabel(objectFields[0].label.en_US)
+				).toHaveValue('user@liferay.com');
+			});
+		}
+	);
+
 	test('can create an object entry with special characters on a text field named Name', async ({
 		apiHelpers,
 		page,
@@ -3410,6 +3636,177 @@ test.describe('Manage object entries through View Object Entries', () => {
 			'test 2'
 		);
 	});
+
+	test(
+		'can link an object entry to a system object via relationship picker',
+		{tag: '@LPS-145393'},
+		async ({apiHelpers, page, viewObjectEntriesPage}) => {
+			const objectFields = generateObjectFields({
+				objectFieldBusinessTypes: ['Text'],
+			});
+
+			const objectDefinition =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					objectFields,
+					status: {code: 0},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+
+			const userAccount =
+				await apiHelpers.headlessAdminUser.postUserAccount();
+
+			const objectRelationshipAPIClient =
+				await apiHelpers.buildRestClient(ObjectRelationshipAPI);
+
+			const objectRelationshipName =
+				'objectRelationshipName' + Math.floor(Math.random() * 99);
+
+			const {body: objectRelationship} =
+				await objectRelationshipAPIClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
+					'L_USER',
+					{
+						label: {en_US: 'Relationship'},
+						name: objectRelationshipName,
+						objectDefinitionExternalReferenceCode1: 'L_USER',
+						objectDefinitionExternalReferenceCode2:
+							objectDefinition.externalReferenceCode,
+						objectDefinitionId2: objectDefinition.id,
+						objectDefinitionName2: objectDefinition.name,
+						type: 'oneToMany',
+					}
+				);
+
+			apiHelpers.data.push({
+				id: objectRelationship.id,
+				type: 'objectRelationship',
+			});
+
+			await viewObjectEntriesPage.goto(objectDefinition.className);
+
+			await viewObjectEntriesPage.clickAddObjectEntry(
+				objectDefinition.label['en_US']
+			);
+
+			await page.getByPlaceholder('Search').click();
+
+			await page
+				.getByRole('menuitem', {name: userAccount.givenName})
+				.click();
+
+			await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+			await expect(viewObjectEntriesPage.successMessage).toBeVisible();
+
+			expect(
+				(
+					await page.getByPlaceholder('Search').inputValue()
+				).toLowerCase()
+			).toBe(userAccount.givenName.toLowerCase());
+		}
+	);
+
+	test(
+		'can link multiple object entries to a system object via relationship picker',
+		{tag: '@LPS-145393'},
+		async ({apiHelpers, page, viewObjectEntriesPage}) => {
+			const objectFields = generateObjectFields({
+				objectFieldBusinessTypes: ['Text'],
+			});
+
+			const objectDefinition =
+				await apiHelpers.objectAdmin.postRandomObjectDefinition({
+					objectFields,
+					status: {code: 0},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+
+			const userAccount =
+				await apiHelpers.headlessAdminUser.postUserAccount();
+
+			const objectRelationshipAPIClient =
+				await apiHelpers.buildRestClient(ObjectRelationshipAPI);
+
+			const objectRelationshipName =
+				'objectRelationshipName' + Math.floor(Math.random() * 99);
+
+			const {body: objectRelationship} =
+				await objectRelationshipAPIClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
+					'L_USER',
+					{
+						label: {en_US: 'Relationship'},
+						name: objectRelationshipName,
+						objectDefinitionExternalReferenceCode1: 'L_USER',
+						objectDefinitionExternalReferenceCode2:
+							objectDefinition.externalReferenceCode,
+						objectDefinitionId2: objectDefinition.id,
+						objectDefinitionName2: objectDefinition.name,
+						type: 'oneToMany',
+					}
+				);
+
+			apiHelpers.data.push({
+				id: objectRelationship.id,
+				type: 'objectRelationship',
+			});
+
+			const textFieldName = objectFields[0].name;
+
+			const entryA = await apiHelpers.objectEntry.postObjectEntry(
+				{[textFieldName]: 'Entry A'},
+				`c/${objectDefinition.name.toLowerCase()}s`
+			);
+
+			const entryB = await apiHelpers.objectEntry.postObjectEntry(
+				{[textFieldName]: 'Entry B'},
+				`c/${objectDefinition.name.toLowerCase()}s`
+			);
+
+			expect(entryA.id).toBeTruthy();
+			expect(entryB.id).toBeTruthy();
+
+			for (const entryLabel of ['Entry A', 'Entry B']) {
+				await viewObjectEntriesPage.goto(objectDefinition.className);
+
+				await page
+					.getByRole('row', {name: new RegExp(entryLabel)})
+					.getByRole('button', {name: 'Actions'})
+					.first()
+					.click();
+
+				await viewObjectEntriesPage.frontendDatasetViewAction.click();
+
+				await viewObjectEntriesPage.editObjectEntryForm.waitFor({
+					state: 'visible',
+				});
+
+				await page.getByPlaceholder('Search').click();
+
+				await page
+					.getByRole('menuitem', {name: userAccount.givenName})
+					.click();
+
+				await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+				await expect(
+					viewObjectEntriesPage.successMessage
+				).toBeVisible();
+
+				expect(
+					(
+						await page.getByPlaceholder('Search').inputValue()
+					).toLowerCase()
+				).toBe(userAccount.givenName.toLowerCase());
+			}
+		}
+	);
 
 	test('can only see entries from their own account', async ({
 		apiHelpers,
@@ -4230,7 +4627,9 @@ test.describe('Manage object entries through View Object Entries', () => {
 		await viewObjectEntriesPage.goto(objectDefinition.className);
 
 		await expect(
-			page.getByText('Add ' + objectDefinition.label.en_US)
+			page
+				.getByTestId('managementToolbar')
+				.locator('[data-testid="fdsCreationActionButton"]')
 		).toBeVisible();
 
 		await expect(
@@ -5101,6 +5500,118 @@ test.describe('Manage object entries through View Object Entries', () => {
 		}
 	);
 
+	test(
+		'shows an error when entering an email address with a blocked domain',
+		{tag: ['@LPD-70673']},
+		async ({apiHelpers, page, viewObjectEntriesPage}) => {
+			const blockedDomain = '@yahoo.com';
+
+			let objectDefinition: ObjectDefinition;
+			let objectFields: ObjectField[];
+
+			await test.step('Create an object definition with a blocked domain', async () => {
+				objectFields = generateObjectFields({
+					objectFieldBusinessTypes: [
+						{
+							businessType: 'EmailAddress',
+							objectFieldSettings: [
+								{
+									name: 'blockedDomains',
+									value: blockedDomain,
+								},
+							],
+						},
+					],
+				});
+
+				objectDefinition =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						objectFields,
+						status: {code: 0},
+					});
+
+				apiHelpers.data.push({
+					id: objectDefinition.id,
+					type: 'objectDefinition',
+				});
+			});
+
+			await test.step('Navigate and attempt to save an entry with the blocked domain', async () => {
+				await viewObjectEntriesPage.goto(objectDefinition.className);
+
+				await viewObjectEntriesPage.clickAddObjectEntry(
+					objectDefinition.label['en_US']
+				);
+
+				await page
+					.getByLabel(objectFields[0].label.en_US)
+					.fill(`user${blockedDomain}`);
+
+				await viewObjectEntriesPage.saveObjectEntryButton.click();
+			});
+
+			await test.step('Verify the blocked domain error is shown', async () => {
+				await expect(
+					page.getByText(
+						'The email address domain is not allowed. Enter an email address with a different domain.'
+					)
+				).toBeVisible();
+			});
+		}
+	);
+
+	test(
+		'shows an error when entering an invalid email',
+		{tag: ['@LPD-70673']},
+		async ({apiHelpers, page, viewObjectEntriesPage}) => {
+			const invalidEmailAddress = 'user@liferay';
+
+			let objectDefinition: ObjectDefinition;
+			let objectFields: ObjectField[];
+
+			await test.step('Create an object definition with a blocked domain', async () => {
+				objectFields = generateObjectFields({
+					objectFieldBusinessTypes: [
+						{
+							businessType: 'EmailAddress',
+						},
+					],
+				});
+
+				objectDefinition =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						objectFields,
+						status: {code: 0},
+					});
+
+				apiHelpers.data.push({
+					id: objectDefinition.id,
+					type: 'objectDefinition',
+				});
+			});
+
+			await test.step('Navigate and attempt to save an entry with the invalid email', async () => {
+				await viewObjectEntriesPage.goto(objectDefinition.className);
+
+				await viewObjectEntriesPage.clickAddObjectEntry(
+					objectDefinition.label['en_US']
+				);
+
+				await page
+					.getByLabel(objectFields[0].label.en_US)
+					.fill(invalidEmailAddress);
+
+				await viewObjectEntriesPage.saveObjectEntryButton.click();
+			});
+
+			await test.step('Verify the invalid email error is shown', async () => {
+				await expect(
+					page.getByText('Please enter a valid email address.')
+				).toBeVisible();
+			});
+		}
+	);
+
 	test('verify that relationship API is called only once and uses pagination when adding object entry', async ({
 		apiHelpers,
 		page,
@@ -5422,64 +5933,34 @@ test.describe('Manage object entries through View Object Entries', () => {
 		'can add an entry with phone number object field where prefix type is defined by user',
 		{tag: ['@LPD-83570']},
 		async ({apiHelpers, page, viewObjectEntriesPage}) => {
-			const localNumber = '1231231234';
-			const objectFieldLabel = `phoneNumber${getRandomInt()}`;
+			const localNumber = '8775433729';
 			const prefix = '+1';
 
-			const fieldContainer = page.locator(
-				`[data-field-name="${objectFieldLabel}"]`
-			);
+			const objectFields = generateObjectFields({
+				objectFieldBusinessTypes: [
+					{
+						businessType: 'PhoneNumber',
+						required: true,
+					},
+				],
+			});
+
+			const objectFieldLabel = objectFields[0].label!['en_US'];
+
+			const fieldContainer = page.getByRole('group', {
+				name: objectFieldLabel,
+			});
+
+			const phoneNumberInput = fieldContainer.getByLabel('Phone Number');
 
 			let objectDefinition: ObjectDefinition;
 
 			await test.step('Create an object definition', async () => {
-				const objectDefinitionAPIClient =
-					await apiHelpers.buildRestClient(ObjectDefinitionAPI);
-
-				const response =
-					await objectDefinitionAPIClient.postObjectDefinition({
-						active: true,
-						externalReferenceCode: getRandomString(),
-						label: {
-							en_US: getRandomString(),
-						},
-						name: 'ObjectDefinitionName' + getRandomInt(),
-						objectFields: [
-							{
-								DBType: 'String' as const,
-								businessType: 'PhoneNumber' as const,
-								indexedAsKeyword: false,
-								indexedLanguageId: '',
-								label: {en_US: objectFieldLabel},
-								localized: false,
-								name: objectFieldLabel,
-								objectFieldSettings: [
-									{
-										name: 'prefixType',
-										value: 'definedByUser',
-									},
-								] as any,
-								readOnly: 'false',
-								readOnlyConditionExpression: '',
-								required: false,
-								state: false,
-								system: false,
-								type: 'String' as const,
-								unique: false,
-							},
-						],
-						panelCategoryKey: 'control_panel.object',
-						pluralLabel: {
-							en_US: 'NewObject',
-						},
-						portlet: true,
-						scope: 'company',
-						status: {
-							code: 0,
-						},
+				objectDefinition =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						objectFields,
+						status: {code: 0},
 					});
-
-				objectDefinition = response.body;
 
 				apiHelpers.data.push({
 					id: objectDefinition.id,
@@ -5495,16 +5976,51 @@ test.describe('Manage object entries through View Object Entries', () => {
 				);
 			});
 
+			await test.step('Verify the validation error messages are displayed', async () => {
+				const formGroup = page.locator('.form-group', {
+					has: fieldContainer,
+				});
+
+				const formatErrorMessage = formGroup.getByText(
+					'Please enter a valid phone number.'
+				);
+				const requiredErrorMessage = formGroup.getByText(
+					'This field is required.'
+				);
+
+				await phoneNumberInput.focus();
+
+				await phoneNumberInput.blur();
+
+				await expect(requiredErrorMessage).toBeVisible();
+
+				await page.reload();
+
+				await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+				await expect(requiredErrorMessage).toBeVisible();
+
+				await phoneNumberInput.fill('1');
+
+				await phoneNumberInput.blur();
+
+				await expect(formatErrorMessage).toBeVisible();
+
+				await phoneNumberInput.clear();
+
+				await expect(formatErrorMessage).not.toBeVisible();
+
+				await expect(requiredErrorMessage).toBeVisible();
+			});
+
 			await test.step('Select the "United States" prefix, fill the phone number field, and save the entry', async () => {
-				await fieldContainer.getByRole('combobox').click();
+				await fieldContainer.getByLabel('Country Code').click();
 
 				await page.getByRole('option', {name: /United States/}).click();
 
 				await expect(fieldContainer.getByText(prefix)).toBeVisible();
 
-				await fieldContainer
-					.locator('input[type="tel"]')
-					.fill(localNumber);
+				await phoneNumberInput.fill(localNumber);
 
 				await viewObjectEntriesPage.saveObjectEntryButton.click();
 
@@ -5520,83 +6036,68 @@ test.describe('Manage object entries through View Object Entries', () => {
 					.first()
 					.click();
 
-				await expect(fieldContainer.getByRole('combobox')).toHaveText(
-					prefix
-				);
-
 				await expect(
-					fieldContainer.locator('input[type="tel"]')
-				).toHaveValue(localNumber);
+					fieldContainer.getByLabel('Country Code')
+				).toHaveText(prefix);
+
+				await expect(phoneNumberInput).toHaveValue(localNumber);
+			});
+
+			await test.step('Verify that the country code icon is correct for the local number entered', async () => {
+				await expect(
+					fieldContainer
+						.getByLabel('Country Code')
+						.locator('.lexicon-icon-en-us')
+				).toBeVisible();
 			});
 		}
 	);
 
 	test(
-		'can add an entry with phone number object field where prefix type is fixed',
-		{tag: ['@LPD-83570']},
+		'can add an entry with phone number object field where country source is fixed',
+		{tag: ['@LPD-83570', '@LPD-91322']},
 		async ({apiHelpers, page, viewObjectEntriesPage}) => {
+			const country = 'US';
 			const localNumber = '11987654321';
-			const objectFieldLabel = `phoneNumber${getRandomInt()}`;
 			const prefix = '+1';
 
-			const fieldContainer = page.locator(
-				`[data-field-name="${objectFieldLabel}"]`
-			);
+			const objectFields = generateObjectFields({
+				objectFieldBusinessTypes: [
+					{
+						businessType: 'PhoneNumber',
+						objectFieldSettings: [
+							{
+								name: 'countrySource',
+								value: 'fixed',
+							},
+							{
+								name: 'country',
+								value: country,
+							},
+						],
+						required: true,
+					},
+				],
+			});
+
+			const objectFieldLabel = objectFields[0].label!['en_US'];
+
+			const fieldContainer = page.getByRole('group', {
+				name: objectFieldLabel,
+			});
+
+			const phoneNumberInput = fieldContainer.getByLabel('Phone Number');
+
+			const usFlagIcon = fieldContainer.locator('svg.lexicon-icon-en-us');
 
 			let objectDefinition: ObjectDefinition;
 
 			await test.step('Create an object definition', async () => {
-				const objectDefinitionAPIClient =
-					await apiHelpers.buildRestClient(ObjectDefinitionAPI);
-
-				const response =
-					await objectDefinitionAPIClient.postObjectDefinition({
-						active: true,
-						externalReferenceCode: getRandomString(),
-						label: {
-							en_US: getRandomString(),
-						},
-						name: 'ObjectDefinitionName' + getRandomInt(),
-						objectFields: [
-							{
-								DBType: 'String' as const,
-								businessType: 'PhoneNumber' as const,
-								indexedAsKeyword: false,
-								indexedLanguageId: '',
-								label: {en_US: objectFieldLabel},
-								localized: false,
-								name: objectFieldLabel,
-								objectFieldSettings: [
-									{
-										name: 'prefixType',
-										value: 'fixed',
-									},
-									{
-										name: 'prefix',
-										value: prefix,
-									},
-								] as any,
-								readOnly: 'false',
-								readOnlyConditionExpression: '',
-								required: false,
-								state: false,
-								system: false,
-								type: 'String' as const,
-								unique: false,
-							},
-						],
-						panelCategoryKey: 'control_panel.object',
-						pluralLabel: {
-							en_US: 'NewObject',
-						},
-						portlet: true,
-						scope: 'company',
-						status: {
-							code: 0,
-						},
+				objectDefinition =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						objectFields,
+						status: {code: 0},
 					});
-
-				objectDefinition = response.body;
 
 				apiHelpers.data.push({
 					id: objectDefinition.id,
@@ -5612,12 +6113,49 @@ test.describe('Manage object entries through View Object Entries', () => {
 				);
 			});
 
+			await test.step('Verify the validation error messages are displayed', async () => {
+				const formGroup = page.locator('.form-group', {
+					has: fieldContainer,
+				});
+
+				const formatErrorMessage = formGroup.getByText(
+					'Please enter a valid phone number.'
+				);
+				const requiredErrorMessage = formGroup.getByText(
+					'This field is required.'
+				);
+
+				await phoneNumberInput.focus();
+
+				await phoneNumberInput.blur();
+
+				await expect(requiredErrorMessage).toBeVisible();
+
+				await page.reload();
+
+				await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+				await expect(requiredErrorMessage).toBeVisible();
+
+				await phoneNumberInput.fill('1');
+
+				await phoneNumberInput.blur();
+
+				await expect(formatErrorMessage).toBeVisible();
+
+				await phoneNumberInput.clear();
+
+				await expect(formatErrorMessage).not.toBeVisible();
+
+				await expect(requiredErrorMessage).toBeVisible();
+			});
+
 			await test.step('Fill the phone number field and save the entry', async () => {
 				await expect(fieldContainer.getByText(prefix)).toBeVisible();
 
-				await fieldContainer
-					.locator('input[type="tel"]')
-					.fill(localNumber);
+				await expect(usFlagIcon).toBeVisible();
+
+				await phoneNumberInput.fill(localNumber);
 
 				await viewObjectEntriesPage.saveObjectEntryButton.click();
 
@@ -5635,9 +6173,9 @@ test.describe('Manage object entries through View Object Entries', () => {
 
 				await expect(fieldContainer.getByText(prefix)).toBeVisible();
 
-				await expect(
-					fieldContainer.locator('input[type="tel"]')
-				).toHaveValue(localNumber);
+				await expect(usFlagIcon).toBeVisible();
+
+				await expect(phoneNumberInput).toHaveValue(localNumber);
 			});
 		}
 	);
@@ -5959,6 +6497,124 @@ test.describe('Manage object entries through Workflow', () => {
 					'input[placeholder="__/__/____ __:__ _"][value="10/05/2025 09:00 AM"]'
 				)
 			).toHaveValue('10/05/2025 09:00 AM');
+		}
+	);
+});
+
+test.describe('Manage object entries with custom Object Layout', () => {
+	test(
+		'verify that friendly URL is preserved when updating an entry through a custom layout without the Friendly URL field',
+		{tag: ['@LPD-90363']},
+		async ({
+			apiHelpers,
+			objectLayoutsPage,
+			page,
+			viewObjectEntriesPage,
+		}) => {
+			test.slow();
+
+			const objectDefinitionLabel =
+				'ObjectDefinitionLabel' + getRandomInt();
+			const objectDefinitionName =
+				'ObjectDefinitionName' + getRandomInt();
+
+			const objectFields = generateObjectFields({
+				objectFieldBusinessTypes: ['Text'],
+			});
+
+			const objectField = objectFields[0];
+
+			const objectDefinitionAPIClient =
+				await apiHelpers.buildRestClient(ObjectDefinitionAPI);
+
+			const {body: objectDefinition} =
+				await objectDefinitionAPIClient.postObjectDefinition({
+					active: true,
+					enableFriendlyURLCustomization: true,
+					label: {
+						en_US: objectDefinitionLabel,
+					},
+					name: objectDefinitionName,
+					objectFields,
+					pluralLabel: {
+						en_US: objectDefinitionLabel,
+					},
+					portlet: true,
+					scope: 'company',
+					status: {
+						code: 0,
+					},
+				});
+
+			apiHelpers.data.push({
+				id: objectDefinition.id,
+				type: 'objectDefinition',
+			});
+
+			const applicationName =
+				'c/' + objectDefinition.name.toLowerCase() + 's';
+
+			const preservedURL = 'preserved-url';
+
+			const objectEntry = await apiHelpers.objectEntry.postObjectEntry(
+				{friendlyUrlPath: preservedURL},
+				applicationName
+			);
+
+			await objectLayoutsPage.goto(objectDefinitionLabel);
+
+			const objectLayoutName = getRandomString();
+
+			await objectLayoutsPage.createObjectLayout(objectLayoutName);
+
+			await page.getByRole('link', {name: objectLayoutName}).click();
+
+			await objectLayoutsPage.markAsDefaultButton.check();
+
+			await objectLayoutsPage.layoutTab.click();
+
+			await objectLayoutsPage.createObjectLayoutTab(getRandomString());
+
+			await objectLayoutsPage.createObjectLayoutBlock({
+				objectLayoutRegularBlockName: getRandomString(),
+			});
+
+			await objectLayoutsPage.openObjectLayoutObjectField();
+
+			await objectLayoutsPage.iframeLocator
+				.getByRole('option', {name: objectField.label.en_US})
+				.click();
+
+			await objectLayoutsPage.saveAddFieldButton.click();
+
+			await objectLayoutsPage.saveUpdateLayoutButton.click();
+
+			await viewObjectEntriesPage.goto(objectDefinition.className);
+
+			await page
+				.getByRole('link', {name: String(objectEntry.id)})
+				.click();
+
+			await expect(page.getByLabel('Friendly URL')).not.toBeVisible();
+
+			await page
+				.getByLabel(objectField.label.en_US)
+				.fill('updated value');
+
+			await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+			await expect(viewObjectEntriesPage.successMessage).toBeVisible();
+
+			const updatedEntry =
+				await apiHelpers.objectEntry.getObjectEntryByExternalReferenceCode(
+					{
+						applicationName,
+						externalReferenceCode:
+							objectEntry.externalReferenceCode,
+					}
+				);
+
+			expect(updatedEntry.friendlyUrlPath).toBe(preservedURL);
 		}
 	);
 });

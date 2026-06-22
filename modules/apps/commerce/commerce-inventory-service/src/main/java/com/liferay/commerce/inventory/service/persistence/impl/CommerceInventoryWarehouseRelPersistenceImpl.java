@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -80,79 +79,15 @@ public class CommerceInventoryWarehouseRelPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath
-		_finderPathWithPaginationFindByCommerceInventoryWarehouseId;
-	private FinderPath
-		_finderPathWithoutPaginationFindByCommerceInventoryWarehouseId;
-	private FinderPath _finderPathCountByCommerceInventoryWarehouseId;
-	private CollectionPersistenceFinder<CommerceInventoryWarehouseRel>
-		_collectionPersistenceFinderByCommerceInventoryWarehouseId;
-
-	/**
-	 * Returns all the commerce inventory warehouse rels where commerceInventoryWarehouseId = &#63;.
-	 *
-	 * @param commerceInventoryWarehouseId the commerce inventory warehouse ID
-	 * @return the matching commerce inventory warehouse rels
-	 */
-	@Override
-	public List<CommerceInventoryWarehouseRel>
-		findByCommerceInventoryWarehouseId(long commerceInventoryWarehouseId) {
-
-		return findByCommerceInventoryWarehouseId(
-			commerceInventoryWarehouseId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouse rels where commerceInventoryWarehouseId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceInventoryWarehouseId the commerce inventory warehouse ID
-	 * @param start the lower bound of the range of commerce inventory warehouse rels
-	 * @param end the upper bound of the range of commerce inventory warehouse rels (not inclusive)
-	 * @return the range of matching commerce inventory warehouse rels
-	 */
-	@Override
-	public List<CommerceInventoryWarehouseRel>
-		findByCommerceInventoryWarehouseId(
-			long commerceInventoryWarehouseId, int start, int end) {
-
-		return findByCommerceInventoryWarehouseId(
-			commerceInventoryWarehouseId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceInventoryWarehouseRel, NoSuchInventoryWarehouseRelException>
+			_collectionPersistenceFinderByCommerceInventoryWarehouseId;
 
 	/**
 	 * Returns an ordered range of all the commerce inventory warehouse rels where commerceInventoryWarehouseId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param commerceInventoryWarehouseId the commerce inventory warehouse ID
-	 * @param start the lower bound of the range of commerce inventory warehouse rels
-	 * @param end the upper bound of the range of commerce inventory warehouse rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce inventory warehouse rels
-	 */
-	@Override
-	public List<CommerceInventoryWarehouseRel>
-		findByCommerceInventoryWarehouseId(
-			long commerceInventoryWarehouseId, int start, int end,
-			OrderByComparator<CommerceInventoryWarehouseRel>
-				orderByComparator) {
-
-		return findByCommerceInventoryWarehouseId(
-			commerceInventoryWarehouseId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce inventory warehouse rels where commerceInventoryWarehouseId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param commerceInventoryWarehouseId the commerce inventory warehouse ID
@@ -190,19 +125,10 @@ public class CommerceInventoryWarehouseRelPersistenceImpl
 					orderByComparator)
 		throws NoSuchInventoryWarehouseRelException {
 
-		CommerceInventoryWarehouseRel commerceInventoryWarehouseRel =
-			fetchByCommerceInventoryWarehouseId_First(
-				commerceInventoryWarehouseId, orderByComparator);
-
-		if (commerceInventoryWarehouseRel != null) {
-			return commerceInventoryWarehouseRel;
-		}
-
-		throw new NoSuchInventoryWarehouseRelException(
-			_collectionPersistenceFinderByCommerceInventoryWarehouseId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {commerceInventoryWarehouseId}));
+		return _collectionPersistenceFinderByCommerceInventoryWarehouseId.
+			findFirst(
+				finderCache, new Object[] {commerceInventoryWarehouseId},
+				orderByComparator);
 	}
 
 	/**
@@ -252,79 +178,15 @@ public class CommerceInventoryWarehouseRelPersistenceImpl
 			finderCache, new Object[] {commerceInventoryWarehouseId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<CommerceInventoryWarehouseRel>
-		_collectionPersistenceFinderByC_C;
-
-	/**
-	 * Returns all the commerce inventory warehouse rels where classNameId = &#63; and commerceInventoryWarehouseId = &#63;.
-	 *
-	 * @param classNameId the class name ID
-	 * @param commerceInventoryWarehouseId the commerce inventory warehouse ID
-	 * @return the matching commerce inventory warehouse rels
-	 */
-	@Override
-	public List<CommerceInventoryWarehouseRel> findByC_C(
-		long classNameId, long commerceInventoryWarehouseId) {
-
-		return findByC_C(
-			classNameId, commerceInventoryWarehouseId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the commerce inventory warehouse rels where classNameId = &#63; and commerceInventoryWarehouseId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param commerceInventoryWarehouseId the commerce inventory warehouse ID
-	 * @param start the lower bound of the range of commerce inventory warehouse rels
-	 * @param end the upper bound of the range of commerce inventory warehouse rels (not inclusive)
-	 * @return the range of matching commerce inventory warehouse rels
-	 */
-	@Override
-	public List<CommerceInventoryWarehouseRel> findByC_C(
-		long classNameId, long commerceInventoryWarehouseId, int start,
-		int end) {
-
-		return findByC_C(
-			classNameId, commerceInventoryWarehouseId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<CommerceInventoryWarehouseRel, NoSuchInventoryWarehouseRelException>
+			_collectionPersistenceFinderByC_C;
 
 	/**
 	 * Returns an ordered range of all the commerce inventory warehouse rels where classNameId = &#63; and commerceInventoryWarehouseId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classNameId the class name ID
-	 * @param commerceInventoryWarehouseId the commerce inventory warehouse ID
-	 * @param start the lower bound of the range of commerce inventory warehouse rels
-	 * @param end the upper bound of the range of commerce inventory warehouse rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching commerce inventory warehouse rels
-	 */
-	@Override
-	public List<CommerceInventoryWarehouseRel> findByC_C(
-		long classNameId, long commerceInventoryWarehouseId, int start, int end,
-		OrderByComparator<CommerceInventoryWarehouseRel> orderByComparator) {
-
-		return findByC_C(
-			classNameId, commerceInventoryWarehouseId, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the commerce inventory warehouse rels where classNameId = &#63; and commerceInventoryWarehouseId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>CommerceInventoryWarehouseRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classNameId the class name ID
@@ -362,18 +224,10 @@ public class CommerceInventoryWarehouseRelPersistenceImpl
 			OrderByComparator<CommerceInventoryWarehouseRel> orderByComparator)
 		throws NoSuchInventoryWarehouseRelException {
 
-		CommerceInventoryWarehouseRel commerceInventoryWarehouseRel =
-			fetchByC_C_First(
-				classNameId, commerceInventoryWarehouseId, orderByComparator);
-
-		if (commerceInventoryWarehouseRel != null) {
-			return commerceInventoryWarehouseRel;
-		}
-
-		throw new NoSuchInventoryWarehouseRelException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {classNameId, commerceInventoryWarehouseId}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			finderCache,
+			new Object[] {classNameId, commerceInventoryWarehouseId},
+			orderByComparator);
 	}
 
 	/**
@@ -424,9 +278,9 @@ public class CommerceInventoryWarehouseRelPersistenceImpl
 			new Object[] {classNameId, commerceInventoryWarehouseId});
 	}
 
-	private FinderPath _finderPathFetchByC_C_CIWI;
-	private UniquePersistenceFinder<CommerceInventoryWarehouseRel>
-		_uniquePersistenceFinderByC_C_CIWI;
+	private UniquePersistenceFinder
+		<CommerceInventoryWarehouseRel, NoSuchInventoryWarehouseRelException>
+			_uniquePersistenceFinderByC_C_CIWI;
 
 	/**
 	 * Returns the commerce inventory warehouse rel where classNameId = &#63; and classPK = &#63; and commerceInventoryWarehouseId = &#63; or throws a <code>NoSuchInventoryWarehouseRelException</code> if it could not be found.
@@ -442,41 +296,9 @@ public class CommerceInventoryWarehouseRelPersistenceImpl
 			long classNameId, long classPK, long commerceInventoryWarehouseId)
 		throws NoSuchInventoryWarehouseRelException {
 
-		CommerceInventoryWarehouseRel commerceInventoryWarehouseRel =
-			fetchByC_C_CIWI(classNameId, classPK, commerceInventoryWarehouseId);
-
-		if (commerceInventoryWarehouseRel == null) {
-			String message =
-				_uniquePersistenceFinderByC_C_CIWI.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {
-						classNameId, classPK, commerceInventoryWarehouseId
-					});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchInventoryWarehouseRelException(message);
-		}
-
-		return commerceInventoryWarehouseRel;
-	}
-
-	/**
-	 * Returns the commerce inventory warehouse rel where classNameId = &#63; and classPK = &#63; and commerceInventoryWarehouseId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param commerceInventoryWarehouseId the commerce inventory warehouse ID
-	 * @return the matching commerce inventory warehouse rel, or <code>null</code> if a matching commerce inventory warehouse rel could not be found
-	 */
-	@Override
-	public CommerceInventoryWarehouseRel fetchByC_C_CIWI(
-		long classNameId, long classPK, long commerceInventoryWarehouseId) {
-
-		return fetchByC_C_CIWI(
-			classNameId, classPK, commerceInventoryWarehouseId, true);
+		return _uniquePersistenceFinderByC_C_CIWI.find(
+			finderCache,
+			new Object[] {classNameId, classPK, commerceInventoryWarehouseId});
 	}
 
 	/**
@@ -771,108 +593,97 @@ public class CommerceInventoryWarehouseRelPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByCommerceInventoryWarehouseId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-				"findByCommerceInventoryWarehouseId",
-				new String[] {
-					Long.class.getName(), Integer.class.getName(),
-					Integer.class.getName(), OrderByComparator.class.getName()
-				},
-				new String[] {"CIWarehouseId"}, true);
-
-		_finderPathWithoutPaginationFindByCommerceInventoryWarehouseId =
-			new FinderPath(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findByCommerceInventoryWarehouseId",
-				new String[] {Long.class.getName()},
-				new String[] {"CIWarehouseId"}, true);
-
-		_finderPathCountByCommerceInventoryWarehouseId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByCommerceInventoryWarehouseId",
-			new String[] {Long.class.getName()}, new String[] {"CIWarehouseId"},
-			false);
-
 		_collectionPersistenceFinderByCommerceInventoryWarehouseId =
 			new CollectionPersistenceFinder<>(
 				this,
-				_finderPathWithPaginationFindByCommerceInventoryWarehouseId,
-				_finderPathWithoutPaginationFindByCommerceInventoryWarehouseId,
-				_finderPathCountByCommerceInventoryWarehouseId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByCommerceInventoryWarehouseId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"CIWarehouseId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByCommerceInventoryWarehouseId",
+					new String[] {Long.class.getName()},
+					new String[] {"CIWarehouseId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCommerceInventoryWarehouseId",
+					new String[] {Long.class.getName()},
+					new String[] {"CIWarehouseId"}, false),
 				_SQL_SELECT_COMMERCEINVENTORYWAREHOUSEREL_WHERE,
 				_SQL_COUNT_COMMERCEINVENTORYWAREHOUSEREL_WHERE,
 				CommerceInventoryWarehouseRelModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"commerceInventoryWarehouseRel.",
-					"commerceInventoryWarehouseId", FinderColumn.Type.LONG, "=",
-					true, true,
+					"commerceInventoryWarehouseId", "CIWarehouseId",
+					FinderColumn.Type.LONG, "=", true, true,
 					CommerceInventoryWarehouseRel::
 						getCommerceInventoryWarehouseId));
 
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"classNameId", "CIWarehouseId"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "CIWarehouseId"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"classNameId", "CIWarehouseId"}, false);
-
 		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"classNameId", "CIWarehouseId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "CIWarehouseId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"classNameId", "CIWarehouseId"}, false),
 			_SQL_SELECT_COMMERCEINVENTORYWAREHOUSEREL_WHERE,
 			_SQL_COUNT_COMMERCEINVENTORYWAREHOUSEREL_WHERE,
 			CommerceInventoryWarehouseRelModelImpl.ORDER_BY_JPQL,
-			_ENTITY_ALIAS_PREFIX,
+			_ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"commerceInventoryWarehouseRel.", "classNameId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CommerceInventoryWarehouseRel::getClassNameId),
 			new FinderColumn<>(
 				"commerceInventoryWarehouseRel.",
-				"commerceInventoryWarehouseId", FinderColumn.Type.LONG, "=",
-				true, true,
+				"commerceInventoryWarehouseId", "CIWarehouseId",
+				FinderColumn.Type.LONG, "=", true, true,
 				CommerceInventoryWarehouseRel::
 					getCommerceInventoryWarehouseId));
 
-		_finderPathFetchByC_C_CIWI = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_C_CIWI",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"classNameId", "classPK", "CIWarehouseId"}, false,
-			CommerceInventoryWarehouseRel::getClassNameId,
-			CommerceInventoryWarehouseRel::getClassPK,
-			CommerceInventoryWarehouseRel::getCommerceInventoryWarehouseId);
-
 		_uniquePersistenceFinderByC_C_CIWI = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByC_C_CIWI,
-			_SQL_SELECT_COMMERCEINVENTORYWAREHOUSEREL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByC_C_CIWI",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"classNameId", "classPK", "CIWarehouseId"}, 0, 0,
+				false, CommerceInventoryWarehouseRel::getClassNameId,
+				CommerceInventoryWarehouseRel::getClassPK,
+				CommerceInventoryWarehouseRel::getCommerceInventoryWarehouseId),
+			_SQL_SELECT_COMMERCEINVENTORYWAREHOUSEREL_WHERE, "",
 			new FinderColumn<>(
 				"commerceInventoryWarehouseRel.", "classNameId",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CommerceInventoryWarehouseRel::getClassNameId),
 			new FinderColumn<>(
 				"commerceInventoryWarehouseRel.", "classPK",
-				FinderColumn.Type.LONG, "=", true, false,
+				FinderColumn.Type.LONG, "=", true, true,
 				CommerceInventoryWarehouseRel::getClassPK),
 			new FinderColumn<>(
 				"commerceInventoryWarehouseRel.",
-				"commerceInventoryWarehouseId", FinderColumn.Type.LONG, "=",
-				true, true,
+				"commerceInventoryWarehouseId", "CIWarehouseId",
+				FinderColumn.Type.LONG, "=", true, true,
 				CommerceInventoryWarehouseRel::
 					getCommerceInventoryWarehouseId));
 
@@ -949,4 +760,4 @@ public class CommerceInventoryWarehouseRelPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:811056374
+// LIFERAY-SERVICE-BUILDER-HASH:1538668945

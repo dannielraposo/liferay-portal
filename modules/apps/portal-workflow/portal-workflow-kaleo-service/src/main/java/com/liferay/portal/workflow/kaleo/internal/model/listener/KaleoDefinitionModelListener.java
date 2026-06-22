@@ -13,7 +13,10 @@ import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
+import com.liferay.portal.workflow.kaleo.definition.constants.WorkflowDefinitionDestinationNames;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinition;
+
+import java.util.Date;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -29,25 +32,28 @@ public class KaleoDefinitionModelListener
 	public void onAfterCreate(KaleoDefinition kaleoDefinition)
 		throws ModelListenerException {
 
-		TransactionCommitCallbackUtil.registerCallback(
-			() -> {
-				Message message = new Message();
-
-				message.put("command", "create");
-				message.put("name", kaleoDefinition.getName());
-				message.put(
-					"serviceContext", getServiceContext(kaleoDefinition));
-				message.put("version", kaleoDefinition.getVersion());
-
-				_messageBus.sendMessage("liferay/kaleo_definition", message);
-
-				return null;
-			});
+		_sendMessage("ADD", kaleoDefinition, null);
 	}
 
 	@Override
 	public void onAfterRemove(KaleoDefinition kaleoDefinition)
 		throws ModelListenerException {
+
+		_sendMessage("DELETE", kaleoDefinition, null);
+	}
+
+	@Override
+	public void onAfterUpdate(
+			KaleoDefinition originalKaleoDefinition,
+			KaleoDefinition kaleoDefinition)
+		throws ModelListenerException {
+
+		_sendMessage("UPDATE", kaleoDefinition, originalKaleoDefinition);
+	}
+
+	private void _sendMessage(
+		String eventType, KaleoDefinition kaleoDefinition,
+		KaleoDefinition originalKaleoDefinition) {
 
 		if (kaleoDefinition == null) {
 			return;
@@ -58,14 +64,35 @@ public class KaleoDefinitionModelListener
 				try {
 					Message message = new Message();
 
-					message.put("command", "delete");
+					message.put("createDate", new Date());
+					message.put("eventType", eventType);
+					message.put("kaleoDefinition", kaleoDefinition);
 					message.put("name", kaleoDefinition.getName());
 					message.put(
-						"serviceContext", getServiceContext(kaleoDefinition));
+						"originalKaleoDefinition", originalKaleoDefinition);
+					message.put("scope", kaleoDefinition.getScope());
+
+					ServiceContext serviceContext =
+						ServiceContextThreadLocal.getServiceContext();
+
+					if (serviceContext == null) {
+						serviceContext = new ServiceContext();
+					}
+
+					serviceContext.setAddGroupPermissions(true);
+					serviceContext.setAddGuestPermissions(true);
+					serviceContext.setCompanyId(kaleoDefinition.getCompanyId());
+					serviceContext.setScopeGroupId(
+						kaleoDefinition.getGroupId());
+					serviceContext.setUserId(kaleoDefinition.getUserId());
+
+					message.put("serviceContext", serviceContext);
+
 					message.put("version", kaleoDefinition.getVersion());
 
 					_messageBus.sendMessage(
-						"liferay/kaleo_definition", message);
+						WorkflowDefinitionDestinationNames.WORKFLOW_DEFINITION,
+						message);
 				}
 				catch (Exception exception) {
 					throw new ModelListenerException(exception);
@@ -73,25 +100,6 @@ public class KaleoDefinitionModelListener
 
 				return null;
 			});
-	}
-
-	protected ServiceContext getServiceContext(
-		KaleoDefinition kaleoDefinition) {
-
-		ServiceContext serviceContext =
-			ServiceContextThreadLocal.getServiceContext();
-
-		if (serviceContext == null) {
-			serviceContext = new ServiceContext();
-		}
-
-		serviceContext.setAddGroupPermissions(true);
-		serviceContext.setAddGuestPermissions(true);
-		serviceContext.setCompanyId(kaleoDefinition.getCompanyId());
-		serviceContext.setScopeGroupId(kaleoDefinition.getGroupId());
-		serviceContext.setUserId(kaleoDefinition.getUserId());
-
-		return serviceContext;
 	}
 
 	@Reference

@@ -6,6 +6,7 @@
 package com.liferay.site.cms.site.initializer.internal.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.depot.constants.DepotRolesConstants;
 import com.liferay.object.constants.ObjectActionKeys;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
@@ -15,6 +16,7 @@ import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectFolder;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectFolderLocalService;
+import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.role.RoleConstants;
@@ -71,6 +73,25 @@ public class CMSPermissionsObjectDefinitionLocalServiceWrapperTest {
 			ObjectFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENT_STRUCTURES);
 		_testPublishCustomObjectDefinition(
 			ObjectFolderConstants.EXTERNAL_REFERENCE_CODE_FILE_TYPES);
+	}
+
+	@Test
+	public void testPublishSystemObjectDefinition() throws Exception {
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				getObjectDefinitionByExternalReferenceCode(
+					"L_CMS_BASIC_WEB_CONTENT", TestPropsValues.getCompanyId());
+
+		_assertResourcePermission(
+			ActionKeys.VIEW, objectDefinition.getObjectDefinitionId(),
+			ObjectDefinition.class.getName(),
+			_roleLocalService.getRole(
+				TestPropsValues.getCompanyId(), RoleConstants.GUEST));
+		_assertResourcePermission(
+			ActionKeys.VIEW, objectDefinition.getObjectDefinitionId(),
+			ObjectDefinition.class.getName(),
+			_roleLocalService.getRole(
+				TestPropsValues.getCompanyId(), RoleConstants.USER));
 	}
 
 	private void _assertResourcePermission(
@@ -151,6 +172,32 @@ public class CMSPermissionsObjectDefinitionLocalServiceWrapperTest {
 				ResourceConstants.SCOPE_INDIVIDUAL,
 				String.valueOf(objectDefinition.getObjectDefinitionId()),
 				guestRole.getRoleId(), ActionKeys.VIEW));
+
+		Role assetLibraryAdministratorRole = _roleLocalService.getRole(
+			TestPropsValues.getCompanyId(),
+			DepotRolesConstants.ASSET_LIBRARY_ADMINISTRATOR);
+
+		Assert.assertFalse(
+			_resourcePermissionLocalService.hasResourcePermission(
+				TestPropsValues.getCompanyId(),
+				objectDefinition.getResourceName(),
+				ResourceConstants.SCOPE_GROUP_TEMPLATE,
+				String.valueOf(GroupConstants.DEFAULT_PARENT_GROUP_ID),
+				assetLibraryAdministratorRole.getRoleId(),
+				ObjectActionKeys.ADD_OBJECT_ENTRY));
+
+		Role assetLibraryContentReviewerRole = _roleLocalService.getRole(
+			TestPropsValues.getCompanyId(),
+			DepotRolesConstants.ASSET_LIBRARY_CONTENT_REVIEWER);
+
+		Assert.assertFalse(
+			_resourcePermissionLocalService.hasResourcePermission(
+				TestPropsValues.getCompanyId(),
+				objectDefinition.getResourceName(),
+				ResourceConstants.SCOPE_GROUP_TEMPLATE,
+				String.valueOf(GroupConstants.DEFAULT_PARENT_GROUP_ID),
+				assetLibraryContentReviewerRole.getRoleId(),
+				ObjectActionKeys.ADD_OBJECT_ENTRY));
 	}
 
 	private void _testPublishCustomObjectDefinition(
@@ -194,6 +241,32 @@ public class CMSPermissionsObjectDefinitionLocalServiceWrapperTest {
 			ObjectDefinition.class.getName(),
 			_roleLocalService.getRole(
 				TestPropsValues.getCompanyId(), RoleConstants.USER));
+
+		Role assetLibraryAdministratorRole = _roleLocalService.getRole(
+			TestPropsValues.getCompanyId(),
+			DepotRolesConstants.ASSET_LIBRARY_ADMINISTRATOR);
+
+		Assert.assertTrue(
+			_resourcePermissionLocalService.hasResourcePermission(
+				TestPropsValues.getCompanyId(),
+				objectDefinition.getResourceName(),
+				ResourceConstants.SCOPE_GROUP_TEMPLATE,
+				String.valueOf(GroupConstants.DEFAULT_PARENT_GROUP_ID),
+				assetLibraryAdministratorRole.getRoleId(),
+				ObjectActionKeys.ADD_OBJECT_ENTRY));
+
+		Role assetLibraryContentReviewerRole = _roleLocalService.getRole(
+			TestPropsValues.getCompanyId(),
+			DepotRolesConstants.ASSET_LIBRARY_CONTENT_REVIEWER);
+
+		Assert.assertTrue(
+			_resourcePermissionLocalService.hasResourcePermission(
+				TestPropsValues.getCompanyId(),
+				objectDefinition.getResourceName(),
+				ResourceConstants.SCOPE_GROUP_TEMPLATE,
+				String.valueOf(GroupConstants.DEFAULT_PARENT_GROUP_ID),
+				assetLibraryContentReviewerRole.getRoleId(),
+				ObjectActionKeys.ADD_OBJECT_ENTRY));
 	}
 
 	@Inject

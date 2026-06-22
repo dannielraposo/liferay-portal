@@ -24,6 +24,7 @@ import {systemSettingsPageTest} from '../../../fixtures/systemSettingsPageTest';
 import {uiElementsPageTest} from '../../../fixtures/uiElementsTest';
 import {webContentDisplayPageTest} from '../../../fixtures/webContentDisplayPageTest';
 import {workflowPagesTest} from '../../../fixtures/workflowPagesTest';
+import {liferayConfig} from '../../../liferay.config';
 import getRandomString from '../../../utils/getRandomString';
 import {normalizeRestPath} from '../../../utils/normalizeRestPath';
 import {reloadUntilVisible} from '../../../utils/reloadUntilVisible';
@@ -42,6 +43,7 @@ const test = mergeTests(
 	featureFlagsTest({
 		'LPD-35443': {enabled: true},
 		'LPD-39304': {enabled: true},
+		'LPD-76864': {enabled: true},
 	}),
 	loginTest(),
 	assetPublisherPagesTest,
@@ -644,7 +646,7 @@ test(
 			}
 		);
 
-		const correctUrl = `http://localhost:8080/documents/d${site.friendlyUrlPath}/${document.friendlyUrlPath}`;
+		const correctUrl = `${liferayConfig.environment.baseUrl}/documents/d${site.friendlyUrlPath}/${document.friendlyUrlPath}`;
 
 		const webContentContent = `<a href="${correctUrl}">Document</a>`;
 		const webcontentTitle = getRandomString();

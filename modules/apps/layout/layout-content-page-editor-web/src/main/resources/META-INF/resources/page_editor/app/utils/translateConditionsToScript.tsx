@@ -8,32 +8,24 @@ import {Condition} from '../../types/Rule';
 
 export function translateConditionsToScript(
 	conditions: Condition[],
-	conditionType: ConditionType
+	conditionType: ConditionType,
+	fieldTypes: Record<string, string> = {}
 ) {
 	const conditionScript = conditions.map((condition) => {
 		if (condition.type === 'field') {
-			let script = `${condition.field}`;
-
-			if (condition.options?.type === 'equal') {
-				script += ` == "${condition.options?.value || ''}"`;
-			}
-			else {
-				script += ` != "${condition.options?.value || ''}"`;
-			}
-
-			return script;
+			return toFieldComparison(
+				condition.field || '',
+				condition.options?.type,
+				condition.options?.value || '',
+				fieldTypes[condition.field || '']
+			);
 		}
 		else if (condition.type === 'form') {
-			let script = `input__${condition.field?.replaceAll('-', '_')}`;
-
-			if (condition.options?.type === 'equal') {
-				script += ` == "${condition.options?.value || ''}"`;
-			}
-			else {
-				script += ` != "${condition.options?.value || ''}"`;
-			}
-
-			return script;
+			return toFieldComparison(
+				`input__${condition.field?.replaceAll('-', '_')}`,
+				condition.options?.type,
+				condition.options?.value || ''
+			);
 		}
 		else if (condition.type === 'user') {
 			if (condition.field === 'role') {
@@ -67,5 +59,99 @@ export function translateConditionsToScript(
 	}
 	else {
 		return conditionScript.join(' OR ');
+	}
+}
+
+function toFieldComparison(
+	field: string,
+	type: NonNullable<Condition['options']>['type'] | undefined,
+	value: string | string[],
+	fieldType?: string
+) {
+	if (fieldType === 'multiselect') {
+		value = Array.isArray(value) ? value : [];
+
+		const containsAnyExpression = `(${value
+			.map((key) => `contains(${field}, "${key}")`)
+			.join(' OR ')})`;
+
+		if (type === 'contains') {
+			return containsAnyExpression;
+		}
+
+		if (type === 'does-not-contain') {
+			return `NOT(${containsAnyExpression})`;
+		}
+
+		const sortedJoinedValue = [...value].sort().join(',');
+
+		if (type === 'equal') {
+			return `${field} == "${sortedJoinedValue}"`;
+		}
+
+		if (type === 'not-equal') {
+			return `${field} != "${sortedJoinedValue}"`;
+		}
+	}
+
+	if (type === 'is-empty') {
+		return `isEmpty(${field})`;
+	}
+
+	if (type === 'is-not-empty') {
+		return `NOT(isEmpty(${field}))`;
+	}
+
+	if (type === 'contains') {
+		return `contains(${field}, "${value}")`;
+	}
+
+	if (type === 'does-not-contain') {
+		return `NOT(contains(${field}, "${value}"))`;
+	}
+
+	if (fieldType === 'number') {
+		const operator = toNumericOperator(type);
+
+		return `${field} ${operator} ${value || '0'}`;
+	}
+
+	if (type === 'greater-than') {
+		return `(futureDates(${field}, "${value}") AND ${field} != "${value}")`;
+	}
+
+	if (type === 'greater-than-or-equals') {
+		return `futureDates(${field}, "${value}")`;
+	}
+
+	if (type === 'less-than') {
+		return `(pastDates(${field}, "${value}") AND ${field} != "${value}")`;
+	}
+
+	if (type === 'less-than-or-equals') {
+		return `pastDates(${field}, "${value}")`;
+	}
+
+	const operator = type === 'not-equal' ? '!=' : '==';
+
+	return `${field} ${operator} "${value}"`;
+}
+
+function toNumericOperator(
+	type: NonNullable<Condition['options']>['type'] | undefined
+) {
+	switch (type) {
+		case 'greater-than':
+			return '>';
+		case 'greater-than-or-equals':
+			return '>=';
+		case 'less-than':
+			return '<';
+		case 'less-than-or-equals':
+			return '<=';
+		case 'not-equal':
+			return '!=';
+		default:
+			return '==';
 	}
 }

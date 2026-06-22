@@ -8,7 +8,7 @@ import {expect, mergeTests} from '@playwright/test';
 import {featureFlagsTest} from '../../../../../fixtures/featureFlagsTest';
 import {loginTest} from '../../../../../fixtures/loginTest';
 import {waitForFDS} from '../../../../../utils/waitFor';
-import {reactClassicPageTest} from '../../../../frontend-editor-ckeditor-sample-web/fixtures/ckeditor5/classicPageTest';
+import {reactClassicPageTest} from '../../../../frontend-editor-ckeditor5-sample-web/fixtures/classicPageTest';
 
 export const test = mergeTests(
 	reactClassicPageTest,

@@ -14,7 +14,6 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -22,13 +21,11 @@ import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.SearchOrderByUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.display.context.GroupDisplayContextHelper;
 
 import jakarta.portlet.PortletURL;
@@ -57,9 +54,6 @@ public class ExportImportToolbarDisplayContext {
 
 		_portletNamespace = PortalUtil.getPortletNamespace(
 			portlet.getRootPortletId());
-
-		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
@@ -90,28 +84,12 @@ public class ExportImportToolbarDisplayContext {
 
 					cmd = Constants.EXPORT;
 					label = "custom-export";
-
-					if (FeatureFlagManagerUtil.isEnabled(
-							_themeDisplay.getCompanyId(), "LPD-57655")) {
-
-						mvcPath = "/revamp/export/new_export.jsp";
-					}
-					else {
-						mvcPath = "/export/new_export/export_layouts.jsp";
-					}
+					mvcPath = "/export/new_export/export_layouts.jsp";
 				}
 				else {
 					cmd = Constants.IMPORT;
 					label = "import";
-
-					if (FeatureFlagManagerUtil.isEnabled(
-							_themeDisplay.getCompanyId(), "LPD-57655")) {
-
-						mvcPath = "/revamp/import/new_import.jsp";
-					}
-					else {
-						mvcPath = "/import/new_import/import_layouts.jsp";
-					}
+					mvcPath = "/import/new_import/import_layouts.jsp";
 				}
 
 				addPrimaryDropdownItem(
@@ -437,6 +415,5 @@ public class ExportImportToolbarDisplayContext {
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private String _orderByType;
 	private final String _portletNamespace;
-	private final ThemeDisplay _themeDisplay;
 
 }

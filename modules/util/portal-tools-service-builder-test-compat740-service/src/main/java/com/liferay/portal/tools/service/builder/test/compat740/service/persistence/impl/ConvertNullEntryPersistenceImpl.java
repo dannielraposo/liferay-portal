@@ -8,7 +8,6 @@ package com.liferay.portal.tools.service.builder.test.compat740.service.persiste
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -69,9 +68,9 @@ public class ConvertNullEntryPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByName;
-	private UniquePersistenceFinder<ConvertNullEntry>
-		_uniquePersistenceFinderByName;
+	private UniquePersistenceFinder
+		<ConvertNullEntry, NoSuchConvertNullEntryException>
+			_uniquePersistenceFinderByName;
 
 	/**
 	 * Returns the convert null entry where name = &#63; or throws a <code>NoSuchConvertNullEntryException</code> if it could not be found.
@@ -84,32 +83,8 @@ public class ConvertNullEntryPersistenceImpl
 	public ConvertNullEntry findByName(String name)
 		throws NoSuchConvertNullEntryException {
 
-		ConvertNullEntry convertNullEntry = fetchByName(name);
-
-		if (convertNullEntry == null) {
-			String message =
-				_uniquePersistenceFinderByName.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchConvertNullEntryException(message);
-		}
-
-		return convertNullEntry;
-	}
-
-	/**
-	 * Returns the convert null entry where name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param name the name
-	 * @return the matching convert null entry, or <code>null</code> if a matching convert null entry could not be found
-	 */
-	@Override
-	public ConvertNullEntry fetchByName(String name) {
-		return fetchByName(name, true);
+		return _uniquePersistenceFinderByName.find(
+			dummyFinderCache, new Object[] {name});
 	}
 
 	/**
@@ -327,13 +302,13 @@ public class ConvertNullEntryPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathFetchByName = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByName",
-			new String[] {String.class.getName()}, new String[] {"name"}, false,
-			ConvertNullEntry::getName);
-
 		_uniquePersistenceFinderByName = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByName, _SQL_SELECT_CONVERTNULLENTRY_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByName",
+				new String[] {String.class.getName()}, new String[] {"name"}, 0,
+				1, false, convertNullFunction(ConvertNullEntry::getName)),
+			_SQL_SELECT_CONVERTNULLENTRY_WHERE, "",
 			new FinderColumn<>(
 				"convertNullEntry.", "name", FinderColumn.Type.STRING, "=",
 				true, true, ConvertNullEntry::getName));
@@ -374,9 +349,6 @@ public class ConvertNullEntryPersistenceImpl
 		super.setSessionFactory(sessionFactory);
 	}
 
-	private static final String _ENTITY_ALIAS_PREFIX =
-		ConvertNullEntryModelImpl.ENTITY_ALIAS + ".";
-
 	private static final String _SQL_SELECT_CONVERTNULLENTRY =
 		"SELECT convertNullEntry FROM ConvertNullEntry convertNullEntry";
 
@@ -395,4 +367,4 @@ public class ConvertNullEntryPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1946170537
+// LIFERAY-SERVICE-BUILDER-HASH:-2063281261

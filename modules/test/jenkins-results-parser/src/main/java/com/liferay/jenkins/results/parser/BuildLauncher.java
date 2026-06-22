@@ -139,16 +139,16 @@ public class BuildLauncher {
 	private static Map<String, String> _getEnvironmentVariables() {
 		Map<String, String> environmentVariables = new HashMap<>();
 
-		environmentVariables.put("BUILD_URL", System.getenv("BUILD_URL"));
-		environmentVariables.put("JOB_NAME", System.getenv("JOB_NAME"));
+		environmentVariables.put("BUILD_URL", Environment.get("BUILD_URL"));
+		environmentVariables.put("JOB_NAME", Environment.get("JOB_NAME"));
 		environmentVariables.put(
-			"PORTAL_GITHUB_URL", System.getenv("PORTAL_GITHUB_URL"));
+			"PORTAL_GITHUB_URL", Environment.get("PORTAL_GITHUB_URL"));
 		environmentVariables.put(
 			"PORTAL_UPSTREAM_BRANCH_NAME",
-			System.getenv("PORTAL_UPSTREAM_BRANCH_NAME"));
-		environmentVariables.put("RUN_ID", System.getenv("RUN_ID"));
+			Environment.get("PORTAL_UPSTREAM_BRANCH_NAME"));
+		environmentVariables.put("RUN_ID", Environment.get("RUN_ID"));
 
-		String workspace = System.getenv("WORKSPACE");
+		String workspace = Environment.get("WORKSPACE");
 
 		if (workspace != null) {
 			environmentVariables.put("WORKSPACE", workspace);

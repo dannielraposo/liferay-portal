@@ -112,9 +112,7 @@ public class SharingEntryPersistenceTest {
 
 	@Test
 	public void testUpdateExisting() throws Exception {
-		long pk = RandomTestUtil.nextLong();
-
-		SharingEntry newSharingEntry = _persistence.create(pk);
+		SharingEntry newSharingEntry = addSharingEntry();
 
 		newSharingEntry.setUuid(RandomTestUtil.randomString());
 
@@ -258,6 +256,20 @@ public class SharingEntryPersistenceTest {
 		_persistence.countByUserId(RandomTestUtil.nextLong());
 
 		_persistence.countByUserId(0L);
+	}
+
+	@Test
+	public void testCountByToTicketId() throws Exception {
+		_persistence.countByToTicketId(RandomTestUtil.nextLong());
+
+		_persistence.countByToTicketId(0L);
+	}
+
+	@Test
+	public void testCountByToUserGroupId() throws Exception {
+		_persistence.countByToUserGroupId(RandomTestUtil.nextLong());
+
+		_persistence.countByToUserGroupId(0L);
 	}
 
 	@Test
@@ -718,4 +730,4 @@ public class SharingEntryPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1193723092
+// LIFERAY-SERVICE-BUILDER-HASH:-69881419

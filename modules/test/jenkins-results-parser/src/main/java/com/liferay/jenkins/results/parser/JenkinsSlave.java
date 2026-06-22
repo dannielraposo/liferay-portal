@@ -25,8 +25,8 @@ public class JenkinsSlave implements JenkinsNode<JenkinsSlave> {
 
 	public JenkinsSlave() {
 		_jenkinsMaster = JenkinsMaster.getInstance(
-			System.getenv("MASTER_HOSTNAME"));
-		_name = System.getenv("NODE_NAME");
+			Environment.get("MASTER_HOSTNAME"));
+		_name = Environment.get("NODE_NAME");
 
 		update(
 			JenkinsAPIUtil.getAPIJSONObject(

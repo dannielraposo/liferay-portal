@@ -42,6 +42,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -133,7 +134,8 @@ public abstract class BaseCTEntryResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -198,6 +200,7 @@ public abstract class BaseCTEntryResourceTestCase {
 		ctEntry.setChangeType(regex);
 		ctEntry.setCtCollectionName(regex);
 		ctEntry.setCtCollectionStatusUserName(regex);
+		ctEntry.setEditURL(regex);
 		ctEntry.setOwnerName(regex);
 		ctEntry.setSiteName(regex);
 		ctEntry.setStatusMessage(regex);
@@ -213,6 +216,7 @@ public abstract class BaseCTEntryResourceTestCase {
 		Assert.assertEquals(regex, ctEntry.getChangeType());
 		Assert.assertEquals(regex, ctEntry.getCtCollectionName());
 		Assert.assertEquals(regex, ctEntry.getCtCollectionStatusUserName());
+		Assert.assertEquals(regex, ctEntry.getEditURL());
 		Assert.assertEquals(regex, ctEntry.getOwnerName());
 		Assert.assertEquals(regex, ctEntry.getSiteName());
 		Assert.assertEquals(regex, ctEntry.getStatusMessage());
@@ -624,8 +628,9 @@ public abstract class BaseCTEntryResourceTestCase {
 			public StringBuffer getRequestURL() {
 				return new StringBuffer(
 					StringBundler.concat(
-						"http://localhost:8080/o/v1.0/",
-						RandomTestUtil.randomString(), "/",
+						"http://localhost:",
+						String.valueOf(PortalUtil.getPortalServerPort(false)),
+						"/o/v1.0/", RandomTestUtil.randomString(), "/",
 						RandomTestUtil.randomString()));
 			}
 
@@ -661,8 +666,10 @@ public abstract class BaseCTEntryResourceTestCase {
 			@Override
 			public URI getRequestUri() {
 				return URI.create(
-					"http://localhost:8080/o/" + applicationPath +
-						resourcePath);
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath, resourcePath));
 			}
 
 			@Override
@@ -682,7 +689,11 @@ public abstract class BaseCTEntryResourceTestCase {
 
 			@Override
 			public URI getBaseUri() {
-				return URI.create("http://localhost:8080/o/" + applicationPath);
+				return URI.create(
+					StringBundler.concat(
+						"http://localhost:",
+						PortalUtil.getPortalServerPort(false), "/o/",
+						applicationPath));
 			}
 
 			@Override
@@ -1578,6 +1589,14 @@ public abstract class BaseCTEntryResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("editURL", additionalAssertFieldName)) {
+				if (ctEntry.getEditURL() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("hideable", additionalAssertFieldName)) {
 				if (ctEntry.getHideable() == null) {
 					valid = false;
@@ -1877,6 +1896,16 @@ public abstract class BaseCTEntryResourceTestCase {
 				if (!Objects.deepEquals(
 						ctEntry1.getDateModified(),
 						ctEntry2.getDateModified())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("editURL", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						ctEntry1.getEditURL(), ctEntry2.getEditURL())) {
 
 					return false;
 				}
@@ -2342,6 +2371,52 @@ public abstract class BaseCTEntryResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("editURL")) {
+			Object object = ctEntry.getEditURL();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("hideable")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -2620,7 +2695,9 @@ public abstract class BaseCTEntryResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -2662,6 +2739,7 @@ public abstract class BaseCTEntryResourceTestCase {
 					RandomTestUtil.randomString());
 				dateCreated = RandomTestUtil.nextDate();
 				dateModified = RandomTestUtil.nextDate();
+				editURL = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				hideable = RandomTestUtil.randomBoolean();
 				id = RandomTestUtil.randomLong();
 				modelClassNameId = RandomTestUtil.randomLong();
@@ -2925,4 +3003,4 @@ public abstract class BaseCTEntryResourceTestCase {
 		_vulcanCRUDItemDelegateBuilderRegistry;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-292120794
+// LIFERAY-REST-BUILDER-HASH:-1452172856

@@ -33,10 +33,12 @@ export default function ({
 	consentRenewalPeriodTimeUnit = 'months',
 	dissentRenewalPeriod = consentRenewalPeriod,
 	dissentRenewalPeriodTimeUnit = consentRenewalPeriodTimeUnit,
+	globalPrivacyControlSignalActive = false,
 	includeDeclineAllButton,
 	modifiedDate = 0,
 	namespace,
 	optionalConsentCookieTypeNames,
+	previewMode = false,
 	requiredConsentCookieTypeNames,
 	title,
 }) {
@@ -53,29 +55,41 @@ export default function ({
 		`${namespace}storeConsent`
 	);
 	const cookieBanner = document.querySelector('.cookies-banner');
+
+	if (!cookieBanner) {
+		return;
+	}
+
 	const editMode = document.body.classList.contains('has-edit-mode-menu');
 
 	if (!editMode) {
-		isCookiesPreferenceHandlingConfigurationModified(modifiedDate).then(
-			(value) => {
-				if (value) {
-					removeAllCookies(
-						optionalConsentCookieTypeNames,
-						requiredConsentCookieTypeNames
-					);
+		if (!globalPrivacyControlSignalActive) {
+			isCookiesPreferenceHandlingConfigurationModified(modifiedDate).then(
+				(value) => {
+					if (value) {
+						removeAllCookies(
+							optionalConsentCookieTypeNames,
+							requiredConsentCookieTypeNames
+						);
+					}
 				}
-			}
-		);
+			);
 
-		if (Liferay.ThemeDisplay.isSignedIn() && hasGuestUserConfigCookie()) {
-			hasPreviouslyStoredConsent().then((hasPreviouslyStoredConsent) => {
-				if (hasPreviouslyStoredConsent) {
-					removeAllCookies(
-						optionalConsentCookieTypeNames,
-						requiredConsentCookieTypeNames
-					);
-				}
-			});
+			if (
+				Liferay.ThemeDisplay.isSignedIn() &&
+				hasGuestUserConfigCookie()
+			) {
+				hasPreviouslyStoredConsent().then(
+					(hasPreviouslyStoredConsent) => {
+						if (hasPreviouslyStoredConsent) {
+							removeAllCookies(
+								optionalConsentCookieTypeNames,
+								requiredConsentCookieTypeNames
+							);
+						}
+					}
+				);
+			}
 		}
 
 		const consentManager = document.getElementById(
@@ -85,7 +99,21 @@ export default function ({
 			'.product-analytics-banner'
 		);
 
-		if (
+		if (previewMode) {
+			cookieBanner.style.display = 'block';
+
+			document.documentElement.classList.add(
+				'cookies-banner-preview-mode'
+			);
+
+			cookieBanner.querySelectorAll('a').forEach((link) => {
+				link.addEventListener('click', (event) => {
+					event.preventDefault();
+				});
+			});
+		}
+		else if (
+			globalPrivacyControlSignalActive ||
 			consentManager ||
 			(productAnalyticsBanner &&
 				productAnalyticsBanner.style.display === 'block')
@@ -125,6 +153,10 @@ export default function ({
 		});
 
 		acceptAllButton.addEventListener('click', () => {
+			if (previewMode) {
+				return;
+			}
+
 			cookieBanner.style.display = 'none';
 
 			storeConsentCheckbox = document.getElementById(
@@ -176,6 +208,10 @@ export default function ({
 							'use-necessary-cookies-only'
 						),
 						onClick() {
+							if (previewMode) {
+								return;
+							}
+
 							declineAllCookies(
 								consentRenewalPeriod,
 								consentRenewalPeriodTimeUnit,
@@ -201,6 +237,10 @@ export default function ({
 						displayType: 'secondary',
 						label: Liferay.Language.get('accept-selected'),
 						onClick() {
+							if (previewMode) {
+								return;
+							}
+
 							Object.entries(cookiePreferences).forEach(
 								([key, value]) => {
 									let renewalPeriod = consentRenewalPeriod;
@@ -248,6 +288,10 @@ export default function ({
 						displayType: 'secondary',
 						label: Liferay.Language.get('accept-all'),
 						onClick() {
+							if (previewMode) {
+								return;
+							}
+
 							acceptAllCookies(
 								consentRenewalPeriod,
 								optionalConsentCookieTypeNames,
@@ -285,6 +329,10 @@ export default function ({
 
 		if (declineAllButton !== null) {
 			declineAllButton.addEventListener('click', () => {
+				if (previewMode) {
+					return;
+				}
+
 				cookieBanner.style.display = 'none';
 
 				storeConsentCheckbox = document.getElementById(

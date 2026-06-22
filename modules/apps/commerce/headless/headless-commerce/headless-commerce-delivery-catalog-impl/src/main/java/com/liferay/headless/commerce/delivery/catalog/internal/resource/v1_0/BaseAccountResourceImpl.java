@@ -71,29 +71,38 @@ public abstract class BaseAccountResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/channels/{channelId}/accounts'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists AccountEntry rows eligible for the channel under /channels/{channelId}/accounts. Loads the CommerceChannel via CommerceChannelLocalService, gathers eligibility-typed CommerceChannelAccountEntryRel rows, and calls Vulcan SearchUtil.search on AccountEntry restricted to commerceChannelIds. Exposes ADD_ACCOUNT_ENTRY / VIEW HATEOAS actions. Validation -- NoSuchChannelException -> 404 when an eligibility rel exists and the caller lacks CommerceAccountActionKeys.VIEW_CHANNELS_ACCOUNTS or ownership of an eligible account. List query support — filterable and sortable fields -- AccountEntityModel (dateCreated, dateModified, name, type); search fields -- indexed AccountEntry fields."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CommerceChannel; raises 404 when no channel with this primary key exists.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelId"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 $filter expression applied to the indexed entity. Supported fields are sourced from the entity model -- ChannelEntityModel exposes siteGroupId, name; AccountEntityModel exposes dateCreated, dateModified, name, type; ProductEntityModel exposes categoryIds, categoryNames, gtins, specificationNames, specificationValues, tags, createDate, modifiedDate, catalogId, statusCode, externalReferenceCode, name, productType plus every expando custom column. Currency, mapped product, and most child endpoints do not publish an entity model and ignore filter.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index for paginated results. Combine with pageSize to walk pages; when omitted the server returns page 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Number of items per page. When omitted the server applies the configured default page size; the maximum page size is bounded by the portal's PortalUtil.PROPS_REST_MAX_RETURN_SIZE.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Free-text keyword applied to the indexed entity. The corpus is sourced from the indexer -- AccountEntry indexes name and email; CommerceChannel indexes name; CPDefinition indexes title, description, SKU, GTIN, and expando custom fields registered via EntityFieldsUtil; CSDiagramEntry indexes the referenced product title.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "search"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "OData v4 $orderby expression. Supported fields mirror the filterable entity-model columns -- AccountEntityModel (dateCreated, dateModified, name, type), ChannelEntityModel (siteGroupId, name), ProductEntityModel (the full set of indexed product fields). Endpoints without an entity model ignore sort.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "sort"
 			)
@@ -129,9 +138,13 @@ public abstract class BaseAccountResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-delivery-catalog/v1.0/channels/{channelId}/accounts' -d $'{"defaultBillingAddressId": ___, "defaultShippingAddressId": ___, "description": ___, "domains": ___, "externalReferenceCode": ___, "id": ___, "logoId": ___, "logoURL": ___, "name": ___, "organizationIds": ___, "status": ___, "taxId": ___, "type": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates a new AccountEntry under /channels/<channelId>/accounts via AccountEntryService.addAccountEntry. The request body supplies externalReferenceCode, name, description, domains, taxId, type (defaults to business) and status (defaults to approved); logo bytes are loaded from DLAppLocalService when logoId is set. Not an upsert -- addAccountEntry is always invoked, so a duplicate externalReferenceCode raises 422. Validation -- NoSuchChannelException -> 404 when channel eligibility re-validation fails. Side effects -- When the channel restricts accounts, creates a CommerceChannelAccountEntryRel of TYPE_ELIGIBILITY linking the new account to the channel; applies default billing and shipping address IDs via AccountEntryLocalService; synchronizes organization rels through AccountEntryOrganizationRelLocalService."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Reference to the addressed CommerceChannel; raises 404 when no channel with this primary key exists.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelId"
 			)
@@ -810,4 +823,4 @@ public abstract class BaseAccountResourceImpl
 		LogFactoryUtil.getLog(BaseAccountResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1037483400
+// LIFERAY-REST-BUILDER-HASH:1423818476

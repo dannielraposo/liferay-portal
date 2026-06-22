@@ -9,6 +9,7 @@ import ClayForm from '@clayui/form';
 import ClayPopover from '@clayui/popover';
 import {
 	API,
+	COUNTRY_SOURCE,
 	FormError,
 	Input,
 	SingleSelect,
@@ -133,8 +134,8 @@ const fieldSettingsMap = new Map<string, ObjectFieldSetting[]>([
 		'PhoneNumber',
 		[
 			{
-				name: 'prefixType',
-				value: 'definedByUser',
+				name: 'countrySource',
+				value: COUNTRY_SOURCE.DEFINED_BY_USER,
 			},
 		],
 	],
@@ -812,9 +813,10 @@ export default function ObjectFieldFormBase({
 					</ClayForm.Group>
 				)}
 
-			{(values.businessType === 'PhoneNumber' ||
-				values.businessType === 'Text' ||
-				values.businessType === 'Integer') && (
+			{(values.businessType === 'EmailAddress' ||
+				values.businessType === 'Integer' ||
+				values.businessType === 'PhoneNumber' ||
+				values.businessType === 'Text') && (
 				<UniqueValues
 					disabled={disabled}
 					objectField={values}

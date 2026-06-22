@@ -10,14 +10,12 @@ import com.liferay.asset.kernel.model.AssetTagGroupRel;
 import com.liferay.asset.kernel.model.AssetTagGroupRelTable;
 import com.liferay.asset.kernel.service.persistence.AssetTagGroupRelPersistence;
 import com.liferay.asset.kernel.service.persistence.AssetTagGroupRelUtil;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -77,66 +75,15 @@ public class AssetTagGroupRelPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByUuid;
-	private FinderPath _finderPathWithoutPaginationFindByUuid;
-	private FinderPath _finderPathCountByUuid;
-	private CollectionPersistenceFinder<AssetTagGroupRel>
-		_collectionPersistenceFinderByUuid;
-
-	/**
-	 * Returns all the asset tag group rels where uuid = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @return the matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByUuid(String uuid) {
-		return findByUuid(uuid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the asset tag group rels where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of asset tag group rels
-	 * @param end the upper bound of the range of asset tag group rels (not inclusive)
-	 * @return the range of matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByUuid(String uuid, int start, int end) {
-		return findByUuid(uuid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<AssetTagGroupRel, NoSuchTagGroupRelException>
+			_collectionPersistenceFinderByUuid;
 
 	/**
 	 * Returns an ordered range of all the asset tag group rels where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param start the lower bound of the range of asset tag group rels
-	 * @param end the upper bound of the range of asset tag group rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByUuid(
-		String uuid, int start, int end,
-		OrderByComparator<AssetTagGroupRel> orderByComparator) {
-
-		return findByUuid(uuid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the asset tag group rels where uuid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -152,14 +99,9 @@ public class AssetTagGroupRelPersistenceImpl
 		OrderByComparator<AssetTagGroupRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AssetTagGroupRel.class)) {
-
-			return _collectionPersistenceFinderByUuid.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -175,16 +117,9 @@ public class AssetTagGroupRelPersistenceImpl
 			String uuid, OrderByComparator<AssetTagGroupRel> orderByComparator)
 		throws NoSuchTagGroupRelException {
 
-		AssetTagGroupRel assetTagGroupRel = fetchByUuid_First(
-			uuid, orderByComparator);
-
-		if (assetTagGroupRel != null) {
-			return assetTagGroupRel;
-		}
-
-		throw new NoSuchTagGroupRelException(
-			_collectionPersistenceFinderByUuid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid}));
+		return _collectionPersistenceFinderByUuid.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid},
+			orderByComparator);
 	}
 
 	/**
@@ -222,18 +157,13 @@ public class AssetTagGroupRelPersistenceImpl
 	 */
 	@Override
 	public int countByUuid(String uuid) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AssetTagGroupRel.class)) {
-
-			return _collectionPersistenceFinderByUuid.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid});
-		}
+		return _collectionPersistenceFinderByUuid.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid});
 	}
 
-	private FinderPath _finderPathFetchByUUID_G;
-	private UniquePersistenceFinder<AssetTagGroupRel>
-		_uniquePersistenceFinderByUUID_G;
+	private UniquePersistenceFinder
+		<AssetTagGroupRel, NoSuchTagGroupRelException>
+			_uniquePersistenceFinderByUUID_G;
 
 	/**
 	 * Returns the asset tag group rel where uuid = &#63; and groupId = &#63; or throws a <code>NoSuchTagGroupRelException</code> if it could not be found.
@@ -247,33 +177,8 @@ public class AssetTagGroupRelPersistenceImpl
 	public AssetTagGroupRel findByUUID_G(String uuid, long groupId)
 		throws NoSuchTagGroupRelException {
 
-		AssetTagGroupRel assetTagGroupRel = fetchByUUID_G(uuid, groupId);
-
-		if (assetTagGroupRel == null) {
-			String message =
-				_uniquePersistenceFinderByUUID_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchTagGroupRelException(message);
-		}
-
-		return assetTagGroupRel;
-	}
-
-	/**
-	 * Returns the asset tag group rel where uuid = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param uuid the uuid
-	 * @param groupId the group ID
-	 * @return the matching asset tag group rel, or <code>null</code> if a matching asset tag group rel could not be found
-	 */
-	@Override
-	public AssetTagGroupRel fetchByUUID_G(String uuid, long groupId) {
-		return fetchByUUID_G(uuid, groupId, true);
+		return _uniquePersistenceFinderByUUID_G.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId});
 	}
 
 	/**
@@ -288,14 +193,9 @@ public class AssetTagGroupRelPersistenceImpl
 	public AssetTagGroupRel fetchByUUID_G(
 		String uuid, long groupId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AssetTagGroupRel.class)) {
-
-			return _uniquePersistenceFinderByUUID_G.fetch(
-				FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByUUID_G.fetch(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId},
+			useFinderCache);
 	}
 
 	/**
@@ -327,73 +227,15 @@ public class AssetTagGroupRelPersistenceImpl
 			FinderCacheUtil.getFinderCache(), new Object[] {uuid, groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByUuid_C;
-	private FinderPath _finderPathWithoutPaginationFindByUuid_C;
-	private FinderPath _finderPathCountByUuid_C;
-	private CollectionPersistenceFinder<AssetTagGroupRel>
-		_collectionPersistenceFinderByUuid_C;
-
-	/**
-	 * Returns all the asset tag group rels where uuid = &#63; and companyId = &#63;.
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @return the matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByUuid_C(String uuid, long companyId) {
-		return findByUuid_C(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the asset tag group rels where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of asset tag group rels
-	 * @param end the upper bound of the range of asset tag group rels (not inclusive)
-	 * @return the range of matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByUuid_C(
-		String uuid, long companyId, int start, int end) {
-
-		return findByUuid_C(uuid, companyId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<AssetTagGroupRel, NoSuchTagGroupRelException>
+			_collectionPersistenceFinderByUuid_C;
 
 	/**
 	 * Returns an ordered range of all the asset tag group rels where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param uuid the uuid
-	 * @param companyId the company ID
-	 * @param start the lower bound of the range of asset tag group rels
-	 * @param end the upper bound of the range of asset tag group rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByUuid_C(
-		String uuid, long companyId, int start, int end,
-		OrderByComparator<AssetTagGroupRel> orderByComparator) {
-
-		return findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the asset tag group rels where uuid = &#63; and companyId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -410,15 +252,9 @@ public class AssetTagGroupRelPersistenceImpl
 		OrderByComparator<AssetTagGroupRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AssetTagGroupRel.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {uuid, companyId}, start, end, orderByComparator,
-				useFinderCache);
-		}
+		return _collectionPersistenceFinderByUuid_C.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId},
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -436,16 +272,9 @@ public class AssetTagGroupRelPersistenceImpl
 			OrderByComparator<AssetTagGroupRel> orderByComparator)
 		throws NoSuchTagGroupRelException {
 
-		AssetTagGroupRel assetTagGroupRel = fetchByUuid_C_First(
-			uuid, companyId, orderByComparator);
-
-		if (assetTagGroupRel != null) {
-			return assetTagGroupRel;
-		}
-
-		throw new NoSuchTagGroupRelException(
-			_collectionPersistenceFinderByUuid_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {uuid, companyId}));
+		return _collectionPersistenceFinderByUuid_C.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId},
+			orderByComparator);
 	}
 
 	/**
@@ -487,79 +316,19 @@ public class AssetTagGroupRelPersistenceImpl
 	 */
 	@Override
 	public int countByUuid_C(String uuid, long companyId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AssetTagGroupRel.class)) {
-
-			return _collectionPersistenceFinderByUuid_C.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {uuid, companyId});
-		}
+		return _collectionPersistenceFinderByUuid_C.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {uuid, companyId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByGroupId;
-	private FinderPath _finderPathWithoutPaginationFindByGroupId;
-	private FinderPath _finderPathCountByGroupId;
-	private CollectionPersistenceFinder<AssetTagGroupRel>
-		_collectionPersistenceFinderByGroupId;
-
-	/**
-	 * Returns all the asset tag group rels where groupId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @return the matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByGroupId(long groupId) {
-		return findByGroupId(
-			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the asset tag group rels where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of asset tag group rels
-	 * @param end the upper bound of the range of asset tag group rels (not inclusive)
-	 * @return the range of matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByGroupId(
-		long groupId, int start, int end) {
-
-		return findByGroupId(groupId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<AssetTagGroupRel, NoSuchTagGroupRelException>
+			_collectionPersistenceFinderByGroupId;
 
 	/**
 	 * Returns an ordered range of all the asset tag group rels where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param start the lower bound of the range of asset tag group rels
-	 * @param end the upper bound of the range of asset tag group rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByGroupId(
-		long groupId, int start, int end,
-		OrderByComparator<AssetTagGroupRel> orderByComparator) {
-
-		return findByGroupId(groupId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the asset tag group rels where groupId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -575,14 +344,9 @@ public class AssetTagGroupRelPersistenceImpl
 		OrderByComparator<AssetTagGroupRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AssetTagGroupRel.class)) {
-
-			return _collectionPersistenceFinderByGroupId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {groupId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByGroupId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -598,16 +362,9 @@ public class AssetTagGroupRelPersistenceImpl
 			long groupId, OrderByComparator<AssetTagGroupRel> orderByComparator)
 		throws NoSuchTagGroupRelException {
 
-		AssetTagGroupRel assetTagGroupRel = fetchByGroupId_First(
-			groupId, orderByComparator);
-
-		if (assetTagGroupRel != null) {
-			return assetTagGroupRel;
-		}
-
-		throw new NoSuchTagGroupRelException(
-			_collectionPersistenceFinderByGroupId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId}));
+		return _collectionPersistenceFinderByGroupId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId},
+			orderByComparator);
 	}
 
 	/**
@@ -645,75 +402,19 @@ public class AssetTagGroupRelPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AssetTagGroupRel.class)) {
-
-			return _collectionPersistenceFinderByGroupId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {groupId});
-		}
+		return _collectionPersistenceFinderByGroupId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByTagId;
-	private FinderPath _finderPathWithoutPaginationFindByTagId;
-	private FinderPath _finderPathCountByTagId;
-	private CollectionPersistenceFinder<AssetTagGroupRel>
-		_collectionPersistenceFinderByTagId;
-
-	/**
-	 * Returns all the asset tag group rels where tagId = &#63;.
-	 *
-	 * @param tagId the tag ID
-	 * @return the matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByTagId(long tagId) {
-		return findByTagId(tagId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the asset tag group rels where tagId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param tagId the tag ID
-	 * @param start the lower bound of the range of asset tag group rels
-	 * @param end the upper bound of the range of asset tag group rels (not inclusive)
-	 * @return the range of matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByTagId(long tagId, int start, int end) {
-		return findByTagId(tagId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<AssetTagGroupRel, NoSuchTagGroupRelException>
+			_collectionPersistenceFinderByTagId;
 
 	/**
 	 * Returns an ordered range of all the asset tag group rels where tagId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param tagId the tag ID
-	 * @param start the lower bound of the range of asset tag group rels
-	 * @param end the upper bound of the range of asset tag group rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching asset tag group rels
-	 */
-	@Override
-	public List<AssetTagGroupRel> findByTagId(
-		long tagId, int start, int end,
-		OrderByComparator<AssetTagGroupRel> orderByComparator) {
-
-		return findByTagId(tagId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the asset tag group rels where tagId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetTagGroupRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param tagId the tag ID
@@ -729,14 +430,9 @@ public class AssetTagGroupRelPersistenceImpl
 		OrderByComparator<AssetTagGroupRel> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AssetTagGroupRel.class)) {
-
-			return _collectionPersistenceFinderByTagId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {tagId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByTagId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {tagId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -752,16 +448,9 @@ public class AssetTagGroupRelPersistenceImpl
 			long tagId, OrderByComparator<AssetTagGroupRel> orderByComparator)
 		throws NoSuchTagGroupRelException {
 
-		AssetTagGroupRel assetTagGroupRel = fetchByTagId_First(
-			tagId, orderByComparator);
-
-		if (assetTagGroupRel != null) {
-			return assetTagGroupRel;
-		}
-
-		throw new NoSuchTagGroupRelException(
-			_collectionPersistenceFinderByTagId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {tagId}));
+		return _collectionPersistenceFinderByTagId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {tagId},
+			orderByComparator);
 	}
 
 	/**
@@ -799,18 +488,13 @@ public class AssetTagGroupRelPersistenceImpl
 	 */
 	@Override
 	public int countByTagId(long tagId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AssetTagGroupRel.class)) {
-
-			return _collectionPersistenceFinderByTagId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {tagId});
-		}
+		return _collectionPersistenceFinderByTagId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {tagId});
 	}
 
-	private FinderPath _finderPathFetchByG_T;
-	private UniquePersistenceFinder<AssetTagGroupRel>
-		_uniquePersistenceFinderByG_T;
+	private UniquePersistenceFinder
+		<AssetTagGroupRel, NoSuchTagGroupRelException>
+			_uniquePersistenceFinderByG_T;
 
 	/**
 	 * Returns the asset tag group rel where groupId = &#63; and tagId = &#63; or throws a <code>NoSuchTagGroupRelException</code> if it could not be found.
@@ -824,33 +508,8 @@ public class AssetTagGroupRelPersistenceImpl
 	public AssetTagGroupRel findByG_T(long groupId, long tagId)
 		throws NoSuchTagGroupRelException {
 
-		AssetTagGroupRel assetTagGroupRel = fetchByG_T(groupId, tagId);
-
-		if (assetTagGroupRel == null) {
-			String message =
-				_uniquePersistenceFinderByG_T.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, tagId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchTagGroupRelException(message);
-		}
-
-		return assetTagGroupRel;
-	}
-
-	/**
-	 * Returns the asset tag group rel where groupId = &#63; and tagId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param groupId the group ID
-	 * @param tagId the tag ID
-	 * @return the matching asset tag group rel, or <code>null</code> if a matching asset tag group rel could not be found
-	 */
-	@Override
-	public AssetTagGroupRel fetchByG_T(long groupId, long tagId) {
-		return fetchByG_T(groupId, tagId, true);
+		return _uniquePersistenceFinderByG_T.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId, tagId});
 	}
 
 	/**
@@ -865,14 +524,9 @@ public class AssetTagGroupRelPersistenceImpl
 	public AssetTagGroupRel fetchByG_T(
 		long groupId, long tagId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					AssetTagGroupRel.class)) {
-
-			return _uniquePersistenceFinderByG_T.fetch(
-				FinderCacheUtil.getFinderCache(), new Object[] {groupId, tagId},
-				useFinderCache);
-		}
+		return _uniquePersistenceFinderByG_T.fetch(
+			FinderCacheUtil.getFinderCache(), new Object[] {groupId, tagId},
+			useFinderCache);
 	}
 
 	/**
@@ -1169,148 +823,139 @@ public class AssetTagGroupRelPersistenceImpl
 	 * Initializes the asset tag group rel persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
-			new String[] {
-				String.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_"}, true);
-
-		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			true);
-
-		_finderPathCountByUuid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()}, new String[] {"uuid_"},
-			false);
-
 		_collectionPersistenceFinderByUuid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByUuid,
-			_finderPathWithoutPaginationFindByUuid, _finderPathCountByUuid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
+				new String[] {
+					String.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"uuid_"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+				new String[] {String.class.getName()}, new String[] {"uuid_"},
+				0, 1, false, null),
 			_SQL_SELECT_ASSETTAGGROUPREL_WHERE,
 			_SQL_COUNT_ASSETTAGGROUPREL_WHERE,
-			AssetTagGroupRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			AssetTagGroupRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
-				"assetTagGroupRel.", "uuid", FinderColumn.Type.STRING, "=",
-				true, true, AssetTagGroupRel::getUuid));
-
-		_finderPathFetchByUUID_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "groupId"}, false, AssetTagGroupRel::getUuid,
-			AssetTagGroupRel::getGroupId);
+				"assetTagGroupRel.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, AssetTagGroupRel::getUuid));
 
 		_uniquePersistenceFinderByUUID_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByUUID_G, _SQL_SELECT_ASSETTAGGROUPREL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByUUID_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"uuid_", "groupId"}, 0, 1, false,
+				convertNullFunction(AssetTagGroupRel::getUuid),
+				AssetTagGroupRel::getGroupId),
+			_SQL_SELECT_ASSETTAGGROUPREL_WHERE, "",
 			new FinderColumn<>(
-				"assetTagGroupRel.", "uuid", FinderColumn.Type.STRING, "=",
-				true, false, AssetTagGroupRel::getUuid),
+				"assetTagGroupRel.", "uuid", "uuid_", FinderColumn.Type.STRING,
+				"=", true, true, AssetTagGroupRel::getUuid),
 			new FinderColumn<>(
 				"assetTagGroupRel.", "groupId", FinderColumn.Type.LONG, "=",
 				true, true, AssetTagGroupRel::getGroupId));
 
-		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
-			new String[] {
-				String.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, true);
-
-		_finderPathCountByUuid_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"uuid_", "companyId"}, false);
-
 		_collectionPersistenceFinderByUuid_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByUuid_C,
-				_finderPathWithoutPaginationFindByUuid_C,
-				_finderPathCountByUuid_C, _SQL_SELECT_ASSETTAGGROUPREL_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
+					new String[] {
+						String.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"uuid_", "companyId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				_SQL_SELECT_ASSETTAGGROUPREL_WHERE,
 				_SQL_COUNT_ASSETTAGGROUPREL_WHERE,
 				AssetTagGroupRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
-					"assetTagGroupRel.", "uuid", FinderColumn.Type.STRING, "=",
-					true, false, AssetTagGroupRel::getUuid),
+					"assetTagGroupRel.", "uuid", "uuid_",
+					FinderColumn.Type.STRING, "=", true, true,
+					AssetTagGroupRel::getUuid),
 				new FinderColumn<>(
 					"assetTagGroupRel.", "companyId", FinderColumn.Type.LONG,
 					"=", true, true, AssetTagGroupRel::getCompanyId));
 
-		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId"}, true);
-
-		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			true);
-
-		_finderPathCountByGroupId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()}, new String[] {"groupId"},
-			false);
-
 		_collectionPersistenceFinderByGroupId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByGroupId,
-				_finderPathWithoutPaginationFindByGroupId,
-				_finderPathCountByGroupId, _SQL_SELECT_ASSETTAGGROUPREL_WHERE,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+					new String[] {Long.class.getName()},
+					new String[] {"groupId"}, false),
+				_SQL_SELECT_ASSETTAGGROUPREL_WHERE,
 				_SQL_COUNT_ASSETTAGGROUPREL_WHERE,
 				AssetTagGroupRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"assetTagGroupRel.", "groupId", FinderColumn.Type.LONG, "=",
 					true, true, AssetTagGroupRel::getGroupId));
 
-		_finderPathWithPaginationFindByTagId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByTagId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"tagId"}, true);
-
-		_finderPathWithoutPaginationFindByTagId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByTagId",
-			new String[] {Long.class.getName()}, new String[] {"tagId"}, true);
-
-		_finderPathCountByTagId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByTagId",
-			new String[] {Long.class.getName()}, new String[] {"tagId"}, false);
-
 		_collectionPersistenceFinderByTagId = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByTagId,
-			_finderPathWithoutPaginationFindByTagId, _finderPathCountByTagId,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByTagId",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"tagId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByTagId",
+				new String[] {Long.class.getName()}, new String[] {"tagId"},
+				true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByTagId",
+				new String[] {Long.class.getName()}, new String[] {"tagId"},
+				false),
 			_SQL_SELECT_ASSETTAGGROUPREL_WHERE,
 			_SQL_COUNT_ASSETTAGGROUPREL_WHERE,
-			AssetTagGroupRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			AssetTagGroupRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 			new FinderColumn<>(
 				"assetTagGroupRel.", "tagId", FinderColumn.Type.LONG, "=", true,
 				true, AssetTagGroupRel::getTagId));
 
-		_finderPathFetchByG_T = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByG_T",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"groupId", "tagId"}, false,
-			AssetTagGroupRel::getGroupId, AssetTagGroupRel::getTagId);
-
 		_uniquePersistenceFinderByG_T = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByG_T, _SQL_SELECT_ASSETTAGGROUPREL_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByG_T",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"groupId", "tagId"}, 0, 0, false,
+				AssetTagGroupRel::getGroupId, AssetTagGroupRel::getTagId),
+			_SQL_SELECT_ASSETTAGGROUPREL_WHERE, "",
 			new FinderColumn<>(
 				"assetTagGroupRel.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, AssetTagGroupRel::getGroupId),
+				true, true, AssetTagGroupRel::getGroupId),
 			new FinderColumn<>(
 				"assetTagGroupRel.", "tagId", FinderColumn.Type.LONG, "=", true,
 				true, AssetTagGroupRel::getTagId));
@@ -1351,4 +996,4 @@ public class AssetTagGroupRelPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1272526856
+// LIFERAY-SERVICE-BUILDER-HASH:2140067249

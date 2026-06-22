@@ -12,6 +12,7 @@ import {SearchResultsMessage} from '@liferay/layout-js-components-web';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {sub} from '../../../../../../../../frontend-js/frontend-js-web/src/main/resources/META-INF/resources/main';
+import SideNavigationColorSchemeButton from './SideNavigationColorSchemeButton';
 import SideNavigationSearchInput from './SideNavigationSearchInput';
 import SideNavigationSiteSelector from './SideNavigationSiteSelector';
 import {SideNavigationItem} from './types/SideNavigation';
@@ -20,6 +21,8 @@ import {useSideNavigationFilter} from './useSideNavigationFilter';
 interface Props {
 	canonicalName: string;
 	categoryImageUrl: string;
+	colorScheme: 'dark' | 'light';
+	colorSchemeSessionKey: string;
 	expandedKeys: Array<React.Key>;
 	expandedKeysSessionKey: string;
 	items: Array<SideNavigationItem>;
@@ -34,6 +37,8 @@ interface Props {
 function SideNavigation({
 	canonicalName,
 	categoryImageUrl,
+	colorScheme,
+	colorSchemeSessionKey,
 	expandedKeys: externalExpandedKeys,
 	expandedKeysSessionKey,
 	items: externalItems,
@@ -163,6 +168,13 @@ function SideNavigation({
 						eventName={siteAdministrationItemSelectedEventName}
 						url={siteAdministrationItemSelectorUrl}
 					/>
+
+					{Liferay.FeatureFlags['LPD-57922'] && (
+						<SideNavigationColorSchemeButton
+							colorScheme={colorScheme}
+							colorSchemeSessionKey={colorSchemeSessionKey}
+						/>
+					)}
 				</SidePanel.Title>
 			</SidePanel.Header>
 

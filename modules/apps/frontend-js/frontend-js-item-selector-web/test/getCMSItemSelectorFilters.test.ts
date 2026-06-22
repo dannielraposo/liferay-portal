@@ -24,7 +24,7 @@ describe('getCMSItemSelectorFilters', () => {
 	it('returns the correct filter configurations', () => {
 		const filters = getCMSItemSelectorFilters(12345);
 
-		expect(filters.length).toBe(12);
+		expect(filters.length).toBe(11);
 
 		expect(filters.map((f) => f.id)).toEqual([
 			'groupIds',
@@ -37,7 +37,6 @@ describe('getCMSItemSelectorFilters', () => {
 			'dateDisplay',
 			'dateExpiration',
 			'dateModified',
-			'datePublish',
 			'dateReview',
 		]);
 
@@ -46,6 +45,9 @@ describe('getCMSItemSelectorFilters', () => {
 		) as ISelectionFilterConfig;
 
 		expect(spaceFilter?.apiURL).toContain("filter=type eq 'Space'");
+		expect(spaceFilter?.entityFieldType).toBe(
+			EEntityFieldType.COLLECTION_INTEGER
+		);
 
 		const typeFilter = filters.find(
 			(f) => f.id === 'objectDefinitionExternalReferenceCode'
@@ -61,7 +63,14 @@ describe('getCMSItemSelectorFilters', () => {
 			(f) => f.id === 'taxonomyCategoryIds'
 		) as ISelectionFilterConfig;
 		expect(categoryFilter?.entityFieldType).toBe(
-			EEntityFieldType.COLLECTION
+			EEntityFieldType.COLLECTION_INTEGER
+		);
+
+		const tagsFilter = filters.find(
+			(f) => f.id === 'keywords'
+		) as ISelectionFilterConfig;
+		expect(tagsFilter?.entityFieldType).toBe(
+			EEntityFieldType.COLLECTION_STRING
 		);
 
 		const authorFilter = filters.find(
@@ -83,7 +92,7 @@ describe('getCMSItemSelectorFilters', () => {
 		expect(groupedFilters.length).toBe(2);
 		expect(groupedFilters[0].filters.length).toBe(6);
 		expect(groupedFilters[0].filters[0]).toBe('groupIds');
-		expect(groupedFilters[1].filters.length).toBe(6);
+		expect(groupedFilters[1].filters.length).toBe(5);
 	});
 
 	it('lets the caller override the space filter id', () => {

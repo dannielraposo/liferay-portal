@@ -58,7 +58,7 @@ class ${entity.name}ModelArgumentsResolver implements ArgumentsResolver {
 			long columnBitmask = ${entity.variableName}ModelImpl.getColumnBitmask();
 
 			if (!checkColumn || (columnBitmask == 0)) {
-				return _getValue(${entity.variableName}ModelImpl, columnNames, original);
+				return _getValue(${entity.variableName}ModelImpl, <#if serviceBuilder.isVersionGTE_7_4_0()>finderPath<#else>columnNames</#if>, original);
 			}
 
 			Long finderPathColumnBitmask = _finderPathColumnBitmasksCache.get(finderPath);
@@ -80,7 +80,7 @@ class ${entity.name}ModelArgumentsResolver implements ArgumentsResolver {
 			}
 
 			if ((columnBitmask & finderPathColumnBitmask) != 0) {
-				return _getValue(${entity.variableName}ModelImpl, columnNames, original);
+				return _getValue(${entity.variableName}ModelImpl, <#if serviceBuilder.isVersionGTE_7_4_0()>finderPath<#else>columnNames</#if>, original);
 			}
 		<#else>
 			if (!checkColumn || _hasModifiedColumns(${entity.variableName}ModelImpl, columnNames)
@@ -90,7 +90,7 @@ class ${entity.name}ModelArgumentsResolver implements ArgumentsResolver {
 			</#if>
 
 			) {
-				return _getValue(${entity.variableName}ModelImpl, columnNames, original);
+				return _getValue(${entity.variableName}ModelImpl, <#if serviceBuilder.isVersionGTE_7_4_0()>finderPath<#else>columnNames</#if>, original);
 			}
 		</#if>
 
@@ -109,18 +109,35 @@ class ${entity.name}ModelArgumentsResolver implements ArgumentsResolver {
 		}
 	</#if>
 
-	private static Object[] _getValue(${entity.name}ModelImpl ${entity.variableName}ModelImpl, String[] columnNames, boolean original) {
+	private static Object[] _getValue(${entity.name}ModelImpl ${entity.variableName}ModelImpl, <#if serviceBuilder.isVersionGTE_7_4_0()>FinderPath finderPath<#else>String[] columnNames</#if>, boolean original) {
+		<#if serviceBuilder.isVersionGTE_7_4_0()>
+			String[] columnNames = finderPath.getColumnNames();
+		</#if>
+
 		Object[] arguments = new Object[columnNames.length];
 
 		for (int i = 0; i < arguments.length; i ++) {
 			String columnName = columnNames[i];
 
-			if (original) {
-				arguments[i] = ${entity.variableName}ModelImpl.getColumnOriginalValue(columnName);
-			}
-			else {
-				arguments[i] = ${entity.variableName}ModelImpl.getColumnValue(columnName);
-			}
+			<#if serviceBuilder.isVersionGTE_7_4_0()>
+				Object value;
+
+				if (original) {
+					value = ${entity.variableName}ModelImpl.getColumnOriginalValue(columnName);
+				}
+				else {
+					value = ${entity.variableName}ModelImpl.getColumnValue(columnName);
+				}
+
+				arguments[i] = finderPath.normalizeArgument(i, value);
+			<#else>
+				if (original) {
+					arguments[i] = ${entity.variableName}ModelImpl.getColumnOriginalValue(columnName);
+				}
+				else {
+					arguments[i] = ${entity.variableName}ModelImpl.getColumnValue(columnName);
+				}
+			</#if>
 		}
 
 		return arguments;

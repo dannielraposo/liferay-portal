@@ -5,14 +5,12 @@
 
 package com.liferay.portal.service.persistence.impl;
 
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchWorkflowInstanceLinkException;
 import com.liferay.portal.kernel.log.Log;
@@ -77,9 +75,9 @@ public class WorkflowInstanceLinkPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathFetchByWorkflowInstanceId;
-	private UniquePersistenceFinder<WorkflowInstanceLink>
-		_uniquePersistenceFinderByWorkflowInstanceId;
+	private UniquePersistenceFinder
+		<WorkflowInstanceLink, NoSuchWorkflowInstanceLinkException>
+			_uniquePersistenceFinderByWorkflowInstanceId;
 
 	/**
 	 * Returns the workflow instance link where workflowInstanceId = &#63; or throws a <code>NoSuchWorkflowInstanceLinkException</code> if it could not be found.
@@ -93,37 +91,9 @@ public class WorkflowInstanceLinkPersistenceImpl
 			long workflowInstanceId)
 		throws NoSuchWorkflowInstanceLinkException {
 
-		WorkflowInstanceLink workflowInstanceLink = fetchByWorkflowInstanceId(
-			workflowInstanceId);
-
-		if (workflowInstanceLink == null) {
-			String message =
-				_uniquePersistenceFinderByWorkflowInstanceId.
-					buildNoSuchKeyMessage(
-						_NO_SUCH_ENTITY_WITH_KEY,
-						new Object[] {workflowInstanceId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchWorkflowInstanceLinkException(message);
-		}
-
-		return workflowInstanceLink;
-	}
-
-	/**
-	 * Returns the workflow instance link where workflowInstanceId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param workflowInstanceId the workflow instance ID
-	 * @return the matching workflow instance link, or <code>null</code> if a matching workflow instance link could not be found
-	 */
-	@Override
-	public WorkflowInstanceLink fetchByWorkflowInstanceId(
-		long workflowInstanceId) {
-
-		return fetchByWorkflowInstanceId(workflowInstanceId, true);
+		return _uniquePersistenceFinderByWorkflowInstanceId.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {workflowInstanceId});
 	}
 
 	/**
@@ -137,14 +107,9 @@ public class WorkflowInstanceLinkPersistenceImpl
 	public WorkflowInstanceLink fetchByWorkflowInstanceId(
 		long workflowInstanceId, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					WorkflowInstanceLink.class)) {
-
-			return _uniquePersistenceFinderByWorkflowInstanceId.fetch(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {workflowInstanceId}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByWorkflowInstanceId.fetch(
+			FinderCacheUtil.getFinderCache(), new Object[] {workflowInstanceId},
+			useFinderCache);
 	}
 
 	/**
@@ -177,75 +142,15 @@ public class WorkflowInstanceLinkPersistenceImpl
 			new Object[] {workflowInstanceId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByC_C;
-	private FinderPath _finderPathWithoutPaginationFindByC_C;
-	private FinderPath _finderPathCountByC_C;
-	private CollectionPersistenceFinder<WorkflowInstanceLink>
-		_collectionPersistenceFinderByC_C;
-
-	/**
-	 * Returns all the workflow instance links where companyId = &#63; and classNameId = &#63;.
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @return the matching workflow instance links
-	 */
-	@Override
-	public List<WorkflowInstanceLink> findByC_C(
-		long companyId, long classNameId) {
-
-		return findByC_C(
-			companyId, classNameId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the workflow instance links where companyId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of workflow instance links
-	 * @param end the upper bound of the range of workflow instance links (not inclusive)
-	 * @return the range of matching workflow instance links
-	 */
-	@Override
-	public List<WorkflowInstanceLink> findByC_C(
-		long companyId, long classNameId, int start, int end) {
-
-		return findByC_C(companyId, classNameId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<WorkflowInstanceLink, NoSuchWorkflowInstanceLinkException>
+			_collectionPersistenceFinderByC_C;
 
 	/**
 	 * Returns an ordered range of all the workflow instance links where companyId = &#63; and classNameId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of workflow instance links
-	 * @param end the upper bound of the range of workflow instance links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching workflow instance links
-	 */
-	@Override
-	public List<WorkflowInstanceLink> findByC_C(
-		long companyId, long classNameId, int start, int end,
-		OrderByComparator<WorkflowInstanceLink> orderByComparator) {
-
-		return findByC_C(
-			companyId, classNameId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the workflow instance links where companyId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -262,15 +167,10 @@ public class WorkflowInstanceLinkPersistenceImpl
 		OrderByComparator<WorkflowInstanceLink> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					WorkflowInstanceLink.class)) {
-
-			return _collectionPersistenceFinderByC_C.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {companyId, classNameId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByC_C.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {companyId, classNameId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -288,17 +188,9 @@ public class WorkflowInstanceLinkPersistenceImpl
 			OrderByComparator<WorkflowInstanceLink> orderByComparator)
 		throws NoSuchWorkflowInstanceLinkException {
 
-		WorkflowInstanceLink workflowInstanceLink = fetchByC_C_First(
-			companyId, classNameId, orderByComparator);
-
-		if (workflowInstanceLink != null) {
-			return workflowInstanceLink;
-		}
-
-		throw new NoSuchWorkflowInstanceLinkException(
-			_collectionPersistenceFinderByC_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {companyId, classNameId}));
+		return _collectionPersistenceFinderByC_C.findFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {companyId, classNameId}, orderByComparator);
 	}
 
 	/**
@@ -341,90 +233,20 @@ public class WorkflowInstanceLinkPersistenceImpl
 	 */
 	@Override
 	public int countByC_C(long companyId, long classNameId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					WorkflowInstanceLink.class)) {
-
-			return _collectionPersistenceFinderByC_C.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {companyId, classNameId});
-		}
+		return _collectionPersistenceFinderByC_C.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {companyId, classNameId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_C_C;
-	private FinderPath _finderPathWithoutPaginationFindByG_C_C;
-	private FinderPath _finderPathCountByG_C_C;
-	private CollectionPersistenceFinder<WorkflowInstanceLink>
-		_collectionPersistenceFinderByG_C_C;
-
-	/**
-	 * Returns all the workflow instance links where groupId = &#63; and companyId = &#63; and classNameId = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @return the matching workflow instance links
-	 */
-	@Override
-	public List<WorkflowInstanceLink> findByG_C_C(
-		long groupId, long companyId, long classNameId) {
-
-		return findByG_C_C(
-			groupId, companyId, classNameId, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the workflow instance links where groupId = &#63; and companyId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of workflow instance links
-	 * @param end the upper bound of the range of workflow instance links (not inclusive)
-	 * @return the range of matching workflow instance links
-	 */
-	@Override
-	public List<WorkflowInstanceLink> findByG_C_C(
-		long groupId, long companyId, long classNameId, int start, int end) {
-
-		return findByG_C_C(groupId, companyId, classNameId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<WorkflowInstanceLink, NoSuchWorkflowInstanceLinkException>
+			_collectionPersistenceFinderByG_C_C;
 
 	/**
 	 * Returns an ordered range of all the workflow instance links where groupId = &#63; and companyId = &#63; and classNameId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param start the lower bound of the range of workflow instance links
-	 * @param end the upper bound of the range of workflow instance links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching workflow instance links
-	 */
-	@Override
-	public List<WorkflowInstanceLink> findByG_C_C(
-		long groupId, long companyId, long classNameId, int start, int end,
-		OrderByComparator<WorkflowInstanceLink> orderByComparator) {
-
-		return findByG_C_C(
-			groupId, companyId, classNameId, start, end, orderByComparator,
-			true);
-	}
-
-	/**
-	 * Returns an ordered range of all the workflow instance links where groupId = &#63; and companyId = &#63; and classNameId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -442,15 +264,10 @@ public class WorkflowInstanceLinkPersistenceImpl
 		OrderByComparator<WorkflowInstanceLink> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					WorkflowInstanceLink.class)) {
-
-			return _collectionPersistenceFinderByG_C_C.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, companyId, classNameId}, start, end,
-				orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_C_C.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, companyId, classNameId}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -469,17 +286,9 @@ public class WorkflowInstanceLinkPersistenceImpl
 			OrderByComparator<WorkflowInstanceLink> orderByComparator)
 		throws NoSuchWorkflowInstanceLinkException {
 
-		WorkflowInstanceLink workflowInstanceLink = fetchByG_C_C_First(
-			groupId, companyId, classNameId, orderByComparator);
-
-		if (workflowInstanceLink != null) {
-			return workflowInstanceLink;
-		}
-
-		throw new NoSuchWorkflowInstanceLinkException(
-			_collectionPersistenceFinderByG_C_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, companyId, classNameId}));
+		return _collectionPersistenceFinderByG_C_C.findFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, companyId, classNameId}, orderByComparator);
 	}
 
 	/**
@@ -525,95 +334,20 @@ public class WorkflowInstanceLinkPersistenceImpl
 	 */
 	@Override
 	public int countByG_C_C(long groupId, long companyId, long classNameId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					WorkflowInstanceLink.class)) {
-
-			return _collectionPersistenceFinderByG_C_C.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, companyId, classNameId});
-		}
+		return _collectionPersistenceFinderByG_C_C.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, companyId, classNameId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_C_C_C;
-	private FinderPath _finderPathWithoutPaginationFindByG_C_C_C;
-	private FinderPath _finderPathCountByG_C_C_C;
-	private CollectionPersistenceFinder<WorkflowInstanceLink>
-		_collectionPersistenceFinderByG_C_C_C;
-
-	/**
-	 * Returns all the workflow instance links where groupId = &#63; and companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @return the matching workflow instance links
-	 */
-	@Override
-	public List<WorkflowInstanceLink> findByG_C_C_C(
-		long groupId, long companyId, long classNameId, long classPK) {
-
-		return findByG_C_C_C(
-			groupId, companyId, classNameId, classPK, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the workflow instance links where groupId = &#63; and companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of workflow instance links
-	 * @param end the upper bound of the range of workflow instance links (not inclusive)
-	 * @return the range of matching workflow instance links
-	 */
-	@Override
-	public List<WorkflowInstanceLink> findByG_C_C_C(
-		long groupId, long companyId, long classNameId, long classPK, int start,
-		int end) {
-
-		return findByG_C_C_C(
-			groupId, companyId, classNameId, classPK, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<WorkflowInstanceLink, NoSuchWorkflowInstanceLinkException>
+			_collectionPersistenceFinderByG_C_C_C;
 
 	/**
 	 * Returns an ordered range of all the workflow instance links where groupId = &#63; and companyId = &#63; and classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param companyId the company ID
-	 * @param classNameId the class name ID
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of workflow instance links
-	 * @param end the upper bound of the range of workflow instance links (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching workflow instance links
-	 */
-	@Override
-	public List<WorkflowInstanceLink> findByG_C_C_C(
-		long groupId, long companyId, long classNameId, long classPK, int start,
-		int end, OrderByComparator<WorkflowInstanceLink> orderByComparator) {
-
-		return findByG_C_C_C(
-			groupId, companyId, classNameId, classPK, start, end,
-			orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the workflow instance links where groupId = &#63; and companyId = &#63; and classNameId = &#63; and classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>WorkflowInstanceLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -632,15 +366,10 @@ public class WorkflowInstanceLinkPersistenceImpl
 		int end, OrderByComparator<WorkflowInstanceLink> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					WorkflowInstanceLink.class)) {
-
-			return _collectionPersistenceFinderByG_C_C_C.find(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, companyId, classNameId, classPK}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByG_C_C_C.find(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, companyId, classNameId, classPK}, start, end,
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -660,17 +389,10 @@ public class WorkflowInstanceLinkPersistenceImpl
 			OrderByComparator<WorkflowInstanceLink> orderByComparator)
 		throws NoSuchWorkflowInstanceLinkException {
 
-		WorkflowInstanceLink workflowInstanceLink = fetchByG_C_C_C_First(
-			groupId, companyId, classNameId, classPK, orderByComparator);
-
-		if (workflowInstanceLink != null) {
-			return workflowInstanceLink;
-		}
-
-		throw new NoSuchWorkflowInstanceLinkException(
-			_collectionPersistenceFinderByG_C_C_C.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY,
-				new Object[] {groupId, companyId, classNameId, classPK}));
+		return _collectionPersistenceFinderByG_C_C_C.findFirst(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, companyId, classNameId, classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -724,14 +446,9 @@ public class WorkflowInstanceLinkPersistenceImpl
 	public int countByG_C_C_C(
 		long groupId, long companyId, long classNameId, long classPK) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					WorkflowInstanceLink.class)) {
-
-			return _collectionPersistenceFinderByG_C_C_C.count(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {groupId, companyId, classNameId, classPK});
-		}
+		return _collectionPersistenceFinderByG_C_C_C.count(
+			FinderCacheUtil.getFinderCache(),
+			new Object[] {groupId, companyId, classNameId, classPK});
 	}
 
 	public WorkflowInstanceLinkPersistenceImpl() {
@@ -1016,140 +733,136 @@ public class WorkflowInstanceLinkPersistenceImpl
 	 * Initializes the workflow instance link persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathFetchByWorkflowInstanceId = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByWorkflowInstanceId",
-			new String[] {Long.class.getName()},
-			new String[] {"workflowInstanceId"}, false,
-			WorkflowInstanceLink::getWorkflowInstanceId);
-
 		_uniquePersistenceFinderByWorkflowInstanceId =
 			new UniquePersistenceFinder<>(
-				this, _finderPathFetchByWorkflowInstanceId,
-				_SQL_SELECT_WORKFLOWINSTANCELINK_WHERE,
+				this,
+				createUniqueFinderPath(
+					FINDER_CLASS_NAME_ENTITY, "fetchByWorkflowInstanceId",
+					new String[] {Long.class.getName()},
+					new String[] {"workflowInstanceId"}, 0, 0, false,
+					WorkflowInstanceLink::getWorkflowInstanceId),
+				_SQL_SELECT_WORKFLOWINSTANCELINK_WHERE, "",
 				new FinderColumn<>(
 					"workflowInstanceLink.", "workflowInstanceId",
 					FinderColumn.Type.LONG, "=", true, true,
 					WorkflowInstanceLink::getWorkflowInstanceId));
 
-		_finderPathWithPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"companyId", "classNameId"}, true);
-
-		_finderPathWithoutPaginationFindByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "classNameId"}, true);
-
-		_finderPathCountByC_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"companyId", "classNameId"}, false);
-
 		_collectionPersistenceFinderByC_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByC_C,
-			_finderPathWithoutPaginationFindByC_C, _finderPathCountByC_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"companyId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"companyId", "classNameId"}, false),
 			_SQL_SELECT_WORKFLOWINSTANCELINK_WHERE,
 			_SQL_COUNT_WORKFLOWINSTANCELINK_WHERE,
 			WorkflowInstanceLinkModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"workflowInstanceLink.", "companyId", FinderColumn.Type.LONG,
-				"=", true, false, WorkflowInstanceLink::getCompanyId),
+				"=", true, true, WorkflowInstanceLink::getCompanyId),
 			new FinderColumn<>(
 				"workflowInstanceLink.", "classNameId", FinderColumn.Type.LONG,
 				"=", true, true, WorkflowInstanceLink::getClassNameId));
-
-		_finderPathWithPaginationFindByG_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "companyId", "classNameId"}, true);
-
-		_finderPathWithoutPaginationFindByG_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "companyId", "classNameId"}, true);
-
-		_finderPathCountByG_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "companyId", "classNameId"}, false);
 
 		_collectionPersistenceFinderByG_C_C = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_C_C,
-			_finderPathWithoutPaginationFindByG_C_C, _finderPathCountByG_C_C,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "companyId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"groupId", "companyId", "classNameId"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_C",
+				new String[] {
+					Long.class.getName(), Long.class.getName(),
+					Long.class.getName()
+				},
+				new String[] {"groupId", "companyId", "classNameId"}, false),
 			_SQL_SELECT_WORKFLOWINSTANCELINK_WHERE,
 			_SQL_COUNT_WORKFLOWINSTANCELINK_WHERE,
 			WorkflowInstanceLinkModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+			"",
 			new FinderColumn<>(
 				"workflowInstanceLink.", "groupId", FinderColumn.Type.LONG, "=",
-				true, false, WorkflowInstanceLink::getGroupId),
+				true, true, WorkflowInstanceLink::getGroupId),
 			new FinderColumn<>(
 				"workflowInstanceLink.", "companyId", FinderColumn.Type.LONG,
-				"=", true, false, WorkflowInstanceLink::getCompanyId),
+				"=", true, true, WorkflowInstanceLink::getCompanyId),
 			new FinderColumn<>(
 				"workflowInstanceLink.", "classNameId", FinderColumn.Type.LONG,
 				"=", true, true, WorkflowInstanceLink::getClassNameId));
-
-		_finderPathWithPaginationFindByG_C_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "companyId", "classNameId", "classPK"},
-			true);
-
-		_finderPathWithoutPaginationFindByG_C_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "companyId", "classNameId", "classPK"},
-			true);
-
-		_finderPathCountByG_C_C_C = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				Long.class.getName(), Long.class.getName()
-			},
-			new String[] {"groupId", "companyId", "classNameId", "classPK"},
-			false);
 
 		_collectionPersistenceFinderByG_C_C_C =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByG_C_C_C,
-				_finderPathWithoutPaginationFindByG_C_C_C,
-				_finderPathCountByG_C_C_C,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_C_C",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Long.class.getName(),
+						Integer.class.getName(), Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {
+						"groupId", "companyId", "classNameId", "classPK"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_C_C",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Long.class.getName()
+					},
+					new String[] {
+						"groupId", "companyId", "classNameId", "classPK"
+					},
+					true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_C_C",
+					new String[] {
+						Long.class.getName(), Long.class.getName(),
+						Long.class.getName(), Long.class.getName()
+					},
+					new String[] {
+						"groupId", "companyId", "classNameId", "classPK"
+					},
+					false),
 				_SQL_SELECT_WORKFLOWINSTANCELINK_WHERE,
 				_SQL_COUNT_WORKFLOWINSTANCELINK_WHERE,
 				WorkflowInstanceLinkModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"workflowInstanceLink.", "groupId", FinderColumn.Type.LONG,
-					"=", true, false, WorkflowInstanceLink::getGroupId),
+					"=", true, true, WorkflowInstanceLink::getGroupId),
 				new FinderColumn<>(
 					"workflowInstanceLink.", "companyId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					WorkflowInstanceLink::getCompanyId),
 				new FinderColumn<>(
 					"workflowInstanceLink.", "classNameId",
-					FinderColumn.Type.LONG, "=", true, false,
+					FinderColumn.Type.LONG, "=", true, true,
 					WorkflowInstanceLink::getClassNameId),
 				new FinderColumn<>(
 					"workflowInstanceLink.", "classPK", FinderColumn.Type.LONG,
@@ -1188,4 +901,4 @@ public class WorkflowInstanceLinkPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:2144102179
+// LIFERAY-SERVICE-BUILDER-HASH:-172647211

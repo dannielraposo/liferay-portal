@@ -1,0 +1,713 @@
+[
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "accountCode",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "AccountType",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "accountTier",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "allowComplimentary",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "allowPermanentLicenses",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "allowSelfProvisioning",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "accountOwnerEmailAddress",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "accountOwnerFirstName",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "accountOwnerLastName",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "cloudProjectName",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 11,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "contractId",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "dossieraProjectKey",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "gsInvolved",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "ldpWorkspaceName",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "marketplaceOrderType",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "opportunityProductFamily",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "opportunitySoldBy",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "opportunityStageName",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "opportunityTerritory",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "opportunityType",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "partnerAccount",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "partnerFirstLineSupport",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "projectDescription",
+		"properties": {
+			"hidden": false,
+			"indexType": 1,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "projectKey",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "projectName",
+		"properties": {
+			"hidden": false,
+			"indexType": 1,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "projectSolution",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "renewal",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "cloudRegion",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "customStatus",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 3,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "effectiveEndDate",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 3,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "endDate",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "machineType",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "opportunitySoldBy",
+		"properties": {
+			"hidden": false,
+			"indexType": 1,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "orderType",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 9,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "sizing",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 5,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "spendLimit",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 3,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "startDate",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 11,
+		"modelResource": "com.liferay.portal.kernel.model.Organization",
+		"name": "accountEntryId",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "agreedToContactEvents",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "agreedToContactSales",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "agreedToContactTrainings",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "agreedToContactTrialLicenses",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "uuid_",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 1,
+		"modelResource": "com.liferay.portal.kernel.model.User",
+		"name": "verified",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Menu Item Description",
+		"properties": {
+			"displayType": "text-box",
+			"height": "150",
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 15,
+		"defaultValue": "",
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Menu Item Icon",
+		"properties": {
+			"displayType": "text-box",
+			"height": "0",
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Menu Item Image URL",
+		"properties": {
+			"displayType": "text-box",
+			"height": "150",
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 20,
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Menu Item Preheader",
+		"properties": {
+			"displayType": "text-box",
+			"height": "150",
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 16,
+		"defaultValue": [
+			"Text",
+			"Image"
+		],
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Menu Item Type",
+		"properties": {
+			"displayType": "selection-list",
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 16,
+		"defaultValue": [
+			"white",
+			"light-blue"
+		],
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Submenu Background",
+		"properties": {
+			"displayType": "selection-list",
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 16,
+		"defaultValue": [
+			"1",
+			"2",
+			"3",
+			"4"
+		],
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Submenu Child Columns",
+		"properties": {
+			"displayType": "selection-list",
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 16,
+		"defaultValue": [
+			"3",
+			"4",
+			"5",
+			"6",
+			"7",
+			"8",
+			"9",
+			"10",
+			"11",
+			"12"
+		],
+		"modelResource": "com.liferay.site.navigation.model.SiteNavigationMenuItem",
+		"name": "Submenu Column Span",
+		"properties": {
+			"displayType": "selection-list",
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": true,
+			"localizeFieldName": true,
+			"visibleWithUpdatePermission": false
+		}
+	}
+]

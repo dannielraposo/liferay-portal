@@ -84,6 +84,10 @@
 					"value": "true"
 				},
 				{
+					"name": "domain",
+					"value": "space"
+				},
+				{
 					"name": "visible",
 					"value": "true"
 				}
@@ -392,6 +396,10 @@
 					"value": "true"
 				},
 				{
+					"name": "domain",
+					"value": "space"
+				},
+				{
 					"name": "visible",
 					"value": "true"
 				}
@@ -670,6 +678,10 @@
 				{
 					"name": "acceptAllGroups",
 					"value": "true"
+				},
+				{
+					"name": "domain",
+					"value": "space"
 				},
 				{
 					"name": "visible",
@@ -1185,6 +1197,22 @@
 				{
 					"DBType": "Integer",
 					"businessType": "Integer",
+					"externalReferenceCode": "NUMBER_OF_FAILED_ITEMS",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Number of Failed Items"
+					},
+					"name": "numberOfFailedItems",
+					"readOnly": "false",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "Integer"
+				},
+				{
+					"DBType": "Integer",
+					"businessType": "Integer",
 					"externalReferenceCode": "NUMBER_OF_ITEMS",
 					"indexed": true,
 					"indexedAsKeyword": false,
@@ -1222,22 +1250,6 @@
 						"zh_TW": "項目數"
 					},
 					"name": "numberOfItems",
-					"readOnly": "false",
-					"required": false,
-					"state": false,
-					"system": true,
-					"type": "Integer"
-				},
-				{
-					"DBType": "Integer",
-					"businessType": "Integer",
-					"externalReferenceCode": "NUMBER_OF_FAILED_ITEMS",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"label": {
-						"en_US": "Number of Failed Items"
-					},
-					"name": "numberOfFailedItems",
 					"readOnly": "false",
 					"required": false,
 					"state": false,
@@ -1601,6 +1613,10 @@
 				{
 					"name": "acceptAllGroups",
 					"value": "true"
+				},
+				{
+					"name": "domain",
+					"value": "space"
 				},
 				{
 					"name": "visible",

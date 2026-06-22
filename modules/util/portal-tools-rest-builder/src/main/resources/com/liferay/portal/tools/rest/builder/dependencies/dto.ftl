@@ -49,6 +49,8 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -91,24 +93,28 @@ import java.util.function.Supplier;
 	</#if>
 )
 @JsonFilter("Liferay.Vulcan")
-<#if schema.requiredPropertySchemaNames?has_content>
-	@io.swagger.v3.oas.annotations.media.Schema(
-		<#if schema.deprecated>
-			deprecated = ${schema.deprecated?c},
-		</#if>
-		requiredProperties =
-			{
-				<#list schema.requiredPropertySchemaNames as requiredProperty>
-					"${requiredProperty}"
-					<#if requiredProperty_has_next>
-						,
-					</#if>
-				</#list>
-			}
-		<#if schema.description??>
-			, description = "${schema.description?j_string}"
-		</#if>
-	)
+<#if schema.deprecated || schema.description?? || schema.requiredPropertySchemaNames?has_content>
+	<#assign schemaParameters = [] />
+
+	<#if schema.deprecated>
+		<#assign schemaParameters = schemaParameters + ["deprecated = ${schema.deprecated?c}"] />
+	</#if>
+
+	<#if schema.requiredPropertySchemaNames?has_content>
+		<#assign requiredPropertyNames = [] />
+
+		<#list schema.requiredPropertySchemaNames as requiredProperty>
+			<#assign requiredPropertyNames = requiredPropertyNames + ["\"${requiredProperty}\""] />
+		</#list>
+
+		<#assign schemaParameters = schemaParameters + ["requiredProperties = {${requiredPropertyNames?join(', ')}}"] />
+	</#if>
+
+	<#if schema.description??>
+		<#assign schemaParameters = schemaParameters + ["description = \"${schema.description?j_string}\""] />
+	</#if>
+
+	@io.swagger.v3.oas.annotations.media.Schema(${schemaParameters?join(", ")})
 </#if>
 
 @XmlRootElement(name = "${schemaName}")
@@ -536,8 +542,14 @@ public <#if schema.discriminator?has_content>abstract</#if> class ${schemaName} 
 				<#elseif allSchemas[propertyType]??>
 					sb.append(String.valueOf(${propertyName}));
 				<#elseif stringUtil.equals(propertyType, "Object")>
-					if (${propertyName} instanceof Map) {
+					if (${propertyName} instanceof Collection) {
+						sb.append(JSONFactoryUtil.createJSONArray((Collection<?>)${propertyName}));
+					}
+					else if (${propertyName} instanceof Map) {
 						sb.append(JSONFactoryUtil.createJSONObject((Map<?, ?>)${propertyName}));
+					}
+					else if (${propertyName} instanceof Object[]) {
+						sb.append(JSONFactoryUtil.createJSONArray(Arrays.asList((Object[])${propertyName})));
 					}
 					else if (${propertyName} instanceof String) {
 						sb.append("\"");

@@ -5,6 +5,7 @@
 
 import React, {useEffect, useState} from 'react';
 
+import FeedbackActionsRow from '../../ReportFeedback/FeedbackActionsRow';
 import ConfirmationBalloon from './ConfirmationBalloon';
 
 export default function WritingAssistantConfirmationAction({
@@ -12,13 +13,18 @@ export default function WritingAssistantConfirmationAction({
 	handleAccept,
 	handleDiscard,
 	hideBalloon,
+	onReport,
+	onThumbsUp,
 }: {
 	containerRef: HTMLElement;
 	handleAccept: () => void;
 	handleDiscard: () => void;
 	hideBalloon: () => void;
+	onReport?: () => void;
+	onThumbsUp?: () => void;
 }) {
 	const [active, setActive] = useState(true);
+	const [feedbackGiven, setFeedbackGiven] = useState(false);
 
 	const actions = [
 		{
@@ -40,12 +46,6 @@ export default function WritingAssistantConfirmationAction({
 				hideBalloon();
 			},
 			symbolLeft: 'times',
-		},
-		{
-			disabled: true,
-			name: Liferay.Language.get('regenerate'),
-			onClick: () => {},
-			symbolLeft: 'reset',
 		},
 	];
 
@@ -71,5 +71,30 @@ export default function WritingAssistantConfirmationAction({
 		return null;
 	}
 
-	return <ConfirmationBalloon actions={actions} />;
+	return (
+		<ConfirmationBalloon
+			actions={actions}
+			actionsRow={
+				<FeedbackActionsRow
+					feedbackGiven={feedbackGiven}
+					onReport={() => {
+						if (onReport) {
+							setActive(false);
+							hideBalloon();
+							onReport();
+						}
+					}}
+					onThumbsUp={
+						onThumbsUp
+							? () => {
+									setFeedbackGiven(true);
+
+									onThumbsUp();
+								}
+							: undefined
+					}
+				/>
+			}
+		/>
+	);
 }

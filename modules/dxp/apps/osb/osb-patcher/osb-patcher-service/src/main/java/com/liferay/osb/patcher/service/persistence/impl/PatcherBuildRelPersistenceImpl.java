@@ -17,11 +17,8 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
@@ -72,72 +69,15 @@ public class PatcherBuildRelPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByChildPatcherBuildId;
-	private FinderPath _finderPathWithoutPaginationFindByChildPatcherBuildId;
-	private FinderPath _finderPathCountByChildPatcherBuildId;
-	private CollectionPersistenceFinder<PatcherBuildRel>
-		_collectionPersistenceFinderByChildPatcherBuildId;
-
-	/**
-	 * Returns all the patcher build rels where childPatcherBuildId = &#63;.
-	 *
-	 * @param childPatcherBuildId the child patcher build ID
-	 * @return the matching patcher build rels
-	 */
-	@Override
-	public List<PatcherBuildRel> findByChildPatcherBuildId(
-		long childPatcherBuildId) {
-
-		return findByChildPatcherBuildId(
-			childPatcherBuildId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the patcher build rels where childPatcherBuildId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param childPatcherBuildId the child patcher build ID
-	 * @param start the lower bound of the range of patcher build rels
-	 * @param end the upper bound of the range of patcher build rels (not inclusive)
-	 * @return the range of matching patcher build rels
-	 */
-	@Override
-	public List<PatcherBuildRel> findByChildPatcherBuildId(
-		long childPatcherBuildId, int start, int end) {
-
-		return findByChildPatcherBuildId(childPatcherBuildId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<PatcherBuildRel, NoSuchPatcherBuildRelException>
+			_collectionPersistenceFinderByChildPatcherBuildId;
 
 	/**
 	 * Returns an ordered range of all the patcher build rels where childPatcherBuildId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param childPatcherBuildId the child patcher build ID
-	 * @param start the lower bound of the range of patcher build rels
-	 * @param end the upper bound of the range of patcher build rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching patcher build rels
-	 */
-	@Override
-	public List<PatcherBuildRel> findByChildPatcherBuildId(
-		long childPatcherBuildId, int start, int end,
-		OrderByComparator<PatcherBuildRel> orderByComparator) {
-
-		return findByChildPatcherBuildId(
-			childPatcherBuildId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the patcher build rels where childPatcherBuildId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param childPatcherBuildId the child patcher build ID
@@ -172,18 +112,8 @@ public class PatcherBuildRelPersistenceImpl
 			OrderByComparator<PatcherBuildRel> orderByComparator)
 		throws NoSuchPatcherBuildRelException {
 
-		PatcherBuildRel patcherBuildRel = fetchByChildPatcherBuildId_First(
-			childPatcherBuildId, orderByComparator);
-
-		if (patcherBuildRel != null) {
-			return patcherBuildRel;
-		}
-
-		throw new NoSuchPatcherBuildRelException(
-			_collectionPersistenceFinderByChildPatcherBuildId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {childPatcherBuildId}));
+		return _collectionPersistenceFinderByChildPatcherBuildId.findFirst(
+			finderCache, new Object[] {childPatcherBuildId}, orderByComparator);
 	}
 
 	/**
@@ -225,73 +155,15 @@ public class PatcherBuildRelPersistenceImpl
 			finderCache, new Object[] {childPatcherBuildId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByParentPatcherBuildId;
-	private FinderPath _finderPathWithoutPaginationFindByParentPatcherBuildId;
-	private FinderPath _finderPathCountByParentPatcherBuildId;
-	private CollectionPersistenceFinder<PatcherBuildRel>
-		_collectionPersistenceFinderByParentPatcherBuildId;
-
-	/**
-	 * Returns all the patcher build rels where parentPatcherBuildId = &#63;.
-	 *
-	 * @param parentPatcherBuildId the parent patcher build ID
-	 * @return the matching patcher build rels
-	 */
-	@Override
-	public List<PatcherBuildRel> findByParentPatcherBuildId(
-		long parentPatcherBuildId) {
-
-		return findByParentPatcherBuildId(
-			parentPatcherBuildId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the patcher build rels where parentPatcherBuildId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param parentPatcherBuildId the parent patcher build ID
-	 * @param start the lower bound of the range of patcher build rels
-	 * @param end the upper bound of the range of patcher build rels (not inclusive)
-	 * @return the range of matching patcher build rels
-	 */
-	@Override
-	public List<PatcherBuildRel> findByParentPatcherBuildId(
-		long parentPatcherBuildId, int start, int end) {
-
-		return findByParentPatcherBuildId(
-			parentPatcherBuildId, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<PatcherBuildRel, NoSuchPatcherBuildRelException>
+			_collectionPersistenceFinderByParentPatcherBuildId;
 
 	/**
 	 * Returns an ordered range of all the patcher build rels where parentPatcherBuildId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildRelModelImpl</code>.
-	 * </p>
-	 *
-	 * @param parentPatcherBuildId the parent patcher build ID
-	 * @param start the lower bound of the range of patcher build rels
-	 * @param end the upper bound of the range of patcher build rels (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching patcher build rels
-	 */
-	@Override
-	public List<PatcherBuildRel> findByParentPatcherBuildId(
-		long parentPatcherBuildId, int start, int end,
-		OrderByComparator<PatcherBuildRel> orderByComparator) {
-
-		return findByParentPatcherBuildId(
-			parentPatcherBuildId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the patcher build rels where parentPatcherBuildId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildRelModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherBuildRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param parentPatcherBuildId the parent patcher build ID
@@ -326,18 +198,9 @@ public class PatcherBuildRelPersistenceImpl
 			OrderByComparator<PatcherBuildRel> orderByComparator)
 		throws NoSuchPatcherBuildRelException {
 
-		PatcherBuildRel patcherBuildRel = fetchByParentPatcherBuildId_First(
-			parentPatcherBuildId, orderByComparator);
-
-		if (patcherBuildRel != null) {
-			return patcherBuildRel;
-		}
-
-		throw new NoSuchPatcherBuildRelException(
-			_collectionPersistenceFinderByParentPatcherBuildId.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {parentPatcherBuildId}));
+		return _collectionPersistenceFinderByParentPatcherBuildId.findFirst(
+			finderCache, new Object[] {parentPatcherBuildId},
+			orderByComparator);
 	}
 
 	/**
@@ -557,64 +420,63 @@ public class PatcherBuildRelPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByChildPatcherBuildId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByChildPatcherBuildId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"childPatcherBuildId"}, true);
-
-		_finderPathWithoutPaginationFindByChildPatcherBuildId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByChildPatcherBuildId", new String[] {Long.class.getName()},
-			new String[] {"childPatcherBuildId"}, true);
-
-		_finderPathCountByChildPatcherBuildId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByChildPatcherBuildId", new String[] {Long.class.getName()},
-			new String[] {"childPatcherBuildId"}, false);
-
 		_collectionPersistenceFinderByChildPatcherBuildId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByChildPatcherBuildId,
-				_finderPathWithoutPaginationFindByChildPatcherBuildId,
-				_finderPathCountByChildPatcherBuildId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByChildPatcherBuildId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"childPatcherBuildId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByChildPatcherBuildId",
+					new String[] {Long.class.getName()},
+					new String[] {"childPatcherBuildId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByChildPatcherBuildId",
+					new String[] {Long.class.getName()},
+					new String[] {"childPatcherBuildId"}, false),
 				_SQL_SELECT_PATCHERBUILDREL_WHERE,
 				_SQL_COUNT_PATCHERBUILDREL_WHERE,
 				PatcherBuildRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"patcherBuildRel.", "childPatcherBuildId",
 					FinderColumn.Type.LONG, "=", true, true,
 					PatcherBuildRel::getChildPatcherBuildId));
 
-		_finderPathWithPaginationFindByParentPatcherBuildId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-			"findByParentPatcherBuildId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"parentPatcherBuildId"}, true);
-
-		_finderPathWithoutPaginationFindByParentPatcherBuildId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByParentPatcherBuildId", new String[] {Long.class.getName()},
-			new String[] {"parentPatcherBuildId"}, true);
-
-		_finderPathCountByParentPatcherBuildId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByParentPatcherBuildId", new String[] {Long.class.getName()},
-			new String[] {"parentPatcherBuildId"}, false);
-
 		_collectionPersistenceFinderByParentPatcherBuildId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByParentPatcherBuildId,
-				_finderPathWithoutPaginationFindByParentPatcherBuildId,
-				_finderPathCountByParentPatcherBuildId,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByParentPatcherBuildId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"parentPatcherBuildId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByParentPatcherBuildId",
+					new String[] {Long.class.getName()},
+					new String[] {"parentPatcherBuildId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByParentPatcherBuildId",
+					new String[] {Long.class.getName()},
+					new String[] {"parentPatcherBuildId"}, false),
 				_SQL_SELECT_PATCHERBUILDREL_WHERE,
 				_SQL_COUNT_PATCHERBUILDREL_WHERE,
 				PatcherBuildRelModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
+				"",
 				new FinderColumn<>(
 					"patcherBuildRel.", "parentPatcherBuildId",
 					FinderColumn.Type.LONG, "=", true, true,
@@ -677,13 +539,10 @@ public class PatcherBuildRelPersistenceImpl
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No PatcherBuildRel exists with the key {";
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		PatcherBuildRelPersistenceImpl.class);
-
 	@Override
 	protected FinderCache getFinderCache() {
 		return finderCache;
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:2060547841
+// LIFERAY-SERVICE-BUILDER-HASH:1678811765

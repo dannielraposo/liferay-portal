@@ -7,7 +7,7 @@ import {expect, mergeTests} from '@playwright/test';
 
 import {featureFlagsTest} from '../../../../../fixtures/featureFlagsTest';
 import {loginTest} from '../../../../../fixtures/loginTest';
-import {reactPlusCETClassicPageTest} from '../../../../frontend-editor-ckeditor-sample-web/fixtures/ckeditor5/classicPageTest';
+import {reactPlusCETClassicPageTest} from '../../../../frontend-editor-ckeditor5-sample-web/fixtures/classicPageTest';
 
 export const test = mergeTests(
 	reactPlusCETClassicPageTest,
@@ -39,5 +39,13 @@ test(
 			await classicPage.toolbar.buttonLabels.allInnerTexts();
 
 		expect(availableButtons).toEqual(expectedButtons);
+	}
+);
+
+test(
+	'WordCount plugin loaded via CX tracks word and character counts',
+	{tag: '@LPD-89734'},
+	async ({classicPage}) => {
+		await expect(classicPage.wordCountContainer).toBeVisible();
 	}
 );

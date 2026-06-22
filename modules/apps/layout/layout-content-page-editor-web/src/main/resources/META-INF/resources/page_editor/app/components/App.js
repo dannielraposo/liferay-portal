@@ -18,6 +18,7 @@ import {CollectionActiveItemContextProvider} from '../contexts/CollectionActiveI
 import {ControlsProvider} from '../contexts/ControlsContext';
 import {DisplayPagePreviewItemContextProvider} from '../contexts/DisplayPagePreviewItemContext';
 import {EditableProcessorContextProvider} from '../contexts/EditableProcessorContext';
+import {FormDataContextProvider} from '../contexts/FormDataContext';
 import {FormValidationContextProvider} from '../contexts/FormValidationContext';
 import {GlobalContextProvider} from '../contexts/GlobalContext';
 import {
@@ -26,7 +27,6 @@ import {
 } from '../contexts/KeyboardMovementContext';
 import {LayoutKeyboardContextProvider} from '../contexts/LayoutKeyboardContext';
 import {LocalConfigContextProvider} from '../contexts/LocalConfigContext';
-import {ObjectDataContextProvider} from '../contexts/ObjectDataContext';
 import {PortletContentContextProvider} from '../contexts/PortletContentContext';
 import {RulesModalContextProvider} from '../contexts/RulesModalContext';
 import {ShortcutContextProvider} from '../contexts/ShortcutContext';
@@ -91,7 +91,7 @@ export default function App({state}) {
 																		<CommonStylesManager />
 
 																		<StyleBookContextProvider>
-																			<ObjectDataContextProvider>
+																			<FormDataContextProvider>
 																				<RulesModalContextProvider>
 																					<Sidebar />
 
@@ -105,7 +105,7 @@ export default function App({state}) {
 
 																					<RulesModal />
 																				</RulesModalContextProvider>
-																			</ObjectDataContextProvider>
+																			</FormDataContextProvider>
 																		</StyleBookContextProvider>
 																	</GlobalContextProvider>
 																</LocalConfigContextProvider>

@@ -46,9 +46,13 @@ public abstract class BaseAccountResourceImpl implements AccountResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/channel-accounts/{channelAccountId}/account'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Retrieves the account associated with the parent ChannelAccount, addressed by internal ID. Calls CommerceChannelAccountEntryRelService.getCommerceChannelAccountEntryRel. Validation -- NoSuchChannelAccountEntryRelException -> 404 when channel-account binding id not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Identifier of a channel-account link. Addresses a single association that grants one commerce account access to a channel.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "channelAccountId"
 			)
@@ -516,4 +520,4 @@ public abstract class BaseAccountResourceImpl implements AccountResource {
 		LogFactoryUtil.getLog(BaseAccountResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1860201670
+// LIFERAY-REST-BUILDER-HASH:-450576742

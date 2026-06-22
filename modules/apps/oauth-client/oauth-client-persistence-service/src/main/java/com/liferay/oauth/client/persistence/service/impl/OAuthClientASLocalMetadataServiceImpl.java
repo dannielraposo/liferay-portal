@@ -11,7 +11,9 @@ import com.liferay.oauth.client.persistence.service.base.OAuthClientASLocalMetad
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -50,6 +52,7 @@ public class OAuthClientASLocalMetadataServiceImpl
 				getUserId(), metadataJSON, wellKnownURISuffix);
 	}
 
+	@Override
 	public OAuthClientASLocalMetadata addOAuthClientASLocalMetadata(
 			String externalReferenceCode, String authorizationEndpoint,
 			String issuer, String jwksURI, boolean localWellKnownEnabled,
@@ -94,13 +97,18 @@ public class OAuthClientASLocalMetadataServiceImpl
 			long companyId, String localWellKnownURI)
 		throws PortalException {
 
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		if (companyId != permissionChecker.getCompanyId()) {
+			throw new PrincipalException();
+		}
+
 		OAuthClientASLocalMetadata oAuthClientASLocalMetadata =
 			oAuthClientASLocalMetadataLocalService.
 				getOAuthClientASLocalMetadata(companyId, localWellKnownURI);
 
 		_oAuthClientASLocalMetadataModelResourcePermission.check(
-			getPermissionChecker(), oAuthClientASLocalMetadata,
-			ActionKeys.DELETE);
+			permissionChecker, oAuthClientASLocalMetadata, ActionKeys.DELETE);
 
 		return oAuthClientASLocalMetadataLocalService.
 			deleteOAuthClientASLocalMetadata(oAuthClientASLocalMetadata);
@@ -277,6 +285,7 @@ public class OAuthClientASLocalMetadataServiceImpl
 				oAuthClientASLocalMetadataId, metadataJSON, wellKnownURISuffix);
 	}
 
+	@Override
 	public OAuthClientASLocalMetadata updateOAuthClientASLocalMetadata(
 			long oAuthClientASLocalMetadataId, String authorizationEndpoint,
 			String issuer, String jwksURI, boolean localWellKnownEnabled,

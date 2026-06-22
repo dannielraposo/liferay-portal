@@ -901,7 +901,7 @@ public class LiferayOAuthDataProvider
 						registrationAccessToken, DateUtil.newDate(),
 						DateUtil.newDate(
 							System.currentTimeMillis() + Time.YEAR),
-						remoteHost, remoteAddr, null, null, null);
+						null, remoteHost, remoteAddr, null, null, null);
 				}
 			}
 
@@ -1504,6 +1504,12 @@ public class LiferayOAuthDataProvider
 			client, oAuth2Authorization.getAccessTokenContent(), lifetime,
 			issuedAt);
 
+		List<String> audiencesList = oAuth2Authorization.getAudiencesList();
+
+		if (!audiencesList.isEmpty()) {
+			serverAccessToken.setAudiences(audiencesList);
+		}
+
 		serverAccessToken.setSubject(
 			_populateUserSubject(
 				oAuth2Authorization.getCompanyId(),
@@ -1718,6 +1724,8 @@ public class LiferayOAuthDataProvider
 				serverAccessToken.getTokenKey());
 			oAuth2Authorization.setAccessTokenCreateDate(createDate);
 			oAuth2Authorization.setAccessTokenExpirationDate(expirationDate);
+			oAuth2Authorization.setAudiencesList(
+				serverAccessToken.getAudiences());
 
 			_oAuth2AuthorizationLocalService.updateOAuth2Authorization(
 				oAuth2Authorization);
@@ -1760,7 +1768,8 @@ public class LiferayOAuthDataProvider
 				oAuth2Application.getOAuth2ApplicationId(),
 				oAuth2Application.getOAuth2ApplicationScopeAliasesId(),
 				serverAccessToken.getTokenKey(), createDate, expirationDate,
-				remoteHost, remoteAddr, null, null, null);
+				serverAccessToken.getAudiences(), remoteHost, remoteAddr, null,
+				null, null);
 
 		List<String> scopeAliasesList =
 			OAuthUtils.convertPermissionsToScopeList(

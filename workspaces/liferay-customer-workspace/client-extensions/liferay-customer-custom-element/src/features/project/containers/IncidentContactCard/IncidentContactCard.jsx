@@ -95,6 +95,7 @@ const ContactSection = ({contacts, hasAdministratorRole, onEdit, title}) => {
 const IncidentContactCard = ({
 	accountSubscriptionGroupsNames,
 	hasActiveProduct,
+	hasPaaSExperience,
 }) => {
 	const [{project}] = useAppContext();
 
@@ -115,8 +116,8 @@ const IncidentContactCard = ({
 
 	const [currentHighPriorityContacts, setCurrentHighPriorityContacts] =
 		useState({
-			cloudNative: [],
 			criticalIncident: [],
+			paasUser: [],
 			privacyBreach: [],
 			securityBreach: [],
 		});
@@ -133,16 +134,18 @@ const IncidentContactCard = ({
 		refetch();
 	};
 
-	const isCloudNative = accountSubscriptionGroupsNames?.some(
-		(name) => name === PRODUCT_TYPES.cloudNative
-	);
-
 	const isLXCEnvironment = accountSubscriptionGroupsNames?.some((name) =>
 		[
 			PRODUCT_TYPES.liferayCloud,
 			PRODUCT_TYPES.liferayExperienceCloud,
 		].includes(name)
 	);
+
+	const isCloudNative = accountSubscriptionGroupsNames?.some(
+		(name) => name === PRODUCT_TYPES.cloudNative
+	);
+
+	const showPaaSUserCard = hasPaaSExperience && !isLXCEnvironment;
 
 	useEffect(() => {
 		if (!userAccountsData) {
@@ -172,10 +175,14 @@ const IncidentContactCard = ({
 		}
 	}, [userAccountsData]);
 
-	const hasCloudNativeContact = !!currentHighPriorityContacts.cloudNative?.length;
-	const hasCriticalIncidentContact = !!currentHighPriorityContacts.criticalIncident?.length;
-	const hasPrivacyBreachContact = !!currentHighPriorityContacts.privacyBreach?.length;
-	const hasSecurityBreachContact = !!currentHighPriorityContacts.securityBreach?.length;
+	const hasPaaSUserContact =
+		!!currentHighPriorityContacts.paasUser?.length;
+	const hasCriticalIncidentContact =
+		!!currentHighPriorityContacts.criticalIncident?.length;
+	const hasPrivacyBreachContact =
+		!!currentHighPriorityContacts.privacyBreach?.length;
+	const hasSecurityBreachContact =
+		!!currentHighPriorityContacts.securityBreach?.length;
 
 	const handleOnClick = (category) => {
 		setModalFilter(category);
@@ -292,18 +299,16 @@ const IncidentContactCard = ({
 							</div>
 						)}
 
-						{isCloudNative && (
+						{showPaaSUserCard && (
 							<div className="customer-portal-card-footer customer-portal-card-footer-style-ac">
 								<div className="customer-portal-card-footer-title">
-									<h1>
-										{i18n.translate('cloud-native-contacts')}
-									</h1>
+									<h1>{i18n.translate('paas-users')}</h1>
 								</div>
 
 								<div className="customer-portal-card-footer-description">
 									<p>
 										{i18n.translate(
-											'team-members-who-will-have-access-to-cloud-native'
+											'paas-users-will-have-access-to-paas-experience-applications'
 										)}
 									</p>
 								</div>
@@ -313,18 +318,18 @@ const IncidentContactCard = ({
 										<div className="col customer-portal-card-description">
 											<ContactSection
 												contacts={
-													currentHighPriorityContacts.cloudNative
+													currentHighPriorityContacts.paasUser
 												}
 												hasAdministratorRole={
 													hasAdministratorRole
 												}
 												onEdit={() =>
 													handleOnClick(
-														HIGH_PRIORITY_CONTACT_CATEGORIES.cloudNative
+														HIGH_PRIORITY_CONTACT_CATEGORIES.paasUser
 													)
 												}
 												title={i18n.translate(
-													'cloud-native-contacts'
+													'paas-users'
 												)}
 											/>
 										</div>
@@ -342,11 +347,15 @@ const IncidentContactCard = ({
 							>
 								<IncidentContactEditForm
 									close={closeModal}
-									hasCloudNativeContact={hasCloudNativeContact}
+									hasPaaSUserContact={
+										hasPaaSUserContact
+									}
 									hasCriticalIncidentContact={
 										hasCriticalIncidentContact
 									}
-									hasPrivacyBreachContact={hasPrivacyBreachContact}
+									hasPrivacyBreachContact={
+										hasPrivacyBreachContact
+									}
 									hasSecurityBreachContact={
 										hasSecurityBreachContact
 									}

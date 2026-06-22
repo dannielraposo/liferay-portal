@@ -32,7 +32,7 @@ $custom-control-indicator-border-color: $gray-600 !default;
 $custom-control-indicator-border-style: solid !default;
 $custom-control-indicator-border-width: $border-width !default;
 $custom-control-indicator-box-shadow: none !default;
-$custom-control-indicator-position-top: 0px !default;
+$custom-control-indicator-position-top: 0rem !default;
 
 $custom-control-indicator-focus-border-color: $custom-control-indicator-border-color !default;
 $custom-control-indicator-focus-box-shadow: $component-focus-box-shadow !default;
@@ -83,6 +83,13 @@ $custom-control-indicator-disabled-checked-border-color: $custom-control-indicat
 
 $custom-control-indicator-checked-disabled-border-color: $custom-control-indicator-disabled-checked-border-color !default;
 
+// .custom-control-input
+
+$custom-control-input-size: 1.5rem !default;
+$custom-control-input-offset: calc(
+	(#{$custom-control-input-size} - #{$custom-control-indicator-size}) / -2
+) !default;
+
 // .custom-control
 
 $custom-control-cursor: null !default;
@@ -99,7 +106,7 @@ $custom-control-margin-top: null !default;
 
 // @deprecated after of v3.5.0 use the Sass map `$custom-control` instead
 
-$custom-control-min-height: 1.5rem !default;
+$custom-control-min-height: $custom-control-indicator-size !default;
 
 // .custom-control-label
 
@@ -125,7 +132,7 @@ $custom-control-description-font-weight: $font-weight-normal !default;
 
 // @deprecated as of v2.19.0 use the Sass map `$custom-control-label` instead
 
-$custom-control-description-line-height: $custom-control-min-height !default;
+$custom-control-description-line-height: 1.5rem !default;
 
 // @deprecated as of v2.19.0 use the Sass map `$custom-control-label-text` instead
 
@@ -146,12 +153,13 @@ $custom-control-label: map-deep-merge(
 	(
 		color: $custom-control-label-color,
 		cursor: $custom-control-description-cursor,
+		display: inline-block,
 		font-size: $custom-control-description-font-size,
 		font-weight: $custom-control-description-font-weight,
 		line-height: $custom-control-description-line-height,
 		margin-bottom: 0rem,
+		max-width: 100%,
 		position: static,
-		vertical-align: top,
 
 		before: (
 			background-color: $custom-control-indicator-bg,
@@ -167,7 +175,7 @@ $custom-control-label: map-deep-merge(
 			height: $custom-control-indicator-size,
 			left: 0rem,
 			position: relative,
-			top: 0.25rem,
+			top: $custom-control-indicator-position-top,
 			transition: clay-enable-transitions($custom-forms-transition),
 			width: $custom-control-indicator-size,
 		),
@@ -177,11 +185,11 @@ $custom-control-label: map-deep-merge(
 			border-radius: $rounded-circle-border-radius,
 			content: '',
 			display: block,
-			height: 1.5rem,
-			left: -0.25rem,
+			height: $custom-control-input-size,
+			left: $custom-control-input-offset,
 			position: absolute,
-			top: $custom-control-indicator-position-top,
-			width: 1.5rem,
+			top: $custom-control-input-offset,
+			width: $custom-control-input-size,
 		),
 	),
 	$custom-control-label
@@ -224,6 +232,8 @@ $custom-control-label-text: () !default;
 $custom-control-label-text: map-deep-merge(
 	(
 		padding-left: $custom-control-description-padding-left,
+		position: relative,
+		top: -0.25rem,
 	),
 	$custom-control-label-text
 );
@@ -270,12 +280,12 @@ $custom-control-input: () !default;
 $custom-control-input: map-deep-merge(
 	(
 		cursor: $link-cursor,
-		height: 1.5rem,
-		left: -0.25rem,
+		height: $custom-control-input-size,
+		left: $custom-control-input-offset,
 		opacity: 0,
 		position: absolute,
-		top: $custom-control-indicator-position-top,
-		width: 1.5rem,
+		top: $custom-control-input-offset,
+		width: $custom-control-input-size,
 		z-index: 1,
 
 		focus: (
@@ -384,7 +394,10 @@ $custom-control-primary-label-text: map-deep-merge(
 
 $custom-checkbox-indicator-border-radius: 0.125rem !default;
 
-$custom-checkbox-indicator-icon-checked: clay-icon(check-small, #fff) !default;
+$custom-checkbox-indicator-icon-checked: var(
+	--custom-checkbox-indicator-icon-checked,
+	clay-icon(check-small, #fff)
+) !default;
 $custom-checkbox-indicator-icon-checked-bg-size: 1rem !default;
 
 $custom-checkbox-indicator-indeterminate-bg: $component-active-bg !default;
@@ -395,7 +408,10 @@ $custom-control-indicator-indeterminate-border-color: $custom-control-indicator-
 $custom-checkbox-indicator-indeterminate-box-shadow: none !default;
 $custom-checkbox-indicator-indeterminate-color: $custom-control-indicator-checked-color !default;
 
-$custom-checkbox-indicator-icon-indeterminate: clay-icon(hr, #fff) !default;
+$custom-checkbox-indicator-icon-indeterminate: var(
+	--custom-checkbox-indicator-icon-indeterminate,
+	clay-icon(hr, #fff)
+) !default;
 $custom-checkbox-indicator-icon-indeterminate-bg-size: 1rem !default;
 
 $custom-checkbox: () !default;
@@ -441,7 +457,11 @@ $custom-checkbox: map-deep-merge(
 						),
 
 						after: (
-							background-image: clay-icon(check-small, #6b6c7e),
+							background-image:
+								var(
+									--custom-checkbox-indicator-icon-checked-readonly,
+									clay-icon(check-small, #cdced9)
+								),
 						),
 					),
 
@@ -497,7 +517,11 @@ $custom-checkbox: map-deep-merge(
 						),
 
 						after: (
-							background-image: clay-icon(hr, #6b6c7e),
+							background-image:
+								var(
+									--custom-checkbox-indicator-icon-indeterminate-readonly,
+									clay-icon(hr, #cdced9)
+								),
 						),
 					),
 
@@ -523,7 +547,10 @@ $custom-checkbox: map-deep-merge(
 
 $custom-radio-indicator-border-radius: 50% !default;
 
-$custom-radio-indicator-icon-checked: clay-icon(circle, #fff) !default;
+$custom-radio-indicator-icon-checked: var(
+	--custom-radio-indicator-icon-checked,
+	clay-icon(circle, #fff)
+) !default;
 $custom-radio-indicator-icon-checked-bg-size: 0.5rem !default;
 
 $custom-radio-indicator-disabled-border-color: $custom-control-indicator-disabled-bg !default;
@@ -655,8 +682,9 @@ $custom-select-border-width: if(
 
 // @deprecated as of v3.x with no replacement
 
-$custom-select-box-shadow: inset 0 1px 2px
-	unquote('hsl(from #{$black} h s l / 0.075)') !default;
+$custom-select-box-shadow: unquote(
+	'inset 0 1px 2px hsl(from #{$black} h s l / 0.075)'
+) !default;
 
 // @deprecated as of v3.x with no replacement
 
@@ -872,8 +900,9 @@ $custom-range-track-border-radius: 1rem !default;
 
 // @deprecated as of v3.x with no replacement
 
-$custom-range-track-box-shadow: inset 0 0.25rem 0.25rem
-	unquote('hsl(from #{$black} h s l / 0.1)') !default;
+$custom-range-track-box-shadow: unquote(
+	'inset 0 0.25rem 0.25rem hsl(from #{$black} h s l / 0.1)'
+) !default;
 
 // @deprecated as of v3.x with no replacement
 
@@ -901,8 +930,9 @@ $custom-range-thumb-border-radius: 1rem !default;
 
 // @deprecated as of v3.x with no replacement
 
-$custom-range-thumb-box-shadow: 0 0.1rem 0.25rem
-	unquote('hsl(from #{$black} h s l / 0.1)') !default;
+$custom-range-thumb-box-shadow: unquote(
+	'0 0.1rem 0.25rem hsl(from #{$black} h s l / 0.1)'
+) !default;
 
 // @deprecated as of v3.x with no replacement
 
@@ -975,7 +1005,7 @@ $custom-file-border-radius: if(
 $custom-file-box-shadow: if(
 	variable-exists(input-box-shadow),
 	$input-box-shadow,
-	inset 0 1px 1px unquote('hsl(from #{$black} h s l / 0.075)')
+	unquote('inset 0 1px 1px hsl(from #{$black} h s l / 0.075)')
 ) !default;
 
 // @deprecated as of v3.x with no replacement

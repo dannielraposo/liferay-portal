@@ -77,9 +77,13 @@ public abstract class BaseAccountChannelShippingOptionResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-commerce-admin-account/v1.0/account-channel-shipping-options/{id}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes the per-account channel shipping option identified by its internal ID. Returns 204."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal primary key that identifies the resource.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -158,17 +162,23 @@ public abstract class BaseAccountChannelShippingOptionResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-account/v1.0/accounts/by-externalReferenceCode/{externalReferenceCode}/account-channel-shipping-option'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists the per-account channel shipping options for the Account identified by external reference code."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that identifies the resource. Idempotency key for create and update; must be unique per entity within the company.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index used together with pageSize to slice the result set. The first page is 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Maximum number of entries returned per page. The default value is 20 when the parameter is omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			)
@@ -204,9 +214,13 @@ public abstract class BaseAccountChannelShippingOptionResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-account/v1.0/account-channel-shipping-options/{id}'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Reads a per-account channel shipping option by its internal ID. Returns the per-account channel shipping option. Returns 404 when no entry exists."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal primary key that identifies the resource.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -238,17 +252,23 @@ public abstract class BaseAccountChannelShippingOptionResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-account/v1.0/accounts/{id}/account-channel-shipping-option'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Lists the per-account channel shipping options for the Account identified by internal ID."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal primary key that identifies the resource.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "One-based page index used together with pageSize to slice the result set. The first page is 1.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "page"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Maximum number of entries returned per page. The default value is 20 when the parameter is omitted.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "pageSize"
 			)
@@ -282,9 +302,13 @@ public abstract class BaseAccountChannelShippingOptionResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-account/v1.0/account-channel-shipping-options/{id}' -d $'{"accountExternalReferenceCode": ___, "accountId": ___, "channelExternalReferenceCode": ___, "channelId": ___, "id": ___, "shippingMethodId": ___, "shippingMethodKey": ___, "shippingOptionId": ___, "shippingOptionKey": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates a per-account channel shipping option by its internal ID. JSON Merge Patch semantics; updates the channel binding, shipping method key, and shipping option key."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal primary key that identifies the resource.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -318,9 +342,13 @@ public abstract class BaseAccountChannelShippingOptionResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-account/v1.0/accounts/by-externalReferenceCode/{externalReferenceCode}/account-channel-shipping-option' -d $'{"accountExternalReferenceCode": ___, "accountId": ___, "channelExternalReferenceCode": ___, "channelId": ___, "id": ___, "shippingMethodId": ___, "shippingMethodKey": ___, "shippingOptionId": ___, "shippingOptionKey": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates or updates a per-account channel shipping option under the Account identified by external reference code. Validates the supplied shipping method key, fixed option key, and channel binding before persisting."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that identifies the resource. Idempotency key for create and update; must be unique per entity within the company.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -357,9 +385,13 @@ public abstract class BaseAccountChannelShippingOptionResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-account/v1.0/accounts/{id}/account-channel-shipping-option' -d $'{"accountExternalReferenceCode": ___, "accountId": ___, "channelExternalReferenceCode": ___, "channelId": ___, "id": ___, "shippingMethodId": ___, "shippingMethodKey": ___, "shippingOptionId": ___, "shippingOptionKey": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Creates or updates a per-account channel shipping option under the Account identified by internal ID. Validates the supplied shipping method key, fixed option key, and channel binding before persisting."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal primary key that identifies the resource.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -1218,4 +1250,4 @@ public abstract class BaseAccountChannelShippingOptionResourceImpl
 			BaseAccountChannelShippingOptionResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-183003098
+// LIFERAY-REST-BUILDER-HASH:444582193

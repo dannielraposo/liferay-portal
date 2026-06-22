@@ -225,6 +225,10 @@ public interface SharingEntryLocalService
 			String externalReferenceCode, long groupId)
 		throws PortalException;
 
+	public void deleteToTicketSharingEntries(long toTicketId);
+
+	public void deleteToUserGroupSharingEntries(long toUserGroupId);
+
 	/**
 	 * Deletes the sharing entries for resources shared with the user.
 	 *
@@ -556,6 +560,12 @@ public interface SharingEntryLocalService
 			String uuid, long groupId)
 		throws PortalException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<SharingEntry> getToTicketSharingEntries(long toTicketId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<SharingEntry> getToUserGroupSharingEntries(long toUserGroupId);
+
 	/**
 	 * Returns the list of sharing entries for resources shared with the user.
 	 *
@@ -729,4 +739,4 @@ public interface SharingEntryLocalService
 	public SharingEntry updateSharingEntry(SharingEntry sharingEntry);
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-916700364
+// LIFERAY-SERVICE-BUILDER-HASH:-720703128

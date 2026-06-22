@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayForm from '@clayui/form';
 import Label from '@clayui/label';
 import ClayPanel from '@clayui/panel';
 import {ItemSelector} from '@liferay/frontend-js-item-selector-web';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useId, useMemo, useState} from 'react';
 
+import ErrorFeedback from '../../../common/components/forms/ErrorFeedback';
 import {
 	IAssetObjectEntry,
 	IGroupedTaxonomies,
@@ -20,6 +22,7 @@ import type {EntryCategorizationDTO} from '../services/ObjectEntryService';
 const AssetCategories = ({
 	cmsGroupId,
 	collapsable = true,
+	errorMessage,
 	hasUpdatePermission,
 	inputSize,
 	objectEntry,
@@ -27,12 +30,15 @@ const AssetCategories = ({
 }: {
 	cmsGroupId: number | string;
 	collapsable?: boolean;
+	errorMessage?: string;
 	hasUpdatePermission?: boolean;
 	inputSize?: CategorizationInputSize;
 	objectEntry: IAssetObjectEntry | EntryCategorizationDTO;
 	updateObjectEntry: (object: EntryCategorizationDTO) => void | Promise<void>;
 }) => {
 	const [value, setValue] = useState('');
+
+	const feedbackId = useId();
 
 	const apiURL = useMemo(() => {
 		const {
@@ -124,6 +130,11 @@ const AssetCategories = ({
 		[groupedTaxonomies.taxonomyCategoryIds, updateObjectEntry]
 	);
 
+	const selectedCategories = useMemo(
+		() => Object.values(groupedTaxonomies.taxonomyVocabularies).flat(),
+		[groupedTaxonomies.taxonomyVocabularies]
+	);
+
 	const removeCategory = useCallback(
 		async (category: ITaxonomyCategoryFacade) => {
 			const {taxonomyCategoryIds} = groupedTaxonomies;
@@ -165,52 +176,66 @@ const AssetCategories = ({
 			showCollapseIcon={collapsable}
 		>
 			<ClayPanel.Body>
-				<ItemSelector<any>
-					apiURL={apiURL}
-					disabled={!hasUpdatePermission}
-					estimateSize={49}
-					locator={{
-						id: 'id',
-						label: 'name',
-						value: 'externalReferenceCode',
-					}}
-					onChange={setValue}
-					onItemsChange={(newItems: any) => {
-						if (newItems[0]) {
-							addCategory(newItems[0]);
-
-							// The reason for this timeout is because of react's
-							// batch rendering. Clay internals set the value of
-							// the input, but we need to wait for the next 'tick' to set the value.
-
-							setTimeout(() => setValue(''));
-						}
-					}}
-					placeholder={Liferay.Language.get('add-category')}
-					refetchOnActive
-					sizing={inputSize}
-					value={value}
+				<div
+					className={
+						errorMessage ? 'form-group has-error' : undefined
+					}
 				>
-					{(item) => (
-						<ItemSelector.Item
-							key={item.name}
-							textValue={item.name}
-						>
-							<div>
-								<span className="font-weight-bold text-truncate">
-									{item?.name}
-								</span>
+					<ItemSelector<any>
+						apiURL={apiURL}
+						aria-describedby={errorMessage ? feedbackId : undefined}
+						disabled={!hasUpdatePermission}
+						estimateSize={49}
+						items={selectedCategories}
+						locator={{
+							id: 'id',
+							label: 'name',
+							value: 'id',
+						}}
+						onChange={setValue}
+						onItemsChange={(newItems: any) => {
+							if (newItems[0]) {
+								addCategory(newItems[0]);
 
-								<span
-									className="text-1 text-secondary text-truncate text-uppercase"
-									title={item?.path}
-								>
-									{item?.path}
-								</span>
-							</div>
-						</ItemSelector.Item>
+								// The reason for this timeout is because of react's
+								// batch rendering. Clay internals set the value of
+								// the input, but we need to wait for the next 'tick' to set the value.
+
+								setTimeout(() => setValue(''));
+							}
+						}}
+						placeholder={Liferay.Language.get('add-category')}
+						refetchOnActive
+						sizing={inputSize}
+						value={value}
+					>
+						{(item) => (
+							<ItemSelector.Item
+								key={item.id}
+								textValue={item.name}
+							>
+								<div>
+									<span className="font-weight-bold text-truncate">
+										{item?.name}
+									</span>
+
+									<span
+										className="text-1 text-secondary text-truncate text-uppercase"
+										title={item?.path}
+									>
+										{item?.path}
+									</span>
+								</div>
+							</ItemSelector.Item>
+						)}
+					</ItemSelector>
+
+					{errorMessage && (
+						<ClayForm.FeedbackGroup id={feedbackId} role="alert">
+							<ErrorFeedback message={errorMessage} />
+						</ClayForm.FeedbackGroup>
 					)}
-				</ItemSelector>
+				</div>
 
 				{groupedTaxonomies.taxonomyVocabularies &&
 					Object.entries(groupedTaxonomies?.taxonomyVocabularies).map(
@@ -250,6 +275,7 @@ const AssetCategories = ({
 														),
 												}}
 												displayType="secondary"
+												inverse
 												key={`${category.taxonomyVocabularyId}_${category.id}`}
 											>
 												{category.name}

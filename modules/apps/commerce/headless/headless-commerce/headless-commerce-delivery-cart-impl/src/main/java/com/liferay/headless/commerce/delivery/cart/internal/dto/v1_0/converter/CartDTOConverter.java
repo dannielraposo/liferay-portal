@@ -17,6 +17,8 @@ import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceOrderType;
 import com.liferay.commerce.model.CommerceShippingEngine;
 import com.liferay.commerce.model.CommerceShippingMethod;
+import com.liferay.commerce.order.CommerceOrderValidatorRegistry;
+import com.liferay.commerce.order.CommerceOrderValidatorResult;
 import com.liferay.commerce.payment.method.CommercePaymentMethod;
 import com.liferay.commerce.payment.method.CommercePaymentMethodRegistry;
 import com.liferay.commerce.payment.model.CommercePaymentMethodGroupRel;
@@ -51,6 +53,7 @@ import com.liferay.portal.kernel.model.Region;
 import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.BigDecimalUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.language.LanguageResources;
@@ -93,11 +96,14 @@ public class CartDTOConverter implements DTOConverter<CommerceOrder, Cart> {
 			return null;
 		}
 
-		CommerceShippingMethod commerceShippingMethod =
-			commerceOrder.getCommerceShippingMethod();
-
 		Locale locale = dtoConverterContext.getLocale();
 
+		List<CommerceOrderValidatorResult> commerceOrderValidatorResults =
+			_getCommerceOrderValidatorResults(
+				commerceOrder, dtoConverterContext, locale);
+
+		CommerceShippingMethod commerceShippingMethod =
+			commerceOrder.getCommerceShippingMethod();
 		ResourceBundle resourceBundle = LanguageResources.getResourceBundle(
 			locale);
 
@@ -148,6 +154,14 @@ public class CartDTOConverter implements DTOConverter<CommerceOrder, Cart> {
 
 						return commerceTermEntry.getLabel(
 							_language.getLanguageId(locale));
+					});
+				setErrorMessages(
+					() -> {
+						if (commerceOrderValidatorResults == null) {
+							return null;
+						}
+
+						return _getErrorMessages(commerceOrderValidatorResults);
 					});
 				setExternalReferenceCode(
 					commerceOrder::getExternalReferenceCode);
@@ -333,6 +347,14 @@ public class CartDTOConverter implements DTOConverter<CommerceOrder, Cart> {
 							false, commerceOrder, locale),
 						stepModel -> _toStep(stepModel), Step.class));
 				setSummary(() -> _getSummary(commerceOrder, locale));
+				setValid(
+					() -> {
+						if (commerceOrderValidatorResults == null) {
+							return null;
+						}
+
+						return commerceOrderValidatorResults.isEmpty();
+					});
 				setWorkflowStatusInfo(
 					() -> {
 						String commerceOrderWorkflowStatusLabelI18n =
@@ -381,6 +403,38 @@ public class CartDTOConverter implements DTOConverter<CommerceOrder, Cart> {
 		}
 
 		return null;
+	}
+
+	private List<CommerceOrderValidatorResult>
+			_getCommerceOrderValidatorResults(
+				CommerceOrder commerceOrder,
+				DTOConverterContext dtoConverterContext, Locale locale)
+		throws Exception {
+
+		if (!GetterUtil.getBoolean(
+				dtoConverterContext.getAttribute("checkOrderErrors"))) {
+
+			return null;
+		}
+
+		return _commerceOrderValidatorRegistry.validate(locale, commerceOrder);
+	}
+
+	private String[] _getErrorMessages(
+		List<CommerceOrderValidatorResult> commerceOrderValidatorResults) {
+
+		List<String> errorMessages = new ArrayList<>();
+
+		for (CommerceOrderValidatorResult commerceOrderValidatorResult :
+				commerceOrderValidatorResults) {
+
+			if (commerceOrderValidatorResult.hasMessageResult()) {
+				errorMessages.add(
+					commerceOrderValidatorResult.getLocalizedMessage());
+			}
+		}
+
+		return errorMessages.toArray(new String[0]);
 	}
 
 	private String[] _getFormattedDiscountPercentages(
@@ -858,6 +912,9 @@ public class CartDTOConverter implements DTOConverter<CommerceOrder, Cart> {
 
 	@Reference
 	private CommerceOrderTypeService _commerceOrderTypeService;
+
+	@Reference
+	private CommerceOrderValidatorRegistry _commerceOrderValidatorRegistry;
 
 	@Reference
 	private CommercePaymentMethodGroupRelLocalService

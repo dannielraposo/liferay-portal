@@ -26,6 +26,11 @@ public class ViewAnalyticsLatestActivityJSPSectionFragmentRenderer
 		<ViewAnalyticsLatestActivityAnalyticsSectionDisplayContext> {
 
 	@Override
+	public String getCollectionKey() {
+		return "digital-sales-room-analytics";
+	}
+
+	@Override
 	public String getLabelKey() {
 		return "latest-activity";
 	}
@@ -41,7 +46,7 @@ public class ViewAnalyticsLatestActivityJSPSectionFragmentRenderer
 				WebKeys.THEME_DISPLAY);
 
 		return new ViewAnalyticsLatestActivityAnalyticsSectionDisplayContext(
-			httpServletRequest,
+			analyticsSettingsManager, httpServletRequest,
 			_objectDefinitionLocalService.
 				fetchObjectDefinitionByExternalReferenceCode(
 					"L_DSR_ROOM", themeDisplay.getCompanyId()));

@@ -25,6 +25,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +41,9 @@ import java.util.function.Supplier;
 @GraphQLName(
 	description = "Represents the history of previously used URLs for a page to prevent broken links and provide an easy way to revert changes.",
 	value = "FriendlyUrlHistory"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Represents the history of previously used URLs for a page to prevent broken links and provide an easy way to revert changes."
 )
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "FriendlyUrlHistory")
@@ -134,10 +139,20 @@ public class FriendlyUrlHistory implements Serializable {
 
 			sb.append("\"friendlyUrlPath_i18n\": ");
 
-			if (friendlyUrlPath_i18n instanceof Map) {
+			if (friendlyUrlPath_i18n instanceof Collection) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						(Collection<?>)friendlyUrlPath_i18n));
+			}
+			else if (friendlyUrlPath_i18n instanceof Map) {
 				sb.append(
 					JSONFactoryUtil.createJSONObject(
 						(Map<?, ?>)friendlyUrlPath_i18n));
+			}
+			else if (friendlyUrlPath_i18n instanceof Object[]) {
+				sb.append(
+					JSONFactoryUtil.createJSONArray(
+						Arrays.asList((Object[])friendlyUrlPath_i18n)));
 			}
 			else if (friendlyUrlPath_i18n instanceof String) {
 				sb.append("\"");
@@ -250,4 +265,4 @@ public class FriendlyUrlHistory implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1848541336
+// LIFERAY-REST-BUILDER-HASH:1373801908

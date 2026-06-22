@@ -48,9 +48,13 @@ public abstract class BaseProductSubscriptionConfigurationResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/subscriptionConfiguration'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the subscription configuration of the product identified by external reference code. Calls CPDefinitionService.fetchCPDefinitionByCProductExternalReferenceCode + ProductSubscriptionConfigurationDTOConverter. Validation -- Returns NPE when product ERC not found (no explicit guard) - effectively 500."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -85,9 +89,13 @@ public abstract class BaseProductSubscriptionConfigurationResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/subscriptionConfiguration'  -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Returns the subscription configuration of the product identified by product id. Calls CPDefinitionService.fetchCPDefinitionByCProductId + ProductSubscriptionConfigurationDTOConverter. Validation -- NoSuchCPDefinitionException -> 404 when product id not found."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -120,9 +128,13 @@ public abstract class BaseProductSubscriptionConfigurationResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/subscriptionConfiguration' -d $'{"deliverySubscriptionEnable": ___, "deliverySubscriptionLength": ___, "deliverySubscriptionNumberOfLength": ___, "deliverySubscriptionType": ___, "deliverySubscriptionTypeSettings": ___, "enable": ___, "length": ___, "numberOfLength": ___, "subscriptionType": ___, "subscriptionTypeSettings": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates the subscription configuration of the product identified by external reference code. Calls CPDefinitionService.fetchCPDefinitionByCProductExternalReferenceCode + ProductSubscriptionConfigurationUtil.updateCPDefinitionSubscriptionInfo. Validation -- NoSuchCPDefinitionException -> 404 when product ERC not found. Side effects -- Updates the CPDefinition subscription fields (length, cycles, type settings)."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "External reference code that addresses the target resource on the `by-externalReferenceCode` paths. The code is the integration-supplied idempotency key, unique within the resource scope; POST against this path is upsert (create when absent, replace when present).",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "externalReferenceCode"
 			)
@@ -162,9 +174,13 @@ public abstract class BaseProductSubscriptionConfigurationResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/subscriptionConfiguration' -d $'{"deliverySubscriptionEnable": ___, "deliverySubscriptionLength": ___, "deliverySubscriptionNumberOfLength": ___, "deliverySubscriptionType": ___, "deliverySubscriptionTypeSettings": ___, "enable": ___, "length": ___, "numberOfLength": ___, "subscriptionType": ___, "subscriptionTypeSettings": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Partially updates the subscription configuration of the product identified by product id. Calls CPDefinitionService.fetchCPDefinitionByCProductId + ProductSubscriptionConfigurationUtil.updateCPDefinitionSubscriptionInfo. Validation -- NoSuchCPDefinitionException -> 404 when product id not found. Side effects -- Updates the CPDefinition subscription fields."
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
+				description = "Internal numeric identifier of the target resource. Counterpart to the `by-externalReferenceCode` path variant; identifiers are server-assigned and stable across the resource's lifetime.",
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
 			)
@@ -641,4 +657,4 @@ public abstract class BaseProductSubscriptionConfigurationResourceImpl
 			BaseProductSubscriptionConfigurationResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1759881767
+// LIFERAY-REST-BUILDER-HASH:1145387945

@@ -45,15 +45,19 @@ type Event = {
 	browserName?: string;
 	canonicalUrl: string;
 	channelId: string;
-	dataSourceId?: number;
+	context?: string;
+	dataSourceId?: number | string;
 	deviceType?: string;
+	emailAddressHashed?: string;
 	eventDate: string;
 	eventId: string;
 	eventProperties?: string;
 	platformName?: string;
 	properties?: Property[];
 	referrer?: string;
+	sessionId?: string;
 	title: string;
+	url?: string;
 	userId: string;
 };
 
@@ -93,9 +97,21 @@ type JournalDaily = {
 };
 
 type Field = {
-	dataSourceId: number;
+	dataSourceId: number | string;
 	name: string;
 	value: string;
+};
+
+type IdentityActivitySummary = {
+	activitiesCount: number;
+	channelId: string;
+	country?: string;
+	dataSourceId: number | string;
+	eventId: string;
+	firstActivityDate: string;
+	identityId: string;
+	individualId: string;
+	lastActivityDate: string;
 };
 
 type Individual = {
@@ -159,7 +175,11 @@ export class JSONWebServicesOSBAsahApiHelper {
 		return this.apiHelpers.post(
 			`${asahConfig.environment.backendUrl}${this.basePath}/bq-events`,
 			{
-				data: events,
+				data: events.map((event) => ({
+					context: '{}',
+					deviceType: 'Desktop',
+					...event,
+				})),
 				failOnStatusCode: true,
 				headers: this.getHeaders(),
 			}
@@ -179,11 +199,35 @@ export class JSONWebServicesOSBAsahApiHelper {
 		);
 	}
 
+	async deleteEventDefinitions(names: string[]): Promise<any> {
+		return this.apiHelpers.delete(
+			`${asahConfig.environment.backendUrl}${this.basePath}/event-definitions`,
+			{
+				data: names,
+				failOnStatusCode: true,
+				headers: this.getHeaders(),
+			}
+		);
+	}
+
 	async createIdentities(identities: Identity[]): Promise<any> {
 		return this.apiHelpers.post(
 			`${asahConfig.environment.backendUrl}${this.basePath}/bq-identities`,
 			{
 				data: identities,
+				failOnStatusCode: true,
+				headers: this.getHeaders(),
+			}
+		);
+	}
+
+	async createIdentityActivitiesSummary(
+		identityActivitiesSummary: IdentityActivitySummary[]
+	): Promise<any> {
+		return this.apiHelpers.post(
+			`${asahConfig.environment.backendUrl}${this.basePath}/bq-identity-activities-summary`,
+			{
+				data: identityActivitiesSummary,
 				failOnStatusCode: true,
 				headers: this.getHeaders(),
 			}

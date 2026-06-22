@@ -14,13 +14,13 @@ import TextTruncate from 'shared/components/TextTruncate';
 import {CSVType} from 'shared/components/download-report/utils';
 import {DropdownRangeKey} from 'shared/components/dropdown-range-key/DropdownRangeKey';
 import {getMatchedRoute, Routes} from 'shared/util/router';
-import {getSafeDecodedURIComponent} from 'shared/util/util';
+import {getSafeDecodedURIComponent, getSafeTouchpoint} from 'shared/util/util';
 import {pickBy} from 'lodash';
 import {PropTypes} from 'prop-types';
 import {removeUriQueryParam, setUriQueryValues} from 'shared/util/router';
 import {Switch, useHistory} from 'react-router-dom';
 import {useChannelContext} from 'shared/context/channel';
-import {useDataSource} from 'shared/hooks/useDataSource';
+import {useDataSources} from 'shared/context/dataSources';
 import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
 
 const KnownIndividuals = lazy(() =>
@@ -56,7 +56,7 @@ const NAV_ITEMS = [
 ];
 
 function TouchpointRoutes({className, router}) {
-	const dataSourceStates = useDataSource();
+	const dataSourceStates = useDataSources();
 	const rangeSelectors = useQueryRangeSelectors();
 	const {
 		channelId,
@@ -171,7 +171,7 @@ function TouchpointRoutes({className, router}) {
 				<BasePage.SubHeader>
 					<div className='d-flex justify-content-end w-100'>
 						<DownloadCSVReport
-							assetId={decodedTouchpoint}
+							assetId={getSafeTouchpoint(touchpoint)}
 							assetType='page'
 							disabled={dataSourceStates.empty}
 							type={CSVType.Individual}

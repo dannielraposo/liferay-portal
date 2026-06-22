@@ -100,7 +100,7 @@ public class AppServer {
 		}
 
 		if (javaHome == null) {
-			javaHome = System.getenv("JAVA_HOME");
+			javaHome = Environment.get("JAVA_HOME");
 		}
 
 		return javaHome;
@@ -114,7 +114,7 @@ public class AppServer {
 		}
 
 		if (javaOpts == null) {
-			javaOpts = System.getenv("JAVA_OPTS");
+			javaOpts = Environment.get("JAVA_OPTS");
 		}
 
 		return javaOpts;
@@ -135,7 +135,7 @@ public class AppServer {
 		String path = _project.getProperty("env.PATH");
 
 		if (path == null) {
-			path = System.getenv("PATH");
+			path = Environment.get("PATH");
 		}
 
 		String javaHome = _getJavaHome();

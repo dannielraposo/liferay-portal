@@ -326,6 +326,10 @@ public class PropsValues {
 	public static final boolean CLUSTER_LINK_ENABLED = GetterUtil.getBoolean(
 		PropsUtil.get(PropsKeys.CLUSTER_LINK_ENABLED));
 
+	public static final boolean CLUSTER_LINK_JMX_ENABLED =
+		GetterUtil.getBoolean(
+			PropsUtil.get(PropsKeys.CLUSTER_LINK_JMX_ENABLED));
+
 	public static final boolean CMS_BROKEN_LINKS_CHECKER_ENABLED =
 		GetterUtil.getBoolean(
 			PropsUtil.get(PropsKeys.CMS_BROKEN_LINKS_CHECKER_ENABLED));
@@ -2396,10 +2400,20 @@ public class PropsValues {
 	public static final long UPGRADE_LOG_PROGRESS_INTERVAL = GetterUtil.getLong(
 		PropsUtil.get(PropsKeys.UPGRADE_LOG_PROGRESS_INTERVAL));
 
+	public static final boolean UPGRADE_QUERY_MONITOR_ENABLED =
+		GetterUtil.getBoolean(
+			PropsUtil.get(PropsKeys.UPGRADE_QUERY_MONITOR_ENABLED), true);
+
 	public static final long UPGRADE_QUERY_MONITOR_LOCK_THRESHOLD =
 		GetterUtil.getLong(
 			PropsUtil.get(PropsKeys.UPGRADE_QUERY_MONITOR_LOCK_THRESHOLD),
 			300000);
+
+	public static final long UPGRADE_QUERY_MONITOR_LONG_RUNNING_THRESHOLD =
+		GetterUtil.getLong(
+			PropsUtil.get(
+				PropsKeys.UPGRADE_QUERY_MONITOR_LONG_RUNNING_THRESHOLD),
+			600000);
 
 	public static final String UPGRADE_REPORT_DIR = GetterUtil.getString(
 		PropsUtil.get(PropsKeys.UPGRADE_REPORT_DIR));

@@ -5,6 +5,7 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.exportimport.kernel.empty.model.EmptyModelManagerUtil;
 import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.DSLFunctionFactoryUtil;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
@@ -18,6 +19,7 @@ import com.liferay.portal.kernel.exception.DuplicateRegionException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.RegionCodeException;
 import com.liferay.portal.kernel.exception.RegionNameException;
+import com.liferay.portal.kernel.lazy.referencing.LazyReferencingThreadLocal;
 import com.liferay.portal.kernel.model.Country;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.OrganizationTable;
@@ -27,6 +29,8 @@ import com.liferay.portal.kernel.model.RegionTable;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.AddressLocalService;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
@@ -35,9 +39,11 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.persistence.CountryPersistence;
 import com.liferay.portal.kernel.service.persistence.OrganizationPersistence;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.service.base.RegionLocalServiceBaseImpl;
 import com.liferay.util.dao.orm.CustomSQLUtil;
 
@@ -49,19 +55,26 @@ import java.util.List;
  */
 public class RegionLocalServiceImpl extends RegionLocalServiceBaseImpl {
 
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public Region addRegion(
-			long countryId, boolean active, String name, double position,
-			String regionCode, ServiceContext serviceContext)
+			String externalReferenceCode, long countryId, boolean active,
+			String name, double position, String regionCode,
+			ServiceContext serviceContext)
 		throws PortalException {
 
-		_countryPersistence.findByPrimaryKey(countryId);
+		Country country = _countryPersistence.findByPrimaryKey(countryId);
 
 		_validate(-1, countryId, name, regionCode);
+
+		if (Validator.isNull(externalReferenceCode)) {
+			externalReferenceCode = country.getA2() + "_" + regionCode;
+		}
 
 		Region region = regionPersistence.create(
 			counterLocalService.increment(Region.class.getName()));
 
+		region.setExternalReferenceCode(externalReferenceCode);
 		region.setCompanyId(serviceContext.getCompanyId());
 
 		User user = _userLocalService.getUser(serviceContext.getUserId());
@@ -74,6 +87,7 @@ public class RegionLocalServiceImpl extends RegionLocalServiceBaseImpl {
 		region.setName(name);
 		region.setPosition(position);
 		region.setRegionCode(regionCode);
+		region.setStatus(WorkflowConstants.STATUS_APPROVED);
 
 		return regionPersistence.update(region);
 	}
@@ -95,6 +109,7 @@ public class RegionLocalServiceImpl extends RegionLocalServiceBaseImpl {
 		return deleteRegion(region);
 	}
 
+	@Indexable(type = IndexableType.DELETE)
 	@Override
 	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
 	public Region deleteRegion(Region region) {
@@ -131,6 +146,38 @@ public class RegionLocalServiceImpl extends RegionLocalServiceBaseImpl {
 	@Override
 	public Region fetchRegion(long countryId, String regionCode) {
 		return regionPersistence.fetchByC_R(countryId, regionCode);
+	}
+
+	@Override
+	public Region getOrAddEmptyRegion(
+			String externalReferenceCode, long companyId, long userId,
+			long countryId, String regionCode, String name)
+		throws PortalException {
+
+		return EmptyModelManagerUtil.getOrAddEmptyModel(
+			Region.class, companyId, externalReferenceCode,
+			this::fetchRegionByExternalReferenceCode,
+			this::getRegionByExternalReferenceCode,
+			() -> {
+				String regionCodeString =
+					(fetchRegion(countryId, regionCode) != null) ?
+						externalReferenceCode : regionCode;
+
+				ServiceContext serviceContext = new ServiceContext();
+
+				serviceContext.setCompanyId(companyId);
+				serviceContext.setUserId(userId);
+
+				Region region = regionLocalService.addRegion(
+					externalReferenceCode, countryId, false,
+					GetterUtil.getString(name), 0D, regionCodeString,
+					serviceContext);
+
+				region.setStatus(WorkflowConstants.STATUS_EMPTY);
+
+				return regionPersistence.update(region);
+			},
+			"region");
 	}
 
 	@Override
@@ -209,6 +256,7 @@ public class RegionLocalServiceImpl extends RegionLocalServiceBaseImpl {
 			start, end);
 	}
 
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public Region updateActive(long regionId, boolean active)
 		throws PortalException {
@@ -220,20 +268,29 @@ public class RegionLocalServiceImpl extends RegionLocalServiceBaseImpl {
 		return regionPersistence.update(region);
 	}
 
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public Region updateRegion(
-			long regionId, boolean active, String name, double position,
-			String regionCode)
+			String externalReferenceCode, long regionId, boolean active,
+			String name, double position, String regionCode)
 		throws PortalException {
 
 		Region region = regionPersistence.findByPrimaryKey(regionId);
 
 		_validate(regionId, region.getCountryId(), name, regionCode);
 
+		if (Validator.isNotNull(externalReferenceCode)) {
+			region.setExternalReferenceCode(externalReferenceCode);
+		}
+
 		region.setActive(active);
 		region.setName(name);
 		region.setPosition(position);
 		region.setRegionCode(regionCode);
+
+		if (region.getStatus() == WorkflowConstants.STATUS_EMPTY) {
+			region.setStatus(WorkflowConstants.STATUS_APPROVED);
+		}
 
 		return regionPersistence.update(region);
 	}
@@ -320,7 +377,9 @@ public class RegionLocalServiceImpl extends RegionLocalServiceBaseImpl {
 			throw new RegionCodeException("Region code is null");
 		}
 
-		if (CompanyThreadLocal.isInitializingPortalInstance()) {
+		if (CompanyThreadLocal.isInitializingPortalInstance() ||
+			LazyReferencingThreadLocal.isEnabled()) {
+
 			return;
 		}
 

@@ -18,8 +18,10 @@ import com.liferay.exportimport.rest.client.dto.v1_0.Type;
 import com.liferay.exportimport.rest.client.pagination.Page;
 import com.liferay.exportimport.rest.client.pagination.Pagination;
 import com.liferay.exportimport.rest.client.resource.v1_0.ReportEntryResource;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.background.task.model.BackgroundTask;
 import com.liferay.portal.background.task.service.BackgroundTaskLocalService;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -27,6 +29,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.test.rule.Inject;
 
@@ -76,7 +79,9 @@ public class ReportEntryResourceTest extends BaseReportEntryResourceTestCase {
 		super.testGetImportProcessReportEntriesPage();
 
 		_testGetImportProcessReportEntriesPageWithEmptyExportImportReportEntry();
+		_testGetImportProcessReportEntriesPageWithFilter();
 		_testGetImportProcessReportEntriesPageWithLocalizedSearchTerm();
+		_testGetImportProcessReportEntriesPageWithSort();
 	}
 
 	@Override
@@ -155,6 +160,58 @@ public class ReportEntryResourceTest extends BaseReportEntryResourceTestCase {
 		};
 	}
 
+	private ReportEntry _addReportEntry(
+			String classExternalReferenceCodePrefix, String modelNamePrefix,
+			int type)
+		throws Exception {
+
+		ReportEntry reportEntry = _randomReportEntry(type);
+
+		reportEntry.setClassExternalReferenceCode(
+			classExternalReferenceCodePrefix + RandomTestUtil.randomString());
+		reportEntry.setModelName(
+			modelNamePrefix + RandomTestUtil.randomString());
+
+		return _addReportEntry(reportEntry);
+	}
+
+	private void _assertReportEntries(
+			String filterString, String sortString,
+			Long... expectedReportEntryIds)
+		throws Exception {
+
+		Page<ReportEntry> page =
+			reportEntryResource.getImportProcessReportEntriesPage(
+				testGetImportProcessReportEntriesPage_getImportProcessId(),
+				null, filterString, Pagination.of(1, 10), sortString);
+
+		List<ReportEntry> items = (List<ReportEntry>)page.getItems();
+
+		Assert.assertEquals(
+			items.toString(), expectedReportEntryIds.length, items.size());
+
+		for (int i = 0; i < expectedReportEntryIds.length; i++) {
+			ReportEntry reportEntry = items.get(i);
+
+			Assert.assertEquals(expectedReportEntryIds[i], reportEntry.getId());
+		}
+	}
+
+	private ReportEntry _randomReportEntry(int typeCode) throws Exception {
+		ReportEntry reportEntry = randomReportEntry();
+
+		reportEntry.setType(
+			() -> {
+				Type type = new Type();
+
+				type.setCode(typeCode);
+
+				return type;
+			});
+
+		return reportEntry;
+	}
+
 	private void _testGetImportProcessReportEntriesPageWithEmptyExportImportReportEntry()
 		throws Exception {
 
@@ -165,15 +222,8 @@ public class ReportEntryResourceTest extends BaseReportEntryResourceTestCase {
 
 		long totalCount = page.getTotalCount();
 
-		ReportEntry reportEntry = randomReportEntry();
-
-		Type type = new Type();
-
-		type.setCode(ExportImportReportEntryConstants.TYPE_EMPTY);
-
-		reportEntry.setType(type);
-
-		_addReportEntry(reportEntry);
+		_addReportEntry(
+			_randomReportEntry(ExportImportReportEntryConstants.TYPE_EMPTY));
 
 		page = reportEntryResource.getImportProcessReportEntriesPage(
 			testGetImportProcessReportEntriesPage_getImportProcessId(), null,
@@ -182,29 +232,84 @@ public class ReportEntryResourceTest extends BaseReportEntryResourceTestCase {
 		Assert.assertEquals(totalCount + 1, page.getTotalCount());
 	}
 
+	private void _testGetImportProcessReportEntriesPageWithFilter()
+		throws Exception {
+
+		ReportEntry reportEntry1 = _addReportEntry(
+			_randomReportEntry(ExportImportReportEntryConstants.TYPE_ERROR));
+		ReportEntry reportEntry2 = _addReportEntry(
+			_randomReportEntry(ExportImportReportEntryConstants.TYPE_EMPTY));
+
+		_assertReportEntries(
+			"contains(classExternalReferenceCode, '" +
+				reportEntry1.getClassExternalReferenceCode() + "')",
+			null, reportEntry1.getId());
+		_assertReportEntries(
+			"contains(classExternalReferenceCode, '" +
+				RandomTestUtil.randomString() + "')",
+			null);
+		_assertReportEntries(
+			StringBundler.concat(
+				"id eq ", reportEntry2.getId(), " and type/code eq ",
+				ExportImportReportEntryConstants.TYPE_EMPTY),
+			null, reportEntry2.getId());
+		_assertReportEntries(
+			StringBundler.concat(
+				"id eq ", reportEntry2.getId(), " and type/code eq ",
+				ExportImportReportEntryConstants.TYPE_ERROR),
+			null);
+		_assertReportEntries(
+			StringBundler.concat(
+				"id eq ", reportEntry2.getId(), " and type/label eq '",
+				LanguageUtil.get(
+					LocaleUtil.getDefault(),
+					ExportImportReportEntryConstants.getTypeLabel(
+						ExportImportReportEntryConstants.TYPE_EMPTY)),
+				"'"),
+			null, reportEntry2.getId());
+		_assertReportEntries(
+			StringBundler.concat(
+				"id eq ", reportEntry2.getId(), " and type/label eq '",
+				LanguageUtil.get(
+					LocaleUtil.getDefault(),
+					ExportImportReportEntryConstants.getTypeLabel(
+						ExportImportReportEntryConstants.TYPE_ERROR)),
+				"'"),
+			null);
+		_assertReportEntries(
+			"startswith(modelName, '" + reportEntry1.getModelName() + "')",
+			null, reportEntry1.getId());
+		_assertReportEntries(
+			"startswith(modelName, '" + RandomTestUtil.randomString() + "')",
+			null);
+	}
+
 	private void _testGetImportProcessReportEntriesPageWithLocalizedSearchTerm()
 		throws Exception {
 
 		User user = UserTestUtil.getAdminUser(testCompany.getCompanyId());
 
-		reportEntryResource = ReportEntryResource.builder(
+		ReportEntryResource reportEntryResource = ReportEntryResource.builder(
 		).authentication(
 			user.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.SPAIN
 		).build();
 
 		ReportEntry reportEntry = randomReportEntry();
 
-		_exportImportReportEntryLocalService.addErrorExportImportReportEntry(
-			testGroup.getGroupId(), testCompany.getCompanyId(),
-			reportEntry.getClassExternalReferenceCode(),
-			reportEntry.getClassNameId(), reportEntry.getClassPK(),
-			_exportImportConfiguration.getExportImportConfigurationId(),
-			reportEntry.getErrorMessage(), reportEntry.getErrorStacktrace(),
-			"example-text");
+		_exportImportReportEntries.add(
+			_exportImportReportEntryLocalService.
+				addErrorExportImportReportEntry(
+					testGroup.getGroupId(), testCompany.getCompanyId(),
+					reportEntry.getClassExternalReferenceCode(),
+					reportEntry.getClassNameId(), reportEntry.getClassPK(),
+					_exportImportConfiguration.getExportImportConfigurationId(),
+					reportEntry.getErrorMessage(),
+					reportEntry.getErrorStacktrace(), "example-text"));
 
 		Page<ReportEntry> page =
 			reportEntryResource.getImportProcessReportEntriesPage(
@@ -214,6 +319,43 @@ public class ReportEntryResourceTest extends BaseReportEntryResourceTestCase {
 		Assert.assertEquals(1, page.getTotalCount());
 
 		assertContains(reportEntry, (List<ReportEntry>)page.getItems());
+	}
+
+	private void _testGetImportProcessReportEntriesPageWithSort()
+		throws Exception {
+
+		ReportEntry reportEntry1 = _addReportEntry(
+			"a", "z", ExportImportReportEntryConstants.TYPE_EMPTY);
+		ReportEntry reportEntry2 = _addReportEntry(
+			"z", "a", ExportImportReportEntryConstants.TYPE_ERROR);
+
+		String filterString = StringBundler.concat(
+			"id eq ", reportEntry1.getId(), " or id eq ", reportEntry2.getId());
+
+		_assertReportEntries(
+			filterString, "classExternalReferenceCode:asc",
+			reportEntry1.getId(), reportEntry2.getId());
+		_assertReportEntries(
+			filterString, "classExternalReferenceCode:desc",
+			reportEntry2.getId(), reportEntry1.getId());
+		_assertReportEntries(
+			filterString, "modelName:asc", reportEntry2.getId(),
+			reportEntry1.getId());
+		_assertReportEntries(
+			filterString, "modelName:desc", reportEntry1.getId(),
+			reportEntry2.getId());
+		_assertReportEntries(
+			filterString, "type/code:asc", reportEntry2.getId(),
+			reportEntry1.getId());
+		_assertReportEntries(
+			filterString, "type/code:desc", reportEntry1.getId(),
+			reportEntry2.getId());
+		_assertReportEntries(
+			filterString, "type/label:asc", reportEntry1.getId(),
+			reportEntry2.getId());
+		_assertReportEntries(
+			filterString, "type/label:desc", reportEntry2.getId(),
+			reportEntry1.getId());
 	}
 
 	@DeleteAfterTestRun

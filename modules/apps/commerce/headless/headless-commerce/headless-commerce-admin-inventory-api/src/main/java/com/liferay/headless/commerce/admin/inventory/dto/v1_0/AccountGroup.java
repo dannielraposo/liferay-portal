@@ -35,7 +35,13 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName("AccountGroup")
+@GraphQLName(
+	description = "Read-only projection of the AccountGroup referenced by a WarehouseAccountGroup binding -- exposes only id and name.",
+	value = "AccountGroup"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "Read-only projection of the AccountGroup referenced by a WarehouseAccountGroup binding -- exposes only id and name."
+)
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "AccountGroup")
 public class AccountGroup implements Serializable {
@@ -49,7 +55,10 @@ public class AccountGroup implements Serializable {
 	}
 
 	@DecimalMin("0")
-	@io.swagger.v3.oas.annotations.media.Schema(example = "30130")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Reference to the account group record (FK identifier). Read-only.",
+		example = "30130"
+	)
 	public Long getId() {
 		if (_idSupplier != null) {
 			id = _idSupplier.get();
@@ -81,14 +90,19 @@ public class AccountGroup implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Reference to the account group record (FK identifier). Read-only."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long id;
 
 	@JsonIgnore
 	private Supplier<Long> _idSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema(example = "AccountGroup Name")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "Display name of the account group. Plain string -- not localized. Read-only.",
+		example = "AccountGroup Name"
+	)
 	public String getName() {
 		if (_nameSupplier != null) {
 			name = _nameSupplier.get();
@@ -120,7 +134,9 @@ public class AccountGroup implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "Display name of the account group. Plain string -- not localized. Read-only."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String name;
 
@@ -283,4 +299,4 @@ public class AccountGroup implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1196459686
+// LIFERAY-REST-BUILDER-HASH:2031622097

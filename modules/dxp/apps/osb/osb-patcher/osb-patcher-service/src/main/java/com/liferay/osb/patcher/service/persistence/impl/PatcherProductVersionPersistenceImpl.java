@@ -13,24 +13,19 @@ import com.liferay.osb.patcher.model.impl.PatcherProductVersionModelImpl;
 import com.liferay.osb.patcher.service.persistence.PatcherProductVersionPersistence;
 import com.liferay.osb.patcher.service.persistence.PatcherProductVersionUtil;
 import com.liferay.osb.patcher.service.persistence.impl.constants.OSBPatcherPersistenceConstants;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.service.persistence.impl.CollectionPersistenceFinder;
+import com.liferay.portal.kernel.service.persistence.impl.FilterCollectionPersistenceFinder;
 import com.liferay.portal.kernel.service.persistence.impl.FinderColumn;
 import com.liferay.portal.kernel.service.persistence.impl.UniquePersistenceFinder;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -81,72 +76,15 @@ public class PatcherProductVersionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByFixDeliveryMethod;
-	private FinderPath _finderPathWithoutPaginationFindByFixDeliveryMethod;
-	private FinderPath _finderPathCountByFixDeliveryMethod;
-	private CollectionPersistenceFinder<PatcherProductVersion>
-		_collectionPersistenceFinderByFixDeliveryMethod;
-
-	/**
-	 * Returns all the patcher product versions where fixDeliveryMethod = &#63;.
-	 *
-	 * @param fixDeliveryMethod the fix delivery method
-	 * @return the matching patcher product versions
-	 */
-	@Override
-	public List<PatcherProductVersion> findByFixDeliveryMethod(
-		int fixDeliveryMethod) {
-
-		return findByFixDeliveryMethod(
-			fixDeliveryMethod, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the patcher product versions where fixDeliveryMethod = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProductVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fixDeliveryMethod the fix delivery method
-	 * @param start the lower bound of the range of patcher product versions
-	 * @param end the upper bound of the range of patcher product versions (not inclusive)
-	 * @return the range of matching patcher product versions
-	 */
-	@Override
-	public List<PatcherProductVersion> findByFixDeliveryMethod(
-		int fixDeliveryMethod, int start, int end) {
-
-		return findByFixDeliveryMethod(fixDeliveryMethod, start, end, null);
-	}
+	private FilterCollectionPersistenceFinder
+		<PatcherProductVersion, NoSuchPatcherProductVersionException>
+			_collectionPersistenceFinderByFixDeliveryMethod;
 
 	/**
 	 * Returns an ordered range of all the patcher product versions where fixDeliveryMethod = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProductVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fixDeliveryMethod the fix delivery method
-	 * @param start the lower bound of the range of patcher product versions
-	 * @param end the upper bound of the range of patcher product versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching patcher product versions
-	 */
-	@Override
-	public List<PatcherProductVersion> findByFixDeliveryMethod(
-		int fixDeliveryMethod, int start, int end,
-		OrderByComparator<PatcherProductVersion> orderByComparator) {
-
-		return findByFixDeliveryMethod(
-			fixDeliveryMethod, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the patcher product versions where fixDeliveryMethod = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProductVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProductVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param fixDeliveryMethod the fix delivery method
@@ -181,19 +119,8 @@ public class PatcherProductVersionPersistenceImpl
 			OrderByComparator<PatcherProductVersion> orderByComparator)
 		throws NoSuchPatcherProductVersionException {
 
-		PatcherProductVersion patcherProductVersion =
-			fetchByFixDeliveryMethod_First(
-				fixDeliveryMethod, orderByComparator);
-
-		if (patcherProductVersion != null) {
-			return patcherProductVersion;
-		}
-
-		throw new NoSuchPatcherProductVersionException(
-			_collectionPersistenceFinderByFixDeliveryMethod.
-				buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {fixDeliveryMethod}));
+		return _collectionPersistenceFinderByFixDeliveryMethod.findFirst(
+			finderCache, new Object[] {fixDeliveryMethod}, orderByComparator);
 	}
 
 	/**
@@ -213,44 +140,10 @@ public class PatcherProductVersionPersistenceImpl
 	}
 
 	/**
-	 * Returns all the patcher product versions that the user has permission to view where fixDeliveryMethod = &#63;.
-	 *
-	 * @param fixDeliveryMethod the fix delivery method
-	 * @return the matching patcher product versions that the user has permission to view
-	 */
-	@Override
-	public List<PatcherProductVersion> filterFindByFixDeliveryMethod(
-		int fixDeliveryMethod) {
-
-		return filterFindByFixDeliveryMethod(
-			fixDeliveryMethod, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the patcher product versions that the user has permission to view where fixDeliveryMethod = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProductVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param fixDeliveryMethod the fix delivery method
-	 * @param start the lower bound of the range of patcher product versions
-	 * @param end the upper bound of the range of patcher product versions (not inclusive)
-	 * @return the range of matching patcher product versions that the user has permission to view
-	 */
-	@Override
-	public List<PatcherProductVersion> filterFindByFixDeliveryMethod(
-		int fixDeliveryMethod, int start, int end) {
-
-		return filterFindByFixDeliveryMethod(
-			fixDeliveryMethod, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the patcher product versions that the user has permissions to view where fixDeliveryMethod = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProductVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PatcherProductVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param fixDeliveryMethod the fix delivery method
@@ -264,99 +157,9 @@ public class PatcherProductVersionPersistenceImpl
 		int fixDeliveryMethod, int start, int end,
 		OrderByComparator<PatcherProductVersion> orderByComparator) {
 
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return findByFixDeliveryMethod(
-				fixDeliveryMethod, start, end, orderByComparator);
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-			isPermissionsInMemoryFilterEnabled()) {
-
-			return InlineSQLHelperUtil.filter(
-				findByFixDeliveryMethod(
-					fixDeliveryMethod, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					orderByComparator));
-		}
-
-		StringBundler sb = null;
-
-		if (orderByComparator != null) {
-			sb = new StringBundler(
-				3 + (orderByComparator.getOrderByFields().length * 2));
-		}
-		else {
-			sb = new StringBundler(4);
-		}
-
-		if (getDB().isSupportsInlineDistinct()) {
-			sb.append(_FILTER_SQL_SELECT_PATCHERPRODUCTVERSION_WHERE);
-		}
-		else {
-			sb.append(
-				_FILTER_SQL_SELECT_PATCHERPRODUCTVERSION_NO_INLINE_DISTINCT_WHERE_1);
-		}
-
-		sb.append(_FINDER_COLUMN_FIXDELIVERYMETHOD_FIXDELIVERYMETHOD_2);
-
-		if (!getDB().isSupportsInlineDistinct()) {
-			sb.append(
-				_FILTER_SQL_SELECT_PATCHERPRODUCTVERSION_NO_INLINE_DISTINCT_WHERE_2);
-		}
-
-		if (orderByComparator != null) {
-			if (getDB().isSupportsInlineDistinct()) {
-				appendOrderByComparator(
-					sb, _ENTITY_ALIAS_PREFIX, orderByComparator, true);
-			}
-			else {
-				appendOrderByComparator(
-					sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
-			}
-		}
-		else {
-			if (getDB().isSupportsInlineDistinct()) {
-				sb.append(
-					PatcherProductVersionModelImpl.
-						ORDER_BY_SQL_INLINE_DISTINCT);
-			}
-			else {
-				sb.append(PatcherProductVersionModelImpl.ORDER_BY_SQL);
-			}
-		}
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), PatcherProductVersion.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			if (getDB().isSupportsInlineDistinct()) {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_ALIAS, PatcherProductVersionImpl.class);
-			}
-			else {
-				sqlQuery.addEntity(
-					_FILTER_ENTITY_TABLE, PatcherProductVersionImpl.class);
-			}
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(fixDeliveryMethod);
-
-			return (List<PatcherProductVersion>)QueryUtil.list(
-				sqlQuery, getDialect(), start, end);
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByFixDeliveryMethod.filterFind(
+			finderCache, new Object[] {fixDeliveryMethod}, start, end,
+			orderByComparator);
 	}
 
 	/**
@@ -390,63 +193,13 @@ public class PatcherProductVersionPersistenceImpl
 	 */
 	@Override
 	public int filterCountByFixDeliveryMethod(int fixDeliveryMethod) {
-		if (!InlineSQLHelperUtil.isEnabled()) {
-			return countByFixDeliveryMethod(fixDeliveryMethod);
-		}
-
-		if (isPermissionsInMemoryFilterEnabled()) {
-			List<PatcherProductVersion> patcherProductVersions =
-				findByFixDeliveryMethod(fixDeliveryMethod);
-
-			patcherProductVersions = InlineSQLHelperUtil.filter(
-				patcherProductVersions);
-
-			return patcherProductVersions.size();
-		}
-
-		StringBundler sb = new StringBundler(2);
-
-		sb.append(_FILTER_SQL_COUNT_PATCHERPRODUCTVERSION_WHERE);
-
-		sb.append(_FINDER_COLUMN_FIXDELIVERYMETHOD_FIXDELIVERYMETHOD_2);
-
-		String sql = InlineSQLHelperUtil.replacePermissionCheck(
-			sb.toString(), PatcherProductVersion.class.getName(),
-			_FILTER_ENTITY_TABLE_FILTER_PK_COLUMN);
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			sqlQuery.addScalar(
-				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
-
-			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
-
-			queryPos.add(fixDeliveryMethod);
-
-			Long count = (Long)sqlQuery.uniqueResult();
-
-			return count.intValue();
-		}
-		catch (Exception exception) {
-			throw processException(exception);
-		}
-		finally {
-			closeSession(session);
-		}
+		return _collectionPersistenceFinderByFixDeliveryMethod.filterCount(
+			finderCache, new Object[] {fixDeliveryMethod});
 	}
 
-	private static final String
-		_FINDER_COLUMN_FIXDELIVERYMETHOD_FIXDELIVERYMETHOD_2 =
-			"patcherProductVersion.fixDeliveryMethod = ?";
-
-	private FinderPath _finderPathFetchByName;
-	private UniquePersistenceFinder<PatcherProductVersion>
-		_uniquePersistenceFinderByName;
+	private UniquePersistenceFinder
+		<PatcherProductVersion, NoSuchPatcherProductVersionException>
+			_uniquePersistenceFinderByName;
 
 	/**
 	 * Returns the patcher product version where name = &#63; or throws a <code>NoSuchPatcherProductVersionException</code> if it could not be found.
@@ -459,32 +212,8 @@ public class PatcherProductVersionPersistenceImpl
 	public PatcherProductVersion findByName(String name)
 		throws NoSuchPatcherProductVersionException {
 
-		PatcherProductVersion patcherProductVersion = fetchByName(name);
-
-		if (patcherProductVersion == null) {
-			String message =
-				_uniquePersistenceFinderByName.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {name});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchPatcherProductVersionException(message);
-		}
-
-		return patcherProductVersion;
-	}
-
-	/**
-	 * Returns the patcher product version where name = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param name the name
-	 * @return the matching patcher product version, or <code>null</code> if a matching patcher product version could not be found
-	 */
-	@Override
-	public PatcherProductVersion fetchByName(String name) {
-		return fetchByName(name, true);
+		return _uniquePersistenceFinderByName.find(
+			finderCache, new Object[] {name});
 	}
 
 	/**
@@ -740,46 +469,44 @@ public class PatcherProductVersionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByFixDeliveryMethod = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByFixDeliveryMethod",
-			new String[] {
-				Integer.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"fixDeliveryMethod"}, true);
-
-		_finderPathWithoutPaginationFindByFixDeliveryMethod = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"findByFixDeliveryMethod", new String[] {Integer.class.getName()},
-			new String[] {"fixDeliveryMethod"}, true);
-
-		_finderPathCountByFixDeliveryMethod = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countByFixDeliveryMethod", new String[] {Integer.class.getName()},
-			new String[] {"fixDeliveryMethod"}, false);
-
 		_collectionPersistenceFinderByFixDeliveryMethod =
-			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByFixDeliveryMethod,
-				_finderPathWithoutPaginationFindByFixDeliveryMethod,
-				_finderPathCountByFixDeliveryMethod,
+			new FilterCollectionPersistenceFinder<>(
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+					"findByFixDeliveryMethod",
+					new String[] {
+						Integer.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"fixDeliveryMethod"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findByFixDeliveryMethod",
+					new String[] {Integer.class.getName()},
+					new String[] {"fixDeliveryMethod"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByFixDeliveryMethod",
+					new String[] {Integer.class.getName()},
+					new String[] {"fixDeliveryMethod"}, false),
 				_SQL_SELECT_PATCHERPRODUCTVERSION_WHERE,
 				_SQL_COUNT_PATCHERPRODUCTVERSION_WHERE,
 				PatcherProductVersionModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				_ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"patcherProductVersion.", "fixDeliveryMethod",
 					FinderColumn.Type.INTEGER, "=", true, true,
 					PatcherProductVersion::getFixDeliveryMethod));
 
-		_finderPathFetchByName = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByName",
-			new String[] {String.class.getName()}, new String[] {"name"}, false,
-			PatcherProductVersion::getName);
-
 		_uniquePersistenceFinderByName = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByName,
-			_SQL_SELECT_PATCHERPRODUCTVERSION_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByName",
+				new String[] {String.class.getName()}, new String[] {"name"}, 0,
+				1, false, convertNullFunction(PatcherProductVersion::getName)),
+			_SQL_SELECT_PATCHERPRODUCTVERSION_WHERE, "",
 			new FinderColumn<>(
 				"patcherProductVersion.", "name", FinderColumn.Type.STRING, "=",
 				true, true, PatcherProductVersion::getName));
@@ -838,31 +565,6 @@ public class PatcherProductVersionPersistenceImpl
 	private static final String _SQL_COUNT_PATCHERPRODUCTVERSION_WHERE =
 		"SELECT COUNT(patcherProductVersion) FROM PatcherProductVersion patcherProductVersion WHERE ";
 
-	private static final String _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN =
-		"patcherProductVersion.patcherProductVersionId";
-
-	private static final String _FILTER_SQL_SELECT_PATCHERPRODUCTVERSION_WHERE =
-		"SELECT DISTINCT {patcherProductVersion.*} FROM OSBPatcher_PProductVersion patcherProductVersion WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_PATCHERPRODUCTVERSION_NO_INLINE_DISTINCT_WHERE_1 =
-			"SELECT {OSBPatcher_PProductVersion.*} FROM (SELECT DISTINCT patcherProductVersion.patcherProductVersionId FROM OSBPatcher_PProductVersion patcherProductVersion WHERE ";
-
-	private static final String
-		_FILTER_SQL_SELECT_PATCHERPRODUCTVERSION_NO_INLINE_DISTINCT_WHERE_2 =
-			") TEMP_TABLE INNER JOIN OSBPatcher_PProductVersion ON TEMP_TABLE.patcherProductVersionId = OSBPatcher_PProductVersion.patcherProductVersionId";
-
-	private static final String _FILTER_SQL_COUNT_PATCHERPRODUCTVERSION_WHERE =
-		"SELECT COUNT(DISTINCT patcherProductVersion.patcherProductVersionId) AS COUNT_VALUE FROM OSBPatcher_PProductVersion patcherProductVersion WHERE ";
-
-	private static final String _FILTER_ENTITY_ALIAS = "patcherProductVersion";
-
-	private static final String _FILTER_ENTITY_TABLE =
-		"OSBPatcher_PProductVersion";
-
-	private static final String _ORDER_BY_ENTITY_TABLE =
-		"OSBPatcher_PProductVersion.";
-
 	private static final String _NO_SUCH_ENTITY_WITH_KEY =
 		"No PatcherProductVersion exists with the key {";
 
@@ -875,4 +577,4 @@ public class PatcherProductVersionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1712598537
+// LIFERAY-SERVICE-BUILDER-HASH:-1881319372

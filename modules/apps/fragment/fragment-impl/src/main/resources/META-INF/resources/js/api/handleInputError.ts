@@ -6,10 +6,26 @@
 type ErrorArgs = {
 	errorContainer: HTMLSpanElement;
 	errorMessageContainer: HTMLSpanElement;
-	errorType: 'length' | 'required' | 'valid';
 	formGroup: HTMLDivElement;
 	lengthInfoContainer?: HTMLParagraphElement;
+	message?: string | null;
 };
+
+export function getLengthErrorMessage({
+	length,
+	maxLength,
+	message: externalMessage,
+}: {
+	length: number;
+	maxLength: number;
+	message?: string | null;
+}): string {
+	const message =
+		externalMessage ??
+		Liferay.Language.get('maximum-number-of-characters-exceeded');
+
+	return `${message}: ${length} / ${maxLength}`;
+}
 
 export function handleInputLengthError({
 	currentLength,
@@ -23,69 +39,70 @@ export function handleInputLengthError({
 	currentLength?: HTMLElement;
 	event: KeyboardEvent;
 	input: {attributes: {maxLength: number}};
-	lengthInfoContainer: HTMLParagraphElement;
+	lengthInfoContainer?: HTMLParagraphElement;
 } & ErrorArgs) {
 	const length = (event.target as HTMLInputElement).value.length;
+	const {maxLength} = input.attributes;
 
 	if (currentLength) {
 		currentLength.innerText = String(length);
 	}
 
 	const params = {
-		additionalMessage: `: ${length} / ${input.attributes.maxLength}`,
 		errorContainer,
 		errorMessageContainer,
 		formGroup,
 		lengthInfoContainer,
 	};
 
-	if (length > input.attributes.maxLength) {
-		showInputError({...params, errorType: 'length'});
+	if (length > maxLength) {
+		showInputError({
+			...params,
+			message: getLengthErrorMessage({
+				length,
+				maxLength,
+				message: errorMessageContainer.getAttribute(
+					'data-length-feedback'
+				),
+			}),
+		});
 	}
 	else if (formGroup.classList.contains('has-error')) {
-		hideInputError({...params, errorType: 'valid'});
+		const validFeedback =
+			errorMessageContainer.getAttribute('data-valid-feedback') ?? '';
+
+		hideInputError({...params, message: validFeedback});
 	}
 }
 
 export function showInputError({
-	additionalMessage,
 	errorContainer,
 	errorMessageContainer,
-	errorType = 'required',
 	formGroup,
 	lengthInfoContainer,
-}: ErrorArgs & {
-	additionalMessage?: string;
-}) {
+	message,
+}: ErrorArgs) {
 	errorContainer.classList.remove('sr-only');
 	formGroup.classList.add('has-error');
 	lengthInfoContainer?.classList.add('d-none');
 
-	updateFeedback(errorMessageContainer, errorType, additionalMessage);
+	if (message) {
+		errorMessageContainer.innerText = message;
+	}
 }
 
-function hideInputError({
+export function hideInputError({
 	errorContainer,
 	errorMessageContainer,
-	errorType,
 	formGroup,
 	lengthInfoContainer,
+	message,
 }: ErrorArgs) {
 	errorContainer.classList.add('sr-only');
 	formGroup.classList.remove('has-error');
 	lengthInfoContainer?.classList.remove('d-none');
 
-	updateFeedback(errorMessageContainer, errorType);
-}
-
-function updateFeedback(
-	element: HTMLElement,
-	messageType: 'length' | 'required' | 'valid',
-	additionalMessage: string = ''
-) {
-	const message = element.getAttribute(`data-${messageType}-feedback`);
-
 	if (message) {
-		element.innerText = `${message}${additionalMessage}`;
+		errorMessageContainer.innerText = message;
 	}
 }

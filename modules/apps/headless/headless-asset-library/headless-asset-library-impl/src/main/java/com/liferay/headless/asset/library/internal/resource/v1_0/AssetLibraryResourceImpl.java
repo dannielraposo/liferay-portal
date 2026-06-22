@@ -23,7 +23,7 @@ import com.liferay.headless.asset.library.internal.odata.entity.v1_0.AssetLibrar
 import com.liferay.headless.asset.library.internal.util.AssetLibraryUtil;
 import com.liferay.headless.asset.library.resource.v1_0.AssetLibraryResource;
 import com.liferay.petra.function.UnsafeSupplier;
-import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.DuplicateGroupExternalReferenceCodeException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
@@ -304,13 +304,25 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 			throw new UnsupportedOperationException();
 		}
 
+		String externalReferenceCode = assetLibrary.getExternalReferenceCode();
+
+		if (Validator.isNotNull(externalReferenceCode)) {
+			Group group = _groupLocalService.fetchGroupByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+			if (group != null) {
+				throw new DuplicateGroupExternalReferenceCodeException(
+					externalReferenceCode);
+			}
+		}
+
 		return _toAssetLibrary(
 			_addOrUpdateDepotEntry(
 				assetLibrary,
 				_getLocalizedMap(
 					assetLibrary.getDescription(),
 					assetLibrary.getDescription_i18n()),
-				StringPool.BLANK,
+				externalReferenceCode,
 				_getLocalizedMap(
 					assetLibrary.getName(), assetLibrary.getName_i18n()),
 				_getServiceContext(),
@@ -408,7 +420,7 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 			_updateDLSizeLimitConfiguration(
 				assetLibrary, group.getGroupId(), mimeTypeSizeLimits);
 
-			return _depotEntryService.updateDepotEntry(
+			DepotEntry updatedDepotEntry = _depotEntryService.updateDepotEntry(
 				depotEntry.getDepotEntryId(), nameMap, descriptionMap,
 				_getDepotAppCustomizationMap(
 					depotEntry.getCompanyId(), externalReferenceCode),
@@ -418,6 +430,15 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 					unicodeProperties
 				).build(),
 				serviceContext);
+
+			_updateFriendlyURL(assetLibrary, group.getGroupId());
+
+			return updatedDepotEntry;
+		}
+
+		if (Validator.isNotNull(externalReferenceCode)) {
+			serviceContext.setAttribute(
+				"groupExternalReferenceCode", externalReferenceCode);
 		}
 
 		DepotEntry depotEntry = _depotEntryService.addDepotEntry(
@@ -430,24 +451,18 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 
 		group = depotEntry.getGroup();
 
-		if (Validator.isNotNull(externalReferenceCode) ||
-			((unicodeProperties != null) && !unicodeProperties.isEmpty())) {
-
-			if (Validator.isNotNull(externalReferenceCode)) {
-				group.setExternalReferenceCode(externalReferenceCode);
-			}
-
-			if ((unicodeProperties != null) && !unicodeProperties.isEmpty()) {
-				group.setTypeSettingsProperties(
-					UnicodePropertiesBuilder.create(
-						group.getTypeSettingsProperties(), true
-					).putAll(
-						unicodeProperties
-					).build());
-			}
+		if ((unicodeProperties != null) && !unicodeProperties.isEmpty()) {
+			group.setTypeSettingsProperties(
+				UnicodePropertiesBuilder.create(
+					group.getTypeSettingsProperties(), true
+				).putAll(
+					unicodeProperties
+				).build());
 
 			group = _groupLocalService.updateGroup(group);
 		}
+
+		_updateFriendlyURL(assetLibrary, group.getGroupId());
 
 		_updateDLSizeLimitConfiguration(
 			assetLibrary, group.getGroupId(), mimeTypeSizeLimits);
@@ -799,6 +814,16 @@ public class AssetLibraryResourceImpl extends BaseAssetLibraryResourceImpl {
 
 		_dlSizeLimitConfigurationProvider.updateGroupSizeLimit(
 			groupId, 0L, 0L, mimeTypeSizeLimits);
+	}
+
+	private void _updateFriendlyURL(AssetLibrary assetLibrary, long groupId)
+		throws Exception {
+
+		String friendlyURL = assetLibrary.getFriendlyURL();
+
+		if (Validator.isNotNull(friendlyURL)) {
+			_groupLocalService.updateFriendlyURL(groupId, friendlyURL);
+		}
 	}
 
 	private static final AssetLibraryEntityModel _assetLibraryEntityModel =

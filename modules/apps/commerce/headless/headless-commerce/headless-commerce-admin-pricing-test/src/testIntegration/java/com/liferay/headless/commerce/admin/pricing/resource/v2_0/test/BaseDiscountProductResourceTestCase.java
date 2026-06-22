@@ -38,6 +38,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -111,7 +112,8 @@ public abstract class BaseDiscountProductResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -121,7 +123,8 @@ public abstract class BaseDiscountProductResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).locale(
 			LocaleUtil.getDefault()
 		).build();
@@ -222,6 +225,7 @@ public abstract class BaseDiscountProductResourceTestCase {
 
 		// No namespace
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		DiscountProduct discountProduct1 =
 			testGraphQLDeleteDiscountProduct_addDiscountProduct();
 
@@ -241,6 +245,7 @@ public abstract class BaseDiscountProductResourceTestCase {
 
 		// Using the namespace headlessCommerceAdminPricing_v2_0
 
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		DiscountProduct discountProduct2 =
 			testGraphQLDeleteDiscountProduct_addDiscountProduct();
 
@@ -1037,7 +1042,8 @@ public abstract class BaseDiscountProductResourceTestCase {
 			_testCompanyAdminUser.getEmailAddress(),
 			PropsValues.DEFAULT_ADMIN_PASSWORD
 		).endpoint(
-			testCompany.getVirtualHostname(), 8080, "http"
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
 		).parameters(
 			parameters
 		).build();
@@ -1667,7 +1673,9 @@ public abstract class BaseDiscountProductResourceTestCase {
 			).toString(),
 			"application/json");
 		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.path(
+			"http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/graphql");
 		httpInvoker.userNameAndPassword(
 			"test@liferay.com:" + PropsValues.DEFAULT_ADMIN_PASSWORD);
 
@@ -1956,4 +1964,4 @@ public abstract class BaseDiscountProductResourceTestCase {
 		DiscountProductResource _discountProductResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:59699509
+// LIFERAY-REST-BUILDER-HASH:1690926814

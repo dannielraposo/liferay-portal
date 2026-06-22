@@ -7,12 +7,11 @@ import ClayLayout from '@clayui/layout';
 import classnames from 'classnames';
 import React from 'react';
 
-import '../../../css/utilities.scss';
-
 export function OptionRow({
 	bordered = false,
 	description,
 	descriptionId,
+	inline = false,
 	input,
 	label,
 	labelId,
@@ -20,40 +19,63 @@ export function OptionRow({
 	bordered?: boolean;
 	description?: string;
 	descriptionId?: string;
+	inline?: boolean;
 	input: React.ReactNode;
 	label: string;
 	labelId: string;
 }) {
+	const labelSpan = (
+		<span
+			className={classnames(
+				'font-weight-semi-bold text-dark',
+				!inline && 'd-block'
+			)}
+			id={labelId}
+		>
+			{label}
+
+			{inline && description && ':'}
+		</span>
+	);
+
+	const descriptionSpan = description && (
+		<span
+			className={
+				inline
+					? 'font-weight-normal ml-1 text-dark'
+					: 'd-block small text-secondary'
+			}
+			id={descriptionId}
+		>
+			{description}
+		</span>
+	);
+
 	return (
 		<label
 			className={classnames(
-				'cursor-pointer d-block mb-2 text-3',
+				'cursor-pointer d-block text-3',
 				bordered && 'border p-3 rounded'
 			)}
 		>
-			<ClayLayout.ContentRow padded>
-				<ClayLayout.ContentCol expand={false}>
-					<div className="pt-1">{input}</div>
+			<ClayLayout.ContentRow className="align-items-start">
+				<ClayLayout.ContentCol className="pr-2 pt-1" expand={false}>
+					{input}
 				</ClayLayout.ContentCol>
 
 				<ClayLayout.ContentCol expand>
-					<ClayLayout.ContentSection>
-						<div
-							className="font-weight-semi-bold mb-0 text-dark"
-							id={labelId}
-						>
-							{label}
-						</div>
+					{inline ? (
+						<span>
+							{labelSpan}
 
-						{description && (
-							<div
-								className="small text-secondary"
-								id={descriptionId}
-							>
-								{description}
-							</div>
-						)}
-					</ClayLayout.ContentSection>
+							{descriptionSpan}
+						</span>
+					) : (
+						<>
+							{labelSpan}
+							{descriptionSpan}
+						</>
+					)}
 				</ClayLayout.ContentCol>
 			</ClayLayout.ContentRow>
 		</label>

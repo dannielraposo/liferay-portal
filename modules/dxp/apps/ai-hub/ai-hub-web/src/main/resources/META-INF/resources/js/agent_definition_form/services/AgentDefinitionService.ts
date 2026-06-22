@@ -11,6 +11,40 @@ const AGENT_DEFINITION_BASE_URI = '/o/ai-hub/agent-definitions';
 
 const AGENT_DEFINITION_BY_ERC_URI = `${AGENT_DEFINITION_BASE_URI}/by-external-reference-code/`;
 
+async function deleteAgentDefinitionToContentRetrievers(
+	agentDefinitionERC: string,
+	contentRetrieverERC: string
+) {
+	return fetch(
+		`${AGENT_DEFINITION_BY_ERC_URI}${agentDefinitionERC}` +
+			`/agentDefinitionsToContentRetrievers/${contentRetrieverERC}`,
+		{method: 'DELETE'}
+	);
+}
+
+async function deleteAgentDefinitionToGuardrails(
+	agentDefinitionERC: string,
+	guardrailERC: string
+) {
+	return fetch(
+		`${AGENT_DEFINITION_BY_ERC_URI}${agentDefinitionERC}` +
+			`/aiHubAgentDefinitionsToAIHubGuardrails/${guardrailERC}`,
+		{method: 'DELETE'}
+	);
+}
+
+async function getAgentDefinition(externalReferenceCode: string) {
+	const response = await fetch(
+		`${AGENT_DEFINITION_BY_ERC_URI}${externalReferenceCode}` +
+			'?nestedFields=agentDefinitionsToContentRetrievers,aiHubAgentDefinitionsToAIHubGuardrails',
+		{
+			method: 'GET',
+		}
+	);
+
+	return response.json();
+}
+
 async function getAgentDefinitions() {
 	const response = await fetch(AGENT_DEFINITION_BASE_URI, {
 		method: 'GET',
@@ -19,14 +53,20 @@ async function getAgentDefinitions() {
 	return response.json();
 }
 
-async function getAgentDefinition(externalReferenceCode: string) {
-	const response = await fetch(
-		`${AGENT_DEFINITION_BY_ERC_URI}${externalReferenceCode}` +
-			'?nestedFields=agentDefinitionsToContentRetrievers',
-		{
-			method: 'GET',
-		}
-	);
+async function postAgentDefinition(agentDefinition: AgentDefinition) {
+	const response = await fetch(AGENT_DEFINITION_BASE_URI, {
+		body: JSON.stringify(agentDefinition),
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		method: 'POST',
+	});
+
+	if (!response.ok) {
+		const errorBody = await response.json().catch(() => ({}));
+
+		throw new Error(errorBody?.detail || errorBody?.title || '');
+	}
 
 	return response.json();
 }
@@ -57,21 +97,24 @@ async function putAgentDefinitionToContentRetrievers(
 	);
 }
 
-async function deleteAgentDefinitionToContentRetrievers(
+async function putAgentDefinitionToGuardrails(
 	agentDefinitionERC: string,
-	contentRetrieverERC: string
+	guardrailERC: string
 ) {
 	return fetch(
 		`${AGENT_DEFINITION_BY_ERC_URI}${agentDefinitionERC}` +
-			`/agentDefinitionsToContentRetrievers/${contentRetrieverERC}`,
-		{method: 'DELETE'}
+			`/aiHubAgentDefinitionsToAIHubGuardrails/${guardrailERC}`,
+		{method: 'PUT'}
 	);
 }
 
 export {
+	deleteAgentDefinitionToContentRetrievers,
+	deleteAgentDefinitionToGuardrails,
 	getAgentDefinition,
 	getAgentDefinitions,
+	postAgentDefinition,
 	putAgentDefinition,
 	putAgentDefinitionToContentRetrievers,
-	deleteAgentDefinitionToContentRetrievers,
+	putAgentDefinitionToGuardrails,
 };

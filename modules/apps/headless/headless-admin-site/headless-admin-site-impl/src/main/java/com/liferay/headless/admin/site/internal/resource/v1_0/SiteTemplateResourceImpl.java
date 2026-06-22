@@ -7,15 +7,25 @@ package com.liferay.headless.admin.site.internal.resource.v1_0;
 
 import com.liferay.headless.admin.site.dto.v1_0.SiteTemplate;
 import com.liferay.headless.admin.site.resource.v1_0.SiteTemplateResource;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeService;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Localization;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
+
+import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -32,19 +42,41 @@ public class SiteTemplateResourceImpl extends BaseSiteTemplateResourceImpl {
 
 	@Override
 	public Page<SiteTemplate> getSiteTemplatesPage(
-			Boolean active, Pagination pagination)
+			Boolean active, String[] excludedSiteExternalReferenceCodes,
+			Pagination pagination)
 		throws Exception {
+
+		List<LayoutSetPrototype> layoutSetPrototypes =
+			_layoutSetPrototypeService.search(
+				contextCompany.getCompanyId(), active, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, null);
+
+		if (ArrayUtil.isNotEmpty(excludedSiteExternalReferenceCodes)) {
+			layoutSetPrototypes = ListUtil.filter(
+				layoutSetPrototypes,
+				layoutSetPrototype -> {
+					try {
+						Group group = layoutSetPrototype.getGroup();
+
+						return !ArrayUtil.contains(
+							excludedSiteExternalReferenceCodes,
+							group.getExternalReferenceCode());
+					}
+					catch (PortalException portalException) {
+						_log.error(portalException);
+
+						return false;
+					}
+				});
+		}
 
 		return Page.of(
 			transform(
-				_layoutSetPrototypeService.search(
-					contextCompany.getCompanyId(), active,
-					pagination.getStartPosition(), pagination.getEndPosition(),
-					null),
+				ListUtil.subList(
+					layoutSetPrototypes, pagination.getStartPosition(),
+					pagination.getEndPosition()),
 				this::_toSiteTemplate),
-			pagination,
-			_layoutSetPrototypeService.searchCount(
-				contextCompany.getCompanyId(), active));
+			pagination, layoutSetPrototypes.size());
 	}
 
 	private SiteTemplate _toSiteTemplate(
@@ -71,6 +103,19 @@ public class SiteTemplateResourceImpl extends BaseSiteTemplateResourceImpl {
 					() -> LocalizedMapUtil.getI18nMap(
 						layoutSetPrototype.getDescriptionMap()));
 				setId(layoutSetPrototype::getLayoutSetPrototypeId);
+				setLogo(
+					() -> {
+						Group group = layoutSetPrototype.getGroup();
+
+						ThemeDisplay themeDisplay = new ThemeDisplay() {
+							{
+								setCompany(contextCompany);
+								setPathImage(_portal.getPathImage());
+							}
+						};
+
+						return group.getLogoURL(themeDisplay, true);
+					});
 				setName(
 					() -> layoutSetPrototype.getName(
 						contextAcceptLanguage.getPreferredLocale()));
@@ -96,10 +141,16 @@ public class SiteTemplateResourceImpl extends BaseSiteTemplateResourceImpl {
 		};
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		SiteTemplateResourceImpl.class);
+
 	@Reference
 	private LayoutSetPrototypeService _layoutSetPrototypeService;
 
 	@Reference
 	private Localization _localization;
+
+	@Reference
+	private Portal _portal;
 
 }

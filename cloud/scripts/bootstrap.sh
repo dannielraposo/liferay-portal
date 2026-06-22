@@ -10,11 +10,17 @@ function main {
 		return
 	fi
 
-	_check_utils curl jq tar
+	_check_utils curl jq tar terraform
+
+	_check_terraform_version "1.5.0"
 
 	local config_file
 
 	config_file=$(_get_config_file "${1:-}")
+
+	local branch
+
+	branch=$(_get_branch "${config_file}")
 
 	local provider
 
@@ -26,9 +32,29 @@ function main {
 
 	local extracted_dir
 
-	extracted_dir=$(_download_and_extract_files "${provider}" "${version}")
+	extracted_dir=$(_download_and_extract_files "${branch}" "${provider}" "${version}")
 
 	"${extracted_dir}/cloud/scripts/setup_${provider}.sh" "${config_file}" "${extracted_dir}/cloud/scripts/versions_${provider}.tfvars"
+}
+
+function _check_terraform_version {
+	local found_version
+
+	found_version=$(terraform --version | awk '/^Terraform v/ {print $2; exit}')
+	found_version="${found_version#v}"
+
+	local required_version="${1}"
+
+	local lowest_version
+
+	lowest_version=$(printf "%s\n%s\n" "${required_version}" "${found_version}" | sort --version-sort | head -n 1)
+
+	if [ "${lowest_version}" != "${required_version}" ]
+	then
+		echo "The installed Terraform version ${found_version} is older than ${required_version}." >&2
+
+		exit 1
+	fi
 }
 
 function _check_utils {
@@ -44,9 +70,25 @@ function _check_utils {
 }
 
 function _download_and_extract_files {
-	local bucket_name="liferay-cloud-native-bootstrap"
+	local branch="${1}"
+	local provider="${2}"
+	local version="${3}"
 
-	local prefix="bootstrap/liferay-${1}-bootstrap"
+	local bucket_name="liferay-cloud-native-bootstrap"
+	local download_base_url="https://cdn.liferay.cloud"
+	local prefix="bootstrap/liferay-${provider}-bootstrap"
+
+	if [ -n "${branch}" ]
+	then
+		bucket_name="liferay-cloud-native-bootstrap-nonprd"
+		download_base_url="https://cdn.liferay.sh"
+
+		local sanitized_branch
+
+		sanitized_branch=$(echo "${branch}" | tr '/' '-')
+
+		prefix="bootstrap/${sanitized_branch}/liferay-${provider}-bootstrap"
+	fi
 
 	local json
 
@@ -63,8 +105,6 @@ function _download_and_extract_files {
 		exit 1
 	fi
 
-	local version="${2}"
-
 	local output_path
 
 	if [ "${version}" == "latest" ]
@@ -72,15 +112,16 @@ function _download_and_extract_files {
 		output_path=$( \
 			jq \
 				--raw-output \
-				".items
+				'.items
+				| map(select(.name | endswith(".tar.gz")))
 				| sort_by(.updated)
 				| last
-				| .name" <<< "${json}")
+				| .name' <<< "${json}")
 
 	else
 		output_path=$( \
 			jq \
-				--arg sn "bootstrap/liferay-${provider}-bootstrap/liferay-${provider}-bootstrap-${version}.tar.gz" \
+				--arg sn "${prefix}/liferay-${provider}-bootstrap-${version}.tar.gz" \
 				--raw-output \
 				'.items[]
 				| select(.name == $sn)
@@ -104,10 +145,34 @@ function _download_and_extract_files {
 	fi
 
 	curl \
+		--fail \
 		--location \
 		--output "${output_file}" \
 		--silent \
-		"https://cdn.liferay.cloud/${output_path}"
+		--show-error \
+		"${download_base_url}/${output_path}"
+
+	local checksum_file="${output_file}.sha256"
+
+	if [ -e "${checksum_file}" ]
+	then
+		rm "${checksum_file}"
+	fi
+
+	if ! curl \
+		--fail \
+		--location \
+		--output "${checksum_file}" \
+		--silent \
+		--show-error \
+		"${download_base_url}/${output_path}.sha256"
+	then
+		echo "Unable to download checksum from ${download_base_url}/${output_path}.sha256." >&2
+
+		exit 1
+	fi
+
+	_verify_checksum "${output_file}" "${checksum_file}"
 
 	local output_dir="${output_file%.tar.gz}"
 
@@ -122,6 +187,16 @@ function _download_and_extract_files {
 		--file "${output_file}"
 
 	echo "${output_dir}"
+}
+
+function _get_branch {
+	local config_file="${1}"
+
+	local branch
+
+	branch=$(jq -r ".options.branch // empty" "${config_file}")
+
+	echo "${branch}"
 }
 
 function _get_config_file {
@@ -184,6 +259,49 @@ function _get_version {
 	fi
 
 	echo "${version}"
+}
+
+function _sha256 {
+	if command -v sha256sum &> /dev/null
+	then
+		sha256sum "${@}"
+	elif command -v shasum &> /dev/null
+	then
+		shasum --algorithm 256 "${@}"
+	else
+		echo "Neither sha256sum nor shasum is installed." >&2
+
+		exit 1
+	fi
+}
+
+function _verify_checksum {
+	local checksum_file="${2}"
+	local output_file="${1}"
+
+	local expected_digest
+
+	expected_digest=$(awk '{print $1; exit}' "${checksum_file}")
+
+	if [[ ! "${expected_digest}" =~ ^[0-9a-f]{64}$ ]]
+	then
+		echo "Invalid expected checksum format in ${checksum_file}." >&2
+
+		exit 1
+	fi
+
+	local sha256_output
+
+	sha256_output=$(_sha256 "${output_file}") || exit 1
+
+	local actual_digest="${sha256_output%% *}"
+
+	if [ "${expected_digest}" != "${actual_digest}" ]
+	then
+		echo "Checksum verification failed for ${output_file}." >&2
+
+		exit 1
+	fi
 }
 
 main ${1+"$@"}

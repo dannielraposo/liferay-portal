@@ -10,14 +10,12 @@ import com.liferay.expando.kernel.model.ExpandoRow;
 import com.liferay.expando.kernel.model.ExpandoRowTable;
 import com.liferay.expando.kernel.service.persistence.ExpandoRowPersistence;
 import com.liferay.expando.kernel.service.persistence.ExpandoRowUtil;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -78,67 +76,14 @@ public class ExpandoRowPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByTableId;
-	private FinderPath _finderPathWithoutPaginationFindByTableId;
-	private FinderPath _finderPathCountByTableId;
-	private CollectionPersistenceFinder<ExpandoRow>
+	private CollectionPersistenceFinder<ExpandoRow, NoSuchRowException>
 		_collectionPersistenceFinderByTableId;
 
 	/**
-	 * Returns all the expando rows where tableId = &#63;.
-	 *
-	 * @param tableId the table ID
-	 * @return the matching expando rows
-	 */
-	@Override
-	public List<ExpandoRow> findByTableId(long tableId) {
-		return findByTableId(
-			tableId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the expando rows where tableId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoRowModelImpl</code>.
-	 * </p>
-	 *
-	 * @param tableId the table ID
-	 * @param start the lower bound of the range of expando rows
-	 * @param end the upper bound of the range of expando rows (not inclusive)
-	 * @return the range of matching expando rows
-	 */
-	@Override
-	public List<ExpandoRow> findByTableId(long tableId, int start, int end) {
-		return findByTableId(tableId, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the expando rows where tableId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoRowModelImpl</code>.
-	 * </p>
-	 *
-	 * @param tableId the table ID
-	 * @param start the lower bound of the range of expando rows
-	 * @param end the upper bound of the range of expando rows (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching expando rows
-	 */
-	@Override
-	public List<ExpandoRow> findByTableId(
-		long tableId, int start, int end,
-		OrderByComparator<ExpandoRow> orderByComparator) {
-
-		return findByTableId(tableId, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the expando rows where tableId = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoRowModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoRowModelImpl</code>.
 	 * </p>
 	 *
 	 * @param tableId the table ID
@@ -154,14 +99,9 @@ public class ExpandoRowPersistenceImpl
 		OrderByComparator<ExpandoRow> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					ExpandoRow.class)) {
-
-			return _collectionPersistenceFinderByTableId.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {tableId}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByTableId.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -177,16 +117,9 @@ public class ExpandoRowPersistenceImpl
 			long tableId, OrderByComparator<ExpandoRow> orderByComparator)
 		throws NoSuchRowException {
 
-		ExpandoRow expandoRow = fetchByTableId_First(
-			tableId, orderByComparator);
-
-		if (expandoRow != null) {
-			return expandoRow;
-		}
-
-		throw new NoSuchRowException(
-			_collectionPersistenceFinderByTableId.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {tableId}));
+		return _collectionPersistenceFinderByTableId.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId},
+			orderByComparator);
 	}
 
 	/**
@@ -224,76 +157,18 @@ public class ExpandoRowPersistenceImpl
 	 */
 	@Override
 	public int countByTableId(long tableId) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					ExpandoRow.class)) {
-
-			return _collectionPersistenceFinderByTableId.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {tableId});
-		}
+		return _collectionPersistenceFinderByTableId.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByClassPK;
-	private FinderPath _finderPathWithoutPaginationFindByClassPK;
-	private FinderPath _finderPathCountByClassPK;
-	private CollectionPersistenceFinder<ExpandoRow>
+	private CollectionPersistenceFinder<ExpandoRow, NoSuchRowException>
 		_collectionPersistenceFinderByClassPK;
 
 	/**
-	 * Returns all the expando rows where classPK = &#63;.
-	 *
-	 * @param classPK the class pk
-	 * @return the matching expando rows
-	 */
-	@Override
-	public List<ExpandoRow> findByClassPK(long classPK) {
-		return findByClassPK(
-			classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the expando rows where classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoRowModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of expando rows
-	 * @param end the upper bound of the range of expando rows (not inclusive)
-	 * @return the range of matching expando rows
-	 */
-	@Override
-	public List<ExpandoRow> findByClassPK(long classPK, int start, int end) {
-		return findByClassPK(classPK, start, end, null);
-	}
-
-	/**
 	 * Returns an ordered range of all the expando rows where classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoRowModelImpl</code>.
-	 * </p>
-	 *
-	 * @param classPK the class pk
-	 * @param start the lower bound of the range of expando rows
-	 * @param end the upper bound of the range of expando rows (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching expando rows
-	 */
-	@Override
-	public List<ExpandoRow> findByClassPK(
-		long classPK, int start, int end,
-		OrderByComparator<ExpandoRow> orderByComparator) {
-
-		return findByClassPK(classPK, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the expando rows where classPK = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoRowModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>ExpandoRowModelImpl</code>.
 	 * </p>
 	 *
 	 * @param classPK the class pk
@@ -309,14 +184,9 @@ public class ExpandoRowPersistenceImpl
 		OrderByComparator<ExpandoRow> orderByComparator,
 		boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					ExpandoRow.class)) {
-
-			return _collectionPersistenceFinderByClassPK.find(
-				FinderCacheUtil.getFinderCache(), new Object[] {classPK}, start,
-				end, orderByComparator, useFinderCache);
-		}
+		return _collectionPersistenceFinderByClassPK.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {classPK}, start,
+			end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -332,16 +202,9 @@ public class ExpandoRowPersistenceImpl
 			long classPK, OrderByComparator<ExpandoRow> orderByComparator)
 		throws NoSuchRowException {
 
-		ExpandoRow expandoRow = fetchByClassPK_First(
-			classPK, orderByComparator);
-
-		if (expandoRow != null) {
-			return expandoRow;
-		}
-
-		throw new NoSuchRowException(
-			_collectionPersistenceFinderByClassPK.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {classPK}));
+		return _collectionPersistenceFinderByClassPK.findFirst(
+			FinderCacheUtil.getFinderCache(), new Object[] {classPK},
+			orderByComparator);
 	}
 
 	/**
@@ -379,17 +242,12 @@ public class ExpandoRowPersistenceImpl
 	 */
 	@Override
 	public int countByClassPK(long classPK) {
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					ExpandoRow.class)) {
-
-			return _collectionPersistenceFinderByClassPK.count(
-				FinderCacheUtil.getFinderCache(), new Object[] {classPK});
-		}
+		return _collectionPersistenceFinderByClassPK.count(
+			FinderCacheUtil.getFinderCache(), new Object[] {classPK});
 	}
 
-	private FinderPath _finderPathFetchByT_C;
-	private UniquePersistenceFinder<ExpandoRow> _uniquePersistenceFinderByT_C;
+	private UniquePersistenceFinder<ExpandoRow, NoSuchRowException>
+		_uniquePersistenceFinderByT_C;
 
 	/**
 	 * Returns the expando row where tableId = &#63; and classPK = &#63; or throws a <code>NoSuchRowException</code> if it could not be found.
@@ -403,33 +261,8 @@ public class ExpandoRowPersistenceImpl
 	public ExpandoRow findByT_C(long tableId, long classPK)
 		throws NoSuchRowException {
 
-		ExpandoRow expandoRow = fetchByT_C(tableId, classPK);
-
-		if (expandoRow == null) {
-			String message =
-				_uniquePersistenceFinderByT_C.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {tableId, classPK});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchRowException(message);
-		}
-
-		return expandoRow;
-	}
-
-	/**
-	 * Returns the expando row where tableId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param tableId the table ID
-	 * @param classPK the class pk
-	 * @return the matching expando row, or <code>null</code> if a matching expando row could not be found
-	 */
-	@Override
-	public ExpandoRow fetchByT_C(long tableId, long classPK) {
-		return fetchByT_C(tableId, classPK, true);
+		return _uniquePersistenceFinderByT_C.find(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId, classPK});
 	}
 
 	/**
@@ -444,14 +277,9 @@ public class ExpandoRowPersistenceImpl
 	public ExpandoRow fetchByT_C(
 		long tableId, long classPK, boolean useFinderCache) {
 
-		try (SafeCloseable safeCloseable =
-				CTPersistenceHelperUtil.setCTCollectionIdWithSafeCloseable(
-					ExpandoRow.class)) {
-
-			return _uniquePersistenceFinderByT_C.fetch(
-				FinderCacheUtil.getFinderCache(),
-				new Object[] {tableId, classPK}, useFinderCache);
-		}
+		return _uniquePersistenceFinderByT_C.fetch(
+			FinderCacheUtil.getFinderCache(), new Object[] {tableId, classPK},
+			useFinderCache);
 	}
 
 	/**
@@ -745,75 +573,67 @@ public class ExpandoRowPersistenceImpl
 	 * Initializes the expando row persistence.
 	 */
 	public void afterPropertiesSet() {
-		_finderPathWithPaginationFindByTableId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByTableId",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"tableId"}, true);
-
-		_finderPathWithoutPaginationFindByTableId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByTableId",
-			new String[] {Long.class.getName()}, new String[] {"tableId"},
-			true);
-
-		_finderPathCountByTableId = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByTableId",
-			new String[] {Long.class.getName()}, new String[] {"tableId"},
-			false);
-
 		_collectionPersistenceFinderByTableId =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByTableId,
-				_finderPathWithoutPaginationFindByTableId,
-				_finderPathCountByTableId, _SQL_SELECT_EXPANDOROW_WHERE,
-				_SQL_COUNT_EXPANDOROW_WHERE, ExpandoRowModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByTableId",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"tableId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByTableId",
+					new String[] {Long.class.getName()},
+					new String[] {"tableId"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByTableId",
+					new String[] {Long.class.getName()},
+					new String[] {"tableId"}, false),
+				_SQL_SELECT_EXPANDOROW_WHERE, _SQL_COUNT_EXPANDOROW_WHERE,
+				ExpandoRowModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"expandoRow.", "tableId", FinderColumn.Type.LONG, "=", true,
 					true, ExpandoRow::getTableId));
 
-		_finderPathWithPaginationFindByClassPK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByClassPK",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"classPK"}, true);
-
-		_finderPathWithoutPaginationFindByClassPK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByClassPK",
-			new String[] {Long.class.getName()}, new String[] {"classPK"},
-			true);
-
-		_finderPathCountByClassPK = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByClassPK",
-			new String[] {Long.class.getName()}, new String[] {"classPK"},
-			false);
-
 		_collectionPersistenceFinderByClassPK =
 			new CollectionPersistenceFinder<>(
-				this, _finderPathWithPaginationFindByClassPK,
-				_finderPathWithoutPaginationFindByClassPK,
-				_finderPathCountByClassPK, _SQL_SELECT_EXPANDOROW_WHERE,
-				_SQL_COUNT_EXPANDOROW_WHERE, ExpandoRowModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX,
+				this,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByClassPK",
+					new String[] {
+						Long.class.getName(), Integer.class.getName(),
+						Integer.class.getName(),
+						OrderByComparator.class.getName()
+					},
+					new String[] {"classPK"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByClassPK",
+					new String[] {Long.class.getName()},
+					new String[] {"classPK"}, true),
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByClassPK",
+					new String[] {Long.class.getName()},
+					new String[] {"classPK"}, false),
+				_SQL_SELECT_EXPANDOROW_WHERE, _SQL_COUNT_EXPANDOROW_WHERE,
+				ExpandoRowModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX, "",
 				new FinderColumn<>(
 					"expandoRow.", "classPK", FinderColumn.Type.LONG, "=", true,
 					true, ExpandoRow::getClassPK));
 
-		_finderPathFetchByT_C = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByT_C",
-			new String[] {Long.class.getName(), Long.class.getName()},
-			new String[] {"tableId", "classPK"}, false, ExpandoRow::getTableId,
-			ExpandoRow::getClassPK);
-
 		_uniquePersistenceFinderByT_C = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByT_C, _SQL_SELECT_EXPANDOROW_WHERE,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByT_C",
+				new String[] {Long.class.getName(), Long.class.getName()},
+				new String[] {"tableId", "classPK"}, 0, 0, false,
+				ExpandoRow::getTableId, ExpandoRow::getClassPK),
+			_SQL_SELECT_EXPANDOROW_WHERE, "",
 			new FinderColumn<>(
 				"expandoRow.", "tableId", FinderColumn.Type.LONG, "=", true,
-				false, ExpandoRow::getTableId),
+				true, ExpandoRow::getTableId),
 			new FinderColumn<>(
 				"expandoRow.", "classPK", FinderColumn.Type.LONG, "=", true,
 				true, ExpandoRow::getClassPK));
@@ -854,4 +674,4 @@ public class ExpandoRowPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:217676045
+// LIFERAY-SERVICE-BUILDER-HASH:-961612123

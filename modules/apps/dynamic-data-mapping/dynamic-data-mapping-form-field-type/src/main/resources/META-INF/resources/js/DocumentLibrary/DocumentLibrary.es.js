@@ -17,26 +17,34 @@ import {
 import {ReactFieldBase as FieldBase} from 'dynamic-data-mapping-form-field-type/api';
 import {openSelectionModal} from 'frontend-js-components-web';
 import {formatStorage, sub} from 'frontend-js-web';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
-const CardItem = ({fileEntryTitle, fileEntryURL}) => {
-	return (
-		<ClayCard horizontal>
-			<ClayCard.Body>
-				<div className="card-col-content card-col-gutters">
-					<div className="h4 text-truncate" title={fileEntryTitle}>
-						{fileEntryTitle}
-					</div>
-				</div>
+const MIME_TO_EXTENSION = {
+	'application/msword': 'doc',
+	'application/vnd.ms-excel': 'xls',
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+	'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+		'docx',
+	'text/plain': 'txt',
+};
 
-				<div className="card-col-field">
-					<a download={fileEntryTitle} href={fileEntryURL}>
-						<ClayIcon symbol="download" />
-					</a>
-				</div>
-			</ClayCard.Body>
-		</ClayCard>
-	);
+const SUBMIT_EVENT = 'paginationControlsSubmitButtonClicked';
+
+const getFileEntryId = (fileEntryValue) => {
+	if (!fileEntryValue) {
+		return null;
+	}
+
+	try {
+		const fileEntry = JSON.parse(fileEntryValue);
+
+		return fileEntry.fileEntryId || null;
+	}
+	catch (error) {
+		console.error('Unable to parse JSON', fileEntryValue);
+
+		return null;
+	}
 };
 
 const getValue = (value) => {
@@ -49,6 +57,39 @@ const getValue = (value) => {
 	}
 
 	return JSON.stringify(value);
+};
+
+const hasInvalidExtension = (value, acceptedExtensions) => {
+	if (!value || !acceptedExtensions) {
+		return false;
+	}
+
+	let fileEntryJSON;
+
+	try {
+		fileEntryJSON = JSON.parse(value);
+	}
+	catch (error) {
+		return false;
+	}
+
+	let fileExtension = fileEntryJSON.extension?.toLowerCase();
+
+	if (!fileExtension && fileEntryJSON.mimeType) {
+		fileExtension =
+			MIME_TO_EXTENSION[fileEntryJSON.mimeType.toLowerCase()] ||
+			fileEntryJSON.mimeType.split('/')[1]?.toLowerCase();
+	}
+
+	if (!fileExtension) {
+		return false;
+	}
+
+	const supportedExtensions = acceptedExtensions
+		.split(',')
+		.map((ext) => ext.trim().toLowerCase());
+
+	return !supportedExtensions.includes(fileExtension);
 };
 
 function transformFileEntryProperties({fileEntryTitle, value}) {
@@ -69,6 +110,26 @@ function transformFileEntryProperties({fileEntryTitle, value}) {
 			? [value.title]
 			: [];
 }
+
+const CardItem = ({fileEntryTitle, fileEntryURL}) => {
+	return (
+		<ClayCard horizontal>
+			<ClayCard.Body>
+				<div className="card-col-content card-col-gutters">
+					<div className="h4 text-truncate" title={fileEntryTitle}>
+						{fileEntryTitle}
+					</div>
+				</div>
+
+				<div className="card-col-field">
+					<a download={fileEntryTitle} href={fileEntryURL}>
+						<ClayIcon symbol="download" />
+					</a>
+				</div>
+			</ClayCard.Body>
+		</ClayCard>
+	);
+};
 
 const DocumentLibrary = ({
 	accessibleProps,
@@ -260,6 +321,122 @@ const GuestUploadFile = ({
 	);
 };
 
+function useFileLifecycle({
+	currentValue,
+	fileEntryDeleteURL,
+	portletNamespace,
+	readOnly,
+	value,
+}) {
+	const originalFileEntryIdRef = useRef(null);
+	const pendingDeletionsRef = useRef([]);
+	const submitButtonClickedRef = useRef(false);
+
+	const deleteFileEntry = useCallback(
+		(fileEntryId, {beacon = false} = {}) => {
+			if (!fileEntryId || !fileEntryDeleteURL) {
+				return;
+			}
+
+			const formData = convertToFormData({
+				[`${portletNamespace}oldFileEntryId`]: fileEntryId,
+			});
+
+			// Use sendBeacon on unload because async XHRs are cancelled when
+			// the page tears down; foreground paths keep XHR for parity with
+			// the rest of the field.
+
+			if (beacon && navigator.sendBeacon) {
+				navigator.sendBeacon(fileEntryDeleteURL, formData);
+
+				return;
+			}
+
+			const request = new XMLHttpRequest();
+
+			request.open('POST', fileEntryDeleteURL);
+			request.send(formData);
+		},
+		[fileEntryDeleteURL, portletNamespace]
+	);
+
+	const stagePendingDeletion = (fileEntryId) => {
+		if (!fileEntryId || pendingDeletionsRef.current.includes(fileEntryId)) {
+			return;
+		}
+
+		pendingDeletionsRef.current = [
+			...pendingDeletionsRef.current,
+			fileEntryId,
+		];
+	};
+
+	useEffect(() => {
+
+		// Capture the file entry that was attached when the page loaded.
+		// The unload handler later compares this against the *current* value
+		// to decide whether the user replaced the file without saving — so it
+		// must reflect the page-load state, not the latest edit. That is why
+		// the deps array is empty.
+
+		originalFileEntryIdRef.current = getFileEntryId(value);
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	useEffect(() => {
+		const handleBeforeUnload = () => {
+			if (readOnly || submitButtonClickedRef.current) {
+				return;
+			}
+
+			const currentFileEntryId = getFileEntryId(currentValue);
+			const originalFileEntryId = originalFileEntryIdRef.current;
+
+			if (
+				currentFileEntryId &&
+				currentFileEntryId !== originalFileEntryId
+			) {
+				deleteFileEntry(currentFileEntryId, {beacon: true});
+			}
+
+			pendingDeletionsRef.current.forEach((fileEntryId) => {
+				if (fileEntryId !== originalFileEntryId) {
+					deleteFileEntry(fileEntryId, {beacon: true});
+				}
+			});
+		};
+
+		window.addEventListener('beforeunload', handleBeforeUnload);
+		Liferay.on('beforeNavigate', handleBeforeUnload);
+
+		return () => {
+			window.removeEventListener('beforeunload', handleBeforeUnload);
+			Liferay.detach('beforeNavigate', handleBeforeUnload);
+		};
+	}, [currentValue, deleteFileEntry, readOnly]);
+
+	useEffect(() => {
+		const onSubmit = () => {
+			pendingDeletionsRef.current.forEach((fileEntryId) =>
+				deleteFileEntry(fileEntryId)
+			);
+
+			pendingDeletionsRef.current = [];
+
+			submitButtonClickedRef.current = true;
+		};
+
+		Liferay.on(SUBMIT_EVENT, onSubmit);
+
+		return () => {
+			Liferay.detach(SUBMIT_EVENT, onSubmit);
+		};
+	}, [deleteFileEntry]);
+
+	return {stagePendingDeletion};
+}
+
 const Main = ({
 	_onBlur,
 	_onFocus,
@@ -297,9 +474,21 @@ const Main = ({
 	const [displayErrors, setDisplayErrors] = useState(initialDisplayErrors);
 	const [valid, setValid] = useState(initialValid);
 	const [progress, setProgress] = useState(0);
-	const [submitButtonClicked, setSubmitButtonClicked] = useState(false);
+
+	const {stagePendingDeletion} = useFileLifecycle({
+		currentValue,
+		fileEntryDeleteURL,
+		portletNamespace,
+		readOnly,
+		value,
+	});
 
 	const isSignedIn = Liferay.ThemeDisplay.isSignedIn();
+
+	const hasCustomError =
+		(!isSignedIn && !allowGuestUsers) ||
+		maximumSubmissionLimitReached ||
+		showUploadPermissionMessage;
 
 	const getErrorMessages = (
 		errorMessage,
@@ -356,24 +545,26 @@ const Main = ({
 	}, [allowGuestUsers, isSignedIn, showUploadPermissionMessage]);
 
 	useEffect(() => {
-		const objectFieldInvalidExtension =
-			isObjectFieldInvalidExtension(value);
+		const invalidExtension = hasInvalidExtension(
+			value,
+			objectFieldAcceptedFileExtensions
+		);
 
-		setCurrentValue(objectFieldInvalidExtension ? null : value);
-		setDisplayErrors(
-			objectFieldInvalidExtension ? true : initialDisplayErrors
-		);
+		setCurrentValue(invalidExtension ? null : value);
+		setDisplayErrors(invalidExtension ? true : initialDisplayErrors);
 		setErrorMessage(
-			getErrorMessages(
-				initialErrorMessage,
-				isSignedIn,
-				objectFieldInvalidExtension
-			)
+			getErrorMessages(initialErrorMessage, isSignedIn, invalidExtension)
 		);
-		setValid(objectFieldInvalidExtension ? false : initialValid);
+		setValid(invalidExtension ? false : initialValid);
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [initialDisplayErrors, initialErrorMessage, initialValid, value]);
+	}, [
+		initialDisplayErrors,
+		initialErrorMessage,
+		initialValid,
+		objectFieldAcceptedFileExtensions,
+		value,
+	]);
 
 	const checkMaximumRepetitions = () => {
 		const visitor = new PagesVisitor(pages);
@@ -393,29 +584,6 @@ const Main = ({
 		return repetitionsCounter === maximumRepetitions;
 	};
 
-	const handleFieldChanged = (selectedItem) => {
-		if (selectedItem?.value) {
-			setCurrentValue(selectedItem.value);
-
-			onChange(selectedItem, selectedItem.value);
-		}
-	};
-
-	const handleSelectButtonClicked = ({portletNamespace}, event) => {
-		onFocus(event);
-
-		openSelectionModal({
-			onClose: () => onBlur(event),
-			onSelect: handleFieldChanged,
-			selectEventName: `${portletNamespace}selectDocumentLibrary`,
-			title: sub(
-				Liferay.Language.get('select-x'),
-				Liferay.Language.get('document')
-			),
-			url: itemSelectorURL,
-		});
-	};
-
 	const configureErrorMessage = (message) => {
 		setErrorMessage(message);
 
@@ -431,14 +599,6 @@ const Main = ({
 		if (ddmFormSubmitButton) {
 			ddmFormSubmitButton.disabled = disable;
 		}
-	};
-
-	const handleGuestUploadFileChanged = (errorMessage, event, value) => {
-		configureErrorMessage(errorMessage);
-
-		setCurrentValue(value);
-
-		onChange(event, value ? value : '{}');
 	};
 
 	const isExceededUploadRequestSizeLimit = (fileSize) => {
@@ -461,68 +621,41 @@ const Main = ({
 		return true;
 	};
 
-	const isObjectFieldInvalidExtension = (value) => {
-		if (!value || !objectFieldAcceptedFileExtensions) {
-			return false;
-		}
+	const handleGuestUploadFileChanged = (errorMessage, event, value) => {
+		configureErrorMessage(errorMessage);
 
-		const fileEntryJSON = JSON.parse(value);
+		setCurrentValue(value);
 
-		let fileExtension = fileEntryJSON.extension?.toLowerCase();
-
-		if (!fileExtension && fileEntryJSON.mimeType) {
-			const mimeToExt = {
-				'application/msword': 'doc',
-				'application/vnd.ms-excel': 'xls',
-				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-					'xlsx',
-				'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-					'docx',
-				'text/plain': 'txt',
-			};
-
-			fileExtension =
-				mimeToExt[fileEntryJSON.mimeType.toLowerCase()] ||
-				fileEntryJSON.mimeType.split('/')[1]?.toLowerCase();
-		}
-
-		if (!fileExtension) {
-			return false;
-		}
-
-		const supportedExtensions = objectFieldAcceptedFileExtensions
-			.split(', ')
-			.map((ext) => ext.trim().toLowerCase());
-
-		return !supportedExtensions.includes(fileExtension);
+		onChange(event, value ? value : '{}');
 	};
 
-	const deleteFileEntry = useCallback(() => {
-		const request = new XMLHttpRequest();
+	const handleFieldChanged = (selectedItem) => {
+		if (selectedItem?.value) {
+			setCurrentValue(selectedItem.value);
 
-		let oldFileEntryId = 0;
-
-		try {
-			const fileEntry = JSON.parse(value);
-
-			oldFileEntryId = fileEntry.fileEntryId;
+			onChange(selectedItem, selectedItem.value);
 		}
-		catch (error) {
-			console.error('Unable to parse JSON', value);
-		}
+	};
 
-		request.open('POST', fileEntryDeleteURL);
-		request.send(
-			convertToFormData({
-				[`${portletNamespace}oldFileEntryId`]: oldFileEntryId,
-			})
-		);
-	}, [fileEntryDeleteURL, portletNamespace, value]);
+	const handleSelectButtonClicked = (event) => {
+		onFocus(event);
+
+		openSelectionModal({
+			onClose: () => onBlur(event),
+			onSelect: handleFieldChanged,
+			selectEventName: `${portletNamespace}selectDocumentLibrary`,
+			title: sub(
+				Liferay.Language.get('select-x'),
+				Liferay.Language.get('document')
+			),
+			url: itemSelectorURL,
+		});
+	};
 
 	const handleOnClearButtonClicked = (event, isSignedIn) => {
 		onFocus(event);
 
-		deleteFileEntry();
+		stagePendingDeletion(getFileEntryId(currentValue));
 
 		setCurrentValue(null);
 
@@ -544,26 +677,12 @@ const Main = ({
 	const handleUploadSelectButtonClicked = (event, currentValue) => {
 		onFocus(event);
 
-		let oldFileEntryId = 0;
+		stagePendingDeletion(getFileEntryId(currentValue));
 
-		if (currentValue) {
-			try {
-				const fileEntry = JSON.parse(currentValue);
-
-				oldFileEntryId = fileEntry.fileEntryId;
-
-				uploadFileEntry(event, oldFileEntryId);
-			}
-			catch (error) {
-				console.error('Unable to parse JSON', currentValue);
-			}
-		}
-		else {
-			uploadFileEntry(event, oldFileEntryId);
-		}
+		uploadFileEntry(event);
 	};
 
-	const uploadFileEntry = (event, oldFileEntryId) => {
+	const uploadFileEntry = (event) => {
 		const file = event.target.files[0];
 
 		if (isExceededUploadRequestSizeLimit(file.size)) {
@@ -617,41 +736,10 @@ const Main = ({
 		request.send(
 			convertToFormData({
 				[`${portletNamespace}file`]: file,
-				[`${portletNamespace}oldFileEntryId`]: oldFileEntryId,
+				[`${portletNamespace}oldFileEntryId`]: 0,
 			})
 		);
 	};
-
-	const hasCustomError =
-		(!isSignedIn && !allowGuestUsers) ||
-		maximumSubmissionLimitReached ||
-		showUploadPermissionMessage;
-
-	useEffect(() => {
-		window.onbeforeunload = function () {
-			if (!submitButtonClicked) {
-				deleteFileEntry();
-			}
-		};
-
-		return () => {
-			window.onbeforeunload = null;
-		};
-	}, [deleteFileEntry, submitButtonClicked]);
-
-	useEffect(() => {
-		Liferay.on(
-			'paginationControlsSubmitButtonClicked',
-
-			() => {
-				setSubmitButtonClicked(true);
-			}
-		);
-
-		return () => {
-			Liferay.detach('paginationControlsSubmitButtonClicked');
-		};
-	}, []);
 
 	return (
 		<FieldBase
@@ -704,15 +792,7 @@ const Main = ({
 					onClearButtonClicked={(event) => {
 						handleOnClearButtonClicked(event, value, isSignedIn);
 					}}
-					onSelectButtonClicked={(event) =>
-						handleSelectButtonClicked(
-							{
-								itemSelectorURL,
-								portletNamespace,
-							},
-							event
-						)
-					}
+					onSelectButtonClicked={handleSelectButtonClicked}
 					placeholder={placeholder}
 					readOnly={hasCustomError ? true : readOnly}
 					value={currentValue || ''}

@@ -55,6 +55,9 @@ export default function CategorizationPanel({
 		<div className="px-3">
 			<AssetCategorization
 				assetLibraryId={assetLibraryId}
+				categoriesErrorMessage={
+					categorizationFields?.assetCategoryIds?.error
+				}
 				categorization={{
 					keywords: categorizationFields?.assetTagNames?.value || [],
 					systemProperties: {
