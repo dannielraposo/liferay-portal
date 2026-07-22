@@ -196,6 +196,11 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 		Map<String, String[]> parameterMap = ParameterMapUtil.toParameterMap(
 			publishProcessRequest);
 
+		parameterMap = ParameterMapUtil.putDateRangeParameters(
+			publishProcessRequest.getDateRangeTypeAsString(),
+			publishProcessRequest.getStartDate(),
+			publishProcessRequest.getEndDate(), parameterMap, contextUser);
+
 		parameterMap =
 			_exportImportConfigurationParameterMapFactory.buildParameterMap(
 				parameterMap);
