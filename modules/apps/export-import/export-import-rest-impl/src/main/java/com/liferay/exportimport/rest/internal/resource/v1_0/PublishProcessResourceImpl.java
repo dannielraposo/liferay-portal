@@ -10,6 +10,7 @@ import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationFa
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactory;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactory;
 import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
+import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
@@ -50,7 +51,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
@@ -193,13 +193,30 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 		Group liveGroup = GroupUtil.getLiveGroup(
 			stagingGroup, _stagingGroupHelper);
 
+		boolean fromLastPublishDate = false;
+
+		if (publishProcessRequest.getDateRangeType() ==
+				PublishProcessRequest.DateRangeType.FROM_LAST_PUBLISH_DATE) {
+
+			fromLastPublishDate = true;
+		}
+
 		Map<String, String[]> parameterMap = ParameterMapUtil.toParameterMap(
 			publishProcessRequest);
 
-		parameterMap = ParameterMapUtil.putDateRangeParameters(
-			publishProcessRequest.getDateRangeTypeAsString(),
-			publishProcessRequest.getStartDate(),
-			publishProcessRequest.getEndDate(), parameterMap, contextUser);
+		if (fromLastPublishDate) {
+			parameterMap.put(
+				ExportImportDateUtil.RANGE,
+				new String[] {
+					ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE
+				});
+		}
+		else {
+			parameterMap = ParameterMapUtil.putDateRangeParameters(
+				publishProcessRequest.getDateRangeTypeAsString(),
+				publishProcessRequest.getStartDate(),
+				publishProcessRequest.getEndDate(), parameterMap, contextUser);
+		}
 
 		parameterMap =
 			_exportImportConfigurationParameterMapFactory.buildParameterMap(
