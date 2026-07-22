@@ -9,12 +9,16 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.lar.UserIdStrategy;
 import com.liferay.exportimport.rest.dto.v1_0.ExportProcessRequest;
 import com.liferay.exportimport.rest.dto.v1_0.ImportProcessRequest;
+import com.liferay.exportimport.rest.dto.v1_0.PublishProcessRequest;
 import com.liferay.exportimport.rest.dto.v1_0.RequestPortletDataHandler;
 import com.liferay.exportimport.rest.dto.v1_0.RequestPortletDataHandlerControl;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 
+
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -31,69 +35,58 @@ public class ParameterMapUtil {
 		_addRequestPortletDataHandlers(
 			exportProcessRequest.getRequestPortletDataHandlers(), parameterMap);
 
-		Boolean comments = exportProcessRequest.getComments();
-
-		if (comments != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.COMMENTS,
-				new String[] {comments.toString()});
-		}
-
-		Boolean deletions = exportProcessRequest.getDeletions();
-
-		if (deletions != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.DELETIONS,
-				new String[] {deletions.toString()});
-		}
-
-		Boolean logo = exportProcessRequest.getLogo();
-
-		if (logo != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.LOGO, new String[] {logo.toString()});
-		}
-
-		Boolean permissions = exportProcessRequest.getPermissions();
-
-		if (permissions != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.PERMISSIONS,
-				new String[] {permissions.toString()});
-		}
-
-		Boolean ratings = exportProcessRequest.getRatings();
-
-		if (ratings != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.RATINGS,
-				new String[] {ratings.toString()});
-		}
-
-		Boolean sitePagesSettings = exportProcessRequest.getSitePagesSettings();
-
-		if (sitePagesSettings != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.LAYOUT_SET_SETTINGS,
-				new String[] {sitePagesSettings.toString()});
-		}
-
-		Boolean siteTemplateSettings =
-			exportProcessRequest.getSiteTemplateSettings();
-
-		if (siteTemplateSettings != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.LAYOUT_SET_PROTOTYPE_SETTINGS,
-				new String[] {siteTemplateSettings.toString()});
-		}
-
-		Boolean themeSettings = exportProcessRequest.getThemeSettings();
-
-		if (themeSettings != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.THEME_REFERENCE,
-				new String[] {themeSettings.toString()});
-		}
+		parameterMap.put(
+			PortletDataHandlerKeys.COMMENTS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(exportProcessRequest.getComments()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.DELETIONS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(exportProcessRequest.getDeletions()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.LAYOUT_SET_PROTOTYPE_SETTINGS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						exportProcessRequest.getSiteTemplateSettings()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.LAYOUT_SET_SETTINGS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						exportProcessRequest.getSitePagesSettings()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.LOGO,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(exportProcessRequest.getLogo()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.PERMISSIONS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						exportProcessRequest.getPermissions()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.RATINGS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(exportProcessRequest.getRatings()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.THEME_REFERENCE,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						exportProcessRequest.getThemeSettings()))
+			});
 
 		return parameterMap;
 	}
@@ -107,6 +100,13 @@ public class ParameterMapUtil {
 		_addRequestPortletDataHandlers(
 			importProcessRequest.getRequestPortletDataHandlers(), parameterMap);
 
+		parameterMap.put(
+			PortletDataHandlerKeys.COMMENTS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(importProcessRequest.getComments()))
+			});
+
 		ImportProcessRequest.DataStrategy dataStrategy =
 			importProcessRequest.getDataStrategy();
 
@@ -116,69 +116,52 @@ public class ParameterMapUtil {
 				new String[] {"DATA_STRATEGY_" + dataStrategy});
 		}
 
-		Boolean comments = importProcessRequest.getComments();
-
-		if (comments != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.COMMENTS,
-				new String[] {comments.toString()});
-		}
-
-		Boolean deletions = importProcessRequest.getDeletions();
-
-		if (deletions != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.DELETIONS,
-				new String[] {deletions.toString()});
-		}
-
-		Boolean logo = importProcessRequest.getLogo();
-
-		if (logo != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.LOGO, new String[] {logo.toString()});
-		}
-
-		Boolean permissions = importProcessRequest.getPermissions();
-
-		if (permissions != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.PERMISSIONS,
-				new String[] {permissions.toString()});
-		}
-
-		Boolean ratings = importProcessRequest.getRatings();
-
-		if (ratings != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.RATINGS,
-				new String[] {ratings.toString()});
-		}
-
-		Boolean sitePagesSettings = importProcessRequest.getSitePagesSettings();
-
-		if (sitePagesSettings != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.LAYOUT_SET_SETTINGS,
-				new String[] {sitePagesSettings.toString()});
-		}
-
-		Boolean siteTemplateSettings =
-			importProcessRequest.getSiteTemplateSettings();
-
-		if (siteTemplateSettings != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.LAYOUT_SET_PROTOTYPE_SETTINGS,
-				new String[] {siteTemplateSettings.toString()});
-		}
-
-		Boolean themeSettings = importProcessRequest.getThemeSettings();
-
-		if (themeSettings != null) {
-			parameterMap.put(
-				PortletDataHandlerKeys.THEME_REFERENCE,
-				new String[] {themeSettings.toString()});
-		}
+		parameterMap.put(
+			PortletDataHandlerKeys.DELETIONS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(importProcessRequest.getDeletions()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.LAYOUT_SET_PROTOTYPE_SETTINGS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						importProcessRequest.getSiteTemplateSettings()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.LAYOUT_SET_SETTINGS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						importProcessRequest.getSitePagesSettings()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.LOGO,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(importProcessRequest.getLogo()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.PERMISSIONS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						importProcessRequest.getPermissions()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.RATINGS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(importProcessRequest.getRatings()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.THEME_REFERENCE,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						importProcessRequest.getThemeSettings()))
+			});
 
 		ImportProcessRequest.UserIdStrategy userIdStrategy =
 			importProcessRequest.getUserIdStrategy();
@@ -188,6 +171,77 @@ public class ParameterMapUtil {
 				PortletDataHandlerKeys.USER_ID_STRATEGY,
 				new String[] {userIdStrategy.toString()});
 		}
+
+		return parameterMap;
+	}
+
+	public static Map<String, String[]> toParameterMap(
+		PublishProcessRequest publishProcessRequest) {
+
+		Map<String, String[]> parameterMap = new LinkedHashMap<>();
+
+		_addRequestPortletDataHandlers(
+			publishProcessRequest.getRequestPortletDataHandlers(),
+			parameterMap);
+
+		parameterMap.put(
+			PortletDataHandlerKeys.COMMENTS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(publishProcessRequest.getComments()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.DELETIONS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(publishProcessRequest.getDeletions()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.LAYOUT_SET_PROTOTYPE_SETTINGS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						publishProcessRequest.getSiteTemplateSettings()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.LAYOUT_SET_SETTINGS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						publishProcessRequest.getSitePagesSettings()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.LOGO,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(publishProcessRequest.getLogo()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.PERMISSIONS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						publishProcessRequest.getPermissions()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.PORTLET_DATA,
+			new String[] {Boolean.TRUE.toString()});
+		parameterMap.put(
+			PortletDataHandlerKeys.PORTLET_DATA_CONTROL_DEFAULT,
+			new String[] {Boolean.FALSE.toString()});
+		parameterMap.put(
+			PortletDataHandlerKeys.RATINGS,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(publishProcessRequest.getRatings()))
+			});
+		parameterMap.put(
+			PortletDataHandlerKeys.THEME_REFERENCE,
+			new String[] {
+				String.valueOf(
+					GetterUtil.getBoolean(
+						publishProcessRequest.getThemeSettings()))
+			});
 
 		return parameterMap;
 	}

@@ -7,34 +7,28 @@ package com.liferay.exportimport.rest.internal.resource.v1_0;
 
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportHelper;
-import com.liferay.exportimport.kernel.lar.ManifestSummary;
-import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataContextFactory;
-import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.lar.DeletionSystemEventExporter;
 import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandlerProvider;
 import com.liferay.exportimport.rest.dto.v1_0.ExportPreview;
-import com.liferay.exportimport.rest.dto.v1_0.ExportProcessRequest;
 import com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandler;
 import com.liferay.exportimport.rest.internal.util.DateRangeUtil;
+import com.liferay.exportimport.rest.internal.util.GroupUtil;
 import com.liferay.exportimport.rest.internal.util.PermissionUtil;
 import com.liferay.exportimport.rest.internal.util.PreviewPortletDataHandlerUtil;
 import com.liferay.exportimport.rest.resource.v1_0.ExportPreviewResource;
-import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.util.DateRange;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.staging.StagingGroupHelper;
 
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -58,7 +52,9 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 			Date endDate, Date startDate)
 		throws Exception {
 
-		Group group = _getAssetLibraryGroup(assetLibraryExternalReferenceCode);
+		Group group = GroupUtil.getAssetLibraryGroup(
+			contextCompany.getCompanyId(), assetLibraryExternalReferenceCode,
+			groupLocalService);
 
 		return _getExportPreview(
 			dateRangeType, endDate, group, 0, null, startDate);
@@ -70,7 +66,9 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 			String dateRangeType, Date endDate, Long plid, Date startDate)
 		throws Exception {
 
-		Group group = _getAssetLibraryGroup(assetLibraryExternalReferenceCode);
+		Group group = GroupUtil.getAssetLibraryGroup(
+			contextCompany.getCompanyId(), assetLibraryExternalReferenceCode,
+			groupLocalService);
 
 		return _getExportPreview(
 			dateRangeType, endDate, group, GetterUtil.getLong(plid), portletId,
@@ -99,7 +97,9 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 			Date endDate, Date startDate)
 		throws Exception {
 
-		Group group = _getSiteGroup(siteExternalReferenceCode);
+		Group group = GroupUtil.getSiteGroup(
+			contextCompany.getCompanyId(), siteExternalReferenceCode,
+			groupLocalService);
 
 		return _getExportPreview(
 			dateRangeType, endDate, group, 0, null, startDate);
@@ -111,22 +111,13 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 			String dateRangeType, Date endDate, Long plid, Date startDate)
 		throws Exception {
 
-		Group group = _getSiteGroup(siteExternalReferenceCode);
+		Group group = GroupUtil.getSiteGroup(
+			contextCompany.getCompanyId(), siteExternalReferenceCode,
+			groupLocalService);
 
 		return _getExportPreview(
 			dateRangeType, endDate, group, GetterUtil.getLong(plid), portletId,
 			startDate);
-	}
-
-	private Group _getAssetLibraryGroup(String externalReferenceCode) {
-		Group group = groupLocalService.fetchGroupByExternalReferenceCode(
-			externalReferenceCode, contextCompany.getCompanyId());
-
-		if ((group == null) || !group.isDepot()) {
-			throw new NotFoundException();
-		}
-
-		return group;
 	}
 
 	private ExportPreview _getExportPreview(
@@ -138,9 +129,6 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 
 		PermissionUtil.checkExportPermission(
 			contextCompany.getCompanyId(), groupId);
-
-		Map<String, List<PreviewPortletDataHandler>>
-			previewPortletDataHandlersMap = new LinkedHashMap<>();
 
 		boolean portletScoped = !Validator.isBlank(portletId);
 
@@ -156,105 +144,22 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 				contextCompany.getCompanyId(), false, groupId);
 		}
 
+		DateRange dateRange = DateRangeUtil.getDateRange(
+			dateRangeType, startDate, endDate);
 		String range = null;
 
-		if (!StringUtil.equals(
-				dateRangeType,
-				String.valueOf(ExportProcessRequest.DateRangeType.ALL))) {
-
-			DateRange dateRange = DateRangeUtil.toDateRange(startDate, endDate);
-
-			if (dateRange != null) {
-				range = ExportImportDateUtil.RANGE_DATE_RANGE;
-				startDate = dateRange.getStartDate();
-				endDate = dateRange.getEndDate();
-			}
+		if (dateRange != null) {
+			range = ExportImportDateUtil.RANGE_DATE_RANGE;
 		}
 
 		Locale locale = contextAcceptLanguage.getPreferredLocale();
 
-		for (Portlet portlet : portlets) {
-			PortletDataHandler portletDataHandler =
-				_portletDataHandlerProvider.provide(portlet);
-
-			if (portletDataHandler == null) {
-				continue;
-			}
-
-			PortletDataContext portletDataContext =
-				_portletDataContextFactory.createPreparePortletDataContext(
-					contextCompany.getCompanyId(), groupId, range, startDate,
-					endDate);
-
-			portletDataHandler.prepareManifestSummary(portletDataContext);
-
-			if (LayoutAdminPortletKeys.LAYOUT_SET_LAYOUTS.equals(
-					portlet.getPortletId())) {
-
-				portletDataContext.addDeletionSystemEventStagedModelTypes(
-					portletDataHandler.
-						getDeletionSystemEventStagedModelTypes());
-
-				long publicDeletionSystemEventsCount =
-					_deletionSystemEventExporter.getDeletionSystemEventsCount(
-						portletDataContext);
-
-				long privateDeletionSystemEventsCount = 0;
-				ManifestSummary privateManifestSummary = null;
-
-				if (!portletScoped && group.isPrivateLayoutsEnabled()) {
-					PortletDataContext privatePortletDataContext =
-						_portletDataContextFactory.
-							createPreparePortletDataContext(
-								contextCompany.getCompanyId(), groupId, range,
-								startDate, endDate);
-
-					privatePortletDataContext.setPrivateLayout(true);
-
-					portletDataHandler.prepareManifestSummary(
-						privatePortletDataContext);
-
-					privatePortletDataContext.
-						addDeletionSystemEventStagedModelTypes(
-							portletDataHandler.
-								getDeletionSystemEventStagedModelTypes());
-
-					privateManifestSummary =
-						privatePortletDataContext.getManifestSummary();
-					privateDeletionSystemEventsCount =
-						_deletionSystemEventExporter.
-							getDeletionSystemEventsCount(
-								privatePortletDataContext);
-				}
-
-				PreviewPortletDataHandlerUtil.
-					addLayoutSetPreviewPortletDataHandler(
-						contextCompany.getCompanyId(), locale, portlet,
-						portletDataHandler, previewPortletDataHandlersMap,
-						privateDeletionSystemEventsCount,
-						privateManifestSummary, publicDeletionSystemEventsCount,
-						portletDataContext.getManifestSummary());
-			}
-			else {
-				PreviewPortletDataHandlerUtil.addPreviewPortletDataHandler(
-					contextCompany.getCompanyId(), locale,
-					portletDataContext.getManifestSummary(), portlet,
-					portletDataHandler,
-					PortletDataHandler::getExportPortletDataHandlerControls,
-					portletScoped, previewPortletDataHandlersMap);
-
-				if (portletScoped) {
-					PreviewPortletDataHandlerUtil.
-						addConfigurationPreviewPortletDataHandler(
-							locale, portlet,
-							portletDataHandler.
-								getExportConfigurationPortletDataHandlerControls(
-									contextCompany.getCompanyId(), groupId,
-									portlet, plid, false),
-							previewPortletDataHandlersMap);
-				}
-			}
-		}
+		Map<String, List<PreviewPortletDataHandler>>
+			previewPortletDataHandlersMap =
+				PreviewPortletDataHandlerUtil.getPreviewPortletDataHandlersMap(
+					_deletionSystemEventExporter, group, locale, plid,
+					_portletDataContextFactory, _portletDataHandlerProvider,
+					portlet -> dateRange, portlets, portletScoped, range);
 
 		return new ExportPreview() {
 			{
@@ -271,17 +176,6 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 								locale, previewPortletDataHandlersMap));
 			}
 		};
-	}
-
-	private Group _getSiteGroup(String externalReferenceCode) {
-		Group group = groupLocalService.fetchGroupByExternalReferenceCode(
-			externalReferenceCode, contextCompany.getCompanyId());
-
-		if ((group == null) || (!group.isCMS() && !group.isSite())) {
-			throw new NotFoundException();
-		}
-
-		return group;
 	}
 
 	@Reference

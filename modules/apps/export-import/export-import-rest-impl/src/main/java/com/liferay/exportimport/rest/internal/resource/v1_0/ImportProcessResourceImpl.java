@@ -17,6 +17,7 @@ import com.liferay.exportimport.rest.dto.v1_0.ImportProcessRequest;
 import com.liferay.exportimport.rest.dto.v1_0.ProcessProgress;
 import com.liferay.exportimport.rest.dto.v1_0.Status;
 import com.liferay.exportimport.rest.internal.util.BackgroundTaskUtil;
+import com.liferay.exportimport.rest.internal.util.GroupUtil;
 import com.liferay.exportimport.rest.internal.util.ParameterMapUtil;
 import com.liferay.exportimport.rest.internal.util.PermissionUtil;
 import com.liferay.exportimport.rest.resource.v1_0.ImportPreviewResource;
@@ -27,7 +28,6 @@ import com.liferay.portal.background.task.model.BackgroundTask;
 import com.liferay.portal.background.task.service.BackgroundTaskLocalService;
 import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
-import com.liferay.portal.kernel.dao.orm.OrderFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.NoSuchBackgroundTaskException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -93,7 +93,9 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 			String search, Integer status, Pagination pagination, Sort[] sorts)
 		throws Exception {
 
-		Group group = _getAssetLibraryGroup(assetLibraryExternalReferenceCode);
+		Group group = GroupUtil.getAssetLibraryGroup(
+			contextCompany.getCompanyId(), assetLibraryExternalReferenceCode,
+			groupLocalService);
 
 		return _getImportProcessesPage(
 			creatorId, group.getGroupId(), pagination, null, search, sorts,
@@ -107,7 +109,9 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 			Pagination pagination, Sort[] sorts)
 		throws Exception {
 
-		Group group = _getAssetLibraryGroup(assetLibraryExternalReferenceCode);
+		Group group = GroupUtil.getAssetLibraryGroup(
+			contextCompany.getCompanyId(), assetLibraryExternalReferenceCode,
+			groupLocalService);
 
 		return _getImportProcessesPage(
 			creatorId, group.getGroupId(), pagination, portletId, search, sorts,
@@ -167,7 +171,9 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 			Integer status, Pagination pagination, Sort[] sorts)
 		throws Exception {
 
-		Group group = _getSiteGroup(siteExternalReferenceCode);
+		Group group = GroupUtil.getSiteGroup(
+			contextCompany.getCompanyId(), siteExternalReferenceCode,
+			groupLocalService);
 
 		return _getImportProcessesPage(
 			creatorId, group.getGroupId(), pagination, null, search, sorts,
@@ -180,7 +186,9 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 			String search, Integer status, Pagination pagination, Sort[] sorts)
 		throws Exception {
 
-		Group group = _getSiteGroup(siteExternalReferenceCode);
+		Group group = GroupUtil.getSiteGroup(
+			contextCompany.getCompanyId(), siteExternalReferenceCode,
+			groupLocalService);
 
 		return _getImportProcessesPage(
 			creatorId, group.getGroupId(), pagination, portletId, search, sorts,
@@ -194,7 +202,9 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 		throws Exception {
 
 		return _postLayoutImportProcess(
-			_getAssetLibraryGroup(assetLibraryExternalReferenceCode),
+			GroupUtil.getAssetLibraryGroup(
+				contextCompany.getCompanyId(),
+				assetLibraryExternalReferenceCode, groupLocalService),
 			importProcessRequest);
 	}
 
@@ -205,7 +215,9 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 		throws Exception {
 
 		return _postPortletImportProcess(
-			_getAssetLibraryGroup(assetLibraryExternalReferenceCode),
+			GroupUtil.getAssetLibraryGroup(
+				contextCompany.getCompanyId(),
+				assetLibraryExternalReferenceCode, groupLocalService),
 			importProcessRequest, GetterUtil.getLong(plid), portletId);
 	}
 
@@ -231,7 +243,10 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 		throws Exception {
 
 		return _postLayoutImportProcess(
-			_getSiteGroup(siteExternalReferenceCode), importProcessRequest);
+			GroupUtil.getSiteGroup(
+				contextCompany.getCompanyId(), siteExternalReferenceCode,
+				groupLocalService),
+			importProcessRequest);
 	}
 
 	@Override
@@ -241,19 +256,10 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 		throws Exception {
 
 		return _postPortletImportProcess(
-			_getSiteGroup(siteExternalReferenceCode), importProcessRequest,
-			GetterUtil.getLong(plid), portletId);
-	}
-
-	private Group _getAssetLibraryGroup(String externalReferenceCode) {
-		Group group = groupLocalService.fetchGroupByExternalReferenceCode(
-			externalReferenceCode, contextCompany.getCompanyId());
-
-		if ((group == null) || !group.isDepot()) {
-			throw new NotFoundException();
-		}
-
-		return group;
+			GroupUtil.getSiteGroup(
+				contextCompany.getCompanyId(), siteExternalReferenceCode,
+				groupLocalService),
+			importProcessRequest, GetterUtil.getLong(plid), portletId);
 	}
 
 	private List<BackgroundTask> _getBackgroundTasks(
@@ -267,7 +273,7 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 		DynamicQuery dynamicQuery = _getDynamicQuery(
 			creatorId, groupId, portletId, search, status);
 
-		_setSorts(dynamicQuery, sorts);
+		BackgroundTaskUtil.addOrders(dynamicQuery, sorts);
 
 		return _backgroundTaskLocalService.dynamicQuery(
 			dynamicQuery, pagination.getStartPosition(),
@@ -356,17 +362,6 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 		}
 
 		return fileEntry;
-	}
-
-	private Group _getSiteGroup(String externalReferenceCode) {
-		Group group = groupLocalService.fetchGroupByExternalReferenceCode(
-			externalReferenceCode, contextCompany.getCompanyId());
-
-		if ((group == null) || (!group.isCMS() && !group.isSite())) {
-			throw new NotFoundException();
-		}
-
-		return group;
 	}
 
 	private boolean _isPrivateLayout(FileEntry fileEntry) throws Exception {
@@ -487,43 +482,6 @@ public class ImportProcessResourceImpl extends BaseImportProcessResourceImpl {
 			return _toImportProcess(
 				_backgroundTaskLocalService.getBackgroundTask(
 					backgroundTaskId));
-		}
-	}
-
-	private void _setSorts(DynamicQuery dynamicQuery, Sort[] sorts) {
-		if (sorts == null) {
-			dynamicQuery.addOrder(OrderFactoryUtil.desc("createDate"));
-
-			return;
-		}
-
-		for (Sort sort : sorts) {
-			String fieldName = sort.getFieldName();
-
-			fieldName = StringUtil.removeSubstring(fieldName, "_sortable");
-
-			if (fieldName.equals("creator")) {
-				fieldName = "userName";
-			}
-			else if (fieldName.equals("dateCompleted")) {
-				fieldName = "completionDate";
-			}
-			else if (fieldName.equals("dateCreated")) {
-				fieldName = "createDate";
-			}
-			else if (fieldName.equals("dateModified")) {
-				fieldName = "modifiedDate";
-			}
-			else if (fieldName.equals("id")) {
-				fieldName = "backgroundTaskId";
-			}
-
-			if (sort.isReverse()) {
-				dynamicQuery.addOrder(OrderFactoryUtil.desc(fieldName));
-			}
-			else {
-				dynamicQuery.addOrder(OrderFactoryUtil.asc(fieldName));
-			}
 		}
 	}
 
