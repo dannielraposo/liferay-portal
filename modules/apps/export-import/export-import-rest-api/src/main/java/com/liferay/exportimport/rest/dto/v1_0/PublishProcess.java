@@ -40,17 +40,17 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName("ExportProcess")
+@GraphQLName("PublishProcess")
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "ExportProcess")
-public class ExportProcess implements Serializable {
+@XmlRootElement(name = "PublishProcess")
+public class PublishProcess implements Serializable {
 
-	public static ExportProcess toDTO(String json) {
-		return ObjectMapperUtil.readValue(ExportProcess.class, json);
+	public static PublishProcess toDTO(String json) {
+		return ObjectMapperUtil.readValue(PublishProcess.class, json);
 	}
 
-	public static ExportProcess unsafeToDTO(String json) {
-		return ObjectMapperUtil.unsafeReadValue(ExportProcess.class, json);
+	public static PublishProcess unsafeToDTO(String json) {
+		return ObjectMapperUtil.unsafeReadValue(PublishProcess.class, json);
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema
@@ -137,7 +137,7 @@ public class ExportProcess implements Serializable {
 	private Supplier<Date> _dateCompletedSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The export process's creation date."
+		description = "The publish process's creation date."
 	)
 	public Date getDateCreated() {
 		if (_dateCreatedSupplier != null) {
@@ -172,7 +172,7 @@ public class ExportProcess implements Serializable {
 		};
 	}
 
-	@GraphQLField(description = "The export process's creation date.")
+	@GraphQLField(description = "The publish process's creation date.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Date dateCreated;
 
@@ -180,7 +180,7 @@ public class ExportProcess implements Serializable {
 	private Supplier<Date> _dateCreatedSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The export process's last modification date."
+		description = "The publish process's last modification date."
 	)
 	public Date getDateModified() {
 		if (_dateModifiedSupplier != null) {
@@ -215,7 +215,7 @@ public class ExportProcess implements Serializable {
 		};
 	}
 
-	@GraphQLField(description = "The export process's last modification date.")
+	@GraphQLField(description = "The publish process's last modification date.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Date dateModified;
 
@@ -223,7 +223,7 @@ public class ExportProcess implements Serializable {
 	private Supplier<Date> _dateModifiedSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The export process's error message when it did not end successfully."
+		description = "The publish process's error message when it did not end successfully."
 	)
 	public String getErrorMessage() {
 		if (_errorMessageSupplier != null) {
@@ -259,7 +259,7 @@ public class ExportProcess implements Serializable {
 	}
 
 	@GraphQLField(
-		description = "The export process's error message when it did not end successfully."
+		description = "The publish process's error message when it did not end successfully."
 	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String errorMessage;
@@ -268,7 +268,7 @@ public class ExportProcess implements Serializable {
 	private Supplier<String> _errorMessageSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The export process's ID."
+		description = "The publish process's ID."
 	)
 	public Long getId() {
 		if (_idSupplier != null) {
@@ -301,7 +301,7 @@ public class ExportProcess implements Serializable {
 		};
 	}
 
-	@GraphQLField(description = "The export process's ID.")
+	@GraphQLField(description = "The publish process's ID.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long id;
 
@@ -309,7 +309,52 @@ public class ExportProcess implements Serializable {
 	private Supplier<Long> _idSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The export process's name."
+		description = "The scheduler job name that identifies the scheduled publish process when the publication is scheduled instead of run immediately."
+	)
+	public String getJobName() {
+		if (_jobNameSupplier != null) {
+			jobName = _jobNameSupplier.get();
+
+			_jobNameSupplier = null;
+		}
+
+		return jobName;
+	}
+
+	public void setJobName(String jobName) {
+		this.jobName = jobName;
+
+		_jobNameSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setJobName(
+		UnsafeSupplier<String, Exception> jobNameUnsafeSupplier) {
+
+		_jobNameSupplier = () -> {
+			try {
+				return jobNameUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(
+		description = "The scheduler job name that identifies the scheduled publish process when the publication is scheduled instead of run immediately."
+	)
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String jobName;
+
+	@JsonIgnore
+	private Supplier<String> _jobNameSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The publish process's name."
 	)
 	public String getName() {
 		if (_nameSupplier != null) {
@@ -342,7 +387,7 @@ public class ExportProcess implements Serializable {
 		};
 	}
 
-	@GraphQLField(description = "The export process's name.")
+	@GraphQLField(description = "The publish process's name.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String name;
 
@@ -350,7 +395,7 @@ public class ExportProcess implements Serializable {
 	private Supplier<String> _nameSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The export process's end status."
+		description = "The publish process's end status."
 	)
 	@Valid
 	public Status getStatus() {
@@ -386,12 +431,56 @@ public class ExportProcess implements Serializable {
 		};
 	}
 
-	@GraphQLField(description = "The export process's end status.")
+	@GraphQLField(description = "The publish process's end status.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Status status;
 
 	@JsonIgnore
 	private Supplier<Status> _statusSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The publish process type, indicating whether the publication was started manually or by a schedule."
+	)
+	@Valid
+	public Type getType() {
+		if (_typeSupplier != null) {
+			type = _typeSupplier.get();
+
+			_typeSupplier = null;
+		}
+
+		return type;
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+
+		_typeSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
+		_typeSupplier = () -> {
+			try {
+				return typeUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(
+		description = "The publish process type, indicating whether the publication was started manually or by a schedule."
+	)
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Type type;
+
+	@JsonIgnore
+	private Supplier<Type> _typeSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -399,13 +488,13 @@ public class ExportProcess implements Serializable {
 			return true;
 		}
 
-		if (!(object instanceof ExportProcess)) {
+		if (!(object instanceof PublishProcess)) {
 			return false;
 		}
 
-		ExportProcess exportProcess = (ExportProcess)object;
+		PublishProcess publishProcess = (PublishProcess)object;
 
-		return Objects.equals(toString(), exportProcess.toString());
+		return Objects.equals(toString(), publishProcess.toString());
 	}
 
 	@Override
@@ -511,6 +600,22 @@ public class ExportProcess implements Serializable {
 			sb.append(id);
 		}
 
+		String jobName = getJobName();
+
+		if (jobName != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"jobName\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(jobName));
+
+			sb.append("\"");
+		}
+
 		String name = getName();
 
 		if (name != null) {
@@ -539,6 +644,18 @@ public class ExportProcess implements Serializable {
 			sb.append(String.valueOf(status));
 		}
 
+		Type type = getType();
+
+		if (type != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"type\": ");
+
+			sb.append(String.valueOf(type));
+		}
+
 		sb.append("}");
 
 		return sb.toString();
@@ -546,7 +663,7 @@ public class ExportProcess implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.ExportProcess",
+		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.PublishProcess",
 		name = "x-class-name"
 	)
 	public String xClassName;
@@ -640,4 +757,4 @@ public class ExportProcess implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1765162398
+// LIFERAY-REST-BUILDER-HASH:-901100648
