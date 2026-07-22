@@ -7,9 +7,13 @@ import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import {Form, Formik, FormikValues} from 'formik';
+import {sub} from 'frontend-js-web';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 
+import DataSelection from '../../components/DataSelection';
 import Footer from '../../components/Footer';
+import {PageTreeModalConfiguration} from '../../components/PageTreeModal';
+import Setup from '../../components/Setup';
 import {
 	DateFilterValues,
 	NormalizedDateFilter,
@@ -30,9 +34,6 @@ import {
 	withSelectedLayoutSetCount,
 } from '../../utils/contentSelection';
 import {toRequestPortletDataHandlers} from '../../utils/toRequestPortletDataHandlers';
-import DataSelection from './components/DataSelection';
-import {PageTreeModalConfiguration} from './components/PageTreeModal';
-import Setup from './components/Setup';
 
 export function NewExport({
 	backURL,
@@ -182,7 +183,18 @@ export function NewExport({
 
 				return (
 					<Form noValidate>
-						<Setup />
+						<Setup
+							placeholder={Liferay.Language.get(
+								'add-an-export-name'
+							)}
+							subtitle={Liferay.Language.get(
+								'provide-a-descriptive-name-for-your-file'
+							)}
+							title={sub(
+								Liferay.Language.get('x-details'),
+								Liferay.Language.get('export')
+							)}
+						/>
 
 						<DataSelection
 							commentsAndRatingsEnabled={
@@ -192,6 +204,12 @@ export function NewExport({
 								preview?.deletionCount,
 								previewPortletDataHandlerSections,
 								contentSelection
+							)}
+							deletionsDescription={Liferay.Language.get(
+								'deletions-help-export'
+							)}
+							deletionsLabel={Liferay.Language.get(
+								'export-individual-deletions'
 							)}
 							itemsCount={getSelectedItemsCount(
 								preview?.additionCount,
@@ -204,9 +222,18 @@ export function NewExport({
 							pageTreeModalConfiguration={
 								pageTreeModalConfiguration
 							}
+							permissionsDescription={Liferay.Language.get(
+								'export-import-permissions-help'
+							)}
+							permissionsLabel={Liferay.Language.get(
+								'export-permissions'
+							)}
 							previewPortletDataHandlerSections={withSelectedLayoutSetCount(
 								previewPortletDataHandlerSections,
 								contentSelection
+							)}
+							subtitle={Liferay.Language.get(
+								'select-and-filter-the-data-you-want-to-include-in-your-export'
 							)}
 						/>
 

@@ -36,6 +36,129 @@ boolean showStagingConfiguration = ParamUtil.getBoolean(request, "showStagingCon
 			portletName="<%= StagingConfigurationPortletKeys.STAGING_CONFIGURATION %>"
 		/>
 	</c:when>
+	<c:when test='<%= FeatureFlagManagerUtil.isEnabled(company.getCompanyId(), "LPD-96689") %>'>
+
+		<%
+		String tabs1 = ParamUtil.getString(request, "tabs1", "processes");
+
+		String publishScopePath = "/o/export-import/v1.0/sites/" + liveGroup.getExternalReferenceCode();
+
+		String newPublishURL = PortletURLBuilder.createRenderURL(
+			liferayPortletResponse
+		).setMVCRenderCommandName(
+			"/staging_processes/view_new_publish"
+		).setBackURL(
+			themeDisplay.getURLCurrent()
+		).setParameter(
+			"groupId", liveGroup.getGroupId()
+		).setParameter(
+			"scheduled", tabs1.equals("scheduled")
+		).buildString();
+
+		CreationMenu publishCreationMenu = CreationMenuBuilder.addPrimaryDropdownItem(
+			dropdownItem -> {
+				dropdownItem.setHref(newPublishURL);
+				dropdownItem.setLabel(LanguageUtil.get(request, "new"));
+			}
+		).build();
+
+		FDSActionDropdownItem relaunchPublishFDSActionDropdownItem = new FDSActionDropdownItem("/o/export-import/v1.0/publish-processes/{id}/relaunch", "reload", "relaunch", LanguageUtil.get(request, "relaunch"), "post", null, "async");
+
+		FDSActionDropdownItem deletePublishFDSActionDropdownItem =
+			new FDSActionDropdownItem(
+				"/o/export-import/v1.0/publish-processes/{id}", "trash", "delete", LanguageUtil.get(request, "delete"), "delete", null, "async",
+				HashMapBuilder.<String, Object>put(
+					"status.code", Arrays.asList(BackgroundTaskConstants.STATUS_IN_PROGRESS, BackgroundTaskConstants.STATUS_NEW, BackgroundTaskConstants.STATUS_QUEUED)
+				).build());
+
+		deletePublishFDSActionDropdownItem.setConfirmationMessage(LanguageUtil.get(request, "are-you-sure-you-want-to-delete-this"));
+
+		FDSActionDropdownItem clearPublishFDSActionDropdownItem =
+			new FDSActionDropdownItem(
+				"/o/export-import/v1.0/publish-processes/{id}", "trash", "clear", LanguageUtil.get(request, "clear"), "delete", null, "async",
+				HashMapBuilder.<String, Object>put(
+					"status.code", Arrays.asList(BackgroundTaskConstants.STATUS_CANCELLED, BackgroundTaskConstants.STATUS_COMPLETED_WITH_ERRORS, BackgroundTaskConstants.STATUS_FAILED, BackgroundTaskConstants.STATUS_SUCCESSFUL)
+				).build());
+
+		clearPublishFDSActionDropdownItem.setConfirmationMessage(LanguageUtil.get(request, "are-you-sure-you-want-to-delete-this"));
+
+		List<FDSActionDropdownItem> publishFDSActionDropdownItems = ListUtil.fromArray(relaunchPublishFDSActionDropdownItem, deletePublishFDSActionDropdownItem, clearPublishFDSActionDropdownItem);
+
+		FDSActionDropdownItem editScheduledPublishFDSActionDropdownItem =
+			new FDSActionDropdownItem(
+				PortletURLBuilder.createRenderURL(
+					liferayPortletResponse
+				).setMVCRenderCommandName(
+					"/staging_processes/view_new_publish"
+				).setBackURL(
+					themeDisplay.getURLCurrent()
+				).setParameter(
+					"groupId", liveGroup.getGroupId()
+				).setParameter(
+					"jobName", "{jobName}"
+				).buildString(),
+				"pencil", "edit", LanguageUtil.get(request, "edit"), "get", null, "link");
+
+		FDSActionDropdownItem unscheduleScheduledPublishFDSActionDropdownItem = new FDSActionDropdownItem(publishScopePath + "/scheduled-publish-processes/{jobName}", "trash", "unschedule", LanguageUtil.get(request, "unschedule"), "delete", null, "async");
+
+		unscheduleScheduledPublishFDSActionDropdownItem.setConfirmationMessage(LanguageUtil.get(request, "are-you-sure-you-want-to-unschedule-this-publication"));
+
+		String processesTabURL = PortletURLBuilder.createRenderURL(
+			liferayPortletResponse
+		).setTabs1(
+			"processes"
+		).buildString();
+
+		String scheduledTabURL = PortletURLBuilder.createRenderURL(
+			liferayPortletResponse
+		).setTabs1(
+			"scheduled"
+		).buildString();
+		%>
+
+		<clay:navigation-bar
+			navigationItems='<%=
+				NavigationItemListBuilder.add(
+					navigationItem -> {
+						navigationItem.setActive(tabs1.equals("processes"));
+						navigationItem.setHref(processesTabURL);
+						navigationItem.setLabel(LanguageUtil.get(request, "processes"));
+					}
+				).add(
+					navigationItem -> {
+						navigationItem.setActive(tabs1.equals("scheduled"));
+						navigationItem.setHref(scheduledTabURL);
+						navigationItem.setLabel(LanguageUtil.get(request, "scheduled"));
+					}
+				).build()
+			%>'
+		/>
+
+		<c:choose>
+			<c:when test='<%= tabs1.equals("scheduled") %>'>
+				<frontend-data-set:headless-display
+					apiURL='<%= publishScopePath + "/scheduled-publish-processes" %>'
+					creationMenu="<%= publishCreationMenu %>"
+					fdsActionDropdownItems="<%= ListUtil.fromArray(editScheduledPublishFDSActionDropdownItem, unscheduleScheduledPublishFDSActionDropdownItem) %>"
+					id="com_liferay_staging_processes_web_portlet_StagingProcessesPortlet-scheduledPublishProcesses"
+					propsTransformer="{ScheduledPublishProcessesFDSPropsTransformer} from exportimport-web"
+					style="fluid"
+					uniformActionsDisplay="<%= true %>"
+				/>
+			</c:when>
+			<c:otherwise>
+				<frontend-data-set:headless-display
+					apiURL='<%= publishScopePath + "/publish-processes" %>'
+					creationMenu="<%= publishCreationMenu %>"
+					fdsActionDropdownItems="<%= publishFDSActionDropdownItems %>"
+					id="com_liferay_staging_processes_web_portlet_StagingProcessesPortlet-publishProcesses"
+					propsTransformer="{PublishProcessesFDSPropsTransformer} from exportimport-web"
+					style="fluid"
+					uniformActionsDisplay="<%= true %>"
+				/>
+			</c:otherwise>
+		</c:choose>
+	</c:when>
 	<c:otherwise>
 		<liferay-util:include page="/navigation.jsp" servletContext="<%= application %>" />
 	</c:otherwise>

@@ -58,12 +58,10 @@ export function normalizeDateFilter(
 	dateFilter: DateFilterValues
 ): NormalizedDateFilter {
 	if (dateFilter.range === Range.Last) {
-		const now = Date.now();
-
 		return {
-			endDate: new Date(now).toISOString(),
+			dateRangeType: 'LAST',
 			startDate: new Date(
-				now - MILLISECONDS_BY_LAST_RANGE[dateFilter.last]
+				Date.now() - MILLISECONDS_BY_LAST_RANGE[dateFilter.last]
 			).toISOString(),
 		};
 	}
@@ -72,6 +70,7 @@ export function normalizeDateFilter(
 		const {endDate, startDate} = dateFilter;
 
 		return {
+			dateRangeType: 'DATE_RANGE',
 			endDate: endDate ? new Date(endDate).toISOString() : undefined,
 			startDate: startDate
 				? new Date(startDate).toISOString()
@@ -79,7 +78,36 @@ export function normalizeDateFilter(
 		};
 	}
 
-	return {};
+	if (dateFilter.range === Range.LastPublishDate) {
+		return {
+			dateRangeType: 'FROM_LAST_PUBLISH_DATE',
+		};
+	}
+
+	return {
+		dateRangeType: 'ALL',
+	};
+}
+
+export function toEditingState(
+	dateFilterValues: DateFilterValues
+): EditingState {
+	const editingState: EditingState = {
+		endDate: '',
+		last: LastRange.H12,
+		range: dateFilterValues.range,
+		startDate: '',
+	};
+
+	if (dateFilterValues.range === Range.DateRange) {
+		editingState.endDate = dateFilterValues.endDate;
+		editingState.startDate = dateFilterValues.startDate;
+	}
+	else if (dateFilterValues.range === Range.Last) {
+		editingState.last = dateFilterValues.last;
+	}
+
+	return editingState;
 }
 
 export function editingToDateFilter(editing: EditingState): DateFilterValues {
@@ -93,10 +121,18 @@ export function editingToDateFilter(editing: EditingState): DateFilterValues {
 		return {last, range: Range.Last};
 	}
 
+	if (range === Range.LastPublishDate) {
+		return {range: Range.LastPublishDate};
+	}
+
 	return {range: Range.All};
 }
 
 export function getAppliedFilterSummary(applied: DateFilterValues): string {
+	if (applied.range === Range.LastPublishDate) {
+		return Liferay.Language.get('from-last-publish-date');
+	}
+
 	if (applied.range === Range.Last) {
 		const option = LAST_RANGE_OPTIONS.find(
 			(opt) => opt.value === applied.last
