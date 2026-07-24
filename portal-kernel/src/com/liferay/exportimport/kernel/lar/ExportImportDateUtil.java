@@ -143,12 +143,15 @@ public class ExportImportDateUtil {
 		int startDateHour = MapUtil.getInteger(parameterMap, "startDateHour");
 		int startDateMinute = MapUtil.getInteger(
 			parameterMap, "startDateMinute");
+		int startDateSecond = MapUtil.getInteger(
+			parameterMap, "startDateSecond");
 		int endDateAmPm = MapUtil.getInteger(parameterMap, "endDateAmPm");
 		int endDateYear = MapUtil.getInteger(parameterMap, "endDateYear");
 		int endDateMonth = MapUtil.getInteger(parameterMap, "endDateMonth");
 		int endDateDay = MapUtil.getInteger(parameterMap, "endDateDay");
 		int endDateHour = MapUtil.getInteger(parameterMap, "endDateHour");
 		int endDateMinute = MapUtil.getInteger(parameterMap, "endDateMinute");
+		int endDateSecond = MapUtil.getInteger(parameterMap, "endDateSecond");
 
 		long groupId = MapUtil.getLong(settingsMap, "sourceGroupId");
 		long plid = MapUtil.getLong(settingsMap, "sourcePlid");
@@ -159,9 +162,10 @@ public class ExportImportDateUtil {
 
 		return getDateRange(
 			range, rangeLast, startDateAmPm, startDateYear, startDateMonth,
-			startDateDay, startDateHour, startDateMinute, endDateAmPm,
-			endDateYear, endDateMonth, endDateDay, endDateHour, endDateMinute,
-			portletId, groupId, plid, privateLayout, locale, timeZone);
+			startDateDay, startDateHour, startDateMinute, startDateSecond,
+			endDateAmPm, endDateYear, endDateMonth, endDateDay, endDateHour,
+			endDateMinute, endDateSecond, portletId, groupId, plid,
+			privateLayout, locale, timeZone);
 	}
 
 	public static DateRange getDateRange(long exportImportConfigurationId)
@@ -390,7 +394,7 @@ public class ExportImportDateUtil {
 
 	protected static Calendar getCalendar(
 		int dateAmPm, int dateYear, int dateMonth, int dateDay, int dateHour,
-		int dateMinute, Locale locale, TimeZone timeZone,
+		int dateMinute, int dateSecond, Locale locale, TimeZone timeZone,
 		boolean timeZoneSensitive) {
 
 		if (dateAmPm == Calendar.PM) {
@@ -409,19 +413,30 @@ public class ExportImportDateUtil {
 		calendar.set(Calendar.YEAR, dateYear);
 		calendar.set(Calendar.HOUR_OF_DAY, dateHour);
 		calendar.set(Calendar.MINUTE, dateMinute);
-		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.SECOND, dateSecond);
 		calendar.set(Calendar.MILLISECOND, 0);
 
 		return calendar;
 	}
 
+	protected static Calendar getCalendar(
+		int dateAmPm, int dateYear, int dateMonth, int dateDay, int dateHour,
+		int dateMinute, Locale locale, TimeZone timeZone,
+		boolean timeZoneSensitive) {
+
+		return getCalendar(
+			dateAmPm, dateYear, dateMonth, dateDay, dateHour, dateMinute, 0,
+			locale, timeZone, timeZoneSensitive);
+	}
+
 	protected static DateRange getDateRange(
 			String range, int rangeLast, int startDateAmPm, int startDateYear,
 			int startDateMonth, int startDateDay, int startDateHour,
-			int startDateMinute, int endDateAmPm, int endDateYear,
-			int endDateMonth, int endDateDay, int endDateHour,
-			int endDateMinute, String portletId, long groupId, long plid,
-			boolean privateLayout, Locale locale, TimeZone timeZone)
+			int startDateMinute, int startDateSecond, int endDateAmPm,
+			int endDateYear, int endDateMonth, int endDateDay, int endDateHour,
+			int endDateMinute, int endDateSecond, String portletId,
+			long groupId, long plid, boolean privateLayout, Locale locale,
+			TimeZone timeZone)
 		throws PortalException {
 
 		Date startDate = null;
@@ -430,13 +445,14 @@ public class ExportImportDateUtil {
 		if (range.equals(RANGE_DATE_RANGE)) {
 			Calendar startCalendar = getCalendar(
 				startDateAmPm, startDateYear, startDateMonth, startDateDay,
-				startDateHour, startDateMinute, locale, timeZone, true);
+				startDateHour, startDateMinute, startDateSecond, locale,
+				timeZone, true);
 
 			startDate = startCalendar.getTime();
 
 			Calendar endCalendar = getCalendar(
 				endDateAmPm, endDateYear, endDateMonth, endDateDay, endDateHour,
-				endDateMinute, locale, timeZone, true);
+				endDateMinute, endDateSecond, locale, timeZone, true);
 
 			endDate = endCalendar.getTime();
 		}
@@ -484,6 +500,22 @@ public class ExportImportDateUtil {
 		}
 
 		return new DateRange(startDate, endDate);
+	}
+
+	protected static DateRange getDateRange(
+			String range, int rangeLast, int startDateAmPm, int startDateYear,
+			int startDateMonth, int startDateDay, int startDateHour,
+			int startDateMinute, int endDateAmPm, int endDateYear,
+			int endDateMonth, int endDateDay, int endDateHour,
+			int endDateMinute, String portletId, long groupId, long plid,
+			boolean privateLayout, Locale locale, TimeZone timeZone)
+		throws PortalException {
+
+		return getDateRange(
+			range, rangeLast, startDateAmPm, startDateYear, startDateMonth,
+			startDateDay, startDateHour, startDateMinute, 0, endDateAmPm,
+			endDateYear, endDateMonth, endDateDay, endDateHour, endDateMinute,
+			0, portletId, groupId, plid, privateLayout, locale, timeZone);
 	}
 
 	protected static String getDefaultDateRange(
