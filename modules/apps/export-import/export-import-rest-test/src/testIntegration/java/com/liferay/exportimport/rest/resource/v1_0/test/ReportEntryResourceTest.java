@@ -71,6 +71,16 @@ public class ReportEntryResourceTest extends BaseReportEntryResourceTestCase {
 				_exportImportConfiguration.getExportImportConfigurationId()
 			).build(),
 			null);
+
+		_publishBackgroundTask = _backgroundTaskLocalService.addBackgroundTask(
+			TestPropsValues.getUserId(), TestPropsValues.getGroupId(),
+			RandomTestUtil.randomString(),
+			BackgroundTaskExecutorNames.LAYOUT_STAGING_BACKGROUND_TASK_EXECUTOR,
+			HashMapBuilder.<String, Serializable>put(
+				"exportImportConfigurationId",
+				_exportImportConfiguration.getExportImportConfigurationId()
+			).build(),
+			null);
 	}
 
 	@Override
@@ -97,6 +107,21 @@ public class ReportEntryResourceTest extends BaseReportEntryResourceTestCase {
 		throws Exception {
 
 		return _backgroundTask.getBackgroundTaskId();
+	}
+
+	@Override
+	protected ReportEntry testGetPublishProcessReportEntriesPage_addReportEntry(
+			Long publishProcessId, ReportEntry reportEntry)
+		throws Exception {
+
+		return _addReportEntry(reportEntry);
+	}
+
+	@Override
+	protected Long testGetPublishProcessReportEntriesPage_getPublishProcessId()
+		throws Exception {
+
+		return _publishBackgroundTask.getBackgroundTaskId();
 	}
 
 	@Override
@@ -376,5 +401,7 @@ public class ReportEntryResourceTest extends BaseReportEntryResourceTestCase {
 	@Inject
 	private ExportImportReportEntryLocalService
 		_exportImportReportEntryLocalService;
+
+	private BackgroundTask _publishBackgroundTask;
 
 }
