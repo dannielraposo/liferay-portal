@@ -15,6 +15,7 @@ import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycle
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportLocalService;
 import com.liferay.exportimport.kernel.service.StagingLocalService;
+import com.liferay.exportimport.report.service.ExportImportReportEntryLocalService;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
@@ -24,6 +25,7 @@ import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplay;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutSetBranchLocalService;
@@ -199,6 +201,21 @@ public class LayoutStagingBackgroundTaskExecutor
 
 		deleteTempLarOnSuccess(file);
 
+		if (FeatureFlagManagerUtil.isEnabled(
+				exportImportConfiguration.getCompanyId(), "LPD-96689")) {
+
+			int exportImportReportEntriesCount =
+				_exportImportReportEntryLocalService.
+					getExportImportReportEntriesCount(
+						exportImportConfiguration.getCompanyId(),
+						exportImportConfiguration.
+							getExportImportConfigurationId());
+
+			if (exportImportReportEntriesCount > 0) {
+				return BackgroundTaskResult.COMPLETED_WITH_ERRORS;
+			}
+		}
+
 		return processMissingReferences(
 			backgroundTask.getBackgroundTaskId(), missingReferences);
 	}
@@ -253,6 +270,10 @@ public class LayoutStagingBackgroundTaskExecutor
 
 	@Reference
 	private ExportImportLocalService _exportImportLocalService;
+
+	@Reference
+	private ExportImportReportEntryLocalService
+		_exportImportReportEntryLocalService;
 
 	@Reference
 	private GroupLocalService _groupLocalService;
