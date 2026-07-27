@@ -5,6 +5,7 @@
 
 package com.liferay.exportimport.rest.internal.resource.v1_0;
 
+import com.liferay.exportimport.kernel.background.task.BackgroundTaskExecutorNames;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.report.constants.ExportImportReportEntryConstants;
@@ -20,6 +21,7 @@ import com.liferay.exportimport.rest.resource.v1_0.ReportEntryResource;
 import com.liferay.headless.delivery.dto.v1_0.util.CreatorUtil;
 import com.liferay.portal.background.task.model.BackgroundTask;
 import com.liferay.portal.background.task.service.BackgroundTaskLocalService;
+import com.liferay.portal.kernel.exception.NoSuchBackgroundTaskException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
@@ -29,6 +31,7 @@ import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.search.filter.TermFilter;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -73,8 +76,60 @@ public class ReportEntryResourceImpl extends BaseReportEntryResourceImpl {
 		BackgroundTask backgroundTask =
 			_backgroundTaskLocalService.getBackgroundTask(importProcessId);
 
+		_validateBackgroundTask(
+			backgroundTask,
+			BackgroundTaskExecutorNames.LAYOUT_IMPORT_BACKGROUND_TASK_EXECUTOR,
+			BackgroundTaskExecutorNames.
+				PORTLET_IMPORT_BACKGROUND_TASK_EXECUTOR);
+
 		PermissionUtil.checkImportPermission(
 			contextCompany.getCompanyId(), backgroundTask.getGroupId());
+
+		Map<String, Serializable> taskContextMap =
+			backgroundTask.getTaskContextMap();
+
+		return SearchUtil.search(
+			Collections.emptyMap(),
+			booleanQuery -> {
+				BooleanFilter booleanFilter =
+					booleanQuery.getPreBooleanFilter();
+
+				booleanFilter.add(
+					new TermFilter(
+						"exportImportConfigurationId_long",
+						MapUtil.getString(
+							taskContextMap, "exportImportConfigurationId")),
+					BooleanClauseOccur.MUST);
+			},
+			filter, ExportImportReportEntry.class.getName(), search, pagination,
+			queryConfig -> queryConfig.setSelectedFieldNames(
+				Field.ENTRY_CLASS_PK),
+			searchContext -> {
+				searchContext.setCompanyId(contextCompany.getCompanyId());
+				searchContext.setLocale(
+					contextAcceptLanguage.getPreferredLocale());
+			},
+			sorts,
+			document -> _toReportEntry(
+				_exportImportReportEntryLocalService.getExportImportReportEntry(
+					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK)))));
+	}
+
+	@Override
+	public Page<ReportEntry> getPublishProcessReportEntriesPage(
+			Long publishProcessId, String search, Filter filter,
+			Pagination pagination, Sort[] sorts)
+		throws Exception {
+
+		BackgroundTask backgroundTask =
+			_backgroundTaskLocalService.getBackgroundTask(publishProcessId);
+
+		_validateBackgroundTask(
+			backgroundTask,
+			BackgroundTaskExecutorNames.
+				LAYOUT_STAGING_BACKGROUND_TASK_EXECUTOR);
+
+		PermissionUtil.checkPublishPermission(backgroundTask.getGroupId());
 
 		Map<String, Serializable> taskContextMap =
 			backgroundTask.getTaskContextMap();
@@ -112,9 +167,17 @@ public class ReportEntryResourceImpl extends BaseReportEntryResourceImpl {
 			_exportImportReportEntryLocalService.getExportImportReportEntry(
 				reportEntryId);
 
-		PermissionUtil.checkImportPermission(
-			contextCompany.getCompanyId(),
-			exportImportReportEntry.getGroupId());
+		if (exportImportReportEntry.getOrigin() ==
+				ExportImportReportEntryConstants.ORIGIN_STAGING) {
+
+			PermissionUtil.checkPublishPermission(
+				exportImportReportEntry.getGroupId());
+		}
+		else {
+			PermissionUtil.checkImportPermission(
+				contextCompany.getCompanyId(),
+				exportImportReportEntry.getGroupId());
+		}
 
 		return _toReportEntry(exportImportReportEntry);
 	}
@@ -220,6 +283,18 @@ public class ReportEntryResourceImpl extends BaseReportEntryResourceImpl {
 						ExportImportReportEntryConstants.getTypeLabel(type)));
 			}
 		};
+	}
+
+	private void _validateBackgroundTask(
+			BackgroundTask backgroundTask, String... taskExecutorClassNames)
+		throws Exception {
+
+		if (!ArrayUtil.contains(
+				taskExecutorClassNames,
+				backgroundTask.getTaskExecutorClassName())) {
+
+			throw new NoSuchBackgroundTaskException();
+		}
 	}
 
 	private static final EntityModel _entityModel =

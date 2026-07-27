@@ -82,7 +82,27 @@ boolean showStagingConfiguration = ParamUtil.getBoolean(request, "showStagingCon
 
 		clearPublishFDSActionDropdownItem.setConfirmationMessage(LanguageUtil.get(request, "are-you-sure-you-want-to-delete-this"));
 
-		List<FDSActionDropdownItem> publishFDSActionDropdownItems = ListUtil.fromArray(relaunchPublishFDSActionDropdownItem, deletePublishFDSActionDropdownItem, clearPublishFDSActionDropdownItem);
+		FDSActionDropdownItem viewReportEntriesPublishFDSActionDropdownItem =
+			new FDSActionDropdownItem(
+				PortletURLBuilder.create(
+					PortletURLFactoryUtil.create(request, ExportImportPortletKeys.EXPORT_IMPORT, PortletRequest.RENDER_PHASE)
+				).setMVCRenderCommandName(
+					"/export_import/view_publish_report_entries"
+				).setBackURL(
+					themeDisplay.getURLCurrent()
+				).setParameter(
+					"backgroundTaskId", "{id}"
+				).setParameter(
+					"groupId", liveGroup.getGroupId()
+				).setWindowState(
+					LiferayWindowState.MAXIMIZED
+				).buildString(),
+				"list-ul", "view-report-entries", LanguageUtil.get(request, "view-report-entries"), "get", null, "link",
+				HashMapBuilder.<String, Object>put(
+					"status.code", Arrays.asList(BackgroundTaskConstants.STATUS_COMPLETED_WITH_ERRORS, BackgroundTaskConstants.STATUS_FAILED)
+				).build());
+
+		List<FDSActionDropdownItem> publishFDSActionDropdownItems = ListUtil.fromArray(relaunchPublishFDSActionDropdownItem, viewReportEntriesPublishFDSActionDropdownItem, deletePublishFDSActionDropdownItem, clearPublishFDSActionDropdownItem);
 
 		FDSActionDropdownItem editScheduledPublishFDSActionDropdownItem =
 			new FDSActionDropdownItem(

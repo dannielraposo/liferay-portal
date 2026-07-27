@@ -35,6 +35,9 @@ public class ExportImportFDSNames {
 	public static final String PUBLISH_PROCESSES =
 		StagingProcessesPortletKeys.STAGING_PROCESSES + "-publishProcesses";
 
+	public static final String PUBLISH_REPORT_ENTRIES =
+		ExportImportPortletKeys.EXPORT_IMPORT + "-publishReportEntries";
+
 	public static final String SCHEDULED_PUBLISH_PROCESSES =
 		StagingProcessesPortletKeys.STAGING_PROCESSES +
 			"-scheduledPublishProcesses";
