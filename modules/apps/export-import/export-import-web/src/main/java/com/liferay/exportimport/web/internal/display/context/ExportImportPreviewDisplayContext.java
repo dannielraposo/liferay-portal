@@ -208,7 +208,7 @@ public class ExportImportPreviewDisplayContext {
 
 	private String _encode(String value) {
 		if (Validator.isBlank(value)) {
-			return "";
+			return StringPool.BLANK;
 		}
 
 		return URLEncoder.encode(value, StandardCharsets.UTF_8);
@@ -237,12 +237,12 @@ public class ExportImportPreviewDisplayContext {
 				).build();
 
 			if (_stagingGroupHelper.isCompanyGroup(_group)) {
-				return exportPreviewResource.getExportPreview(null, null);
+				return exportPreviewResource.getExportPreview(null, null, null);
 			}
 
-			String externalReferenceCode = _group.getExternalReferenceCode();
-
 			String portletId = _getPortletId();
+
+			String externalReferenceCode = _group.getExternalReferenceCode();
 
 			if (!Validator.isBlank(portletId)) {
 				long plid = ParamUtil.getLong(_httpServletRequest, "plid");
@@ -250,20 +250,21 @@ public class ExportImportPreviewDisplayContext {
 				if (_group.isDepot()) {
 					return exportPreviewResource.
 						getAssetLibraryPortletExportPreview(
-							externalReferenceCode, portletId, null, plid, null);
+							externalReferenceCode, portletId, null, null, plid,
+							null);
 				}
 
 				return exportPreviewResource.getSitePortletExportPreview(
-					externalReferenceCode, portletId, null, plid, null);
+					externalReferenceCode, portletId, null, null, plid, null);
 			}
 
 			if (_group.isDepot()) {
 				return exportPreviewResource.getAssetLibraryExportPreview(
-					externalReferenceCode, null, null);
+					externalReferenceCode, null, null, null);
 			}
 
 			return exportPreviewResource.getSiteExportPreview(
-				externalReferenceCode, null, null);
+				externalReferenceCode, null, null, null);
 		}
 		catch (Exception exception) {
 			_log.error("Unable to get export preview", exception);
