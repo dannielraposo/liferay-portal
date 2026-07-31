@@ -145,17 +145,19 @@ public class ExportPreviewResourceTest
 		assertHttpResponseStatusCode(
 			404,
 			_exportPreviewResource.getAssetLibraryExportPreviewHttpResponse(
-				testDepotEntryGroup.getExternalReferenceCode(), null, null));
+				testDepotEntryGroup.getExternalReferenceCode(), null, null,
+				null));
 
 		_testGetExportPreviewWithDateFilter(
 			_depotObjectDefinition,
 			(startDate, endDate) ->
 				exportPreviewResource.getAssetLibraryExportPreview(
-					testDepotEntryGroup.getExternalReferenceCode(), endDate,
-					startDate));
+					testDepotEntryGroup.getExternalReferenceCode(), null,
+					endDate, startDate));
 		_testGetExportPreviewWithDifferentScope(
 			exportPreviewResource.getAssetLibraryExportPreview(
-				testDepotEntryGroup.getExternalReferenceCode(), null, null),
+				testDepotEntryGroup.getExternalReferenceCode(), null, null,
+				null),
 			_companyObjectDefinition, _siteObjectDefinition);
 	}
 
@@ -169,21 +171,21 @@ public class ExportPreviewResourceTest
 			_exportPreviewResource.
 				getAssetLibraryPortletExportPreviewHttpResponse(
 					testDepotEntryGroup.getExternalReferenceCode(), portletId,
-					null, 0L, null));
+					null, null, 0L, null));
 
 		_testGetExportPreviewWithDateFilter(
 			_depotObjectDefinition,
 			(startDate, endDate) ->
 				exportPreviewResource.getAssetLibraryPortletExportPreview(
 					testDepotEntryGroup.getExternalReferenceCode(), portletId,
-					endDate, 0L, startDate));
+					null, endDate, 0L, startDate));
 
 		long plid = _addLayoutWithPortlet(testDepotEntryGroup, portletId);
 
 		_testGetPortletExportPreview(
 			exportPreviewResource.getAssetLibraryPortletExportPreview(
 				testDepotEntryGroup.getExternalReferenceCode(), portletId, null,
-				plid, null),
+				null, plid, null),
 			portletId);
 	}
 
@@ -192,18 +194,19 @@ public class ExportPreviewResourceTest
 	public void testGetExportPreview() throws Exception {
 		assertHttpResponseStatusCode(
 			404,
-			_exportPreviewResource.getExportPreviewHttpResponse(null, null));
+			_exportPreviewResource.getExportPreviewHttpResponse(
+				null, null, null));
 
 		_testGetExportPreviewWithDateFilter(
 			_companyObjectDefinition,
 			(startDate, endDate) -> exportPreviewResource.getExportPreview(
-				endDate, startDate));
+				null, endDate, startDate));
 		_testGetExportPreviewWithDeletions(
 			GroupConstants.DEFAULT_PARENT_GROUP_ID,
 			ObjectDefinitionConstants.SCOPE_COMPANY,
-			() -> exportPreviewResource.getExportPreview(null, null));
+			() -> exportPreviewResource.getExportPreview(null, null, null));
 		_testGetExportPreviewWithDifferentScope(
-			exportPreviewResource.getExportPreview(null, null),
+			exportPreviewResource.getExportPreview(null, null, null),
 			_depotObjectDefinition, _siteObjectDefinition);
 	}
 
@@ -214,23 +217,25 @@ public class ExportPreviewResourceTest
 		assertHttpResponseStatusCode(
 			404,
 			_exportPreviewResource.getSiteExportPreviewHttpResponse(
-				testGroup.getExternalReferenceCode(), null, null));
+				testGroup.getExternalReferenceCode(), null, null, null));
 
 		_testGetExportPreviewWithDateFilter(
 			_siteObjectDefinition,
 			(startDate, endDate) -> exportPreviewResource.getSiteExportPreview(
-				testGroup.getExternalReferenceCode(), endDate, startDate));
+				testGroup.getExternalReferenceCode(), null, endDate,
+				startDate));
 		_testGetExportPreviewWithDeletions(
 			testGroup.getGroupId(), ObjectDefinitionConstants.SCOPE_SITE,
 			() -> exportPreviewResource.getSiteExportPreview(
-				testGroup.getExternalReferenceCode(), null, null));
+				testGroup.getExternalReferenceCode(), null, null, null));
 		_testGetExportPreviewWithDifferentScope(
 			exportPreviewResource.getSiteExportPreview(
-				testGroup.getExternalReferenceCode(), null, null),
+				testGroup.getExternalReferenceCode(), null, null, null),
 			_companyObjectDefinition, _depotObjectDefinition);
 		_testGetExportPreviewWithLayoutSet(
 			(startDate, endDate) -> exportPreviewResource.getSiteExportPreview(
-				testGroup.getExternalReferenceCode(), endDate, startDate));
+				testGroup.getExternalReferenceCode(), null, endDate,
+				startDate));
 		_testGetSiteExportPreviewWithLayoutPageTemplateEntries();
 	}
 
@@ -242,22 +247,22 @@ public class ExportPreviewResourceTest
 		assertHttpResponseStatusCode(
 			404,
 			_exportPreviewResource.getSitePortletExportPreviewHttpResponse(
-				testGroup.getExternalReferenceCode(), portletId, null, 0L,
+				testGroup.getExternalReferenceCode(), portletId, null, null, 0L,
 				null));
 
 		_testGetExportPreviewWithDateFilter(
 			_siteObjectDefinition,
 			(startDate, endDate) ->
 				exportPreviewResource.getSitePortletExportPreview(
-					testGroup.getExternalReferenceCode(), portletId, endDate,
-					0L, startDate));
+					testGroup.getExternalReferenceCode(), portletId, null,
+					endDate, 0L, startDate));
 
 		long plid = _addLayoutWithPortlet(testGroup, portletId);
 
 		_testGetPortletExportPreview(
 			exportPreviewResource.getSitePortletExportPreview(
-				testGroup.getExternalReferenceCode(), portletId, null, plid,
-				null),
+				testGroup.getExternalReferenceCode(), portletId, null, null,
+				plid, null),
 			portletId);
 	}
 
@@ -641,7 +646,7 @@ public class ExportPreviewResourceTest
 		PreviewPortletDataHandler previewPortletDataHandler =
 			_getPreviewPortletDataHandler(
 				exportPreviewResource.getSiteExportPreview(
-					testGroup.getExternalReferenceCode(), null, null),
+					testGroup.getExternalReferenceCode(), null, null, null),
 				"PORTLET_DATA_" +
 					LayoutPageTemplateAdminPortletKeys.LAYOUT_PAGE_TEMPLATES);
 
