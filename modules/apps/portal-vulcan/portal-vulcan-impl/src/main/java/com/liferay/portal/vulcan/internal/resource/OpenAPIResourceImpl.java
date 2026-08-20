@@ -13,19 +13,21 @@ import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.extension.EntityExtensionHandler;
 import com.liferay.portal.vulcan.extension.ExtensionProviderRegistry;
 import com.liferay.portal.vulcan.extension.PropertyDefinition;
 import com.liferay.portal.vulcan.extension.util.ExtensionUtil;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlag;
 import com.liferay.portal.vulcan.internal.configuration.util.ConfigurationUtil;
 import com.liferay.portal.vulcan.openapi.DTOProperty;
 import com.liferay.portal.vulcan.openapi.OpenAPIContext;
@@ -72,10 +74,14 @@ import io.swagger.v3.oas.models.tags.Tag;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 
 import java.net.URI;
 
@@ -676,6 +682,44 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 		return propertyDefinitions;
 	}
 
+	private Set<String> _getFeatureFlagDisabledOperationIds(
+		Set<Class<?>> resourceClasses) {
+
+		Set<String> operationIds = new HashSet<>();
+
+		long companyId = CompanyThreadLocal.getCompanyId();
+
+		for (Class<?> resourceClass : resourceClasses) {
+			for (Method method : resourceClass.getMethods()) {
+				Method resourceMethod = _getResourceMethod(
+					resourceClass, method);
+
+				if (resourceMethod == null) {
+					continue;
+				}
+
+				FeatureFlag featureFlag = resourceMethod.getAnnotation(
+					FeatureFlag.class);
+
+				if (featureFlag == null) {
+					featureFlag = resourceClass.getAnnotation(
+						FeatureFlag.class);
+				}
+
+				if ((featureFlag == null) ||
+					FeatureFlagManagerUtil.isEnabled(
+						companyId, featureFlag.value())) {
+
+					continue;
+				}
+
+				operationIds.add(_getOperationId(resourceMethod));
+			}
+		}
+
+		return operationIds;
+	}
+
 	private Response _getOpenAPI(
 			HttpServletRequest httpServletRequest,
 			OpenAPIContributor openAPIContributor,
@@ -722,19 +766,18 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 					_getBasePath(null, uriInfo), _extensionProviderRegistry,
 					resourceClasses));
 
-		if (mergedOpenAPISchemaFilter != null) {
-			SpecFilter specFilter = new SpecFilter();
+		Map<String, List<String>> queryParameters = null;
 
-			Map<String, List<String>> queryParameters = null;
-
-			if (uriInfo != null) {
-				queryParameters = uriInfo.getQueryParameters();
-			}
-
-			openAPI = specFilter.filter(
-				openAPI, _toOpenAPISpecFilter(mergedOpenAPISchemaFilter),
-				queryParameters, null, null);
+		if (uriInfo != null) {
+			queryParameters = uriInfo.getQueryParameters();
 		}
+
+		SpecFilter specFilter = new SpecFilter();
+
+		openAPI = specFilter.filter(
+			openAPI,
+			_toOpenAPISpecFilter(mergedOpenAPISchemaFilter, resourceClasses),
+			queryParameters, null, null);
 
 		if (openAPI == null) {
 			return Response.status(
@@ -781,18 +824,12 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 			Set<Class<?>> resourceClasses)
 		throws Exception {
 
-		Set<String> classNames = _getDTOClassNames(resourceClasses);
-
-		if (SetUtil.isEmpty(classNames)) {
-			return null;
-		}
-
-		long companyId = CompanyThreadLocal.getCompanyId();
-
 		Map<String, List<PropertyDefinition>> propertyDefinitionsMap =
 			new HashMap<>();
 
-		for (String className : classNames) {
+		long companyId = CompanyThreadLocal.getCompanyId();
+
+		for (String className : _getDTOClassNames(resourceClasses)) {
 			List<PropertyDefinition> propertyDefinitions =
 				_getExtendedPropertyDefinitions(
 					className, companyId, extensionProviderRegistry);
@@ -802,11 +839,7 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 			}
 		}
 
-		if (MapUtil.isNotEmpty(propertyDefinitionsMap)) {
-			return _getOpenAPISchemaFilter(basePath, propertyDefinitionsMap);
-		}
-
-		return null;
+		return _getOpenAPISchemaFilter(basePath, propertyDefinitionsMap);
 	}
 
 	private OpenAPISchemaFilter _getOpenAPISchemaFilter(
@@ -836,6 +869,48 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 				setDTOProperties(dtoProperties);
 			}
 		};
+	}
+
+	private String _getOperationId(Method resourceMethod) {
+		io.swagger.v3.oas.annotations.Operation operation =
+			resourceMethod.getAnnotation(
+				io.swagger.v3.oas.annotations.Operation.class);
+
+		if ((operation != null) &&
+			Validator.isNotNull(operation.operationId())) {
+
+			return operation.operationId();
+		}
+
+		return resourceMethod.getName();
+	}
+
+	private Method _getResourceMethod(Class<?> resourceClass, Method method) {
+		for (Class<?> currentClass = resourceClass; currentClass != null;
+			 currentClass = currentClass.getSuperclass()) {
+
+			for (Method declaredMethod : currentClass.getDeclaredMethods()) {
+				if (!Objects.equals(
+						declaredMethod.getName(), method.getName()) ||
+					!Arrays.equals(
+						declaredMethod.getParameterTypes(),
+						method.getParameterTypes())) {
+
+					continue;
+				}
+
+				for (Annotation annotation : declaredMethod.getAnnotations()) {
+					Class<? extends Annotation> annotationType =
+						annotation.annotationType();
+
+					if (annotationType.isAnnotationPresent(HttpMethod.class)) {
+						return declaredMethod;
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 
 	private OpenAPISchemaFilter _mergeOpenAPISchemaFilters(
@@ -872,10 +947,14 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 	}
 
 	private OpenAPISpecFilter _toOpenAPISpecFilter(
-		OpenAPISchemaFilter openAPISchemaFilter) {
+		OpenAPISchemaFilter openAPISchemaFilter,
+		Set<Class<?>> resourceClasses) {
 
 		List<DTOProperty> dtoProperties =
 			openAPISchemaFilter.getDTOProperties();
+
+		Set<String> featureFlagDisabledOperationIds =
+			_getFeatureFlagDisabledOperationIds(resourceClasses);
 
 		Map<String, String> schemaMappings =
 			openAPISchemaFilter.getSchemaMappings();
@@ -890,7 +969,16 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 
 				Components components = openAPI.getComponents();
 
-				Map<String, Schema> schemas = components.getSchemas();
+				Map<String, Schema> schemas = null;
+
+				if (components != null) {
+					schemas = components.getSchemas();
+				}
+
+				if (MapUtil.isEmpty(schemas)) {
+					return super.filterOpenAPI(
+						openAPI, params, cookies, headers);
+				}
 
 				for (Map.Entry<String, String> entry :
 						schemaMappings.entrySet()) {
@@ -937,7 +1025,9 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 						CompanyThreadLocal.getCompanyId(), _configurationAdmin,
 						openAPISchemaFilter.getApplicationPath());
 
-				if (excludedOperationIds.contains(operationId)) {
+				if (excludedOperationIds.contains(operationId) ||
+					featureFlagDisabledOperationIds.contains(operationId)) {
+
 					return Optional.empty();
 				}
 
