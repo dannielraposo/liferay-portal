@@ -74,8 +74,6 @@ public class PageTemplateSetResourceImpl
 			String pageTemplateSetExternalReferenceCode)
 		throws Exception {
 
-		EnabledUtil.checkDesignLibrariesEnabled(contextCompany);
-
 		_layoutPageTemplateCollectionService.deleteLayoutPageTemplateCollection(
 			pageTemplateSetExternalReferenceCode,
 			_getDesignLibraryGroupId(designLibraryExternalReferenceCode));
@@ -86,8 +84,6 @@ public class PageTemplateSetResourceImpl
 			String siteExternalReferenceCode,
 			String pageTemplateSetExternalReferenceCode)
 		throws Exception {
-
-		EnabledUtil.checkEnabled(contextCompany);
 
 		_layoutPageTemplateCollectionService.deleteLayoutPageTemplateCollection(
 			pageTemplateSetExternalReferenceCode,
@@ -100,8 +96,6 @@ public class PageTemplateSetResourceImpl
 			String designLibraryExternalReferenceCode,
 			String pageTemplateSetExternalReferenceCode)
 		throws Exception {
-
-		EnabledUtil.checkDesignLibrariesEnabled(contextCompany);
 
 		return _toDesignLibraryPageTemplateSet(
 			designLibraryExternalReferenceCode,
@@ -118,8 +112,6 @@ public class PageTemplateSetResourceImpl
 			Aggregation aggregation, Filter filter, Pagination pagination,
 			Sort[] sorts)
 		throws Exception {
-
-		EnabledUtil.checkDesignLibrariesEnabled(contextCompany);
 
 		long groupId = _getDesignLibraryGroupId(
 			designLibraryExternalReferenceCode);
@@ -230,8 +222,6 @@ public class PageTemplateSetResourceImpl
 			String pageTemplateSetExternalReferenceCode)
 		throws Exception {
 
-		EnabledUtil.checkEnabled(contextCompany);
-
 		return _toPageTemplateSet(
 			_layoutPageTemplateCollectionService.
 				getLayoutPageTemplateCollection(
@@ -248,8 +238,6 @@ public class PageTemplateSetResourceImpl
 			Sort[] sorts)
 		throws Exception {
 
-		EnabledUtil.checkEnabled(contextCompany);
-
 		return _getPageTemplateSetsPage(
 			aggregation, filter,
 			GroupUtil.getGroupId(
@@ -261,8 +249,6 @@ public class PageTemplateSetResourceImpl
 	protected PageTemplateSet doPostSitePageTemplateSet(
 			String siteExternalReferenceCode, PageTemplateSet pageTemplateSet)
 		throws Exception {
-
-		EnabledUtil.checkEnabled(contextCompany);
 
 		return _toPageTemplateSet(
 			PageTemplateSetUtil.addLayoutPageTemplateCollection(
@@ -277,8 +263,6 @@ public class PageTemplateSetResourceImpl
 			String pageTemplateSetExternalReferenceCode,
 			PageTemplateSet pageTemplateSet)
 		throws Exception {
-
-		EnabledUtil.checkEnabled(contextCompany);
 
 		long groupId = GroupUtil.getStagingAwareGroupId(
 			contextCompany.getCompanyId(), siteExternalReferenceCode);

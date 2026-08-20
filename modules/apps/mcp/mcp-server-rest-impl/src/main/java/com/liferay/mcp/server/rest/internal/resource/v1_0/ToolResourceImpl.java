@@ -8,7 +8,6 @@ package com.liferay.mcp.server.rest.internal.resource.v1_0;
 import com.liferay.mcp.server.rest.dto.v1_0.Tool;
 import com.liferay.mcp.server.rest.internal.util.ToolSetUtil;
 import com.liferay.mcp.server.rest.resource.v1_0.ToolResource;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.vulcan.fields.NestedField;
 
 import jakarta.ws.rs.PathParam;
@@ -34,21 +33,12 @@ public class ToolResourceImpl extends BaseToolResourceImpl {
 		@PathParam("toolName") String toolName,
 		@PathParam("toolSetName") String toolSetName) {
 
-		if (!FeatureFlagManagerUtil.isEnabled(
-				contextCompany.getCompanyId(), "LPD-63311")) {
-
-			throw new UnsupportedOperationException();
-		}
-
 		return ToolSetUtil.getToolOutputSchema(
 			contextHttpServletRequest, toolName, toolSetName);
 	}
 
 	@Override
 	public Tool getToolSetToolSetNameTool(String toolSetName, String toolName) {
-		FeatureFlagManagerUtil.checkEnabled(
-			contextCompany.getCompanyId(), "LPD-63311");
-
 		return ToolSetUtil.getTool(
 			contextHttpServletRequest, null, toolName, toolSetName);
 	}
@@ -57,9 +47,6 @@ public class ToolResourceImpl extends BaseToolResourceImpl {
 	public Response postToolSetToolSetNameToolInvokeObject(
 			String toolSetName, String toolName, Object object)
 		throws Exception {
-
-		FeatureFlagManagerUtil.checkEnabled(
-			contextCompany.getCompanyId(), "LPD-63311");
 
 		return ToolSetUtil.invokeTool(
 			null, contextHttpServletRequest, object, null, toolName,
