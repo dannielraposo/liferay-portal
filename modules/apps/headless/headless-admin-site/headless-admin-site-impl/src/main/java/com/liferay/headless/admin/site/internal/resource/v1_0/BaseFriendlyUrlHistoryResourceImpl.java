@@ -47,6 +47,7 @@ public abstract class BaseFriendlyUrlHistoryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/display-page-templates/{displayPageTemplateExternalReferenceCode}/friendly-url-history'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-35443")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves the history of previously used URLs for a display page template."
 	)
@@ -103,6 +104,7 @@ public abstract class BaseFriendlyUrlHistoryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/site-pages/{sitePageExternalReferenceCode}/friendly-url-history'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-35443")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves the history of previously used URLs for a page."
 	)
@@ -159,6 +161,7 @@ public abstract class BaseFriendlyUrlHistoryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/utility-pages/{utilityPageExternalReferenceCode}/friendly-url-history'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-35443")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves the history of previously used URLs for a utility page."
 	)
@@ -655,4 +658,4 @@ public abstract class BaseFriendlyUrlHistoryResourceImpl
 		LogFactoryUtil.getLog(BaseFriendlyUrlHistoryResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-215436349
+// LIFERAY-REST-BUILDER-HASH:1994087252

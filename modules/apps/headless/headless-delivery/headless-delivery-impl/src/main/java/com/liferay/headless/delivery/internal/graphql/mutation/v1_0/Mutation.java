@@ -4806,6 +4806,12 @@ public class Mutation {
 			@GraphQLName("sitePage") SitePage sitePage)
 		throws Exception {
 
+		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
+				isEnabled(_company.getCompanyId(), "LPS-178052")) {
+
+			throw new jakarta.ws.rs.NotFoundException();
+		}
+
 		return _applyComponentServiceObjects(
 			_sitePageResourceComponentServiceObjects,
 			this::_populateResourceContext,
@@ -4819,6 +4825,12 @@ public class Mutation {
 			@GraphQLName("callbackURL") String callbackURL,
 			@GraphQLName("object") Object object)
 		throws Exception {
+
+		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
+				isEnabled(_company.getCompanyId(), "LPS-178052")) {
+
+			throw new jakarta.ws.rs.NotFoundException();
+		}
 
 		return _applyComponentServiceObjects(
 			_sitePageResourceComponentServiceObjects,
@@ -6961,4 +6973,4 @@ public class Mutation {
 		_vulcanBatchEngineImportTaskResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-996168166
+// LIFERAY-REST-BUILDER-HASH:-1143976026

@@ -444,6 +444,7 @@ public abstract class BaseSitePageResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/site-pages' -d $'{"customFields": ___, "datePublished": ___, "experience": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "pageDefinition": ___, "pagePermissions": ___, "pageSettings": ___, "pageType": ___, "parentSitePage": ___, "renderedPage": ___, "taxonomyCategoryBriefs": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPS-178052")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Adds a new site page"
 	)
@@ -479,6 +480,7 @@ public abstract class BaseSitePageResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/site-pages/batch'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPS-178052")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -1312,4 +1314,4 @@ public abstract class BaseSitePageResourceImpl
 		LogFactoryUtil.getLog(BaseSitePageResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-848090239
+// LIFERAY-REST-BUILDER-HASH:936722373

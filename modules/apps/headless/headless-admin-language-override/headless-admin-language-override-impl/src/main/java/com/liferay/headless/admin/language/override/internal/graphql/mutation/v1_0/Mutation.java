@@ -49,6 +49,12 @@ public class Mutation {
 			@GraphQLName("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
+		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
+				isEnabled(_company.getCompanyId(), "LPD-49852")) {
+
+			throw new jakarta.ws.rs.NotFoundException();
+		}
+
 		_applyVoidComponentServiceObjects(
 			_languageOverrideResourceComponentServiceObjects,
 			this::_populateResourceContext,
@@ -65,6 +71,12 @@ public class Mutation {
 			@GraphQLName("languageOverride") LanguageOverride languageOverride)
 		throws Exception {
 
+		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
+				isEnabled(_company.getCompanyId(), "LPD-49852")) {
+
+			throw new jakarta.ws.rs.NotFoundException();
+		}
+
 		return _applyComponentServiceObjects(
 			_languageOverrideResourceComponentServiceObjects,
 			this::_populateResourceContext,
@@ -78,6 +90,12 @@ public class Mutation {
 			@GraphQLName("callbackURL") String callbackURL,
 			@GraphQLName("object") Object object)
 		throws Exception {
+
+		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
+				isEnabled(_company.getCompanyId(), "LPD-49852")) {
+
+			throw new jakarta.ws.rs.NotFoundException();
+		}
 
 		return _applyComponentServiceObjects(
 			_languageOverrideResourceComponentServiceObjects,
@@ -96,6 +114,12 @@ public class Mutation {
 			@GraphQLName("fieldNames") String fieldNames)
 		throws Exception {
 
+		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
+				isEnabled(_company.getCompanyId(), "LPD-49852")) {
+
+			throw new jakarta.ws.rs.NotFoundException();
+		}
+
 		return _applyComponentServiceObjects(
 			_languageOverrideResourceComponentServiceObjects,
 			this::_populateResourceContext,
@@ -112,6 +136,12 @@ public class Mutation {
 			@GraphQLName("externalReferenceCode") String externalReferenceCode,
 			@GraphQLName("languageOverride") LanguageOverride languageOverride)
 		throws Exception {
+
+		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
+				isEnabled(_company.getCompanyId(), "LPD-49852")) {
+
+			throw new jakarta.ws.rs.NotFoundException();
+		}
 
 		return _applyComponentServiceObjects(
 			_languageOverrideResourceComponentServiceObjects,
@@ -201,4 +231,4 @@ public class Mutation {
 		_vulcanBatchEngineImportTaskResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1653057350
+// LIFERAY-REST-BUILDER-HASH:-1478704752

@@ -123,6 +123,12 @@ public class Query {
 			@GraphQLName("sort") String sortsString)
 		throws Exception {
 
+		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
+				isEnabled(_company.getCompanyId(), "LPD-82226")) {
+
+			throw new jakarta.ws.rs.NotFoundException();
+		}
+
 		return _applyComponentServiceObjects(
 			_brokenLinkAssetResourceComponentServiceObjects,
 			this::_populateResourceContext,
@@ -333,4 +339,4 @@ public class Query {
 	private com.liferay.portal.kernel.model.User _user;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-802839611
+// LIFERAY-REST-BUILDER-HASH:1351380529

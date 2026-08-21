@@ -56,6 +56,12 @@ public class Query {
 			@GraphQLName("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
+		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
+				isEnabled(_company.getCompanyId(), "LPD-49852")) {
+
+			throw new jakarta.ws.rs.NotFoundException();
+		}
+
 		return _applyComponentServiceObjects(
 			_languageOverrideResourceComponentServiceObjects,
 			this::_populateResourceContext,
@@ -77,6 +83,12 @@ public class Query {
 			@GraphQLName("page") int page,
 			@GraphQLName("sort") String sortsString)
 		throws Exception {
+
+		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
+				isEnabled(_company.getCompanyId(), "LPD-49852")) {
+
+			throw new jakarta.ws.rs.NotFoundException();
+		}
 
 		return _applyComponentServiceObjects(
 			_languageOverrideResourceComponentServiceObjects,
@@ -180,4 +192,4 @@ public class Query {
 	private com.liferay.portal.kernel.model.User _user;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-2035292836
+// LIFERAY-REST-BUILDER-HASH:-837615232

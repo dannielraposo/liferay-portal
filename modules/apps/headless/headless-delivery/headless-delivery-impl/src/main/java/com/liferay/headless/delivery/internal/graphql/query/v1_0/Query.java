@@ -1037,6 +1037,12 @@ public class Query {
 			@GraphQLName("page") int page)
 		throws Exception {
 
+		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
+				isEnabled(_company.getCompanyId(), "LPD-32867")) {
+
+			throw new jakarta.ws.rs.NotFoundException();
+		}
+
 		return _applyComponentServiceObjects(
 			_contentSetElementResourceComponentServiceObjects,
 			this::_populateResourceContext,
@@ -7729,4 +7735,4 @@ public class Query {
 	private com.liferay.portal.kernel.model.User _user;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1851934736
+// LIFERAY-REST-BUILDER-HASH:1378663232

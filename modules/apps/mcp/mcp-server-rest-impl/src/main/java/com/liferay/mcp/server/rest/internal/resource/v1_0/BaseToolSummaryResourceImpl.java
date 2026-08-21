@@ -39,6 +39,7 @@ import java.util.Map;
  * @author Alejandro Tardín
  * @generated
  */
+@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-63311")
 @Generated("")
 @jakarta.ws.rs.Path("/v1.0")
 public abstract class BaseToolSummaryResourceImpl
@@ -49,6 +50,7 @@ public abstract class BaseToolSummaryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/mcp-server/v1.0/tool-sets/{toolSetName}/tool-summaries'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-63311")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Use this once you have identified a tool set (via `getToolSetsPage`) and need to find which of its tools matches the user's request. Returns every tool in the tool set, each with a `name` and a description. Pick the tool whose description matches the user's intent and pass its `name` to `getToolSetToolSetNameTool` to see its input schema."
 	)
@@ -523,4 +525,4 @@ public abstract class BaseToolSummaryResourceImpl
 		LogFactoryUtil.getLog(BaseToolSummaryResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1592209868
+// LIFERAY-REST-BUILDER-HASH:448189551

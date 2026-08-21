@@ -63,6 +63,7 @@ import java.util.Set;
  * @author Feliphe Marinho
  * @generated
  */
+@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-62272")
 @Generated("")
 @jakarta.ws.rs.Path("/v1.0")
 public abstract class BaseAuthorizationTokenResourceImpl
@@ -74,6 +75,7 @@ public abstract class BaseAuthorizationTokenResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/ai-hub-cell/v1.0/authorization-tokens'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-62272")
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
 			@io.swagger.v3.oas.annotations.tags.Tag(name = "AuthorizationToken")
@@ -92,6 +94,7 @@ public abstract class BaseAuthorizationTokenResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/ai-hub-cell/v1.0/authorization-tokens/batch'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-62272")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -822,4 +825,4 @@ public abstract class BaseAuthorizationTokenResourceImpl
 		LogFactoryUtil.getLog(BaseAuthorizationTokenResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:246510993
+// LIFERAY-REST-BUILDER-HASH:-1104012445

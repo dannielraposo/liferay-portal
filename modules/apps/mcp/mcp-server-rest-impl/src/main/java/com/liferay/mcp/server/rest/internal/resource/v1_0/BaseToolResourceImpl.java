@@ -38,6 +38,7 @@ import java.util.Map;
  * @author Alejandro Tardín
  * @generated
  */
+@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-63311")
 @Generated("")
 @jakarta.ws.rs.Path("/v1.0")
 public abstract class BaseToolResourceImpl implements ToolResource {
@@ -47,6 +48,7 @@ public abstract class BaseToolResourceImpl implements ToolResource {
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/mcp-server/v1.0/tool-sets/{toolSetName}/tools/{toolName}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-63311")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Use this once you have identified a tool (via `getToolSetToolSetNameToolSummariesPage`) and need its input schema before invoking it. Returns the tool's `inputSchema`, and its `outputSchema` when the tool returns a JSON body. Build an input map matching `inputSchema` and POST it to `invoke` under the same URL to execute the tool."
 	)
@@ -94,6 +96,7 @@ public abstract class BaseToolResourceImpl implements ToolResource {
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/mcp-server/v1.0/tool-sets/{toolSetName}/tools/{toolName}/invoke'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-63311")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Invokes a tool. ALWAYS call `getToolSetToolSetNameTool` first to fetch the tool's `inputSchema`, then build the request `body` to match it exactly. Skipping `getToolSetToolSetNameTool` leads to malformed input and avoidable failures. Returns the tool's response body unchanged.",
 		operationId = "postToolSetToolSetNameToolInvoke",
@@ -583,4 +586,4 @@ public abstract class BaseToolResourceImpl implements ToolResource {
 		LogFactoryUtil.getLog(BaseToolResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:873540736
+// LIFERAY-REST-BUILDER-HASH:1028081257
