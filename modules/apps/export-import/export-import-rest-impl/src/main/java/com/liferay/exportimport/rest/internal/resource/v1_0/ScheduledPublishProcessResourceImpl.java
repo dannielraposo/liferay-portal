@@ -5,9 +5,11 @@
 
 package com.liferay.exportimport.rest.internal.resource.v1_0;
 
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.exportimport.rest.dto.v1_0.RemoteConnection;
 import com.liferay.exportimport.rest.dto.v1_0.ScheduledPublishProcess;
 import com.liferay.exportimport.rest.internal.util.GroupUtil;
 import com.liferay.exportimport.rest.internal.util.ParameterMapUtil;
@@ -27,6 +29,7 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -68,16 +71,23 @@ public class ScheduledPublishProcessResourceImpl
 
 		PermissionUtil.checkPublishPermission(stagingGroup.getGroupId());
 
-		Group liveGroup = GroupUtil.getLiveGroup(stagingGroup);
-
-		String groupName = _staging.getSchedulerGroupName(
-			DestinationNames.LAYOUTS_LOCAL_PUBLISHER, liveGroup.getGroupId());
+		String groupName = _getSchedulerGroupName(stagingGroup);
 
 		SchedulerResponse schedulerResponse = _getSchedulerResponse(
 			groupName, scheduledPublishProcessId);
 
-		_layoutService.unschedulePublishToLive(
-			liveGroup.getGroupId(), schedulerResponse.getJobName(), groupName);
+		if (stagingGroup.isStagedRemotely()) {
+			_layoutService.unschedulePublishToRemote(
+				stagingGroup.getGroupId(), schedulerResponse.getJobName(),
+				groupName);
+		}
+		else {
+			Group liveGroup = GroupUtil.getLiveGroup(stagingGroup);
+
+			_layoutService.unschedulePublishToLive(
+				liveGroup.getGroupId(), schedulerResponse.getJobName(),
+				groupName);
+		}
 
 		_exportImportConfigurationLocalService.deleteExportImportConfiguration(
 			scheduledPublishProcessId);
@@ -94,13 +104,9 @@ public class ScheduledPublishProcessResourceImpl
 
 		PermissionUtil.checkPublishPermission(stagingGroup.getGroupId());
 
-		Group liveGroup = GroupUtil.getLiveGroup(stagingGroup);
-
 		return _toScheduledPublishProcess(
 			_getSchedulerResponse(
-				_staging.getSchedulerGroupName(
-					DestinationNames.LAYOUTS_LOCAL_PUBLISHER,
-					liveGroup.getGroupId()),
+				_getSchedulerGroupName(stagingGroup),
 				scheduledPublishProcessId));
 	}
 
@@ -116,15 +122,11 @@ public class ScheduledPublishProcessResourceImpl
 
 		PermissionUtil.checkPublishPermission(stagingGroup.getGroupId());
 
-		Group liveGroup = GroupUtil.getLiveGroup(stagingGroup);
-
 		List<ScheduledPublishProcess> scheduledPublishProcesses =
 			new ArrayList<>(
 				transform(
 					_schedulerEngineHelper.getScheduledJobs(
-						_staging.getSchedulerGroupName(
-							DestinationNames.LAYOUTS_LOCAL_PUBLISHER,
-							liveGroup.getGroupId()),
+						_getSchedulerGroupName(stagingGroup),
 						StorageType.PERSISTED),
 					this::_toScheduledPublishProcess));
 
@@ -227,6 +229,19 @@ public class ScheduledPublishProcessResourceImpl
 		return (Map<String, String[]>)settingsMap.get("parameterMap");
 	}
 
+	private String _getSchedulerGroupName(Group stagingGroup) {
+		if (stagingGroup.isStagedRemotely()) {
+			return _staging.getSchedulerGroupName(
+				DestinationNames.LAYOUTS_REMOTE_PUBLISHER,
+				stagingGroup.getGroupId());
+		}
+
+		Group liveGroup = GroupUtil.getLiveGroup(stagingGroup);
+
+		return _staging.getSchedulerGroupName(
+			DestinationNames.LAYOUTS_LOCAL_PUBLISHER, liveGroup.getGroupId());
+	}
+
 	private SchedulerResponse _getSchedulerResponse(
 			String groupName, Long scheduledPublishProcessId)
 		throws Exception {
@@ -247,6 +262,36 @@ public class ScheduledPublishProcessResourceImpl
 		throw new NotFoundException(
 			"No scheduled publish process was found with ID " +
 				scheduledPublishProcessId);
+	}
+
+	private RemoteConnection _toRemoteConnection(
+		ExportImportConfiguration exportImportConfiguration) {
+
+		if ((exportImportConfiguration == null) ||
+			(exportImportConfiguration.getType() !=
+				ExportImportConfigurationConstants.
+					TYPE_SCHEDULED_PUBLISH_LAYOUT_REMOTE)) {
+
+			return null;
+		}
+
+		Map<String, Serializable> settingsMap =
+			exportImportConfiguration.getSettingsMap();
+
+		return new RemoteConnection() {
+			{
+				setRemoteAddress(
+					() -> MapUtil.getString(settingsMap, "remoteAddress"));
+				setRemoteGroupId(
+					() -> MapUtil.getLong(settingsMap, "targetGroupId"));
+				setRemotePathContext(
+					() -> MapUtil.getString(settingsMap, "remotePathContext"));
+				setRemotePort(
+					() -> MapUtil.getInteger(settingsMap, "remotePort"));
+				setSecureConnection(
+					() -> MapUtil.getBoolean(settingsMap, "secureConnection"));
+			}
+		};
 	}
 
 	private ScheduledPublishProcess _toScheduledPublishProcess(
@@ -304,6 +349,8 @@ public class ScheduledPublishProcessResourceImpl
 					() -> _schedulerEngineHelper.getNextFireDate(
 						schedulerResponse));
 				setPublishParameters(() -> parameterMap);
+				setRemoteConnection(
+					() -> _toRemoteConnection(exportImportConfiguration));
 				setScheduleEndDate(
 					() -> _schedulerEngineHelper.getEndDate(schedulerResponse));
 				setScheduleStartDate(

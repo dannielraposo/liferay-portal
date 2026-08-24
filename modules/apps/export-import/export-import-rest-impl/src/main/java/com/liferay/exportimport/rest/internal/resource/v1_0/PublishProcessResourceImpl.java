@@ -10,6 +10,7 @@ import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationFa
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactory;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactory;
 import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
+import com.liferay.exportimport.kernel.exception.RemoteExportException;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
@@ -17,6 +18,7 @@ import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.rest.dto.v1_0.ProcessProgress;
 import com.liferay.exportimport.rest.dto.v1_0.PublishProcess;
 import com.liferay.exportimport.rest.dto.v1_0.PublishProcessRequest;
+import com.liferay.exportimport.rest.dto.v1_0.RemoteConnection;
 import com.liferay.exportimport.rest.dto.v1_0.Status;
 import com.liferay.exportimport.rest.internal.util.BackgroundTaskUtil;
 import com.liferay.exportimport.rest.internal.util.GroupUtil;
@@ -32,18 +34,28 @@ import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstant
 import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplayFactory;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.RemoteOptionsException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.scheduler.Trigger;
 import com.liferay.portal.kernel.scheduler.TriggerFactory;
 import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.security.auth.RemoteAuthException;
+import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
@@ -55,8 +67,10 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 import org.osgi.service.component.annotations.Component;
@@ -167,6 +181,28 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 							backgroundTask.getTaskContextMap(),
 							"exportImportConfigurationId")));
 
+		if (StringUtil.equals(
+				backgroundTask.getTaskExecutorClassName(),
+				BackgroundTaskExecutorNames.
+					LAYOUT_REMOTE_STAGING_BACKGROUND_TASK_EXECUTOR)) {
+
+			Map<String, Serializable> settingsMap =
+				exportImportConfiguration.getSettingsMap();
+
+			_validateRemoteGroup(
+				exportImportConfiguration.getGroupId(),
+				_staging.stripProtocolFromRemoteAddress(
+					MapUtil.getString(settingsMap, "remoteAddress")),
+				MapUtil.getInteger(settingsMap, "remotePort"),
+				MapUtil.getString(settingsMap, "remotePathContext"),
+				MapUtil.getBoolean(settingsMap, "secureConnection"),
+				MapUtil.getLong(settingsMap, "targetGroupId"));
+
+			return _toPublishProcess(
+				_backgroundTaskLocalService.getBackgroundTask(
+					_staging.copyRemoteLayouts(exportImportConfiguration)));
+		}
+
 		return _toPublishProcess(
 			_backgroundTaskLocalService.getBackgroundTask(
 				_staging.publishLayouts(
@@ -199,9 +235,11 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 			_exportImportConfigurationParameterMapFactory.buildParameterMap(
 				parameterMap);
 
-		parameterMap.put(
-			PortletDataHandlerKeys.PERFORM_DIRECT_BINARY_IMPORT,
-			new String[] {Boolean.TRUE.toString()});
+		if (!stagingGroup.isStagedRemotely()) {
+			parameterMap.put(
+				PortletDataHandlerKeys.PERFORM_DIRECT_BINARY_IMPORT,
+				new String[] {Boolean.TRUE.toString()});
+		}
 
 		boolean privateLayout = LayoutUtil.isPrivateLayout(parameterMap);
 
@@ -211,6 +249,12 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 
 		long[] layoutIds = LayoutUtil.getLayoutIds(
 			stagingGroupId, parameterMap, privateLayout);
+
+		if (stagingGroup.isStagedRemotely()) {
+			return _postSiteRemotePublishProcess(
+				layoutIds, parameterMap, privateLayout, publishProcessRequest,
+				stagingGroup);
+		}
 
 		Group liveGroup = GroupUtil.getLiveGroup(stagingGroup);
 
@@ -265,10 +309,8 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 				"companyId", contextCompany.getCompanyId()));
 		dynamicQuery.add(RestrictionsFactoryUtil.in("groupId", groupIds));
 		dynamicQuery.add(
-			RestrictionsFactoryUtil.eq(
-				"taskExecutorClassName",
-				BackgroundTaskExecutorNames.
-					LAYOUT_STAGING_BACKGROUND_TASK_EXECUTOR));
+			RestrictionsFactoryUtil.in(
+				"taskExecutorClassName", _CLASS_NAMES_TASK_EXECUTOR));
 
 		if (!Validator.isBlank(search)) {
 			dynamicQuery.add(
@@ -287,6 +329,68 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 		return dynamicQuery;
 	}
 
+	private Map<Long, Boolean> _getLayoutIdMap(
+		long[] layoutIds, boolean privateLayout, Group stagingGroup) {
+
+		Map<Long, Boolean> layoutIdMap = new LinkedHashMap<>();
+
+		Set<Long> layoutIdsSet = SetUtil.fromArray(layoutIds);
+
+		for (Layout layout :
+				_layoutLocalService.getLayouts(
+					stagingGroup.getGroupId(), privateLayout)) {
+
+			if (layoutIdsSet.contains(layout.getLayoutId())) {
+				layoutIdMap.put(layout.getPlid(), false);
+			}
+		}
+
+		return layoutIdMap;
+	}
+
+	private String _getMessage(RemoteExportException remoteExportException) {
+		int type = remoteExportException.getType();
+
+		if (type == RemoteExportException.BAD_CONNECTION) {
+			return "Unable to connect to the remote site at " +
+				remoteExportException.getURL();
+		}
+
+		if (type == RemoteExportException.NO_GROUP) {
+			return "No remote site exists with ID " +
+				remoteExportException.getGroupId();
+		}
+
+		if (type == RemoteExportException.NO_PERMISSIONS) {
+			return "The user does not have permission to publish to the " +
+				"remote site";
+		}
+
+		if (type == RemoteExportException.SAME_GROUP) {
+			return "The remote site must be different from the current site";
+		}
+
+		return "The remote site is not valid";
+	}
+
+	private String _getMessage(RemoteOptionsException remoteOptionsException) {
+		int type = remoteOptionsException.getType();
+
+		if (type == RemoteOptionsException.REMOTE_ADDRESS) {
+			return "The remote address is not valid";
+		}
+
+		if (type == RemoteOptionsException.REMOTE_GROUP_ID) {
+			return "The remote site ID is not valid";
+		}
+
+		if (type == RemoteOptionsException.REMOTE_PATH_CONTEXT) {
+			return "The remote path context is not valid";
+		}
+
+		return "The remote port is not valid";
+	}
+
 	private List<Long> _getPublishGroupIds(Group stagingGroup) {
 		List<Long> groupIds = new ArrayList<>();
 
@@ -301,6 +405,37 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 		return groupIds;
 	}
 
+	private Date _getScheduleStartDate(
+		PublishProcessRequest publishProcessRequest) {
+
+		Date date = new Date();
+
+		Date scheduleStartDate = publishProcessRequest.getScheduleStartDate();
+
+		if (scheduleStartDate == null) {
+			return date;
+		}
+
+		if (scheduleStartDate.before(date)) {
+			throw new BadRequestException(
+				"The schedule start date must be in the future");
+		}
+
+		return scheduleStartDate;
+	}
+
+	private String _getTimeZoneId(PublishProcessRequest publishProcessRequest) {
+		String timeZoneId = publishProcessRequest.getTimeZoneId();
+
+		if (!Validator.isBlank(timeZoneId)) {
+			return timeZoneId;
+		}
+
+		TimeZone timeZone = TimeZoneUtil.getDefault();
+
+		return timeZone.getID();
+	}
+
 	private boolean _isScheduled(
 		ExportImportConfiguration exportImportConfiguration) {
 
@@ -308,9 +443,12 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 			return false;
 		}
 
-		if (exportImportConfiguration.getType() ==
+		if ((exportImportConfiguration.getType() ==
 				ExportImportConfigurationConstants.
-					TYPE_SCHEDULED_PUBLISH_LAYOUT_LOCAL) {
+					TYPE_SCHEDULED_PUBLISH_LAYOUT_LOCAL) ||
+			(exportImportConfiguration.getType() ==
+				ExportImportConfigurationConstants.
+					TYPE_SCHEDULED_PUBLISH_LAYOUT_REMOTE)) {
 
 			return true;
 		}
@@ -330,35 +468,90 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 		return false;
 	}
 
+	private PublishProcess _postSiteRemotePublishProcess(
+			long[] layoutIds, Map<String, String[]> parameterMap,
+			boolean privateLayout, PublishProcessRequest publishProcessRequest,
+			Group stagingGroup)
+		throws Exception {
+
+		Map<Long, Boolean> layoutIdMap = _getLayoutIdMap(
+			layoutIds, privateLayout, stagingGroup);
+
+		RemoteConnection remoteConnection =
+			publishProcessRequest.getRemoteConnection();
+
+		if (remoteConnection == null) {
+			remoteConnection = new RemoteConnection();
+		}
+
+		UnicodeProperties typeSettingsUnicodeProperties =
+			stagingGroup.getTypeSettingsProperties();
+
+		String remoteAddress = _staging.stripProtocolFromRemoteAddress(
+			GetterUtil.getString(
+				remoteConnection.getRemoteAddress(),
+				typeSettingsUnicodeProperties.getProperty("remoteAddress")));
+		long remoteGroupId = GetterUtil.getLong(
+			remoteConnection.getRemoteGroupId(),
+			GetterUtil.getLong(
+				typeSettingsUnicodeProperties.getProperty("remoteGroupId")));
+		String remotePathContext = GetterUtil.getString(
+			remoteConnection.getRemotePathContext(),
+			typeSettingsUnicodeProperties.getProperty("remotePathContext"));
+		int remotePort = GetterUtil.getInteger(
+			remoteConnection.getRemotePort(),
+			GetterUtil.getInteger(
+				typeSettingsUnicodeProperties.getProperty("remotePort")));
+		boolean secureConnection = GetterUtil.getBoolean(
+			remoteConnection.getSecureConnection(),
+			GetterUtil.getBoolean(
+				typeSettingsUnicodeProperties.getProperty("secureConnection")));
+
+		_validateRemoteGroup(
+			stagingGroup.getGroupId(), remoteAddress, remotePort,
+			remotePathContext, secureConnection, remoteGroupId);
+
+		if (!Validator.isBlank(publishProcessRequest.getCronExpression())) {
+			return _scheduleSiteRemotePublishProcess(
+				layoutIdMap, parameterMap, privateLayout, publishProcessRequest,
+				remoteAddress, remoteGroupId, remotePathContext, remotePort,
+				secureConnection, stagingGroup);
+		}
+
+		Map<String, Serializable> settingsMap =
+			_exportImportConfigurationSettingsMapFactory.
+				buildPublishLayoutRemoteSettingsMap(
+					contextUser, stagingGroup.getGroupId(), privateLayout,
+					layoutIdMap, parameterMap, remoteAddress, remotePort,
+					remotePathContext, secureConnection, remoteGroupId,
+					privateLayout);
+
+		ExportImportConfiguration exportImportConfiguration =
+			_exportImportConfigurationLocalService.
+				addDraftExportImportConfiguration(
+					contextUser.getUserId(), publishProcessRequest.getName(),
+					ExportImportConfigurationConstants.
+						TYPE_PUBLISH_LAYOUT_REMOTE,
+					settingsMap);
+
+		return _toPublishProcess(
+			_backgroundTaskLocalService.getBackgroundTask(
+				_staging.copyRemoteLayouts(exportImportConfiguration)));
+	}
+
 	private PublishProcess _scheduleSitePublishProcess(
 			long[] layoutIds, Group liveGroup,
 			Map<String, String[]> parameterMap, boolean privateLayout,
 			PublishProcessRequest publishProcessRequest, Group stagingGroup)
 		throws Exception {
 
-		Date date = new Date();
-		Date scheduleStartDate = publishProcessRequest.getScheduleStartDate();
-
-		if (scheduleStartDate == null) {
-			scheduleStartDate = date;
-		}
-		else if (scheduleStartDate.before(date)) {
-			throw new BadRequestException(
-				"The schedule start date must be in the future");
-		}
+		Date scheduleStartDate = _getScheduleStartDate(publishProcessRequest);
 
 		String cronExpression = publishProcessRequest.getCronExpression();
 		String groupName = _staging.getSchedulerGroupName(
 			DestinationNames.LAYOUTS_LOCAL_PUBLISHER, liveGroup.getGroupId());
 		String name = publishProcessRequest.getName();
-
-		String timeZoneId = publishProcessRequest.getTimeZoneId();
-
-		if (Validator.isBlank(timeZoneId)) {
-			TimeZone timeZone = TimeZoneUtil.getDefault();
-
-			timeZoneId = timeZone.getID();
-		}
+		String timeZoneId = _getTimeZoneId(publishProcessRequest);
 
 		_validateCronExpression(
 			cronExpression, groupName, name,
@@ -376,12 +569,43 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 			scheduleStartDate, publishProcessRequest.getScheduleEndDate(),
 			name);
 
-		return new PublishProcess() {
-			{
-				setDateCreated(Date::new);
-				setName(() -> name);
-			}
-		};
+		return _toPublishProcess(name);
+	}
+
+	private PublishProcess _scheduleSiteRemotePublishProcess(
+			Map<Long, Boolean> layoutIdMap, Map<String, String[]> parameterMap,
+			boolean privateLayout, PublishProcessRequest publishProcessRequest,
+			String remoteAddress, long remoteGroupId, String remotePathContext,
+			int remotePort, boolean secureConnection, Group stagingGroup)
+		throws Exception {
+
+		Date scheduleStartDate = _getScheduleStartDate(publishProcessRequest);
+
+		String cronExpression = publishProcessRequest.getCronExpression();
+		String groupName = _staging.getSchedulerGroupName(
+			DestinationNames.LAYOUTS_REMOTE_PUBLISHER,
+			stagingGroup.getGroupId());
+		String name = publishProcessRequest.getName();
+		String timeZoneId = _getTimeZoneId(publishProcessRequest);
+
+		_validateCronExpression(
+			cronExpression, groupName, name,
+			publishProcessRequest.getScheduleEndDate(), scheduleStartDate,
+			timeZoneId);
+
+		parameterMap.put(
+			ParameterMapUtil.CRON_EXPRESSION, new String[] {cronExpression});
+		parameterMap.put(
+			ParameterMapUtil.TIME_ZONE_ID, new String[] {timeZoneId});
+
+		_layoutService.schedulePublishToRemote(
+			stagingGroup.getGroupId(), privateLayout, layoutIdMap, parameterMap,
+			remoteAddress, remotePort, remotePathContext, secureConnection,
+			remoteGroupId, privateLayout, null, null, groupName, cronExpression,
+			scheduleStartDate, publishProcessRequest.getScheduleEndDate(),
+			name);
+
+		return _toPublishProcess(name);
 	}
 
 	private PublishProcess _toPublishProcess(BackgroundTask backgroundTask) {
@@ -423,6 +647,15 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 		};
 	}
 
+	private PublishProcess _toPublishProcess(String name) {
+		return new PublishProcess() {
+			{
+				setDateCreated(Date::new);
+				setName(() -> name);
+			}
+		};
+	}
+
 	private PublishProcess.Type _toType(BackgroundTask backgroundTask) {
 		if (_isScheduled(
 				_exportImportConfigurationLocalService.
@@ -459,7 +692,42 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 		}
 	}
 
+	private void _validateRemoteGroup(
+		long groupId, String remoteAddress, int remotePort,
+		String remotePathContext, boolean secureConnection,
+		long remoteGroupId) {
+
+		try {
+			_groupLocalService.validateRemote(
+				groupId, remoteAddress, remotePort, remotePathContext,
+				secureConnection, remoteGroupId);
+		}
+		catch (RemoteAuthException remoteAuthException) {
+			throw new BadRequestException(
+				"Unable to authenticate with the remote site",
+				remoteAuthException);
+		}
+		catch (RemoteExportException remoteExportException) {
+			throw new BadRequestException(
+				_getMessage(remoteExportException), remoteExportException);
+		}
+		catch (RemoteOptionsException remoteOptionsException) {
+			throw new BadRequestException(
+				_getMessage(remoteOptionsException), remoteOptionsException);
+		}
+		catch (SystemException systemException) {
+			throw new BadRequestException(
+				"Unable to connect to the remote site", systemException);
+		}
+		catch (PortalException portalException) {
+			throw new BadRequestException(
+				"Unable to validate the remote site", portalException);
+		}
+	}
+
 	private static final String[] _CLASS_NAMES_TASK_EXECUTOR = {
+		BackgroundTaskExecutorNames.
+			LAYOUT_REMOTE_STAGING_BACKGROUND_TASK_EXECUTOR,
 		BackgroundTaskExecutorNames.LAYOUT_STAGING_BACKGROUND_TASK_EXECUTOR
 	};
 
@@ -482,7 +750,13 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 		_exportImportConfigurationSettingsMapFactory;
 
 	@Reference
+	private GroupLocalService _groupLocalService;
+
+	@Reference
 	private Language _language;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
 
 	@Reference
 	private LayoutService _layoutService;
