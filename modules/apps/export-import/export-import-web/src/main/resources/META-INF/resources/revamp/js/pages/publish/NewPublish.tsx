@@ -6,6 +6,7 @@
 import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
+import ClayLayout from '@clayui/layout';
 import {Form, Formik, FormikValues} from 'formik';
 import {sub} from 'frontend-js-web';
 import React, {useEffect, useRef, useState} from 'react';
@@ -15,6 +16,10 @@ import Footer from '../../components/Footer';
 import Setup from '../../components/Setup';
 import {DateFilterValues, Range} from '../../components/date_filter';
 import {ContentSelection} from '../../components/forms/content_selector/ContentSelector';
+import {
+	FormikFieldCheckbox,
+	FormikFieldText,
+} from '../../components/forms/formik';
 import {usePreview} from '../../hooks/usePreview';
 import {deleteScheduledPublishProcess} from '../../services/deleteScheduledPublishProcess';
 import {getScheduledPublishProcess} from '../../services/getScheduledPublishProcess';
@@ -44,12 +49,21 @@ import {
 	getScheduleValuesErrors,
 } from './components/scheduler/utils';
 
+type RemoteConnection = {
+	remoteAddress: string;
+	remoteGroupId: string;
+	remotePathContext: string;
+	remotePort: string;
+	secureConnection: boolean;
+};
+
 type PublishFormValues = {
 	contentSelection: ContentSelection | undefined;
 	dateFilter: DateFilterValues;
 	deletions: boolean;
 	name: string;
 	permissions: boolean;
+	remoteConnection?: RemoteConnection;
 	scheduleValues: ScheduleValues;
 };
 
@@ -62,6 +76,7 @@ export function NewPublish({
 	pagePickerConfiguration,
 	publishPreviewAPIURL,
 	publishProcessAPIURL,
+	remoteConnectionSettings,
 	scheduledBackURL,
 	scheduledPublishProcessAPIURL,
 	scheduledPublishProcessId,
@@ -76,6 +91,7 @@ export function NewPublish({
 	pagePickerConfiguration: PagePickerConfiguration;
 	publishPreviewAPIURL: string;
 	publishProcessAPIURL: string;
+	remoteConnectionSettings?: RemoteConnection;
 	scheduledBackURL: string;
 	scheduledPublishProcessAPIURL: string;
 	scheduledPublishProcessId?: number;
@@ -97,6 +113,7 @@ export function NewPublish({
 			deletions: false,
 			name: '',
 			permissions: false,
+			remoteConnection: remoteConnectionSettings,
 			scheduleValues: getInitialScheduleValues(
 				getDefaultTimeZoneId(timeZones, timeZoneId),
 				defaultScheduled
@@ -142,6 +159,8 @@ export function NewPublish({
 				? toWallClockDateTime(scheduleStartDate, scheduledTimeZoneId)
 				: '';
 
+			const remoteConnection = scheduledPublishProcess.remoteConnection;
+
 			setInitialFormValues((currentInitialFormValues) => ({
 				contentSelection: toContentSelection(
 					preview.previewPortletDataHandlerSections ?? [],
@@ -152,6 +171,21 @@ export function NewPublish({
 				deletions: publishParameters.DELETIONS?.[0] === 'true',
 				name: scheduledPublishProcess.name ?? '',
 				permissions: publishParameters.PERMISSIONS?.[0] === 'true',
+				remoteConnection: remoteConnection
+					? {
+							remoteAddress: remoteConnection.remoteAddress ?? '',
+							remoteGroupId: String(
+								remoteConnection.remoteGroupId ?? ''
+							),
+							remotePathContext:
+								remoteConnection.remotePathContext ?? '',
+							remotePort: String(
+								remoteConnection.remotePort ?? ''
+							),
+							secureConnection:
+								remoteConnection.secureConnection ?? false,
+						}
+					: currentInitialFormValues.remoteConnection,
 				scheduleValues: {
 					...currentInitialFormValues.scheduleValues,
 					enabled: true,
@@ -231,11 +265,30 @@ export function NewPublish({
 						}
 					: {};
 
+				const remoteConnection = values.remoteConnection;
+
+				const remoteFields = remoteConnection
+					? {
+							remoteConnection: {
+								remoteAddress: remoteConnection.remoteAddress,
+								remoteGroupId: Number(
+									remoteConnection.remoteGroupId
+								),
+								remotePathContext:
+									remoteConnection.remotePathContext,
+								remotePort: Number(remoteConnection.remotePort),
+								secureConnection:
+									remoteConnection.secureConnection,
+							},
+						}
+					: {};
+
 				const result = await postPublishProcess({
 					publishProcessRequest: {
 						...appliedDateFilterRef.current,
 						...toProcessRequestFlags(values.contentSelection),
 						...scheduleFields,
+						...remoteFields,
 						deletions: values.deletions,
 						name: values.name,
 						permissions: values.permissions,
@@ -312,6 +365,50 @@ export function NewPublish({
 							timeZones={timeZones}
 						/>
 
+						{formik.values.remoteConnection && (
+							<ClayLayout.Sheet className="mt-4 option-group">
+								<div className="mb-3 sheet-title">
+									{Liferay.Language.get('where-to-publish')}
+								</div>
+
+								<FormikFieldText
+									label={Liferay.Language.get(
+										'remote-host-ip'
+									)}
+									name="remoteConnection.remoteAddress"
+									required
+								/>
+
+								<FormikFieldText
+									label={Liferay.Language.get('remote-port')}
+									name="remoteConnection.remotePort"
+									required
+								/>
+
+								<FormikFieldText
+									label={Liferay.Language.get(
+										'remote-path-context'
+									)}
+									name="remoteConnection.remotePathContext"
+								/>
+
+								<FormikFieldText
+									label={Liferay.Language.get(
+										'remote-site-id'
+									)}
+									name="remoteConnection.remoteGroupId"
+									required
+								/>
+
+								<FormikFieldCheckbox
+									label={Liferay.Language.get(
+										'use-a-secure-network-connection'
+									)}
+									name="remoteConnection.secureConnection"
+								/>
+							</ClayLayout.Sheet>
+						)}
+
 						<DataSelection
 							commentsAndRatingsEnabled={
 								commentsAndRatingsEnabled
@@ -372,12 +469,20 @@ export function NewPublish({
 									</span>
 
 									{formik.values.scheduleValues.enabled
-										? Liferay.Language.get(
-												'schedule-publication-to-live'
-											)
-										: Liferay.Language.get(
-												'publish-to-live'
-											)}
+										? remoteConnectionSettings
+											? Liferay.Language.get(
+													'schedule-publication-to-remote-live'
+												)
+											: Liferay.Language.get(
+													'schedule-publication-to-live'
+												)
+										: remoteConnectionSettings
+											? Liferay.Language.get(
+													'publish-to-remote-live'
+												)
+											: Liferay.Language.get(
+													'publish-to-live'
+												)}
 								</ClayButton>
 							}
 							backURL={backURL}

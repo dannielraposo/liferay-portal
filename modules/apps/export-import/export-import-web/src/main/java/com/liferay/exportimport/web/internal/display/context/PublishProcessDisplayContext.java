@@ -9,6 +9,7 @@ import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.exportimport.util.ScopeUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -26,6 +27,7 @@ import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.TimeZoneComparator;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Date;
@@ -50,6 +52,33 @@ public class PublishProcessDisplayContext {
 
 	public String getPublishProcessAPIURL() {
 		return ScopeUtil.getAPIURL(_liveGroup, "/publish-processes");
+	}
+
+	public JSONObject getRemoteConnectionSettingsJSONObject() {
+		if (!_liveGroup.isStagedRemotely()) {
+			return null;
+		}
+
+		UnicodeProperties typeSettingsUnicodeProperties =
+			_liveGroup.getTypeSettingsProperties();
+
+		return JSONUtil.put(
+			"remoteAddress",
+			typeSettingsUnicodeProperties.getProperty("remoteAddress")
+		).put(
+			"remoteGroupId",
+			typeSettingsUnicodeProperties.getProperty("remoteGroupId")
+		).put(
+			"remotePathContext",
+			typeSettingsUnicodeProperties.getProperty("remotePathContext")
+		).put(
+			"remotePort",
+			typeSettingsUnicodeProperties.getProperty("remotePort")
+		).put(
+			"secureConnection",
+			GetterUtil.getBoolean(
+				typeSettingsUnicodeProperties.getProperty("secureConnection"))
+		);
 	}
 
 	public String getScheduledPublishProcessAPIURL() {
@@ -82,8 +111,7 @@ public class PublishProcessDisplayContext {
 			for (SchedulerResponse schedulerResponse :
 					SchedulerEngineHelperUtil.getScheduledJobs(
 						StagingUtil.getSchedulerGroupName(
-							DestinationNames.LAYOUTS_LOCAL_PUBLISHER,
-							_liveGroup.getGroupId()),
+							_getDestinationName(), _liveGroup.getGroupId()),
 						StorageType.PERSISTED)) {
 
 				Message message = schedulerResponse.getMessage();
@@ -118,6 +146,14 @@ public class PublishProcessDisplayContext {
 
 	public boolean isLookAndFeelEnabled() {
 		return ScopeUtil.isLookAndFeelEnabled(_liveGroup);
+	}
+
+	private String _getDestinationName() {
+		if (_liveGroup.isStagedRemotely()) {
+			return DestinationNames.LAYOUTS_REMOTE_PUBLISHER;
+		}
+
+		return DestinationNames.LAYOUTS_LOCAL_PUBLISHER;
 	}
 
 	private String _getTimeZoneLabel(TimeZone timeZone) {

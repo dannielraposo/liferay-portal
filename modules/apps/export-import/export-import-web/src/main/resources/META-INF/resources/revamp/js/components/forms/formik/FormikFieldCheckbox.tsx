@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {FormikValues, useFormikContext} from 'formik';
+import {FormikValues, getIn, useFormikContext} from 'formik';
 import React from 'react';
 
 import {FieldCheckbox} from '../FieldCheckbox';
@@ -26,7 +26,7 @@ export function FormikFieldCheckbox({
 	return (
 		<FieldCheckbox
 			bordered={false}
-			checked={Boolean(values[name])}
+			checked={Boolean(getIn(values, name))}
 			description={description}
 			id={id}
 			label={label}

@@ -84,6 +84,14 @@ export interface PublishProcess {
 	status?: {code: number; label: string};
 }
 
+export interface RemoteConnectionSettings {
+	remoteAddress?: string;
+	remoteGroupId?: number;
+	remotePathContext?: string;
+	remotePort?: number;
+	secureConnection?: boolean;
+}
+
 export interface PublishProcessRequest {
 	comments?: boolean;
 	cronExpression?: string;
@@ -94,6 +102,7 @@ export interface PublishProcessRequest {
 	name: string;
 	permissions?: boolean;
 	ratings?: boolean;
+	remoteConnection?: RemoteConnectionSettings;
 	requestPortletDataHandlers?: RequestPortletDataHandler[];
 	scheduleEndDate?: string;
 	scheduleStartDate?: string;
@@ -111,6 +120,7 @@ export interface ScheduledPublishProcess {
 	name?: string;
 	nextFireDate?: string;
 	publishParameters?: Record<string, string[]>;
+	remoteConnection?: RemoteConnectionSettings;
 	scheduleEndDate?: string;
 	scheduleStartDate?: string;
 }
