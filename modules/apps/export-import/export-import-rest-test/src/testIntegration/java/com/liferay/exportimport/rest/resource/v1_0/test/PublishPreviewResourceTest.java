@@ -9,6 +9,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerSection;
 import com.liferay.exportimport.rest.client.dto.v1_0.PublishPreview;
 import com.liferay.exportimport.rest.client.dto.v1_0.PublishProcessRequest;
+import com.liferay.exportimport.test.util.ExportImportTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -88,6 +89,28 @@ public class PublishPreviewResourceTest
 				null, null);
 
 		Assert.assertNotNull(lastPublishDatePublishPreview.getAdditionCount());
+
+		_testGetSiteRemotePublishPreview();
+	}
+
+	private void _testGetSiteRemotePublishPreview() throws Exception {
+		ExportImportTestUtil.withRemoteStaging(
+			(stagingGroup, remoteLiveGroup) -> {
+				LayoutTestUtil.addTypePortletLayout(stagingGroup);
+
+				PublishPreview publishPreview =
+					publishPreviewResource.getSitePublishPreview(
+						stagingGroup.getExternalReferenceCode(), null, null,
+						null);
+
+				Assert.assertNotNull(publishPreview.getAdditionCount());
+
+				PreviewPortletDataHandlerSection[]
+					previewPortletDataHandlerSections =
+						publishPreview.getPreviewPortletDataHandlerSections();
+
+				Assert.assertTrue(previewPortletDataHandlerSections.length > 0);
+			});
 	}
 
 	@Inject

@@ -6,11 +6,16 @@
 package com.liferay.exportimport.rest.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
+import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
+import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.rest.client.dto.v1_0.PublishProcessRequest;
+import com.liferay.exportimport.rest.client.dto.v1_0.RemoteConnection;
 import com.liferay.exportimport.rest.client.dto.v1_0.ScheduledPublishProcess;
 import com.liferay.exportimport.rest.client.pagination.Page;
 import com.liferay.exportimport.rest.client.pagination.Pagination;
 import com.liferay.exportimport.rest.client.resource.v1_0.PublishProcessResource;
+import com.liferay.exportimport.test.util.ExportImportTestUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -19,6 +24,7 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
+import com.liferay.portal.test.rule.Inject;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -82,6 +88,8 @@ public class ScheduledPublishProcessResourceTest
 				scheduledPublishProcess.getId(),
 				remainingScheduledPublishProcess.getId());
 		}
+
+		_testDeleteSiteRemoteScheduledPublishProcess();
 	}
 
 	@Override
@@ -111,6 +119,7 @@ public class ScheduledPublishProcessResourceTest
 			getScheduledPublishProcess.getName());
 		Assert.assertNotNull(getScheduledPublishProcess.getDateCreated());
 		Assert.assertNotNull(getScheduledPublishProcess.getPublishParameters());
+		Assert.assertNull(getScheduledPublishProcess.getRemoteConnection());
 		Assert.assertNotNull(getScheduledPublishProcess.getScheduleStartDate());
 	}
 
@@ -156,7 +165,69 @@ public class ScheduledPublishProcessResourceTest
 		return page.fetchFirstItem();
 	}
 
+	private void _testDeleteSiteRemoteScheduledPublishProcess()
+		throws Exception {
+
+		ExportImportTestUtil.withRemoteStaging(
+			(stagingGroup, remoteLiveGroup) -> {
+				ScheduledPublishProcess scheduledPublishProcess =
+					_addScheduledPublishProcess(
+						stagingGroup.getExternalReferenceCode(),
+						RandomTestUtil.randomString());
+
+				ExportImportConfiguration exportImportConfiguration =
+					_exportImportConfigurationLocalService.
+						getExportImportConfiguration(
+							scheduledPublishProcess.getId());
+
+				Assert.assertEquals(
+					ExportImportConfigurationConstants.
+						TYPE_SCHEDULED_PUBLISH_LAYOUT_REMOTE,
+					exportImportConfiguration.getType());
+
+				ScheduledPublishProcess getScheduledPublishProcess =
+					scheduledPublishProcessResource.
+						getSiteScheduledPublishProcess(
+							stagingGroup.getExternalReferenceCode(),
+							scheduledPublishProcess.getId());
+
+				Assert.assertEquals(
+					scheduledPublishProcess.getName(),
+					getScheduledPublishProcess.getName());
+
+				RemoteConnection remoteConnection =
+					getScheduledPublishProcess.getRemoteConnection();
+
+				Assert.assertNotNull(remoteConnection);
+				Assert.assertEquals(
+					"localhost", remoteConnection.getRemoteAddress());
+				Assert.assertEquals(
+					Long.valueOf(remoteLiveGroup.getGroupId()),
+					remoteConnection.getRemoteGroupId());
+				Assert.assertFalse(remoteConnection.getSecureConnection());
+
+				assertHttpResponseStatusCode(
+					204,
+					scheduledPublishProcessResource.
+						deleteSiteScheduledPublishProcessHttpResponse(
+							stagingGroup.getExternalReferenceCode(),
+							scheduledPublishProcess.getId()));
+
+				Page<ScheduledPublishProcess> page =
+					scheduledPublishProcessResource.
+						getSiteScheduledPublishProcessesPage(
+							stagingGroup.getExternalReferenceCode(), null,
+							Pagination.of(1, 1), null);
+
+				Assert.assertEquals(0, page.getTotalCount());
+			});
+	}
+
 	private static final String _CRON_EXPRESSION = "0 0 3 * * ?";
+
+	@Inject
+	private ExportImportConfigurationLocalService
+		_exportImportConfigurationLocalService;
 
 	private PublishProcessResource _publishProcessResource;
 

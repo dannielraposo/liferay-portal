@@ -143,6 +143,117 @@ describe('NewPublish', () => {
 		).toBeChecked();
 	});
 
+	it('seeds the editable connection fields and submits the edited values', async () => {
+		renderComponent({
+			remoteConnectionSettings: {
+				remoteAddress: 'remote.example.com',
+				remoteGroupId: '12345',
+				remotePathContext: '/portal',
+				remotePort: '8080',
+				secureConnection: false,
+			},
+		});
+
+		await fillRequiredFields();
+
+		expect(screen.getByLabelText(/remote-host-ip/)).toHaveValue(
+			'remote.example.com'
+		);
+		expect(screen.getByLabelText(/remote-port/)).toHaveValue('8080');
+		expect(screen.getByLabelText(/remote-path-context/)).toHaveValue(
+			'/portal'
+		);
+		expect(screen.getByLabelText(/remote-site-id/)).toHaveValue('12345');
+
+		const secureConnectionCheckbox = screen.getByLabelText(
+			/use-a-secure-network-connection/
+		);
+
+		expect(secureConnectionCheckbox).not.toBeChecked();
+
+		await user.click(secureConnectionCheckbox);
+
+		expect(secureConnectionCheckbox).toBeChecked();
+
+		const addressField = screen.getByLabelText(/remote-host-ip/);
+
+		await user.clear(addressField);
+		await user.click(addressField);
+		await user.paste('other.example.com');
+
+		await user.click(
+			screen.getByRole('button', {name: /publish-to-remote-live/})
+		);
+
+		await waitFor(() => {
+			expect(getPublishProcessCall()).toBeDefined();
+		});
+
+		const body = JSON.parse(getPublishProcessCall()![1]!.body as string);
+
+		expect(body.remoteConnection.remoteAddress).toBe('other.example.com');
+		expect(body.remoteConnection.remoteGroupId).toBe(12345);
+		expect(body.remoteConnection.remotePort).toBe(8080);
+		expect(body.remoteConnection.remotePathContext).toBe('/portal');
+		expect(body.remoteConnection.secureConnection).toBe(true);
+	});
+
+	it('labels the button for a scheduled remote publication', async () => {
+		renderComponent({
+			remoteConnectionSettings: {
+				remoteAddress: 'remote.example.com',
+				remoteGroupId: '12345',
+				remotePathContext: '/portal',
+				remotePort: '8080',
+				secureConnection: false,
+			},
+		});
+
+		await fillRequiredFields();
+
+		await user.click(
+			screen.getByRole('radio', {name: /schedule-for-later/})
+		);
+
+		expect(
+			screen.getByRole('button', {
+				name: /schedule-publication-to-remote-live/,
+			})
+		).toBeInTheDocument();
+	});
+
+	it('clears the required error when a connection field is corrected', async () => {
+		renderComponent({
+			remoteConnectionSettings: {
+				remoteAddress: 'remote.example.com',
+				remoteGroupId: '12345',
+				remotePathContext: '/portal',
+				remotePort: '8080',
+				secureConnection: false,
+			},
+		});
+
+		await fillRequiredFields();
+
+		const siteIdField = screen.getByLabelText(/remote-site-id/);
+
+		await user.clear(siteIdField);
+		await user.tab();
+
+		expect(
+			await screen.findByText('this-field-is-required')
+		).toBeInTheDocument();
+
+		await user.click(siteIdField);
+		await user.paste('54321');
+
+		await waitFor(() => {
+			expect(
+				screen.queryByText('this-field-is-required')
+			).not.toBeInTheDocument();
+		});
+	});
+
 	it('requires a start date to schedule the publication', async () => {
 		renderComponent();
 
@@ -227,6 +338,42 @@ describe('NewPublish', () => {
 		expect(screen.getByLabelText('filter-content-by')).toHaveValue(
 			'fromLastPublishDate'
 		);
+	});
+
+	it('seeds the connection fields from the scheduled remote process when editing', async () => {
+		mockAPIRoutes({
+			scheduledPublishProcess: {
+				...SCHEDULED_PUBLISH_PROCESS,
+				remoteConnection: {
+					remoteAddress: 'saved.example.com',
+					remoteGroupId: 98765,
+					remotePathContext: '/o',
+					remotePort: 443,
+					secureConnection: true,
+				},
+			},
+		});
+
+		renderComponent({
+			remoteConnectionSettings: {
+				remoteAddress: 'default.example.com',
+				remoteGroupId: '11111',
+				remotePathContext: '',
+				remotePort: '8080',
+				secureConnection: false,
+			},
+			scheduledPublishProcessId: SCHEDULED_PUBLISH_PROCESS.id,
+		});
+
+		expect(await screen.findByLabelText(/remote-host-ip/)).toHaveValue(
+			'saved.example.com'
+		);
+		expect(screen.getByLabelText(/remote-site-id/)).toHaveValue('98765');
+		expect(screen.getByLabelText(/remote-port/)).toHaveValue('443');
+		expect(screen.getByLabelText(/remote-path-context/)).toHaveValue('/o');
+		expect(
+			screen.getByLabelText(/use-a-secure-network-connection/)
+		).toBeChecked();
 	});
 
 	it('replaces the scheduled process on submit when editing', async () => {
