@@ -12,10 +12,10 @@ import React from 'react';
 
 import DataSelection from '../../components/DataSelection';
 import Footer from '../../components/Footer';
-import {PageTreeModalConfiguration} from '../../components/PageTreeModal';
 import Setup from '../../components/Setup';
 import {DateFilterValues, Range} from '../../components/date_filter';
 import {ContentSelection} from '../../components/forms/content_selector/ContentSelector';
+import {PagePickerConfiguration} from '../../components/forms/content_selector/LayoutSetControl';
 import {usePreview} from '../../hooks/usePreview';
 import {postExportProcess} from '../../services/postExportProcess';
 import {Preview} from '../../types/exportImportPreview';
@@ -43,7 +43,7 @@ export function NewExport({
 	exportPreviewAPIURL,
 	exportProcessAPIURL,
 	lookAndFeelEnabled = false,
-	pageTreeModalConfiguration,
+	pagePickerConfiguration,
 }: {
 	backURL: string;
 	commentsAndRatingsEnabled?: boolean;
@@ -51,7 +51,7 @@ export function NewExport({
 	exportPreviewAPIURL: string;
 	exportProcessAPIURL: string;
 	lookAndFeelEnabled?: boolean;
-	pageTreeModalConfiguration: PageTreeModalConfiguration;
+	pagePickerConfiguration: PagePickerConfiguration;
 }) {
 	const {appliedDateFilterRef, error, handleApplyFilter, loading, preview} =
 		usePreview(exportPreviewAPIURL, exportPreview);
@@ -146,9 +146,10 @@ export function NewExport({
 							loading={loading}
 							lookAndFeelEnabled={lookAndFeelEnabled}
 							onApplyFilter={handleApplyFilter}
-							pageTreeModalConfiguration={
-								pageTreeModalConfiguration
-							}
+							pagePickerConfiguration={{
+								...pagePickerConfiguration,
+								title: Liferay.Language.get('pages-to-export'),
+							}}
 							permissionsDescription={Liferay.Language.get(
 								'export-import-permissions-help'
 							)}

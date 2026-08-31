@@ -12,8 +12,8 @@ import {
 	getVisibleSections,
 	updateSelection,
 } from '../../../utils/contentSelection';
-import {PageTreeModalConfiguration} from '../../PageTreeModal';
 import ContentSection, {SectionSelection} from './ContentSection';
+import {PagePickerConfiguration} from './LayoutSetControl';
 
 export type ContentSelection = Record<string, SectionSelection>;
 
@@ -25,7 +25,7 @@ interface ContentSelectorProps {
 	'lookAndFeelEnabled'?: boolean;
 	'name': string;
 	'onChange': (value: ContentSelection | undefined) => void;
-	'pageTreeModalConfiguration'?: PageTreeModalConfiguration;
+	'pagePickerConfiguration'?: PagePickerConfiguration;
 	'previewPortletDataHandlerSections': PreviewPortletDataHandlerSection[];
 	'process'?: ExportImportProcess;
 	'showDeletions'?: boolean;
@@ -39,7 +39,7 @@ export default function ContentSelector({
 	lookAndFeelEnabled = false,
 	name,
 	onChange,
-	pageTreeModalConfiguration,
+	pagePickerConfiguration,
 	process = 'export',
 	previewPortletDataHandlerSections,
 	showDeletions,
@@ -79,7 +79,7 @@ export default function ContentSelector({
 								)
 							)
 						}
-						pageTreeModalConfiguration={pageTreeModalConfiguration}
+						pagePickerConfiguration={pagePickerConfiguration}
 						previewPortletDataHandlerSection={
 							previewPortletDataHandlerSection
 						}

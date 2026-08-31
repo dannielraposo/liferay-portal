@@ -12,10 +12,10 @@ import React, {useEffect, useRef, useState} from 'react';
 
 import DataSelection from '../../components/DataSelection';
 import Footer from '../../components/Footer';
-import {PageTreeModalConfiguration} from '../../components/PageTreeModal';
 import Setup from '../../components/Setup';
 import {DateFilterValues, Range} from '../../components/date_filter';
 import {ContentSelection} from '../../components/forms/content_selector/ContentSelector';
+import {PagePickerConfiguration} from '../../components/forms/content_selector/LayoutSetControl';
 import {usePreview} from '../../hooks/usePreview';
 import {deleteScheduledPublishProcess} from '../../services/deleteScheduledPublishProcess';
 import {getScheduledPublishProcess} from '../../services/getScheduledPublishProcess';
@@ -59,7 +59,7 @@ export function NewPublish({
 	defaultScheduled = false,
 	lastPublishDate,
 	lookAndFeelEnabled = false,
-	pageTreeModalConfiguration,
+	pagePickerConfiguration,
 	publishPreviewAPIURL,
 	publishProcessAPIURL,
 	scheduledBackURL,
@@ -73,7 +73,7 @@ export function NewPublish({
 	defaultScheduled?: boolean;
 	lastPublishDate?: string;
 	lookAndFeelEnabled?: boolean;
-	pageTreeModalConfiguration: PageTreeModalConfiguration;
+	pagePickerConfiguration: PagePickerConfiguration;
 	publishPreviewAPIURL: string;
 	publishProcessAPIURL: string;
 	scheduledBackURL: string;
@@ -336,8 +336,8 @@ export function NewPublish({
 							loading={loading}
 							lookAndFeelEnabled={lookAndFeelEnabled}
 							onApplyFilter={handleApplyFilter}
-							pageTreeModalConfiguration={{
-								...pageTreeModalConfiguration,
+							pagePickerConfiguration={{
+								...pagePickerConfiguration,
 								title: Liferay.Language.get('pages-to-publish'),
 							}}
 							permissionsDescription={Liferay.Language.get(
