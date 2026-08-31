@@ -14,13 +14,8 @@ import '@testing-library/jest-dom';
 
 import {NewExport} from '../../../../../src/main/resources/META-INF/resources/revamp/js/pages/export/NewExport';
 import {Preview} from '../../../../../src/main/resources/META-INF/resources/revamp/js/types/exportImportPreview';
-import {LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY} from '../../../../../src/main/resources/META-INF/resources/revamp/js/utils/contentSelection';
-import {mockPageTreeItems} from '../../mocks/mockPageTreeItems';
+import {PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS} from '../../../../../src/main/resources/META-INF/resources/revamp/js/utils/contentSelection';
 import {mockPreview} from '../../mocks/mockPreview';
-
-jest.mock('staging-taglib', () => ({
-	PagesTree: require('../../mocks/MockPagesTree').MockPagesTree,
-}));
 
 const expandSection = async (label: string) => {
 	const sectionLabel = screen.getByText(label, {selector: 'label'});
@@ -43,10 +38,10 @@ const DEFAULT_PROPS = {
 	backURL: '/some/back/url',
 	exportPreviewAPIURL: '/o/export-import/v1.0/export-preview',
 	exportProcessAPIURL: '/o/export-import/v1.0/export-processes',
-	pageTreeModalConfiguration: {
-		groupId: 20121,
+	pagePickerConfiguration: {
 		pageSize: 20,
 		privateLayoutsAvailable: false,
+		siteExternalReferenceCode: 'site-erc',
 	},
 };
 
@@ -399,15 +394,15 @@ describe('NewExport', () => {
 					previewPortletDataHandlers: [
 						{
 							label: 'Pages',
-							name: LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
+							name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 						},
 					],
 				},
 			],
 		};
 
-		const privatePageTreeModalConfiguration = {
-			...DEFAULT_PROPS.pageTreeModalConfiguration,
+		const privatePagePickerConfiguration = {
+			...DEFAULT_PROPS.pagePickerConfiguration,
 			privateLayoutsAvailable: true,
 		};
 
@@ -438,17 +433,21 @@ describe('NewExport', () => {
 
 			fetch.resetMocks();
 			fetch.mockResponse(async (request) => {
-				if (request.url.includes('get_layouts_tree')) {
+				if (request.url.includes('/site-pages')) {
 					return JSON.stringify({
-						hasMoreElements: false,
-						items: mockPageTreeItems,
+						items: [
+							{
+								externalReferenceCode: 'page-1-erc',
+								name_i18n: {en_US: 'page-1'},
+							},
+							{
+								externalReferenceCode: 'page-2-erc',
+								name_i18n: {en_US: 'page-2'},
+							},
+						],
+						lastPage: 1,
+						totalCount: 2,
 					});
-				}
-
-				if (request.url.includes('session_tree_js_click')) {
-					return (await request.text()).includes('cmd=layoutCheck')
-						? JSON.stringify([1, 2])
-						: '[]';
 				}
 
 				return JSON.stringify({exportImportConfigurationId: 1});
@@ -465,9 +464,14 @@ describe('NewExport', () => {
 			await waitFor(() =>
 				expect(getExportRequest().requestPortletDataHandlers).toEqual([
 					{
-						name: LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
+						name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 						requestPortletDataHandlerControls: [
-							{name: 'publicLayoutPages'},
+							{
+								name: '_layout_set_pages',
+								requestPortletDataHandlerControls: [
+									{name: '_layout_set_all'},
+								],
+							},
 						],
 					},
 				])
@@ -480,7 +484,7 @@ describe('NewExport', () => {
 			);
 		});
 
-		it('hides the visibility radios and exports a public page subset through the modal', async () => {
+		it('hides the visibility radios and excludes a page deselected in the modal', async () => {
 			renderComponent({exportPreview: previewWithPagePicker});
 
 			await typeFileName();
@@ -491,6 +495,10 @@ describe('NewExport', () => {
 			await userEvent.click(
 				screen.getByRole('button', {name: 'select-x'})
 			);
+
+			expect(
+				await screen.findByText('pages-to-export')
+			).toBeInTheDocument();
 
 			expect(await screen.findByLabelText('page-1')).toBeChecked();
 			expect(screen.getByLabelText('page-2')).toBeChecked();
@@ -503,9 +511,18 @@ describe('NewExport', () => {
 			await waitFor(() =>
 				expect(getExportRequest().requestPortletDataHandlers).toEqual([
 					{
-						name: LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
+						name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 						requestPortletDataHandlerControls: [
-							{name: 'publicLayoutPages', values: ['1']},
+							{
+								name: '_layout_set_pages',
+								requestPortletDataHandlerControls: [
+									{name: '_layout_set_all'},
+									{
+										name: '_layout_set_excluded-items',
+										values: ['page-2-erc'],
+									},
+								],
+							},
 						],
 					},
 				])
@@ -515,7 +532,7 @@ describe('NewExport', () => {
 		it('shows the visibility radios and exports all private pages', async () => {
 			renderComponent({
 				exportPreview: previewWithPagePicker,
-				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
+				pagePickerConfiguration: privatePagePickerConfiguration,
 			});
 
 			await typeFileName();
@@ -536,9 +553,18 @@ describe('NewExport', () => {
 			await waitFor(() =>
 				expect(getExportRequest().requestPortletDataHandlers).toEqual([
 					{
-						name: LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
+						name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 						requestPortletDataHandlerControls: [
-							{name: 'privateLayoutPages'},
+							{
+								name: '_layout_set_visibility',
+								values: ['private-pages'],
+							},
+							{
+								name: '_layout_set_pages',
+								requestPortletDataHandlerControls: [
+									{name: '_layout_set_all'},
+								],
+							},
 						],
 					},
 				])
@@ -548,7 +574,7 @@ describe('NewExport', () => {
 		it('resets the selection to public when the public radio is selected', async () => {
 			renderComponent({
 				exportPreview: previewWithPagePicker,
-				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
+				pagePickerConfiguration: privatePagePickerConfiguration,
 			});
 
 			await expandSection();
@@ -566,7 +592,7 @@ describe('NewExport', () => {
 		it('clears the page selection when the main checkbox is toggled off', async () => {
 			renderComponent({
 				exportPreview: previewWithPagePicker,
-				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
+				pagePickerConfiguration: privatePagePickerConfiguration,
 			});
 
 			await expandSection();
@@ -584,10 +610,10 @@ describe('NewExport', () => {
 			).not.toBeChecked();
 		});
 
-		it('exports a private page subset selected through the modal', async () => {
+		it('excludes a private page deselected in the modal', async () => {
 			renderComponent({
 				exportPreview: previewWithPagePicker,
-				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
+				pagePickerConfiguration: privatePagePickerConfiguration,
 			});
 
 			await typeFileName();
@@ -609,9 +635,22 @@ describe('NewExport', () => {
 			await waitFor(() =>
 				expect(getExportRequest().requestPortletDataHandlers).toEqual([
 					{
-						name: LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
+						name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 						requestPortletDataHandlerControls: [
-							{name: 'privateLayoutPages', values: ['1']},
+							{
+								name: '_layout_set_visibility',
+								values: ['private-pages'],
+							},
+							{
+								name: '_layout_set_pages',
+								requestPortletDataHandlerControls: [
+									{name: '_layout_set_all'},
+									{
+										name: '_layout_set_excluded-items',
+										values: ['page-2-erc'],
+									},
+								],
+							},
 						],
 					},
 				])

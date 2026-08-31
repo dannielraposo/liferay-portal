@@ -15,10 +15,6 @@ import {toWallClockDateTime} from '../../../../../src/main/resources/META-INF/re
 import {ScheduledPublishProcess} from '../../../../../src/main/resources/META-INF/resources/revamp/js/types/exportImportProcess';
 import {mockPreview} from '../../mocks/mockPreview';
 
-jest.mock('staging-taglib', () => ({
-	PagesTree: require('../../mocks/MockPagesTree').MockPagesTree,
-}));
-
 const DAY = 24 * 60 * 60 * 1000;
 
 const FUTURE_DATE = new Date(Date.now() + DAY);
@@ -41,10 +37,10 @@ const SCHEDULED_PUBLISH_PROCESS: ScheduledPublishProcess = {
 
 const DEFAULT_PROPS = {
 	backURL: '/some/back/url',
-	pageTreeModalConfiguration: {
-		groupId: 20121,
+	pagePickerConfiguration: {
 		pageSize: 20,
 		privateLayoutsAvailable: false,
+		siteExternalReferenceCode: 'site-erc',
 	},
 	publishPreviewAPIURL:
 		'/o/export-import/v1.0/sites/site-erc/publish-preview',
