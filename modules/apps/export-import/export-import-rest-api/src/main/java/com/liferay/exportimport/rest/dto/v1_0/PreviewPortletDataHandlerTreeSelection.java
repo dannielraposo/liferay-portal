@@ -6,14 +6,10 @@
 package com.liferay.exportimport.rest.dto.v1_0;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
@@ -29,151 +25,29 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * @author Petteri Karttunen
  * @generated
  */
 @Generated("")
-@GraphQLName("PreviewPortletDataHandlerBoolean")
+@GraphQLName("PreviewPortletDataHandlerTreeSelection")
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "PreviewPortletDataHandlerBoolean")
-public class PreviewPortletDataHandlerBoolean
+@XmlRootElement(name = "PreviewPortletDataHandlerTreeSelection")
+public class PreviewPortletDataHandlerTreeSelection
 	extends PreviewPortletDataHandlerControl implements Serializable {
 
-	public static PreviewPortletDataHandlerBoolean toDTO(String json) {
+	public static PreviewPortletDataHandlerTreeSelection toDTO(String json) {
 		return ObjectMapperUtil.readValue(
-			PreviewPortletDataHandlerBoolean.class, json);
+			PreviewPortletDataHandlerTreeSelection.class, json);
 	}
 
-	public static PreviewPortletDataHandlerBoolean unsafeToDTO(String json) {
+	public static PreviewPortletDataHandlerTreeSelection unsafeToDTO(
+		String json) {
+
 		return ObjectMapperUtil.unsafeReadValue(
-			PreviewPortletDataHandlerBoolean.class, json);
+			PreviewPortletDataHandlerTreeSelection.class, json);
 	}
-
-	@io.swagger.v3.oas.annotations.media.Schema
-	public Long getAdditionCount() {
-		if (_additionCountSupplier != null) {
-			additionCount = _additionCountSupplier.get();
-
-			_additionCountSupplier = null;
-		}
-
-		return additionCount;
-	}
-
-	public void setAdditionCount(Long additionCount) {
-		this.additionCount = additionCount;
-
-		_additionCountSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setAdditionCount(
-		UnsafeSupplier<Long, Exception> additionCountUnsafeSupplier) {
-
-		_additionCountSupplier = () -> {
-			try {
-				return additionCountUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected Long additionCount;
-
-	@JsonIgnore
-	private Supplier<Long> _additionCountSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema
-	public Boolean getDefaultState() {
-		if (_defaultStateSupplier != null) {
-			defaultState = _defaultStateSupplier.get();
-
-			_defaultStateSupplier = null;
-		}
-
-		return defaultState;
-	}
-
-	public void setDefaultState(Boolean defaultState) {
-		this.defaultState = defaultState;
-
-		_defaultStateSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setDefaultState(
-		UnsafeSupplier<Boolean, Exception> defaultStateUnsafeSupplier) {
-
-		_defaultStateSupplier = () -> {
-			try {
-				return defaultStateUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected Boolean defaultState;
-
-	@JsonIgnore
-	private Supplier<Boolean> _defaultStateSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema
-	public Long getDeletionCount() {
-		if (_deletionCountSupplier != null) {
-			deletionCount = _deletionCountSupplier.get();
-
-			_deletionCountSupplier = null;
-		}
-
-		return deletionCount;
-	}
-
-	public void setDeletionCount(Long deletionCount) {
-		this.deletionCount = deletionCount;
-
-		_deletionCountSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setDeletionCount(
-		UnsafeSupplier<Long, Exception> deletionCountUnsafeSupplier) {
-
-		_deletionCountSupplier = () -> {
-			try {
-				return deletionCountUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected Long deletionCount;
-
-	@JsonIgnore
-	private Supplier<Long> _deletionCountSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -181,15 +55,16 @@ public class PreviewPortletDataHandlerBoolean
 			return true;
 		}
 
-		if (!(object instanceof PreviewPortletDataHandlerBoolean)) {
+		if (!(object instanceof PreviewPortletDataHandlerTreeSelection)) {
 			return false;
 		}
 
-		PreviewPortletDataHandlerBoolean previewPortletDataHandlerBoolean =
-			(PreviewPortletDataHandlerBoolean)object;
+		PreviewPortletDataHandlerTreeSelection
+			previewPortletDataHandlerTreeSelection =
+				(PreviewPortletDataHandlerTreeSelection)object;
 
 		return Objects.equals(
-			toString(), previewPortletDataHandlerBoolean.toString());
+			toString(), previewPortletDataHandlerTreeSelection.toString());
 	}
 
 	@Override
@@ -203,42 +78,6 @@ public class PreviewPortletDataHandlerBoolean
 		StringBundler sb = new StringBundler();
 
 		sb.append("{");
-
-		Long additionCount = getAdditionCount();
-
-		if (additionCount != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"additionCount\": ");
-
-			sb.append(additionCount);
-		}
-
-		Boolean defaultState = getDefaultState();
-
-		if (defaultState != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"defaultState\": ");
-
-			sb.append(defaultState);
-		}
-
-		Long deletionCount = getDeletionCount();
-
-		if (deletionCount != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"deletionCount\": ");
-
-			sb.append(deletionCount);
-		}
 
 		Boolean disabled = getDisabled();
 
@@ -328,7 +167,7 @@ public class PreviewPortletDataHandlerBoolean
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerBoolean",
+		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerTreeSelection",
 		name = "x-class-name"
 	)
 	public String xClassName;
@@ -443,4 +282,4 @@ public class PreviewPortletDataHandlerBoolean
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:284751425
+// LIFERAY-REST-BUILDER-HASH:1669223530

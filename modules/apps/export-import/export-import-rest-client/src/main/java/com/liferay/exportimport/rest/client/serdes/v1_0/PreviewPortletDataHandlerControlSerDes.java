@@ -9,6 +9,7 @@ import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerBo
 import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerChoice;
 import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerControl;
 import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerSetting;
+import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerTreeSelection;
 import com.liferay.exportimport.rest.client.dto.v1_0.Type;
 import com.liferay.exportimport.rest.client.json.BaseJSONParser;
 
@@ -75,6 +76,12 @@ public class PreviewPortletDataHandlerControlSerDes {
 						previewPortletDataHandlerControl);
 			}
 
+			if (typeString.equals("TreeSelection")) {
+				return PreviewPortletDataHandlerTreeSelectionSerDes.toJSON(
+					(PreviewPortletDataHandlerTreeSelection)
+						previewPortletDataHandlerControl);
+			}
+
 			throw new IllegalArgumentException("Unknown type " + typeString);
 		}
 		else {
@@ -126,6 +133,19 @@ public class PreviewPortletDataHandlerControlSerDes {
 				String.valueOf(previewPortletDataHandlerControl.getName()));
 		}
 
+		if (previewPortletDataHandlerControl.
+				getPreviewPortletDataHandlerControls() == null) {
+
+			map.put("previewPortletDataHandlerControls", null);
+		}
+		else {
+			map.put(
+				"previewPortletDataHandlerControls",
+				String.valueOf(
+					previewPortletDataHandlerControl.
+						getPreviewPortletDataHandlerControls()));
+		}
+
 		if (previewPortletDataHandlerControl.getType() == null) {
 			map.put("type", null);
 		}
@@ -162,6 +182,12 @@ public class PreviewPortletDataHandlerControlSerDes {
 			else if (Objects.equals(jsonParserFieldName, "name")) {
 				return false;
 			}
+			else if (Objects.equals(
+						jsonParserFieldName,
+						"previewPortletDataHandlerControls")) {
+
+				return false;
+			}
 			else if (Objects.equals(jsonParserFieldName, "type")) {
 				return false;
 			}
@@ -188,6 +214,10 @@ public class PreviewPortletDataHandlerControlSerDes {
 
 				if (typeString.equals("Setting")) {
 					return PreviewPortletDataHandlerSetting.toDTO(json);
+				}
+
+				if (typeString.equals("TreeSelection")) {
+					return PreviewPortletDataHandlerTreeSelection.toDTO(json);
 				}
 
 				throw new IllegalArgumentException(
@@ -219,6 +249,33 @@ public class PreviewPortletDataHandlerControlSerDes {
 				if (jsonParserFieldValue != null) {
 					previewPortletDataHandlerControl.setName(
 						(String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(
+						jsonParserFieldName,
+						"previewPortletDataHandlerControls")) {
+
+				if (jsonParserFieldValue != null) {
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					PreviewPortletDataHandlerControl[]
+						previewPortletDataHandlerControlsArray =
+							new PreviewPortletDataHandlerControl
+								[jsonParserFieldValues.length];
+
+					for (int i = 0;
+						 i < previewPortletDataHandlerControlsArray.length;
+						 i++) {
+
+						previewPortletDataHandlerControlsArray[i] =
+							PreviewPortletDataHandlerControlSerDes.toDTO(
+								(String)jsonParserFieldValues[i]);
+					}
+
+					previewPortletDataHandlerControl.
+						setPreviewPortletDataHandlerControls(
+							previewPortletDataHandlerControlsArray);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "type")) {
@@ -315,4 +372,4 @@ public class PreviewPortletDataHandlerControlSerDes {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1225805541
+// LIFERAY-REST-BUILDER-HASH:2144372126
