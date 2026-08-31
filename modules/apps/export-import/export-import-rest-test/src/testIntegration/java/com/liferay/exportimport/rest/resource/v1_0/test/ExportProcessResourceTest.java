@@ -30,6 +30,7 @@ import com.liferay.object.service.ObjectDefinitionSettingLocalService;
 import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.background.task.model.BackgroundTask;
 import com.liferay.portal.background.task.service.BackgroundTaskLocalService;
@@ -66,9 +67,11 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -669,8 +672,66 @@ public class ExportProcessResourceTest
 			JSONCompareMode.LENIENT);
 	}
 
+	private void _assertExportedLayoutExternalReferenceCodes(
+			String[] expectedExternalReferenceCodes,
+			ExportProcess exportProcess,
+			String[] unexpectedExternalReferenceCodes)
+		throws Exception {
+
+		ExportImportTestUtil.retryAssert(
+			1, TimeUnit.SECONDS, 30, TimeUnit.SECONDS,
+			() -> {
+				BackgroundTask backgroundTask =
+					_backgroundTaskLocalService.getBackgroundTask(
+						exportProcess.getId());
+
+				Assert.assertEquals(
+					BackgroundTaskConstants.STATUS_SUCCESSFUL,
+					backgroundTask.getStatus());
+			});
+
+		BackgroundTask backgroundTask =
+			_backgroundTaskLocalService.getBackgroundTask(
+				exportProcess.getId());
+
+		List<FileEntry> fileEntries =
+			backgroundTask.getAttachmentsFileEntries();
+
+		FileEntry larFileEntry = fileEntries.get(0);
+
+		JSONArray jsonArray = ExportImportTestUtil.getExportedJSONArray(
+			"com.liferay.headless.admin.site.internal.resource.v1_0." +
+				"SitePageResourceImpl",
+			testGroup.getGroupId(), larFileEntry.getContentStream());
+
+		Set<String> exportedExternalReferenceCodes = new HashSet<>();
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+			exportedExternalReferenceCodes.add(
+				jsonObject.getString("externalReferenceCode"));
+		}
+
+		for (String expectedExternalReferenceCode :
+				expectedExternalReferenceCodes) {
+
+			Assert.assertTrue(
+				exportedExternalReferenceCodes.contains(
+					expectedExternalReferenceCode));
+		}
+
+		for (String unexpectedExternalReferenceCode :
+				unexpectedExternalReferenceCodes) {
+
+			Assert.assertFalse(
+				exportedExternalReferenceCodes.contains(
+					unexpectedExternalReferenceCode));
+		}
+	}
+
 	private void _assertExportedLayouts(
-			String controlName,
+			String choiceName,
 			UnsafeFunction<ExportProcessRequest, ExportProcess, Exception>
 				unsafeFunction,
 			Layout... layouts)
@@ -689,13 +750,13 @@ public class ExportProcessResourceTest
 										"PORTLET_DATA_" + _LAYOUT_SET_LAYOUTS;
 
 									setRequestPortletDataHandlerControls(
-										new RequestPortletDataHandlerControl[] {
+										_toLayoutSetControls(
+											choiceName,
 											new RequestPortletDataHandlerControl() {
 												{
-													name = controlName;
+													name = "_layout_set_all";
 												}
-											}
-										});
+											}));
 								}
 							}
 						});
@@ -720,6 +781,50 @@ public class ExportProcessResourceTest
 			"com.liferay.headless.admin.site.internal.resource.v1_0." +
 				"SitePageResourceImpl",
 			testGroup.getGroupId(), layouts, Layout::getExternalReferenceCode);
+	}
+
+	private void _assertExportedLayoutsWithExclusion(
+			String excludedControlName, Layout excludedLayout,
+			Layout expectedLayout, Layout unexportedLayout,
+			UnsafeFunction<ExportProcessRequest, ExportProcess, Exception>
+				unsafeFunction)
+		throws Exception {
+
+		ExportProcess exportProcess = unsafeFunction.apply(
+			_toExportProcessRequest(
+				"public-pages",
+				new RequestPortletDataHandlerControl() {
+					{
+						name = "_layout_set_all";
+					}
+				},
+				_toTreeSelectionControl(excludedControlName, excludedLayout)));
+
+		_assertExportedLayoutExternalReferenceCodes(
+			new String[] {expectedLayout.getExternalReferenceCode()},
+			exportProcess,
+			new String[] {unexportedLayout.getExternalReferenceCode()});
+	}
+
+	private void _assertExportedLayoutTree(
+			Layout childLayout, Layout parentLayout,
+			UnsafeFunction<ExportProcessRequest, ExportProcess, Exception>
+				unsafeFunction,
+			Layout unselectedLayout)
+		throws Exception {
+
+		ExportProcess exportProcess = unsafeFunction.apply(
+			_toExportProcessRequest(
+				"public-pages",
+				_toTreeSelectionControl("_layout_set_subtrees", parentLayout)));
+
+		_assertExportedLayoutExternalReferenceCodes(
+			new String[] {
+				childLayout.getExternalReferenceCode(),
+				parentLayout.getExternalReferenceCode()
+			},
+			exportProcess,
+			new String[] {unselectedLayout.getExternalReferenceCode()});
 	}
 
 	private long _getCompanyGroupId() throws Exception {
@@ -910,39 +1015,79 @@ public class ExportProcessResourceTest
 		Layout publicLayout = LayoutTestUtil.addTypeContentLayout(
 			testGroup, false, false);
 
-		_assertExportedLayouts(
-			"privateLayoutPages", unsafeFunction, privateLayout);
-		_assertExportedLayouts(
-			"publicLayoutPages", unsafeFunction, publicLayout);
+		_assertExportedLayouts("private-pages", unsafeFunction, privateLayout);
+		_assertExportedLayouts("public-pages", unsafeFunction, publicLayout);
 
-		ExportProcessRequest exportProcessRequest = new ExportProcessRequest() {
-			{
-				name = RandomTestUtil.randomString();
+		Layout excludedPublicLayout = LayoutTestUtil.addTypeContentLayout(
+			testGroup, false, false);
 
-				setRequestPortletDataHandlers(
-					new RequestPortletDataHandler[] {
-						new RequestPortletDataHandler() {
-							{
-								name = "PORTLET_DATA_" + _LAYOUT_SET_LAYOUTS;
+		_assertExportedLayoutsWithExclusion(
+			"_layout_set_excluded-items", excludedPublicLayout, publicLayout,
+			excludedPublicLayout, unsafeFunction);
 
-								setRequestPortletDataHandlerControls(
-									new RequestPortletDataHandlerControl[] {
-										new RequestPortletDataHandlerControl() {
-											{
-												name = "publicLayoutPages";
-											}
-										},
-										new RequestPortletDataHandlerControl() {
-											{
-												name = "privateLayoutPages";
-											}
-										}
-									});
-							}
+		Layout excludedParentPublicLayout = LayoutTestUtil.addTypeContentLayout(
+			testGroup, false, false);
+
+		Layout excludedChildPublicLayout = LayoutTestUtil.addTypeContentLayout(
+			testGroup, excludedParentPublicLayout.getPlid());
+
+		_assertExportedLayoutsWithExclusion(
+			"_layout_set_excluded-subtrees", excludedParentPublicLayout,
+			publicLayout, excludedChildPublicLayout, unsafeFunction);
+
+		Layout reincludedChildPublicLayout =
+			LayoutTestUtil.addTypeContentLayout(
+				testGroup, excludedParentPublicLayout.getPlid());
+
+		_assertExportedLayoutExternalReferenceCodes(
+			new String[] {
+				publicLayout.getExternalReferenceCode(),
+				reincludedChildPublicLayout.getExternalReferenceCode()
+			},
+			unsafeFunction.apply(
+				_toExportProcessRequest(
+					"public-pages",
+					new RequestPortletDataHandlerControl() {
+						{
+							name = "_layout_set_all";
 						}
-					});
-			}
-		};
+					},
+					_toTreeSelectionControl(
+						"_layout_set_excluded-subtrees",
+						excludedParentPublicLayout),
+					_toTreeSelectionControl(
+						"_layout_set_items", reincludedChildPublicLayout))),
+			new String[] {
+				excludedChildPublicLayout.getExternalReferenceCode(),
+				excludedParentPublicLayout.getExternalReferenceCode()
+			});
+
+		Layout parentPublicLayout = LayoutTestUtil.addTypeContentLayout(
+			testGroup, false, false);
+
+		Layout childPublicLayout = LayoutTestUtil.addTypeContentLayout(
+			testGroup, parentPublicLayout.getPlid());
+
+		_assertExportedLayoutTree(
+			childPublicLayout, parentPublicLayout, unsafeFunction,
+			publicLayout);
+
+		_assertExportedLayoutExternalReferenceCodes(
+			new String[] {childPublicLayout.getExternalReferenceCode()},
+			unsafeFunction.apply(
+				_toExportProcessRequest(
+					"public-pages",
+					_toTreeSelectionControl(
+						"_layout_set_subtrees", parentPublicLayout),
+					_toTreeSelectionControl(
+						"_layout_set_excluded-items", parentPublicLayout))),
+			new String[] {
+				parentPublicLayout.getExternalReferenceCode(),
+				publicLayout.getExternalReferenceCode()
+			});
+
+		ExportProcessRequest exportProcessRequest = _toExportProcessRequest(
+			RandomTestUtil.randomString());
 
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
 				"com.liferay.portal.vulcan.internal.jaxrs.exception.mapper." +
@@ -1057,6 +1202,76 @@ public class ExportProcessResourceTest
 		Assert.assertEquals(2, jsonArray2.length());
 
 		_objectDefinitionLocalService.deleteObjectDefinition(objectDefinition);
+	}
+
+	private ExportProcessRequest _toExportProcessRequest(
+		RequestPortletDataHandlerControl... layoutSetControls) {
+
+		return new ExportProcessRequest() {
+			{
+				name = RandomTestUtil.randomString();
+
+				setRequestPortletDataHandlers(
+					new RequestPortletDataHandler[] {
+						new RequestPortletDataHandler() {
+							{
+								name = "PORTLET_DATA_" + _LAYOUT_SET_LAYOUTS;
+
+								setRequestPortletDataHandlerControls(
+									layoutSetControls);
+							}
+						}
+					});
+			}
+		};
+	}
+
+	private ExportProcessRequest _toExportProcessRequest(
+		String choiceName,
+		RequestPortletDataHandlerControl... treeSelectionControls) {
+
+		return _toExportProcessRequest(
+			_toLayoutSetControls(choiceName, treeSelectionControls));
+	}
+
+	private RequestPortletDataHandlerControl[] _toLayoutSetControls(
+		String choiceName,
+		RequestPortletDataHandlerControl... treeSelectionControls) {
+
+		RequestPortletDataHandlerControl pagesControl =
+			new RequestPortletDataHandlerControl() {
+				{
+					name = "_layout_set_pages";
+
+					setRequestPortletDataHandlerControls(treeSelectionControls);
+				}
+			};
+
+		if (Objects.equals(choiceName, "public-pages")) {
+			return new RequestPortletDataHandlerControl[] {pagesControl};
+		}
+
+		return new RequestPortletDataHandlerControl[] {
+			new RequestPortletDataHandlerControl() {
+				{
+					name = "_layout_set_visibility";
+					values = new String[] {choiceName};
+				}
+			},
+			pagesControl
+		};
+	}
+
+	private RequestPortletDataHandlerControl _toTreeSelectionControl(
+		String controlName, Layout... layouts) {
+
+		return new RequestPortletDataHandlerControl() {
+			{
+				name = controlName;
+				values = TransformUtil.transform(
+					layouts, Layout::getExternalReferenceCode, String.class);
+			}
+		};
 	}
 
 	private static final String _LAYOUT_SET_LAYOUTS =
