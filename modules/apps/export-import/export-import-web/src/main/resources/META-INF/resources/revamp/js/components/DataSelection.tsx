@@ -9,7 +9,6 @@ import React from 'react';
 
 import {ExportImportProcess} from '../types/exportImportProcess';
 import {PreviewPortletDataHandlerSection} from '../types/portletDataHandler';
-import {PageTreeModalConfiguration} from './PageTreeModal';
 import SectionHeader from './SectionHeader';
 import {DateFilterValues} from './date_filter';
 import {
@@ -17,6 +16,7 @@ import {
 	FormikFieldContentSelector,
 	FormikFieldDateFilter,
 } from './forms/formik';
+import {PagePickerConfiguration} from './page_picker/types';
 
 const LABEL_ID = 'dataSelection-label';
 
@@ -30,7 +30,7 @@ export default function DataSelection({
 	loading = false,
 	lookAndFeelEnabled = false,
 	onApplyFilter,
-	pageTreeModalConfiguration,
+	pagePickerConfiguration,
 	permissionsDescription,
 	permissionsLabel,
 	previewPortletDataHandlerSections,
@@ -46,7 +46,7 @@ export default function DataSelection({
 	loading?: boolean;
 	lookAndFeelEnabled?: boolean;
 	onApplyFilter: (dateFilterValues: DateFilterValues) => void;
-	pageTreeModalConfiguration: PageTreeModalConfiguration;
+	pagePickerConfiguration: PagePickerConfiguration;
 	permissionsDescription: string;
 	permissionsLabel: string;
 	previewPortletDataHandlerSections: PreviewPortletDataHandlerSection[];
@@ -102,7 +102,7 @@ export default function DataSelection({
 						commentsAndRatingsEnabled={commentsAndRatingsEnabled}
 						lookAndFeelEnabled={lookAndFeelEnabled}
 						name="contentSelection"
-						pageTreeModalConfiguration={pageTreeModalConfiguration}
+						pagePickerConfiguration={pagePickerConfiguration}
 						previewPortletDataHandlerSections={
 							previewPortletDataHandlerSections
 						}

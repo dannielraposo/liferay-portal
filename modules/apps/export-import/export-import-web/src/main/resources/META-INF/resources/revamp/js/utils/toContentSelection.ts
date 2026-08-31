@@ -8,10 +8,15 @@ import {
 	PreviewPortletDataHandlerSection,
 } from '../types/portletDataHandler';
 import {
-	LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
+	CHOICE_NAME_PRIVATE_PAGES,
+	CONTROL_NAME_TREE_SELECTION_ALL,
+	CONTROL_NAME_TREE_SELECTION_EXCLUDED_ITEMS,
+	CONTROL_NAME_TREE_SELECTION_EXCLUDED_SUBTREES,
+	CONTROL_NAME_TREE_SELECTION_ITEMS,
+	CONTROL_NAME_TREE_SELECTION_SUBTREES,
+	CONTROL_NAME_VISIBILITY,
 	LayoutSetSelection,
-	PRIVATE_PAGES_CONTROL_NAME,
-	PUBLIC_PAGES_CONTROL_NAME,
+	PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 	PortletDataHandlerSelection,
 	SECTION_KEY_CONTENT,
 	SECTION_KEY_CONTENT_AND_DATA,
@@ -27,18 +32,25 @@ function isTrue(values: string[] | undefined): boolean {
 function toLayoutSetSelection(
 	publishParameters: Record<string, string[]>
 ): LayoutSetSelection {
-	const privateLayout = PRIVATE_PAGES_CONTROL_NAME in publishParameters;
-
-	const values =
-		publishParameters[PRIVATE_PAGES_CONTROL_NAME] ??
-		publishParameters[PUBLIC_PAGES_CONTROL_NAME] ??
-		[];
-
-	const layoutIds = values.map(Number).filter((layoutId) => !isNaN(layoutId));
+	const excludedItems =
+		publishParameters[CONTROL_NAME_TREE_SELECTION_EXCLUDED_ITEMS] ?? [];
+	const excludedSubtrees =
+		publishParameters[CONTROL_NAME_TREE_SELECTION_EXCLUDED_SUBTREES] ?? [];
+	const items = publishParameters[CONTROL_NAME_TREE_SELECTION_ITEMS] ?? [];
+	const subtrees =
+		publishParameters[CONTROL_NAME_TREE_SELECTION_SUBTREES] ?? [];
 
 	return {
-		...(layoutIds.length && {layoutIds}),
-		privateLayout,
+		...(isTrue(publishParameters[CONTROL_NAME_TREE_SELECTION_ALL]) && {
+			all: true,
+		}),
+		...(excludedItems.length && {excludedItems}),
+		...(excludedSubtrees.length && {excludedSubtrees}),
+		...(items.length && {items}),
+		privateLayout:
+			publishParameters[CONTROL_NAME_VISIBILITY]?.[0] ===
+			CHOICE_NAME_PRIVATE_PAGES,
+		...(subtrees.length && {subtrees}),
 	};
 }
 
@@ -112,7 +124,7 @@ export function toContentSelection(
 
 			if (
 				previewPortletDataHandler.name ===
-				LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY
+				PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
 			) {
 				sectionSelection[previewPortletDataHandler.name] =
 					toLayoutSetSelection(

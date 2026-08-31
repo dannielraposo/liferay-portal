@@ -13,30 +13,45 @@ import {
 } from '../types/portletDataHandler';
 
 import type {ContentSelection} from '../components/forms/content_selector/ContentSelector';
+import type {PagePickerSelection} from '../components/page_picker/types';
 
 export type PortletDataHandlerSelection =
 	| {
-			[key: string]: PortletDataHandlerSelection | boolean | number[];
+			[key: string]: PortletDataHandlerSelection | boolean | string[];
 	  }
 	| string
 	| true;
 
-export interface LayoutSetSelection {
-	layoutIds?: number[];
-	privateLayout?: boolean;
-}
+export type LayoutSetSelection = Omit<PagePickerSelection, 'privateLayout'> &
+	Partial<Pick<PagePickerSelection, 'privateLayout'>>;
+
+export const CHOICE_NAME_PRIVATE_PAGES = 'private-pages';
+
+export const CHOICE_NAME_PUBLIC_PAGES = 'public-pages';
 
 export const COMPACT_SECTION_NAMES = [
 	'category.control_panel.users',
 	'objects',
 ];
 
-export const LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY =
+export const CONTROL_NAME_PAGES = '_layout_set_pages';
+
+export const CONTROL_NAME_TREE_SELECTION_ALL = '_layout_set_all';
+
+export const CONTROL_NAME_TREE_SELECTION_EXCLUDED_ITEMS =
+	'_layout_set_excluded-items';
+
+export const CONTROL_NAME_TREE_SELECTION_EXCLUDED_SUBTREES =
+	'_layout_set_excluded-subtrees';
+
+export const CONTROL_NAME_TREE_SELECTION_ITEMS = '_layout_set_items';
+
+export const CONTROL_NAME_TREE_SELECTION_SUBTREES = '_layout_set_subtrees';
+
+export const CONTROL_NAME_VISIBILITY = '_layout_set_visibility';
+
+export const PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS =
 	'PORTLET_DATA_com_liferay_layout_admin_web_portlet_LayoutSetLayoutsPortlet';
-
-export const PRIVATE_PAGES_CONTROL_NAME = 'privateLayoutPages';
-
-export const PUBLIC_PAGES_CONTROL_NAME = 'publicLayoutPages';
 
 export const SCROLLABLE_SECTION_NAMES = ['objects'];
 
@@ -52,7 +67,7 @@ export function isAllLayoutsSelected(
 ): boolean {
 	return (
 		typeof portletDataHandlerSelection === 'object' &&
-		!portletDataHandlerSelection.layoutIds
+		!!portletDataHandlerSelection.all
 	);
 }
 
@@ -66,7 +81,7 @@ export function isSelected(
 
 	if (
 		previewPortletDataHandlerControl.name ===
-		LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY
+		PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
 	) {
 		return isAllLayoutsSelected(portletDataHandlerSelection);
 	}
@@ -99,9 +114,9 @@ export function getPortletDataHandlerSelection(
 ): PortletDataHandlerSelection {
 	if (
 		previewPortletDataHandlerControl.name ===
-		LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY
+		PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
 	) {
-		return {privateLayout: false};
+		return {all: true, privateLayout: false};
 	}
 
 	if (previewPortletDataHandlerControl.type === 'Choice') {
@@ -370,7 +385,7 @@ export function getLayoutSetPreviewPortletDataHandler(
 			previewPortletDataHandlerSection.previewPortletDataHandlers?.find(
 				(previewPortletDataHandler) =>
 					previewPortletDataHandler.name ===
-					LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY
+					PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
 			);
 
 		if (previewPortletDataHandler) {
@@ -402,8 +417,8 @@ export function getLayoutSetCount(
 
 	if (choiceControl?.type === 'Choice') {
 		const choiceName = privateLayout
-			? PRIVATE_PAGES_CONTROL_NAME
-			: PUBLIC_PAGES_CONTROL_NAME;
+			? CHOICE_NAME_PRIVATE_PAGES
+			: CHOICE_NAME_PUBLIC_PAGES;
 
 		const choice = choiceControl.choices.find(
 			({name}) => name === choiceName
@@ -426,7 +441,7 @@ export function isPrivateLayoutSelected(
 
 	for (const sectionSelection of Object.values(contentSelection)) {
 		const portletDataHandlerSelection = sectionSelection?.[
-			LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY
+			PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
 		] as LayoutSetSelection | undefined;
 
 		if (portletDataHandlerSelection) {
@@ -532,7 +547,7 @@ export function withSelectedLayoutSetCount(
 				!previewPortletDataHandlerSection.previewPortletDataHandlers?.some(
 					(previewPortletDataHandler) =>
 						previewPortletDataHandler.name ===
-						LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY
+						PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
 				)
 			) {
 				return previewPortletDataHandlerSection;
@@ -550,7 +565,7 @@ export function withSelectedLayoutSetCount(
 					previewPortletDataHandlerSection.previewPortletDataHandlers.map(
 						(previewPortletDataHandler) =>
 							previewPortletDataHandler.name ===
-							LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY
+							PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
 								? {
 										...previewPortletDataHandler,
 										additionCount: selectedAdditionCount,

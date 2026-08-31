@@ -9,7 +9,7 @@ import React, {useEffect, useRef} from 'react';
 import {ExportImportProcess} from '../../../types/exportImportProcess';
 import {PreviewPortletDataHandlerSection} from '../../../types/portletDataHandler';
 import {getFullDataSelection} from '../../../utils/contentSelection';
-import {PageTreeModalConfiguration} from '../../PageTreeModal';
+import {PagePickerConfiguration} from '../../page_picker/types';
 import ContentSelector, {
 	ContentSelection,
 } from '../content_selector/ContentSelector';
@@ -19,7 +19,7 @@ interface FormikFieldContentSelectorProps {
 	'commentsAndRatingsEnabled'?: boolean;
 	'lookAndFeelEnabled'?: boolean;
 	'name': string;
-	'pageTreeModalConfiguration'?: PageTreeModalConfiguration;
+	'pagePickerConfiguration'?: PagePickerConfiguration;
 	'previewPortletDataHandlerSections': PreviewPortletDataHandlerSection[];
 	'process'?: ExportImportProcess;
 }
@@ -29,7 +29,7 @@ export function FormikFieldContentSelector({
 	commentsAndRatingsEnabled = false,
 	lookAndFeelEnabled = false,
 	name,
-	pageTreeModalConfiguration,
+	pagePickerConfiguration,
 	previewPortletDataHandlerSections,
 	process = 'export',
 }: FormikFieldContentSelectorProps) {
@@ -76,7 +76,7 @@ export function FormikFieldContentSelector({
 				helpers.setValue(newValue);
 				setFieldTouched(name, true, false);
 			}}
-			pageTreeModalConfiguration={pageTreeModalConfiguration}
+			pagePickerConfiguration={pagePickerConfiguration}
 			previewPortletDataHandlerSections={
 				previewPortletDataHandlerSections
 			}

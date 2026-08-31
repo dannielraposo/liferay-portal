@@ -11,14 +11,14 @@ import React, {ReactNode, useId} from 'react';
 
 import {PreviewPortletDataHandlerControl} from '../../../types/portletDataHandler';
 import {
-	LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
+	PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 	PortletDataHandlerSelection,
 	getPortletDataHandlerSelection,
 	getSelectionSummary,
 	isSelected,
 	updateSelection,
 } from '../../../utils/contentSelection';
-import {PageTreeModalConfiguration} from '../../PageTreeModal';
+import {PagePickerConfiguration} from '../../page_picker/types';
 import CollapsibleGroup from './CollapsibleGroup';
 import ControlRow from './ControlRow';
 import LayoutSetControl from './LayoutSetControl';
@@ -28,7 +28,7 @@ import SectionTags from './SectionTags';
 export default function PortletDataControl({
 	compact = false,
 	onChange,
-	pageTreeModalConfiguration,
+	pagePickerConfiguration,
 	portletDataHandlerSelection,
 	previewPortletDataHandlerControl,
 	showDeletions,
@@ -36,7 +36,7 @@ export default function PortletDataControl({
 }: {
 	compact?: boolean;
 	onChange: (value: PortletDataHandlerSelection | undefined) => void;
-	pageTreeModalConfiguration?: PageTreeModalConfiguration;
+	pagePickerConfiguration?: PagePickerConfiguration;
 	portletDataHandlerSelection: PortletDataHandlerSelection | undefined;
 	previewPortletDataHandlerControl: PreviewPortletDataHandlerControl;
 	showDeletions?: boolean;
@@ -46,8 +46,8 @@ export default function PortletDataControl({
 
 	if (
 		previewPortletDataHandlerControl.name ===
-			LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY &&
-		pageTreeModalConfiguration
+			PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS &&
+		pagePickerConfiguration
 	) {
 		return (
 			<LayoutSetControl
@@ -64,7 +64,7 @@ export default function PortletDataControl({
 				}
 				label={previewPortletDataHandlerControl.label}
 				onChange={onChange}
-				pageTreeModalConfiguration={pageTreeModalConfiguration}
+				pagePickerConfiguration={pagePickerConfiguration}
 				portletDataHandlerSelection={portletDataHandlerSelection}
 			/>
 		);
@@ -162,7 +162,7 @@ export default function PortletDataControl({
 						)
 					)
 				}
-				pageTreeModalConfiguration={pageTreeModalConfiguration}
+				pagePickerConfiguration={pagePickerConfiguration}
 				portletDataHandlerSelection={
 					portletDataHandlerSelections[
 						nestedPreviewPortletDataHandlerControl.name
