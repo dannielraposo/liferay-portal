@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY} from '../../../../src/main/resources/META-INF/resources/revamp/js/utils/contentSelection';
+import {PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS} from '../../../../src/main/resources/META-INF/resources/revamp/js/utils/contentSelection';
 import {toContentSelection} from '../../../../src/main/resources/META-INF/resources/revamp/js/utils/toContentSelection';
 
 import type {PreviewPortletDataHandlerSection} from '../../../../src/main/resources/META-INF/resources/revamp/js/types/portletDataHandler';
@@ -41,7 +41,7 @@ const PREVIEW_PORTLET_DATA_HANDLER_SECTIONS = [
 		previewPortletDataHandlers: [
 			{
 				label: 'Pages',
-				name: LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
+				name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 			},
 		],
 	},
@@ -68,13 +68,15 @@ describe('toContentSelection', () => {
 	it('maps the layout set parameters to a layout set selection', () => {
 		expect(
 			toContentSelection(PREVIEW_PORTLET_DATA_HANDLER_SECTIONS, {
-				[LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY]: ['true'],
-				privateLayoutPages: ['10', '11'],
+				_layout_set_items: ['page-1-erc', 'page-2-erc'],
+				_layout_set_pages: ['true'],
+				_layout_set_visibility: ['private-pages'],
+				[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: ['true'],
 			})
 		).toEqual({
 			'category.site_administration.build': {
-				[LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY]: {
-					layoutIds: [10, 11],
+				[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {
+					items: ['page-1-erc', 'page-2-erc'],
 					privateLayout: true,
 				},
 			},
@@ -82,13 +84,51 @@ describe('toContentSelection', () => {
 
 		expect(
 			toContentSelection(PREVIEW_PORTLET_DATA_HANDLER_SECTIONS, {
-				[LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY]: ['true'],
-				publicLayoutPages: ['true'],
+				_layout_set_all: ['true'],
+				_layout_set_pages: ['true'],
+				[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: ['true'],
 			})
 		).toEqual({
 			'category.site_administration.build': {
-				[LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY]: {
+				[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {
+					all: true,
 					privateLayout: false,
+				},
+			},
+		});
+	});
+
+	it('keeps the whole tree selected next to the items included by hand', () => {
+		expect(
+			toContentSelection(PREVIEW_PORTLET_DATA_HANDLER_SECTIONS, {
+				'_layout_set_all': ['true'],
+				'_layout_set_excluded-subtrees': ['section-erc'],
+				'_layout_set_items': ['section-page-erc'],
+				'_layout_set_pages': ['true'],
+				[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: ['true'],
+			})
+		).toEqual({
+			'category.site_administration.build': {
+				[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {
+					all: true,
+					excludedSubtrees: ['section-erc'],
+					items: ['section-page-erc'],
+					privateLayout: false,
+				},
+			},
+		});
+
+		expect(
+			toContentSelection(PREVIEW_PORTLET_DATA_HANDLER_SECTIONS, {
+				_layout_set_pages: ['true'],
+				_layout_set_subtrees: ['section-erc'],
+				[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: ['true'],
+			})
+		).toEqual({
+			'category.site_administration.build': {
+				[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {
+					privateLayout: false,
+					subtrees: ['section-erc'],
 				},
 			},
 		});
