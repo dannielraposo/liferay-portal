@@ -11,6 +11,7 @@ import React, {useEffect, useId, useRef, useState} from 'react';
 
 import '../../../../css/utilities.scss';
 import {ExportImportProcess} from '../../../types/exportImportProcess';
+import {PagePickerConfiguration} from '../../../types/pagePicker';
 import {PreviewPortletDataHandlerSection as PortletDataHandlerSectionType} from '../../../types/portletDataHandler';
 import {
 	COMPACT_SECTION_NAMES,
@@ -24,7 +25,6 @@ import {
 	isSelected,
 	updateSelection,
 } from '../../../utils/contentSelection';
-import {PageTreeModalConfiguration} from '../../PageTreeModal';
 import CollapsibleGroup from './CollapsibleGroup';
 import PortletDataControl from './PortletDataControl';
 import SectionFooter from './SectionFooter';
@@ -48,7 +48,7 @@ interface ContentSectionProps {
 	commentsAndRatingsEnabled?: boolean;
 	lookAndFeelEnabled?: boolean;
 	onChange: (value: SectionSelection | undefined) => void;
-	pageTreeModalConfiguration?: PageTreeModalConfiguration;
+	pagePickerConfiguration?: PagePickerConfiguration;
 	previewPortletDataHandlerSection: PortletDataHandlerSectionType;
 	process?: ExportImportProcess;
 	sectionSelection: SectionSelection | undefined;
@@ -59,7 +59,7 @@ export default function ContentSection({
 	commentsAndRatingsEnabled = false,
 	lookAndFeelEnabled = false,
 	onChange,
-	pageTreeModalConfiguration,
+	pagePickerConfiguration,
 	previewPortletDataHandlerSection,
 	process = 'export',
 	sectionSelection = {},
@@ -216,9 +216,7 @@ export default function ContentSection({
 									)
 								)
 							}
-							pageTreeModalConfiguration={
-								pageTreeModalConfiguration
-							}
+							pagePickerConfiguration={pagePickerConfiguration}
 							portletDataHandlerSelection={
 								sectionSelection[previewPortletDataHandler.name]
 							}

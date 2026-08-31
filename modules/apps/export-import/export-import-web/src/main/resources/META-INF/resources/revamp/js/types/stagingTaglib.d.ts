@@ -13,21 +13,4 @@ declare module 'staging-taglib' {
 	}
 
 	export const ExportReportEntriesModal: ComponentType<ExportReportEntriesModalProps>;
-
-	export interface PagesTreeProps {
-		config: {
-			changeItemSelectionURL: string;
-			loadMoreItemsURL: string;
-			maxPageSize: number;
-			namespace: string;
-		};
-		groupId: string;
-		items: unknown[];
-		portletNamespace: string;
-		privateLayout: boolean;
-		selectedLayoutIds: string[];
-		treeId: string;
-	}
-
-	export const PagesTree: ComponentType<PagesTreeProps>;
 }

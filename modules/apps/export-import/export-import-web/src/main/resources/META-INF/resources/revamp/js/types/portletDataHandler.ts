@@ -33,10 +33,18 @@ export interface PreviewPortletDataHandlerSetting {
 	type: 'Setting';
 }
 
+export interface PreviewPortletDataHandlerTreeSelection {
+	label: string;
+	name: string;
+	previewPortletDataHandlerControls?: PreviewPortletDataHandlerControl[];
+	type: 'TreeSelection';
+}
+
 export type PreviewPortletDataHandlerControl =
 	| PreviewPortletDataHandlerBoolean
 	| PreviewPortletDataHandlerChoice
-	| PreviewPortletDataHandlerSetting;
+	| PreviewPortletDataHandlerSetting
+	| PreviewPortletDataHandlerTreeSelection;
 
 export type PreviewPortletDataHandler = Omit<
 	PreviewPortletDataHandlerBoolean,

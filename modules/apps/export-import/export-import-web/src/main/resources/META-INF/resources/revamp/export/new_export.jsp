@@ -12,7 +12,6 @@
 <%
 if (liveGroup == null) {
 	liveGroup = group;
-	liveGroupId = groupId;
 }
 
 ExportImportProcessDisplayContext exportImportProcessDisplayContext = (ExportImportProcessDisplayContext)request.getAttribute(ExportImportWebKeys.EXPORT_IMPORT_PROCESS_DISPLAY_CONTEXT);
@@ -46,13 +45,13 @@ renderResponse.setTitle(exportImportProcessDisplayContext.getExportTitle());
 			).put(
 				"lookAndFeelEnabled", exportImportProcessDisplayContext.isLookAndFeelEnabled()
 			).put(
-				"pageTreeModalConfiguration",
+				"pagePickerConfiguration",
 				HashMapBuilder.<String, Object>put(
-					"groupId", liveGroupId
-				).put(
 					"pageSize", PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN
 				).put(
 					"privateLayoutsAvailable", liveGroup.isPrivateLayoutsEnabled() && liveGroup.hasPrivateLayouts()
+				).put(
+					"siteExternalReferenceCode", liveGroup.getExternalReferenceCode()
 				).build()
 			).build()
 		%>'
