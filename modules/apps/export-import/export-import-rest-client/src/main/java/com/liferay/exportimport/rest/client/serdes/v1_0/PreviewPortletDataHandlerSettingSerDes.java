@@ -61,37 +61,6 @@ public class PreviewPortletDataHandlerSettingSerDes {
 			sb.append(previewPortletDataHandlerSetting.getDefaultState());
 		}
 
-		if (previewPortletDataHandlerSetting.
-				getPreviewPortletDataHandlerControls() != null) {
-
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"previewPortletDataHandlerControls\": ");
-
-			sb.append("[");
-
-			for (int i = 0;
-				 i < previewPortletDataHandlerSetting.
-					 getPreviewPortletDataHandlerControls().length;
-				 i++) {
-
-				sb.append(
-					String.valueOf(
-						previewPortletDataHandlerSetting.
-							getPreviewPortletDataHandlerControls()[i]));
-
-				if ((i + 1) < previewPortletDataHandlerSetting.
-						getPreviewPortletDataHandlerControls().length) {
-
-					sb.append(", ");
-				}
-			}
-
-			sb.append("]");
-		}
-
 		if (previewPortletDataHandlerSetting.getDisabled() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -128,6 +97,37 @@ public class PreviewPortletDataHandlerSettingSerDes {
 			sb.append(_escape(previewPortletDataHandlerSetting.getName()));
 
 			sb.append("\"");
+		}
+
+		if (previewPortletDataHandlerSetting.
+				getPreviewPortletDataHandlerControls() != null) {
+
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"previewPortletDataHandlerControls\": ");
+
+			sb.append("[");
+
+			for (int i = 0;
+				 i < previewPortletDataHandlerSetting.
+					 getPreviewPortletDataHandlerControls().length;
+				 i++) {
+
+				sb.append(
+					String.valueOf(
+						previewPortletDataHandlerSetting.
+							getPreviewPortletDataHandlerControls()[i]));
+
+				if ((i + 1) < previewPortletDataHandlerSetting.
+						getPreviewPortletDataHandlerControls().length) {
+
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		if (previewPortletDataHandlerSetting.getType() != null) {
@@ -174,19 +174,6 @@ public class PreviewPortletDataHandlerSettingSerDes {
 					previewPortletDataHandlerSetting.getDefaultState()));
 		}
 
-		if (previewPortletDataHandlerSetting.
-				getPreviewPortletDataHandlerControls() == null) {
-
-			map.put("previewPortletDataHandlerControls", null);
-		}
-		else {
-			map.put(
-				"previewPortletDataHandlerControls",
-				String.valueOf(
-					previewPortletDataHandlerSetting.
-						getPreviewPortletDataHandlerControls()));
-		}
-
 		if (previewPortletDataHandlerSetting.getDisabled() == null) {
 			map.put("disabled", null);
 		}
@@ -212,6 +199,19 @@ public class PreviewPortletDataHandlerSettingSerDes {
 			map.put(
 				"name",
 				String.valueOf(previewPortletDataHandlerSetting.getName()));
+		}
+
+		if (previewPortletDataHandlerSetting.
+				getPreviewPortletDataHandlerControls() == null) {
+
+			map.put("previewPortletDataHandlerControls", null);
+		}
+		else {
+			map.put(
+				"previewPortletDataHandlerControls",
+				String.valueOf(
+					previewPortletDataHandlerSetting.
+						getPreviewPortletDataHandlerControls()));
 		}
 
 		if (previewPortletDataHandlerSetting.getType() == null) {
@@ -244,12 +244,6 @@ public class PreviewPortletDataHandlerSettingSerDes {
 			if (Objects.equals(jsonParserFieldName, "defaultState")) {
 				return false;
 			}
-			else if (Objects.equals(
-						jsonParserFieldName,
-						"previewPortletDataHandlerControls")) {
-
-				return false;
-			}
 			else if (Objects.equals(jsonParserFieldName, "disabled")) {
 				return false;
 			}
@@ -257,6 +251,12 @@ public class PreviewPortletDataHandlerSettingSerDes {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "name")) {
+				return false;
+			}
+			else if (Objects.equals(
+						jsonParserFieldName,
+						"previewPortletDataHandlerControls")) {
+
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "type")) {
@@ -275,6 +275,24 @@ public class PreviewPortletDataHandlerSettingSerDes {
 				if (jsonParserFieldValue != null) {
 					previewPortletDataHandlerSetting.setDefaultState(
 						(Boolean)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "disabled")) {
+				if (jsonParserFieldValue != null) {
+					previewPortletDataHandlerSetting.setDisabled(
+						(Boolean)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "label")) {
+				if (jsonParserFieldValue != null) {
+					previewPortletDataHandlerSetting.setLabel(
+						(String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "name")) {
+				if (jsonParserFieldValue != null) {
+					previewPortletDataHandlerSetting.setName(
+						(String)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(
@@ -302,24 +320,6 @@ public class PreviewPortletDataHandlerSettingSerDes {
 					previewPortletDataHandlerSetting.
 						setPreviewPortletDataHandlerControls(
 							previewPortletDataHandlerControlsArray);
-				}
-			}
-			else if (Objects.equals(jsonParserFieldName, "disabled")) {
-				if (jsonParserFieldValue != null) {
-					previewPortletDataHandlerSetting.setDisabled(
-						(Boolean)jsonParserFieldValue);
-				}
-			}
-			else if (Objects.equals(jsonParserFieldName, "label")) {
-				if (jsonParserFieldValue != null) {
-					previewPortletDataHandlerSetting.setLabel(
-						(String)jsonParserFieldValue);
-				}
-			}
-			else if (Objects.equals(jsonParserFieldName, "name")) {
-				if (jsonParserFieldValue != null) {
-					previewPortletDataHandlerSetting.setName(
-						(String)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "type")) {
@@ -410,4 +410,4 @@ public class PreviewPortletDataHandlerSettingSerDes {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:692643701
+// LIFERAY-REST-BUILDER-HASH:2134201649

@@ -87,6 +87,35 @@ public abstract class PreviewPortletDataHandlerControl
 
 	protected String name;
 
+	public PreviewPortletDataHandlerControl[]
+		getPreviewPortletDataHandlerControls() {
+
+		return previewPortletDataHandlerControls;
+	}
+
+	public void setPreviewPortletDataHandlerControls(
+		PreviewPortletDataHandlerControl[] previewPortletDataHandlerControls) {
+
+		this.previewPortletDataHandlerControls =
+			previewPortletDataHandlerControls;
+	}
+
+	public void setPreviewPortletDataHandlerControls(
+		UnsafeSupplier<PreviewPortletDataHandlerControl[], Exception>
+			previewPortletDataHandlerControlsUnsafeSupplier) {
+
+		try {
+			previewPortletDataHandlerControls =
+				previewPortletDataHandlerControlsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected PreviewPortletDataHandlerControl[]
+		previewPortletDataHandlerControls;
+
 	public Type getType() {
 		return type;
 	}
@@ -151,7 +180,8 @@ public abstract class PreviewPortletDataHandlerControl
 
 	public static enum Type {
 
-		BOOLEAN("Boolean"), CHOICE("Choice"), SETTING("Setting");
+		BOOLEAN("Boolean"), CHOICE("Choice"), SETTING("Setting"),
+		TREE_SELECTION("TreeSelection");
 
 		public static Type create(String value) {
 			for (Type type : values()) {
@@ -183,4 +213,4 @@ public abstract class PreviewPortletDataHandlerControl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1110324476
+// LIFERAY-REST-BUILDER-HASH:1273206908
