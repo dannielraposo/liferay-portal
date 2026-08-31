@@ -33,6 +33,13 @@ export {RowBuilder} from './components/row_builder/RowBuilder';
 export {default as ScreenReaderAnnouncer} from './components/screen_reader_announcer/ScreenReaderAnnouncer';
 export {default as SearchForm} from './components/search_form/SearchForm';
 export {default as SearchResultsMessage} from './components/search_results_message/SearchResultsMessage';
+export {default as TreePickerPanel} from './components/tree_picker/TreePickerPanel';
+export type {
+	TreePickerDataSource,
+	TreePickerItem,
+	TreePickerPage,
+	TreePickerSelectionEntry,
+} from './components/tree_picker/types';
 export {
 	DragAndDropContextProvider,
 	useKeyboardDragPreviewProps,
