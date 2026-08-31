@@ -13,15 +13,19 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Localization;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.language.LanguageResources;
 import com.liferay.portal.search.spi.model.index.contributor.ModelDocumentContributor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -61,6 +65,35 @@ public class LayoutModelDocumentContributor
 		}
 
 		document.addText(Field.TYPE, layout.getType());
+
+		Layout parentLayout = _layoutLocalService.fetchLayout(
+			layout.getGroupId(), layout.isPrivateLayout(),
+			layout.getParentLayoutId());
+
+		List<String> ancestorLayoutExternalReferenceCodes = new ArrayList<>();
+
+		Layout ancestorLayout = parentLayout;
+
+		while (ancestorLayout != null) {
+			ancestorLayoutExternalReferenceCodes.add(
+				StringUtil.toLowerCase(
+					ancestorLayout.getExternalReferenceCode()));
+
+			ancestorLayout = _layoutLocalService.fetchLayout(
+				ancestorLayout.getGroupId(), ancestorLayout.isPrivateLayout(),
+				ancestorLayout.getParentLayoutId());
+		}
+
+		if (parentLayout != null) {
+			document.addKeyword(
+				Field.getSortableFieldName(
+					"ancestorLayoutExternalReferenceCodes_String"),
+				ancestorLayoutExternalReferenceCodes.toArray(new String[0]));
+			document.addKeywordSortable(
+				"parentLayoutExternalReferenceCode",
+				parentLayout.getExternalReferenceCode());
+		}
+
 		document.addLocalizedKeyword(
 			"localized_title",
 			_localization.populateLocalizationMap(
@@ -140,6 +173,9 @@ public class LayoutModelDocumentContributor
 
 	@Reference
 	private LayoutContentProvider _layoutContentProvider;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
 
 	@Reference
 	private LayoutServiceContextHelper _layoutServiceContextHelper;

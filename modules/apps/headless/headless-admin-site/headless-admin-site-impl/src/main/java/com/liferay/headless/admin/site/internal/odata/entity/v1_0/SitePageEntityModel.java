@@ -37,7 +37,15 @@ public class SitePageEntityModel implements EntityModel {
 				locale -> Field.getSortableFieldName(Field.MODIFIED_DATE),
 				locale -> Field.MODIFIED_DATE),
 			new StringEntityField(
-				"externalReferenceCode", locale -> "externalReferenceCode"));
+				"ancestorSitePageExternalReferenceCode",
+				locale -> Field.getSortableFieldName(
+					"ancestorLayoutExternalReferenceCodes_String")),
+			new StringEntityField(
+				"externalReferenceCode", locale -> "externalReferenceCode"),
+			new StringEntityField(
+				"parentSitePageExternalReferenceCode",
+				locale -> Field.getSortableFieldName(
+					"parentLayoutExternalReferenceCode_String")));
 	}
 
 	@Override
