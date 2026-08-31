@@ -6,6 +6,7 @@
 package com.liferay.layout.internal.model.listener;
 
 import com.liferay.client.extension.service.ClientExtensionEntryRelLocalService;
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.layout.friendly.url.LayoutFriendlyURLEntryHelper;
@@ -32,6 +33,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -94,7 +96,22 @@ public class LayoutModelListener extends BaseModelListener<Layout> {
 
 	@Override
 	public void onAfterUpdate(Layout originalLayout, Layout layout) {
-		if ((originalLayout == null) || (layout == null) ||
+		if ((originalLayout == null) || (layout == null)) {
+			return;
+		}
+
+		boolean hierarchyChanged = false;
+
+		if ((originalLayout.getParentLayoutId() !=
+				layout.getParentLayoutId()) ||
+			!Objects.equals(
+				originalLayout.getExternalReferenceCode(),
+				layout.getExternalReferenceCode())) {
+
+			hierarchyChanged = true;
+		}
+
+		if (!hierarchyChanged &&
 			(originalLayout.getPriority() == layout.getPriority())) {
 
 			return;
@@ -105,6 +122,14 @@ public class LayoutModelListener extends BaseModelListener<Layout> {
 				Layout.class);
 
 			indexer.reindex(layout);
+
+			if (hierarchyChanged &&
+				!ExportImportThreadLocal.isImportInProcess()) {
+
+				for (Layout childLayout : layout.getAllChildren()) {
+					indexer.reindex(childLayout);
+				}
+			}
 		}
 		catch (SearchException searchException) {
 			throw new ModelListenerException(searchException);
