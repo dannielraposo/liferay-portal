@@ -550,13 +550,12 @@ public class ExportPreviewResourceTest
 
 		Assert.assertNotNull(previewPortletDataHandler);
 
-		Choice choice = _getChoice(
-			previewPortletDataHandler, "publicLayoutPages");
+		Choice choice = _getChoice(previewPortletDataHandler, "public-pages");
 
 		Assert.assertEquals(1L, GetterUtil.getLong(choice.getAdditionCount()));
 		Assert.assertEquals(1L, GetterUtil.getLong(choice.getDeletionCount()));
 
-		choice = _getChoice(previewPortletDataHandler, "privateLayoutPages");
+		choice = _getChoice(previewPortletDataHandler, "private-pages");
 
 		Assert.assertEquals(2L, GetterUtil.getLong(choice.getAdditionCount()));
 		Assert.assertEquals(0L, GetterUtil.getLong(choice.getDeletionCount()));
