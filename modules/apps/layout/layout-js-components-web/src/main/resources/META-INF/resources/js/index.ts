@@ -27,6 +27,22 @@ export {default as openConfirmModal} from './components/modals/openConfirmModal'
 export {default as openModalComponent} from './components/modals/openModalComponent';
 export {default as openOptionsModal} from './components/modals/openOptionsModal';
 export {default as PageTemplateModal} from './components/page_template_modal/PageTemplateModal';
+export {default as PageTreePickerModal} from './components/page_tree_picker/PageTreePickerModal';
+export {default as PageTreePickerPanel} from './components/page_tree_picker/PageTreePickerPanel';
+export {
+	default as SitePageTreeDataSource,
+	ROOT_ITEM_ID as SITE_PAGE_TREE_ROOT_ITEM_ID,
+} from './components/page_tree_picker/SitePageTreeDataSource';
+export type {
+	SitePageTreeNode,
+	SitePageTreeSelection,
+} from './components/page_tree_picker/SitePageTreeDataSource';
+export type {
+	PageTreePickerDataSource,
+	PageTreePickerItem,
+	PageTreePickerPage,
+	PageTreePickerSelectionEntry,
+} from './components/page_tree_picker/types';
 export {default as PopoverTooltip} from './components/popover_tooltip/PopoverTooltip';
 export {default as Resizer} from './components/resizer/Resizer';
 export {RowBuilder} from './components/row_builder/RowBuilder';
