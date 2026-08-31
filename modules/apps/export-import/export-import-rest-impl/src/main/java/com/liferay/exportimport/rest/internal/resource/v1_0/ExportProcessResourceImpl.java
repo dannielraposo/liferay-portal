@@ -19,9 +19,9 @@ import com.liferay.exportimport.rest.dto.v1_0.ProcessProgress;
 import com.liferay.exportimport.rest.dto.v1_0.Status;
 import com.liferay.exportimport.rest.internal.util.BackgroundTaskUtil;
 import com.liferay.exportimport.rest.internal.util.GroupUtil;
+import com.liferay.exportimport.rest.internal.util.LayoutUtil;
 import com.liferay.exportimport.rest.internal.util.ParameterMapUtil;
 import com.liferay.exportimport.rest.internal.util.PermissionUtil;
-import com.liferay.exportimport.rest.internal.util.PreviewPortletDataHandlerUtil;
 import com.liferay.exportimport.rest.resource.v1_0.ExportProcessResource;
 import com.liferay.headless.delivery.dto.v1_0.util.CreatorUtil;
 import com.liferay.petra.string.StringPool;
@@ -390,41 +390,18 @@ public class ExportProcessResourceImpl extends BaseExportProcessResourceImpl {
 				ParameterMapUtil.toParameterMap(exportProcessRequest, false),
 				contextUser);
 
-		boolean privateLayout = parameterMap.containsKey(
-			PreviewPortletDataHandlerUtil.PRIVATE_PAGES_CONTROL_NAME);
-		boolean publicLayout = parameterMap.containsKey(
-			PreviewPortletDataHandlerUtil.PUBLIC_PAGES_CONTROL_NAME);
-
-		if (privateLayout && publicLayout) {
-			throw new BadRequestException(
-				"Unable to request both private and public pages");
-		}
+		boolean privateLayout = LayoutUtil.isPrivateLayout(parameterMap);
 
 		if (privateLayout && !group.isPrivateLayoutsEnabled()) {
 			throw new BadRequestException("Private pages are not enabled");
 		}
 
-		String[] values = parameterMap.get(
-			privateLayout ?
-				PreviewPortletDataHandlerUtil.PRIVATE_PAGES_CONTROL_NAME :
-					PreviewPortletDataHandlerUtil.PUBLIC_PAGES_CONTROL_NAME);
-
-		long[] layoutIds = new long[0];
-
-		if (values != null) {
-			if (Boolean.parseBoolean(values[0])) {
-				layoutIds = _exportImportHelper.getAllLayoutIds(
-					groupId, privateLayout);
-			}
-			else {
-				layoutIds = GetterUtil.getLongValues(values);
-			}
-		}
-
 		Map<String, Serializable> settingsMap =
 			_exportImportConfigurationSettingsMapFactory.
 				buildExportLayoutSettingsMap(
-					contextUser.getUserId(), groupId, privateLayout, layoutIds,
+					contextUser.getUserId(), groupId, privateLayout,
+					LayoutUtil.getLayoutIds(
+						groupId, parameterMap, privateLayout),
 					parameterMap, contextAcceptLanguage.getPreferredLocale(),
 					contextUser.getTimeZone());
 

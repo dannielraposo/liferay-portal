@@ -10,7 +10,6 @@ import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationFa
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactory;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactory;
 import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
-import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
@@ -21,9 +20,9 @@ import com.liferay.exportimport.rest.dto.v1_0.PublishProcessRequest;
 import com.liferay.exportimport.rest.dto.v1_0.Status;
 import com.liferay.exportimport.rest.internal.util.BackgroundTaskUtil;
 import com.liferay.exportimport.rest.internal.util.GroupUtil;
+import com.liferay.exportimport.rest.internal.util.LayoutUtil;
 import com.liferay.exportimport.rest.internal.util.ParameterMapUtil;
 import com.liferay.exportimport.rest.internal.util.PermissionUtil;
-import com.liferay.exportimport.rest.internal.util.PreviewPortletDataHandlerUtil;
 import com.liferay.exportimport.rest.resource.v1_0.PublishProcessResource;
 import com.liferay.headless.delivery.dto.v1_0.util.CreatorUtil;
 import com.liferay.petra.string.StringPool;
@@ -43,7 +42,6 @@ import com.liferay.portal.kernel.scheduler.TriggerFactory;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -207,34 +205,14 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 			PortletDataHandlerKeys.PERFORM_DIRECT_BINARY_IMPORT,
 			new String[] {Boolean.TRUE.toString()});
 
-		boolean privateLayout = parameterMap.containsKey(
-			PreviewPortletDataHandlerUtil.PRIVATE_PAGES_CONTROL_NAME);
-		boolean publicLayout = parameterMap.containsKey(
-			PreviewPortletDataHandlerUtil.PUBLIC_PAGES_CONTROL_NAME);
-
-		if (privateLayout && publicLayout) {
-			throw new BadRequestException(
-				"Unable to request both private and public pages");
-		}
+		boolean privateLayout = LayoutUtil.isPrivateLayout(parameterMap);
 
 		if (privateLayout && !stagingGroup.isPrivateLayoutsEnabled()) {
 			throw new BadRequestException("Private pages are not enabled");
 		}
 
-		String[] values = parameterMap.get(
-			privateLayout ?
-				PreviewPortletDataHandlerUtil.PRIVATE_PAGES_CONTROL_NAME :
-					PreviewPortletDataHandlerUtil.PUBLIC_PAGES_CONTROL_NAME);
-
-		long[] layoutIds = null;
-
-		if ((values == null) || Boolean.parseBoolean(values[0])) {
-			layoutIds = _exportImportHelper.getAllLayoutIds(
-				stagingGroupId, privateLayout);
-		}
-		else {
-			layoutIds = GetterUtil.getLongValues(values);
-		}
+		long[] layoutIds = LayoutUtil.getLayoutIds(
+			stagingGroupId, parameterMap, privateLayout);
 
 		Group liveGroup = GroupUtil.getLiveGroup(stagingGroup);
 
@@ -513,9 +491,6 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 	@Reference
 	private ExportImportConfigurationSettingsMapFactory
 		_exportImportConfigurationSettingsMapFactory;
-
-	@Reference
-	private ExportImportHelper _exportImportHelper;
 
 	@Reference
 	private JSONFactory _jsonFactory;
