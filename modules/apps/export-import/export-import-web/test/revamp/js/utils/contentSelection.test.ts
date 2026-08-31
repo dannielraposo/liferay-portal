@@ -5,9 +5,9 @@
 
 import {PreviewPortletDataHandlerSection} from '../../../../src/main/resources/META-INF/resources/revamp/js/types/portletDataHandler';
 import {
-	LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
-	PRIVATE_PAGES_CONTROL_NAME,
-	PUBLIC_PAGES_CONTROL_NAME,
+	CHOICE_NAME_PRIVATE_PAGES,
+	CHOICE_NAME_PUBLIC_PAGES,
+	PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 	SECTION_KEY_SITE_BUILDER,
 	getLayoutSetCount,
 	getSelectedDeletionCount,
@@ -38,7 +38,7 @@ function mockLayoutSetSections({
 					additionCount: publicAdditionCount,
 					deletionCount: publicDeletionCount,
 					label: 'Static Pages',
-					name: LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
+					name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 					previewPortletDataHandlerControls: [
 						{
 							choices: [
@@ -46,13 +46,13 @@ function mockLayoutSetSections({
 									additionCount: publicAdditionCount,
 									deletionCount: publicDeletionCount,
 									label: 'Public Pages',
-									name: PUBLIC_PAGES_CONTROL_NAME,
+									name: CHOICE_NAME_PUBLIC_PAGES,
 								},
 								{
 									additionCount: privateAdditionCount,
 									deletionCount: privateDeletionCount,
 									label: 'Private Pages',
-									name: PRIVATE_PAGES_CONTROL_NAME,
+									name: CHOICE_NAME_PRIVATE_PAGES,
 								},
 							],
 							label: 'Static Pages',
@@ -68,13 +68,13 @@ function mockLayoutSetSections({
 
 const privateSelection = {
 	[SECTION_KEY_SITE_BUILDER]: {
-		[LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY]: {privateLayout: true},
+		[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {privateLayout: true},
 	},
 };
 
 const publicSelection = {
 	[SECTION_KEY_SITE_BUILDER]: {
-		[LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY]: {privateLayout: false},
+		[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {privateLayout: false},
 	},
 };
 
@@ -192,7 +192,7 @@ describe('contentSelection layout set counts', () => {
 
 		const previewPortletDataHandler =
 			previewPortletDataHandlerSection.previewPortletDataHandlers.find(
-				({name}) => name === LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY
+				({name}) => name === PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
 			);
 
 		expect(previewPortletDataHandler?.additionCount).toBe(5);
