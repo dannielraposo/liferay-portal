@@ -11,10 +11,16 @@ import {
 	RequestPortletDataHandlerControl,
 } from '../types/portletDataHandler';
 import {
-	LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY,
+	CHOICE_NAME_PRIVATE_PAGES,
+	CONTROL_NAME_PAGES,
+	CONTROL_NAME_TREE_SELECTION_ALL,
+	CONTROL_NAME_TREE_SELECTION_EXCLUDED_ITEMS,
+	CONTROL_NAME_TREE_SELECTION_EXCLUDED_SUBTREES,
+	CONTROL_NAME_TREE_SELECTION_ITEMS,
+	CONTROL_NAME_TREE_SELECTION_SUBTREES,
+	CONTROL_NAME_VISIBILITY,
 	LayoutSetSelection,
-	PRIVATE_PAGES_CONTROL_NAME,
-	PUBLIC_PAGES_CONTROL_NAME,
+	PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 	PortletDataHandlerSelection,
 } from './contentSelection';
 
@@ -47,7 +53,7 @@ export function toRequestPortletDataHandlers(
 
 			if (
 				previewPortletDataHandler.name ===
-				LAYOUT_SET_LAYOUTS_PORTLET_DATA_KEY
+				PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
 			) {
 				requestPortletDataHandlers.push(
 					toLayoutSetRequestPortletDataHandler(
@@ -151,18 +157,50 @@ function toLayoutSetRequestPortletDataHandler(
 		return {name};
 	}
 
-	const {layoutIds, privateLayout = false} =
-		portletDataHandlerSelection as LayoutSetSelection;
+	const {
+		all = false,
+		excludedItems,
+		excludedSubtrees,
+		items,
+		privateLayout = false,
+		subtrees,
+	} = portletDataHandlerSelection as LayoutSetSelection;
 
-	const requestPortletDataHandlerControl: RequestPortletDataHandlerControl = {
-		name: privateLayout
-			? PRIVATE_PAGES_CONTROL_NAME
-			: PUBLIC_PAGES_CONTROL_NAME,
-		...(layoutIds?.length && {values: layoutIds.map(String)}),
+	const treeSelectionControls: RequestPortletDataHandlerControl[] = [];
+
+	if (all) {
+		treeSelectionControls.push({name: CONTROL_NAME_TREE_SELECTION_ALL});
+	}
+
+	const addControl = (name: string, values: string[] | undefined) => {
+		if (values?.length) {
+			treeSelectionControls.push({name, values});
+		}
 	};
+
+	addControl(CONTROL_NAME_TREE_SELECTION_ITEMS, items);
+	addControl(CONTROL_NAME_TREE_SELECTION_SUBTREES, subtrees);
+	addControl(CONTROL_NAME_TREE_SELECTION_EXCLUDED_ITEMS, excludedItems);
+	addControl(CONTROL_NAME_TREE_SELECTION_EXCLUDED_SUBTREES, excludedSubtrees);
+
+	const requestPortletDataHandlerControls: RequestPortletDataHandlerControl[] =
+		[
+			...(privateLayout
+				? [
+						{
+							name: CONTROL_NAME_VISIBILITY,
+							values: [CHOICE_NAME_PRIVATE_PAGES],
+						},
+					]
+				: []),
+			{
+				name: CONTROL_NAME_PAGES,
+				requestPortletDataHandlerControls: treeSelectionControls,
+			},
+		];
 
 	return {
 		name,
-		requestPortletDataHandlerControls: [requestPortletDataHandlerControl],
+		requestPortletDataHandlerControls,
 	};
 }
