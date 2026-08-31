@@ -50,7 +50,9 @@ public class RequestPortletDataHandlerControl implements Serializable {
 			RequestPortletDataHandlerControl.class, json);
 	}
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The name of the preview control this control answers."
+	)
 	public String getName() {
 		if (_nameSupplier != null) {
 			name = _nameSupplier.get();
@@ -82,14 +84,18 @@ public class RequestPortletDataHandlerControl implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The name of the preview control this control answers."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String name;
 
 	@JsonIgnore
 	private Supplier<String> _nameSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The nested controls, answering the nested controls of the preview control."
+	)
 	@Valid
 	public RequestPortletDataHandlerControl[]
 		getRequestPortletDataHandlerControls() {
@@ -131,7 +137,9 @@ public class RequestPortletDataHandlerControl implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The nested controls, answering the nested controls of the preview control."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected RequestPortletDataHandlerControl[]
 		requestPortletDataHandlerControls;
@@ -140,7 +148,9 @@ public class RequestPortletDataHandlerControl implements Serializable {
 	private Supplier<RequestPortletDataHandlerControl[]>
 		_requestPortletDataHandlerControlsSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The values of the control. The values are omitted for a `Boolean`, hold the name of the chosen choice for a `Choice`, and hold the setting's values for a `Setting`."
+	)
 	public String[] getValues() {
 		if (_valuesSupplier != null) {
 			values = _valuesSupplier.get();
@@ -174,7 +184,9 @@ public class RequestPortletDataHandlerControl implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The values of the control. The values are omitted for a `Boolean`, hold the name of the chosen choice for a `Choice`, and hold the setting's values for a `Setting`."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String[] values;
 
@@ -376,4 +388,4 @@ public class RequestPortletDataHandlerControl implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1502571639
+// LIFERAY-REST-BUILDER-HASH:-20614013

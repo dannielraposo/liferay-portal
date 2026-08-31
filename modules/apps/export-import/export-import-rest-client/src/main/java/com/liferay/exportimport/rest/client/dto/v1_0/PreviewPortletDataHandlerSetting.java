@@ -48,35 +48,6 @@ public class PreviewPortletDataHandlerSetting
 
 	protected Boolean defaultState;
 
-	public PreviewPortletDataHandlerControl[]
-		getPreviewPortletDataHandlerControls() {
-
-		return previewPortletDataHandlerControls;
-	}
-
-	public void setPreviewPortletDataHandlerControls(
-		PreviewPortletDataHandlerControl[] previewPortletDataHandlerControls) {
-
-		this.previewPortletDataHandlerControls =
-			previewPortletDataHandlerControls;
-	}
-
-	public void setPreviewPortletDataHandlerControls(
-		UnsafeSupplier<PreviewPortletDataHandlerControl[], Exception>
-			previewPortletDataHandlerControlsUnsafeSupplier) {
-
-		try {
-			previewPortletDataHandlerControls =
-				previewPortletDataHandlerControlsUnsafeSupplier.get();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected PreviewPortletDataHandlerControl[]
-		previewPortletDataHandlerControls;
-
 	@Override
 	public PreviewPortletDataHandlerSetting clone()
 		throws CloneNotSupportedException {
@@ -113,4 +84,4 @@ public class PreviewPortletDataHandlerSetting
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1074218424
+// LIFERAY-REST-BUILDER-HASH:-1683052127

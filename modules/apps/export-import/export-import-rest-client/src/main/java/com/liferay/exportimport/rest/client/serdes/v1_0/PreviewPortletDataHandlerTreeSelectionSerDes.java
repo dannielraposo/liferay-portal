@@ -6,7 +6,7 @@
 package com.liferay.exportimport.rest.client.serdes.v1_0;
 
 import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerControl;
-import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerSetting;
+import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerTreeSelection;
 import com.liferay.exportimport.rest.client.json.BaseJSONParser;
 
 import jakarta.annotation.Generated;
@@ -22,28 +22,31 @@ import java.util.TreeMap;
  * @generated
  */
 @Generated("")
-public class PreviewPortletDataHandlerSettingSerDes {
+public class PreviewPortletDataHandlerTreeSelectionSerDes {
 
-	public static PreviewPortletDataHandlerSetting toDTO(String json) {
-		PreviewPortletDataHandlerSettingJSONParser
-			previewPortletDataHandlerSettingJSONParser =
-				new PreviewPortletDataHandlerSettingJSONParser();
+	public static PreviewPortletDataHandlerTreeSelection toDTO(String json) {
+		PreviewPortletDataHandlerTreeSelectionJSONParser
+			previewPortletDataHandlerTreeSelectionJSONParser =
+				new PreviewPortletDataHandlerTreeSelectionJSONParser();
 
-		return previewPortletDataHandlerSettingJSONParser.parseToDTO(json);
+		return previewPortletDataHandlerTreeSelectionJSONParser.parseToDTO(
+			json);
 	}
 
-	public static PreviewPortletDataHandlerSetting[] toDTOs(String json) {
-		PreviewPortletDataHandlerSettingJSONParser
-			previewPortletDataHandlerSettingJSONParser =
-				new PreviewPortletDataHandlerSettingJSONParser();
+	public static PreviewPortletDataHandlerTreeSelection[] toDTOs(String json) {
+		PreviewPortletDataHandlerTreeSelectionJSONParser
+			previewPortletDataHandlerTreeSelectionJSONParser =
+				new PreviewPortletDataHandlerTreeSelectionJSONParser();
 
-		return previewPortletDataHandlerSettingJSONParser.parseToDTOs(json);
+		return previewPortletDataHandlerTreeSelectionJSONParser.parseToDTOs(
+			json);
 	}
 
 	public static String toJSON(
-		PreviewPortletDataHandlerSetting previewPortletDataHandlerSetting) {
+		PreviewPortletDataHandlerTreeSelection
+			previewPortletDataHandlerTreeSelection) {
 
-		if (previewPortletDataHandlerSetting == null) {
+		if (previewPortletDataHandlerTreeSelection == null) {
 			return "null";
 		}
 
@@ -51,27 +54,17 @@ public class PreviewPortletDataHandlerSettingSerDes {
 
 		sb.append("{");
 
-		if (previewPortletDataHandlerSetting.getDefaultState() != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"defaultState\": ");
-
-			sb.append(previewPortletDataHandlerSetting.getDefaultState());
-		}
-
-		if (previewPortletDataHandlerSetting.getDisabled() != null) {
+		if (previewPortletDataHandlerTreeSelection.getDisabled() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
 			sb.append("\"disabled\": ");
 
-			sb.append(previewPortletDataHandlerSetting.getDisabled());
+			sb.append(previewPortletDataHandlerTreeSelection.getDisabled());
 		}
 
-		if (previewPortletDataHandlerSetting.getLabel() != null) {
+		if (previewPortletDataHandlerTreeSelection.getLabel() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
@@ -80,12 +73,13 @@ public class PreviewPortletDataHandlerSettingSerDes {
 
 			sb.append("\"");
 
-			sb.append(_escape(previewPortletDataHandlerSetting.getLabel()));
+			sb.append(
+				_escape(previewPortletDataHandlerTreeSelection.getLabel()));
 
 			sb.append("\"");
 		}
 
-		if (previewPortletDataHandlerSetting.getName() != null) {
+		if (previewPortletDataHandlerTreeSelection.getName() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
@@ -94,12 +88,13 @@ public class PreviewPortletDataHandlerSettingSerDes {
 
 			sb.append("\"");
 
-			sb.append(_escape(previewPortletDataHandlerSetting.getName()));
+			sb.append(
+				_escape(previewPortletDataHandlerTreeSelection.getName()));
 
 			sb.append("\"");
 		}
 
-		if (previewPortletDataHandlerSetting.
+		if (previewPortletDataHandlerTreeSelection.
 				getPreviewPortletDataHandlerControls() != null) {
 
 			if (sb.length() > 1) {
@@ -111,16 +106,16 @@ public class PreviewPortletDataHandlerSettingSerDes {
 			sb.append("[");
 
 			for (int i = 0;
-				 i < previewPortletDataHandlerSetting.
+				 i < previewPortletDataHandlerTreeSelection.
 					 getPreviewPortletDataHandlerControls().length;
 				 i++) {
 
 				sb.append(
 					String.valueOf(
-						previewPortletDataHandlerSetting.
+						previewPortletDataHandlerTreeSelection.
 							getPreviewPortletDataHandlerControls()[i]));
 
-				if ((i + 1) < previewPortletDataHandlerSetting.
+				if ((i + 1) < previewPortletDataHandlerTreeSelection.
 						getPreviewPortletDataHandlerControls().length) {
 
 					sb.append(", ");
@@ -130,7 +125,7 @@ public class PreviewPortletDataHandlerSettingSerDes {
 			sb.append("]");
 		}
 
-		if (previewPortletDataHandlerSetting.getType() != null) {
+		if (previewPortletDataHandlerTreeSelection.getType() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
@@ -138,7 +133,7 @@ public class PreviewPortletDataHandlerSettingSerDes {
 			sb.append("\"type\": ");
 
 			sb.append("\"");
-			sb.append(previewPortletDataHandlerSetting.getType());
+			sb.append(previewPortletDataHandlerTreeSelection.getType());
 			sb.append("\"");
 		}
 
@@ -148,60 +143,55 @@ public class PreviewPortletDataHandlerSettingSerDes {
 	}
 
 	public static Map<String, Object> toMap(String json) {
-		PreviewPortletDataHandlerSettingJSONParser
-			previewPortletDataHandlerSettingJSONParser =
-				new PreviewPortletDataHandlerSettingJSONParser();
+		PreviewPortletDataHandlerTreeSelectionJSONParser
+			previewPortletDataHandlerTreeSelectionJSONParser =
+				new PreviewPortletDataHandlerTreeSelectionJSONParser();
 
-		return previewPortletDataHandlerSettingJSONParser.parseToMap(json);
+		return previewPortletDataHandlerTreeSelectionJSONParser.parseToMap(
+			json);
 	}
 
 	public static Map<String, String> toMap(
-		PreviewPortletDataHandlerSetting previewPortletDataHandlerSetting) {
+		PreviewPortletDataHandlerTreeSelection
+			previewPortletDataHandlerTreeSelection) {
 
-		if (previewPortletDataHandlerSetting == null) {
+		if (previewPortletDataHandlerTreeSelection == null) {
 			return null;
 		}
 
 		Map<String, String> map = new TreeMap<>();
 
-		if (previewPortletDataHandlerSetting.getDefaultState() == null) {
-			map.put("defaultState", null);
-		}
-		else {
-			map.put(
-				"defaultState",
-				String.valueOf(
-					previewPortletDataHandlerSetting.getDefaultState()));
-		}
-
-		if (previewPortletDataHandlerSetting.getDisabled() == null) {
+		if (previewPortletDataHandlerTreeSelection.getDisabled() == null) {
 			map.put("disabled", null);
 		}
 		else {
 			map.put(
 				"disabled",
-				String.valueOf(previewPortletDataHandlerSetting.getDisabled()));
+				String.valueOf(
+					previewPortletDataHandlerTreeSelection.getDisabled()));
 		}
 
-		if (previewPortletDataHandlerSetting.getLabel() == null) {
+		if (previewPortletDataHandlerTreeSelection.getLabel() == null) {
 			map.put("label", null);
 		}
 		else {
 			map.put(
 				"label",
-				String.valueOf(previewPortletDataHandlerSetting.getLabel()));
+				String.valueOf(
+					previewPortletDataHandlerTreeSelection.getLabel()));
 		}
 
-		if (previewPortletDataHandlerSetting.getName() == null) {
+		if (previewPortletDataHandlerTreeSelection.getName() == null) {
 			map.put("name", null);
 		}
 		else {
 			map.put(
 				"name",
-				String.valueOf(previewPortletDataHandlerSetting.getName()));
+				String.valueOf(
+					previewPortletDataHandlerTreeSelection.getName()));
 		}
 
-		if (previewPortletDataHandlerSetting.
+		if (previewPortletDataHandlerTreeSelection.
 				getPreviewPortletDataHandlerControls() == null) {
 
 			map.put("previewPortletDataHandlerControls", null);
@@ -210,41 +200,41 @@ public class PreviewPortletDataHandlerSettingSerDes {
 			map.put(
 				"previewPortletDataHandlerControls",
 				String.valueOf(
-					previewPortletDataHandlerSetting.
+					previewPortletDataHandlerTreeSelection.
 						getPreviewPortletDataHandlerControls()));
 		}
 
-		if (previewPortletDataHandlerSetting.getType() == null) {
+		if (previewPortletDataHandlerTreeSelection.getType() == null) {
 			map.put("type", null);
 		}
 		else {
 			map.put(
 				"type",
-				String.valueOf(previewPortletDataHandlerSetting.getType()));
+				String.valueOf(
+					previewPortletDataHandlerTreeSelection.getType()));
 		}
 
 		return map;
 	}
 
-	public static class PreviewPortletDataHandlerSettingJSONParser
-		extends BaseJSONParser<PreviewPortletDataHandlerSetting> {
+	public static class PreviewPortletDataHandlerTreeSelectionJSONParser
+		extends BaseJSONParser<PreviewPortletDataHandlerTreeSelection> {
 
 		@Override
-		protected PreviewPortletDataHandlerSetting createDTO() {
-			return new PreviewPortletDataHandlerSetting();
+		protected PreviewPortletDataHandlerTreeSelection createDTO() {
+			return new PreviewPortletDataHandlerTreeSelection();
 		}
 
 		@Override
-		protected PreviewPortletDataHandlerSetting[] createDTOArray(int size) {
-			return new PreviewPortletDataHandlerSetting[size];
+		protected PreviewPortletDataHandlerTreeSelection[] createDTOArray(
+			int size) {
+
+			return new PreviewPortletDataHandlerTreeSelection[size];
 		}
 
 		@Override
 		protected boolean parseMaps(String jsonParserFieldName) {
-			if (Objects.equals(jsonParserFieldName, "defaultState")) {
-				return false;
-			}
-			else if (Objects.equals(jsonParserFieldName, "disabled")) {
+			if (Objects.equals(jsonParserFieldName, "disabled")) {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "label")) {
@@ -268,30 +258,25 @@ public class PreviewPortletDataHandlerSettingSerDes {
 
 		@Override
 		protected void setField(
-			PreviewPortletDataHandlerSetting previewPortletDataHandlerSetting,
+			PreviewPortletDataHandlerTreeSelection
+				previewPortletDataHandlerTreeSelection,
 			String jsonParserFieldName, Object jsonParserFieldValue) {
 
-			if (Objects.equals(jsonParserFieldName, "defaultState")) {
+			if (Objects.equals(jsonParserFieldName, "disabled")) {
 				if (jsonParserFieldValue != null) {
-					previewPortletDataHandlerSetting.setDefaultState(
-						(Boolean)jsonParserFieldValue);
-				}
-			}
-			else if (Objects.equals(jsonParserFieldName, "disabled")) {
-				if (jsonParserFieldValue != null) {
-					previewPortletDataHandlerSetting.setDisabled(
+					previewPortletDataHandlerTreeSelection.setDisabled(
 						(Boolean)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "label")) {
 				if (jsonParserFieldValue != null) {
-					previewPortletDataHandlerSetting.setLabel(
+					previewPortletDataHandlerTreeSelection.setLabel(
 						(String)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "name")) {
 				if (jsonParserFieldValue != null) {
-					previewPortletDataHandlerSetting.setName(
+					previewPortletDataHandlerTreeSelection.setName(
 						(String)jsonParserFieldValue);
 				}
 			}
@@ -317,15 +302,15 @@ public class PreviewPortletDataHandlerSettingSerDes {
 								(String)jsonParserFieldValues[i]);
 					}
 
-					previewPortletDataHandlerSetting.
+					previewPortletDataHandlerTreeSelection.
 						setPreviewPortletDataHandlerControls(
 							previewPortletDataHandlerControlsArray);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "type")) {
 				if (jsonParserFieldValue != null) {
-					previewPortletDataHandlerSetting.setType(
-						PreviewPortletDataHandlerSetting.Type.create(
+					previewPortletDataHandlerTreeSelection.setType(
+						PreviewPortletDataHandlerTreeSelection.Type.create(
 							(String)jsonParserFieldValue));
 				}
 			}
@@ -410,4 +395,4 @@ public class PreviewPortletDataHandlerSettingSerDes {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:2134201649
+// LIFERAY-REST-BUILDER-HASH:-1861521738

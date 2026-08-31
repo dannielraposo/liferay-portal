@@ -6,13 +6,9 @@
 package com.liferay.exportimport.rest.dto.v1_0;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
@@ -26,69 +22,29 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * @author Petteri Karttunen
  * @generated
  */
 @Generated("")
-@GraphQLName("PreviewPortletDataHandlerSetting")
+@GraphQLName("PreviewPortletDataHandlerTreeSelection")
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "PreviewPortletDataHandlerSetting")
-public class PreviewPortletDataHandlerSetting
+@XmlRootElement(name = "PreviewPortletDataHandlerTreeSelection")
+public class PreviewPortletDataHandlerTreeSelection
 	extends PreviewPortletDataHandlerControl implements Serializable {
 
-	public static PreviewPortletDataHandlerSetting toDTO(String json) {
+	public static PreviewPortletDataHandlerTreeSelection toDTO(String json) {
 		return ObjectMapperUtil.readValue(
-			PreviewPortletDataHandlerSetting.class, json);
+			PreviewPortletDataHandlerTreeSelection.class, json);
 	}
 
-	public static PreviewPortletDataHandlerSetting unsafeToDTO(String json) {
+	public static PreviewPortletDataHandlerTreeSelection unsafeToDTO(
+		String json) {
+
 		return ObjectMapperUtil.unsafeReadValue(
-			PreviewPortletDataHandlerSetting.class, json);
+			PreviewPortletDataHandlerTreeSelection.class, json);
 	}
-
-	@io.swagger.v3.oas.annotations.media.Schema
-	public Boolean getDefaultState() {
-		if (_defaultStateSupplier != null) {
-			defaultState = _defaultStateSupplier.get();
-
-			_defaultStateSupplier = null;
-		}
-
-		return defaultState;
-	}
-
-	public void setDefaultState(Boolean defaultState) {
-		this.defaultState = defaultState;
-
-		_defaultStateSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setDefaultState(
-		UnsafeSupplier<Boolean, Exception> defaultStateUnsafeSupplier) {
-
-		_defaultStateSupplier = () -> {
-			try {
-				return defaultStateUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected Boolean defaultState;
-
-	@JsonIgnore
-	private Supplier<Boolean> _defaultStateSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -96,15 +52,16 @@ public class PreviewPortletDataHandlerSetting
 			return true;
 		}
 
-		if (!(object instanceof PreviewPortletDataHandlerSetting)) {
+		if (!(object instanceof PreviewPortletDataHandlerTreeSelection)) {
 			return false;
 		}
 
-		PreviewPortletDataHandlerSetting previewPortletDataHandlerSetting =
-			(PreviewPortletDataHandlerSetting)object;
+		PreviewPortletDataHandlerTreeSelection
+			previewPortletDataHandlerTreeSelection =
+				(PreviewPortletDataHandlerTreeSelection)object;
 
 		return Objects.equals(
-			toString(), previewPortletDataHandlerSetting.toString());
+			toString(), previewPortletDataHandlerTreeSelection.toString());
 	}
 
 	@Override
@@ -118,18 +75,6 @@ public class PreviewPortletDataHandlerSetting
 		StringBundler sb = new StringBundler();
 
 		sb.append("{");
-
-		Boolean defaultState = getDefaultState();
-
-		if (defaultState != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"defaultState\": ");
-
-			sb.append(defaultState);
-		}
 
 		Boolean disabled = getDisabled();
 
@@ -219,7 +164,7 @@ public class PreviewPortletDataHandlerSetting
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerSetting",
+		defaultValue = "com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerTreeSelection",
 		name = "x-class-name"
 	)
 	public String xClassName;
@@ -313,4 +258,4 @@ public class PreviewPortletDataHandlerSetting
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:833941364
+// LIFERAY-REST-BUILDER-HASH:-1400245781
