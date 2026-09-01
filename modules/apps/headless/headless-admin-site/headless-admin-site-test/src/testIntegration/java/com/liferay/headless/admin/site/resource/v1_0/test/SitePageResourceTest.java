@@ -337,6 +337,47 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		_testGetSiteSitePagesPageWithParentSitePageExternalReferenceCode();
 	}
 
+	@FeatureFlag(enable = false, value = "LPD-35443")
+	@Test
+	public void testGetSiteSitePagesPageWhenFeatureFlagIsDisabled()
+		throws Exception {
+
+		Layout layout = LayoutTestUtil.addTypePortletLayout(testGroup);
+
+		Page<SitePage> page = sitePageResource.getSiteSitePagesPage(
+			testGroup.getExternalReferenceCode(), false, null, null, null,
+			Pagination.of(1, 10), null);
+
+		Assert.assertEquals(1, page.getTotalCount());
+
+		SitePage sitePage = page.fetchFirstItem();
+
+		Assert.assertEquals(
+			layout.getExternalReferenceCode(),
+			sitePage.getExternalReferenceCode());
+
+		String password = RandomTestUtil.randomString();
+
+		User user = UserTestUtil.addUser(testCompany, password);
+
+		SitePageResource userSitePageResource = SitePageResource.builder(
+		).authentication(
+			user.getEmailAddress(), password
+		).endpoint(
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
+
+		_assertProblemException(
+			"Feature flag LPD-35443 is disabled for company " +
+				testCompany.getCompanyId(),
+			() -> userSitePageResource.getSiteSitePagesPage(
+				testGroup.getExternalReferenceCode(), false, null, null, null,
+				Pagination.of(1, 10), null));
+	}
+
 	@Override
 	@Test
 	@TestInfo({"LPD-74225", "LPD-75413", "LPD-83094"})
