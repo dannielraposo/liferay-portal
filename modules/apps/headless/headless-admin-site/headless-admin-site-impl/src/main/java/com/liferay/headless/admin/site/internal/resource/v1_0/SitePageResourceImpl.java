@@ -313,10 +313,11 @@ public class SitePageResourceImpl
 			Pagination pagination, Sort[] sorts)
 		throws Exception {
 
-		EnabledUtil.checkEnabled(contextCompany, privateLayout);
-
 		long groupId = GroupUtil.getGroupId(
 			true, contextCompany.getCompanyId(), siteExternalReferenceCode);
+
+		EnabledUtil.checkGetSiteSitePagesPageEnabled(
+			contextCompany, groupId, privateLayout);
 
 		return SearchUtil.search(
 			null,
