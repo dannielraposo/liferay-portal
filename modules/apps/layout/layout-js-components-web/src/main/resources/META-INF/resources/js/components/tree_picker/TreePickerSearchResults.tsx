@@ -11,7 +11,6 @@ import ClayLoadingIndicator from '@clayui/loading-indicator';
 import React, {useEffect, useState} from 'react';
 
 import SearchResultsMessage from '../search_results_message/SearchResultsMessage';
-import {openErrorToast} from './TreePicker';
 import {
 	TreePickerDataSource,
 	TreePickerItem,
@@ -21,12 +20,14 @@ import {TreePickerSelection} from './useTreePickerSelection';
 
 export default function TreePickerSearchResults<T>({
 	dataSource,
+	onError,
 	onItemSelect,
 	query,
 	selection,
 	selectionMode = 'multiple',
 }: {
 	dataSource: TreePickerDataSource<T>;
+	onError: (error: unknown) => void;
 	onItemSelect?: (item: TreePickerItem<T>) => void;
 	query: string;
 	selection: TreePickerSelection<T>;
@@ -64,7 +65,7 @@ export default function TreePickerSearchResults<T>({
 					setResults(items);
 					setTotalCount(nextTotalCount);
 				})
-				.catch(() => !cancelled && openErrorToast());
+				.catch((error) => !cancelled && onError(error));
 		}, 500);
 
 		return () => {
@@ -72,7 +73,7 @@ export default function TreePickerSearchResults<T>({
 
 			clearTimeout(timeoutId);
 		};
-	}, [dataSource, query, registerItems]);
+	}, [dataSource, onError, query, registerItems]);
 
 	if (!results) {
 		return <ClayLoadingIndicator displayType="secondary" />;
@@ -112,7 +113,7 @@ export default function TreePickerSearchResults<T>({
 				]);
 				setTotalCount(nextTotalCount);
 			})
-			.catch(() => openErrorToast())
+			.catch((error) => onError(error))
 			.finally(() => setLoadingMore(false));
 	};
 

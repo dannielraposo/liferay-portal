@@ -7,11 +7,11 @@ import ClayForm, {ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {sub} from 'frontend-js-web';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import './TreePicker.scss';
 import isNullOrUndefined from '../../utils/isNullOrUndefined';
-import TreePicker, {openErrorToast} from './TreePicker';
+import TreePicker from './TreePicker';
 import TreePickerSearchResults from './TreePickerSearchResults';
 import {
 	TreePickerDataSource,
@@ -20,6 +20,7 @@ import {
 	TreePickerSelectionMode,
 } from './types';
 import useTreePickerSelection from './useTreePickerSelection';
+import {openErrorToast} from './utils';
 
 function ShiftHint() {
 	const [prefix, suffix] = Liferay.Language.get(
@@ -106,6 +107,7 @@ export interface TreePickerPanelProps<T> {
 	defaultRegisteredItems?: Array<TreePickerItem<T>>;
 	defaultSelectedEntries?: Array<TreePickerSelectionEntry<T>>;
 	filterSlot?: React.ReactNode;
+	onError?: (error: unknown) => void;
 	onItemSelect?: (item: TreePickerItem<T>) => void;
 	onSelectionChange?: (
 		entries: Array<TreePickerSelectionEntry<T>>,
@@ -120,6 +122,7 @@ export default function TreePickerPanel<T>({
 	defaultRegisteredItems,
 	defaultSelectedEntries,
 	filterSlot,
+	onError,
 	onItemSelect,
 	onSelectionChange,
 	selectionMode = 'multiple',
@@ -139,6 +142,18 @@ export default function TreePickerPanel<T>({
 
 	const defaultSelectedEntriesRef = useRef(defaultSelectedEntries);
 
+	const onErrorRef = useRef(onError);
+
+	useEffect(() => {
+		onErrorRef.current = onError;
+	}, [onError]);
+
+	const handleError = useCallback(
+		(error: unknown) =>
+			onErrorRef.current ? onErrorRef.current(error) : openErrorToast(),
+		[]
+	);
+
 	useEffect(() => {
 		const items = defaultSelectedEntriesRef.current?.map(
 			(entry) => entry.item
@@ -157,16 +172,16 @@ export default function TreePickerPanel<T>({
 					registerItems(resolvedItems, null);
 				}
 			})
-			.catch(() => {
+			.catch((error) => {
 				if (!cancelled) {
-					openErrorToast();
+					handleError(error);
 				}
 			});
 
 		return () => {
 			cancelled = true;
 		};
-	}, [dataSource, registerItems]);
+	}, [dataSource, handleError, registerItems]);
 
 	const onSelectionChangeRef = useRef(onSelectionChange);
 
@@ -242,9 +257,9 @@ export default function TreePickerPanel<T>({
 					setResolvingCount(false);
 				}
 			})
-			.catch(() => {
+			.catch((error) => {
 				if (!cancelled) {
-					openErrorToast();
+					handleError(error);
 
 					setCountFailed(true);
 					setExactCount(null);
@@ -255,7 +270,14 @@ export default function TreePickerPanel<T>({
 		return () => {
 			cancelled = true;
 		};
-	}, [dataSource, entries, isDescendant, selectedKeys, singleSelection]);
+	}, [
+		dataSource,
+		entries,
+		handleError,
+		isDescendant,
+		selectedKeys,
+		singleSelection,
+	]);
 
 	const selectedItemsCount =
 		exactCount ??
@@ -319,6 +341,7 @@ export default function TreePickerPanel<T>({
 				{query ? (
 					<TreePickerSearchResults
 						dataSource={dataSource}
+						onError={handleError}
 						onItemSelect={onItemSelect}
 						query={query}
 						selection={selection}
@@ -331,6 +354,7 @@ export default function TreePickerPanel<T>({
 						<TreePicker<T>
 							dataSource={dataSource}
 							defaultExpandedIds={defaultExpandedIds}
+							onError={handleError}
 							onItemSelect={onItemSelect}
 							selection={selection}
 							selectionMode={selectionMode}

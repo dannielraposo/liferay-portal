@@ -8,7 +8,7 @@ import {TreeView as ClayTreeView} from '@clayui/core';
 import {ClayCheckbox} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import {openToast, useId} from 'frontend-js-components-web';
+import {useId} from 'frontend-js-components-web';
 import React, {
 	useCallback,
 	useEffect,
@@ -36,7 +36,7 @@ function useTreePickerItems<T>({
 }: {
 	dataSource: TreePickerDataSource<T>;
 	defaultExpandedIds?: string[];
-	onError: () => void;
+	onError: (error: unknown) => void;
 	onItemsLoaded: (
 		items: Array<TreePickerItem<T>>,
 		parentId: string | null
@@ -91,9 +91,9 @@ function useTreePickerItems<T>({
 								nextPage: 2,
 							});
 						}
-						catch {
+						catch (error) {
 							if (!cancelled) {
-								onError();
+								onError(error);
 							}
 						}
 					})
@@ -107,9 +107,9 @@ function useTreePickerItems<T>({
 			setRootTotalCount(totalCount);
 		};
 
-		loadItems().catch(() => {
+		loadItems().catch((error) => {
 			if (!cancelled) {
-				onError();
+				onError(error);
 
 				setItems([]);
 			}
@@ -141,7 +141,7 @@ function useTreePickerItems<T>({
 				setRootPage(nextRootPage);
 				setRootTotalCount(totalCount);
 			})
-			.catch(() => onError());
+			.catch((error) => onError(error));
 	}, [dataSource, onError, onItemsLoaded, rootPage]);
 
 	const onLoadMore = useCallback(
@@ -171,8 +171,8 @@ function useTreePickerItems<T>({
 						items: nextItems,
 					};
 				})
-				.catch(() => {
-					onError();
+				.catch((error) => {
+					onError(error);
 
 					return {cursor: null, items: []};
 				});
@@ -200,22 +200,16 @@ interface TreePickerLoadMore {
 interface TreePickerProps<T> {
 	dataSource: TreePickerDataSource<T>;
 	defaultExpandedIds?: string[];
+	onError: (error: unknown) => void;
 	onItemSelect?: (item: TreePickerItem<T>) => void;
 	selection: TreePickerSelection<T>;
 	selectionMode?: TreePickerSelectionMode;
 }
 
-export function openErrorToast() {
-	openToast({
-		message: Liferay.Language.get('an-unexpected-error-occurred'),
-		title: Liferay.Language.get('error'),
-		type: 'danger',
-	});
-}
-
 export default function TreePicker<T>({
 	dataSource,
 	defaultExpandedIds,
+	onError,
 	onItemSelect,
 	selection,
 	selectionMode = 'multiple',
@@ -242,7 +236,7 @@ export default function TreePicker<T>({
 	} = useTreePickerItems<T>({
 		dataSource,
 		defaultExpandedIds,
-		onError: openErrorToast,
+		onError,
 		onItemsLoaded: registerItems,
 	});
 

@@ -178,6 +178,25 @@ describe('TreePickerPanel', () => {
 		expect(screen.queryByText('nothing-selected')).not.toBeInTheDocument();
 	});
 
+	it('lets the consumer handle load errors instead of showing a toast', async () => {
+		const error = new Error();
+		const onError = jest.fn();
+
+		render(
+			<TreePickerPanel
+				dataSource={{
+					getChildren: () => Promise.reject(error),
+					search: DATA_SOURCE.search,
+				}}
+				onError={onError}
+			/>
+		);
+
+		await waitFor(() => expect(onError).toHaveBeenCalledWith(error));
+
+		expect(openToast).not.toHaveBeenCalled();
+	});
+
 	it('shows the selection count while items are selected', async () => {
 		await renderTreePickerPanel();
 
