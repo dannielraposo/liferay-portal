@@ -18,9 +18,10 @@ import {
 	isSelected,
 	updateSelection,
 } from '../../../utils/contentSelection';
+import {PagePickerConfiguration} from '../../page_picker/types';
 import CollapsibleGroup from './CollapsibleGroup';
 import ControlRow from './ControlRow';
-import LayoutSetControl, {PagePickerConfiguration} from './LayoutSetControl';
+import LayoutSetControl from './LayoutSetControl';
 import PortletDataControlChoice from './PortletDataControlChoice';
 import SectionTags from './SectionTags';
 

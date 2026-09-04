@@ -12,8 +12,8 @@ import {
 	getVisibleSections,
 	updateSelection,
 } from '../../../utils/contentSelection';
+import {PagePickerConfiguration} from '../../page_picker/types';
 import ContentSection, {SectionSelection} from './ContentSection';
-import {PagePickerConfiguration} from './LayoutSetControl';
 
 export type ContentSelection = Record<string, SectionSelection>;
 

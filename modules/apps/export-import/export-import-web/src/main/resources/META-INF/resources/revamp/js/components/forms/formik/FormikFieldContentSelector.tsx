@@ -9,10 +9,10 @@ import React, {useEffect, useRef} from 'react';
 import {ExportImportProcess} from '../../../types/exportImportProcess';
 import {PreviewPortletDataHandlerSection} from '../../../types/portletDataHandler';
 import {getFullDataSelection} from '../../../utils/contentSelection';
+import {PagePickerConfiguration} from '../../page_picker/types';
 import ContentSelector, {
 	ContentSelection,
 } from '../content_selector/ContentSelector';
-import {PagePickerConfiguration} from '../content_selector/LayoutSetControl';
 
 interface FormikFieldContentSelectorProps {
 	'aria-labelledby'?: string;

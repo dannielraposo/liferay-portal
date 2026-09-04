@@ -24,8 +24,8 @@ import {
 	isSelected,
 	updateSelection,
 } from '../../../utils/contentSelection';
+import {PagePickerConfiguration} from '../../page_picker/types';
 import CollapsibleGroup from './CollapsibleGroup';
-import {PagePickerConfiguration} from './LayoutSetControl';
 import PortletDataControl from './PortletDataControl';
 import SectionFooter from './SectionFooter';
 import SectionTags from './SectionTags';

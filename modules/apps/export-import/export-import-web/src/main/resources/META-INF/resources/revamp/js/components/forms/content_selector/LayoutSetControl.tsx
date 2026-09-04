@@ -15,14 +15,8 @@ import {
 	isAllLayoutsSelected,
 } from '../../../utils/contentSelection';
 import PagePickerModal from '../../page_picker/PagePickerModal';
+import {PagePickerConfiguration} from '../../page_picker/types';
 import SectionTags from './SectionTags';
-
-export interface PagePickerConfiguration {
-	pageSize?: number;
-	privateLayoutsAvailable: boolean;
-	siteExternalReferenceCode: string;
-	title?: string;
-}
 
 interface Props {
 	additionCount?: number;

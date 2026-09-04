@@ -11,12 +11,12 @@ import {ExportImportProcess} from '../types/exportImportProcess';
 import {PreviewPortletDataHandlerSection} from '../types/portletDataHandler';
 import SectionHeader from './SectionHeader';
 import {DateFilterValues} from './date_filter';
-import {PagePickerConfiguration} from './forms/content_selector/LayoutSetControl';
 import {
 	FormikFieldCheckbox,
 	FormikFieldContentSelector,
 	FormikFieldDateFilter,
 } from './forms/formik';
+import {PagePickerConfiguration} from './page_picker/types';
 
 const LABEL_ID = 'dataSelection-label';
 

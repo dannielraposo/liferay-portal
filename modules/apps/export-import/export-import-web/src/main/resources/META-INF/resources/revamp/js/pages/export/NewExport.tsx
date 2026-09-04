@@ -15,7 +15,7 @@ import Footer from '../../components/Footer';
 import Setup from '../../components/Setup';
 import {DateFilterValues, Range} from '../../components/date_filter';
 import {ContentSelection} from '../../components/forms/content_selector/ContentSelector';
-import {PagePickerConfiguration} from '../../components/forms/content_selector/LayoutSetControl';
+import {PagePickerConfiguration} from '../../components/page_picker/types';
 import {usePreview} from '../../hooks/usePreview';
 import {postExportProcess} from '../../services/postExportProcess';
 import {Preview} from '../../types/exportImportPreview';
