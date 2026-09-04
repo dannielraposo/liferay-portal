@@ -13,16 +13,17 @@ import {sub} from 'frontend-js-web';
 import React, {useMemo, useState} from 'react';
 
 import SitePageDataSource, {ROOT_ITEM_ID} from './SitePageDataSource';
-import {PagePickerSelection, SitePage} from './types';
+import {PagePickerConfiguration, PagePickerSelection, SitePage} from './types';
 
-interface PagePickerModalProps {
+interface PagePickerModalProps
+	extends Pick<
+		PagePickerConfiguration,
+		'pageSize' | 'siteExternalReferenceCode' | 'title'
+	> {
 	initialSelection?: PagePickerSelection | null;
 	onClose: () => void;
 	onSubmit: (selection: PagePickerSelection | null) => void;
-	pageSize?: number;
 	privateLayout: boolean;
-	siteExternalReferenceCode: string;
-	title?: string;
 }
 
 export default function PagePickerModal({
