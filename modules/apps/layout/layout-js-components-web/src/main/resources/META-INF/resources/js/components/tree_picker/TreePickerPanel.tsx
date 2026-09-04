@@ -182,8 +182,9 @@ export default function TreePickerPanel<T>({
 		onSelectionChangeRef.current?.(entries, getSelectedItems());
 	}, [entries, getSelectedItems, selectedKeys]);
 
-	const [query, setQuery] = useState('');
 	const [searchValue, setSearchValue] = useState('');
+
+	const query = searchValue.trim();
 
 	const [countFailed, setCountFailed] = useState(false);
 	const [exactCount, setExactCount] = useState<number | null>(null);
@@ -264,14 +265,6 @@ export default function TreePickerPanel<T>({
 		exactCount ??
 		getSelectedItems().filter((item) => !isNullOrUndefined(item.payload))
 			.length;
-
-	useEffect(() => {
-		const timeoutId = setTimeout(() => setQuery(searchValue.trim()), 500);
-
-		return () => {
-			clearTimeout(timeoutId);
-		};
-	}, [searchValue]);
 
 	return (
 		<>
@@ -385,22 +378,26 @@ function TreePickerSearchResults<T>({
 		setResults(null);
 		setTotalCount(0);
 
-		dataSource
-			.search(query, 1)
-			.then(({ancestors, items, totalCount: nextTotalCount}) => {
-				if (cancelled) {
-					return;
-				}
+		const timeoutId = setTimeout(() => {
+			dataSource
+				.search(query, 1)
+				.then(({ancestors, items, totalCount: nextTotalCount}) => {
+					if (cancelled) {
+						return;
+					}
 
-				registerItems([...(ancestors ?? []), ...items], null);
+					registerItems([...(ancestors ?? []), ...items], null);
 
-				setResults(items);
-				setTotalCount(nextTotalCount);
-			})
-			.catch(() => !cancelled && openErrorToast());
+					setResults(items);
+					setTotalCount(nextTotalCount);
+				})
+				.catch(() => !cancelled && openErrorToast());
+		}, 500);
 
 		return () => {
 			cancelled = true;
+
+			clearTimeout(timeoutId);
 		};
 	}, [dataSource, query, registerItems]);
 

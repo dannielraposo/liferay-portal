@@ -107,6 +107,25 @@ describe('TreePickerPanel', () => {
 		expect(screen.getByText('Site')).toBeInTheDocument();
 	});
 
+	it('hides the tree as soon as the user starts a search', async () => {
+		const search = jest.spyOn(DATA_SOURCE, 'search');
+
+		await renderTreePickerPanel();
+
+		await userEvent.type(screen.getByRole('textbox'), 'Label b');
+
+		expect(screen.queryByRole('treeitem')).not.toBeInTheDocument();
+		expect(search).not.toHaveBeenCalled();
+
+		expect(
+			await screen.findByText('Label b', {selector: 'mark'})
+		).toBeInTheDocument();
+
+		expect(search).toHaveBeenCalledTimes(1);
+
+		search.mockRestore();
+	});
+
 	it('reports the selection made from the search results', async () => {
 		const onSelectionChange = jest.fn();
 
