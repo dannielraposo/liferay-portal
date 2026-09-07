@@ -121,7 +121,7 @@ export default function TreePickerSearchResults<T>({
 		<>
 			<SearchResultsMessage numberOfResults={totalCount} />
 
-			<div className="pt-3">
+			<div className="pt-3 text-3">
 				{results.map((item) => (
 					<div
 						className="align-items-center d-flex pb-2 search-result"
@@ -177,10 +177,12 @@ export default function TreePickerSearchResults<T>({
 
 				{results.length < totalCount && (
 					<ClayButton
-						className="load-more-btn mb-5 mt-2"
+						borderless
+						className="load-more-btn my-2"
 						disabled={loadingMore}
 						displayType="secondary"
 						onClick={loadMoreResults}
+						size="xs"
 					>
 						{loadingMore ? (
 							<ClayLoadingIndicator
