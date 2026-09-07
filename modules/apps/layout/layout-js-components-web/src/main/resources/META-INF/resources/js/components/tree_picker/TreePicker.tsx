@@ -388,8 +388,6 @@ export default function TreePicker<T>({
 					setItems(nextItems as Array<TreePickerNode<T>>)
 				}
 				onLoadMore={onLoadMore}
-				selectedKeys={selectedKeys}
-				selectionMode={selectionMode}
 				showExpanderOnHover={false}
 			>
 				{(item: TreePickerNode<T>, selection, expand, load) =>
