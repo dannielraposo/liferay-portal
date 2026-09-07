@@ -98,7 +98,7 @@ export class HeadlessDeliveryApiHelper {
 		parentSitePage,
 		siteId,
 		title,
-	}: createSitePageProps): Promise<Layout> {
+	}: createSitePageProps): Promise<Layout & {title: string}> {
 		return this.apiHelpers.post(
 			`${this.apiHelpers.baseUrl}${this.basePath}/sites/${siteId}/site-pages`,
 			{data: {pageDefinition, pagePermissions, parentSitePage, title}}
