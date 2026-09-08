@@ -803,6 +803,14 @@ public abstract class BaseScheduledPublishProcessResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("remoteConnection", additionalAssertFieldName)) {
+				if (scheduledPublishProcess.getRemoteConnection() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("scheduleEndDate", additionalAssertFieldName)) {
 				if (scheduledPublishProcess.getScheduleEndDate() == null) {
 					valid = false;
@@ -1016,6 +1024,17 @@ public abstract class BaseScheduledPublishProcessResourceTestCase {
 				if (!Objects.deepEquals(
 						scheduledPublishProcess1.getPublishParameters(),
 						scheduledPublishProcess2.getPublishParameters())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("remoteConnection", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						scheduledPublishProcess1.getRemoteConnection(),
+						scheduledPublishProcess2.getRemoteConnection())) {
 
 					return false;
 				}
@@ -1320,6 +1339,11 @@ public abstract class BaseScheduledPublishProcessResourceTestCase {
 		}
 
 		if (entityFieldName.equals("publishParameters")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("remoteConnection")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
@@ -1674,4 +1698,4 @@ public abstract class BaseScheduledPublishProcessResourceTestCase {
 			ScheduledPublishProcessResource _scheduledPublishProcessResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:286661717
+// LIFERAY-REST-BUILDER-HASH:-416546662

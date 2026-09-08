@@ -448,6 +448,53 @@ public class PublishProcessRequest implements Serializable {
 	@JsonIgnore
 	private Supplier<Boolean> _ratingsSupplier;
 
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The remote live connection to publish to. Any field left absent falls back to the value configured on the staging group."
+	)
+	@Valid
+	public RemoteConnection getRemoteConnection() {
+		if (_remoteConnectionSupplier != null) {
+			remoteConnection = _remoteConnectionSupplier.get();
+
+			_remoteConnectionSupplier = null;
+		}
+
+		return remoteConnection;
+	}
+
+	public void setRemoteConnection(RemoteConnection remoteConnection) {
+		this.remoteConnection = remoteConnection;
+
+		_remoteConnectionSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setRemoteConnection(
+		UnsafeSupplier<RemoteConnection, Exception>
+			remoteConnectionUnsafeSupplier) {
+
+		_remoteConnectionSupplier = () -> {
+			try {
+				return remoteConnectionUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(
+		description = "The remote live connection to publish to. Any field left absent falls back to the value configured on the staging group."
+	)
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected RemoteConnection remoteConnection;
+
+	@JsonIgnore
+	private Supplier<RemoteConnection> _remoteConnectionSupplier;
+
 	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
 	public RequestPortletDataHandler[] getRequestPortletDataHandlers() {
@@ -947,6 +994,18 @@ public class PublishProcessRequest implements Serializable {
 			sb.append(ratings);
 		}
 
+		RemoteConnection remoteConnection = getRemoteConnection();
+
+		if (remoteConnection != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"remoteConnection\": ");
+
+			sb.append(String.valueOf(remoteConnection));
+		}
+
 		RequestPortletDataHandler[] requestPortletDataHandlers =
 			getRequestPortletDataHandlers();
 
@@ -1231,4 +1290,4 @@ public class PublishProcessRequest implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1082728791
+// LIFERAY-REST-BUILDER-HASH:1882115128

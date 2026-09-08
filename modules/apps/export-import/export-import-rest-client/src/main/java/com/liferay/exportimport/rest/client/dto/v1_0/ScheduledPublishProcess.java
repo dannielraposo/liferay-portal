@@ -169,6 +169,28 @@ public class ScheduledPublishProcess implements Cloneable, Serializable {
 
 	protected Object publishParameters;
 
+	public RemoteConnection getRemoteConnection() {
+		return remoteConnection;
+	}
+
+	public void setRemoteConnection(RemoteConnection remoteConnection) {
+		this.remoteConnection = remoteConnection;
+	}
+
+	public void setRemoteConnection(
+		UnsafeSupplier<RemoteConnection, Exception>
+			remoteConnectionUnsafeSupplier) {
+
+		try {
+			remoteConnection = remoteConnectionUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected RemoteConnection remoteConnection;
+
 	public Date getScheduleEndDate() {
 		return scheduleEndDate;
 	}
@@ -244,4 +266,4 @@ public class ScheduledPublishProcess implements Cloneable, Serializable {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-735704498
+// LIFERAY-REST-BUILDER-HASH:271794292

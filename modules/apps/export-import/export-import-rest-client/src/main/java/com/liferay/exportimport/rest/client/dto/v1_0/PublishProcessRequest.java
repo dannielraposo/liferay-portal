@@ -219,6 +219,28 @@ public class PublishProcessRequest implements Cloneable, Serializable {
 
 	protected Boolean ratings;
 
+	public RemoteConnection getRemoteConnection() {
+		return remoteConnection;
+	}
+
+	public void setRemoteConnection(RemoteConnection remoteConnection) {
+		this.remoteConnection = remoteConnection;
+	}
+
+	public void setRemoteConnection(
+		UnsafeSupplier<RemoteConnection, Exception>
+			remoteConnectionUnsafeSupplier) {
+
+		try {
+			remoteConnection = remoteConnectionUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected RemoteConnection remoteConnection;
+
 	public RequestPortletDataHandler[] getRequestPortletDataHandlers() {
 		return requestPortletDataHandlers;
 	}
@@ -458,4 +480,4 @@ public class PublishProcessRequest implements Cloneable, Serializable {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:814828940
+// LIFERAY-REST-BUILDER-HASH:-1075028250

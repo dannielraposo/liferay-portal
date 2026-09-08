@@ -145,6 +145,17 @@ public class ScheduledPublishProcessSerDes {
 			sb.append(_toJSON(scheduledPublishProcess.getPublishParameters()));
 		}
 
+		if (scheduledPublishProcess.getRemoteConnection() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"remoteConnection\": ");
+
+			sb.append(
+				String.valueOf(scheduledPublishProcess.getRemoteConnection()));
+		}
+
 		if (scheduledPublishProcess.getScheduleEndDate() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -262,6 +273,15 @@ public class ScheduledPublishProcessSerDes {
 				String.valueOf(scheduledPublishProcess.getPublishParameters()));
 		}
 
+		if (scheduledPublishProcess.getRemoteConnection() == null) {
+			map.put("remoteConnection", null);
+		}
+		else {
+			map.put(
+				"remoteConnection",
+				String.valueOf(scheduledPublishProcess.getRemoteConnection()));
+		}
+
 		if (scheduledPublishProcess.getScheduleEndDate() == null) {
 			map.put("scheduleEndDate", null);
 		}
@@ -321,6 +341,9 @@ public class ScheduledPublishProcessSerDes {
 			else if (Objects.equals(jsonParserFieldName, "publishParameters")) {
 				return false;
 			}
+			else if (Objects.equals(jsonParserFieldName, "remoteConnection")) {
+				return false;
+			}
 			else if (Objects.equals(jsonParserFieldName, "scheduleEndDate")) {
 				return false;
 			}
@@ -376,6 +399,13 @@ public class ScheduledPublishProcessSerDes {
 				if (jsonParserFieldValue != null) {
 					scheduledPublishProcess.setPublishParameters(
 						(Object)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "remoteConnection")) {
+				if (jsonParserFieldValue != null) {
+					scheduledPublishProcess.setRemoteConnection(
+						RemoteConnectionSerDes.toDTO(
+							(String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "scheduleEndDate")) {
@@ -477,4 +507,4 @@ public class ScheduledPublishProcessSerDes {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1307010682
+// LIFERAY-REST-BUILDER-HASH:549941694

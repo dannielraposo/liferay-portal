@@ -363,6 +363,53 @@ public class ScheduledPublishProcess implements Serializable {
 	private Supplier<Object> _publishParametersSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The remote live connection, present only when the scheduled publication targets a remotely staged site."
+	)
+	@Valid
+	public RemoteConnection getRemoteConnection() {
+		if (_remoteConnectionSupplier != null) {
+			remoteConnection = _remoteConnectionSupplier.get();
+
+			_remoteConnectionSupplier = null;
+		}
+
+		return remoteConnection;
+	}
+
+	public void setRemoteConnection(RemoteConnection remoteConnection) {
+		this.remoteConnection = remoteConnection;
+
+		_remoteConnectionSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setRemoteConnection(
+		UnsafeSupplier<RemoteConnection, Exception>
+			remoteConnectionUnsafeSupplier) {
+
+		_remoteConnectionSupplier = () -> {
+			try {
+				return remoteConnectionUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(
+		description = "The remote live connection, present only when the scheduled publication targets a remotely staged site."
+	)
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected RemoteConnection remoteConnection;
+
+	@JsonIgnore
+	private Supplier<RemoteConnection> _remoteConnectionSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The date the scheduled publication stops firing."
 	)
 	public Date getScheduleEndDate() {
@@ -583,6 +630,18 @@ public class ScheduledPublishProcess implements Serializable {
 			sb.append(_toJSON(publishParameters));
 		}
 
+		RemoteConnection remoteConnection = getRemoteConnection();
+
+		if (remoteConnection != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"remoteConnection\": ");
+
+			sb.append(String.valueOf(remoteConnection));
+		}
+
 		Date scheduleEndDate = getScheduleEndDate();
 
 		if (scheduleEndDate != null) {
@@ -737,4 +796,4 @@ public class ScheduledPublishProcess implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:228822266
+// LIFERAY-REST-BUILDER-HASH:-1821393770
