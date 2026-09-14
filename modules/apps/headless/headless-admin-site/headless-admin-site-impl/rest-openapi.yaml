@@ -3772,6 +3772,46 @@ components:
             description:
                 The navigation settings of a site page.
             type: object
+        SitePageTreeNode:
+            description:
+                A page of a layout set as a node of the page tree. The tree is read from the page hierarchy itself, so a node is available as soon as the page exists.
+            properties:
+                ancestorSitePageTreeNodes:
+                    description:
+                        The pages above this page, from the root page down to the parent. This field is not returned by default. It can be requested via nestedFields.
+                    items:
+                        $ref: "#/components/schemas/SitePageTreeNode"
+                    readOnly: true
+                    type: array
+                descendantSitePagesCount:
+                    description:
+                        The number of pages below this page, at every depth.
+                    format: int32
+                    readOnly: true
+                    type: integer
+                externalReferenceCode:
+                    readOnly: true
+                    type: string
+                hasChildSitePages:
+                    readOnly: true
+                    type: boolean
+                name:
+                    readOnly: true
+                    type: string
+                parentSitePageExternalReferenceCode:
+                    readOnly: true
+                    type: string
+                type:
+                    enum:
+                        -   ContentPage
+                        -   EmbeddedPage
+                        -   LinkToPagePage
+                        -   LinkToURLPage
+                        -   PageSetPage
+                        -   WidgetPage
+                    readOnly: true
+                    type: string
+            type: object
         SitePageURLValue:
             allOf:
                 -   $ref: "#/components/schemas/URLValue"
@@ -8441,6 +8481,120 @@ paths:
                         application/json: {}
                         application/xml: {}
             tags: ["Site"]
+    "/sites/{siteExternalReferenceCode}/site-page-tree-nodes":
+        get:
+            description:
+                Retrieves one level of the page tree of a site, the root pages when no parent is given or the child pages of the given parent. When a search is given, retrieves the pages matching it at any depth instead.
+            operationId: getSiteSitePageTreeNodesPage
+            parameters:
+                -   in: path
+                    name: siteExternalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+                -   in: query
+                    name: page
+                    schema:
+                        type: integer
+                -   in: query
+                    name: pageSize
+                    schema:
+                        type: integer
+                -   in: query
+                    name: parentSitePageExternalReferenceCode
+                    schema:
+                        type: string
+                -   in: query
+                    name: privateLayout
+                    schema:
+                        default: false
+                        type: boolean
+                -   in: query
+                    name: search
+                    schema:
+                        type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/SitePageTreeNode"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/SitePageTreeNode"
+                                type: array
+            tags: ["SitePageTreeNode"]
+    "/sites/{siteExternalReferenceCode}/site-page-tree-nodes/{sitePageTreeNodeExternalReferenceCode}":
+        get:
+            description:
+                Retrieves a specific page of a site as a node of the page tree. The node has the external reference code of the page.
+            operationId: getSiteSitePageTreeNode
+            parameters:
+                -   in: path
+                    name: siteExternalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+                -   in: path
+                    name: sitePageTreeNodeExternalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/SitePageTreeNode"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/SitePageTreeNode"
+            tags: ["SitePageTreeNode"]
+    "/sites/{siteExternalReferenceCode}/site-page-tree-nodes/{sitePageTreeNodeExternalReferenceCode}/ancestor-site-page-tree-nodes":
+        get:
+            description:
+                Retrieves the pages above a page of a site, from the root page down to the parent.
+            operationId: getSiteSitePageTreeNodeAncestorSitePageTreeNodesPage
+            parameters:
+                -   in: path
+                    name: siteExternalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+                -   in: path
+                    name: sitePageTreeNodeExternalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+                -   in: query
+                    name: fields
+                    schema:
+                        type: string
+                -   in: query
+                    name: nestedFields
+                    schema:
+                        type: string
+                -   in: query
+                    name: restrictFields
+                    schema:
+                        type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/SitePageTreeNode"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/SitePageTreeNode"
+                                type: array
+            tags: ["SitePageTreeNode"]
     "/sites/{siteExternalReferenceCode}/site-pages":
         get:
             # @review
