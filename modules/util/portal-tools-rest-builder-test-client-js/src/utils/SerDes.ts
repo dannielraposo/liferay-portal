@@ -17,6 +17,8 @@
 	import {ERCSiteTestEntity} from '../models/ERCSiteTestEntity';
 	import {Facet} from '../models/Facet';
 	import {FacetValue} from '../models/FacetValue';
+	import {FeatureFlagClassTestEntity} from '../models/FeatureFlagClassTestEntity';
+	import {FeatureFlagMethodTestEntity} from '../models/FeatureFlagMethodTestEntity';
 	import {Filter} from '../models/Filter';
 	import {JSONMapAttributeTestEntity} from '../models/JSONMapAttributeTestEntity';
 	import {MultipartTestEntity} from '../models/MultipartTestEntity';
@@ -31,6 +33,8 @@
 	import {PageERCAssetLibraryTestEntity} from '../models/PageERCAssetLibraryTestEntity';
 	import {PageERCScopedTestEntity} from '../models/PageERCScopedTestEntity';
 	import {PageERCSiteTestEntity} from '../models/PageERCSiteTestEntity';
+	import {PageFeatureFlagClassTestEntity} from '../models/PageFeatureFlagClassTestEntity';
+	import {PageFeatureFlagMethodTestEntity} from '../models/PageFeatureFlagMethodTestEntity';
 	import {PageFilter} from '../models/PageFilter';
 	import {PagePermission} from '../models/PagePermission';
 	import {PageSchema} from '../models/PageSchema';
@@ -98,6 +102,8 @@ const typeMap: {[index: string]: any} = {
 	ERCSiteTestEntity,
 	Facet,
 	FacetValue,
+	FeatureFlagClassTestEntity,
+	FeatureFlagMethodTestEntity,
 	Filter,
 	JSONMapAttributeTestEntity,
 	MultipartTestEntity,
@@ -112,6 +118,8 @@ const typeMap: {[index: string]: any} = {
 	PageERCAssetLibraryTestEntity,
 	PageERCScopedTestEntity,
 	PageERCSiteTestEntity,
+	PageFeatureFlagClassTestEntity,
+	PageFeatureFlagMethodTestEntity,
 	PageFilter,
 	PagePermission,
 	PageSchema,
