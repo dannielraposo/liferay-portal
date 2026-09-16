@@ -68,8 +68,17 @@ public class Mutation {
 		</#if>
 
 		${freeMarkerTool.getGraphQLMutationName(javaMethodSignature.methodName)}(${freeMarkerTool.getGraphQLParameters(javaMethodSignature.javaMethodParameters, javaMethodSignature.operation, true)}) throws Exception {
-			<#assign arguments = freeMarkerTool.getGraphQLArguments(javaMethodSignature.javaMethodParameters, freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName)) />
+			<#assign
+				arguments = freeMarkerTool.getGraphQLArguments(javaMethodSignature.javaMethodParameters, freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName))
+				featureFlag = freeMarkerTool.getFeatureFlag(openAPIYAML, javaMethodSignature.operation)!
+			/>
 
+			<#if featureFlag?has_content>
+				if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.isEnabled(_company.getCompanyId(), "${featureFlag}")) {
+					throw new ${configYAML.javaEEPackage}.ws.rs.NotFoundException();
+				}
+
+			</#if>
 			<#if javaMethodSignature.returnType?contains("java.util.Collection<")>
 				return _applyComponentServiceObjects(
 					_${freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName)}ResourceComponentServiceObjects, this::_populateResourceContext,

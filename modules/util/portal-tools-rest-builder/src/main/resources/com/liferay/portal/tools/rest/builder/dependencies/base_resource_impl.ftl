@@ -101,6 +101,9 @@ import java.util.Set;
  * @generated
  */
 @Generated("")
+<#if openAPIYAML.info.featureFlag??>
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("${openAPIYAML.info.featureFlag}")
+</#if>
 <#if configYAML.application??>
 	@${configYAML.javaEEPackage}.ws.rs.Path("/${openAPIYAML.info.version}")
 </#if>
@@ -224,7 +227,7 @@ public abstract class Base${schemaName}ResourceImpl
 				 */
 			</#if>
 			@Override
-			${freeMarkerTool.getResourceMethodAnnotations(configYAML, javaMethodSignature)}
+			${freeMarkerTool.getResourceMethodAnnotations(configYAML, openAPIYAML, javaMethodSignature)}
 			public final ${javaMethodSignature.returnType} ${javaMethodSignature.methodName}(${freeMarkerTool.getResourceParameters(configYAML, javaMethodSignature.javaMethodParameters, javaMethodSignature.operation, allSchemas, true)}) throws Exception {
 				<#if stringUtil.equals(httpMethod, "get")>
 					<#if javaMethodSignature.returnType?contains("Page<")>
@@ -363,7 +366,7 @@ public abstract class Base${schemaName}ResourceImpl
 			 */
 		</#if>
 		@Override
-		${freeMarkerTool.getResourceMethodAnnotations(configYAML, javaMethodSignature)}
+		${freeMarkerTool.getResourceMethodAnnotations(configYAML, openAPIYAML, javaMethodSignature)}
 		public <#if generatePermissions>final</#if> ${javaMethodSignature.returnType} ${javaMethodSignature.methodName}(${freeMarkerTool.getResourceParameters(configYAML, javaMethodSignature.javaMethodParameters, javaMethodSignature.operation, allSchemas, true)}) throws Exception {
 			<#if stringUtil.equals(javaMethodSignature.returnType, "boolean")>
 				return false;
