@@ -1,0 +1,45 @@
+components:
+    schemas:
+        FeatureFlagAPITestEntity:
+            properties:
+                id:
+                    format: int64
+                    type: integer
+                name:
+                    type: string
+            type: object
+info:
+    license:
+        name: Apache 2.0
+        url: http://www.apache.org/licenses/LICENSE-2.0.html
+    title: ""
+    version: v2.0
+    x-feature-flag: API-123
+openapi: 3.0.1
+paths:
+    "/feature-flag-api-test-entities":
+        get:
+            operationId: getFeatureFlagAPITestEntitiesPage
+            parameters:
+                -   in: query
+                    name: page
+                    schema:
+                        type: integer
+                -   in: query
+                    name: pageSize
+                    schema:
+                        type: integer
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/FeatureFlagAPITestEntity"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/FeatureFlagAPITestEntity"
+                                type: array
+            tags: ["FeatureFlagAPITestEntity"]

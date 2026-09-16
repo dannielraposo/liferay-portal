@@ -171,6 +171,24 @@ components:
                     enum: [-1em, -0.95em, 1em, 0.95em]
                     type: string
             type: object
+        FeatureFlagClassTestEntity:
+            properties:
+                id:
+                    format: int64
+                    readOnly: true
+                    type: integer
+                name:
+                    type: string
+            type: object
+        FeatureFlagMethodTestEntity:
+            properties:
+                id:
+                    format: int64
+                    readOnly: true
+                    type: integer
+                name:
+                    type: string
+            type: object
         Filter:
             properties:
                 maxResults:
@@ -1521,6 +1539,86 @@ paths:
                         application/json: {}
                         application/xml: {}
             tags: ["ERCScopedTestEntity"]
+    "/feature-flag-class-test-entities":
+        get:
+            operationId: getFeatureFlagClassTestEntitiesPage
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/FeatureFlagClassTestEntity"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/FeatureFlagClassTestEntity"
+                                type: array
+                    description:
+                        "OK"
+            tags: ["FeatureFlagClassTestEntity"]
+    "/feature-flag-method-test-entities":
+        get:
+            operationId: getFeatureFlagMethodTestEntitiesPage
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/FeatureFlagMethodTestEntity"
+                                type: array
+                        application/xml:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/FeatureFlagMethodTestEntity"
+                                type: array
+                    description:
+                        "OK"
+            tags: ["FeatureFlagMethodTestEntity"]
+            x-feature-flag: METHOD-123
+        post:
+            operationId: postFeatureFlagMethodTestEntity
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/FeatureFlagMethodTestEntity"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/FeatureFlagMethodTestEntity"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/FeatureFlagMethodTestEntity"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/FeatureFlagMethodTestEntity"
+                    description:
+                        "OK"
+            tags: ["FeatureFlagMethodTestEntity"]
+    "/feature-flag-method-test-entities/{featureFlagMethodTestEntityId}":
+        delete:
+            operationId: deleteFeatureFlagMethodTestEntity
+            parameters:
+                -   in: path
+                    name: featureFlagMethodTestEntityId
+                    required: true
+                    schema:
+                        format: int64
+                        type: integer
+            responses:
+                200:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+                    description:
+                        "OK"
+            tags: ["FeatureFlagMethodTestEntity"]
+            x-feature-flag: METHOD-123
     "/filters":
         get:
             operationId: getFiltersPage
