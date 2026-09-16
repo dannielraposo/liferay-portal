@@ -26,6 +26,7 @@ import com.liferay.portal.tools.rest.builder.internal.yaml.config.ConfigYAML;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Content;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Delete;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Get;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Info;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.OpenAPIYAML;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Operation;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Parameter;
@@ -53,6 +54,28 @@ import java.util.function.Consumer;
  * @author Peter Shin
  */
 public class ResourceOpenAPIParser {
+
+	public static String getFeatureFlag(
+		OpenAPIYAML openAPIYAML, Operation operation) {
+
+		if ((operation != null) &&
+			Validator.isNotNull(operation.getFeatureFlag())) {
+
+			return operation.getFeatureFlag();
+		}
+
+		if (openAPIYAML == null) {
+			return null;
+		}
+
+		Info info = openAPIYAML.getInfo();
+
+		if ((info == null) || Validator.isNull(info.getFeatureFlag())) {
+			return null;
+		}
+
+		return info.getFeatureFlag();
+	}
 
 	public static List<JavaMethodSignature> getJavaMethodSignatures(
 		ConfigYAML configYAML, OpenAPIYAML openAPIYAML, String schemaName) {
@@ -129,60 +152,60 @@ public class ResourceOpenAPIParser {
 	}
 
 	public static String getMethodAnnotations(
-		ConfigYAML configYAML, JavaMethodSignature javaMethodSignature) {
+		ConfigYAML configYAML, OpenAPIYAML openAPIYAML,
+		JavaMethodSignature javaMethodSignature) {
 
 		String path = javaMethodSignature.getPath();
 		Operation operation = javaMethodSignature.getOperation();
 
 		Set<String> methodAnnotations = new TreeSet<>();
 
+		String featureFlag = getFeatureFlag(openAPIYAML, operation);
+
 		String requestBodyAnnotation = _getRequestBodyAnnotation(
 			javaMethodSignature, operation);
 
-		if ((operation.getDescription() != null) || operation.isDeprecated()) {
-			StringBundler sb = new StringBundler(
-				"@io.swagger.v3.oas.annotations.Operation(");
+		List<String> operationAttributes = new ArrayList<>();
 
-			if (operation.isDeprecated()) {
-				methodAnnotations.add("@Deprecated");
-				sb.append("deprecated=true");
-			}
+		if (operation.isDeprecated()) {
+			methodAnnotations.add("@Deprecated");
 
-			if (operation.getDescription() != null) {
-				if (operation.isDeprecated()) {
-					sb.append(", ");
-				}
-
-				sb.append("description=\"");
-				sb.append(operation.getDescription());
-				sb.append("\"");
-
-				if (!StringUtil.equals(
-						javaMethodSignature.getMethodName(),
-						operation.getOperationId())) {
-
-					sb.append(", operationId=\"");
-					sb.append(operation.getOperationId());
-					sb.append("\"");
-				}
-
-				if (!requestBodyAnnotation.isEmpty()) {
-					sb.append(", ");
-					sb.append(requestBodyAnnotation);
-				}
-			}
-
-			sb.append(")");
-
-			methodAnnotations.add(sb.toString());
+			operationAttributes.add("deprecated=true");
 		}
-		else {
-			if (!requestBodyAnnotation.isEmpty()) {
-				methodAnnotations.add(
+
+		if (operation.getDescription() != null) {
+			operationAttributes.add(
+				StringBundler.concat(
+					"description=\"", operation.getDescription(), "\""));
+
+			if (!StringUtil.equals(
+					javaMethodSignature.getMethodName(),
+					operation.getOperationId())) {
+
+				operationAttributes.add(
 					StringBundler.concat(
-						"@io.swagger.v3.oas.annotations.Operation(",
-						requestBodyAnnotation, ")"));
+						"operationId=\"", operation.getOperationId(), "\""));
 			}
+
+			if (!requestBodyAnnotation.isEmpty()) {
+				operationAttributes.add(requestBodyAnnotation);
+			}
+		}
+		else if (!operation.isDeprecated() &&
+				 !requestBodyAnnotation.isEmpty()) {
+
+			operationAttributes.add(requestBodyAnnotation);
+		}
+
+		if (featureFlag != null) {
+			methodAnnotations.add(_getFeatureFlagAnnotation(featureFlag));
+		}
+
+		if (!operationAttributes.isEmpty()) {
+			methodAnnotations.add(
+				StringBundler.concat(
+					"@io.swagger.v3.oas.annotations.Operation(",
+					StringUtil.merge(operationAttributes, ", "), ")"));
 		}
 
 		if (operation.getTags() != null) {
@@ -745,6 +768,8 @@ public class ResourceOpenAPIParser {
 			batchOperation.setDeprecated(true);
 		}
 
+		batchOperation.setFeatureFlag(operation.getFeatureFlag());
+
 		batchOperation.setParameters(
 			_getBatchParameters(
 				batchOperationType, configYAML, operation, schemaName));
@@ -843,6 +868,12 @@ public class ResourceOpenAPIParser {
 		}
 
 		return null;
+	}
+
+	private static String _getFeatureFlagAnnotation(String featureFlag) {
+		return StringBundler.concat(
+			"@com.liferay.portal.vulcan.feature.flag.FeatureFlag(\"",
+			featureFlag, "\")");
 	}
 
 	private static List<JavaMethodParameter> _getJavaMethodParameters(

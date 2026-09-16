@@ -82,8 +82,17 @@ public class Query {
 		</#if>
 
 		${freeMarkerTool.getGraphQLPropertyName(javaMethodSignature, javaMethodSignatures)}(${freeMarkerTool.getGraphQLParameters(javaMethodSignature.javaMethodParameters, javaMethodSignature.operation, true)}) throws Exception {
-			<#assign arguments = freeMarkerTool.getGraphQLArguments(javaMethodSignature.javaMethodParameters, freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName)) />
+			<#assign
+				arguments = freeMarkerTool.getGraphQLArguments(javaMethodSignature.javaMethodParameters, freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName))
+				featureFlag = freeMarkerTool.getFeatureFlag(openAPIYAML, javaMethodSignature.operation)!
+			/>
 
+			<#if featureFlag?has_content>
+				if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.isEnabled(_company.getCompanyId(), "${featureFlag}")) {
+					throw new ${configYAML.javaEEPackage}.ws.rs.NotFoundException();
+				}
+
+			</#if>
 			<#if javaMethodSignature.returnType?contains("Collection<")>
 				return _applyComponentServiceObjects(
 					_${freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName)}ResourceComponentServiceObjects,
@@ -116,8 +125,17 @@ public class Query {
 			</#if>
 
 			${freeMarkerTool.getGraphQLRelationName(javaMethodSignature, javaMethodSignatures)}(${freeMarkerTool.getGraphQLParameters(javaMethodSignature.javaMethodParameters[1..*(javaMethodSignature.javaMethodParameters?size - 1)], javaMethodSignature.operation, true)}) throws Exception {
-				<#assign arguments = freeMarkerTool.getGraphQLArguments(javaMethodSignature.javaMethodParameters[1..*(javaMethodSignature.javaMethodParameters?size - 1)], freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName)) />
+				<#assign
+					arguments = freeMarkerTool.getGraphQLArguments(javaMethodSignature.javaMethodParameters[1..*(javaMethodSignature.javaMethodParameters?size - 1)], freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName))
+					featureFlag = freeMarkerTool.getFeatureFlag(openAPIYAML, javaMethodSignature.operation)!
+				/>
 
+				<#if featureFlag?has_content>
+					if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.isEnabled(_company.getCompanyId(), "${featureFlag}")) {
+						throw new ${configYAML.javaEEPackage}.ws.rs.NotFoundException();
+					}
+
+				</#if>
 				<#if javaMethodSignature.returnType?contains("Collection<")>
 					return _applyComponentServiceObjects(
 						_${freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName)}ResourceComponentServiceObjects,
@@ -204,8 +222,17 @@ public class Query {
 
 			${freeMarkerTool.getGraphQLMethodAnnotations(javaMethodSignature)}
 			public ${javaMethodSignature.returnType} parent${javaMethodSignature.parentSchemaName}(${freeMarkerTool.getGraphQLParameters(javaMethodSignature.javaMethodParameters[1..*(javaMethodSignature.javaMethodParameters?size - 1)], javaMethodSignature.operation, true)}) throws Exception {
-				<#assign arguments = freeMarkerTool.getGraphQLArguments(javaMethodSignature.javaMethodParameters[1..*(javaMethodSignature.javaMethodParameters?size - 1)], freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName)) />
+				<#assign
+					arguments = freeMarkerTool.getGraphQLArguments(javaMethodSignature.javaMethodParameters[1..*(javaMethodSignature.javaMethodParameters?size - 1)], freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName))
+					featureFlag = freeMarkerTool.getFeatureFlag(openAPIYAML, javaMethodSignature.operation)!
+				/>
 
+				<#if featureFlag?has_content>
+					if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.isEnabled(_company.getCompanyId(), "${featureFlag}")) {
+						throw new ${configYAML.javaEEPackage}.ws.rs.NotFoundException();
+					}
+
+				</#if>
 				if (_${javaMethodSignature.parentSchemaName?uncap_first}.getParent${javaMethodSignature.javaMethodParameters[0].parameterName?cap_first}() == null) {
 					return null;
 				}

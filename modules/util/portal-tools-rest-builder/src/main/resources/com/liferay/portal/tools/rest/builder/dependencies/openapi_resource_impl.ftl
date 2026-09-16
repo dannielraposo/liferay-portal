@@ -36,6 +36,9 @@ import org.osgi.service.component.annotations.Reference;
 	service = OpenAPIResourceImpl.class
 )
 @Generated("")
+<#if openAPIYAML.info.featureFlag??>
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("${openAPIYAML.info.featureFlag}")
+</#if>
 @OpenAPIDefinition(
 	info = @Info(
 		<#if openAPIYAML.info?? && openAPIYAML.info.description??>
