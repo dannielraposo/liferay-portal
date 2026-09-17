@@ -254,6 +254,12 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 				stagingGroup);
 		}
 
+		if (publishProcessRequest.getRemoteConnection() != null) {
+			throw new BadRequestException(
+				"Remote staging is not enabled for site \"" +
+					siteExternalReferenceCode + "\"");
+		}
+
 		Group liveGroup = GroupUtil.getLiveGroup(stagingGroup);
 
 		if (!Validator.isBlank(publishProcessRequest.getCronExpression())) {
