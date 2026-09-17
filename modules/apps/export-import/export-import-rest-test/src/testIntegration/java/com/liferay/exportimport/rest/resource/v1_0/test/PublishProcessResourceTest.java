@@ -190,6 +190,7 @@ public class PublishProcessResourceTest
 		_testPostSitePublishProcessWithPageExternalReferenceCodes();
 		_testPostSitePublishProcessWithPageTreeExternalReferenceCodes();
 		_testPostSitePublishProcessPerformsDirectBinaryImport();
+		_testPostSitePublishProcessWithRemoteConnection();
 		_testPostSiteRemotePublishProcess();
 		_testPostSiteRemotePrivatePublishProcess();
 		_testPostSiteRemotePublishProcessWithRemoteConnection();
@@ -776,6 +777,31 @@ public class PublishProcessResourceTest
 		Assert.assertNull(
 			_layoutLocalService.fetchLayoutByUuidAndGroupId(
 				unselectedLayout.getUuid(), testGroup.getGroupId(), false));
+	}
+
+	private void _testPostSitePublishProcessWithRemoteConnection()
+		throws Exception {
+
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.portal.vulcan.internal.jaxrs.exception.mapper." +
+					"WebApplicationExceptionMapper",
+				LoggerTestUtil.WARN)) {
+
+			assertHttpResponseStatusCode(
+				400,
+				publishProcessResource.postSitePublishProcessHttpResponse(
+					testGroup.getExternalReferenceCode(),
+					new PublishProcessRequest() {
+						{
+							name = RandomTestUtil.randomString();
+							remoteConnection = new RemoteConnection() {
+								{
+									remoteSiteId = RandomTestUtil.randomLong();
+								}
+							};
+						}
+					}));
+		}
 	}
 
 	private void _testPostSitePublishProcessWithoutStaging() throws Exception {
