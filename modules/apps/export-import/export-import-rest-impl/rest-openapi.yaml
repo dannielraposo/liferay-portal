@@ -557,11 +557,6 @@ components:
                     description:
                         The remote live host or IP.
                     type: string
-                remoteGroupId:
-                    description:
-                        The remote live site ID.
-                    format: int64
-                    type: integer
                 remotePathContext:
                     description:
                         The remote live path context.
@@ -569,6 +564,11 @@ components:
                 remotePort:
                     description:
                         The remote live port.
+                    type: integer
+                remoteSiteId:
+                    description:
+                        The remote live site ID.
+                    format: int64
                     type: integer
                 secureConnection:
                     description:
