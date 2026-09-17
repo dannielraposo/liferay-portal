@@ -383,6 +383,7 @@ export function NewPublish({
 									label={Liferay.Language.get('remote-port')}
 									name="remoteConnection.remotePort"
 									required
+									type="number"
 								/>
 
 								<FormikFieldText
@@ -398,6 +399,7 @@ export function NewPublish({
 									)}
 									name="remoteConnection.remoteGroupId"
 									required
+									type="number"
 								/>
 
 								<FormikFieldCheckbox

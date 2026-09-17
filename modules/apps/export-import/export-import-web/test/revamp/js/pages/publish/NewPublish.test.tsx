@@ -159,11 +159,11 @@ describe('NewPublish', () => {
 		expect(screen.getByLabelText(/remote-host-ip/)).toHaveValue(
 			'remote.example.com'
 		);
-		expect(screen.getByLabelText(/remote-port/)).toHaveValue('8080');
+		expect(screen.getByLabelText(/remote-port/)).toHaveValue(8080);
 		expect(screen.getByLabelText(/remote-path-context/)).toHaveValue(
 			'/portal'
 		);
-		expect(screen.getByLabelText(/remote-site-id/)).toHaveValue('12345');
+		expect(screen.getByLabelText(/remote-site-id/)).toHaveValue(12345);
 
 		const secureConnectionCheckbox = screen.getByLabelText(
 			/use-a-secure-network-connection/
@@ -244,8 +244,7 @@ describe('NewPublish', () => {
 			await screen.findByText('this-field-is-required')
 		).toBeInTheDocument();
 
-		await user.click(siteIdField);
-		await user.paste('54321');
+		await user.type(siteIdField, '54321');
 
 		await waitFor(() => {
 			expect(
@@ -368,8 +367,8 @@ describe('NewPublish', () => {
 		expect(await screen.findByLabelText(/remote-host-ip/)).toHaveValue(
 			'saved.example.com'
 		);
-		expect(screen.getByLabelText(/remote-site-id/)).toHaveValue('98765');
-		expect(screen.getByLabelText(/remote-port/)).toHaveValue('443');
+		expect(screen.getByLabelText(/remote-site-id/)).toHaveValue(98765);
+		expect(screen.getByLabelText(/remote-port/)).toHaveValue(443);
 		expect(screen.getByLabelText(/remote-path-context/)).toHaveValue('/o');
 		expect(
 			screen.getByLabelText(/use-a-secure-network-connection/)
