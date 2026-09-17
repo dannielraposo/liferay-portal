@@ -51,9 +51,9 @@ import {
 
 type RemoteConnection = {
 	remoteAddress: string;
-	remoteGroupId: string;
 	remotePathContext: string;
 	remotePort: string;
+	remoteSiteId: string;
 	secureConnection: boolean;
 };
 
@@ -174,13 +174,14 @@ export function NewPublish({
 				remoteConnection: remoteConnection
 					? {
 							remoteAddress: remoteConnection.remoteAddress ?? '',
-							remoteGroupId: String(
-								remoteConnection.remoteGroupId ?? ''
-							),
+
 							remotePathContext:
 								remoteConnection.remotePathContext ?? '',
 							remotePort: String(
 								remoteConnection.remotePort ?? ''
+							),
+							remoteSiteId: String(
+								remoteConnection.remoteSiteId ?? ''
 							),
 							secureConnection:
 								remoteConnection.secureConnection ?? false,
@@ -271,12 +272,13 @@ export function NewPublish({
 					? {
 							remoteConnection: {
 								remoteAddress: remoteConnection.remoteAddress,
-								remoteGroupId: Number(
-									remoteConnection.remoteGroupId
-								),
+
 								remotePathContext:
 									remoteConnection.remotePathContext,
 								remotePort: Number(remoteConnection.remotePort),
+								remoteSiteId: Number(
+									remoteConnection.remoteSiteId
+								),
 								secureConnection:
 									remoteConnection.secureConnection,
 							},
@@ -397,7 +399,7 @@ export function NewPublish({
 									label={Liferay.Language.get(
 										'remote-site-id'
 									)}
-									name="remoteConnection.remoteGroupId"
+									name="remoteConnection.remoteSiteId"
 									required
 									type="number"
 								/>

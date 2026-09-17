@@ -1027,7 +1027,7 @@ public class PublishProcessResourceTest
 					publishProcessRequest.setRemoteConnection(
 						new RemoteConnection() {
 							{
-								remoteGroupId =
+								remoteSiteId =
 									otherRemoteLiveGroup.getGroupId();
 							}
 						});

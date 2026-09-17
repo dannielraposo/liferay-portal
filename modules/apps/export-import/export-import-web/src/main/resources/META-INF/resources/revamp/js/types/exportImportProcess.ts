@@ -86,9 +86,9 @@ export interface PublishProcess {
 
 export interface RemoteConnectionSettings {
 	remoteAddress?: string;
-	remoteGroupId?: number;
 	remotePathContext?: string;
 	remotePort?: number;
+	remoteSiteId?: number;
 	secureConnection?: boolean;
 }
 

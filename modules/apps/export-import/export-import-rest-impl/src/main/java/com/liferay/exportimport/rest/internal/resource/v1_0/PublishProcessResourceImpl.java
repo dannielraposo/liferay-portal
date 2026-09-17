@@ -490,7 +490,7 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 				remoteConnection.getRemoteAddress(),
 				typeSettingsUnicodeProperties.getProperty("remoteAddress")));
 		long remoteGroupId = GetterUtil.getLong(
-			remoteConnection.getRemoteGroupId(),
+			remoteConnection.getRemoteSiteId(),
 			GetterUtil.getLong(
 				typeSettingsUnicodeProperties.getProperty("remoteGroupId")));
 		String remotePathContext = GetterUtil.getString(

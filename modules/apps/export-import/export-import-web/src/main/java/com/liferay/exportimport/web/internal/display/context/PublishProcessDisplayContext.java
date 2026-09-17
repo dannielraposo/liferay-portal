@@ -66,14 +66,14 @@ public class PublishProcessDisplayContext {
 			"remoteAddress",
 			typeSettingsUnicodeProperties.getProperty("remoteAddress")
 		).put(
-			"remoteGroupId",
-			typeSettingsUnicodeProperties.getProperty("remoteGroupId")
-		).put(
 			"remotePathContext",
 			typeSettingsUnicodeProperties.getProperty("remotePathContext")
 		).put(
 			"remotePort",
 			typeSettingsUnicodeProperties.getProperty("remotePort")
+		).put(
+			"remoteSiteId",
+			typeSettingsUnicodeProperties.getProperty("remoteGroupId")
 		).put(
 			"secureConnection",
 			GetterUtil.getBoolean(

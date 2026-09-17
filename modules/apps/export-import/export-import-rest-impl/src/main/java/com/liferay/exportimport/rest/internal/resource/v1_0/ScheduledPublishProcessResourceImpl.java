@@ -282,12 +282,12 @@ public class ScheduledPublishProcessResourceImpl
 			{
 				setRemoteAddress(
 					() -> MapUtil.getString(settingsMap, "remoteAddress"));
-				setRemoteGroupId(
-					() -> MapUtil.getLong(settingsMap, "targetGroupId"));
 				setRemotePathContext(
 					() -> MapUtil.getString(settingsMap, "remotePathContext"));
 				setRemotePort(
 					() -> MapUtil.getInteger(settingsMap, "remotePort"));
+				setRemoteSiteId(
+					() -> MapUtil.getLong(settingsMap, "targetGroupId"));
 				setSecureConnection(
 					() -> MapUtil.getBoolean(settingsMap, "secureConnection"));
 			}

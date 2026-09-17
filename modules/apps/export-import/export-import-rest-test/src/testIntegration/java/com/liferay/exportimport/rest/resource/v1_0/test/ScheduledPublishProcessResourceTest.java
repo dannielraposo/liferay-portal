@@ -202,7 +202,7 @@ public class ScheduledPublishProcessResourceTest
 					"localhost", remoteConnection.getRemoteAddress());
 				Assert.assertEquals(
 					Long.valueOf(remoteLiveGroup.getGroupId()),
-					remoteConnection.getRemoteGroupId());
+					remoteConnection.getRemoteSiteId());
 				Assert.assertFalse(remoteConnection.getSecureConnection());
 
 				assertHttpResponseStatusCode(

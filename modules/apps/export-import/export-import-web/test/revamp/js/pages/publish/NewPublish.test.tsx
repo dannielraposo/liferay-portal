@@ -147,9 +147,9 @@ describe('NewPublish', () => {
 		renderComponent({
 			remoteConnectionSettings: {
 				remoteAddress: 'remote.example.com',
-				remoteGroupId: '12345',
 				remotePathContext: '/portal',
 				remotePort: '8080',
+				remoteSiteId: '12345',
 				secureConnection: false,
 			},
 		});
@@ -192,7 +192,7 @@ describe('NewPublish', () => {
 		const body = JSON.parse(getPublishProcessCall()![1]!.body as string);
 
 		expect(body.remoteConnection.remoteAddress).toBe('other.example.com');
-		expect(body.remoteConnection.remoteGroupId).toBe(12345);
+		expect(body.remoteConnection.remoteSiteId).toBe(12345);
 		expect(body.remoteConnection.remotePort).toBe(8080);
 		expect(body.remoteConnection.remotePathContext).toBe('/portal');
 		expect(body.remoteConnection.secureConnection).toBe(true);
@@ -202,9 +202,9 @@ describe('NewPublish', () => {
 		renderComponent({
 			remoteConnectionSettings: {
 				remoteAddress: 'remote.example.com',
-				remoteGroupId: '12345',
 				remotePathContext: '/portal',
 				remotePort: '8080',
+				remoteSiteId: '12345',
 				secureConnection: false,
 			},
 		});
@@ -226,9 +226,9 @@ describe('NewPublish', () => {
 		renderComponent({
 			remoteConnectionSettings: {
 				remoteAddress: 'remote.example.com',
-				remoteGroupId: '12345',
 				remotePathContext: '/portal',
 				remotePort: '8080',
+				remoteSiteId: '12345',
 				secureConnection: false,
 			},
 		});
@@ -345,9 +345,9 @@ describe('NewPublish', () => {
 				...SCHEDULED_PUBLISH_PROCESS,
 				remoteConnection: {
 					remoteAddress: 'saved.example.com',
-					remoteGroupId: 98765,
 					remotePathContext: '/o',
 					remotePort: 443,
+					remoteSiteId: 98765,
 					secureConnection: true,
 				},
 			},
@@ -356,9 +356,9 @@ describe('NewPublish', () => {
 		renderComponent({
 			remoteConnectionSettings: {
 				remoteAddress: 'default.example.com',
-				remoteGroupId: '11111',
 				remotePathContext: '',
 				remotePort: '8080',
+				remoteSiteId: '11111',
 				secureConnection: false,
 			},
 			scheduledPublishProcessId: SCHEDULED_PUBLISH_PROCESS.id,
