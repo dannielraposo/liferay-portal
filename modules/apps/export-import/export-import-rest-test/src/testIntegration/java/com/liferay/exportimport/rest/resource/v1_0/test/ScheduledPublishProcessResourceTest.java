@@ -198,7 +198,6 @@ public class ScheduledPublishProcessResourceTest
 				RemoteConnection remoteConnection =
 					getScheduledPublishProcess.getRemoteConnection();
 
-				Assert.assertNotNull(remoteConnection);
 				Assert.assertEquals(
 					"localhost", remoteConnection.getRemoteAddress());
 				Assert.assertEquals(
