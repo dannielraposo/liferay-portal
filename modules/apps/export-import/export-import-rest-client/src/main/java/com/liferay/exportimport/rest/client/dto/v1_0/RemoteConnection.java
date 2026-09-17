@@ -46,27 +46,6 @@ public class RemoteConnection implements Cloneable, Serializable {
 
 	protected String remoteAddress;
 
-	public Long getRemoteGroupId() {
-		return remoteGroupId;
-	}
-
-	public void setRemoteGroupId(Long remoteGroupId) {
-		this.remoteGroupId = remoteGroupId;
-	}
-
-	public void setRemoteGroupId(
-		UnsafeSupplier<Long, Exception> remoteGroupIdUnsafeSupplier) {
-
-		try {
-			remoteGroupId = remoteGroupIdUnsafeSupplier.get();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected Long remoteGroupId;
-
 	public String getRemotePathContext() {
 		return remotePathContext;
 	}
@@ -108,6 +87,27 @@ public class RemoteConnection implements Cloneable, Serializable {
 	}
 
 	protected Integer remotePort;
+
+	public Long getRemoteSiteId() {
+		return remoteSiteId;
+	}
+
+	public void setRemoteSiteId(Long remoteSiteId) {
+		this.remoteSiteId = remoteSiteId;
+	}
+
+	public void setRemoteSiteId(
+		UnsafeSupplier<Long, Exception> remoteSiteIdUnsafeSupplier) {
+
+		try {
+			remoteSiteId = remoteSiteIdUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Long remoteSiteId;
 
 	public Boolean getSecureConnection() {
 		return secureConnection;
@@ -162,4 +162,4 @@ public class RemoteConnection implements Cloneable, Serializable {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1641994949
+// LIFERAY-REST-BUILDER-HASH:-2136876629

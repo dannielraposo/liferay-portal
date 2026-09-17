@@ -99,49 +99,6 @@ public class RemoteConnection implements Serializable {
 	private Supplier<String> _remoteAddressSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The remote live site ID."
-	)
-	public Long getRemoteGroupId() {
-		if (_remoteGroupIdSupplier != null) {
-			remoteGroupId = _remoteGroupIdSupplier.get();
-
-			_remoteGroupIdSupplier = null;
-		}
-
-		return remoteGroupId;
-	}
-
-	public void setRemoteGroupId(Long remoteGroupId) {
-		this.remoteGroupId = remoteGroupId;
-
-		_remoteGroupIdSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setRemoteGroupId(
-		UnsafeSupplier<Long, Exception> remoteGroupIdUnsafeSupplier) {
-
-		_remoteGroupIdSupplier = () -> {
-			try {
-				return remoteGroupIdUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField(description = "The remote live site ID.")
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected Long remoteGroupId;
-
-	@JsonIgnore
-	private Supplier<Long> _remoteGroupIdSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The remote live path context."
 	)
 	public String getRemotePathContext() {
@@ -226,6 +183,49 @@ public class RemoteConnection implements Serializable {
 
 	@JsonIgnore
 	private Supplier<Integer> _remotePortSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The remote live site ID."
+	)
+	public Long getRemoteSiteId() {
+		if (_remoteSiteIdSupplier != null) {
+			remoteSiteId = _remoteSiteIdSupplier.get();
+
+			_remoteSiteIdSupplier = null;
+		}
+
+		return remoteSiteId;
+	}
+
+	public void setRemoteSiteId(Long remoteSiteId) {
+		this.remoteSiteId = remoteSiteId;
+
+		_remoteSiteIdSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setRemoteSiteId(
+		UnsafeSupplier<Long, Exception> remoteSiteIdUnsafeSupplier) {
+
+		_remoteSiteIdSupplier = () -> {
+			try {
+				return remoteSiteIdUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(description = "The remote live site ID.")
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Long remoteSiteId;
+
+	@JsonIgnore
+	private Supplier<Long> _remoteSiteIdSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "Whether to connect to the remote live over a secure network connection."
@@ -315,18 +315,6 @@ public class RemoteConnection implements Serializable {
 			sb.append("\"");
 		}
 
-		Long remoteGroupId = getRemoteGroupId();
-
-		if (remoteGroupId != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"remoteGroupId\": ");
-
-			sb.append(remoteGroupId);
-		}
-
 		String remotePathContext = getRemotePathContext();
 
 		if (remotePathContext != null) {
@@ -353,6 +341,18 @@ public class RemoteConnection implements Serializable {
 			sb.append("\"remotePort\": ");
 
 			sb.append(remotePort);
+		}
+
+		Long remoteSiteId = getRemoteSiteId();
+
+		if (remoteSiteId != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"remoteSiteId\": ");
+
+			sb.append(remoteSiteId);
 		}
 
 		Boolean secureConnection = getSecureConnection();
@@ -489,4 +489,4 @@ public class RemoteConnection implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:268431974
+// LIFERAY-REST-BUILDER-HASH:-2073949830

@@ -61,16 +61,6 @@ public class RemoteConnectionSerDes {
 			sb.append("\"");
 		}
 
-		if (remoteConnection.getRemoteGroupId() != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"remoteGroupId\": ");
-
-			sb.append(remoteConnection.getRemoteGroupId());
-		}
-
 		if (remoteConnection.getRemotePathContext() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -93,6 +83,16 @@ public class RemoteConnectionSerDes {
 			sb.append("\"remotePort\": ");
 
 			sb.append(remoteConnection.getRemotePort());
+		}
+
+		if (remoteConnection.getRemoteSiteId() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"remoteSiteId\": ");
+
+			sb.append(remoteConnection.getRemoteSiteId());
 		}
 
 		if (remoteConnection.getSecureConnection() != null) {
@@ -133,15 +133,6 @@ public class RemoteConnectionSerDes {
 				String.valueOf(remoteConnection.getRemoteAddress()));
 		}
 
-		if (remoteConnection.getRemoteGroupId() == null) {
-			map.put("remoteGroupId", null);
-		}
-		else {
-			map.put(
-				"remoteGroupId",
-				String.valueOf(remoteConnection.getRemoteGroupId()));
-		}
-
 		if (remoteConnection.getRemotePathContext() == null) {
 			map.put("remotePathContext", null);
 		}
@@ -157,6 +148,15 @@ public class RemoteConnectionSerDes {
 		else {
 			map.put(
 				"remotePort", String.valueOf(remoteConnection.getRemotePort()));
+		}
+
+		if (remoteConnection.getRemoteSiteId() == null) {
+			map.put("remoteSiteId", null);
+		}
+		else {
+			map.put(
+				"remoteSiteId",
+				String.valueOf(remoteConnection.getRemoteSiteId()));
 		}
 
 		if (remoteConnection.getSecureConnection() == null) {
@@ -189,13 +189,13 @@ public class RemoteConnectionSerDes {
 			if (Objects.equals(jsonParserFieldName, "remoteAddress")) {
 				return false;
 			}
-			else if (Objects.equals(jsonParserFieldName, "remoteGroupId")) {
-				return false;
-			}
 			else if (Objects.equals(jsonParserFieldName, "remotePathContext")) {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "remotePort")) {
+				return false;
+			}
+			else if (Objects.equals(jsonParserFieldName, "remoteSiteId")) {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "secureConnection")) {
@@ -216,12 +216,6 @@ public class RemoteConnectionSerDes {
 						(String)jsonParserFieldValue);
 				}
 			}
-			else if (Objects.equals(jsonParserFieldName, "remoteGroupId")) {
-				if (jsonParserFieldValue != null) {
-					remoteConnection.setRemoteGroupId(
-						Long.valueOf((String)jsonParserFieldValue));
-				}
-			}
 			else if (Objects.equals(jsonParserFieldName, "remotePathContext")) {
 				if (jsonParserFieldValue != null) {
 					remoteConnection.setRemotePathContext(
@@ -232,6 +226,12 @@ public class RemoteConnectionSerDes {
 				if (jsonParserFieldValue != null) {
 					remoteConnection.setRemotePort(
 						Integer.valueOf((String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "remoteSiteId")) {
+				if (jsonParserFieldValue != null) {
+					remoteConnection.setRemoteSiteId(
+						Long.valueOf((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "secureConnection")) {
@@ -327,4 +327,4 @@ public class RemoteConnectionSerDes {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-406850338
+// LIFERAY-REST-BUILDER-HASH:1069353954
