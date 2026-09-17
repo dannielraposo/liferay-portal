@@ -353,39 +353,44 @@ public class ExportImportTestUtil {
 		throws Exception {
 
 		Group remoteLiveGroup = GroupTestUtil.addGroup();
-		Group stagingGroup = GroupTestUtil.addGroup();
 
-		try (SafeCloseable safeCloseable1 =
-				PropsValuesTestUtil.swapWithSafeCloseable(
-					"TUNNELING_SERVLET_SHARED_SECRET",
-					"F0E1D2C3B4A5968778695A4B3C2D1E0F");
-			SafeCloseable safeCloseable2 =
-				PropsValuesTestUtil.swapWithSafeCloseable(
-					"TUNNELING_SERVLET_SHARED_SECRET_HEX", true)) {
+		try {
+			Group stagingGroup = GroupTestUtil.addGroup();
 
-			ServiceContext serviceContext =
-				ServiceContextTestUtil.getServiceContext(
-					stagingGroup.getGroupId());
+			try (SafeCloseable safeCloseable1 =
+					PropsValuesTestUtil.swapWithSafeCloseable(
+						"TUNNELING_SERVLET_SHARED_SECRET",
+						"F0E1D2C3B4A5968778695A4B3C2D1E0F");
+				SafeCloseable safeCloseable2 =
+					PropsValuesTestUtil.swapWithSafeCloseable(
+						"TUNNELING_SERVLET_SHARED_SECRET_HEX", true)) {
 
-			Map<String, Serializable> attributes =
-				serviceContext.getAttributes();
+				ServiceContext serviceContext =
+					ServiceContextTestUtil.getServiceContext(
+						stagingGroup.getGroupId());
 
-			attributes.putAll(
-				ExportImportConfigurationParameterMapFactoryUtil.
-					buildParameterMap());
+				Map<String, Serializable> attributes =
+					serviceContext.getAttributes();
 
-			StagingLocalServiceUtil.enableRemoteStaging(
-				TestPropsValues.getUserId(), stagingGroup, false, false,
-				"localhost", PortalUtil.getPortalServerPort(false),
-				PortalUtil.getPathContext(), false,
-				remoteLiveGroup.getGroupId(), serviceContext);
+				attributes.putAll(
+					ExportImportConfigurationParameterMapFactoryUtil.
+						buildParameterMap());
 
-			unsafeBiConsumer.accept(
-				GroupLocalServiceUtil.getGroup(stagingGroup.getGroupId()),
-				remoteLiveGroup);
+				StagingLocalServiceUtil.enableRemoteStaging(
+					TestPropsValues.getUserId(), stagingGroup, false, false,
+					"localhost", PortalUtil.getPortalServerPort(false),
+					PortalUtil.getPathContext(), false,
+					remoteLiveGroup.getGroupId(), serviceContext);
+
+				unsafeBiConsumer.accept(
+					GroupLocalServiceUtil.getGroup(stagingGroup.getGroupId()),
+					remoteLiveGroup);
+			}
+			finally {
+				GroupTestUtil.deleteGroup(stagingGroup);
+			}
 		}
 		finally {
-			GroupTestUtil.deleteGroup(stagingGroup);
 			GroupTestUtil.deleteGroup(remoteLiveGroup);
 		}
 	}
