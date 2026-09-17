@@ -1005,13 +1005,8 @@ public class PublishProcessResourceTest
 					publishProcessRequest.setRemoteConnection(
 						new RemoteConnection() {
 							{
-								remoteAddress = "localhost";
 								remoteGroupId =
 									otherRemoteLiveGroup.getGroupId();
-								remotePathContext = PortalUtil.getPathContext();
-								remotePort = PortalUtil.getPortalServerPort(
-									false);
-								secureConnection = false;
 							}
 						});
 
