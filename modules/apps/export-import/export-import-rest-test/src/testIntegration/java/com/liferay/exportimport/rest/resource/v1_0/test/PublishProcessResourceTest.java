@@ -895,6 +895,28 @@ public class PublishProcessResourceTest
 				ExportImportTestUtil.assertBackgroundTaskSuccessful(
 					publishProcess.getId());
 
+				BackgroundTask backgroundTask =
+					_backgroundTaskLocalService.getBackgroundTask(
+						publishProcess.getId());
+
+				ExportImportConfiguration exportImportConfiguration =
+					_exportImportConfigurationLocalService.
+						getExportImportConfiguration(
+							MapUtil.getLong(
+								backgroundTask.getTaskContextMap(),
+								"exportImportConfigurationId"));
+
+				Map<String, Serializable> settingsMap =
+					exportImportConfiguration.getSettingsMap();
+
+				Map<String, String[]> parameterMap =
+					(Map<String, String[]>)settingsMap.get("parameterMap");
+
+				Assert.assertFalse(
+					MapUtil.getBoolean(
+						parameterMap,
+						PortletDataHandlerKeys.PERFORM_DIRECT_BINARY_IMPORT));
+
 				Assert.assertEquals(
 					layoutsCount + 1,
 					_layoutLocalService.getLayoutsCount(
