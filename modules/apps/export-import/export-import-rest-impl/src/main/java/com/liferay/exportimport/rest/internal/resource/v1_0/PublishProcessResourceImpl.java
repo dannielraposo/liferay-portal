@@ -34,9 +34,7 @@ import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstant
 import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplayFactory;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.RemoteOptionsException;
-import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.model.Group;
@@ -693,9 +691,10 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 	}
 
 	private void _validateRemoteGroup(
-		long groupId, String remoteAddress, int remotePort,
-		String remotePathContext, boolean secureConnection,
-		long remoteGroupId) {
+			long groupId, String remoteAddress, int remotePort,
+			String remotePathContext, boolean secureConnection,
+			long remoteGroupId)
+		throws Exception {
 
 		try {
 			_groupLocalService.validateRemote(
@@ -714,14 +713,6 @@ public class PublishProcessResourceImpl extends BasePublishProcessResourceImpl {
 		catch (RemoteOptionsException remoteOptionsException) {
 			throw new BadRequestException(
 				_getMessage(remoteOptionsException), remoteOptionsException);
-		}
-		catch (SystemException systemException) {
-			throw new BadRequestException(
-				"Unable to connect to the remote site", systemException);
-		}
-		catch (PortalException portalException) {
-			throw new BadRequestException(
-				"Unable to validate the remote site", portalException);
 		}
 	}
 
