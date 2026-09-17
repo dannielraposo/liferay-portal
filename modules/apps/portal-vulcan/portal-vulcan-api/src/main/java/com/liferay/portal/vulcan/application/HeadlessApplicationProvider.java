@@ -12,6 +12,9 @@ import java.util.List;
  */
 public interface HeadlessApplicationProvider {
 
+	// TODO Receive the company ID as a parameter instead of reading it from
+	// CompanyThreadLocal
+
 	public List<Application> getApplications();
 
 	public interface Application {
