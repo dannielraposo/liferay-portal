@@ -24,7 +24,7 @@ public class ToolSetResourceImpl extends BaseToolSetResourceImpl {
 
 	@Override
 	public Page<ToolSet> getToolSetsPage() {
-		return ToolSetUtil.getToolSetsPage();
+		return ToolSetUtil.getToolSetsPage(contextCompany.getCompanyId());
 	}
 
 }

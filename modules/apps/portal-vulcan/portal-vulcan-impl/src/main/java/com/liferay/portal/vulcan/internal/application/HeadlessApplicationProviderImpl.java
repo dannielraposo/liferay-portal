@@ -16,7 +16,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.remote.jaxrs.whiteboard.lifecycle.JAXRSLifecycle;
@@ -72,10 +72,10 @@ public class HeadlessApplicationProviderImpl
 	implements HeadlessApplicationProvider {
 
 	@Override
-	public List<Application> getApplications() {
+	public List<Application> getApplications(long companyId) {
 		List<Application> applications = new ArrayList<>();
 
-		if (_applicationImpls == null) {
+		if (_applicationDTOs == null) {
 			_jaxrsLifecycle.ensureReady();
 
 			JaxrsServiceRuntime jaxrsServiceRuntime =
@@ -87,32 +87,29 @@ public class HeadlessApplicationProviderImpl
 
 			RuntimeDTO runtimeDTO = jaxrsServiceRuntime.getRuntimeDTO();
 
-			_applicationImpls = TransformUtil.transformToList(
-				runtimeDTO.applicationDTOs, ApplicationImpl::new);
+			_applicationDTOs = ListUtil.fromArray(runtimeDTO.applicationDTOs);
 		}
 
-		List<ApplicationImpl> applicationImpls = _applicationImpls;
+		List<ApplicationDTO> applicationDTOs = _applicationDTOs;
 
-		if (applicationImpls == null) {
+		if (applicationDTOs == null) {
 			return applications;
 		}
 
-		long companyId = CompanyThreadLocal.getCompanyId();
-
-		for (ApplicationImpl applicationImpl : applicationImpls) {
+		for (ApplicationDTO applicationDTO : applicationDTOs) {
 			ServiceReference<?> serviceReference =
 				_companyIdsServiceTrackerMap.getService(
-					applicationImpl._applicationDTO.serviceId);
+					applicationDTO.serviceId);
 
 			if (!_isRegistered(companyId, serviceReference)) {
 				continue;
 			}
 
-			List<OpenAPIDocument> openAPIDocuments =
-				applicationImpl.getOpenAPIDocuments();
+			ApplicationImpl applicationImpl = new ApplicationImpl(
+				applicationDTO, companyId);
 
 			if (applicationImpl._hasOpenAPIDocuments() &&
-				openAPIDocuments.isEmpty()) {
+				ListUtil.isEmpty(applicationImpl.getOpenAPIDocuments())) {
 
 				continue;
 			}
@@ -160,7 +157,7 @@ public class HeadlessApplicationProviderImpl
 				public JaxrsServiceRuntime addingService(
 					ServiceReference<JaxrsServiceRuntime> serviceReference) {
 
-					_applicationImpls = null;
+					_applicationDTOs = null;
 
 					return bundleContext.getService(serviceReference);
 				}
@@ -170,7 +167,7 @@ public class HeadlessApplicationProviderImpl
 					ServiceReference<JaxrsServiceRuntime> serviceReference,
 					JaxrsServiceRuntime jaxrsServiceRuntime) {
 
-					_applicationImpls = null;
+					_applicationDTOs = null;
 				}
 
 				@Override
@@ -178,7 +175,7 @@ public class HeadlessApplicationProviderImpl
 					ServiceReference<JaxrsServiceRuntime> serviceReference,
 					JaxrsServiceRuntime jaxrsServiceRuntime) {
 
-					_applicationImpls = null;
+					_applicationDTOs = null;
 
 					bundleContext.ungetService(serviceReference);
 				}
@@ -335,7 +332,7 @@ public class HeadlessApplicationProviderImpl
 	private static final Pattern _versionPattern = Pattern.compile(
 		"v[0-9]+\\.[0-9]+");
 
-	private volatile List<ApplicationImpl> _applicationImpls;
+	private volatile List<ApplicationDTO> _applicationDTOs;
 	private ServiceTrackerMap<Long, ServiceReference<?>>
 		_companyIdsServiceTrackerMap;
 
@@ -398,8 +395,6 @@ public class HeadlessApplicationProviderImpl
 		public List<OpenAPIDocument> getOpenAPIDocuments() {
 			List<OpenAPIDocument> openAPIDocuments = new ArrayList<>();
 
-			long companyId = CompanyThreadLocal.getCompanyId();
-
 			for (String path : _getOpenAPIPaths()) {
 				OpenAPIDocumentImpl openAPIDocumentImpl =
 					new OpenAPIDocumentImpl(this, path);
@@ -418,7 +413,7 @@ public class HeadlessApplicationProviderImpl
 
 					if ((featureFlag != null) &&
 						!FeatureFlagManagerUtil.isEnabled(
-							companyId, featureFlag.value())) {
+							_companyId, featureFlag.value())) {
 
 						continue;
 					}
@@ -443,8 +438,9 @@ public class HeadlessApplicationProviderImpl
 					getBasePath(), resourceMethodInfoDTO));
 		}
 
-		private ApplicationImpl(ApplicationDTO applicationDTO) {
+		private ApplicationImpl(ApplicationDTO applicationDTO, long companyId) {
 			_applicationDTO = applicationDTO;
+			_companyId = companyId;
 		}
 
 		private Set<String> _getOpenAPIPaths() {
@@ -503,6 +499,7 @@ public class HeadlessApplicationProviderImpl
 		}
 
 		private final ApplicationDTO _applicationDTO;
+		private final long _companyId;
 
 	}
 
@@ -646,7 +643,6 @@ public class HeadlessApplicationProviderImpl
 				return null;
 			}
 
-			long companyId = CompanyThreadLocal.getCompanyId();
 			String version = getVersion();
 
 			for (ServiceReferenceServiceTuple<Object, Object>
@@ -658,7 +654,8 @@ public class HeadlessApplicationProviderImpl
 
 				if (Objects.equals(
 						version, serviceReference.getProperty("api.version")) &&
-					_isRegistered(companyId, serviceReference)) {
+					_isRegistered(
+						_applicationImpl._companyId, serviceReference)) {
 
 					return serviceReferenceServiceTuple;
 				}
