@@ -5,10 +5,11 @@
 
 package com.liferay.mcp.server.rest.internal.feature.flag;
 
-import com.liferay.mcp.server.rest.internal.util.ToolSetUtil;
+import com.liferay.mcp.server.rest.internal.cache.MCPServerCacheManager;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagListener;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alejandro Tardín
@@ -20,7 +21,10 @@ public class MCPServerFeatureFlagListener implements FeatureFlagListener {
 	public void onValue(
 		long companyId, String featureFlagKey, boolean enabled) {
 
-		ToolSetUtil.clearOpenAPIJSONObjectCache(companyId);
+		_mcpServerCacheManager.clearOpenAPIJSONObjectCache(companyId);
 	}
+
+	@Reference
+	private MCPServerCacheManager _mcpServerCacheManager;
 
 }
