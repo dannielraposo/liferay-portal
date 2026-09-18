@@ -227,7 +227,7 @@ public abstract class Base${schemaName}ResourceImpl
 				 */
 			</#if>
 			@Override
-			${freeMarkerTool.getResourceMethodAnnotations(configYAML, openAPIYAML, javaMethodSignature)}
+			${freeMarkerTool.getResourceMethodAnnotations(configYAML, javaMethodSignature)}
 			public final ${javaMethodSignature.returnType} ${javaMethodSignature.methodName}(${freeMarkerTool.getResourceParameters(configYAML, javaMethodSignature.javaMethodParameters, javaMethodSignature.operation, allSchemas, true)}) throws Exception {
 				<#if stringUtil.equals(httpMethod, "get")>
 					<#if javaMethodSignature.returnType?contains("Page<")>
@@ -366,7 +366,7 @@ public abstract class Base${schemaName}ResourceImpl
 			 */
 		</#if>
 		@Override
-		${freeMarkerTool.getResourceMethodAnnotations(configYAML, openAPIYAML, javaMethodSignature)}
+		${freeMarkerTool.getResourceMethodAnnotations(configYAML, javaMethodSignature)}
 		public <#if generatePermissions>final</#if> ${javaMethodSignature.returnType} ${javaMethodSignature.methodName}(${freeMarkerTool.getResourceParameters(configYAML, javaMethodSignature.javaMethodParameters, javaMethodSignature.operation, allSchemas, true)}) throws Exception {
 			<#if stringUtil.equals(javaMethodSignature.returnType, "boolean")>
 				return false;
