@@ -71,7 +71,7 @@ public class ResourceOpenAPIParser {
 
 		Info info = openAPIYAML.getInfo();
 
-		if ((info == null) || Validator.isNull(info.getFeatureFlag())) {
+		if (info == null) {
 			return null;
 		}
 
@@ -158,15 +158,12 @@ public class ResourceOpenAPIParser {
 	}
 
 	public static String getMethodAnnotations(
-		ConfigYAML configYAML, OpenAPIYAML openAPIYAML,
-		JavaMethodSignature javaMethodSignature) {
+		ConfigYAML configYAML, JavaMethodSignature javaMethodSignature) {
 
 		String path = javaMethodSignature.getPath();
 		Operation operation = javaMethodSignature.getOperation();
 
 		Set<String> methodAnnotations = new TreeSet<>();
-
-		String featureFlag = getFeatureFlag(openAPIYAML, operation);
 
 		String requestBodyAnnotation = _getRequestBodyAnnotation(
 			javaMethodSignature, operation);
@@ -203,8 +200,13 @@ public class ResourceOpenAPIParser {
 			operationAttributes.add(requestBodyAnnotation);
 		}
 
-		if (featureFlag != null) {
-			methodAnnotations.add(_getFeatureFlagAnnotation(featureFlag));
+		String featureFlag = operation.getFeatureFlag();
+
+		if (Validator.isNotNull(featureFlag)) {
+			methodAnnotations.add(
+				StringBundler.concat(
+					"@com.liferay.portal.vulcan.feature.flag.FeatureFlag(\"",
+					featureFlag, "\")"));
 		}
 
 		if (!operationAttributes.isEmpty()) {
@@ -901,12 +903,6 @@ public class ResourceOpenAPIParser {
 		}
 
 		return null;
-	}
-
-	private static String _getFeatureFlagAnnotation(String featureFlag) {
-		return StringBundler.concat(
-			"@com.liferay.portal.vulcan.feature.flag.FeatureFlag(\"",
-			featureFlag, "\")");
 	}
 
 	private static List<JavaMethodParameter> _getJavaMethodParameters(
