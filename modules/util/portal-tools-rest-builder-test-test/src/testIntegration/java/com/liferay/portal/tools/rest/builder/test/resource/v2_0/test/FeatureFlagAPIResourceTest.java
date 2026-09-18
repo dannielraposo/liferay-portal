@@ -8,6 +8,7 @@ package com.liferay.portal.tools.rest.builder.test.resource.v2_0.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.HTTPTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
@@ -65,9 +66,10 @@ public class FeatureFlagAPIResourceTest {
 			null, "portal-tools-rest-builder-test/" + path, Http.Method.GET);
 	}
 
-	private List<String> _getOpenAPIDocumentVersions() {
+	private List<String> _getOpenAPIDocumentVersions() throws Exception {
 		for (HeadlessApplicationProvider.Application application :
-				_headlessApplicationProvider.getApplications()) {
+				_headlessApplicationProvider.getApplications(
+					TestPropsValues.getCompanyId())) {
 
 			if (!Objects.equals(
 					application.getBasePath(),
