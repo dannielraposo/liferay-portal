@@ -13,13 +13,13 @@ import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Validator;
@@ -27,8 +27,8 @@ import com.liferay.portal.vulcan.extension.EntityExtensionHandler;
 import com.liferay.portal.vulcan.extension.ExtensionProviderRegistry;
 import com.liferay.portal.vulcan.extension.PropertyDefinition;
 import com.liferay.portal.vulcan.extension.util.ExtensionUtil;
-import com.liferay.portal.vulcan.feature.flag.FeatureFlag;
 import com.liferay.portal.vulcan.internal.configuration.util.ConfigurationUtil;
+import com.liferay.portal.vulcan.internal.feature.flag.FeatureFlagUtil;
 import com.liferay.portal.vulcan.openapi.DTOProperty;
 import com.liferay.portal.vulcan.openapi.OpenAPIContext;
 import com.liferay.portal.vulcan.openapi.OpenAPISchemaFilter;
@@ -74,13 +74,11 @@ import io.swagger.v3.oas.models.tags.Tag;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import java.net.URI;
@@ -100,6 +98,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.cxf.jaxrs.utils.AnnotationUtils;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
@@ -545,6 +545,19 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 			_getUpdatedSchemaReference(schema.get$ref(), schemaPrefix));
 	}
 
+	private String _getApplicationPath(UriInfo uriInfo) {
+		if (uriInfo == null) {
+			return null;
+		}
+
+		URI baseURI = uriInfo.getBaseUri();
+
+		String applicationPath = StringUtil.removeFirst(
+			baseURI.getPath(), Portal.PATH_MODULE);
+
+		return StringUtil.replaceLast(applicationPath, '/', "");
+	}
+
 	private String _getBasePath(
 		HttpServletRequest httpServletRequest, UriInfo uriInfo) {
 
@@ -690,30 +703,19 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 		long companyId = CompanyThreadLocal.getCompanyId();
 
 		for (Class<?> resourceClass : resourceClasses) {
-			for (Method method : resourceClass.getMethods()) {
-				Method resourceMethod = _getResourceMethod(
-					resourceClass, method);
+			for (Class<?> currentClass = resourceClass; currentClass != null;
+				 currentClass = currentClass.getSuperclass()) {
 
-				if (resourceMethod == null) {
-					continue;
+				for (Method method : currentClass.getDeclaredMethods()) {
+					if ((AnnotationUtils.getHttpMethodValue(method) == null) ||
+						FeatureFlagUtil.isEnabled(
+							companyId, method, resourceClass)) {
+
+						continue;
+					}
+
+					operationIds.add(_getOperationId(method));
 				}
-
-				FeatureFlag featureFlag = resourceMethod.getAnnotation(
-					FeatureFlag.class);
-
-				if (featureFlag == null) {
-					featureFlag = resourceClass.getAnnotation(
-						FeatureFlag.class);
-				}
-
-				if ((featureFlag == null) ||
-					FeatureFlagManagerUtil.isEnabled(
-						companyId, featureFlag.value())) {
-
-					continue;
-				}
-
-				operationIds.add(_getOperationId(resourceMethod));
 			}
 		}
 
@@ -763,7 +765,7 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 			_mergeOpenAPISchemaFilters(
 				openAPISchemaFilter,
 				_getOpenAPISchemaFilter(
-					_getBasePath(null, uriInfo), _extensionProviderRegistry,
+					_getApplicationPath(uriInfo), _extensionProviderRegistry,
 					resourceClasses));
 
 		Map<String, List<String>> queryParameters = null;
@@ -819,7 +821,7 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 	}
 
 	private OpenAPISchemaFilter _getOpenAPISchemaFilter(
-			String basePath,
+			String applicationPath,
 			ExtensionProviderRegistry extensionProviderRegistry,
 			Set<Class<?>> resourceClasses)
 		throws Exception {
@@ -839,7 +841,7 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 			}
 		}
 
-		return _getOpenAPISchemaFilter(basePath, propertyDefinitionsMap);
+		return _getOpenAPISchemaFilter(applicationPath, propertyDefinitionsMap);
 	}
 
 	private OpenAPISchemaFilter _getOpenAPISchemaFilter(
@@ -885,34 +887,6 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 		return resourceMethod.getName();
 	}
 
-	private Method _getResourceMethod(Class<?> resourceClass, Method method) {
-		for (Class<?> currentClass = resourceClass; currentClass != null;
-			 currentClass = currentClass.getSuperclass()) {
-
-			for (Method declaredMethod : currentClass.getDeclaredMethods()) {
-				if (!Objects.equals(
-						declaredMethod.getName(), method.getName()) ||
-					!Arrays.equals(
-						declaredMethod.getParameterTypes(),
-						method.getParameterTypes())) {
-
-					continue;
-				}
-
-				for (Annotation annotation : declaredMethod.getAnnotations()) {
-					Class<? extends Annotation> annotationType =
-						annotation.annotationType();
-
-					if (annotationType.isAnnotationPresent(HttpMethod.class)) {
-						return declaredMethod;
-					}
-				}
-			}
-		}
-
-		return null;
-	}
-
 	private OpenAPISchemaFilter _mergeOpenAPISchemaFilters(
 		OpenAPISchemaFilter openAPISchemaFilter1,
 		OpenAPISchemaFilter openAPISchemaFilter2) {
@@ -952,10 +926,12 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 
 		List<DTOProperty> dtoProperties =
 			openAPISchemaFilter.getDTOProperties();
-
+		Set<String> excludedOperationIds =
+			ConfigurationUtil.getExcludedOperationIds(
+				CompanyThreadLocal.getCompanyId(), _configurationAdmin,
+				openAPISchemaFilter.getApplicationPath());
 		Set<String> featureFlagDisabledOperationIds =
 			_getFeatureFlagDisabledOperationIds(resourceClasses);
-
 		Map<String, String> schemaMappings =
 			openAPISchemaFilter.getSchemaMappings();
 
@@ -1019,11 +995,6 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 				Map<String, List<String>> headers) {
 
 				String operationId = operation.getOperationId();
-
-				Set<String> excludedOperationIds =
-					ConfigurationUtil.getExcludedOperationIds(
-						CompanyThreadLocal.getCompanyId(), _configurationAdmin,
-						openAPISchemaFilter.getApplicationPath());
 
 				if (excludedOperationIds.contains(operationId) ||
 					featureFlagDisabledOperationIds.contains(operationId)) {

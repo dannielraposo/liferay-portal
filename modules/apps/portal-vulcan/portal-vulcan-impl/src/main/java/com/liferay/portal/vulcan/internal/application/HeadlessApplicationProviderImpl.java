@@ -13,15 +13,15 @@ import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory
 import com.liferay.osgi.util.ServiceTrackerFactory;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.remote.jaxrs.whiteboard.lifecycle.JAXRSLifecycle;
 import com.liferay.portal.vulcan.application.HeadlessApplicationProvider;
-import com.liferay.portal.vulcan.feature.flag.FeatureFlag;
+import com.liferay.portal.vulcan.internal.feature.flag.FeatureFlagUtil;
 
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -108,7 +108,7 @@ public class HeadlessApplicationProviderImpl
 			ApplicationImpl applicationImpl = new ApplicationImpl(
 				applicationDTO, companyId);
 
-			if (applicationImpl._hasOpenAPIDocuments() &&
+			if (SetUtil.isNotEmpty(applicationImpl._getOpenAPIPaths()) &&
 				ListUtil.isEmpty(applicationImpl.getOpenAPIDocuments())) {
 
 				continue;
@@ -399,27 +399,9 @@ public class HeadlessApplicationProviderImpl
 				OpenAPIDocumentImpl openAPIDocumentImpl =
 					new OpenAPIDocumentImpl(this, path);
 
-				ServiceReferenceServiceTuple<Object, Object>
-					serviceReferenceServiceTuple =
-						openAPIDocumentImpl._getServiceReferenceServiceTuple();
-
-				if (serviceReferenceServiceTuple != null) {
-					Object service = serviceReferenceServiceTuple.getService();
-
-					Class<?> clazz = service.getClass();
-
-					FeatureFlag featureFlag = clazz.getAnnotation(
-						FeatureFlag.class);
-
-					if ((featureFlag != null) &&
-						!FeatureFlagManagerUtil.isEnabled(
-							_companyId, featureFlag.value())) {
-
-						continue;
-					}
+				if (openAPIDocumentImpl._isFeatureFlagEnabled()) {
+					openAPIDocuments.add(openAPIDocumentImpl);
 				}
-
-				openAPIDocuments.add(openAPIDocumentImpl);
 			}
 
 			openAPIDocuments.sort(
@@ -490,12 +472,6 @@ public class HeadlessApplicationProviderImpl
 			}
 
 			return resourceMethodInfoDTOs;
-		}
-
-		private boolean _hasOpenAPIDocuments() {
-			Set<String> paths = _getOpenAPIPaths();
-
-			return !paths.isEmpty();
 		}
 
 		private final ApplicationDTO _applicationDTO;
@@ -662,6 +638,25 @@ public class HeadlessApplicationProviderImpl
 			}
 
 			return null;
+		}
+
+		private boolean _isFeatureFlagEnabled() {
+			ServiceReferenceServiceTuple<Object, Object>
+				serviceReferenceServiceTuple =
+					_getServiceReferenceServiceTuple();
+
+			if (serviceReferenceServiceTuple == null) {
+				return true;
+			}
+
+			Object service = serviceReferenceServiceTuple.getService();
+
+			if (service == null) {
+				return true;
+			}
+
+			return FeatureFlagUtil.isEnabled(
+				_applicationImpl._companyId, service.getClass());
 		}
 
 		private final ApplicationImpl _applicationImpl;
