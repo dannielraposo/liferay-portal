@@ -96,7 +96,7 @@ public class PropertiesFeatureFlagsCheck extends BaseFileCheck {
 				"**/portal-tools-rest-builder-test-impl/**", "**/test/**"
 			},
 			new String[] {
-				"**/bnd.bnd", "**/rest-openapi.yaml", "**/*.java", "**/*.js",
+				"**/bnd.bnd", "**/rest-openapi*.yaml", "**/*.java", "**/*.js",
 				"**/*.json", "**/*.jsp", "**/*.jspf", "**/*.jsx", "**/*.ts",
 				"**/*.tsx"
 			},
@@ -136,7 +136,7 @@ public class PropertiesFeatureFlagsCheck extends BaseFileCheck {
 					_getFeatureFlagKeysByMapUtilSingletonDictionaryCall(
 						fileContent));
 			}
-			else if (fileName.endsWith("rest-openapi.yaml")) {
+			else if (fileName.endsWith(".yaml")) {
 				featureFlagKeys.addAll(
 					_getFeatureFlagKeys(fileContent, _featureFlagPattern6));
 			}
@@ -491,7 +491,7 @@ public class PropertiesFeatureFlagsCheck extends BaseFileCheck {
 	private static final Pattern _featureFlagPattern5 = Pattern.compile(
 		"featureFlagKey = \"([A-Z]+-\\d+)\"");
 	private static final Pattern _featureFlagPattern6 = Pattern.compile(
-		"x-feature-flag: ([A-Z]+-\\d+)");
+		"x-feature-flag: \"?([A-Z]+-\\d+)");
 	private static final Pattern _featureFlagUIPattern = Pattern.compile(
 		"(\n|\\A)##\n## Feature Flag UI\n##(\n\n[\\s\\S]*?)(?=(\n\n##|\\Z))");
 	private static final Pattern _featureFlagsPattern = Pattern.compile(
