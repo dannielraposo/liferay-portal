@@ -75,7 +75,6 @@ public abstract class BaseLanguageOverrideResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-admin-language-override/v1.0/language-overrides/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-49852")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -108,7 +107,6 @@ public abstract class BaseLanguageOverrideResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-language-override/v1.0/language-overrides/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-49852")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -143,7 +141,6 @@ public abstract class BaseLanguageOverrideResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-language-override/v1.0/language-overrides'  -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-49852")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -190,7 +187,6 @@ public abstract class BaseLanguageOverrideResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-language-override/v1.0/language-overrides' -d $'{"externalReferenceCode": ___, "key": ___, "languageId": ___, "value": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-49852")
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
 			@io.swagger.v3.oas.annotations.tags.Tag(name = "LanguageOverride")
@@ -213,7 +209,6 @@ public abstract class BaseLanguageOverrideResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-language-override/v1.0/language-overrides/batch'  -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-49852")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -260,7 +255,6 @@ public abstract class BaseLanguageOverrideResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-language-override/v1.0/language-overrides/export-batch'  -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-49852")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -337,7 +331,6 @@ public abstract class BaseLanguageOverrideResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-admin-language-override/v1.0/language-overrides/by-external-reference-code/{externalReferenceCode}' -d $'{"externalReferenceCode": ___, "key": ___, "languageId": ___, "value": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-49852")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -1099,4 +1092,4 @@ public abstract class BaseLanguageOverrideResourceImpl
 		LogFactoryUtil.getLog(BaseLanguageOverrideResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:631751574
+// LIFERAY-REST-BUILDER-HASH:-349174112

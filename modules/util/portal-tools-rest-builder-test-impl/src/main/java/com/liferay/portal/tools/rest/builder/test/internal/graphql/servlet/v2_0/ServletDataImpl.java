@@ -8,8 +8,8 @@ package com.liferay.portal.tools.rest.builder.test.internal.graphql.servlet.v2_0
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.tools.rest.builder.test.internal.graphql.mutation.v2_0.Mutation;
 import com.liferay.portal.tools.rest.builder.test.internal.graphql.query.v2_0.Query;
-import com.liferay.portal.tools.rest.builder.test.internal.resource.v2_0.FeatureFlagAPITestEntityResourceImpl;
-import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagAPITestEntityResource;
+import com.liferay.portal.tools.rest.builder.test.internal.resource.v2_0.FeatureFlagApplicationTestEntityResourceImpl;
+import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagApplicationTestEntityResource;
 import com.liferay.portal.vulcan.graphql.servlet.ServletData;
 
 import jakarta.annotation.Generated;
@@ -34,11 +34,13 @@ public class ServletDataImpl implements ServletData {
 
 	@Activate
 	public void activate(BundleContext bundleContext) {
-		Mutation.setFeatureFlagAPITestEntityResourceComponentServiceObjects(
-			_featureFlagAPITestEntityResourceComponentServiceObjects);
+		Mutation.
+			setFeatureFlagApplicationTestEntityResourceComponentServiceObjects(
+				_featureFlagApplicationTestEntityResourceComponentServiceObjects);
 
-		Query.setFeatureFlagAPITestEntityResourceComponentServiceObjects(
-			_featureFlagAPITestEntityResourceComponentServiceObjects);
+		Query.
+			setFeatureFlagApplicationTestEntityResourceComponentServiceObjects(
+				_featureFlagApplicationTestEntityResourceComponentServiceObjects);
 	}
 
 	public String getApplicationName() {
@@ -76,22 +78,22 @@ public class ServletDataImpl implements ServletData {
 			new HashMap<String, ObjectValuePair<Class<?>, String>>() {
 				{
 					put(
-						"mutation#createFeatureFlagAPITestEntitiesPageExportBatch",
+						"mutation#createFeatureFlagApplicationTestEntitiesPageExportBatch",
 						new ObjectValuePair<>(
-							FeatureFlagAPITestEntityResourceImpl.class,
-							"postFeatureFlagAPITestEntitiesPageExportBatch"));
+							FeatureFlagApplicationTestEntityResourceImpl.class,
+							"postFeatureFlagApplicationTestEntitiesPageExportBatch"));
 
 					put(
-						"query#featureFlagAPITestEntities",
+						"query#featureFlagApplicationTestEntities",
 						new ObjectValuePair<>(
-							FeatureFlagAPITestEntityResourceImpl.class,
-							"getFeatureFlagAPITestEntitiesPage"));
+							FeatureFlagApplicationTestEntityResourceImpl.class,
+							"getFeatureFlagApplicationTestEntitiesPage"));
 				}
 			};
 
 	@Reference(scope = ReferenceScope.PROTOTYPE_REQUIRED)
-	private ComponentServiceObjects<FeatureFlagAPITestEntityResource>
-		_featureFlagAPITestEntityResourceComponentServiceObjects;
+	private ComponentServiceObjects<FeatureFlagApplicationTestEntityResource>
+		_featureFlagApplicationTestEntityResourceComponentServiceObjects;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1709822950
+// LIFERAY-REST-BUILDER-HASH:2069163910

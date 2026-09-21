@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.portal.tools.rest.builder.test.internal.resource.v1_0.factory;
+package com.liferay.portal.tools.rest.builder.test.internal.resource.v2_0.factory;
 
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
@@ -25,7 +25,7 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.tools.rest.builder.test.internal.security.permission.LiberalPermissionChecker;
-import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FeatureFlagClassTestEntityResource;
+import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagApplicationTestEntityResource;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 
 import jakarta.annotation.Generated;
@@ -55,29 +55,31 @@ import org.osgi.service.component.annotations.ReferenceScope;
  * @generated
  */
 @Component(
-	property = "resource.locator.key=/portal-tools-rest-builder-test/v1.0/FeatureFlagClassTestEntity",
-	service = FeatureFlagClassTestEntityResource.Factory.class
+	property = "resource.locator.key=/portal-tools-rest-builder-test/v2.0/FeatureFlagApplicationTestEntity",
+	service = FeatureFlagApplicationTestEntityResource.Factory.class
 )
 @Generated("")
-public class FeatureFlagClassTestEntityResourceFactoryImpl
-	implements FeatureFlagClassTestEntityResource.Factory {
+public class FeatureFlagApplicationTestEntityResourceFactoryImpl
+	implements FeatureFlagApplicationTestEntityResource.Factory {
 
 	@Override
-	public FeatureFlagClassTestEntityResource.Builder create() {
-		return new FeatureFlagClassTestEntityResource.Builder() {
+	public FeatureFlagApplicationTestEntityResource.Builder create() {
+		return new FeatureFlagApplicationTestEntityResource.Builder() {
 
 			@Override
-			public FeatureFlagClassTestEntityResource build() {
+			public FeatureFlagApplicationTestEntityResource build() {
 				if (_user == null) {
 					throw new IllegalArgumentException("User is not set");
 				}
 
-				Function<InvocationHandler, FeatureFlagClassTestEntityResource>
-					featureFlagClassTestEntityResourceProxyProviderFunction =
-						ResourceProxyProviderFunctionHolder.
-							_featureFlagClassTestEntityResourceProxyProviderFunction;
+				Function
+					<InvocationHandler,
+					 FeatureFlagApplicationTestEntityResource>
+						featureFlagApplicationTestEntityResourceProxyProviderFunction =
+							ResourceProxyProviderFunctionHolder.
+								_featureFlagApplicationTestEntityResourceProxyProviderFunction;
 
-				return featureFlagClassTestEntityResourceProxyProviderFunction.
+				return featureFlagApplicationTestEntityResourceProxyProviderFunction.
 					apply(
 						(proxy, method, arguments) -> _invoke(
 							method, arguments, _checkPermissions,
@@ -86,8 +88,8 @@ public class FeatureFlagClassTestEntityResourceFactoryImpl
 			}
 
 			@Override
-			public FeatureFlagClassTestEntityResource.Builder checkPermissions(
-				boolean checkPermissions) {
+			public FeatureFlagApplicationTestEntityResource.Builder
+				checkPermissions(boolean checkPermissions) {
 
 				_checkPermissions = checkPermissions;
 
@@ -95,7 +97,7 @@ public class FeatureFlagClassTestEntityResourceFactoryImpl
 			}
 
 			@Override
-			public FeatureFlagClassTestEntityResource.Builder
+			public FeatureFlagApplicationTestEntityResource.Builder
 				httpServletRequest(HttpServletRequest httpServletRequest) {
 
 				_httpServletRequest = httpServletRequest;
@@ -104,7 +106,7 @@ public class FeatureFlagClassTestEntityResourceFactoryImpl
 			}
 
 			@Override
-			public FeatureFlagClassTestEntityResource.Builder
+			public FeatureFlagApplicationTestEntityResource.Builder
 				httpServletResponse(HttpServletResponse httpServletResponse) {
 
 				_httpServletResponse = httpServletResponse;
@@ -113,8 +115,8 @@ public class FeatureFlagClassTestEntityResourceFactoryImpl
 			}
 
 			@Override
-			public FeatureFlagClassTestEntityResource.Builder preferredLocale(
-				Locale preferredLocale) {
+			public FeatureFlagApplicationTestEntityResource.Builder
+				preferredLocale(Locale preferredLocale) {
 
 				_preferredLocale = preferredLocale;
 
@@ -122,7 +124,7 @@ public class FeatureFlagClassTestEntityResourceFactoryImpl
 			}
 
 			@Override
-			public FeatureFlagClassTestEntityResource.Builder uriInfo(
+			public FeatureFlagApplicationTestEntityResource.Builder uriInfo(
 				UriInfo uriInfo) {
 
 				_uriInfo = uriInfo;
@@ -131,7 +133,9 @@ public class FeatureFlagClassTestEntityResourceFactoryImpl
 			}
 
 			@Override
-			public FeatureFlagClassTestEntityResource.Builder user(User user) {
+			public FeatureFlagApplicationTestEntityResource.Builder user(
+				User user) {
+
 				_user = user;
 
 				return this;
@@ -148,16 +152,16 @@ public class FeatureFlagClassTestEntityResourceFactoryImpl
 	}
 
 	private static Function
-		<InvocationHandler, FeatureFlagClassTestEntityResource>
+		<InvocationHandler, FeatureFlagApplicationTestEntityResource>
 			_getProxyProviderFunction() {
 
 		Class<?> proxyClass = ProxyUtil.getProxyClass(
-			FeatureFlagClassTestEntityResource.class.getClassLoader(),
-			FeatureFlagClassTestEntityResource.class);
+			FeatureFlagApplicationTestEntityResource.class.getClassLoader(),
+			FeatureFlagApplicationTestEntityResource.class);
 
 		try {
-			Constructor<FeatureFlagClassTestEntityResource> constructor =
-				(Constructor<FeatureFlagClassTestEntityResource>)
+			Constructor<FeatureFlagApplicationTestEntityResource> constructor =
+				(Constructor<FeatureFlagApplicationTestEntityResource>)
 					proxyClass.getConstructor(InvocationHandler.class);
 
 			return invocationHandler -> {
@@ -199,46 +203,48 @@ public class FeatureFlagClassTestEntityResourceFactoryImpl
 				new LiberalPermissionChecker(user));
 		}
 
-		FeatureFlagClassTestEntityResource featureFlagClassTestEntityResource =
-			_componentServiceObjects.getService();
+		FeatureFlagApplicationTestEntityResource
+			featureFlagApplicationTestEntityResource =
+				_componentServiceObjects.getService();
 
-		featureFlagClassTestEntityResource.setContextAcceptLanguage(
+		featureFlagApplicationTestEntityResource.setContextAcceptLanguage(
 			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
 
 		Company company = _companyLocalService.getCompany(user.getCompanyId());
 
-		featureFlagClassTestEntityResource.setContextCompany(company);
+		featureFlagApplicationTestEntityResource.setContextCompany(company);
 
-		featureFlagClassTestEntityResource.setContextHttpServletRequest(
+		featureFlagApplicationTestEntityResource.setContextHttpServletRequest(
 			httpServletRequest);
-		featureFlagClassTestEntityResource.setContextHttpServletResponse(
+		featureFlagApplicationTestEntityResource.setContextHttpServletResponse(
 			httpServletResponse);
-		featureFlagClassTestEntityResource.setContextUriInfo(uriInfo);
-		featureFlagClassTestEntityResource.setContextUser(user);
-		featureFlagClassTestEntityResource.setExpressionConvert(
+		featureFlagApplicationTestEntityResource.setContextUriInfo(uriInfo);
+		featureFlagApplicationTestEntityResource.setContextUser(user);
+		featureFlagApplicationTestEntityResource.setExpressionConvert(
 			_expressionConvert);
-		featureFlagClassTestEntityResource.setFilterParserProvider(
+		featureFlagApplicationTestEntityResource.setFilterParserProvider(
 			_filterParserProvider);
-		featureFlagClassTestEntityResource.setGroupLocalService(
+		featureFlagApplicationTestEntityResource.setGroupLocalService(
 			_groupLocalService);
-		featureFlagClassTestEntityResource.setResourceActionLocalService(
+		featureFlagApplicationTestEntityResource.setResourceActionLocalService(
 			_resourceActionLocalService);
-		featureFlagClassTestEntityResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		featureFlagClassTestEntityResource.setRoleLocalService(
+		featureFlagApplicationTestEntityResource.
+			setResourcePermissionLocalService(_resourcePermissionLocalService);
+		featureFlagApplicationTestEntityResource.setRoleLocalService(
 			_roleLocalService);
-		featureFlagClassTestEntityResource.setSortParserProvider(
+		featureFlagApplicationTestEntityResource.setSortParserProvider(
 			_sortParserProvider);
 
 		try {
-			return method.invoke(featureFlagClassTestEntityResource, arguments);
+			return method.invoke(
+				featureFlagApplicationTestEntityResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
 			throw invocationTargetException.getTargetException();
 		}
 		finally {
 			_componentServiceObjects.ungetService(
-				featureFlagClassTestEntityResource);
+				featureFlagApplicationTestEntityResource);
 
 			PrincipalThreadLocal.setName(name);
 
@@ -250,7 +256,7 @@ public class FeatureFlagClassTestEntityResourceFactoryImpl
 	private CompanyLocalService _companyLocalService;
 
 	@Reference(scope = ReferenceScope.PROTOTYPE_REQUIRED)
-	private ComponentServiceObjects<FeatureFlagClassTestEntityResource>
+	private ComponentServiceObjects<FeatureFlagApplicationTestEntityResource>
 		_componentServiceObjects;
 
 	@Reference
@@ -285,8 +291,8 @@ public class FeatureFlagClassTestEntityResourceFactoryImpl
 	private static class ResourceProxyProviderFunctionHolder {
 
 		private static final Function
-			<InvocationHandler, FeatureFlagClassTestEntityResource>
-				_featureFlagClassTestEntityResourceProxyProviderFunction =
+			<InvocationHandler, FeatureFlagApplicationTestEntityResource>
+				_featureFlagApplicationTestEntityResourceProxyProviderFunction =
 					_getProxyProviderFunction();
 
 	}
@@ -342,4 +348,4 @@ public class FeatureFlagClassTestEntityResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-421630588
+// LIFERAY-REST-BUILDER-HASH:-938807797

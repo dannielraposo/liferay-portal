@@ -5,12 +5,11 @@
 
 package com.liferay.portal.tools.rest.builder.test.client.resource.v2_0;
 
-import com.liferay.portal.tools.rest.builder.test.client.dto.v2_0.FeatureFlagAPITestEntity;
+import com.liferay.portal.tools.rest.builder.test.client.dto.v2_0.FeatureFlagApplicationTestEntity;
 import com.liferay.portal.tools.rest.builder.test.client.http.HttpInvoker;
 import com.liferay.portal.tools.rest.builder.test.client.pagination.Page;
-import com.liferay.portal.tools.rest.builder.test.client.pagination.Pagination;
 import com.liferay.portal.tools.rest.builder.test.client.problem.Problem;
-import com.liferay.portal.tools.rest.builder.test.client.serdes.v2_0.FeatureFlagAPITestEntitySerDes;
+import com.liferay.portal.tools.rest.builder.test.client.serdes.v2_0.FeatureFlagApplicationTestEntitySerDes;
 
 import jakarta.annotation.Generated;
 
@@ -28,26 +27,26 @@ import java.util.logging.Logger;
  * @generated
  */
 @Generated("")
-public interface FeatureFlagAPITestEntityResource {
+public interface FeatureFlagApplicationTestEntityResource {
 
 	public static Builder builder() {
 		return new Builder();
 	}
 
-	public Page<FeatureFlagAPITestEntity> getFeatureFlagAPITestEntitiesPage(
-			Pagination pagination)
+	public Page<FeatureFlagApplicationTestEntity>
+			getFeatureFlagApplicationTestEntitiesPage()
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
-			getFeatureFlagAPITestEntitiesPageHttpResponse(Pagination pagination)
+			getFeatureFlagApplicationTestEntitiesPageHttpResponse()
 		throws Exception;
 
-	public void postFeatureFlagAPITestEntitiesPageExportBatch(
+	public void postFeatureFlagApplicationTestEntitiesPageExportBatch(
 			String callbackURL, String contentType, String fieldNames)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
-			postFeatureFlagAPITestEntitiesPageExportBatchHttpResponse(
+			postFeatureFlagApplicationTestEntitiesPageExportBatchHttpResponse(
 				String callbackURL, String contentType, String fieldNames)
 		throws Exception;
 
@@ -64,8 +63,8 @@ public interface FeatureFlagAPITestEntityResource {
 			return header("Authorization", "Bearer " + token);
 		}
 
-		public FeatureFlagAPITestEntityResource build() {
-			return new FeatureFlagAPITestEntityResourceImpl(this);
+		public FeatureFlagApplicationTestEntityResource build() {
+			return new FeatureFlagApplicationTestEntityResourceImpl(this);
 		}
 
 		public Builder contextPath(String contextPath) {
@@ -157,15 +156,15 @@ public interface FeatureFlagAPITestEntityResource {
 
 	}
 
-	public static class FeatureFlagAPITestEntityResourceImpl
-		implements FeatureFlagAPITestEntityResource {
+	public static class FeatureFlagApplicationTestEntityResourceImpl
+		implements FeatureFlagApplicationTestEntityResource {
 
-		public Page<FeatureFlagAPITestEntity> getFeatureFlagAPITestEntitiesPage(
-				Pagination pagination)
+		public Page<FeatureFlagApplicationTestEntity>
+				getFeatureFlagApplicationTestEntitiesPage()
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
-				getFeatureFlagAPITestEntitiesPageHttpResponse(pagination);
+				getFeatureFlagApplicationTestEntitiesPageHttpResponse();
 
 			String content = httpResponse.getContent();
 
@@ -215,7 +214,8 @@ public interface FeatureFlagAPITestEntityResource {
 			}
 
 			try {
-				return Page.of(content, FeatureFlagAPITestEntitySerDes::toDTO);
+				return Page.of(
+					content, FeatureFlagApplicationTestEntitySerDes::toDTO);
 			}
 			catch (Exception e) {
 				_logger.log(
@@ -227,8 +227,7 @@ public interface FeatureFlagAPITestEntityResource {
 		}
 
 		public HttpInvoker.HttpResponse
-				getFeatureFlagAPITestEntitiesPageHttpResponse(
-					Pagination pagination)
+				getFeatureFlagApplicationTestEntitiesPageHttpResponse()
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -252,17 +251,10 @@ public interface FeatureFlagAPITestEntityResource {
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
 
-			if (pagination != null) {
-				httpInvoker.parameter(
-					"page", String.valueOf(pagination.getPage()));
-				httpInvoker.parameter(
-					"pageSize", String.valueOf(pagination.getPageSize()));
-			}
-
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port + _builder._contextPath +
-						"/o/portal-tools-rest-builder-test/v2.0/feature-flag-api-test-entities");
+						"/o/portal-tools-rest-builder-test/v2.0/feature-flag-application-test-entities");
 
 			if ((_builder._login != null) && (_builder._password != null)) {
 				httpInvoker.userNameAndPassword(
@@ -272,12 +264,12 @@ public interface FeatureFlagAPITestEntityResource {
 			return httpInvoker.invoke();
 		}
 
-		public void postFeatureFlagAPITestEntitiesPageExportBatch(
+		public void postFeatureFlagApplicationTestEntitiesPageExportBatch(
 				String callbackURL, String contentType, String fieldNames)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
-				postFeatureFlagAPITestEntitiesPageExportBatchHttpResponse(
+				postFeatureFlagApplicationTestEntitiesPageExportBatchHttpResponse(
 					callbackURL, contentType, fieldNames);
 
 			String content = httpResponse.getContent();
@@ -329,7 +321,7 @@ public interface FeatureFlagAPITestEntityResource {
 		}
 
 		public HttpInvoker.HttpResponse
-				postFeatureFlagAPITestEntitiesPageExportBatchHttpResponse(
+				postFeatureFlagApplicationTestEntitiesPageExportBatchHttpResponse(
 					String callbackURL, String contentType, String fieldNames)
 			throws Exception {
 
@@ -373,7 +365,7 @@ public interface FeatureFlagAPITestEntityResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port + _builder._contextPath +
-						"/o/portal-tools-rest-builder-test/v2.0/feature-flag-api-test-entities/export-batch");
+						"/o/portal-tools-rest-builder-test/v2.0/feature-flag-application-test-entities/export-batch");
 
 			if ((_builder._login != null) && (_builder._password != null)) {
 				httpInvoker.userNameAndPassword(
@@ -383,16 +375,16 @@ public interface FeatureFlagAPITestEntityResource {
 			return httpInvoker.invoke();
 		}
 
-		private FeatureFlagAPITestEntityResourceImpl(Builder builder) {
+		private FeatureFlagApplicationTestEntityResourceImpl(Builder builder) {
 			_builder = builder;
 		}
 
 		private static final Logger _logger = Logger.getLogger(
-			FeatureFlagAPITestEntityResource.class.getName());
+			FeatureFlagApplicationTestEntityResource.class.getName());
 
 		private Builder _builder;
 
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1969387677
+// LIFERAY-REST-BUILDER-HASH:159825400

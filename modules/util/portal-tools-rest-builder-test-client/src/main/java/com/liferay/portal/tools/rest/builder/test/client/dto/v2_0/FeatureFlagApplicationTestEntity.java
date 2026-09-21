@@ -6,7 +6,7 @@
 package com.liferay.portal.tools.rest.builder.test.client.dto.v2_0;
 
 import com.liferay.portal.tools.rest.builder.test.client.function.UnsafeSupplier;
-import com.liferay.portal.tools.rest.builder.test.client.serdes.v2_0.FeatureFlagAPITestEntitySerDes;
+import com.liferay.portal.tools.rest.builder.test.client.serdes.v2_0.FeatureFlagApplicationTestEntitySerDes;
 
 import jakarta.annotation.Generated;
 
@@ -19,10 +19,11 @@ import java.util.Objects;
  * @generated
  */
 @Generated("")
-public class FeatureFlagAPITestEntity implements Cloneable, Serializable {
+public class FeatureFlagApplicationTestEntity
+	implements Cloneable, Serializable {
 
-	public static FeatureFlagAPITestEntity toDTO(String json) {
-		return FeatureFlagAPITestEntitySerDes.toDTO(json);
+	public static FeatureFlagApplicationTestEntity toDTO(String json) {
+		return FeatureFlagApplicationTestEntitySerDes.toDTO(json);
 	}
 
 	public Long getId() {
@@ -64,8 +65,10 @@ public class FeatureFlagAPITestEntity implements Cloneable, Serializable {
 	protected String name;
 
 	@Override
-	public FeatureFlagAPITestEntity clone() throws CloneNotSupportedException {
-		return (FeatureFlagAPITestEntity)super.clone();
+	public FeatureFlagApplicationTestEntity clone()
+		throws CloneNotSupportedException {
+
+		return (FeatureFlagApplicationTestEntity)super.clone();
 	}
 
 	@Override
@@ -74,14 +77,15 @@ public class FeatureFlagAPITestEntity implements Cloneable, Serializable {
 			return true;
 		}
 
-		if (!(object instanceof FeatureFlagAPITestEntity)) {
+		if (!(object instanceof FeatureFlagApplicationTestEntity)) {
 			return false;
 		}
 
-		FeatureFlagAPITestEntity featureFlagAPITestEntity =
-			(FeatureFlagAPITestEntity)object;
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity =
+			(FeatureFlagApplicationTestEntity)object;
 
-		return Objects.equals(toString(), featureFlagAPITestEntity.toString());
+		return Objects.equals(
+			toString(), featureFlagApplicationTestEntity.toString());
 	}
 
 	@Override
@@ -92,8 +96,8 @@ public class FeatureFlagAPITestEntity implements Cloneable, Serializable {
 	}
 
 	public String toString() {
-		return FeatureFlagAPITestEntitySerDes.toJSON(this);
+		return FeatureFlagApplicationTestEntitySerDes.toJSON(this);
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-525935829
+// LIFERAY-REST-BUILDER-HASH:493450801

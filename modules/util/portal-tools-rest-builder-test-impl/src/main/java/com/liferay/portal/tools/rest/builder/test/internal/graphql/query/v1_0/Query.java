@@ -19,7 +19,6 @@ import com.liferay.portal.tools.rest.builder.test.dto.v1_0.ERCScopedTestEntity;
 import com.liferay.portal.tools.rest.builder.test.dto.v1_0.ERCSiteTestEntity;
 import com.liferay.portal.tools.rest.builder.test.dto.v1_0.EntityModelResourceTestEntity1;
 import com.liferay.portal.tools.rest.builder.test.dto.v1_0.EntityModelResourceTestEntity2;
-import com.liferay.portal.tools.rest.builder.test.dto.v1_0.FeatureFlagClassTestEntity;
 import com.liferay.portal.tools.rest.builder.test.dto.v1_0.FeatureFlagMethodTestEntity;
 import com.liferay.portal.tools.rest.builder.test.dto.v1_0.Filter;
 import com.liferay.portal.tools.rest.builder.test.dto.v1_0.MultipartTestEntity;
@@ -38,7 +37,6 @@ import com.liferay.portal.tools.rest.builder.test.resource.v1_0.ERCScopedTestEnt
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.ERCSiteTestEntityResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.EntityModelResourceTestEntity1Resource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.EntityModelResourceTestEntity2Resource;
-import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FeatureFlagClassTestEntityResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FeatureFlagMethodTestEntityResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FilterResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.MultipartTestEntityResource;
@@ -142,15 +140,6 @@ public class Query {
 
 		_entityModelResourceTestEntity2ResourceComponentServiceObjects =
 			entityModelResourceTestEntity2ResourceComponentServiceObjects;
-	}
-
-	public static void
-		setFeatureFlagClassTestEntityResourceComponentServiceObjects(
-			ComponentServiceObjects<FeatureFlagClassTestEntityResource>
-				featureFlagClassTestEntityResourceComponentServiceObjects) {
-
-		_featureFlagClassTestEntityResourceComponentServiceObjects =
-			featureFlagClassTestEntityResourceComponentServiceObjects;
 	}
 
 	public static void
@@ -721,24 +710,6 @@ public class Query {
 				entityModelResourceTestEntity2Resource.
 					getEntityModelResourceTestEntity2(
 						entityModelResourceTestEntity2Id));
-	}
-
-	/**
-	 * Invoke this method with the command line:
-	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {featureFlagClassTestEntities{items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
-	 */
-	@GraphQLField
-	public FeatureFlagClassTestEntityPage featureFlagClassTestEntities()
-		throws Exception {
-
-		return _applyComponentServiceObjects(
-			_featureFlagClassTestEntityResourceComponentServiceObjects,
-			this::_populateResourceContext,
-			featureFlagClassTestEntityResource ->
-				new FeatureFlagClassTestEntityPage(
-					featureFlagClassTestEntityResource.
-						getFeatureFlagClassTestEntitiesPage()));
 	}
 
 	/**
@@ -1501,41 +1472,6 @@ public class Query {
 
 	}
 
-	@GraphQLName("FeatureFlagClassTestEntityPage")
-	public class FeatureFlagClassTestEntityPage {
-
-		public FeatureFlagClassTestEntityPage(
-			Page featureFlagClassTestEntityPage) {
-
-			actions = featureFlagClassTestEntityPage.getActions();
-
-			items = featureFlagClassTestEntityPage.getItems();
-			lastPage = featureFlagClassTestEntityPage.getLastPage();
-			page = featureFlagClassTestEntityPage.getPage();
-			pageSize = featureFlagClassTestEntityPage.getPageSize();
-			totalCount = featureFlagClassTestEntityPage.getTotalCount();
-		}
-
-		@GraphQLField
-		protected Map<String, Map<String, String>> actions;
-
-		@GraphQLField
-		protected java.util.Collection<FeatureFlagClassTestEntity> items;
-
-		@GraphQLField
-		protected long lastPage;
-
-		@GraphQLField
-		protected long page;
-
-		@GraphQLField
-		protected long pageSize;
-
-		@GraphQLField
-		protected long totalCount;
-
-	}
-
 	@GraphQLName("FeatureFlagMethodTestEntityPage")
 	public class FeatureFlagMethodTestEntityPage {
 
@@ -2063,30 +1999,6 @@ public class Query {
 	}
 
 	private void _populateResourceContext(
-			FeatureFlagClassTestEntityResource
-				featureFlagClassTestEntityResource)
-		throws Exception {
-
-		featureFlagClassTestEntityResource.setContextAcceptLanguage(
-			_acceptLanguage);
-		featureFlagClassTestEntityResource.setContextCompany(_company);
-		featureFlagClassTestEntityResource.setContextHttpServletRequest(
-			_httpServletRequest);
-		featureFlagClassTestEntityResource.setContextHttpServletResponse(
-			_httpServletResponse);
-		featureFlagClassTestEntityResource.setContextUriInfo(_uriInfo);
-		featureFlagClassTestEntityResource.setContextUser(_user);
-		featureFlagClassTestEntityResource.setGroupLocalService(
-			_groupLocalService);
-		featureFlagClassTestEntityResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		featureFlagClassTestEntityResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		featureFlagClassTestEntityResource.setRoleLocalService(
-			_roleLocalService);
-	}
-
-	private void _populateResourceContext(
 			FeatureFlagMethodTestEntityResource
 				featureFlagMethodTestEntityResource)
 		throws Exception {
@@ -2299,8 +2211,6 @@ public class Query {
 	private static ComponentServiceObjects
 		<EntityModelResourceTestEntity2Resource>
 			_entityModelResourceTestEntity2ResourceComponentServiceObjects;
-	private static ComponentServiceObjects<FeatureFlagClassTestEntityResource>
-		_featureFlagClassTestEntityResourceComponentServiceObjects;
 	private static ComponentServiceObjects<FeatureFlagMethodTestEntityResource>
 		_featureFlagMethodTestEntityResourceComponentServiceObjects;
 	private static ComponentServiceObjects<FilterResource>
@@ -2340,4 +2250,4 @@ public class Query {
 	private com.liferay.portal.kernel.model.User _user;
 
 }
-// LIFERAY-REST-BUILDER-HASH:748282072
+// LIFERAY-REST-BUILDER-HASH:-1504901118

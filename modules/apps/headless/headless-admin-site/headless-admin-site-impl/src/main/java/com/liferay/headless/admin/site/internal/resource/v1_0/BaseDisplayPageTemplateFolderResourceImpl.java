@@ -441,6 +441,7 @@ public abstract class BaseDisplayPageTemplateFolderResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/display-page-template-folders/{displayPageTemplateFolderExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "description": ___, "externalReferenceCode": ___, "key": ___, "name": ___, "parentDisplayPageTemplateFolder": ___, "parentDisplayPageTemplateFolderExternalReferenceCode": ___, "permissions": ___, "uuid": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-35443")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates only the fields received in the request body, leaving any other fields untouched."
 	)
@@ -1952,4 +1953,4 @@ public abstract class BaseDisplayPageTemplateFolderResourceImpl
 		LogFactoryUtil.getLog(BaseDisplayPageTemplateFolderResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1719402999
+// LIFERAY-REST-BUILDER-HASH:337991512

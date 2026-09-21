@@ -5,6 +5,7 @@
 
 package com.liferay.mcp.server.rest.internal.resource.v1_0;
 
+import com.liferay.portal.vulcan.feature.flag.FeatureFlag;
 import com.liferay.portal.vulcan.resource.OpenAPIResource;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -36,11 +37,11 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alejandro Tardín
  * @generated
  */
-@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-63311")
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/openapi.properties",
 	service = OpenAPIResourceImpl.class
 )
+@FeatureFlag("LPD-63311")
 @Generated("")
 @OpenAPIDefinition(
 	info = @Info(description = "Single entry point for an AI to discover, understand, and invoke any tool exposed by Liferay. When the user asks for something you do not already know how to do in Liferay, start with `getToolSetsPage` to find a tool set matching their intent, then `getToolSetToolSetNameToolSummariesPage` to find the right tool in it, then `getToolSetToolSetNameTool` to fetch the tool's input schema, then `postToolSetToolSetNameToolInvoke` with an input map matching that schema to execute it. A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.mcp.server.rest.client', and version '1.1.0'.", license = @License(name = "Apache 2.0", url = "http://www.apache.org/licenses/LICENSE-2.0.html"), title = "MCP", version = "v1.0")
@@ -97,4 +98,4 @@ public class OpenAPIResourceImpl {
 	};
 
 }
-// LIFERAY-REST-BUILDER-HASH:366230958
+// LIFERAY-REST-BUILDER-HASH:1392159175

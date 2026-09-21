@@ -26,8 +26,8 @@ import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortField;
 import com.liferay.portal.odata.sort.SortParser;
 import com.liferay.portal.odata.sort.SortParserProvider;
-import com.liferay.portal.tools.rest.builder.test.dto.v2_0.FeatureFlagAPITestEntity;
-import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagAPITestEntityResource;
+import com.liferay.portal.tools.rest.builder.test.dto.v2_0.FeatureFlagApplicationTestEntity;
+import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagApplicationTestEntityResource;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegate;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineExportTaskResource;
@@ -61,44 +61,32 @@ import java.util.Set;
  * @author Alejandro Tardín
  * @generated
  */
-@com.liferay.portal.vulcan.feature.flag.FeatureFlag("API-123")
+@com.liferay.portal.vulcan.feature.flag.FeatureFlag("APPLICATION-123")
 @Generated("")
 @jakarta.ws.rs.Path("/v2.0")
-public abstract class BaseFeatureFlagAPITestEntityResourceImpl
-	implements EntityModelResource, FeatureFlagAPITestEntityResource,
-			   VulcanBatchEngineTaskItemDelegate<FeatureFlagAPITestEntity> {
+public abstract class BaseFeatureFlagApplicationTestEntityResourceImpl
+	implements EntityModelResource, FeatureFlagApplicationTestEntityResource,
+			   VulcanBatchEngineTaskItemDelegate
+				   <FeatureFlagApplicationTestEntity> {
 
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'GET' 'http://localhost:8080/o/portal-tools-rest-builder-test/v2.0/feature-flag-api-test-entities'  -u 'test@liferay.com:test'
+	 * curl -X 'GET' 'http://localhost:8080/o/portal-tools-rest-builder-test/v2.0/feature-flag-application-test-entities'  -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("API-123")
-	@io.swagger.v3.oas.annotations.Parameters(
-		value = {
-			@io.swagger.v3.oas.annotations.Parameter(
-				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
-				name = "page"
-			),
-			@io.swagger.v3.oas.annotations.Parameter(
-				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
-				name = "pageSize"
-			)
-		}
-	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
 			@io.swagger.v3.oas.annotations.tags.Tag(
-				name = "FeatureFlagAPITestEntity"
+				name = "FeatureFlagApplicationTestEntity"
 			)
 		}
 	)
 	@jakarta.ws.rs.GET
-	@jakarta.ws.rs.Path("/feature-flag-api-test-entities")
+	@jakarta.ws.rs.Path("/feature-flag-application-test-entities")
 	@jakarta.ws.rs.Produces({"application/json", "application/xml"})
 	@Override
-	public Page<FeatureFlagAPITestEntity> getFeatureFlagAPITestEntitiesPage(
-			@jakarta.ws.rs.core.Context Pagination pagination)
+	public Page<FeatureFlagApplicationTestEntity>
+			getFeatureFlagApplicationTestEntitiesPage()
 		throws Exception {
 
 		return Page.of(Collections.emptyList());
@@ -107,9 +95,8 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v2.0/feature-flag-api-test-entities/export-batch'  -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v2.0/feature-flag-application-test-entities/export-batch'  -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("API-123")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -129,16 +116,16 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
 			@io.swagger.v3.oas.annotations.tags.Tag(
-				name = "FeatureFlagAPITestEntity"
+				name = "FeatureFlagApplicationTestEntity"
 			)
 		}
 	)
 	@jakarta.ws.rs.Consumes("application/json")
-	@jakarta.ws.rs.Path("/feature-flag-api-test-entities/export-batch")
+	@jakarta.ws.rs.Path("/feature-flag-application-test-entities/export-batch")
 	@jakarta.ws.rs.POST
 	@jakarta.ws.rs.Produces("application/json")
 	@Override
-	public Response postFeatureFlagAPITestEntitiesPageExportBatch(
+	public Response postFeatureFlagApplicationTestEntitiesPageExportBatch(
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@jakarta.ws.rs.QueryParam("callbackURL")
 			String callbackURL,
@@ -165,7 +152,7 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 
 		return responseBuilder.entity(
 			vulcanBatchEngineExportTaskResource.postExportTask(
-				FeatureFlagAPITestEntity.class.getName(), callbackURL,
+				FeatureFlagApplicationTestEntity.class.getName(), callbackURL,
 				contentType, fieldNames)
 		).build();
 	}
@@ -173,7 +160,8 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 	@Override
 	@SuppressWarnings("PMD.UnusedLocalVariable")
 	public void create(
-			Collection<FeatureFlagAPITestEntity> featureFlagAPITestEntities,
+			Collection<FeatureFlagApplicationTestEntity>
+				featureFlagApplicationTestEntities,
 			Map<String, Serializable> parameters)
 		throws Exception {
 
@@ -183,7 +171,8 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 
 	@Override
 	public void delete(
-			Collection<FeatureFlagAPITestEntity> featureFlagAPITestEntities,
+			Collection<FeatureFlagApplicationTestEntity>
+				featureFlagApplicationTestEntities,
 			Map<String, Serializable> parameters)
 		throws Exception {
 
@@ -208,7 +197,7 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 	}
 
 	public String getResourceName() {
-		return "FeatureFlagAPITestEntity";
+		return "FeatureFlagApplicationTestEntity";
 	}
 
 	public String getVersion() {
@@ -216,14 +205,14 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 	}
 
 	@Override
-	public Page<FeatureFlagAPITestEntity> read(
+	public Page<FeatureFlagApplicationTestEntity> read(
 			com.liferay.portal.kernel.search.filter.Filter filter,
 			Pagination pagination,
 			com.liferay.portal.kernel.search.Sort[] sorts,
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
 
-		return getFeatureFlagAPITestEntitiesPage(pagination);
+		return getFeatureFlagApplicationTestEntitiesPage();
 	}
 
 	@Override
@@ -259,7 +248,8 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 
 	@Override
 	public void update(
-			Collection<FeatureFlagAPITestEntity> featureFlagAPITestEntities,
+			Collection<FeatureFlagApplicationTestEntity>
+				featureFlagApplicationTestEntities,
 			Map<String, Serializable> parameters)
 		throws Exception {
 
@@ -280,10 +270,10 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 
 	public void setContextBatchUnsafeBiConsumer(
 		UnsafeBiConsumer
-			<Collection<FeatureFlagAPITestEntity>,
+			<Collection<FeatureFlagApplicationTestEntity>,
 			 UnsafeFunction
-				 <FeatureFlagAPITestEntity, FeatureFlagAPITestEntity,
-				  Exception>,
+				 <FeatureFlagApplicationTestEntity,
+				  FeatureFlagApplicationTestEntity, Exception>,
 			 Exception> contextBatchUnsafeBiConsumer) {
 
 		this.contextBatchUnsafeBiConsumer = contextBatchUnsafeBiConsumer;
@@ -291,9 +281,9 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 
 	public void setContextBatchUnsafeConsumer(
 		UnsafeBiConsumer
-			<Collection<FeatureFlagAPITestEntity>,
-			 UnsafeConsumer<FeatureFlagAPITestEntity, Exception>, Exception>
-				contextBatchUnsafeConsumer) {
+			<Collection<FeatureFlagApplicationTestEntity>,
+			 UnsafeConsumer<FeatureFlagApplicationTestEntity, Exception>,
+			 Exception> contextBatchUnsafeConsumer) {
 
 		this.contextBatchUnsafeConsumer = contextBatchUnsafeConsumer;
 	}
@@ -802,13 +792,14 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 
 	protected AcceptLanguage contextAcceptLanguage;
 	protected UnsafeBiConsumer
-		<Collection<FeatureFlagAPITestEntity>,
+		<Collection<FeatureFlagApplicationTestEntity>,
 		 UnsafeFunction
-			 <FeatureFlagAPITestEntity, FeatureFlagAPITestEntity, Exception>,
+			 <FeatureFlagApplicationTestEntity,
+			  FeatureFlagApplicationTestEntity, Exception>,
 		 Exception> contextBatchUnsafeBiConsumer;
 	protected UnsafeBiConsumer
-		<Collection<FeatureFlagAPITestEntity>,
-		 UnsafeConsumer<FeatureFlagAPITestEntity, Exception>, Exception>
+		<Collection<FeatureFlagApplicationTestEntity>,
+		 UnsafeConsumer<FeatureFlagApplicationTestEntity, Exception>, Exception>
 			contextBatchUnsafeConsumer;
 	protected com.liferay.portal.kernel.model.Company contextCompany;
 	protected HttpServletRequest contextHttpServletRequest;
@@ -830,7 +821,8 @@ public abstract class BaseFeatureFlagAPITestEntityResourceImpl
 		vulcanBatchEngineImportTaskResource;
 
 	private static final com.liferay.portal.kernel.log.Log _log =
-		LogFactoryUtil.getLog(BaseFeatureFlagAPITestEntityResourceImpl.class);
+		LogFactoryUtil.getLog(
+			BaseFeatureFlagApplicationTestEntityResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-83964880
+// LIFERAY-REST-BUILDER-HASH:886401122

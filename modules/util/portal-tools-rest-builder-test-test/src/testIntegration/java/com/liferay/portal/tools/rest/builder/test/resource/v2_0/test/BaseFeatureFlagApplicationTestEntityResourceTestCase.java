@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.portal.tools.rest.builder.test.resource.v1_0.test;
+package com.liferay.portal.tools.rest.builder.test.resource.v2_0.test;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -35,11 +35,11 @@ import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.tools.rest.builder.test.client.dto.v1_0.FeatureFlagClassTestEntity;
+import com.liferay.portal.tools.rest.builder.test.client.dto.v2_0.FeatureFlagApplicationTestEntity;
 import com.liferay.portal.tools.rest.builder.test.client.http.HttpInvoker;
 import com.liferay.portal.tools.rest.builder.test.client.pagination.Page;
-import com.liferay.portal.tools.rest.builder.test.client.resource.v1_0.FeatureFlagClassTestEntityResource;
-import com.liferay.portal.tools.rest.builder.test.client.serdes.v1_0.FeatureFlagClassTestEntitySerDes;
+import com.liferay.portal.tools.rest.builder.test.client.resource.v2_0.FeatureFlagApplicationTestEntityResource;
+import com.liferay.portal.tools.rest.builder.test.client.serdes.v2_0.FeatureFlagApplicationTestEntitySerDes;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
 import jakarta.annotation.Generated;
@@ -74,7 +74,7 @@ import org.junit.Test;
  * @generated
  */
 @Generated("")
-public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
+public abstract class BaseFeatureFlagApplicationTestEntityResourceTestCase {
 
 	@ClassRule
 	@Rule
@@ -97,13 +97,14 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 		testCompany = CompanyLocalServiceUtil.getCompany(
 			testGroup.getCompanyId());
 
-		_featureFlagClassTestEntityResource.setContextCompany(testCompany);
+		_featureFlagApplicationTestEntityResource.setContextCompany(
+			testCompany);
 
 		_testCompanyAdminUser = UserTestUtil.getAdminUser(
 			testCompany.getCompanyId());
 
-		featureFlagClassTestEntityResource =
-			FeatureFlagClassTestEntityResource.builder(
+		featureFlagApplicationTestEntityResource =
+			FeatureFlagApplicationTestEntityResource.builder(
 			).authentication(
 				_testCompanyAdminUser.getEmailAddress(),
 				PropsValues.DEFAULT_ADMIN_PASSWORD
@@ -125,30 +126,32 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 	public void testClientSerDesToDTO() throws Exception {
 		ObjectMapper objectMapper = getClientSerDesObjectMapper();
 
-		FeatureFlagClassTestEntity featureFlagClassTestEntity1 =
-			randomFeatureFlagClassTestEntity();
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity1 =
+			randomFeatureFlagApplicationTestEntity();
 
 		String json = objectMapper.writeValueAsString(
-			featureFlagClassTestEntity1);
+			featureFlagApplicationTestEntity1);
 
-		FeatureFlagClassTestEntity featureFlagClassTestEntity2 =
-			FeatureFlagClassTestEntitySerDes.toDTO(json);
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity2 =
+			FeatureFlagApplicationTestEntitySerDes.toDTO(json);
 
 		Assert.assertTrue(
-			equals(featureFlagClassTestEntity1, featureFlagClassTestEntity2));
+			equals(
+				featureFlagApplicationTestEntity1,
+				featureFlagApplicationTestEntity2));
 	}
 
 	@Test
 	public void testClientSerDesToJSON() throws Exception {
 		ObjectMapper objectMapper = getClientSerDesObjectMapper();
 
-		FeatureFlagClassTestEntity featureFlagClassTestEntity =
-			randomFeatureFlagClassTestEntity();
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity =
+			randomFeatureFlagApplicationTestEntity();
 
 		String json1 = objectMapper.writeValueAsString(
-			featureFlagClassTestEntity);
-		String json2 = FeatureFlagClassTestEntitySerDes.toJSON(
-			featureFlagClassTestEntity);
+			featureFlagApplicationTestEntity);
+		String json2 = FeatureFlagApplicationTestEntitySerDes.toJSON(
+			featureFlagApplicationTestEntity);
 
 		Assert.assertEquals(
 			objectMapper.readTree(json1), objectMapper.readTree(json2));
@@ -176,56 +179,59 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 	public void testEscapeRegexInStringFields() throws Exception {
 		String regex = "^[0-9]+(\\.[0-9]{1,2})\"?";
 
-		FeatureFlagClassTestEntity featureFlagClassTestEntity =
-			randomFeatureFlagClassTestEntity();
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity =
+			randomFeatureFlagApplicationTestEntity();
 
-		featureFlagClassTestEntity.setName(regex);
+		featureFlagApplicationTestEntity.setName(regex);
 
-		String json = FeatureFlagClassTestEntitySerDes.toJSON(
-			featureFlagClassTestEntity);
+		String json = FeatureFlagApplicationTestEntitySerDes.toJSON(
+			featureFlagApplicationTestEntity);
 
 		Assert.assertFalse(json.contains(regex));
 
-		featureFlagClassTestEntity = FeatureFlagClassTestEntitySerDes.toDTO(
-			json);
+		featureFlagApplicationTestEntity =
+			FeatureFlagApplicationTestEntitySerDes.toDTO(json);
 
-		Assert.assertEquals(regex, featureFlagClassTestEntity.getName());
+		Assert.assertEquals(regex, featureFlagApplicationTestEntity.getName());
 	}
 
 	@Test
-	public void testGetFeatureFlagClassTestEntitiesPage() throws Exception {
-		Page<FeatureFlagClassTestEntity> page =
-			featureFlagClassTestEntityResource.
-				getFeatureFlagClassTestEntitiesPage();
+	public void testGetFeatureFlagApplicationTestEntitiesPage()
+		throws Exception {
+
+		Page<FeatureFlagApplicationTestEntity> page =
+			featureFlagApplicationTestEntityResource.
+				getFeatureFlagApplicationTestEntitiesPage();
 
 		long totalCount = page.getTotalCount();
 
-		FeatureFlagClassTestEntity featureFlagClassTestEntity1 =
-			testGetFeatureFlagClassTestEntitiesPage_addFeatureFlagClassTestEntity(
-				randomFeatureFlagClassTestEntity());
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity1 =
+			testGetFeatureFlagApplicationTestEntitiesPage_addFeatureFlagApplicationTestEntity(
+				randomFeatureFlagApplicationTestEntity());
 
-		FeatureFlagClassTestEntity featureFlagClassTestEntity2 =
-			testGetFeatureFlagClassTestEntitiesPage_addFeatureFlagClassTestEntity(
-				randomFeatureFlagClassTestEntity());
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity2 =
+			testGetFeatureFlagApplicationTestEntitiesPage_addFeatureFlagApplicationTestEntity(
+				randomFeatureFlagApplicationTestEntity());
 
 		page =
-			featureFlagClassTestEntityResource.
-				getFeatureFlagClassTestEntitiesPage();
+			featureFlagApplicationTestEntityResource.
+				getFeatureFlagApplicationTestEntitiesPage();
 
 		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
 		assertContains(
-			featureFlagClassTestEntity1,
-			(List<FeatureFlagClassTestEntity>)page.getItems());
+			featureFlagApplicationTestEntity1,
+			(List<FeatureFlagApplicationTestEntity>)page.getItems());
 		assertContains(
-			featureFlagClassTestEntity2,
-			(List<FeatureFlagClassTestEntity>)page.getItems());
+			featureFlagApplicationTestEntity2,
+			(List<FeatureFlagApplicationTestEntity>)page.getItems());
 		assertValid(
-			page, testGetFeatureFlagClassTestEntitiesPage_getExpectedActions());
+			page,
+			testGetFeatureFlagApplicationTestEntitiesPage_getExpectedActions());
 	}
 
 	protected Map<String, Map<String, String>>
-			testGetFeatureFlagClassTestEntitiesPage_getExpectedActions()
+			testGetFeatureFlagApplicationTestEntitiesPage_getExpectedActions()
 		throws Exception {
 
 		Map<String, Map<String, String>> expectedActions = new HashMap<>();
@@ -233,9 +239,10 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 		return expectedActions;
 	}
 
-	protected FeatureFlagClassTestEntity
-			testGetFeatureFlagClassTestEntitiesPage_addFeatureFlagClassTestEntity(
-				FeatureFlagClassTestEntity featureFlagClassTestEntity)
+	protected FeatureFlagApplicationTestEntity
+			testGetFeatureFlagApplicationTestEntitiesPage_addFeatureFlagApplicationTestEntity(
+				FeatureFlagApplicationTestEntity
+					featureFlagApplicationTestEntity)
 		throws Exception {
 
 		throw new UnsupportedOperationException(
@@ -248,13 +255,16 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 	}
 
 	protected void assertContains(
-		FeatureFlagClassTestEntity featureFlagClassTestEntity,
-		List<FeatureFlagClassTestEntity> featureFlagClassTestEntities) {
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity,
+		List<FeatureFlagApplicationTestEntity>
+			featureFlagApplicationTestEntities) {
 
 		boolean contains = false;
 
-		for (FeatureFlagClassTestEntity item : featureFlagClassTestEntities) {
-			if (equals(featureFlagClassTestEntity, item)) {
+		for (FeatureFlagApplicationTestEntity item :
+				featureFlagApplicationTestEntities) {
+
+			if (equals(featureFlagApplicationTestEntity, item)) {
 				contains = true;
 
 				break;
@@ -262,8 +272,8 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 		}
 
 		Assert.assertTrue(
-			featureFlagClassTestEntities + " does not contain " +
-				featureFlagClassTestEntity,
+			featureFlagApplicationTestEntities + " does not contain " +
+				featureFlagApplicationTestEntity,
 			contains);
 	}
 
@@ -276,53 +286,62 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 	}
 
 	protected void assertEquals(
-		FeatureFlagClassTestEntity featureFlagClassTestEntity1,
-		FeatureFlagClassTestEntity featureFlagClassTestEntity2) {
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity1,
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity2) {
 
 		Assert.assertTrue(
-			featureFlagClassTestEntity1 + " does not equal " +
-				featureFlagClassTestEntity2,
-			equals(featureFlagClassTestEntity1, featureFlagClassTestEntity2));
+			featureFlagApplicationTestEntity1 + " does not equal " +
+				featureFlagApplicationTestEntity2,
+			equals(
+				featureFlagApplicationTestEntity1,
+				featureFlagApplicationTestEntity2));
 	}
 
 	protected void assertEquals(
-		List<FeatureFlagClassTestEntity> featureFlagClassTestEntities1,
-		List<FeatureFlagClassTestEntity> featureFlagClassTestEntities2) {
+		List<FeatureFlagApplicationTestEntity>
+			featureFlagApplicationTestEntities1,
+		List<FeatureFlagApplicationTestEntity>
+			featureFlagApplicationTestEntities2) {
 
 		Assert.assertEquals(
-			featureFlagClassTestEntities1.size(),
-			featureFlagClassTestEntities2.size());
+			featureFlagApplicationTestEntities1.size(),
+			featureFlagApplicationTestEntities2.size());
 
-		for (int i = 0; i < featureFlagClassTestEntities1.size(); i++) {
-			FeatureFlagClassTestEntity featureFlagClassTestEntity1 =
-				featureFlagClassTestEntities1.get(i);
-			FeatureFlagClassTestEntity featureFlagClassTestEntity2 =
-				featureFlagClassTestEntities2.get(i);
+		for (int i = 0; i < featureFlagApplicationTestEntities1.size(); i++) {
+			FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity1 =
+				featureFlagApplicationTestEntities1.get(i);
+			FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity2 =
+				featureFlagApplicationTestEntities2.get(i);
 
 			assertEquals(
-				featureFlagClassTestEntity1, featureFlagClassTestEntity2);
+				featureFlagApplicationTestEntity1,
+				featureFlagApplicationTestEntity2);
 		}
 	}
 
 	protected void assertEqualsIgnoringOrder(
-		List<FeatureFlagClassTestEntity> featureFlagClassTestEntities1,
-		List<FeatureFlagClassTestEntity> featureFlagClassTestEntities2) {
+		List<FeatureFlagApplicationTestEntity>
+			featureFlagApplicationTestEntities1,
+		List<FeatureFlagApplicationTestEntity>
+			featureFlagApplicationTestEntities2) {
 
 		Assert.assertEquals(
-			featureFlagClassTestEntities1.size(),
-			featureFlagClassTestEntities2.size());
+			featureFlagApplicationTestEntities1.size(),
+			featureFlagApplicationTestEntities2.size());
 
-		for (FeatureFlagClassTestEntity featureFlagClassTestEntity1 :
-				featureFlagClassTestEntities1) {
+		for (FeatureFlagApplicationTestEntity
+				featureFlagApplicationTestEntity1 :
+					featureFlagApplicationTestEntities1) {
 
 			boolean contains = false;
 
-			for (FeatureFlagClassTestEntity featureFlagClassTestEntity2 :
-					featureFlagClassTestEntities2) {
+			for (FeatureFlagApplicationTestEntity
+					featureFlagApplicationTestEntity2 :
+						featureFlagApplicationTestEntities2) {
 
 				if (equals(
-						featureFlagClassTestEntity1,
-						featureFlagClassTestEntity2)) {
+						featureFlagApplicationTestEntity1,
+						featureFlagApplicationTestEntity2)) {
 
 					contains = true;
 
@@ -331,19 +350,19 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 			}
 
 			Assert.assertTrue(
-				featureFlagClassTestEntities2 + " does not contain " +
-					featureFlagClassTestEntity1,
+				featureFlagApplicationTestEntities2 + " does not contain " +
+					featureFlagApplicationTestEntity1,
 				contains);
 		}
 	}
 
 	protected void assertValid(
-			FeatureFlagClassTestEntity featureFlagClassTestEntity)
+			FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity)
 		throws Exception {
 
 		boolean valid = true;
 
-		if (featureFlagClassTestEntity.getId() == null) {
+		if (featureFlagApplicationTestEntity.getId() == null) {
 			valid = false;
 		}
 
@@ -351,7 +370,7 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 				getAdditionalAssertFieldNames()) {
 
 			if (Objects.equals("name", additionalAssertFieldName)) {
-				if (featureFlagClassTestEntity.getName() == null) {
+				if (featureFlagApplicationTestEntity.getName() == null) {
 					valid = false;
 				}
 
@@ -366,20 +385,20 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 		Assert.assertTrue(valid);
 	}
 
-	protected void assertValid(Page<FeatureFlagClassTestEntity> page) {
+	protected void assertValid(Page<FeatureFlagApplicationTestEntity> page) {
 		assertValid(page, Collections.emptyMap());
 	}
 
 	protected void assertValid(
-		Page<FeatureFlagClassTestEntity> page,
+		Page<FeatureFlagApplicationTestEntity> page,
 		Map<String, Map<String, String>> expectedActions) {
 
 		boolean valid = false;
 
-		java.util.Collection<FeatureFlagClassTestEntity>
-			featureFlagClassTestEntities = page.getItems();
+		java.util.Collection<FeatureFlagApplicationTestEntity>
+			featureFlagApplicationTestEntities = page.getItems();
 
-		int size = featureFlagClassTestEntities.size();
+		int size = featureFlagApplicationTestEntities.size();
 
 		if ((page.getLastPage() > 0) && (page.getPage() > 0) &&
 			(page.getPageSize() > 0) && (page.getTotalCount() > 0) &&
@@ -421,8 +440,8 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 
 		for (java.lang.reflect.Field field :
 				getDeclaredFields(
-					com.liferay.portal.tools.rest.builder.test.dto.v1_0.
-						FeatureFlagClassTestEntity.class)) {
+					com.liferay.portal.tools.rest.builder.test.dto.v2_0.
+						FeatureFlagApplicationTestEntity.class)) {
 
 			if (!ArrayUtil.contains(
 					getAdditionalAssertFieldNames(), field.getName())) {
@@ -471,10 +490,12 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 	}
 
 	protected boolean equals(
-		FeatureFlagClassTestEntity featureFlagClassTestEntity1,
-		FeatureFlagClassTestEntity featureFlagClassTestEntity2) {
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity1,
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity2) {
 
-		if (featureFlagClassTestEntity1 == featureFlagClassTestEntity2) {
+		if (featureFlagApplicationTestEntity1 ==
+				featureFlagApplicationTestEntity2) {
+
 			return true;
 		}
 
@@ -483,8 +504,8 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 
 			if (Objects.equals("id", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
-						featureFlagClassTestEntity1.getId(),
-						featureFlagClassTestEntity2.getId())) {
+						featureFlagApplicationTestEntity1.getId(),
+						featureFlagApplicationTestEntity2.getId())) {
 
 					return false;
 				}
@@ -494,8 +515,8 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 
 			if (Objects.equals("name", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
-						featureFlagClassTestEntity1.getName(),
-						featureFlagClassTestEntity2.getName())) {
+						featureFlagApplicationTestEntity1.getName(),
+						featureFlagApplicationTestEntity2.getName())) {
 
 					return false;
 				}
@@ -559,7 +580,7 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 	protected java.util.Collection<EntityField> getEntityFields()
 		throws Exception {
 
-		if (!(_featureFlagClassTestEntityResource instanceof
+		if (!(_featureFlagApplicationTestEntityResource instanceof
 				EntityModelResource)) {
 
 			throw new UnsupportedOperationException(
@@ -567,7 +588,7 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 		}
 
 		EntityModelResource entityModelResource =
-			(EntityModelResource)_featureFlagClassTestEntityResource;
+			(EntityModelResource)_featureFlagApplicationTestEntityResource;
 
 		EntityModel entityModel = entityModelResource.getEntityModel(
 			new MultivaluedHashMap());
@@ -601,7 +622,7 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 
 	protected String getFilterString(
 		EntityField entityField, String operator,
-		FeatureFlagClassTestEntity featureFlagClassTestEntity) {
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity) {
 
 		StringBundler sb = new StringBundler();
 
@@ -619,7 +640,7 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 		}
 
 		if (entityFieldName.equals("name")) {
-			Object object = featureFlagClassTestEntity.getName();
+			Object object = featureFlagApplicationTestEntity.getName();
 
 			String value = String.valueOf(object);
 
@@ -708,10 +729,11 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 			invoke(queryGraphQLField.toString()));
 	}
 
-	protected FeatureFlagClassTestEntity randomFeatureFlagClassTestEntity()
+	protected FeatureFlagApplicationTestEntity
+			randomFeatureFlagApplicationTestEntity()
 		throws Exception {
 
-		return new FeatureFlagClassTestEntity() {
+		return new FeatureFlagApplicationTestEntity() {
 			{
 				id = RandomTestUtil.randomLong();
 				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
@@ -719,24 +741,26 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 		};
 	}
 
-	protected FeatureFlagClassTestEntity
-			randomIrrelevantFeatureFlagClassTestEntity()
+	protected FeatureFlagApplicationTestEntity
+			randomIrrelevantFeatureFlagApplicationTestEntity()
 		throws Exception {
 
-		FeatureFlagClassTestEntity randomIrrelevantFeatureFlagClassTestEntity =
-			randomFeatureFlagClassTestEntity();
+		FeatureFlagApplicationTestEntity
+			randomIrrelevantFeatureFlagApplicationTestEntity =
+				randomFeatureFlagApplicationTestEntity();
 
-		return randomIrrelevantFeatureFlagClassTestEntity;
+		return randomIrrelevantFeatureFlagApplicationTestEntity;
 	}
 
-	protected FeatureFlagClassTestEntity randomPatchFeatureFlagClassTestEntity()
+	protected FeatureFlagApplicationTestEntity
+			randomPatchFeatureFlagApplicationTestEntity()
 		throws Exception {
 
-		return randomFeatureFlagClassTestEntity();
+		return randomFeatureFlagApplicationTestEntity();
 	}
 
-	protected FeatureFlagClassTestEntityResource
-		featureFlagClassTestEntityResource;
+	protected FeatureFlagApplicationTestEntityResource
+		featureFlagApplicationTestEntityResource;
 	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
 	protected com.liferay.portal.kernel.model.Company testCompany;
 	protected com.liferay.portal.kernel.model.Group testGroup;
@@ -936,15 +960,16 @@ public abstract class BaseFeatureFlagClassTestEntityResourceTestCase {
 
 	private static final com.liferay.portal.kernel.log.Log _log =
 		LogFactoryUtil.getLog(
-			BaseFeatureFlagClassTestEntityResourceTestCase.class);
+			BaseFeatureFlagApplicationTestEntityResourceTestCase.class);
 
 	private static Format _format;
 
 	private com.liferay.portal.kernel.model.User _testCompanyAdminUser;
 
 	@Inject
-	private com.liferay.portal.tools.rest.builder.test.resource.v1_0.
-		FeatureFlagClassTestEntityResource _featureFlagClassTestEntityResource;
+	private com.liferay.portal.tools.rest.builder.test.resource.v2_0.
+		FeatureFlagApplicationTestEntityResource
+			_featureFlagApplicationTestEntityResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:731666244
+// LIFERAY-REST-BUILDER-HASH:508278523

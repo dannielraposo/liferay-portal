@@ -16,7 +16,6 @@ import com.liferay.portal.tools.rest.builder.test.internal.resource.v1_0.ERCScop
 import com.liferay.portal.tools.rest.builder.test.internal.resource.v1_0.ERCSiteTestEntityResourceImpl;
 import com.liferay.portal.tools.rest.builder.test.internal.resource.v1_0.EntityModelResourceTestEntity1ResourceImpl;
 import com.liferay.portal.tools.rest.builder.test.internal.resource.v1_0.EntityModelResourceTestEntity2ResourceImpl;
-import com.liferay.portal.tools.rest.builder.test.internal.resource.v1_0.FeatureFlagClassTestEntityResourceImpl;
 import com.liferay.portal.tools.rest.builder.test.internal.resource.v1_0.FeatureFlagMethodTestEntityResourceImpl;
 import com.liferay.portal.tools.rest.builder.test.internal.resource.v1_0.FilterResourceImpl;
 import com.liferay.portal.tools.rest.builder.test.internal.resource.v1_0.MultipartTestEntityResourceImpl;
@@ -36,7 +35,6 @@ import com.liferay.portal.tools.rest.builder.test.resource.v1_0.ERCScopedTestEnt
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.ERCSiteTestEntityResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.EntityModelResourceTestEntity1Resource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.EntityModelResourceTestEntity2Resource;
-import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FeatureFlagClassTestEntityResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FeatureFlagMethodTestEntityResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FilterResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.MultipartTestEntityResource;
@@ -87,8 +85,6 @@ public class ServletDataImpl implements ServletData {
 		Mutation.
 			setEntityModelResourceTestEntity1ResourceComponentServiceObjects(
 				_entityModelResourceTestEntity1ResourceComponentServiceObjects);
-		Mutation.setFeatureFlagClassTestEntityResourceComponentServiceObjects(
-			_featureFlagClassTestEntityResourceComponentServiceObjects);
 		Mutation.setFeatureFlagMethodTestEntityResourceComponentServiceObjects(
 			_featureFlagMethodTestEntityResourceComponentServiceObjects);
 		Mutation.setFilterResourceComponentServiceObjects(
@@ -127,8 +123,6 @@ public class ServletDataImpl implements ServletData {
 			_entityModelResourceTestEntity1ResourceComponentServiceObjects);
 		Query.setEntityModelResourceTestEntity2ResourceComponentServiceObjects(
 			_entityModelResourceTestEntity2ResourceComponentServiceObjects);
-		Query.setFeatureFlagClassTestEntityResourceComponentServiceObjects(
-			_featureFlagClassTestEntityResourceComponentServiceObjects);
 		Query.setFeatureFlagMethodTestEntityResourceComponentServiceObjects(
 			_featureFlagMethodTestEntityResourceComponentServiceObjects);
 		Query.setFilterResourceComponentServiceObjects(
@@ -411,11 +405,6 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							EntityModelResourceTestEntity1ResourceImpl.class,
 							"postEntityModelResourceTestEntities1PageExportBatch"));
-					put(
-						"mutation#createFeatureFlagClassTestEntitiesPageExportBatch",
-						new ObjectValuePair<>(
-							FeatureFlagClassTestEntityResourceImpl.class,
-							"postFeatureFlagClassTestEntitiesPageExportBatch"));
 					put(
 						"mutation#deleteFeatureFlagMethodTestEntity",
 						new ObjectValuePair<>(
@@ -813,11 +802,6 @@ public class ServletDataImpl implements ServletData {
 							EntityModelResourceTestEntity2ResourceImpl.class,
 							"getEntityModelResourceTestEntity2"));
 					put(
-						"query#featureFlagClassTestEntities",
-						new ObjectValuePair<>(
-							FeatureFlagClassTestEntityResourceImpl.class,
-							"getFeatureFlagClassTestEntitiesPage"));
-					put(
 						"query#featureFlagMethodTestEntities",
 						new ObjectValuePair<>(
 							FeatureFlagMethodTestEntityResourceImpl.class,
@@ -974,10 +958,6 @@ public class ServletDataImpl implements ServletData {
 		_entityModelResourceTestEntity1ResourceComponentServiceObjects;
 
 	@Reference(scope = ReferenceScope.PROTOTYPE_REQUIRED)
-	private ComponentServiceObjects<FeatureFlagClassTestEntityResource>
-		_featureFlagClassTestEntityResourceComponentServiceObjects;
-
-	@Reference(scope = ReferenceScope.PROTOTYPE_REQUIRED)
 	private ComponentServiceObjects<FeatureFlagMethodTestEntityResource>
 		_featureFlagMethodTestEntityResourceComponentServiceObjects;
 
@@ -1026,4 +1006,4 @@ public class ServletDataImpl implements ServletData {
 		_testEntityAddressResourceComponentServiceObjects;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1326635539
+// LIFERAY-REST-BUILDER-HASH:645070994

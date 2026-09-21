@@ -30,7 +30,6 @@ import com.liferay.portal.tools.rest.builder.test.resource.v1_0.ERCAssetLibraryT
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.ERCScopedTestEntityResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.ERCSiteTestEntityResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.EntityModelResourceTestEntity1Resource;
-import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FeatureFlagClassTestEntityResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FeatureFlagMethodTestEntityResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FilterResource;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.MultipartTestEntityResource;
@@ -126,15 +125,6 @@ public class Mutation {
 
 		_entityModelResourceTestEntity1ResourceComponentServiceObjects =
 			entityModelResourceTestEntity1ResourceComponentServiceObjects;
-	}
-
-	public static void
-		setFeatureFlagClassTestEntityResourceComponentServiceObjects(
-			ComponentServiceObjects<FeatureFlagClassTestEntityResource>
-				featureFlagClassTestEntityResourceComponentServiceObjects) {
-
-		_featureFlagClassTestEntityResourceComponentServiceObjects =
-			featureFlagClassTestEntityResourceComponentServiceObjects;
 	}
 
 	public static void
@@ -1033,22 +1023,6 @@ public class Mutation {
 			entityModelResourceTestEntity1Resource ->
 				entityModelResourceTestEntity1Resource.
 					postEntityModelResourceTestEntities1PageExportBatch(
-						callbackURL, contentType, fieldNames));
-	}
-
-	@GraphQLField
-	public Response createFeatureFlagClassTestEntitiesPageExportBatch(
-			@GraphQLName("callbackURL") String callbackURL,
-			@GraphQLName("contentType") String contentType,
-			@GraphQLName("fieldNames") String fieldNames)
-		throws Exception {
-
-		return _applyComponentServiceObjects(
-			_featureFlagClassTestEntityResourceComponentServiceObjects,
-			this::_populateResourceContext,
-			featureFlagClassTestEntityResource ->
-				featureFlagClassTestEntityResource.
-					postFeatureFlagClassTestEntitiesPageExportBatch(
 						callbackURL, contentType, fieldNames));
 	}
 
@@ -2132,34 +2106,6 @@ public class Mutation {
 	}
 
 	private void _populateResourceContext(
-			FeatureFlagClassTestEntityResource
-				featureFlagClassTestEntityResource)
-		throws Exception {
-
-		featureFlagClassTestEntityResource.setContextAcceptLanguage(
-			_acceptLanguage);
-		featureFlagClassTestEntityResource.setContextCompany(_company);
-		featureFlagClassTestEntityResource.setContextHttpServletRequest(
-			_httpServletRequest);
-		featureFlagClassTestEntityResource.setContextHttpServletResponse(
-			_httpServletResponse);
-		featureFlagClassTestEntityResource.setContextUriInfo(_uriInfo);
-		featureFlagClassTestEntityResource.setContextUser(_user);
-		featureFlagClassTestEntityResource.setGroupLocalService(
-			_groupLocalService);
-		featureFlagClassTestEntityResource.setRoleLocalService(
-			_roleLocalService);
-
-		featureFlagClassTestEntityResource.
-			setVulcanBatchEngineExportTaskResource(
-				_vulcanBatchEngineExportTaskResource);
-
-		featureFlagClassTestEntityResource.
-			setVulcanBatchEngineImportTaskResource(
-				_vulcanBatchEngineImportTaskResource);
-	}
-
-	private void _populateResourceContext(
 			FeatureFlagMethodTestEntityResource
 				featureFlagMethodTestEntityResource)
 		throws Exception {
@@ -2394,8 +2340,6 @@ public class Mutation {
 	private static ComponentServiceObjects
 		<EntityModelResourceTestEntity1Resource>
 			_entityModelResourceTestEntity1ResourceComponentServiceObjects;
-	private static ComponentServiceObjects<FeatureFlagClassTestEntityResource>
-		_featureFlagClassTestEntityResourceComponentServiceObjects;
 	private static ComponentServiceObjects<FeatureFlagMethodTestEntityResource>
 		_featureFlagMethodTestEntityResourceComponentServiceObjects;
 	private static ComponentServiceObjects<FilterResource>
@@ -2437,4 +2381,4 @@ public class Mutation {
 		_vulcanBatchEngineImportTaskResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1150129721
+// LIFERAY-REST-BUILDER-HASH:1200627579

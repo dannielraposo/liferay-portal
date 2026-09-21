@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.portal.tools.rest.builder.test.client.serdes.v1_0;
+package com.liferay.portal.tools.rest.builder.test.client.serdes.v2_0;
 
-import com.liferay.portal.tools.rest.builder.test.client.dto.v1_0.FeatureFlagClassTestEntity;
+import com.liferay.portal.tools.rest.builder.test.client.dto.v2_0.FeatureFlagApplicationTestEntity;
 import com.liferay.portal.tools.rest.builder.test.client.json.BaseJSONParser;
 
 import jakarta.annotation.Generated;
@@ -22,28 +22,28 @@ import java.util.TreeMap;
  * @generated
  */
 @Generated("")
-public class FeatureFlagClassTestEntitySerDes {
+public class FeatureFlagApplicationTestEntitySerDes {
 
-	public static FeatureFlagClassTestEntity toDTO(String json) {
-		FeatureFlagClassTestEntityJSONParser
-			featureFlagClassTestEntityJSONParser =
-				new FeatureFlagClassTestEntityJSONParser();
+	public static FeatureFlagApplicationTestEntity toDTO(String json) {
+		FeatureFlagApplicationTestEntityJSONParser
+			featureFlagApplicationTestEntityJSONParser =
+				new FeatureFlagApplicationTestEntityJSONParser();
 
-		return featureFlagClassTestEntityJSONParser.parseToDTO(json);
+		return featureFlagApplicationTestEntityJSONParser.parseToDTO(json);
 	}
 
-	public static FeatureFlagClassTestEntity[] toDTOs(String json) {
-		FeatureFlagClassTestEntityJSONParser
-			featureFlagClassTestEntityJSONParser =
-				new FeatureFlagClassTestEntityJSONParser();
+	public static FeatureFlagApplicationTestEntity[] toDTOs(String json) {
+		FeatureFlagApplicationTestEntityJSONParser
+			featureFlagApplicationTestEntityJSONParser =
+				new FeatureFlagApplicationTestEntityJSONParser();
 
-		return featureFlagClassTestEntityJSONParser.parseToDTOs(json);
+		return featureFlagApplicationTestEntityJSONParser.parseToDTOs(json);
 	}
 
 	public static String toJSON(
-		FeatureFlagClassTestEntity featureFlagClassTestEntity) {
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity) {
 
-		if (featureFlagClassTestEntity == null) {
+		if (featureFlagApplicationTestEntity == null) {
 			return "null";
 		}
 
@@ -51,17 +51,17 @@ public class FeatureFlagClassTestEntitySerDes {
 
 		sb.append("{");
 
-		if (featureFlagClassTestEntity.getId() != null) {
+		if (featureFlagApplicationTestEntity.getId() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
 			sb.append("\"id\": ");
 
-			sb.append(featureFlagClassTestEntity.getId());
+			sb.append(featureFlagApplicationTestEntity.getId());
 		}
 
-		if (featureFlagClassTestEntity.getName() != null) {
+		if (featureFlagApplicationTestEntity.getName() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
@@ -70,7 +70,7 @@ public class FeatureFlagClassTestEntitySerDes {
 
 			sb.append("\"");
 
-			sb.append(_escape(featureFlagClassTestEntity.getName()));
+			sb.append(_escape(featureFlagApplicationTestEntity.getName()));
 
 			sb.append("\"");
 		}
@@ -81,51 +81,53 @@ public class FeatureFlagClassTestEntitySerDes {
 	}
 
 	public static Map<String, Object> toMap(String json) {
-		FeatureFlagClassTestEntityJSONParser
-			featureFlagClassTestEntityJSONParser =
-				new FeatureFlagClassTestEntityJSONParser();
+		FeatureFlagApplicationTestEntityJSONParser
+			featureFlagApplicationTestEntityJSONParser =
+				new FeatureFlagApplicationTestEntityJSONParser();
 
-		return featureFlagClassTestEntityJSONParser.parseToMap(json);
+		return featureFlagApplicationTestEntityJSONParser.parseToMap(json);
 	}
 
 	public static Map<String, String> toMap(
-		FeatureFlagClassTestEntity featureFlagClassTestEntity) {
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity) {
 
-		if (featureFlagClassTestEntity == null) {
+		if (featureFlagApplicationTestEntity == null) {
 			return null;
 		}
 
 		Map<String, String> map = new TreeMap<>();
 
-		if (featureFlagClassTestEntity.getId() == null) {
+		if (featureFlagApplicationTestEntity.getId() == null) {
 			map.put("id", null);
 		}
 		else {
-			map.put("id", String.valueOf(featureFlagClassTestEntity.getId()));
+			map.put(
+				"id", String.valueOf(featureFlagApplicationTestEntity.getId()));
 		}
 
-		if (featureFlagClassTestEntity.getName() == null) {
+		if (featureFlagApplicationTestEntity.getName() == null) {
 			map.put("name", null);
 		}
 		else {
 			map.put(
-				"name", String.valueOf(featureFlagClassTestEntity.getName()));
+				"name",
+				String.valueOf(featureFlagApplicationTestEntity.getName()));
 		}
 
 		return map;
 	}
 
-	public static class FeatureFlagClassTestEntityJSONParser
-		extends BaseJSONParser<FeatureFlagClassTestEntity> {
+	public static class FeatureFlagApplicationTestEntityJSONParser
+		extends BaseJSONParser<FeatureFlagApplicationTestEntity> {
 
 		@Override
-		protected FeatureFlagClassTestEntity createDTO() {
-			return new FeatureFlagClassTestEntity();
+		protected FeatureFlagApplicationTestEntity createDTO() {
+			return new FeatureFlagApplicationTestEntity();
 		}
 
 		@Override
-		protected FeatureFlagClassTestEntity[] createDTOArray(int size) {
-			return new FeatureFlagClassTestEntity[size];
+		protected FeatureFlagApplicationTestEntity[] createDTOArray(int size) {
+			return new FeatureFlagApplicationTestEntity[size];
 		}
 
 		@Override
@@ -142,18 +144,18 @@ public class FeatureFlagClassTestEntitySerDes {
 
 		@Override
 		protected void setField(
-			FeatureFlagClassTestEntity featureFlagClassTestEntity,
+			FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity,
 			String jsonParserFieldName, Object jsonParserFieldValue) {
 
 			if (Objects.equals(jsonParserFieldName, "id")) {
 				if (jsonParserFieldValue != null) {
-					featureFlagClassTestEntity.setId(
+					featureFlagApplicationTestEntity.setId(
 						Long.valueOf((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "name")) {
 				if (jsonParserFieldValue != null) {
-					featureFlagClassTestEntity.setName(
+					featureFlagApplicationTestEntity.setName(
 						(String)jsonParserFieldValue);
 				}
 			}
@@ -244,4 +246,4 @@ public class FeatureFlagClassTestEntitySerDes {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1574840358
+// LIFERAY-REST-BUILDER-HASH:1373976378

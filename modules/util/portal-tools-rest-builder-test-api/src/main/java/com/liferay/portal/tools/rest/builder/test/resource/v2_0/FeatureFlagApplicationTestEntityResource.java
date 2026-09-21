@@ -13,12 +13,11 @@ import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
-import com.liferay.portal.tools.rest.builder.test.dto.v2_0.FeatureFlagAPITestEntity;
+import com.liferay.portal.tools.rest.builder.test.dto.v2_0.FeatureFlagApplicationTestEntity;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineExportTaskResource;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResource;
 import com.liferay.portal.vulcan.pagination.Page;
-import com.liferay.portal.vulcan.pagination.Pagination;
 
 import jakarta.annotation.Generated;
 
@@ -46,13 +45,13 @@ import org.osgi.annotation.versioning.ProviderType;
 @CTAware
 @Generated("")
 @ProviderType
-public interface FeatureFlagAPITestEntityResource {
+public interface FeatureFlagApplicationTestEntityResource {
 
-	public Page<FeatureFlagAPITestEntity> getFeatureFlagAPITestEntitiesPage(
-			Pagination pagination)
+	public Page<FeatureFlagApplicationTestEntity>
+			getFeatureFlagApplicationTestEntitiesPage()
 		throws Exception;
 
-	public Response postFeatureFlagAPITestEntitiesPageExportBatch(
+	public Response postFeatureFlagApplicationTestEntitiesPageExportBatch(
 			String callbackURL, String contentType, String fieldNames)
 		throws Exception;
 
@@ -126,7 +125,7 @@ public interface FeatureFlagAPITestEntityResource {
 	@ProviderType
 	public interface Builder {
 
-		public FeatureFlagAPITestEntityResource build();
+		public FeatureFlagApplicationTestEntityResource build();
 
 		public Builder checkPermissions(boolean checkPermissions);
 
@@ -152,4 +151,4 @@ public interface FeatureFlagAPITestEntityResource {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:955361016
+// LIFERAY-REST-BUILDER-HASH:-821563478

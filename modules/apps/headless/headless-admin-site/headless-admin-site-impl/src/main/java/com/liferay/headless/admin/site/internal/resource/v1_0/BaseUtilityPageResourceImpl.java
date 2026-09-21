@@ -400,6 +400,7 @@ public abstract class BaseUtilityPageResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/utility-pages/{utilityPageExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "datePublished": ___, "externalReferenceCode": ___, "friendlyUrlHistory": ___, "friendlyUrlPath_i18n": ___, "markedAsDefault": ___, "name": ___, "pageSpecifications": ___, "permissions": ___, "thumbnailURLReference": ___, "type": ___, "utilityPageSettings": ___, "uuid": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-35443")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates only the fields received in the request body, leaving any other fields untouched."
 	)
@@ -1879,4 +1880,4 @@ public abstract class BaseUtilityPageResourceImpl
 		LogFactoryUtil.getLog(BaseUtilityPageResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1403245610
+// LIFERAY-REST-BUILDER-HASH:-1286925505

@@ -496,6 +496,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-admin-site/v1.0/design-libraries/{designLibraryExternalReferenceCode}/style-books/{styleBookExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "defaultStyleBook": ___, "externalReferenceCode": ___, "frontendTokensValues": ___, "key": ___, "name": ___, "previewFileEntryExternalReferenceCode": ___, "scope": ___, "themeId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates only the fields received in the request body, leaving any other fields untouched."
 	)
@@ -604,6 +605,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/style-books/{styleBookExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "defaultStyleBook": ___, "externalReferenceCode": ___, "frontendTokensValues": ___, "key": ___, "name": ___, "previewFileEntryExternalReferenceCode": ___, "scope": ___, "themeId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates only the fields received in the request body, leaving any other fields untouched."
 	)
@@ -1792,4 +1794,4 @@ public abstract class BaseStyleBookResourceImpl
 		LogFactoryUtil.getLog(BaseStyleBookResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:744025140
+// LIFERAY-REST-BUILDER-HASH:-180876182

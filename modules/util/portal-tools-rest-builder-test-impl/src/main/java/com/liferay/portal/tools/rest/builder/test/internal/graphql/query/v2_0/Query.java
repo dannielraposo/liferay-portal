@@ -11,13 +11,12 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
-import com.liferay.portal.tools.rest.builder.test.dto.v2_0.FeatureFlagAPITestEntity;
-import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagAPITestEntityResource;
+import com.liferay.portal.tools.rest.builder.test.dto.v2_0.FeatureFlagApplicationTestEntity;
+import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagApplicationTestEntityResource;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.pagination.Page;
-import com.liferay.portal.vulcan.pagination.Pagination;
 
 import jakarta.annotation.Generated;
 
@@ -39,59 +38,59 @@ import org.osgi.service.component.ComponentServiceObjects;
 public class Query {
 
 	public static void
-		setFeatureFlagAPITestEntityResourceComponentServiceObjects(
-			ComponentServiceObjects<FeatureFlagAPITestEntityResource>
-				featureFlagAPITestEntityResourceComponentServiceObjects) {
+		setFeatureFlagApplicationTestEntityResourceComponentServiceObjects(
+			ComponentServiceObjects<FeatureFlagApplicationTestEntityResource>
+				featureFlagApplicationTestEntityResourceComponentServiceObjects) {
 
-		_featureFlagAPITestEntityResourceComponentServiceObjects =
-			featureFlagAPITestEntityResourceComponentServiceObjects;
+		_featureFlagApplicationTestEntityResourceComponentServiceObjects =
+			featureFlagApplicationTestEntityResourceComponentServiceObjects;
 	}
 
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {featureFlagAPITestEntities(page: ___, pageSize: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {featureFlagApplicationTestEntities{items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
-	public FeatureFlagAPITestEntityPage featureFlagAPITestEntities(
-			@GraphQLName("pageSize") int pageSize,
-			@GraphQLName("page") int page)
+	public FeatureFlagApplicationTestEntityPage
+			featureFlagApplicationTestEntities()
 		throws Exception {
 
 		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
-				isEnabled(_company.getCompanyId(), "API-123")) {
+				isEnabled(_company.getCompanyId(), "APPLICATION-123")) {
 
 			throw new jakarta.ws.rs.NotFoundException();
 		}
 
 		return _applyComponentServiceObjects(
-			_featureFlagAPITestEntityResourceComponentServiceObjects,
+			_featureFlagApplicationTestEntityResourceComponentServiceObjects,
 			this::_populateResourceContext,
-			featureFlagAPITestEntityResource ->
-				new FeatureFlagAPITestEntityPage(
-					featureFlagAPITestEntityResource.
-						getFeatureFlagAPITestEntitiesPage(
-							Pagination.of(page, pageSize))));
+			featureFlagApplicationTestEntityResource ->
+				new FeatureFlagApplicationTestEntityPage(
+					featureFlagApplicationTestEntityResource.
+						getFeatureFlagApplicationTestEntitiesPage()));
 	}
 
-	@GraphQLName("FeatureFlagAPITestEntityPage")
-	public class FeatureFlagAPITestEntityPage {
+	@GraphQLName("FeatureFlagApplicationTestEntityPage")
+	public class FeatureFlagApplicationTestEntityPage {
 
-		public FeatureFlagAPITestEntityPage(Page featureFlagAPITestEntityPage) {
-			actions = featureFlagAPITestEntityPage.getActions();
+		public FeatureFlagApplicationTestEntityPage(
+			Page featureFlagApplicationTestEntityPage) {
 
-			items = featureFlagAPITestEntityPage.getItems();
-			lastPage = featureFlagAPITestEntityPage.getLastPage();
-			page = featureFlagAPITestEntityPage.getPage();
-			pageSize = featureFlagAPITestEntityPage.getPageSize();
-			totalCount = featureFlagAPITestEntityPage.getTotalCount();
+			actions = featureFlagApplicationTestEntityPage.getActions();
+
+			items = featureFlagApplicationTestEntityPage.getItems();
+			lastPage = featureFlagApplicationTestEntityPage.getLastPage();
+			page = featureFlagApplicationTestEntityPage.getPage();
+			pageSize = featureFlagApplicationTestEntityPage.getPageSize();
+			totalCount = featureFlagApplicationTestEntityPage.getTotalCount();
 		}
 
 		@GraphQLField
 		protected Map<String, Map<String, String>> actions;
 
 		@GraphQLField
-		protected java.util.Collection<FeatureFlagAPITestEntity> items;
+		protected java.util.Collection<FeatureFlagApplicationTestEntity> items;
 
 		@GraphQLField
 		protected long lastPage;
@@ -127,29 +126,32 @@ public class Query {
 	}
 
 	private void _populateResourceContext(
-			FeatureFlagAPITestEntityResource featureFlagAPITestEntityResource)
+			FeatureFlagApplicationTestEntityResource
+				featureFlagApplicationTestEntityResource)
 		throws Exception {
 
-		featureFlagAPITestEntityResource.setContextAcceptLanguage(
+		featureFlagApplicationTestEntityResource.setContextAcceptLanguage(
 			_acceptLanguage);
-		featureFlagAPITestEntityResource.setContextCompany(_company);
-		featureFlagAPITestEntityResource.setContextHttpServletRequest(
+		featureFlagApplicationTestEntityResource.setContextCompany(_company);
+		featureFlagApplicationTestEntityResource.setContextHttpServletRequest(
 			_httpServletRequest);
-		featureFlagAPITestEntityResource.setContextHttpServletResponse(
+		featureFlagApplicationTestEntityResource.setContextHttpServletResponse(
 			_httpServletResponse);
-		featureFlagAPITestEntityResource.setContextUriInfo(_uriInfo);
-		featureFlagAPITestEntityResource.setContextUser(_user);
-		featureFlagAPITestEntityResource.setGroupLocalService(
+		featureFlagApplicationTestEntityResource.setContextUriInfo(_uriInfo);
+		featureFlagApplicationTestEntityResource.setContextUser(_user);
+		featureFlagApplicationTestEntityResource.setGroupLocalService(
 			_groupLocalService);
-		featureFlagAPITestEntityResource.setResourceActionLocalService(
+		featureFlagApplicationTestEntityResource.setResourceActionLocalService(
 			_resourceActionLocalService);
-		featureFlagAPITestEntityResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		featureFlagAPITestEntityResource.setRoleLocalService(_roleLocalService);
+		featureFlagApplicationTestEntityResource.
+			setResourcePermissionLocalService(_resourcePermissionLocalService);
+		featureFlagApplicationTestEntityResource.setRoleLocalService(
+			_roleLocalService);
 	}
 
-	private static ComponentServiceObjects<FeatureFlagAPITestEntityResource>
-		_featureFlagAPITestEntityResourceComponentServiceObjects;
+	private static ComponentServiceObjects
+		<FeatureFlagApplicationTestEntityResource>
+			_featureFlagApplicationTestEntityResourceComponentServiceObjects;
 
 	private AcceptLanguage _acceptLanguage;
 	private com.liferay.portal.kernel.model.Company _company;
@@ -168,4 +170,4 @@ public class Query {
 	private com.liferay.portal.kernel.model.User _user;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1787328229
+// LIFERAY-REST-BUILDER-HASH:1724361956

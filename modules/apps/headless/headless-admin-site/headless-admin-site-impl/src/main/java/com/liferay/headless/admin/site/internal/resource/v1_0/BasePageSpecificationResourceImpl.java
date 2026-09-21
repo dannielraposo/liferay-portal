@@ -545,6 +545,7 @@ public abstract class BasePageSpecificationResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/page-specifications/{pageSpecificationExternalReferenceCode}' -d $'{"customFields": ___, "externalReferenceCode": ___, "siteTemplatePageSpecificationExternalReferenceCode": ___, "status": ___, "type": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-74328")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates a page specification of a site page. Updates only the fields received in the request body, leaving any other fields untouched."
 	)
@@ -1490,4 +1491,4 @@ public abstract class BasePageSpecificationResourceImpl
 		LogFactoryUtil.getLog(BasePageSpecificationResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:218463395
+// LIFERAY-REST-BUILDER-HASH:-802443007

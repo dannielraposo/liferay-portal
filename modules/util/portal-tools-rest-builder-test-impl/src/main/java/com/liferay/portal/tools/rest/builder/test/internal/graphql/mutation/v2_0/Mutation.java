@@ -9,7 +9,7 @@ import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
-import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagAPITestEntityResource;
+import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagApplicationTestEntityResource;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineExportTaskResource;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResource;
@@ -36,33 +36,33 @@ import org.osgi.service.component.ComponentServiceObjects;
 public class Mutation {
 
 	public static void
-		setFeatureFlagAPITestEntityResourceComponentServiceObjects(
-			ComponentServiceObjects<FeatureFlagAPITestEntityResource>
-				featureFlagAPITestEntityResourceComponentServiceObjects) {
+		setFeatureFlagApplicationTestEntityResourceComponentServiceObjects(
+			ComponentServiceObjects<FeatureFlagApplicationTestEntityResource>
+				featureFlagApplicationTestEntityResourceComponentServiceObjects) {
 
-		_featureFlagAPITestEntityResourceComponentServiceObjects =
-			featureFlagAPITestEntityResourceComponentServiceObjects;
+		_featureFlagApplicationTestEntityResourceComponentServiceObjects =
+			featureFlagApplicationTestEntityResourceComponentServiceObjects;
 	}
 
 	@GraphQLField
-	public Response createFeatureFlagAPITestEntitiesPageExportBatch(
+	public Response createFeatureFlagApplicationTestEntitiesPageExportBatch(
 			@GraphQLName("callbackURL") String callbackURL,
 			@GraphQLName("contentType") String contentType,
 			@GraphQLName("fieldNames") String fieldNames)
 		throws Exception {
 
 		if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.
-				isEnabled(_company.getCompanyId(), "API-123")) {
+				isEnabled(_company.getCompanyId(), "APPLICATION-123")) {
 
 			throw new jakarta.ws.rs.NotFoundException();
 		}
 
 		return _applyComponentServiceObjects(
-			_featureFlagAPITestEntityResourceComponentServiceObjects,
+			_featureFlagApplicationTestEntityResourceComponentServiceObjects,
 			this::_populateResourceContext,
-			featureFlagAPITestEntityResource ->
-				featureFlagAPITestEntityResource.
-					postFeatureFlagAPITestEntitiesPageExportBatch(
+			featureFlagApplicationTestEntityResource ->
+				featureFlagApplicationTestEntityResource.
+					postFeatureFlagApplicationTestEntitiesPageExportBatch(
 						callbackURL, contentType, fieldNames));
 	}
 
@@ -105,31 +105,36 @@ public class Mutation {
 	}
 
 	private void _populateResourceContext(
-			FeatureFlagAPITestEntityResource featureFlagAPITestEntityResource)
+			FeatureFlagApplicationTestEntityResource
+				featureFlagApplicationTestEntityResource)
 		throws Exception {
 
-		featureFlagAPITestEntityResource.setContextAcceptLanguage(
+		featureFlagApplicationTestEntityResource.setContextAcceptLanguage(
 			_acceptLanguage);
-		featureFlagAPITestEntityResource.setContextCompany(_company);
-		featureFlagAPITestEntityResource.setContextHttpServletRequest(
+		featureFlagApplicationTestEntityResource.setContextCompany(_company);
+		featureFlagApplicationTestEntityResource.setContextHttpServletRequest(
 			_httpServletRequest);
-		featureFlagAPITestEntityResource.setContextHttpServletResponse(
+		featureFlagApplicationTestEntityResource.setContextHttpServletResponse(
 			_httpServletResponse);
-		featureFlagAPITestEntityResource.setContextUriInfo(_uriInfo);
-		featureFlagAPITestEntityResource.setContextUser(_user);
-		featureFlagAPITestEntityResource.setGroupLocalService(
+		featureFlagApplicationTestEntityResource.setContextUriInfo(_uriInfo);
+		featureFlagApplicationTestEntityResource.setContextUser(_user);
+		featureFlagApplicationTestEntityResource.setGroupLocalService(
 			_groupLocalService);
-		featureFlagAPITestEntityResource.setRoleLocalService(_roleLocalService);
+		featureFlagApplicationTestEntityResource.setRoleLocalService(
+			_roleLocalService);
 
-		featureFlagAPITestEntityResource.setVulcanBatchEngineExportTaskResource(
-			_vulcanBatchEngineExportTaskResource);
+		featureFlagApplicationTestEntityResource.
+			setVulcanBatchEngineExportTaskResource(
+				_vulcanBatchEngineExportTaskResource);
 
-		featureFlagAPITestEntityResource.setVulcanBatchEngineImportTaskResource(
-			_vulcanBatchEngineImportTaskResource);
+		featureFlagApplicationTestEntityResource.
+			setVulcanBatchEngineImportTaskResource(
+				_vulcanBatchEngineImportTaskResource);
 	}
 
-	private static ComponentServiceObjects<FeatureFlagAPITestEntityResource>
-		_featureFlagAPITestEntityResourceComponentServiceObjects;
+	private static ComponentServiceObjects
+		<FeatureFlagApplicationTestEntityResource>
+			_featureFlagApplicationTestEntityResourceComponentServiceObjects;
 
 	private AcceptLanguage _acceptLanguage;
 	private com.liferay.portal.kernel.model.Company _company;
@@ -147,4 +152,4 @@ public class Mutation {
 		_vulcanBatchEngineImportTaskResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1331464662
+// LIFERAY-REST-BUILDER-HASH:284251586

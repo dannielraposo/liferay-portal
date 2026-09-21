@@ -36,18 +36,19 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName("FeatureFlagAPITestEntity")
+@GraphQLName("FeatureFlagApplicationTestEntity")
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "FeatureFlagAPITestEntity")
-public class FeatureFlagAPITestEntity implements Serializable {
+@XmlRootElement(name = "FeatureFlagApplicationTestEntity")
+public class FeatureFlagApplicationTestEntity implements Serializable {
 
-	public static FeatureFlagAPITestEntity toDTO(String json) {
-		return ObjectMapperUtil.readValue(FeatureFlagAPITestEntity.class, json);
+	public static FeatureFlagApplicationTestEntity toDTO(String json) {
+		return ObjectMapperUtil.readValue(
+			FeatureFlagApplicationTestEntity.class, json);
 	}
 
-	public static FeatureFlagAPITestEntity unsafeToDTO(String json) {
+	public static FeatureFlagApplicationTestEntity unsafeToDTO(String json) {
 		return ObjectMapperUtil.unsafeReadValue(
-			FeatureFlagAPITestEntity.class, json);
+			FeatureFlagApplicationTestEntity.class, json);
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema
@@ -83,7 +84,7 @@ public class FeatureFlagAPITestEntity implements Serializable {
 	}
 
 	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long id;
 
 	@JsonIgnore
@@ -134,14 +135,15 @@ public class FeatureFlagAPITestEntity implements Serializable {
 			return true;
 		}
 
-		if (!(object instanceof FeatureFlagAPITestEntity)) {
+		if (!(object instanceof FeatureFlagApplicationTestEntity)) {
 			return false;
 		}
 
-		FeatureFlagAPITestEntity featureFlagAPITestEntity =
-			(FeatureFlagAPITestEntity)object;
+		FeatureFlagApplicationTestEntity featureFlagApplicationTestEntity =
+			(FeatureFlagApplicationTestEntity)object;
 
-		return Objects.equals(toString(), featureFlagAPITestEntity.toString());
+		return Objects.equals(
+			toString(), featureFlagApplicationTestEntity.toString());
 	}
 
 	@Override
@@ -191,7 +193,7 @@ public class FeatureFlagAPITestEntity implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.portal.tools.rest.builder.test.dto.v2_0.FeatureFlagAPITestEntity",
+		defaultValue = "com.liferay.portal.tools.rest.builder.test.dto.v2_0.FeatureFlagApplicationTestEntity",
 		name = "x-class-name"
 	)
 	public String xClassName;
@@ -306,4 +308,4 @@ public class FeatureFlagAPITestEntity implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1515443983
+// LIFERAY-REST-BUILDER-HASH:1454904530

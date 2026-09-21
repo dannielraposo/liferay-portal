@@ -5,6 +5,7 @@
 
 package com.liferay.portal.tools.rest.builder.test.internal.resource.v2_0;
 
+import com.liferay.portal.vulcan.feature.flag.FeatureFlag;
 import com.liferay.portal.vulcan.resource.OpenAPIResource;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -36,11 +37,11 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alejandro Tardín
  * @generated
  */
-@com.liferay.portal.vulcan.feature.flag.FeatureFlag("API-123")
 @Component(
 	properties = "OSGI-INF/liferay/rest/v2_0/openapi.properties",
 	service = OpenAPIResourceImpl.class
 )
+@FeatureFlag("APPLICATION-123")
 @Generated("")
 @OpenAPIDefinition(
 	info = @Info(license = @License(name = "Apache 2.0", url = "http://www.apache.org/licenses/LICENSE-2.0.html"), title = "", version = "v2.0")
@@ -86,11 +87,11 @@ public class OpenAPIResourceImpl {
 
 	private final Set<Class<?>> _resourceClasses = new HashSet<Class<?>>() {
 		{
-			add(FeatureFlagAPITestEntityResourceImpl.class);
+			add(FeatureFlagApplicationTestEntityResourceImpl.class);
 
 			add(OpenAPIResourceImpl.class);
 		}
 	};
 
 }
-// LIFERAY-REST-BUILDER-HASH:1170435087
+// LIFERAY-REST-BUILDER-HASH:965412832

@@ -75,7 +75,6 @@ public abstract class BaseSiteConfigurationResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-configuration/v1.0/sites/{siteExternalReferenceCode}/site-configurations/{siteConfigurationExternalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-65399")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -118,7 +117,6 @@ public abstract class BaseSiteConfigurationResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-configuration/v1.0/sites/{siteExternalReferenceCode}/site-configurations'  -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-65399")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -162,7 +160,6 @@ public abstract class BaseSiteConfigurationResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-configuration/v1.0/sites/{siteExternalReferenceCode}/site-configurations' -d $'{"externalReferenceCode": ___, "properties": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-65399")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -199,7 +196,6 @@ public abstract class BaseSiteConfigurationResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-configuration/v1.0/sites/{siteExternalReferenceCode}/site-configurations/batch'  -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-65399")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -256,7 +252,6 @@ public abstract class BaseSiteConfigurationResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-configuration/v1.0/sites/{siteExternalReferenceCode}/site-configurations/export-batch'  -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-65399")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -330,7 +325,6 @@ public abstract class BaseSiteConfigurationResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-admin-configuration/v1.0/sites/{siteExternalReferenceCode}/site-configurations/{siteConfigurationExternalReferenceCode}' -d $'{"externalReferenceCode": ___, "properties": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-65399")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -1098,4 +1092,4 @@ public abstract class BaseSiteConfigurationResourceImpl
 		LogFactoryUtil.getLog(BaseSiteConfigurationResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:219398590
+// LIFERAY-REST-BUILDER-HASH:-2079253656

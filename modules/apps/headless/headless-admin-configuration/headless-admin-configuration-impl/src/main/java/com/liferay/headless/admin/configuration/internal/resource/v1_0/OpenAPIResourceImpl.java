@@ -5,6 +5,7 @@
 
 package com.liferay.headless.admin.configuration.internal.resource.v1_0;
 
+import com.liferay.portal.vulcan.feature.flag.FeatureFlag;
 import com.liferay.portal.vulcan.resource.OpenAPIResource;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -36,11 +37,11 @@ import org.osgi.service.component.annotations.Reference;
  * @author Thiago Buarque
  * @generated
  */
-@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-65399")
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/openapi.properties",
 	service = OpenAPIResourceImpl.class
 )
+@FeatureFlag("LPD-65399")
 @Generated("")
 @OpenAPIDefinition(
 	info = @Info(license = @License(name = "Apache 2.0", url = "http://www.apache.org/licenses/LICENSE-2.0.html"), title = "Liferay Admin Configuration Headless API", version = "v1.0")
@@ -97,4 +98,4 @@ public class OpenAPIResourceImpl {
 	};
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1339181893
+// LIFERAY-REST-BUILDER-HASH:1958141190

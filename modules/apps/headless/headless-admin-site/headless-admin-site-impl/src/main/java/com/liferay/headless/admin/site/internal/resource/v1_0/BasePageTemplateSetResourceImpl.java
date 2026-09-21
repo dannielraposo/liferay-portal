@@ -598,6 +598,7 @@ public abstract class BasePageTemplateSetResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/page-template-sets/{pageTemplateSetExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "description": ___, "externalReferenceCode": ___, "key": ___, "name": ___, "permissions": ___, "uuid": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-35443")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates only the fields received in the request body, leaving any other fields untouched."
 	)
@@ -2031,4 +2032,4 @@ public abstract class BasePageTemplateSetResourceImpl
 		LogFactoryUtil.getLog(BasePageTemplateSetResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:818265399
+// LIFERAY-REST-BUILDER-HASH:1165804500
