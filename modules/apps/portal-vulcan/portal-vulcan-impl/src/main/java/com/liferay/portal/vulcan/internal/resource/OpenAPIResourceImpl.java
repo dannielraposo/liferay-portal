@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Validator;
@@ -768,18 +769,21 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 					_getApplicationPath(uriInfo), _extensionProviderRegistry,
 					resourceClasses));
 
-		Map<String, List<String>> queryParameters = null;
+		OpenAPISpecFilter openAPISpecFilter = _toOpenAPISpecFilter(
+			mergedOpenAPISchemaFilter, resourceClasses);
 
-		if (uriInfo != null) {
-			queryParameters = uriInfo.getQueryParameters();
+		if (openAPISpecFilter != null) {
+			Map<String, List<String>> queryParameters = null;
+
+			if (uriInfo != null) {
+				queryParameters = uriInfo.getQueryParameters();
+			}
+
+			SpecFilter specFilter = new SpecFilter();
+
+			openAPI = specFilter.filter(
+				openAPI, openAPISpecFilter, queryParameters, null, null);
 		}
-
-		SpecFilter specFilter = new SpecFilter();
-
-		openAPI = specFilter.filter(
-			openAPI,
-			_toOpenAPISpecFilter(mergedOpenAPISchemaFilter, resourceClasses),
-			queryParameters, null, null);
 
 		if (openAPI == null) {
 			return Response.status(
@@ -895,10 +899,6 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 			return openAPISchemaFilter2;
 		}
 
-		if (openAPISchemaFilter2 == null) {
-			return openAPISchemaFilter1;
-		}
-
 		OpenAPISchemaFilter mergedOpenAPISchemaFilter =
 			new OpenAPISchemaFilter();
 
@@ -934,6 +934,14 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 			_getFeatureFlagDisabledOperationIds(resourceClasses);
 		Map<String, String> schemaMappings =
 			openAPISchemaFilter.getSchemaMappings();
+
+		if (ListUtil.isEmpty(dtoProperties) &&
+			SetUtil.isEmpty(excludedOperationIds) &&
+			featureFlagDisabledOperationIds.isEmpty() &&
+			MapUtil.isEmpty(schemaMappings)) {
+
+			return null;
+		}
 
 		return new AbstractSpecFilter() {
 
