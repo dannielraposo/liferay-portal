@@ -877,10 +877,9 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 		};
 	}
 
-	private String _getOperationId(Method resourceMethod) {
+	private String _getOperationId(Method method) {
 		io.swagger.v3.oas.annotations.Operation operation =
-			resourceMethod.getAnnotation(
-				io.swagger.v3.oas.annotations.Operation.class);
+			method.getAnnotation(io.swagger.v3.oas.annotations.Operation.class);
 
 		if ((operation != null) &&
 			Validator.isNotNull(operation.operationId())) {
@@ -888,7 +887,7 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 			return operation.operationId();
 		}
 
-		return resourceMethod.getName();
+		return method.getName();
 	}
 
 	private OpenAPISchemaFilter _mergeOpenAPISchemaFilters(
