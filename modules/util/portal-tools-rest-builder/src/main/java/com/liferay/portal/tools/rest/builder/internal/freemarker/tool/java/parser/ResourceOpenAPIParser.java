@@ -162,36 +162,50 @@ public class ResourceOpenAPIParser {
 		String requestBodyAnnotation = _getRequestBodyAnnotation(
 			javaMethodSignature, operation);
 
-		List<String> operationAttributes = new ArrayList<>();
+		if ((operation.getDescription() != null) || operation.isDeprecated()) {
+			StringBundler sb = new StringBundler(
+				"@io.swagger.v3.oas.annotations.Operation(");
 
-		if (operation.isDeprecated()) {
-			methodAnnotations.add("@Deprecated");
-
-			operationAttributes.add("deprecated=true");
-		}
-
-		if (operation.getDescription() != null) {
-			operationAttributes.add(
-				StringBundler.concat(
-					"description=\"", operation.getDescription(), "\""));
-
-			if (!StringUtil.equals(
-					javaMethodSignature.getMethodName(),
-					operation.getOperationId())) {
-
-				operationAttributes.add(
-					StringBundler.concat(
-						"operationId=\"", operation.getOperationId(), "\""));
+			if (operation.isDeprecated()) {
+				methodAnnotations.add("@Deprecated");
+				sb.append("deprecated=true");
 			}
 
+			if (operation.getDescription() != null) {
+				if (operation.isDeprecated()) {
+					sb.append(", ");
+				}
+
+				sb.append("description=\"");
+				sb.append(operation.getDescription());
+				sb.append("\"");
+
+				if (!StringUtil.equals(
+						javaMethodSignature.getMethodName(),
+						operation.getOperationId())) {
+
+					sb.append(", operationId=\"");
+					sb.append(operation.getOperationId());
+					sb.append("\"");
+				}
+
+				if (!requestBodyAnnotation.isEmpty()) {
+					sb.append(", ");
+					sb.append(requestBodyAnnotation);
+				}
+			}
+
+			sb.append(")");
+
+			methodAnnotations.add(sb.toString());
+		}
+		else {
 			if (!requestBodyAnnotation.isEmpty()) {
-				operationAttributes.add(requestBodyAnnotation);
+				methodAnnotations.add(
+					StringBundler.concat(
+						"@io.swagger.v3.oas.annotations.Operation(",
+						requestBodyAnnotation, ")"));
 			}
-		}
-		else if (!operation.isDeprecated() &&
-				 !requestBodyAnnotation.isEmpty()) {
-
-			operationAttributes.add(requestBodyAnnotation);
 		}
 
 		String featureFlag = operation.getFeatureFlag();
@@ -201,13 +215,6 @@ public class ResourceOpenAPIParser {
 				StringBundler.concat(
 					"@com.liferay.portal.vulcan.feature.flag.FeatureFlag(\"",
 					featureFlag, "\")"));
-		}
-
-		if (!operationAttributes.isEmpty()) {
-			methodAnnotations.add(
-				StringBundler.concat(
-					"@io.swagger.v3.oas.annotations.Operation(",
-					StringUtil.merge(operationAttributes, ", "), ")"));
 		}
 
 		if (operation.getTags() != null) {
