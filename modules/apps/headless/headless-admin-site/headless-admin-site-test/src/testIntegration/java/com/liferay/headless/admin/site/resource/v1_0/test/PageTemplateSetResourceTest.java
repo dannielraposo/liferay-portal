@@ -110,7 +110,7 @@ public class PageTemplateSetResourceTest
 		super.testDeleteDesignLibraryPageTemplateSet();
 
 		_testDeleteDesignLibraryPageTemplateSetWithAssetLibraryExternalReferenceCodeProblemException();
-		_testDeleteDesignLibraryPageTemplateSetWithFeatureFlagDisabledProblemException();
+		_testDeleteDesignLibraryPageTemplateSetWithFeatureFlagDisabled();
 		_testDeleteDesignLibraryPageTemplateSetWithSiteExternalReferenceCodeProblemException();
 	}
 
@@ -634,7 +634,7 @@ public class PageTemplateSetResourceTest
 				RandomTestUtil.randomString()));
 	}
 
-	private void _testDeleteDesignLibraryPageTemplateSetWithFeatureFlagDisabledProblemException()
+	private void _testDeleteDesignLibraryPageTemplateSetWithFeatureFlagDisabled()
 		throws Exception {
 
 		Group group = _depotEntry.getGroup();
@@ -648,12 +648,10 @@ public class PageTemplateSetResourceTest
 					FeatureFlagConstants.getKey("LPD-57283"),
 					Boolean.FALSE.toString())) {
 
-			_assertProblemException(
-				"BAD_REQUEST",
-				"Feature flag LPD-57283 is disabled for company " +
-					testCompany.getCompanyId(),
-				() ->
-					pageTemplateSetResource.deleteDesignLibraryPageTemplateSet(
+			assertHttpResponseStatusCode(
+				404,
+				pageTemplateSetResource.
+					deleteDesignLibraryPageTemplateSetHttpResponse(
 						group.getExternalReferenceCode(),
 						layoutPageTemplateCollection.
 							getExternalReferenceCode()));
