@@ -5127,6 +5127,7 @@ paths:
                                     $ref: "#/components/schemas/DisplayPageTemplate"
                                 type: array
             tags: ["DisplayPageTemplate"]
+            x-feature-flag: LPD-57283
     "/design-libraries/{designLibraryExternalReferenceCode}/display-page-templates/{displayPageTemplateExternalReferenceCode}":
         delete:
             # @review
@@ -5150,6 +5151,7 @@ paths:
                         application/json: {}
                         application/xml: {}
             tags: ["DisplayPageTemplate"]
+            x-feature-flag: LPD-57283
         get:
             # @review
             description:
@@ -5188,6 +5190,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/DisplayPageTemplate"
             tags: ["DisplayPageTemplate"]
+            x-feature-flag: LPD-57283
     "/design-libraries/{designLibraryExternalReferenceCode}/display-page-templates/{displayPageTemplateExternalReferenceCode}/permissions":
         get:
             operationId: getDesignLibraryDisplayPageTemplatePermissionsPage
@@ -5220,6 +5223,7 @@ paths:
                         application/json: {}
                         application/xml: {}
             tags: ["DisplayPageTemplate"]
+            x-feature-flag: LPD-57283
         put:
             operationId: putDesignLibraryDisplayPageTemplatePermissionsPage
             parameters:
@@ -5243,6 +5247,7 @@ paths:
                         application/json: {}
                         application/xml: {}
             tags: ["DisplayPageTemplate"]
+            x-feature-flag: LPD-57283
     "/design-libraries/{designLibraryExternalReferenceCode}/page-template-sets":
         get:
             # @review
