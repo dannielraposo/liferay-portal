@@ -97,11 +97,11 @@ public class HeadlessApplicationProviderImpl
 		}
 
 		for (ApplicationDTO applicationDTO : applicationDTOs) {
-			ServiceReference<?> serviceReference =
-				_companyIdsServiceTrackerMap.getService(
-					applicationDTO.serviceId);
+			if (!_isRegistered(
+					companyId,
+					_companyIdsServiceTrackerMap.getService(
+						applicationDTO.serviceId))) {
 
-			if (!_isRegistered(companyId, serviceReference)) {
 				continue;
 			}
 
