@@ -112,8 +112,6 @@ public class PageTemplateSetResourceImpl
 			String pageTemplateSetExternalReferenceCode, String roleNames)
 		throws Exception {
 
-		EnabledUtil.checkDesignLibrariesEnabled(contextCompany);
-
 		long groupId = _getDesignLibraryGroupId(
 			designLibraryExternalReferenceCode);
 		String resourceName = getPermissionCheckerResourceName(
@@ -239,8 +237,6 @@ public class PageTemplateSetResourceImpl
 			String pageTemplateSetExternalReferenceCode,
 			Permission[] permissions)
 		throws Exception {
-
-		EnabledUtil.checkDesignLibrariesEnabled(contextCompany);
 
 		super.putSitePageTemplateSetPermissionsPage(
 			designLibraryExternalReferenceCode,
