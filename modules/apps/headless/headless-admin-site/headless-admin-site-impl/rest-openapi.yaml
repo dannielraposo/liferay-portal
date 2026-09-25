@@ -5576,6 +5576,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/StyleBook"
             tags: ["StyleBook"]
+            x-feature-flag: LPD-57283
         put:
             # @review
             description:
@@ -5828,6 +5829,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/DisplayPageTemplateFolder"
             tags: ["DisplayPageTemplateFolder"]
+            x-feature-flag: LPD-35443
         put:
             # @review
             description:
@@ -6232,6 +6234,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/DisplayPageTemplate"
             tags: ["DisplayPageTemplate"]
+            x-feature-flag: LPD-35443
         put:
             # @review
             description:
@@ -6670,6 +6673,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/MasterPage"
             tags: ["MasterPage"]
+            x-feature-flag: LPD-35443
         put:
             # @review
             description:
@@ -7223,6 +7227,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/PageExperience"
             tags: ["PageExperience"]
+            x-feature-flag: LPD-74328
         put:
             # @review
             description:
@@ -7391,6 +7396,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/PageSpecification"
             tags: ["PageSpecification"]
+            x-feature-flag: LPD-74328
         put:
             # @review
             description:
@@ -7777,6 +7783,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/PageElement"
             tags: ["PageElement"]
+            x-feature-flag: LPD-74328
         put:
             # @review
             description:
@@ -8189,6 +8196,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/PageTemplateSet"
             tags: ["PageTemplateSet"]
+            x-feature-flag: LPD-35443
         put:
             # @review
             description:
@@ -8593,6 +8601,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/PageTemplate"
             tags: ["PageTemplate"]
+            x-feature-flag: LPD-35443
         put:
             # @review
             description:
@@ -9052,6 +9061,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/SitePage"
             tags: ["SitePage"]
+            x-feature-flag: LPD-35443
         put:
             # @review
             description:
@@ -9773,6 +9783,7 @@ paths:
                     description:
                         "The requested site page or widget instance could not be found."
             tags: ["WidgetPageWidgetInstance"]
+            x-feature-flag: LPD-74328
         put:
             # @review
             description:
@@ -10036,6 +10047,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/StyleBook"
             tags: ["StyleBook"]
+            x-feature-flag: LPD-57283
         put:
             # @review
             description:
@@ -10288,6 +10300,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/UtilityPage"
             tags: ["UtilityPage"]
+            x-feature-flag: LPD-35443
         put:
             # @review
             description:
