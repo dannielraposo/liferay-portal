@@ -5,7 +5,7 @@
 
 package com.liferay.portal.tools.rest.builder.test.internal.resource.v2_0;
 
-import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagAPITestEntityResource;
+import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagApplicationTestEntityResource;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ServiceScope;
@@ -14,10 +14,10 @@ import org.osgi.service.component.annotations.ServiceScope;
  * @author Alejandro Tardín
  */
 @Component(
-	properties = "OSGI-INF/liferay/rest/v2_0/feature-flag-api-test-entity.properties",
+	properties = "OSGI-INF/liferay/rest/v2_0/feature-flag-application-test-entity.properties",
 	scope = ServiceScope.PROTOTYPE,
-	service = FeatureFlagAPITestEntityResource.class
+	service = FeatureFlagApplicationTestEntityResource.class
 )
-public class FeatureFlagAPITestEntityResourceImpl
-	extends BaseFeatureFlagAPITestEntityResourceImpl {
+public class FeatureFlagApplicationTestEntityResourceImpl
+	extends BaseFeatureFlagApplicationTestEntityResourceImpl {
 }

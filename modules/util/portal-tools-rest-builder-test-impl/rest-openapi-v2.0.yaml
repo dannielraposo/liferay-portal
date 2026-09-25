@@ -1,6 +1,6 @@
 components:
     schemas:
-        FeatureFlagAPITestEntity:
+        FeatureFlagApplicationTestEntity:
             properties:
                 id:
                     format: int64
@@ -14,12 +14,12 @@ info:
         url: http://www.apache.org/licenses/LICENSE-2.0.html
     title: ""
     version: v2.0
-    x-feature-flag: API-123
+    x-feature-flag: APPLICATION-123
 openapi: 3.0.1
 paths:
-    "/feature-flag-api-test-entities":
+    "/feature-flag-application-test-entities":
         get:
-            operationId: getFeatureFlagAPITestEntitiesPage
+            operationId: getFeatureFlagApplicationTestEntitiesPage
             parameters:
                 -   in: query
                     name: page
@@ -35,11 +35,11 @@ paths:
                         application/json:
                             schema:
                                 items:
-                                    $ref: "#/components/schemas/FeatureFlagAPITestEntity"
+                                    $ref: "#/components/schemas/FeatureFlagApplicationTestEntity"
                                 type: array
                         application/xml:
                             schema:
                                 items:
-                                    $ref: "#/components/schemas/FeatureFlagAPITestEntity"
+                                    $ref: "#/components/schemas/FeatureFlagApplicationTestEntity"
                                 type: array
-            tags: ["FeatureFlagAPITestEntity"]
+            tags: ["FeatureFlagApplicationTestEntity"]
