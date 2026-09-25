@@ -58,21 +58,13 @@ public class ResourceOpenAPIParser {
 	public static String getFeatureFlag(
 		OpenAPIYAML openAPIYAML, Operation operation) {
 
-		if ((operation != null) &&
-			Validator.isNotNull(operation.getFeatureFlag())) {
+		String featureFlag = operation.getFeatureFlag();
 
-			return operation.getFeatureFlag();
-		}
-
-		if (openAPIYAML == null) {
-			return null;
+		if (Validator.isNotNull(featureFlag)) {
+			return featureFlag;
 		}
 
 		Info info = openAPIYAML.getInfo();
-
-		if (info == null) {
-			return null;
-		}
 
 		return info.getFeatureFlag();
 	}
@@ -778,7 +770,6 @@ public class ResourceOpenAPIParser {
 		}
 
 		batchOperation.setFeatureFlag(operation.getFeatureFlag());
-
 		batchOperation.setParameters(
 			_getBatchParameters(
 				batchOperationType, configYAML, operation, schemaName));

@@ -1,5 +1,9 @@
 package ${configYAML.apiPackagePath}.internal.resource.${escapedVersion};
 
+<#if openAPIYAML.info.featureFlag?has_content>
+	import com.liferay.portal.vulcan.feature.flag.FeatureFlag;
+</#if>
+
 import com.liferay.portal.vulcan.resource.OpenAPIResource;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -35,10 +39,10 @@ import org.osgi.service.component.annotations.Reference;
 	properties = "OSGI-INF/liferay/rest/${escapedVersion}/openapi.properties",
 	service = OpenAPIResourceImpl.class
 )
-@Generated("")
-<#if openAPIYAML.info.featureFlag??>
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("${openAPIYAML.info.featureFlag}")
+<#if openAPIYAML.info.featureFlag?has_content>
+	@FeatureFlag("${openAPIYAML.info.featureFlag}")
 </#if>
+@Generated("")
 @OpenAPIDefinition(
 	info = @Info(
 		<#if openAPIYAML.info?? && openAPIYAML.info.description??>

@@ -151,8 +151,6 @@ public class YAMLUtil {
 		Constructor openAPIYAMLConstructor = new Constructor(
 			OpenAPIYAML.class, loaderOptions);
 
-		// Feature flag
-
 		for (Class<?> clazz :
 				new Class<?>[] {
 					Delete.class, Get.class, Head.class, Info.class,
