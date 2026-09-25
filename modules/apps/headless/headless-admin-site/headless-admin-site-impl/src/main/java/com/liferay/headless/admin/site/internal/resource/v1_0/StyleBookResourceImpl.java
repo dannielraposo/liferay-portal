@@ -10,6 +10,7 @@ import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.headless.admin.site.dto.v1_0.StyleBook;
+import com.liferay.headless.admin.site.internal.util.EnabledUtil;
 import com.liferay.headless.admin.site.resource.v1_0.StyleBookResource;
 import com.liferay.headless.common.spi.service.context.ServiceContextBuilder;
 import com.liferay.headless.common.spi.util.GroupUtil;
@@ -18,7 +19,6 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -157,7 +157,7 @@ public class StyleBookResourceImpl
 
 	@Override
 	public StyleBook getItem(Long id) throws Exception {
-		_checkFeatureFlag();
+		EnabledUtil.checkDesignLibrariesEnabled(contextCompany);
 
 		return _toStyleBook(_styleBookEntryService.getStyleBookEntry(id));
 	}
@@ -404,14 +404,6 @@ public class StyleBookResourceImpl
 					groupId,
 					styleBook.getPreviewFileEntryExternalReferenceCode()),
 				_getServiceContext(groupId)));
-	}
-
-	private void _checkFeatureFlag() {
-		if (!FeatureFlagManagerUtil.isEnabled(
-				contextCompany.getCompanyId(), "LPD-57283")) {
-
-			throw new UnsupportedOperationException();
-		}
 	}
 
 	private Map<String, Map<String, String>> _getActions(
