@@ -4,6 +4,7 @@ components:
             properties:
                 id:
                     format: int64
+                    readOnly: true
                     type: integer
                 name:
                     type: string
@@ -20,15 +21,6 @@ paths:
     "/feature-flag-application-test-entities":
         get:
             operationId: getFeatureFlagApplicationTestEntitiesPage
-            parameters:
-                -   in: query
-                    name: page
-                    schema:
-                        type: integer
-                -   in: query
-                    name: pageSize
-                    schema:
-                        type: integer
             responses:
                 200:
                     content:
@@ -42,4 +34,6 @@ paths:
                                 items:
                                     $ref: "#/components/schemas/FeatureFlagApplicationTestEntity"
                                 type: array
+                    description:
+                        "OK"
             tags: ["FeatureFlagApplicationTestEntity"]
