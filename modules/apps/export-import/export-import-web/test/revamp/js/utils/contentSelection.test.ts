@@ -12,7 +12,9 @@ import {
 	getLayoutSetCount,
 	getSelectedDeletionCount,
 	getSelectedItemsCount,
+	isAllLayoutsSelected,
 	isPrivateLayoutSelected,
+	isSelected,
 	withSelectedLayoutSetCount,
 } from '../../../../src/main/resources/META-INF/resources/revamp/js/utils/contentSelection';
 
@@ -197,5 +199,56 @@ describe('contentSelection layout set counts', () => {
 
 		expect(previewPortletDataHandler?.additionCount).toBe(5);
 		expect(previewPortletDataHandler?.deletionCount).toBe(3);
+	});
+});
+
+describe('contentSelection layout set selection', () => {
+	const layoutSetControl = {
+		label: 'Pages',
+		name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
+		type: 'Boolean' as const,
+	};
+
+	it('treats a selection with excluded pages as not fully selected', () => {
+		expect(
+			isAllLayoutsSelected({
+				all: true,
+				excludedItems: ['excluded'],
+				privateLayout: false,
+			})
+		).toBe(false);
+		expect(
+			isAllLayoutsSelected({
+				all: true,
+				excludedSubtrees: ['excluded'],
+				privateLayout: false,
+			})
+		).toBe(false);
+	});
+
+	it('treats a selection without exclusions as fully selected', () => {
+		expect(isAllLayoutsSelected({all: true, privateLayout: false})).toBe(
+			true
+		);
+		expect(
+			isAllLayoutsSelected({
+				all: true,
+				excludedItems: [],
+				excludedSubtrees: [],
+				privateLayout: false,
+			})
+		).toBe(true);
+	});
+
+	it('reports the pages handler as partially selected when pages are excluded', () => {
+		expect(
+			isSelected(
+				{all: true, excludedItems: ['excluded'], privateLayout: false},
+				layoutSetControl
+			)
+		).toBe(false);
+		expect(
+			isSelected({all: true, privateLayout: false}, layoutSetControl)
+		).toBe(true);
 	});
 });

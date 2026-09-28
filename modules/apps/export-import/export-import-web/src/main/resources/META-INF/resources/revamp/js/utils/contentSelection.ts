@@ -66,10 +66,17 @@ export const SECTION_KEY_SITE_BUILDER = 'category.site_administration.build';
 export function isAllLayoutsSelected(
 	portletDataHandlerSelection: PortletDataHandlerSelection | undefined
 ): boolean {
-	return (
-		typeof portletDataHandlerSelection === 'object' &&
-		!!portletDataHandlerSelection.all
-	);
+	if (
+		typeof portletDataHandlerSelection !== 'object' ||
+		!portletDataHandlerSelection.all
+	) {
+		return false;
+	}
+
+	const {excludedItems = [], excludedSubtrees = []} =
+		portletDataHandlerSelection as LayoutSetSelection;
+
+	return !excludedItems.length && !excludedSubtrees.length;
 }
 
 export function isSelected(

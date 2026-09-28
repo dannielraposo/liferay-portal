@@ -109,13 +109,7 @@ export default function LayoutSetControl({
 			: {}
 	) as LayoutSetSelection;
 
-	const {
-		excludedItems = [],
-		excludedSubtrees = [],
-		items = [],
-		privateLayout = false,
-		subtrees = [],
-	} = layoutSetSelection;
+	const {privateLayout = false} = layoutSetSelection;
 
 	const isAll = isAllLayoutsSelected(portletDataHandlerSelection);
 
@@ -128,12 +122,7 @@ export default function LayoutSetControl({
 					<ClayCheckbox
 						checked={isAll}
 						id={checkboxId}
-						indeterminate={
-							isAll
-								? !!excludedItems.length ||
-									!!excludedSubtrees.length
-								: !!items.length || !!subtrees.length
-						}
+						indeterminate={selected && !isAll}
 						onChange={() =>
 							onChange(
 								isAll ? undefined : {all: true, privateLayout}
