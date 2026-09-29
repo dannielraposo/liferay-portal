@@ -39,8 +39,6 @@ public class LayoutUtil {
 			return new long[0];
 		}
 
-		List<Long> layoutIds = new ArrayList<>();
-
 		Set<Long> excludedItemLayoutIds = _getLayoutIds(
 			groupId, privateLayout,
 			parameterMap.get(
@@ -62,6 +60,16 @@ public class LayoutUtil {
 				PreviewPortletDataHandlerUtil.
 					CONTROL_NAME_TREE_SELECTION_SUBTREES));
 
+		List<Layout> layouts = LayoutLocalServiceUtil.getLayouts(
+			groupId, privateLayout);
+
+		Map<Long, Long> parentLayoutIds = new HashMap<>();
+
+		for (Layout layout : layouts) {
+			parentLayoutIds.put(
+				layout.getLayoutId(), layout.getParentLayoutId());
+		}
+
 		boolean all = false;
 
 		if (!parameterMap.containsKey(
@@ -73,15 +81,7 @@ public class LayoutUtil {
 			all = true;
 		}
 
-		List<Layout> layouts = LayoutLocalServiceUtil.getLayouts(
-			groupId, privateLayout);
-
-		Map<Long, Long> parentLayoutIds = new HashMap<>();
-
-		for (Layout layout : layouts) {
-			parentLayoutIds.put(
-				layout.getLayoutId(), layout.getParentLayoutId());
-		}
+		List<Long> layoutIds = new ArrayList<>();
 
 		for (Layout layout : layouts) {
 			if (_isSelected(
