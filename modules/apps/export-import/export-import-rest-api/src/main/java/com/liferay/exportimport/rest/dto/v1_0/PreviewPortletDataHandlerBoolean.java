@@ -19,8 +19,6 @@ import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
 import jakarta.annotation.Generated;
 
-import jakarta.validation.Valid;
-
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
@@ -177,57 +175,6 @@ public class PreviewPortletDataHandlerBoolean
 	@JsonIgnore
 	private Supplier<Long> _deletionCountSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
-	@Valid
-	public PreviewPortletDataHandlerControl[]
-		getPreviewPortletDataHandlerControls() {
-
-		if (_previewPortletDataHandlerControlsSupplier != null) {
-			previewPortletDataHandlerControls =
-				_previewPortletDataHandlerControlsSupplier.get();
-
-			_previewPortletDataHandlerControlsSupplier = null;
-		}
-
-		return previewPortletDataHandlerControls;
-	}
-
-	public void setPreviewPortletDataHandlerControls(
-		PreviewPortletDataHandlerControl[] previewPortletDataHandlerControls) {
-
-		this.previewPortletDataHandlerControls =
-			previewPortletDataHandlerControls;
-
-		_previewPortletDataHandlerControlsSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setPreviewPortletDataHandlerControls(
-		UnsafeSupplier<PreviewPortletDataHandlerControl[], Exception>
-			previewPortletDataHandlerControlsUnsafeSupplier) {
-
-		_previewPortletDataHandlerControlsSupplier = () -> {
-			try {
-				return previewPortletDataHandlerControlsUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected PreviewPortletDataHandlerControl[]
-		previewPortletDataHandlerControls;
-
-	@JsonIgnore
-	private Supplier<PreviewPortletDataHandlerControl[]>
-		_previewPortletDataHandlerControlsSupplier;
-
 	@Override
 	public boolean equals(Object object) {
 		if (this == object) {
@@ -293,29 +240,6 @@ public class PreviewPortletDataHandlerBoolean
 			sb.append(deletionCount);
 		}
 
-		PreviewPortletDataHandlerControl[] previewPortletDataHandlerControls =
-			getPreviewPortletDataHandlerControls();
-
-		if (previewPortletDataHandlerControls != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"previewPortletDataHandlerControls\": ");
-
-			sb.append("[");
-
-			for (int i = 0; i < previewPortletDataHandlerControls.length; i++) {
-				sb.append(String.valueOf(previewPortletDataHandlerControls[i]));
-
-				if ((i + 1) < previewPortletDataHandlerControls.length) {
-					sb.append(", ");
-				}
-			}
-
-			sb.append("]");
-		}
-
 		Boolean disabled = getDisabled();
 
 		if (disabled != null) {
@@ -358,6 +282,29 @@ public class PreviewPortletDataHandlerBoolean
 			sb.append(_escape(name));
 
 			sb.append("\"");
+		}
+
+		PreviewPortletDataHandlerControl[] previewPortletDataHandlerControls =
+			getPreviewPortletDataHandlerControls();
+
+		if (previewPortletDataHandlerControls != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"previewPortletDataHandlerControls\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < previewPortletDataHandlerControls.length; i++) {
+				sb.append(String.valueOf(previewPortletDataHandlerControls[i]));
+
+				if ((i + 1) < previewPortletDataHandlerControls.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		Type type = getType();
@@ -496,4 +443,4 @@ public class PreviewPortletDataHandlerBoolean
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:773514269
+// LIFERAY-REST-BUILDER-HASH:284751425

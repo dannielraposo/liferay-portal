@@ -248,6 +248,29 @@ public class PreviewPortletDataHandlerChoice
 			sb.append("\"");
 		}
 
+		PreviewPortletDataHandlerControl[] previewPortletDataHandlerControls =
+			getPreviewPortletDataHandlerControls();
+
+		if (previewPortletDataHandlerControls != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"previewPortletDataHandlerControls\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < previewPortletDataHandlerControls.length; i++) {
+				sb.append(String.valueOf(previewPortletDataHandlerControls[i]));
+
+				if ((i + 1) < previewPortletDataHandlerControls.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
 		Type type = getType();
 
 		if (type != null) {
@@ -384,4 +407,4 @@ public class PreviewPortletDataHandlerChoice
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-584166768
+// LIFERAY-REST-BUILDER-HASH:606074822
