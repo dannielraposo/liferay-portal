@@ -9,7 +9,6 @@ import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerBo
 import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerChoice;
 import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerControl;
 import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerSetting;
-import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerTreeSelection;
 import com.liferay.exportimport.rest.client.dto.v1_0.Type;
 import com.liferay.exportimport.rest.client.json.BaseJSONParser;
 
@@ -73,12 +72,6 @@ public class PreviewPortletDataHandlerControlSerDes {
 			if (typeString.equals("Setting")) {
 				return PreviewPortletDataHandlerSettingSerDes.toJSON(
 					(PreviewPortletDataHandlerSetting)
-						previewPortletDataHandlerControl);
-			}
-
-			if (typeString.equals("TreeSelection")) {
-				return PreviewPortletDataHandlerTreeSelectionSerDes.toJSON(
-					(PreviewPortletDataHandlerTreeSelection)
 						previewPortletDataHandlerControl);
 			}
 
@@ -214,10 +207,6 @@ public class PreviewPortletDataHandlerControlSerDes {
 
 				if (typeString.equals("Setting")) {
 					return PreviewPortletDataHandlerSetting.toDTO(json);
-				}
-
-				if (typeString.equals("TreeSelection")) {
-					return PreviewPortletDataHandlerTreeSelection.toDTO(json);
 				}
 
 				throw new IllegalArgumentException(
@@ -372,4 +361,4 @@ public class PreviewPortletDataHandlerControlSerDes {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:2144372126
+// LIFERAY-REST-BUILDER-HASH:418757265

@@ -586,6 +586,48 @@ public class PublishProcessRequest implements Serializable {
 	private Supplier<Date> _scheduleStartDateSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema
+	@Valid
+	public SitePageSelection getSitePages() {
+		if (_sitePagesSupplier != null) {
+			sitePages = _sitePagesSupplier.get();
+
+			_sitePagesSupplier = null;
+		}
+
+		return sitePages;
+	}
+
+	public void setSitePages(SitePageSelection sitePages) {
+		this.sitePages = sitePages;
+
+		_sitePagesSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setSitePages(
+		UnsafeSupplier<SitePageSelection, Exception> sitePagesUnsafeSupplier) {
+
+		_sitePagesSupplier = () -> {
+			try {
+				return sitePagesUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected SitePageSelection sitePages;
+
+	@JsonIgnore
+	private Supplier<SitePageSelection> _sitePagesSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
 	public Boolean getSitePagesSettings() {
 		if (_sitePagesSettingsSupplier != null) {
 			sitePagesSettings = _sitePagesSettingsSupplier.get();
@@ -1002,6 +1044,18 @@ public class PublishProcessRequest implements Serializable {
 			sb.append("\"");
 		}
 
+		SitePageSelection sitePages = getSitePages();
+
+		if (sitePages != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"sitePages\": ");
+
+			sb.append(String.valueOf(sitePages));
+		}
+
 		Boolean sitePagesSettings = getSitePagesSettings();
 
 		if (sitePagesSettings != null) {
@@ -1231,4 +1285,4 @@ public class PublishProcessRequest implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1082728791
+// LIFERAY-REST-BUILDER-HASH:-1007178392

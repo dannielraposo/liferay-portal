@@ -180,8 +180,7 @@ public abstract class PreviewPortletDataHandlerControl
 
 	public static enum Type {
 
-		BOOLEAN("Boolean"), CHOICE("Choice"), SETTING("Setting"),
-		TREE_SELECTION("TreeSelection");
+		BOOLEAN("Boolean"), CHOICE("Choice"), SETTING("Setting");
 
 		public static Type create(String value) {
 			for (Type type : values()) {
@@ -213,4 +212,4 @@ public abstract class PreviewPortletDataHandlerControl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1273206908
+// LIFERAY-REST-BUILDER-HASH:-829524639

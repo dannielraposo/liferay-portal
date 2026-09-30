@@ -222,6 +222,16 @@ public class PublishProcessRequestSerDes {
 			sb.append("\"");
 		}
 
+		if (publishProcessRequest.getSitePages() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"sitePages\": ");
+
+			sb.append(String.valueOf(publishProcessRequest.getSitePages()));
+		}
+
 		if (publishProcessRequest.getSitePagesSettings() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -413,6 +423,15 @@ public class PublishProcessRequestSerDes {
 					publishProcessRequest.getScheduleStartDate()));
 		}
 
+		if (publishProcessRequest.getSitePages() == null) {
+			map.put("sitePages", null);
+		}
+		else {
+			map.put(
+				"sitePages",
+				String.valueOf(publishProcessRequest.getSitePages()));
+		}
+
 		if (publishProcessRequest.getSitePagesSettings() == null) {
 			map.put("sitePagesSettings", null);
 		}
@@ -514,6 +533,9 @@ public class PublishProcessRequestSerDes {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "scheduleStartDate")) {
+				return false;
+			}
+			else if (Objects.equals(jsonParserFieldName, "sitePages")) {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "sitePagesSettings")) {
@@ -630,6 +652,13 @@ public class PublishProcessRequestSerDes {
 				if (jsonParserFieldValue != null) {
 					publishProcessRequest.setScheduleStartDate(
 						toDate((String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "sitePages")) {
+				if (jsonParserFieldValue != null) {
+					publishProcessRequest.setSitePages(
+						SitePageSelectionSerDes.toDTO(
+							(String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "sitePagesSettings")) {
@@ -751,4 +780,4 @@ public class PublishProcessRequestSerDes {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1829882138
+// LIFERAY-REST-BUILDER-HASH:-1298134424

@@ -248,6 +248,27 @@ public class ExportProcessRequest implements Cloneable, Serializable {
 
 	protected String[] siteExternalReferenceCodes;
 
+	public SitePageSelection getSitePages() {
+		return sitePages;
+	}
+
+	public void setSitePages(SitePageSelection sitePages) {
+		this.sitePages = sitePages;
+	}
+
+	public void setSitePages(
+		UnsafeSupplier<SitePageSelection, Exception> sitePagesUnsafeSupplier) {
+
+		try {
+			sitePages = sitePagesUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected SitePageSelection sitePages;
+
 	public Boolean getSitePagesSettings() {
 		return sitePagesSettings;
 	}
@@ -398,4 +419,4 @@ public class ExportProcessRequest implements Cloneable, Serializable {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-831202142
+// LIFERAY-REST-BUILDER-HASH:-1647230143

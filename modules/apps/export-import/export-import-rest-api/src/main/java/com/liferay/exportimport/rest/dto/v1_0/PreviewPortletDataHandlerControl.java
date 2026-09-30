@@ -57,10 +57,6 @@ import java.util.function.Supplier;
 		),
 		@JsonSubTypes.Type(
 			name = "Setting", value = PreviewPortletDataHandlerSetting.class
-		),
-		@JsonSubTypes.Type(
-			name = "TreeSelection",
-			value = PreviewPortletDataHandlerTreeSelection.class
 		)
 	}
 )
@@ -202,9 +198,7 @@ public abstract class PreviewPortletDataHandlerControl implements Serializable {
 	@JsonIgnore
 	private Supplier<String> _nameSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The nested controls. A `TreeSelection` nests its parts as settings valued with external reference codes of the selected entity. The `all` part selects the whole tree. The `items` and `excluded-items` parts select or deselect single items. The `subtrees` and `excluded-subtrees` parts select or deselect an item together with all its descendants. An item follows its own setting, then the nearest ancestor found in a subtree setting, then `all`."
-	)
+	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
 	public PreviewPortletDataHandlerControl[]
 		getPreviewPortletDataHandlerControls() {
@@ -246,9 +240,7 @@ public abstract class PreviewPortletDataHandlerControl implements Serializable {
 		};
 	}
 
-	@GraphQLField(
-		description = "The nested controls. A `TreeSelection` nests its parts as settings valued with external reference codes of the selected entity. The `all` part selects the whole tree. The `items` and `excluded-items` parts select or deselect single items. The `subtrees` and `excluded-subtrees` parts select or deselect an item together with all its descendants. An item follows its own setting, then the nearest ancestor found in a subtree setting, then `all`."
-	)
+	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected PreviewPortletDataHandlerControl[]
 		previewPortletDataHandlerControls;
@@ -258,7 +250,7 @@ public abstract class PreviewPortletDataHandlerControl implements Serializable {
 		_previewPortletDataHandlerControlsSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "How the control is filled in the request. A `Boolean` is sent without values to include its data. A `Choice` is sent with the name of the chosen choice as its only value. A `Setting` is sent with its values. A `TreeSelection` is sent as a control whose nested controls are its parts."
+		description = "How the control is filled in the request. A `Boolean` is sent without values to include its data. A `Choice` is sent with the name of the chosen choice as its only value. A `Setting` is sent with its values."
 	)
 	@JsonGetter("type")
 	@Valid
@@ -305,7 +297,7 @@ public abstract class PreviewPortletDataHandlerControl implements Serializable {
 	}
 
 	@GraphQLField(
-		description = "How the control is filled in the request. A `Boolean` is sent without values to include its data. A `Choice` is sent with the name of the chosen choice as its only value. A `Setting` is sent with its values. A `TreeSelection` is sent as a control whose nested controls are its parts."
+		description = "How the control is filled in the request. A `Boolean` is sent without values to include its data. A `Choice` is sent with the name of the chosen choice as its only value. A `Setting` is sent with its values."
 	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	@NotNull
@@ -439,8 +431,7 @@ public abstract class PreviewPortletDataHandlerControl implements Serializable {
 	@GraphQLName("Type")
 	public static enum Type {
 
-		BOOLEAN("Boolean"), CHOICE("Choice"), SETTING("Setting"),
-		TREE_SELECTION("TreeSelection");
+		BOOLEAN("Boolean"), CHOICE("Choice"), SETTING("Setting");
 
 		@JsonCreator
 		public static Type create(String value) {
@@ -585,4 +576,4 @@ public abstract class PreviewPortletDataHandlerControl implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-228907251
+// LIFERAY-REST-BUILDER-HASH:-1544642087

@@ -286,6 +286,27 @@ public class PublishProcessRequest implements Cloneable, Serializable {
 
 	protected Date scheduleStartDate;
 
+	public SitePageSelection getSitePages() {
+		return sitePages;
+	}
+
+	public void setSitePages(SitePageSelection sitePages) {
+		this.sitePages = sitePages;
+	}
+
+	public void setSitePages(
+		UnsafeSupplier<SitePageSelection, Exception> sitePagesUnsafeSupplier) {
+
+		try {
+			sitePages = sitePagesUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected SitePageSelection sitePages;
+
 	public Boolean getSitePagesSettings() {
 		return sitePagesSettings;
 	}
@@ -458,4 +479,4 @@ public class PublishProcessRequest implements Cloneable, Serializable {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:814828940
+// LIFERAY-REST-BUILDER-HASH:1563733365
