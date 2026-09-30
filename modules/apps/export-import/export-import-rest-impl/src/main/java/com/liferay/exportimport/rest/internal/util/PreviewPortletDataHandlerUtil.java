@@ -25,7 +25,6 @@ import com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerChoice;
 import com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerControl;
 import com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerSection;
 import com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerSetting;
-import com.liferay.exportimport.rest.dto.v1_0.PreviewPortletDataHandlerTreeSelection;
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
@@ -186,10 +185,7 @@ public class PreviewPortletDataHandlerUtil {
 					setPreviewPortletDataHandlerControls(
 						() -> {
 							if (privateManifestSummary == null) {
-								return new PreviewPortletDataHandlerControl[] {
-									_toPreviewPortletDataHandlerTreeSelection(
-										locale)
-								};
+								return new PreviewPortletDataHandlerControl[0];
 							}
 
 							return new PreviewPortletDataHandlerControl[] {
@@ -197,9 +193,7 @@ public class PreviewPortletDataHandlerUtil {
 									locale, finalPrivateLayoutAdditionCount,
 									privateLayoutDeletionCount,
 									publicLayoutAdditionCount,
-									publicLayoutDeletionCount),
-								_toPreviewPortletDataHandlerTreeSelection(
-									locale)
+									publicLayoutDeletionCount)
 							};
 						});
 					setTag(() -> portletDataHandler.getTag(locale));
@@ -684,43 +678,6 @@ public class PreviewPortletDataHandlerUtil {
 					}
 				},
 			PreviewPortletDataHandlerControl.class);
-	}
-
-	private static PreviewPortletDataHandlerSetting
-		_toPreviewPortletDataHandlerSetting(String controlName) {
-
-		return new PreviewPortletDataHandlerSetting() {
-			{
-				setName(() -> controlName);
-				setType(() -> PreviewPortletDataHandlerControl.Type.SETTING);
-			}
-		};
-	}
-
-	private static PreviewPortletDataHandlerTreeSelection
-		_toPreviewPortletDataHandlerTreeSelection(Locale locale) {
-
-		return new PreviewPortletDataHandlerTreeSelection() {
-			{
-				setLabel(() -> LanguageUtil.get(locale, "pages"));
-				setName(() -> CONTROL_NAME_PAGES);
-				setPreviewPortletDataHandlerControls(
-					() -> new PreviewPortletDataHandlerControl[] {
-						_toPreviewPortletDataHandlerSetting(
-							CONTROL_NAME_TREE_SELECTION_ALL),
-						_toPreviewPortletDataHandlerSetting(
-							CONTROL_NAME_TREE_SELECTION_EXCLUDED_ITEMS),
-						_toPreviewPortletDataHandlerSetting(
-							CONTROL_NAME_TREE_SELECTION_EXCLUDED_SUBTREES),
-						_toPreviewPortletDataHandlerSetting(
-							CONTROL_NAME_TREE_SELECTION_ITEMS),
-						_toPreviewPortletDataHandlerSetting(
-							CONTROL_NAME_TREE_SELECTION_SUBTREES)
-					});
-				setType(
-					() -> PreviewPortletDataHandlerControl.Type.TREE_SELECTION);
-			}
-		};
 	}
 
 	private static final String _NAMESPACE = "layout_set";

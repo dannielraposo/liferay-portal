@@ -11,7 +11,8 @@ import com.liferay.exportimport.rest.client.dto.v1_0.ExportProcess;
 import com.liferay.exportimport.rest.client.dto.v1_0.ExportProcessRequest;
 import com.liferay.exportimport.rest.client.dto.v1_0.ProcessProgress;
 import com.liferay.exportimport.rest.client.dto.v1_0.RequestPortletDataHandler;
-import com.liferay.exportimport.rest.client.dto.v1_0.RequestPortletDataHandlerControl;
+import com.liferay.exportimport.rest.client.dto.v1_0.SitePageSelection;
+import com.liferay.exportimport.rest.client.dto.v1_0.SitePageSelectionEntry;
 import com.liferay.exportimport.rest.client.http.HttpInvoker;
 import com.liferay.exportimport.rest.client.pagination.Page;
 import com.liferay.exportimport.rest.client.pagination.Pagination;
@@ -30,7 +31,6 @@ import com.liferay.object.service.ObjectDefinitionSettingLocalService;
 import com.liferay.object.test.util.ObjectDefinitionTestUtil;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
-import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.background.task.model.BackgroundTask;
 import com.liferay.portal.background.task.service.BackgroundTaskLocalService;
@@ -731,8 +731,8 @@ public class ExportProcessResourceTest
 
 		ExportProcess exportProcess = unsafeFunction.apply(
 			_toExportProcessRequest(
-				"public-pages",
-				_toTreeSelectionControl("_layout_set_subtrees", parentLayout)));
+				false, SitePageSelection.Visibility.PUBLIC,
+				_toSitePageSelectionEntry(false, true, parentLayout)));
 
 		_assertExportedLayoutExternalReferenceCodes(
 			new String[] {
@@ -744,36 +744,13 @@ public class ExportProcessResourceTest
 	}
 
 	private void _assertExportedLayouts(
-			String choiceName,
 			UnsafeFunction<ExportProcessRequest, ExportProcess, Exception>
 				unsafeFunction,
-			Layout... layouts)
+			SitePageSelection.Visibility visibility, Layout... layouts)
 		throws Exception {
 
 		ExportProcess exportProcess = unsafeFunction.apply(
-			new ExportProcessRequest() {
-				{
-					name = RandomTestUtil.randomString();
-
-					setRequestPortletDataHandlers(
-						new RequestPortletDataHandler[] {
-							new RequestPortletDataHandler() {
-								{
-									name = "PORTLET_DATA_" + _PORTLET_ID;
-
-									setRequestPortletDataHandlerControls(
-										_toLayoutSetControls(
-											choiceName,
-											new RequestPortletDataHandlerControl() {
-												{
-													name = "_layout_set_all";
-												}
-											}));
-								}
-							}
-						});
-				}
-			});
+			_toExportProcessRequest(true, visibility));
 
 		ExportImportTestUtil.retryAssert(
 			1, TimeUnit.SECONDS, 30, TimeUnit.SECONDS,
@@ -796,21 +773,17 @@ public class ExportProcessResourceTest
 	}
 
 	private void _assertExportedLayoutsWithExclusion(
-			String excludedControlName, Layout excludedLayout,
-			Layout expectedLayout, Layout unexportedLayout,
+			Layout excludedLayout, Layout expectedLayout,
+			boolean includeDescendants, Layout unexportedLayout,
 			UnsafeFunction<ExportProcessRequest, ExportProcess, Exception>
 				unsafeFunction)
 		throws Exception {
 
 		ExportProcess exportProcess = unsafeFunction.apply(
 			_toExportProcessRequest(
-				"public-pages",
-				new RequestPortletDataHandlerControl() {
-					{
-						name = "_layout_set_all";
-					}
-				},
-				_toTreeSelectionControl(excludedControlName, excludedLayout)));
+				true, SitePageSelection.Visibility.PUBLIC,
+				_toSitePageSelectionEntry(
+					true, includeDescendants, excludedLayout)));
 
 		_assertExportedLayoutExternalReferenceCodes(
 			new String[] {expectedLayout.getExternalReferenceCode()},
@@ -1047,15 +1020,18 @@ public class ExportProcessResourceTest
 		Layout publicLayout = LayoutTestUtil.addTypeContentLayout(
 			testGroup, false, false);
 
-		_assertExportedLayouts("private-pages", unsafeFunction, privateLayout);
-		_assertExportedLayouts("public-pages", unsafeFunction, publicLayout);
+		_assertExportedLayouts(
+			unsafeFunction, SitePageSelection.Visibility.PRIVATE,
+			privateLayout);
+		_assertExportedLayouts(
+			unsafeFunction, SitePageSelection.Visibility.PUBLIC, publicLayout);
 
 		Layout excludedPublicLayout = LayoutTestUtil.addTypeContentLayout(
 			testGroup, false, false);
 
 		_assertExportedLayoutsWithExclusion(
-			"_layout_set_excluded-items", excludedPublicLayout, publicLayout,
-			excludedPublicLayout, unsafeFunction);
+			excludedPublicLayout, publicLayout, false, excludedPublicLayout,
+			unsafeFunction);
 
 		Layout excludedParentPublicLayout = LayoutTestUtil.addTypeContentLayout(
 			testGroup, false, false);
@@ -1064,8 +1040,8 @@ public class ExportProcessResourceTest
 			testGroup, excludedParentPublicLayout.getPlid());
 
 		_assertExportedLayoutsWithExclusion(
-			"_layout_set_excluded-subtrees", excludedParentPublicLayout,
-			publicLayout, excludedChildPublicLayout, unsafeFunction);
+			excludedParentPublicLayout, publicLayout, true,
+			excludedChildPublicLayout, unsafeFunction);
 
 		Layout reincludedChildPublicLayout =
 			LayoutTestUtil.addTypeContentLayout(
@@ -1078,17 +1054,11 @@ public class ExportProcessResourceTest
 			},
 			unsafeFunction.apply(
 				_toExportProcessRequest(
-					"public-pages",
-					new RequestPortletDataHandlerControl() {
-						{
-							name = "_layout_set_all";
-						}
-					},
-					_toTreeSelectionControl(
-						"_layout_set_excluded-subtrees",
-						excludedParentPublicLayout),
-					_toTreeSelectionControl(
-						"_layout_set_items", reincludedChildPublicLayout))),
+					true, SitePageSelection.Visibility.PUBLIC,
+					_toSitePageSelectionEntry(
+						true, true, excludedParentPublicLayout),
+					_toSitePageSelectionEntry(
+						false, false, reincludedChildPublicLayout))),
 			new String[] {
 				excludedChildPublicLayout.getExternalReferenceCode(),
 				excludedParentPublicLayout.getExternalReferenceCode()
@@ -1108,18 +1078,14 @@ public class ExportProcessResourceTest
 			new String[] {childPublicLayout.getExternalReferenceCode()},
 			unsafeFunction.apply(
 				_toExportProcessRequest(
-					"public-pages",
-					_toTreeSelectionControl(
-						"_layout_set_subtrees", parentPublicLayout),
-					_toTreeSelectionControl(
-						"_layout_set_excluded-items", parentPublicLayout))),
+					false, SitePageSelection.Visibility.PUBLIC,
+					_toSitePageSelectionEntry(false, true, parentPublicLayout),
+					_toSitePageSelectionEntry(
+						true, false, parentPublicLayout))),
 			new String[] {
 				parentPublicLayout.getExternalReferenceCode(),
 				publicLayout.getExternalReferenceCode()
 			});
-
-		ExportProcessRequest exportProcessRequest = _toExportProcessRequest(
-			RandomTestUtil.randomString());
 
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
 				"com.liferay.portal.vulcan.internal.jaxrs.exception.mapper." +
@@ -1127,7 +1093,14 @@ public class ExportProcessResourceTest
 				LoggerTestUtil.WARN)) {
 
 			assertHttpResponseStatusCode(
-				400, httpResponseUnsafeFunction.apply(exportProcessRequest));
+				400,
+				httpResponseUnsafeFunction.apply(
+					_toExportProcessRequest(
+						true, SitePageSelection.Visibility.PUBLIC,
+						_toSitePageSelectionEntry(
+							false, false, parentPublicLayout),
+						_toSitePageSelectionEntry(
+							true, false, parentPublicLayout))));
 		}
 	}
 
@@ -1237,77 +1210,36 @@ public class ExportProcessResourceTest
 	}
 
 	private ExportProcessRequest _toExportProcessRequest(
-		RequestPortletDataHandlerControl... layoutSetControls) {
+		boolean allLayouts, SitePageSelection.Visibility layoutVisibility,
+		SitePageSelectionEntry... entries) {
 
 		return new ExportProcessRequest() {
 			{
 				name = RandomTestUtil.randomString();
-
-				setRequestPortletDataHandlers(
-					new RequestPortletDataHandler[] {
-						new RequestPortletDataHandler() {
-							{
-								name = "PORTLET_DATA_" + _PORTLET_ID;
-
-								setRequestPortletDataHandlerControls(
-									layoutSetControls);
-							}
-						}
-					});
+				sitePages = new SitePageSelection() {
+					{
+						all = allLayouts;
+						sitePageSelectionEntries = entries;
+						visibility = layoutVisibility;
+					}
+				};
 			}
 		};
 	}
 
-	private ExportProcessRequest _toExportProcessRequest(
-		String choiceName,
-		RequestPortletDataHandlerControl... treeSelectionControls) {
+	private SitePageSelectionEntry _toSitePageSelectionEntry(
+		boolean excludedLayout, boolean includeLayoutDescendants,
+		Layout layout) {
 
-		return _toExportProcessRequest(
-			_toLayoutSetControls(choiceName, treeSelectionControls));
-	}
-
-	private RequestPortletDataHandlerControl[] _toLayoutSetControls(
-		String choiceName,
-		RequestPortletDataHandlerControl... treeSelectionControls) {
-
-		RequestPortletDataHandlerControl pagesControl =
-			new RequestPortletDataHandlerControl() {
-				{
-					name = "_layout_set_pages";
-
-					setRequestPortletDataHandlerControls(treeSelectionControls);
-				}
-			};
-
-		if (Objects.equals(choiceName, "public-pages")) {
-			return new RequestPortletDataHandlerControl[] {pagesControl};
-		}
-
-		return new RequestPortletDataHandlerControl[] {
-			new RequestPortletDataHandlerControl() {
-				{
-					name = "_layout_set_visibility";
-					values = new String[] {choiceName};
-				}
-			},
-			pagesControl
-		};
-	}
-
-	private RequestPortletDataHandlerControl _toTreeSelectionControl(
-		String controlName, Layout... layouts) {
-
-		return new RequestPortletDataHandlerControl() {
+		return new SitePageSelectionEntry() {
 			{
-				name = controlName;
-				values = TransformUtil.transform(
-					layouts, Layout::getExternalReferenceCode, String.class);
+				excluded = excludedLayout;
+				includeDescendants = includeLayoutDescendants;
+				sitePageExternalReferenceCode =
+					layout.getExternalReferenceCode();
 			}
 		};
 	}
-
-	private static final String _PORTLET_ID =
-		"com_liferay_layout_admin_web_portlet_LayoutSetLayoutsPortlet";
 
 	private static final String _STATUS_MESSAGE =
 		"java.lang.NullPointerException\n\tat com.liferay.exportimport." +

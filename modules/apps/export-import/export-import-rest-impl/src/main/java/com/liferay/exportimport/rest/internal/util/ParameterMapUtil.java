@@ -13,6 +13,11 @@ import com.liferay.exportimport.rest.dto.v1_0.ImportProcessRequest;
 import com.liferay.exportimport.rest.dto.v1_0.PublishProcessRequest;
 import com.liferay.exportimport.rest.dto.v1_0.RequestPortletDataHandler;
 import com.liferay.exportimport.rest.dto.v1_0.RequestPortletDataHandlerControl;
+import com.liferay.exportimport.rest.dto.v1_0.SitePageSelection;
+import com.liferay.exportimport.rest.dto.v1_0.SitePageSelectionEntry;
+import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
@@ -23,10 +28,15 @@ import com.liferay.portal.kernel.util.Validator;
 
 import jakarta.ws.rs.BadRequestException;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Daniel Raposo
@@ -139,6 +149,11 @@ public class ParameterMapUtil {
 
 		_addRequestPortletDataHandlers(
 			exportProcessRequest.getRequestPortletDataHandlers(), parameterMap);
+
+		if (!portletScoped) {
+			_addSitePageSelection(
+				exportProcessRequest.getSitePages(), parameterMap);
+		}
 
 		parameterMap.put(
 			PortletDataHandlerKeys.COMMENTS,
@@ -310,6 +325,8 @@ public class ParameterMapUtil {
 		_addRequestPortletDataHandlers(
 			publishProcessRequest.getRequestPortletDataHandlers(),
 			parameterMap);
+		_addSitePageSelection(
+			publishProcessRequest.getSitePages(), parameterMap);
 
 		parameterMap.put(
 			PortletDataHandlerKeys.COMMENTS,
@@ -429,6 +446,109 @@ public class ParameterMapUtil {
 					getRequestPortletDataHandlerControls(),
 				parameterMap);
 		}
+	}
+
+	private static void _addSitePageSelection(
+		SitePageSelection sitePageSelection,
+		Map<String, String[]> parameterMap) {
+
+		if (sitePageSelection == null) {
+			return;
+		}
+
+		parameterMap.put(
+			PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE +
+				LayoutAdminPortletKeys.LAYOUT_SET_LAYOUTS,
+			new String[] {Boolean.TRUE.toString()});
+		parameterMap.put(
+			PreviewPortletDataHandlerUtil.CONTROL_NAME_PAGES,
+			new String[] {Boolean.TRUE.toString()});
+
+		if (GetterUtil.getBoolean(sitePageSelection.getAll())) {
+			parameterMap.put(
+				PreviewPortletDataHandlerUtil.CONTROL_NAME_TREE_SELECTION_ALL,
+				new String[] {Boolean.TRUE.toString()});
+		}
+
+		if (sitePageSelection.getVisibility() ==
+				SitePageSelection.Visibility.PRIVATE) {
+
+			parameterMap.put(
+				PreviewPortletDataHandlerUtil.CONTROL_NAME_VISIBILITY,
+				new String[] {
+					PreviewPortletDataHandlerUtil.CHOICE_NAME_PRIVATE_PAGES
+				});
+		}
+
+		SitePageSelectionEntry[] sitePageSelectionEntries =
+			sitePageSelection.getSitePageSelectionEntries();
+
+		if (ArrayUtil.isEmpty(sitePageSelectionEntries)) {
+			return;
+		}
+
+		Map<String, List<String>> sitePageExternalReferenceCodesMap =
+			new HashMap<>();
+		Set<String> sitePageSelectionEntryKeys = new HashSet<>();
+
+		for (SitePageSelectionEntry sitePageSelectionEntry :
+				sitePageSelectionEntries) {
+
+			boolean includeDescendants = GetterUtil.getBoolean(
+				sitePageSelectionEntry.getIncludeDescendants());
+			String sitePageExternalReferenceCode =
+				sitePageSelectionEntry.getSitePageExternalReferenceCode();
+
+			if (!sitePageSelectionEntryKeys.add(
+					sitePageExternalReferenceCode + StringPool.UNDERLINE +
+						includeDescendants)) {
+
+				throw new BadRequestException(
+					StringBundler.concat(
+						"The page with external reference code \"",
+						sitePageExternalReferenceCode,
+						"\" has more than one entry for ",
+						includeDescendants ? "its descendants" : "itself"));
+			}
+
+			List<String> sitePageExternalReferenceCodes =
+				sitePageExternalReferenceCodesMap.computeIfAbsent(
+					_getControlName(
+						GetterUtil.getBoolean(
+							sitePageSelectionEntry.getExcluded()),
+						includeDescendants),
+					controlName -> new ArrayList<>());
+
+			sitePageExternalReferenceCodes.add(sitePageExternalReferenceCode);
+		}
+
+		for (Map.Entry<String, List<String>> entry :
+				sitePageExternalReferenceCodesMap.entrySet()) {
+
+			parameterMap.put(
+				entry.getKey(), ArrayUtil.toStringArray(entry.getValue()));
+		}
+	}
+
+	private static String _getControlName(
+		boolean excluded, boolean includeDescendants) {
+
+		if (includeDescendants) {
+			if (excluded) {
+				return PreviewPortletDataHandlerUtil.
+					CONTROL_NAME_TREE_SELECTION_EXCLUDED_SUBTREES;
+			}
+
+			return PreviewPortletDataHandlerUtil.
+				CONTROL_NAME_TREE_SELECTION_SUBTREES;
+		}
+
+		if (excluded) {
+			return PreviewPortletDataHandlerUtil.
+				CONTROL_NAME_TREE_SELECTION_EXCLUDED_ITEMS;
+		}
+
+		return PreviewPortletDataHandlerUtil.CONTROL_NAME_TREE_SELECTION_ITEMS;
 	}
 
 	private static Map<String, String[]> _getDefaultParameterMap(
