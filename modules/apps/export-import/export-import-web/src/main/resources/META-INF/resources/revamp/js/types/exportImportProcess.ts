@@ -21,6 +21,20 @@ export interface ExportProcess {
 	status?: {code: number; label: string};
 }
 
+export type SitePageVisibility = 'PRIVATE' | 'PUBLIC';
+
+export interface SitePageSelectionEntry {
+	excluded?: boolean;
+	includeDescendants?: boolean;
+	sitePageExternalReferenceCode: string;
+}
+
+export interface SitePageSelection {
+	all?: boolean;
+	sitePageSelectionEntries?: SitePageSelectionEntry[];
+	visibility?: SitePageVisibility;
+}
+
 export interface ExportProcessRequest {
 	comments?: boolean;
 	dateRangeType?: DateRangeType;
@@ -31,6 +45,7 @@ export interface ExportProcessRequest {
 	permissions?: boolean;
 	ratings?: boolean;
 	requestPortletDataHandlers?: RequestPortletDataHandler[];
+	sitePages?: SitePageSelection;
 	sitePagesSettings?: boolean;
 	siteTemplateSettings?: boolean;
 	startDate?: string;
@@ -97,6 +112,7 @@ export interface PublishProcessRequest {
 	requestPortletDataHandlers?: RequestPortletDataHandler[];
 	scheduleEndDate?: string;
 	scheduleStartDate?: string;
+	sitePages?: SitePageSelection;
 	sitePagesSettings?: boolean;
 	siteTemplateSettings?: boolean;
 	startDate?: string;

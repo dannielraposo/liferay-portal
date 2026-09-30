@@ -468,19 +468,10 @@ describe('NewExport', () => {
 			await submitExport();
 
 			await waitFor(() =>
-				expect(getExportRequest().requestPortletDataHandlers).toEqual([
-					{
-						name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
-						requestPortletDataHandlerControls: [
-							{
-								name: '_layout_set_pages',
-								requestPortletDataHandlerControls: [
-									{name: '_layout_set_all'},
-								],
-							},
-						],
-					},
-				])
+				expect(getExportRequest().sitePages).toEqual({
+					all: true,
+					visibility: 'PUBLIC',
+				})
 			);
 
 			await waitFor(() =>
@@ -521,23 +512,16 @@ describe('NewExport', () => {
 			await submitExport();
 
 			await waitFor(() =>
-				expect(getExportRequest().requestPortletDataHandlers).toEqual([
-					{
-						name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
-						requestPortletDataHandlerControls: [
-							{
-								name: '_layout_set_pages',
-								requestPortletDataHandlerControls: [
-									{name: '_layout_set_all'},
-									{
-										name: '_layout_set_excluded-items',
-										values: ['page-2-erc'],
-									},
-								],
-							},
-						],
-					},
-				])
+				expect(getExportRequest().sitePages).toEqual({
+					all: true,
+					sitePageSelectionEntries: [
+						{
+							excluded: true,
+							sitePageExternalReferenceCode: 'page-2-erc',
+						},
+					],
+					visibility: 'PUBLIC',
+				})
 			);
 		});
 
@@ -563,23 +547,10 @@ describe('NewExport', () => {
 			await submitExport();
 
 			await waitFor(() =>
-				expect(getExportRequest().requestPortletDataHandlers).toEqual([
-					{
-						name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
-						requestPortletDataHandlerControls: [
-							{
-								name: '_layout_set_visibility',
-								values: ['private-pages'],
-							},
-							{
-								name: '_layout_set_pages',
-								requestPortletDataHandlerControls: [
-									{name: '_layout_set_all'},
-								],
-							},
-						],
-					},
-				])
+				expect(getExportRequest().sitePages).toEqual({
+					all: true,
+					visibility: 'PRIVATE',
+				})
 			);
 		});
 
@@ -651,27 +622,16 @@ describe('NewExport', () => {
 			await submitExport();
 
 			await waitFor(() =>
-				expect(getExportRequest().requestPortletDataHandlers).toEqual([
-					{
-						name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
-						requestPortletDataHandlerControls: [
-							{
-								name: '_layout_set_visibility',
-								values: ['private-pages'],
-							},
-							{
-								name: '_layout_set_pages',
-								requestPortletDataHandlerControls: [
-									{name: '_layout_set_all'},
-									{
-										name: '_layout_set_excluded-items',
-										values: ['page-2-erc'],
-									},
-								],
-							},
-						],
-					},
-				])
+				expect(getExportRequest().sitePages).toEqual({
+					all: true,
+					sitePageSelectionEntries: [
+						{
+							excluded: true,
+							sitePageExternalReferenceCode: 'page-2-erc',
+						},
+					],
+					visibility: 'PRIVATE',
+				})
 			);
 		});
 	});

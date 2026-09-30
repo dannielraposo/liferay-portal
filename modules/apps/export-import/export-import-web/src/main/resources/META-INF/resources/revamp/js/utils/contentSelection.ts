@@ -440,24 +440,36 @@ export function getLayoutSetCount(
 	return previewPortletDataHandler[key];
 }
 
-export function isPrivateLayoutSelected(
+export function getLayoutSetSelection(
 	contentSelection: ContentSelection | undefined
-): boolean {
+): LayoutSetSelection | true | undefined {
 	if (!contentSelection) {
-		return false;
+		return undefined;
 	}
 
 	for (const sectionSelection of Object.values(contentSelection)) {
 		const portletDataHandlerSelection = sectionSelection?.[
 			PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
-		] as LayoutSetSelection | undefined;
+		] as LayoutSetSelection | true | undefined;
 
 		if (portletDataHandlerSelection) {
-			return !!portletDataHandlerSelection.privateLayout;
+			return portletDataHandlerSelection;
 		}
 	}
 
-	return false;
+	return undefined;
+}
+
+export function isPrivateLayoutSelected(
+	contentSelection: ContentSelection | undefined
+): boolean {
+	const layoutSetSelection = getLayoutSetSelection(contentSelection);
+
+	if (!layoutSetSelection || layoutSetSelection === true) {
+		return false;
+	}
+
+	return !!layoutSetSelection.privateLayout;
 }
 
 export function getSelectedItemsCount(

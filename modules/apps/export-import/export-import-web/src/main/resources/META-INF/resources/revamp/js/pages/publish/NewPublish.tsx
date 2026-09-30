@@ -30,6 +30,7 @@ import {getProcessFormErrors} from '../../utils/getProcessFormErrors';
 import {toContentSelection} from '../../utils/toContentSelection';
 import {toDateFilterValues} from '../../utils/toDateFilterValues';
 import {toRequestPortletDataHandlers} from '../../utils/toRequestPortletDataHandlers';
+import {toSitePageSelection} from '../../utils/toSitePageSelection';
 import {FormikFieldPublishScheduler} from './components/scheduler/FormikFieldPublishScheduler';
 import {
 	fromCronExpression,
@@ -244,6 +245,7 @@ export function NewPublish({
 								previewPortletDataHandlerSections,
 								values.contentSelection
 							),
+						sitePages: toSitePageSelection(values.contentSelection),
 					},
 					url: publishProcessAPIURL,
 				});

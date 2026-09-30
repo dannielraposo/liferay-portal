@@ -27,6 +27,7 @@ import {
 } from '../../utils/contentSelection';
 import {getProcessFormErrors} from '../../utils/getProcessFormErrors';
 import {toRequestPortletDataHandlers} from '../../utils/toRequestPortletDataHandlers';
+import {toSitePageSelection} from '../../utils/toSitePageSelection';
 
 type ExportFormValues = {
 	contentSelection: ContentSelection | undefined;
@@ -87,6 +88,7 @@ export function NewExport({
 								previewPortletDataHandlerSections,
 								values.contentSelection
 							),
+						sitePages: toSitePageSelection(values.contentSelection),
 					},
 					url: exportProcessAPIURL,
 				});
