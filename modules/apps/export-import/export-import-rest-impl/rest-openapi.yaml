@@ -111,6 +111,8 @@ components:
                     items:
                         type: string
                     type: array
+                sitePages:
+                    $ref: "#/components/schemas/SitePageSelection"
                 sitePagesSettings:
                     default: false
                     type: boolean
@@ -322,7 +324,6 @@ components:
                     Boolean: "#/components/schemas/PreviewPortletDataHandlerBoolean"
                     Choice: "#/components/schemas/PreviewPortletDataHandlerChoice"
                     Setting: "#/components/schemas/PreviewPortletDataHandlerSetting"
-                    TreeSelection: "#/components/schemas/PreviewPortletDataHandlerTreeSelection"
                 propertyName: type
             properties:
                 disabled:
@@ -335,16 +336,14 @@ components:
                     readOnly: true
                     type: string
                 previewPortletDataHandlerControls:
-                    description:
-                        The nested controls. A `TreeSelection` nests its parts as settings valued with external reference codes of the selected entity. The `all` part selects the whole tree. The `items` and `excluded-items` parts select or deselect single items. The `subtrees` and `excluded-subtrees` parts select or deselect an item together with all its descendants. An item follows its own setting, then the nearest ancestor found in a subtree setting, then `all`.
                     items:
                         $ref: "#/components/schemas/PreviewPortletDataHandlerControl"
                     readOnly: true
                     type: array
                 type:
                     description:
-                        How the control is filled in the request. A `Boolean` is sent without values to include its data. A `Choice` is sent with the name of the chosen choice as its only value. A `Setting` is sent with its values. A `TreeSelection` is sent as a control whose nested controls are its parts.
-                    enum: [Boolean, Choice, Setting, TreeSelection]
+                        How the control is filled in the request. A `Boolean` is sent without values to include its data. A `Choice` is sent with the name of the chosen choice as its only value. A `Setting` is sent with its values.
+                    enum: [Boolean, Choice, Setting]
                     readOnly: true
                     type: string
             required:
@@ -379,10 +378,6 @@ components:
                         defaultState:
                             readOnly: true
                             type: boolean
-            type: object
-        PreviewPortletDataHandlerTreeSelection:
-            allOf:
-                -   $ref: "#/components/schemas/PreviewPortletDataHandlerControl"
             type: object
         PreviewSite:
             properties:
@@ -526,6 +521,8 @@ components:
                         When the scheduled publish starts. Applies only when a cron expression is given. Defaults to now.
                     format: date-time
                     type: string
+                sitePages:
+                    $ref: "#/components/schemas/SitePageSelection"
                 sitePagesSettings:
                     default: false
                     type: boolean
@@ -712,6 +709,41 @@ components:
                     format: date-time
                     readOnly: true
                     type: string
+            type: object
+        SitePageSelection:
+            description:
+                The pages to include. A page follows its own entry for itself, then its own entry for its descendants, then the nearest ancestor with an entry that includes descendants, then `all`. Omitting the field includes no pages.
+            properties:
+                all:
+                    default: false
+                    description:
+                        Includes every page of the chosen visibility. The entries refine the selection.
+                    type: boolean
+                sitePageSelectionEntries:
+                    items:
+                        $ref: "#/components/schemas/SitePageSelectionEntry"
+                    type: array
+                visibility:
+                    default: PUBLIC
+                    enum: [PRIVATE, PUBLIC]
+                    type: string
+            type: object
+        SitePageSelectionEntry:
+            description:
+                One page to include or exclude. A page may appear twice, once for itself and once for its descendants.
+            properties:
+                excluded:
+                    default: false
+                    type: boolean
+                includeDescendants:
+                    default: false
+                    description:
+                        Applies the entry to every page under the page, at any depth, instead of to the page itself.
+                    type: boolean
+                sitePageExternalReferenceCode:
+                    type: string
+            required:
+                -   sitePageExternalReferenceCode
             type: object
         Status:
             properties:
