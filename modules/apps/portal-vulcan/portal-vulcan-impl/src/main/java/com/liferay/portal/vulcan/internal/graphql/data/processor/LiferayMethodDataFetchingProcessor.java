@@ -35,6 +35,7 @@ import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTa
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResourceFactory;
 import com.liferay.portal.vulcan.graphql.contributor.GraphQLContributor;
 import com.liferay.portal.vulcan.internal.accept.language.AcceptLanguageImpl;
+import com.liferay.portal.vulcan.internal.feature.flag.FeatureFlagUtil;
 import com.liferay.portal.vulcan.internal.graphql.util.GraphQLUtil;
 import com.liferay.portal.vulcan.internal.jaxrs.context.provider.AggregationContextProvider;
 import com.liferay.portal.vulcan.internal.jaxrs.context.provider.ContextProviderUtil;
@@ -60,6 +61,7 @@ import jakarta.validation.ValidationException;
 import jakarta.validation.constraints.NotNull;
 
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.UriInfo;
@@ -134,9 +136,16 @@ public class LiferayMethodDataFetchingProcessor {
 			Object source)
 		throws Exception {
 
+		long companyId = _portal.getCompanyId(httpServletRequest);
+
+		if (!FeatureFlagUtil.isEnabled(
+				companyId, method, method.getDeclaringClass())) {
+
+			throw new NotFoundException();
+		}
+
 		Pagination pagination = _paginationProvider.getPagination(
-			_portal.getCompanyId(httpServletRequest),
-			_getIntegerValue(arguments, "page"),
+			companyId, _getIntegerValue(arguments, "page"),
 			_getIntegerValue(arguments, "pageSize"));
 
 		Parameter[] parameters = method.getParameters();

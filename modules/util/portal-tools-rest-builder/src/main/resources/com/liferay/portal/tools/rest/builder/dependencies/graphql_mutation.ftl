@@ -42,6 +42,9 @@ import org.osgi.service.component.ComponentServiceObjects;
  * @author ${configYAML.author}
  * @generated
  */
+<#if openAPIYAML.info.featureFlag?has_content>
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("${openAPIYAML.info.featureFlag}")
+</#if>
 @Generated("")
 public class Mutation {
 
@@ -70,15 +73,8 @@ public class Mutation {
 		${freeMarkerTool.getGraphQLMutationName(javaMethodSignature.methodName)}(${freeMarkerTool.getGraphQLParameters(javaMethodSignature.javaMethodParameters, javaMethodSignature.operation, true)}) throws Exception {
 			<#assign
 				arguments = freeMarkerTool.getGraphQLArguments(javaMethodSignature.javaMethodParameters, freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName))
-				featureFlag = freeMarkerTool.getFeatureFlag(openAPIYAML, javaMethodSignature.operation)!
 			/>
 
-			<#if featureFlag?has_content>
-				if (!com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil.isEnabled(_company.getCompanyId(), "${featureFlag}")) {
-					throw new ${configYAML.javaEEPackage}.ws.rs.NotFoundException();
-				}
-
-			</#if>
 			<#if javaMethodSignature.returnType?contains("java.util.Collection<")>
 				return _applyComponentServiceObjects(
 					_${freeMarkerTool.getSchemaVarName(javaMethodSignature.schemaName)}ResourceComponentServiceObjects, this::_populateResourceContext,

@@ -16,8 +16,18 @@ import java.lang.reflect.Method;
 public class FeatureFlagUtil {
 
 	public static boolean isEnabled(long companyId, Class<?> resourceClass) {
-		return _isEnabled(
-			companyId, resourceClass.getAnnotation(FeatureFlag.class));
+		while (resourceClass != null) {
+			FeatureFlag featureFlag = resourceClass.getAnnotation(
+				FeatureFlag.class);
+
+			if (featureFlag != null) {
+				return _isEnabled(companyId, featureFlag);
+			}
+
+			resourceClass = resourceClass.getEnclosingClass();
+		}
+
+		return true;
 	}
 
 	public static boolean isEnabled(

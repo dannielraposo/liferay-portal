@@ -27,7 +27,6 @@ import com.liferay.portal.tools.rest.builder.internal.yaml.config.ConfigYAML;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Content;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Delete;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Get;
-import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Info;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.OpenAPIYAML;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Operation;
 import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Parameter;
@@ -55,20 +54,6 @@ import java.util.function.Consumer;
  * @author Peter Shin
  */
 public class ResourceOpenAPIParser {
-
-	public static String getFeatureFlag(
-		OpenAPIYAML openAPIYAML, Operation operation) {
-
-		String featureFlag = operation.getFeatureFlag();
-
-		if (Validator.isNotNull(featureFlag)) {
-			return featureFlag;
-		}
-
-		Info info = openAPIYAML.getInfo();
-
-		return info.getFeatureFlag();
-	}
 
 	public static List<JavaMethodSignature> getJavaMethodSignatures(
 		ConfigYAML configYAML, OpenAPIYAML openAPIYAML, String schemaName) {
