@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.JavaMethodParameter;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.JavaMethodSignature;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.parser.DTOOpenAPIParser;
@@ -1232,6 +1233,31 @@ public class FreeMarkerTool {
 					"ExternalReferenceCode")) {
 
 			return true;
+		}
+
+		return false;
+	}
+
+	public boolean isGenerateFeatureFlag(
+		ConfigYAML configYAML, OpenAPIYAML openAPIYAML, String schemaName) {
+
+		Info info = openAPIYAML.getInfo();
+
+		if (Validator.isNotNull(info.getFeatureFlag())) {
+			return true;
+		}
+
+		for (JavaMethodSignature javaMethodSignature :
+				getResourceJavaMethodSignatures(
+					configYAML, openAPIYAML, schemaName)) {
+
+			Operation operation = javaMethodSignature.getOperation();
+
+			if ((operation != null) &&
+				Validator.isNotNull(operation.getFeatureFlag())) {
+
+				return true;
+			}
 		}
 
 		return false;

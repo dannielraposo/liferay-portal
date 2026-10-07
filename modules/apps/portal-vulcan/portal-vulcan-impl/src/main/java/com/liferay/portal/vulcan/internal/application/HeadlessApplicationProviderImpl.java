@@ -21,7 +21,8 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.remote.jaxrs.whiteboard.lifecycle.JAXRSLifecycle;
 import com.liferay.portal.vulcan.application.HeadlessApplicationProvider;
-import com.liferay.portal.vulcan.internal.feature.flag.FeatureFlagUtil;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
+import com.liferay.portal.vulcan.internal.feature.flag.FeatureFlagCheckerImpl;
 
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -335,6 +336,9 @@ public class HeadlessApplicationProviderImpl
 	private volatile List<ApplicationDTO> _applicationDTOs;
 	private ServiceTrackerMap<Long, ServiceReference<?>>
 		_companyIdsServiceTrackerMap;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private JAXRSLifecycle _jaxrsLifecycle;
@@ -655,7 +659,10 @@ public class HeadlessApplicationProviderImpl
 				return true;
 			}
 
-			return FeatureFlagUtil.isEnabled(
+			FeatureFlagCheckerImpl featureFlagCheckerImpl =
+				(FeatureFlagCheckerImpl)_featureFlagChecker;
+
+			return featureFlagCheckerImpl.isEnabled(
 				_applicationImpl._companyId, service.getClass());
 		}
 

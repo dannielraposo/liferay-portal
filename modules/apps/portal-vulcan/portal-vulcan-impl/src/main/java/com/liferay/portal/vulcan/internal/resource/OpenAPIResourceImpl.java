@@ -28,8 +28,8 @@ import com.liferay.portal.vulcan.extension.EntityExtensionHandler;
 import com.liferay.portal.vulcan.extension.ExtensionProviderRegistry;
 import com.liferay.portal.vulcan.extension.PropertyDefinition;
 import com.liferay.portal.vulcan.extension.util.ExtensionUtil;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 import com.liferay.portal.vulcan.internal.configuration.util.ConfigurationUtil;
-import com.liferay.portal.vulcan.internal.feature.flag.FeatureFlagUtil;
 import com.liferay.portal.vulcan.openapi.DTOProperty;
 import com.liferay.portal.vulcan.openapi.OpenAPIContext;
 import com.liferay.portal.vulcan.openapi.OpenAPISchemaFilter;
@@ -709,7 +709,7 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 
 				for (Method method : currentClass.getDeclaredMethods()) {
 					if ((AnnotationUtils.getHttpMethodValue(method) == null) ||
-						FeatureFlagUtil.isEnabled(companyId, method)) {
+						_featureFlagChecker.isEnabled(companyId, method)) {
 
 						continue;
 					}
@@ -1534,6 +1534,9 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 
 	@Reference
 	private ExtensionProviderRegistry _extensionProviderRegistry;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	private ServiceTrackerMap<String, String> _serviceTrackerMap;
 	private ServiceTrackerList<OpenAPIContributor> _trackedOpenAPIContributors;

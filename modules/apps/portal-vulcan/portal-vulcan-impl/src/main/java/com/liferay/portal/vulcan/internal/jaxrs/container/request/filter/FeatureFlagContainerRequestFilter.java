@@ -6,7 +6,7 @@
 package com.liferay.portal.vulcan.internal.jaxrs.container.request.filter;
 
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.vulcan.internal.feature.flag.FeatureFlagUtil;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 import com.liferay.portal.vulcan.internal.jaxrs.context.provider.ContextProviderUtil;
 
 import jakarta.ws.rs.NotFoundException;
@@ -26,7 +26,10 @@ import org.apache.cxf.phase.PhaseInterceptorChain;
 public class FeatureFlagContainerRequestFilter
 	implements ContainerRequestFilter {
 
-	public FeatureFlagContainerRequestFilter(Portal portal) {
+	public FeatureFlagContainerRequestFilter(
+		FeatureFlagChecker featureFlagChecker, Portal portal) {
+
+		_featureFlagChecker = featureFlagChecker;
 		_portal = portal;
 	}
 
@@ -43,7 +46,7 @@ public class FeatureFlagContainerRequestFilter
 			return;
 		}
 
-		if (!FeatureFlagUtil.isEnabled(
+		if (!_featureFlagChecker.isEnabled(
 				_portal.getCompanyId(
 					ContextProviderUtil.getHttpServletRequest(message)),
 				operationResourceInfo.getAnnotatedMethod())) {
@@ -52,6 +55,7 @@ public class FeatureFlagContainerRequestFilter
 		}
 	}
 
+	private final FeatureFlagChecker _featureFlagChecker;
 	private final Portal _portal;
 
 }

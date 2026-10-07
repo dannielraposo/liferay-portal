@@ -7,19 +7,23 @@ package com.liferay.portal.vulcan.internal.feature.flag;
 
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.vulcan.feature.flag.FeatureFlag;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import java.lang.reflect.Method;
 
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Daniel Raposo
  * @author Carlos Correa
  */
-public class FeatureFlagUtil {
+@Component(service = FeatureFlagChecker.class)
+public class FeatureFlagCheckerImpl implements FeatureFlagChecker {
 
-	public static String getFeatureFlagKey(Class<?> clazz) {
+	public String getFeatureFlagKey(Class<?> clazz) {
 		while (clazz != null) {
 			FeatureFlag featureFlag = clazz.getAnnotation(FeatureFlag.class);
 
@@ -33,7 +37,7 @@ public class FeatureFlagUtil {
 		return null;
 	}
 
-	public static String getFeatureFlagKey(Method method) {
+	public String getFeatureFlagKey(Method method) {
 		FeatureFlag featureFlag = method.getAnnotation(FeatureFlag.class);
 
 		if (featureFlag != null) {
@@ -66,15 +70,16 @@ public class FeatureFlagUtil {
 		return getFeatureFlagKey(declaringClass);
 	}
 
-	public static boolean isEnabled(long companyId, Class<?> clazz) {
+	public boolean isEnabled(long companyId, Class<?> clazz) {
 		return _isEnabled(companyId, getFeatureFlagKey(clazz));
 	}
 
-	public static boolean isEnabled(long companyId, Method method) {
+	@Override
+	public boolean isEnabled(long companyId, Method method) {
 		return _isEnabled(companyId, getFeatureFlagKey(method));
 	}
 
-	private static boolean _isEnabled(long companyId, String featureFlagKey) {
+	private boolean _isEnabled(long companyId, String featureFlagKey) {
 		if (featureFlagKey == null) {
 			return true;
 		}

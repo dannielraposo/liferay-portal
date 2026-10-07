@@ -24,11 +24,13 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 import ${configYAML.javaEEPackage}.annotation.Generated;
 
 import ${configYAML.javaEEPackage}.servlet.http.HttpServletRequest;
 import ${configYAML.javaEEPackage}.servlet.http.HttpServletResponse;
 
+import ${configYAML.javaEEPackage}.ws.rs.NotFoundException;
 import ${configYAML.javaEEPackage}.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Constructor;
@@ -142,40 +144,50 @@ public class ${schemaName}ResourceFactoryImpl implements ${schemaName}Resource.F
 	}
 
 	private Object _invoke(Method method, Object[] arguments, boolean checkPermissions, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Locale preferredLocale, UriInfo uriInfo, User user) throws Throwable {
-		String name = PrincipalThreadLocal.getName();
+		${schemaName}Resource ${schemaVarName}Resource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker = PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(new LiberalPermissionChecker(user));
-		}
-
-		${schemaName}Resource ${schemaVarName}Resource = _componentServiceObjects.getService();
-
-		${schemaVarName}Resource.setContextAcceptLanguage(new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		${schemaVarName}Resource.setContextCompany(company);
-
-		${schemaVarName}Resource.setContextHttpServletRequest(httpServletRequest);
-		${schemaVarName}Resource.setContextHttpServletResponse(httpServletResponse);
-		${schemaVarName}Resource.setContextUriInfo(uriInfo);
-		${schemaVarName}Resource.setContextUser(user);
-		${schemaVarName}Resource.setExpressionConvert(_expressionConvert);
-		${schemaVarName}Resource.setFilterParserProvider(_filterParserProvider);
-		${schemaVarName}Resource.setGroupLocalService(_groupLocalService);
-		${schemaVarName}Resource.setResourceActionLocalService(_resourceActionLocalService);
-		${schemaVarName}Resource.setResourcePermissionLocalService(_resourcePermissionLocalService);
-		${schemaVarName}Resource.setRoleLocalService(_roleLocalService);
-		${schemaVarName}Resource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			<#assign generateFeatureFlag = freeMarkerTool.isGenerateFeatureFlag(configYAML, openAPIYAML, schemaName) />
+
+			<#if generateFeatureFlag>
+				Class<?> clazz = ${schemaVarName}Resource.getClass();
+
+				if (!_featureFlagChecker.isEnabled(user.getCompanyId(), clazz.getMethod(method.getName(), method.getParameterTypes()))) {
+					throw new NotFoundException();
+				}
+			</#if>
+
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(new LiberalPermissionChecker(user));
+			}
+
+			${schemaVarName}Resource.setContextAcceptLanguage(new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(user.getCompanyId());
+
+			${schemaVarName}Resource.setContextCompany(company);
+
+			${schemaVarName}Resource.setContextHttpServletRequest(httpServletRequest);
+			${schemaVarName}Resource.setContextHttpServletResponse(httpServletResponse);
+			${schemaVarName}Resource.setContextUriInfo(uriInfo);
+			${schemaVarName}Resource.setContextUser(user);
+			${schemaVarName}Resource.setExpressionConvert(_expressionConvert);
+			${schemaVarName}Resource.setFilterParserProvider(_filterParserProvider);
+			${schemaVarName}Resource.setGroupLocalService(_groupLocalService);
+			${schemaVarName}Resource.setResourceActionLocalService(_resourceActionLocalService);
+			${schemaVarName}Resource.setResourcePermissionLocalService(_resourcePermissionLocalService);
+			${schemaVarName}Resource.setRoleLocalService(_roleLocalService);
+			${schemaVarName}Resource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(${schemaVarName}Resource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -203,6 +215,11 @@ public class ${schemaName}ResourceFactoryImpl implements ${schemaName}Resource.F
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	<#if generateFeatureFlag>
+		@Reference
+		private FeatureFlagChecker _featureFlagChecker;
+	</#if>
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;

@@ -10,6 +10,7 @@ import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.feature.flag.constants.FeatureFlagConstants;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.util.FeatureFlagTestUtil;
 import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
@@ -17,7 +18,10 @@ import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
+import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagApplicationTestEntityResource;
 import com.liferay.portal.vulcan.application.HeadlessApplicationProvider;
+
+import jakarta.ws.rs.NotFoundException;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,6 +47,16 @@ public class FeatureFlagApplicationTestEntityResourceTest
 
 		_testGetFeatureFlagApplicationTestEntitiesPageWhenFeatureFlagIsDisabled();
 		_testGetFeatureFlagApplicationTestEntitiesPageWhenFeatureFlagIsEnabled();
+	}
+
+	private FeatureFlagApplicationTestEntityResource
+			_buildFeatureFlagApplicationTestEntityResource()
+		throws Exception {
+
+		return _featureFlagApplicationTestEntityResourceFactory.create(
+		).user(
+			TestPropsValues.getUser()
+		).build();
 	}
 
 	private int _getHttpCode(String path) throws Exception {
@@ -94,6 +108,16 @@ public class FeatureFlagApplicationTestEntityResourceTest
 		Assert.assertEquals(
 			Collections.singletonList("v1.0"), _getOpenAPIDocumentVersions());
 
+		FeatureFlagApplicationTestEntityResource
+			factoryFeatureFlagApplicationTestEntityResource =
+				_buildFeatureFlagApplicationTestEntityResource();
+
+		AssertUtils.assertFailure(
+			NotFoundException.class, "HTTP 404 Not Found",
+			() ->
+				factoryFeatureFlagApplicationTestEntityResource.
+					getFeatureFlagApplicationTestEntitiesPage());
+
 		JSONObject jsonObject = invokeGraphQLQuery(
 			new GraphQLField(
 				"featureFlagApplicationTestEntities",
@@ -128,6 +152,14 @@ public class FeatureFlagApplicationTestEntityResourceTest
 		Assert.assertEquals(
 			Arrays.asList("v1.0", "v2.0"), _getOpenAPIDocumentVersions());
 
+		FeatureFlagApplicationTestEntityResource
+			factoryFeatureFlagApplicationTestEntityResource =
+				_buildFeatureFlagApplicationTestEntityResource();
+
+		Assert.assertNotNull(
+			factoryFeatureFlagApplicationTestEntityResource.
+				getFeatureFlagApplicationTestEntitiesPage());
+
 		Assert.assertEquals(
 			0,
 			JSONUtil.getValueAsLong(
@@ -141,6 +173,10 @@ public class FeatureFlagApplicationTestEntityResourceTest
 	}
 
 	private static final String _FEATURE_FLAG_KEY = "APPLICATION-123";
+
+	@Inject
+	private FeatureFlagApplicationTestEntityResource.Factory
+		_featureFlagApplicationTestEntityResourceFactory;
 
 	@Inject
 	private HeadlessApplicationProvider _headlessApplicationProvider;

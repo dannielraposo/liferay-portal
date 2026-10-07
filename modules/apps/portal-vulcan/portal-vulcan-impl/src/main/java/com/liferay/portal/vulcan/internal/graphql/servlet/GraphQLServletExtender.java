@@ -50,6 +50,7 @@ import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResourceFactory;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLTypeExtension;
@@ -63,7 +64,7 @@ import com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfig
 import com.liferay.portal.vulcan.internal.configuration.VulcanCompanyConfiguration;
 import com.liferay.portal.vulcan.internal.configuration.VulcanConfiguration;
 import com.liferay.portal.vulcan.internal.configuration.util.ConfigurationUtil;
-import com.liferay.portal.vulcan.internal.feature.flag.FeatureFlagUtil;
+import com.liferay.portal.vulcan.internal.feature.flag.FeatureFlagCheckerImpl;
 import com.liferay.portal.vulcan.internal.graphql.constants.GraphQLConstants;
 import com.liferay.portal.vulcan.internal.graphql.data.fetcher.GraphQLDTOContributorDataFetcher;
 import com.liferay.portal.vulcan.internal.graphql.data.fetcher.LiferayMethodDataFetcher;
@@ -615,7 +616,7 @@ public class GraphQLServletExtender {
 		_liferayMethodDataFetchingProcessor =
 			new LiferayMethodDataFetchingProcessor(
 				_bundleContext, _companyLocalService, _depotEntryLocalService,
-				_expressionConvert, _filterParserProvider,
+				_expressionConvert, _featureFlagChecker, _filterParserProvider,
 				_graphQLContributorServiceTrackerList, _groupLocalService,
 				_language, _paginationProvider, _portal,
 				_resourceActionLocalService, _resourcePermissionLocalService,
@@ -1331,7 +1332,11 @@ public class GraphQLServletExtender {
 	}
 
 	private boolean _isFeatureFlagEnabled(Method method) {
-		String featureFlagKey = FeatureFlagUtil.getFeatureFlagKey(method);
+		FeatureFlagCheckerImpl featureFlagCheckerImpl =
+			(FeatureFlagCheckerImpl)_featureFlagChecker;
+
+		String featureFlagKey = featureFlagCheckerImpl.getFeatureFlagKey(
+			method);
 
 		if (featureFlagKey == null) {
 			return true;
@@ -2122,6 +2127,9 @@ public class GraphQLServletExtender {
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	private final Map<Long, Set<String>> _featureFlagKeysMap =
 		new ConcurrentHashMap<>();

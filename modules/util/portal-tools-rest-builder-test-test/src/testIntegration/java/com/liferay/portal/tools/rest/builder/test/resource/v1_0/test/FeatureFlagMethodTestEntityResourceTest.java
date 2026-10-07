@@ -6,11 +6,12 @@
 package com.liferay.portal.tools.rest.builder.test.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
 import com.liferay.portal.kernel.feature.flag.constants.FeatureFlagConstants;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.util.FeatureFlagTestUtil;
 import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -20,6 +21,10 @@ import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
+import com.liferay.portal.test.rule.Inject;
+import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FeatureFlagMethodTestEntityResource;
+
+import jakarta.ws.rs.NotFoundException;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -47,7 +52,9 @@ public class FeatureFlagMethodTestEntityResourceTest
 	@Test
 	public void testDeleteFeatureFlagMethodTestEntity() throws Exception {
 		_testDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled();
+		_testDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabledUsingFactory();
 		_testDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabled();
+		_testDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabledUsingFactory();
 	}
 
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
@@ -204,6 +211,26 @@ public class FeatureFlagMethodTestEntityResourceTest
 				"delete", _PATH + "/{featureFlagMethodTestEntityId}"));
 	}
 
+	private void _testDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabledUsingFactory()
+		throws Exception {
+
+		_setFeatureFlagEnabled(false);
+
+		FeatureFlagMethodTestEntityResource
+			factoryFeatureFlagMethodTestEntityResource =
+				_featureFlagMethodTestEntityResourceFactory.create(
+				).user(
+					TestPropsValues.getUser()
+				).build();
+
+		AssertUtils.assertFailure(
+			NotFoundException.class, "HTTP 404 Not Found",
+			() ->
+				factoryFeatureFlagMethodTestEntityResource.
+					deleteFeatureFlagMethodTestEntity(
+						RandomTestUtil.randomLong()));
+	}
+
 	private void _testDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabled()
 		throws Exception {
 
@@ -218,6 +245,22 @@ public class FeatureFlagMethodTestEntityResourceTest
 		Assert.assertTrue(
 			_hasOperation(
 				"delete", _PATH + "/{featureFlagMethodTestEntityId}"));
+	}
+
+	private void _testDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabledUsingFactory()
+		throws Exception {
+
+		_setFeatureFlagEnabled(true);
+
+		FeatureFlagMethodTestEntityResource
+			factoryFeatureFlagMethodTestEntityResource =
+				_featureFlagMethodTestEntityResourceFactory.create(
+				).user(
+					TestPropsValues.getUser()
+				).build();
+
+		factoryFeatureFlagMethodTestEntityResource.
+			deleteFeatureFlagMethodTestEntity(RandomTestUtil.randomLong());
 	}
 
 	private void _testGetFeatureFlagMethodTestEntitiesPageWhenFeatureFlagIsDisabled()
@@ -412,5 +455,9 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private static final String _FEATURE_FLAG_KEY = "METHOD-123";
 
 	private static final String _PATH = "feature-flag-method-test-entities";
+
+	@Inject
+	private FeatureFlagMethodTestEntityResource.Factory
+		_featureFlagMethodTestEntityResourceFactory;
 
 }
