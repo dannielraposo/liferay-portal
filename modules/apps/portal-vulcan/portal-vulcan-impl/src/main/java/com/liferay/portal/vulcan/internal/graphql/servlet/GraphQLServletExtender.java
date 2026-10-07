@@ -1331,8 +1331,7 @@ public class GraphQLServletExtender {
 	}
 
 	private boolean _isFeatureFlagEnabled(Method method) {
-		String featureFlagKey = FeatureFlagUtil.getFeatureFlagKey(
-			method, method.getDeclaringClass());
+		String featureFlagKey = FeatureFlagUtil.getFeatureFlagKey(method);
 
 		if (featureFlagKey == null) {
 			return true;

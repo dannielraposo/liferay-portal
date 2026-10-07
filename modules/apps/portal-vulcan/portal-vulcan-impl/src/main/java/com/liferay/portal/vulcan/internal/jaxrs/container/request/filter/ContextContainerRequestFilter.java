@@ -49,7 +49,6 @@ import java.util.Set;
 
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
-import org.apache.cxf.jaxrs.model.ClassResourceInfo;
 import org.apache.cxf.jaxrs.model.OperationResourceInfo;
 import org.apache.cxf.jaxrs.utils.JAXRSUtils;
 import org.apache.cxf.message.Exchange;
@@ -251,13 +250,9 @@ public class ContextContainerRequestFilter
 			return true;
 		}
 
-		ClassResourceInfo classResourceInfo =
-			operationResourceInfo.getClassResourceInfo();
-
 		return FeatureFlagUtil.isEnabled(
 			_portal.getCompanyId(httpServletRequest),
-			operationResourceInfo.getAnnotatedMethod(),
-			classResourceInfo.getServiceClass());
+			operationResourceInfo.getAnnotatedMethod());
 	}
 
 	private final ConfigurationAdmin _configurationAdmin;

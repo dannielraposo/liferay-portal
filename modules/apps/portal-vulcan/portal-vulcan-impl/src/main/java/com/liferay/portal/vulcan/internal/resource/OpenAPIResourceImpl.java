@@ -709,8 +709,7 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 
 				for (Method method : currentClass.getDeclaredMethods()) {
 					if ((AnnotationUtils.getHttpMethodValue(method) == null) ||
-						FeatureFlagUtil.isEnabled(
-							companyId, method, resourceClass)) {
+						FeatureFlagUtil.isEnabled(companyId, method)) {
 
 						continue;
 					}

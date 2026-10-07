@@ -138,9 +138,7 @@ public class LiferayMethodDataFetchingProcessor {
 
 		long companyId = _portal.getCompanyId(httpServletRequest);
 
-		if (!FeatureFlagUtil.isEnabled(
-				companyId, method, method.getDeclaringClass())) {
-
+		if (!FeatureFlagUtil.isEnabled(companyId, method)) {
 			throw new NotFoundException();
 		}
 
