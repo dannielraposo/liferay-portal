@@ -235,6 +235,13 @@ public class FeatureFlagMethodTestEntityResourceTest
 				postFeatureFlagMethodTestEntitiesPageExportBatchHttpResponse(
 					null, null, null));
 		Assert.assertEquals(
+			"NOT_FOUND",
+			JSONUtil.getValueAsString(
+				HTTPTestUtil.invokeToJSONObject(
+					null, "portal-tools-rest-builder-test/v1.0/" + _PATH,
+					Http.Method.GET),
+				"Object/status"));
+		Assert.assertEquals(
 			200,
 			HTTPTestUtil.invokeToHttpCode(
 				null, "portal-tools-rest-builder-test/v1.0/test-entities",

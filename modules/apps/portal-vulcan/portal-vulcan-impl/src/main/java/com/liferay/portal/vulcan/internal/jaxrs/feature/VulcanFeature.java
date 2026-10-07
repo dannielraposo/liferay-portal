@@ -25,6 +25,7 @@ import com.liferay.portal.vulcan.extension.ExtensionProviderRegistry;
 import com.liferay.portal.vulcan.internal.configuration.admin.service.HeadlessAPICacheManagedServiceFactory;
 import com.liferay.portal.vulcan.internal.jaxrs.container.request.filter.CTContainerRequestFilter;
 import com.liferay.portal.vulcan.internal.jaxrs.container.request.filter.ContextContainerRequestFilter;
+import com.liferay.portal.vulcan.internal.jaxrs.container.request.filter.FeatureFlagContainerRequestFilter;
 import com.liferay.portal.vulcan.internal.jaxrs.container.request.filter.LogContainerRequestFilter;
 import com.liferay.portal.vulcan.internal.jaxrs.container.request.filter.NestedFieldsContainerRequestFilter;
 import com.liferay.portal.vulcan.internal.jaxrs.container.request.filter.TransactionContainerRequestFilter;
@@ -182,6 +183,9 @@ public class VulcanFeature implements Feature {
 		featureContext.register(
 			new EntityExtensionHandlerContextResolver(
 				_extensionProviderRegistry));
+		featureContext.register(
+			new FeatureFlagContainerRequestFilter(_portal),
+			Priorities.USER - 20);
 		featureContext.register(new MultipartBodyMessageBodyReader());
 		featureContext.register(
 			new NestedFieldsWriterInterceptor(
