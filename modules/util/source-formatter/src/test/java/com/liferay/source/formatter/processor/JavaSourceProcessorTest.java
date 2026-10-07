@@ -315,6 +315,24 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testFeatureFlagAnnotation() throws Exception {
+		test(
+			SourceProcessorTestParameters.create(
+				"FeatureFlagAnnotation.testjava"
+			).addExpectedMessage(
+				"Declare the feature flag with \"x-feature-flag\" in " +
+					"\"rest-openapi.yaml\" instead of using the annotation " +
+						"\"@FeatureFlag\"",
+				13
+			).addExpectedMessage(
+				"Declare the feature flag with \"x-feature-flag\" in " +
+					"\"rest-openapi.yaml\" instead of using the annotation " +
+						"\"@FeatureFlag\"",
+				16
+			));
+	}
+
+	@Test
 	public void testFeatureFlagsAnnotationTest() throws Exception {
 		test(
 			SourceProcessorTestParameters.create(
