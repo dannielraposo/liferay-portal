@@ -10,10 +10,28 @@ import com.liferay.portal.vulcan.feature.flag.FeatureFlag;
 
 import java.lang.reflect.Method;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * @author Daniel Raposo
+ * @author Carlos Correa
  */
 public class FeatureFlagUtil {
+
+	public static String getFeatureFlagKey(Class<?> clazz) {
+		while (clazz != null) {
+			FeatureFlag featureFlag = clazz.getAnnotation(FeatureFlag.class);
+
+			if (featureFlag != null) {
+				return featureFlag.value();
+			}
+
+			clazz = clazz.getEnclosingClass();
+		}
+
+		return null;
+	}
 
 	public static String getFeatureFlagKey(Method method) {
 		FeatureFlag featureFlag = method.getAnnotation(FeatureFlag.class);
@@ -22,30 +40,38 @@ public class FeatureFlagUtil {
 			return featureFlag.value();
 		}
 
-		return _getFeatureFlagKey(method.getDeclaringClass());
+		Class<?> declaringClass = method.getDeclaringClass();
+
+		for (Class<?> superclass = declaringClass.getSuperclass();
+			 superclass != null; superclass = superclass.getSuperclass()) {
+
+			for (Method declaredMethod : superclass.getDeclaredMethods()) {
+				if (!Objects.equals(
+						declaredMethod.getName(), method.getName()) ||
+					!Arrays.equals(
+						declaredMethod.getParameterTypes(),
+						method.getParameterTypes())) {
+
+					continue;
+				}
+
+				featureFlag = declaredMethod.getAnnotation(FeatureFlag.class);
+
+				if (featureFlag != null) {
+					return featureFlag.value();
+				}
+			}
+		}
+
+		return getFeatureFlagKey(declaringClass);
 	}
 
-	public static boolean isEnabled(long companyId, Class<?> resourceClass) {
-		return _isEnabled(companyId, _getFeatureFlagKey(resourceClass));
+	public static boolean isEnabled(long companyId, Class<?> clazz) {
+		return _isEnabled(companyId, getFeatureFlagKey(clazz));
 	}
 
 	public static boolean isEnabled(long companyId, Method method) {
 		return _isEnabled(companyId, getFeatureFlagKey(method));
-	}
-
-	private static String _getFeatureFlagKey(Class<?> resourceClass) {
-		while (resourceClass != null) {
-			FeatureFlag featureFlag = resourceClass.getAnnotation(
-				FeatureFlag.class);
-
-			if (featureFlag != null) {
-				return featureFlag.value();
-			}
-
-			resourceClass = resourceClass.getEnclosingClass();
-		}
-
-		return null;
 	}
 
 	private static boolean _isEnabled(long companyId, String featureFlagKey) {
