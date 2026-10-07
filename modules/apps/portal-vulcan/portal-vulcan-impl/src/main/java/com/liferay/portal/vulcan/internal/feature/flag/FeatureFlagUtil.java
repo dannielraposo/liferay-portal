@@ -15,39 +15,49 @@ import java.lang.reflect.Method;
  */
 public class FeatureFlagUtil {
 
-	public static boolean isEnabled(long companyId, Class<?> resourceClass) {
+	public static String getFeatureFlagKey(Class<?> resourceClass) {
 		while (resourceClass != null) {
 			FeatureFlag featureFlag = resourceClass.getAnnotation(
 				FeatureFlag.class);
 
 			if (featureFlag != null) {
-				return _isEnabled(companyId, featureFlag);
+				return featureFlag.value();
 			}
 
 			resourceClass = resourceClass.getEnclosingClass();
 		}
 
-		return true;
+		return null;
+	}
+
+	public static String getFeatureFlagKey(
+		Method method, Class<?> resourceClass) {
+
+		FeatureFlag featureFlag = method.getAnnotation(FeatureFlag.class);
+
+		if (featureFlag != null) {
+			return featureFlag.value();
+		}
+
+		return getFeatureFlagKey(resourceClass);
+	}
+
+	public static boolean isEnabled(long companyId, Class<?> resourceClass) {
+		return _isEnabled(companyId, getFeatureFlagKey(resourceClass));
 	}
 
 	public static boolean isEnabled(
 		long companyId, Method method, Class<?> resourceClass) {
 
-		FeatureFlag featureFlag = method.getAnnotation(FeatureFlag.class);
-
-		if (featureFlag == null) {
-			return isEnabled(companyId, resourceClass);
-		}
-
-		return _isEnabled(companyId, featureFlag);
+		return _isEnabled(companyId, getFeatureFlagKey(method, resourceClass));
 	}
 
-	private static boolean _isEnabled(long companyId, FeatureFlag featureFlag) {
-		if (featureFlag == null) {
+	private static boolean _isEnabled(long companyId, String featureFlagKey) {
+		if (featureFlagKey == null) {
 			return true;
 		}
 
-		return FeatureFlagManagerUtil.isEnabled(companyId, featureFlag.value());
+		return FeatureFlagManagerUtil.isEnabled(companyId, featureFlagKey);
 	}
 
 }

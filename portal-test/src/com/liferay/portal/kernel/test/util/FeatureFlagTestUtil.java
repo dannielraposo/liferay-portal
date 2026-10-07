@@ -30,7 +30,9 @@ public class FeatureFlagTestUtil {
 				ServiceTrackerListFactory.open(
 					SystemBundleUtil.getBundleContext(),
 					FeatureFlagListener.class,
-					StringBundler.concat("(feature.flag.key=", key, ")"))) {
+					StringBundler.concat(
+						"(|(feature.flag.key=", key,
+						")(feature.flag.key=\\*))"))) {
 
 			for (FeatureFlagListener featureFlagListener :
 					featureFlagListeners) {

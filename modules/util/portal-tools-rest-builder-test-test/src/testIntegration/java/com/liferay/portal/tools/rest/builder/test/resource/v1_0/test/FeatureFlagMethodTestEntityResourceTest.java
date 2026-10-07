@@ -7,11 +7,14 @@ package com.liferay.portal.tools.rest.builder.test.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.feature.flag.constants.FeatureFlagConstants;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.test.util.FeatureFlagTestUtil;
 import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.Http;
@@ -22,6 +25,8 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.skyscreamer.jsonassert.JSONAssert;
 
 /**
  * @author Alejandro Tardín
@@ -96,12 +101,26 @@ public class FeatureFlagMethodTestEntityResourceTest
 		_testPostFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled();
 	}
 
-	private int _getErrno(JSONObject jsonObject) {
-		JSONObject exceptionJSONObject = JSONUtil.getValueAsJSONObject(
-			jsonObject, "JSONArray/errors", "Object/0", "JSONObject/extensions",
-			"JSONObject/exception");
+	private void _assertFieldUndefined(
+			String fieldName, JSONObject jsonObject, String typeName)
+		throws Exception {
 
-		return exceptionJSONObject.getInt("errno");
+		JSONAssert.assertEquals(
+			JSONUtil.put(
+				"errors",
+				JSONUtil.putAll(
+					JSONUtil.put(
+						"extensions",
+						JSONUtil.put("exception", JSONUtil.put("errno", 400))
+					).put(
+						"message",
+						StringBundler.concat(
+							"Validation error (FieldUndefined@[", fieldName,
+							"]) : Field '", fieldName, "' in type '", typeName,
+							"' is undefined")
+					))
+			).toString(),
+			jsonObject.toString(), false);
 	}
 
 	private boolean _hasFeatureFlagExtension() throws Exception {
@@ -133,10 +152,13 @@ public class FeatureFlagMethodTestEntityResourceTest
 		return pathJSONObject.has(httpMethod);
 	}
 
-	private void _setFeatureFlagEnabled(boolean enabled) {
+	private void _setFeatureFlagEnabled(boolean enabled) throws Exception {
 		PropsUtil.set(
 			FeatureFlagConstants.getKey(_FEATURE_FLAG_KEY),
 			String.valueOf(enabled));
+
+		FeatureFlagTestUtil.invokeFeatureFlagListeners(
+			TestPropsValues.getCompanyId(), enabled, _FEATURE_FLAG_KEY);
 	}
 
 	private void _testDeleteFeatureFlagMethodTestEntityBatchWhenFeatureFlagIsDisabled()
@@ -287,16 +309,16 @@ public class FeatureFlagMethodTestEntityResourceTest
 
 		_setFeatureFlagEnabled(false);
 
-		Assert.assertEquals(
-			404,
-			_getErrno(
-				invokeGraphQLMutation(
-					new GraphQLField(
-						"deleteFeatureFlagMethodTestEntity",
-						HashMapBuilder.<String, Object>put(
-							"featureFlagMethodTestEntityId",
-							RandomTestUtil.randomLong()
-						).build()))));
+		_assertFieldUndefined(
+			"deleteFeatureFlagMethodTestEntity",
+			invokeGraphQLMutation(
+				new GraphQLField(
+					"deleteFeatureFlagMethodTestEntity",
+					HashMapBuilder.<String, Object>put(
+						"featureFlagMethodTestEntityId",
+						RandomTestUtil.randomLong()
+					).build())),
+			"mutation");
 	}
 
 	private void _testGraphQLDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabled()
@@ -321,13 +343,13 @@ public class FeatureFlagMethodTestEntityResourceTest
 
 		_setFeatureFlagEnabled(false);
 
-		Assert.assertEquals(
-			404,
-			_getErrno(
-				invokeGraphQLQuery(
-					new GraphQLField(
-						"featureFlagMethodTestEntities",
-						new GraphQLField("totalCount")))));
+		_assertFieldUndefined(
+			"featureFlagMethodTestEntities",
+			invokeGraphQLQuery(
+				new GraphQLField(
+					"featureFlagMethodTestEntities",
+					new GraphQLField("totalCount"))),
+			"query");
 	}
 
 	private void _testGraphQLGetFeatureFlagMethodTestEntitiesPageWhenFeatureFlagIsEnabled()

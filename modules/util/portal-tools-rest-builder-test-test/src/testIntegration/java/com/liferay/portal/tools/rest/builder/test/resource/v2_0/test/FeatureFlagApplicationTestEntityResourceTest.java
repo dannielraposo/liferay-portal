@@ -10,6 +10,7 @@ import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.feature.flag.constants.FeatureFlagConstants;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.test.util.FeatureFlagTestUtil;
 import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Http;
@@ -69,10 +70,13 @@ public class FeatureFlagApplicationTestEntityResourceTest
 		return Collections.emptyList();
 	}
 
-	private void _setFeatureFlagEnabled(boolean enabled) {
+	private void _setFeatureFlagEnabled(boolean enabled) throws Exception {
 		PropsUtil.set(
 			FeatureFlagConstants.getKey(_FEATURE_FLAG_KEY),
 			String.valueOf(enabled));
+
+		FeatureFlagTestUtil.invokeFeatureFlagListeners(
+			TestPropsValues.getCompanyId(), enabled, _FEATURE_FLAG_KEY);
 	}
 
 	private void _testGetFeatureFlagApplicationTestEntitiesPageWhenFeatureFlagIsDisabled()
@@ -90,15 +94,24 @@ public class FeatureFlagApplicationTestEntityResourceTest
 		Assert.assertEquals(
 			Collections.singletonList("v1.0"), _getOpenAPIDocumentVersions());
 
-		JSONObject exceptionJSONObject = JSONUtil.getValueAsJSONObject(
-			invokeGraphQLQuery(
-				new GraphQLField(
-					"featureFlagApplicationTestEntities",
-					new GraphQLField("totalCount"))),
-			"JSONArray/errors", "Object/0", "JSONObject/extensions",
-			"JSONObject/exception");
+		JSONObject jsonObject = invokeGraphQLQuery(
+			new GraphQLField(
+				"featureFlagApplicationTestEntities",
+				new GraphQLField("totalCount")));
 
-		Assert.assertEquals(404, exceptionJSONObject.getInt("errno"));
+		Assert.assertEquals(
+			"Validation error (FieldUndefined@[" +
+				"featureFlagApplicationTestEntities]) : Field " +
+					"'featureFlagApplicationTestEntities' in type 'query' is " +
+						"undefined",
+			JSONUtil.getValueAsString(
+				jsonObject, "JSONArray/errors", "Object/0", "Object/message"));
+		Assert.assertEquals(
+			400,
+			JSONUtil.getValueAsInt(
+				jsonObject, "JSONArray/errors", "Object/0",
+				"JSONObject/extensions", "JSONObject/exception",
+				"Object/errno"));
 	}
 
 	private void _testGetFeatureFlagApplicationTestEntitiesPageWhenFeatureFlagIsEnabled()
