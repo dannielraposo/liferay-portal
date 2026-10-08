@@ -16,6 +16,8 @@ import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.tools.rest.builder.test.resource.v2_0.FeatureFlagApplicationTestEntityResource;
@@ -118,10 +120,16 @@ public class FeatureFlagApplicationTestEntityResourceTest
 				factoryFeatureFlagApplicationTestEntityResource.
 					getFeatureFlagApplicationTestEntitiesPage());
 
-		JSONObject jsonObject = invokeGraphQLQuery(
-			new GraphQLField(
-				"featureFlagApplicationTestEntities",
-				new GraphQLField("totalCount")));
+		JSONObject jsonObject = null;
+
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"notprivacysafe.graphql.GraphQL", LoggerTestUtil.ERROR)) {
+
+			jsonObject = invokeGraphQLQuery(
+				new GraphQLField(
+					"featureFlagApplicationTestEntities",
+					new GraphQLField("totalCount")));
+		}
 
 		Assert.assertEquals(
 			"Validation error (FieldUndefined@[" +

@@ -20,6 +20,8 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.tools.rest.builder.test.resource.v1_0.FeatureFlagMethodTestEntityResource;
@@ -377,16 +379,20 @@ public class FeatureFlagMethodTestEntityResourceTest
 
 		_setFeatureFlagEnabled(false);
 
-		_assertFieldUndefined(
-			"deleteFeatureFlagMethodTestEntity",
-			invokeGraphQLMutation(
-				new GraphQLField(
-					"deleteFeatureFlagMethodTestEntity",
-					HashMapBuilder.<String, Object>put(
-						"featureFlagMethodTestEntityId",
-						RandomTestUtil.randomLong()
-					).build())),
-			"mutation");
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"notprivacysafe.graphql.GraphQL", LoggerTestUtil.ERROR)) {
+
+			_assertFieldUndefined(
+				"deleteFeatureFlagMethodTestEntity",
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"deleteFeatureFlagMethodTestEntity",
+						HashMapBuilder.<String, Object>put(
+							"featureFlagMethodTestEntityId",
+							RandomTestUtil.randomLong()
+						).build())),
+				"mutation");
+		}
 	}
 
 	private void _testGraphQLDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabled()
@@ -411,13 +417,17 @@ public class FeatureFlagMethodTestEntityResourceTest
 
 		_setFeatureFlagEnabled(false);
 
-		_assertFieldUndefined(
-			"featureFlagMethodTestEntities",
-			invokeGraphQLQuery(
-				new GraphQLField(
-					"featureFlagMethodTestEntities",
-					new GraphQLField("totalCount"))),
-			"query");
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"notprivacysafe.graphql.GraphQL", LoggerTestUtil.ERROR)) {
+
+			_assertFieldUndefined(
+				"featureFlagMethodTestEntities",
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"featureFlagMethodTestEntities",
+						new GraphQLField("totalCount"))),
+				"query");
+		}
 	}
 
 	private void _testGraphQLGetFeatureFlagMethodTestEntitiesPageWhenFeatureFlagIsEnabled()

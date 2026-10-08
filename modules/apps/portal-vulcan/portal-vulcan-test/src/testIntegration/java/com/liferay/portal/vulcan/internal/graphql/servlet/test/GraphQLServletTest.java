@@ -23,6 +23,8 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.feature.flag.FeatureFlag;
@@ -1099,13 +1101,19 @@ public class GraphQLServletTest {
 		Assert.assertEquals(
 			enabled, _hasField(testDTO1FieldsJSONArray, "featureFlagString"));
 
-		JSONObject jsonObject = _invoke(
-			new GraphQLField(
-				"testPath_v1_0",
+		JSONObject jsonObject = null;
+
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"notprivacysafe.graphql.GraphQL", LoggerTestUtil.ERROR)) {
+
+			jsonObject = _invoke(
 				new GraphQLField(
-					"testFeatureFlagDTO", new GraphQLField("id"),
-					new GraphQLField("featureFlagString"))),
-			"query");
+					"testPath_v1_0",
+					new GraphQLField(
+						"testFeatureFlagDTO", new GraphQLField("id"),
+						new GraphQLField("featureFlagString"))),
+				"query");
+		}
 
 		if (enabled) {
 			Assert.assertEquals(
