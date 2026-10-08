@@ -104,8 +104,26 @@ public class FeatureFlagMethodTestEntityResourceTest
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Override
 	@Test
+	public void testPatchFeatureFlagMethodTestEntity() throws Exception {
+		_testPatchFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled();
+		_testPatchFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabled();
+	}
+
+	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
+	@Override
+	@Test
 	public void testPostFeatureFlagMethodTestEntity() throws Exception {
 		_testPostFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled();
+	}
+
+	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
+	@Override
+	@Test
+	public void testPutFeatureFlagMethodTestEntityByExternalReferenceCode()
+		throws Exception {
+
+		_testPutFeatureFlagMethodTestEntityByExternalReferenceCodeWhenFeatureFlagIsDisabled();
+		_testPutFeatureFlagMethodTestEntityByExternalReferenceCodeWhenFeatureFlagIsEnabled();
 	}
 
 	private void _assertFieldUndefined(
@@ -437,6 +455,38 @@ public class FeatureFlagMethodTestEntityResourceTest
 			dataJSONObject.isNull("createFeatureFlagMethodTestEntity"));
 	}
 
+	private void _testPatchFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled()
+		throws Exception {
+
+		_setFeatureFlagEnabled(false);
+
+		assertHttpResponseStatusCode(
+			404,
+			featureFlagMethodTestEntityResource.
+				patchFeatureFlagMethodTestEntityHttpResponse(
+					RandomTestUtil.randomLong(),
+					randomFeatureFlagMethodTestEntity()));
+
+		Assert.assertFalse(
+			_hasOperation("patch", _PATH + "/{featureFlagMethodTestEntityId}"));
+	}
+
+	private void _testPatchFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabled()
+		throws Exception {
+
+		_setFeatureFlagEnabled(true);
+
+		assertHttpResponseStatusCode(
+			200,
+			featureFlagMethodTestEntityResource.
+				patchFeatureFlagMethodTestEntityHttpResponse(
+					RandomTestUtil.randomLong(),
+					randomFeatureFlagMethodTestEntity()));
+
+		Assert.assertTrue(
+			_hasOperation("patch", _PATH + "/{featureFlagMethodTestEntityId}"));
+	}
+
 	private void _testPostFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled()
 		throws Exception {
 
@@ -450,6 +500,42 @@ public class FeatureFlagMethodTestEntityResourceTest
 
 		Assert.assertTrue(_hasOperation("post", _PATH));
 		Assert.assertTrue(_hasOperation("post", _PATH + "/batch"));
+	}
+
+	private void _testPutFeatureFlagMethodTestEntityByExternalReferenceCodeWhenFeatureFlagIsDisabled()
+		throws Exception {
+
+		_setFeatureFlagEnabled(false);
+
+		assertHttpResponseStatusCode(
+			404,
+			featureFlagMethodTestEntityResource.
+				putFeatureFlagMethodTestEntityByExternalReferenceCodeHttpResponse(
+					RandomTestUtil.randomString(),
+					randomFeatureFlagMethodTestEntity()));
+
+		Assert.assertFalse(
+			_hasOperation(
+				"put",
+				_PATH + "/by-external-reference-code/{externalReferenceCode}"));
+	}
+
+	private void _testPutFeatureFlagMethodTestEntityByExternalReferenceCodeWhenFeatureFlagIsEnabled()
+		throws Exception {
+
+		_setFeatureFlagEnabled(true);
+
+		assertHttpResponseStatusCode(
+			200,
+			featureFlagMethodTestEntityResource.
+				putFeatureFlagMethodTestEntityByExternalReferenceCodeHttpResponse(
+					RandomTestUtil.randomString(),
+					randomFeatureFlagMethodTestEntity()));
+
+		Assert.assertTrue(
+			_hasOperation(
+				"put",
+				_PATH + "/by-external-reference-code/{externalReferenceCode}"));
 	}
 
 	private static final String _FEATURE_FLAG_KEY = "METHOD-123";
