@@ -177,47 +177,50 @@ public class OrderRuleResourceFactoryImpl implements OrderRuleResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		OrderRuleResource orderRuleResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		OrderRuleResource orderRuleResource =
-			_componentServiceObjects.getService();
-
-		orderRuleResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		orderRuleResource.setContextCompany(company);
-
-		orderRuleResource.setContextHttpServletRequest(httpServletRequest);
-		orderRuleResource.setContextHttpServletResponse(httpServletResponse);
-		orderRuleResource.setContextUriInfo(uriInfo);
-		orderRuleResource.setContextUser(user);
-		orderRuleResource.setExpressionConvert(_expressionConvert);
-		orderRuleResource.setFilterParserProvider(_filterParserProvider);
-		orderRuleResource.setGroupLocalService(_groupLocalService);
-		orderRuleResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		orderRuleResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		orderRuleResource.setRoleLocalService(_roleLocalService);
-		orderRuleResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			orderRuleResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			orderRuleResource.setContextCompany(company);
+
+			orderRuleResource.setContextHttpServletRequest(httpServletRequest);
+			orderRuleResource.setContextHttpServletResponse(
+				httpServletResponse);
+			orderRuleResource.setContextUriInfo(uriInfo);
+			orderRuleResource.setContextUser(user);
+			orderRuleResource.setExpressionConvert(_expressionConvert);
+			orderRuleResource.setFilterParserProvider(_filterParserProvider);
+			orderRuleResource.setGroupLocalService(_groupLocalService);
+			orderRuleResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			orderRuleResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			orderRuleResource.setRoleLocalService(_roleLocalService);
+			orderRuleResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(orderRuleResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -326,4 +329,4 @@ public class OrderRuleResourceFactoryImpl implements OrderRuleResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-972651463
+// LIFERAY-REST-BUILDER-HASH:1892313742

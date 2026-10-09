@@ -12,7 +12,9 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
@@ -54,6 +56,7 @@ import java.io.Serializable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -63,6 +66,7 @@ import java.util.Set;
  * @author Thiago Buarque
  * @generated
  */
+@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-65399")
 @Generated("")
 @jakarta.ws.rs.Path("/v1.0")
 public abstract class BaseSiteConfigurationResourceImpl
@@ -376,7 +380,10 @@ public abstract class BaseSiteConfigurationResourceImpl
 		String createStrategy = (String)parameters.getOrDefault(
 			"createStrategy", "INSERT");
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT")) {
+		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT") &&
+			FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-65399")) {
+
 			if (parameters.containsKey("siteExternalReferenceCode")) {
 				siteConfigurationUnsafeFunction =
 					siteConfiguration -> postSiteSiteConfiguration(
@@ -389,7 +396,10 @@ public abstract class BaseSiteConfigurationResourceImpl
 			}
 		}
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
+		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT") &&
+			FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-65399")) {
+
 			String updateStrategy = (String)parameters.getOrDefault(
 				"updateStrategy", "UPDATE");
 
@@ -445,7 +455,16 @@ public abstract class BaseSiteConfigurationResourceImpl
 	}
 
 	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
+		Set<String> createStrategies = new HashSet<>();
+
+		if (FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-65399")) {
+
+			createStrategies.add("INSERT");
+			createStrategies.add("UPSERT");
+		}
+
+		return createStrategies;
 	}
 
 	public Set<String> getAvailableUpdateStrategies() {
@@ -475,6 +494,13 @@ public abstract class BaseSiteConfigurationResourceImpl
 			com.liferay.portal.kernel.search.Sort[] sorts,
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-65399")) {
+
+			throw new UnsupportedOperationException(
+				"This method needs to be implemented");
+		}
 
 		if (parameters.containsKey("siteExternalReferenceCode")) {
 			return getSiteSiteConfigurationsPage(
@@ -1091,4 +1117,4 @@ public abstract class BaseSiteConfigurationResourceImpl
 		LogFactoryUtil.getLog(BaseSiteConfigurationResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-532316947
+// LIFERAY-REST-BUILDER-HASH:-1917360457

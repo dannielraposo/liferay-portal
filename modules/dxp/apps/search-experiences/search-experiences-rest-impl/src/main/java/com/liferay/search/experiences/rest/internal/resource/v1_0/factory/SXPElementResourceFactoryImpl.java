@@ -179,47 +179,50 @@ public class SXPElementResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		SXPElementResource sxpElementResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		SXPElementResource sxpElementResource =
-			_componentServiceObjects.getService();
-
-		sxpElementResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		sxpElementResource.setContextCompany(company);
-
-		sxpElementResource.setContextHttpServletRequest(httpServletRequest);
-		sxpElementResource.setContextHttpServletResponse(httpServletResponse);
-		sxpElementResource.setContextUriInfo(uriInfo);
-		sxpElementResource.setContextUser(user);
-		sxpElementResource.setExpressionConvert(_expressionConvert);
-		sxpElementResource.setFilterParserProvider(_filterParserProvider);
-		sxpElementResource.setGroupLocalService(_groupLocalService);
-		sxpElementResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		sxpElementResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		sxpElementResource.setRoleLocalService(_roleLocalService);
-		sxpElementResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			sxpElementResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			sxpElementResource.setContextCompany(company);
+
+			sxpElementResource.setContextHttpServletRequest(httpServletRequest);
+			sxpElementResource.setContextHttpServletResponse(
+				httpServletResponse);
+			sxpElementResource.setContextUriInfo(uriInfo);
+			sxpElementResource.setContextUser(user);
+			sxpElementResource.setExpressionConvert(_expressionConvert);
+			sxpElementResource.setFilterParserProvider(_filterParserProvider);
+			sxpElementResource.setGroupLocalService(_groupLocalService);
+			sxpElementResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			sxpElementResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			sxpElementResource.setRoleLocalService(_roleLocalService);
+			sxpElementResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(sxpElementResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -329,4 +332,4 @@ public class SXPElementResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1818830999
+// LIFERAY-REST-BUILDER-HASH:-1468226188

@@ -653,4 +653,4 @@ public abstract class BaseProductTaxConfigurationResourceImpl
 		LogFactoryUtil.getLog(BaseProductTaxConfigurationResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1417076571
+// LIFERAY-REST-BUILDER-HASH:472986204

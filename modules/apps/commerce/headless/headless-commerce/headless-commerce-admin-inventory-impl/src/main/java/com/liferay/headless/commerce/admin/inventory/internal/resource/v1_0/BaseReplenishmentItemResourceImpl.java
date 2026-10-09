@@ -1498,4 +1498,4 @@ public abstract class BaseReplenishmentItemResourceImpl
 		LogFactoryUtil.getLog(BaseReplenishmentItemResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:424003362
+// LIFERAY-REST-BUILDER-HASH:-2083800327

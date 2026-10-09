@@ -182,53 +182,56 @@ public class CookiesConsentPreferenceResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		CookiesConsentPreferenceResource cookiesConsentPreferenceResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		CookiesConsentPreferenceResource cookiesConsentPreferenceResource =
-			_componentServiceObjects.getService();
-
-		cookiesConsentPreferenceResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		cookiesConsentPreferenceResource.setContextCompany(company);
-
-		cookiesConsentPreferenceResource.setContextHttpServletRequest(
-			httpServletRequest);
-		cookiesConsentPreferenceResource.setContextHttpServletResponse(
-			httpServletResponse);
-		cookiesConsentPreferenceResource.setContextUriInfo(uriInfo);
-		cookiesConsentPreferenceResource.setContextUser(user);
-		cookiesConsentPreferenceResource.setExpressionConvert(
-			_expressionConvert);
-		cookiesConsentPreferenceResource.setFilterParserProvider(
-			_filterParserProvider);
-		cookiesConsentPreferenceResource.setGroupLocalService(
-			_groupLocalService);
-		cookiesConsentPreferenceResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		cookiesConsentPreferenceResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		cookiesConsentPreferenceResource.setRoleLocalService(_roleLocalService);
-		cookiesConsentPreferenceResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			cookiesConsentPreferenceResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			cookiesConsentPreferenceResource.setContextCompany(company);
+
+			cookiesConsentPreferenceResource.setContextHttpServletRequest(
+				httpServletRequest);
+			cookiesConsentPreferenceResource.setContextHttpServletResponse(
+				httpServletResponse);
+			cookiesConsentPreferenceResource.setContextUriInfo(uriInfo);
+			cookiesConsentPreferenceResource.setContextUser(user);
+			cookiesConsentPreferenceResource.setExpressionConvert(
+				_expressionConvert);
+			cookiesConsentPreferenceResource.setFilterParserProvider(
+				_filterParserProvider);
+			cookiesConsentPreferenceResource.setGroupLocalService(
+				_groupLocalService);
+			cookiesConsentPreferenceResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			cookiesConsentPreferenceResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			cookiesConsentPreferenceResource.setRoleLocalService(
+				_roleLocalService);
+			cookiesConsentPreferenceResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(cookiesConsentPreferenceResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -340,4 +343,4 @@ public class CookiesConsentPreferenceResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1055236041
+// LIFERAY-REST-BUILDER-HASH:-340798272

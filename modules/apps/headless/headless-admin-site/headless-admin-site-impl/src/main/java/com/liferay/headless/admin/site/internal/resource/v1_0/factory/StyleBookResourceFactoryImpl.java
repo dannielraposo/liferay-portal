@@ -27,12 +27,14 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import jakarta.annotation.Generated;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Constructor;
@@ -177,47 +179,60 @@ public class StyleBookResourceFactoryImpl implements StyleBookResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		StyleBookResource styleBookResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		StyleBookResource styleBookResource =
-			_componentServiceObjects.getService();
-
-		styleBookResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		styleBookResource.setContextCompany(company);
-
-		styleBookResource.setContextHttpServletRequest(httpServletRequest);
-		styleBookResource.setContextHttpServletResponse(httpServletResponse);
-		styleBookResource.setContextUriInfo(uriInfo);
-		styleBookResource.setContextUser(user);
-		styleBookResource.setExpressionConvert(_expressionConvert);
-		styleBookResource.setFilterParserProvider(_filterParserProvider);
-		styleBookResource.setGroupLocalService(_groupLocalService);
-		styleBookResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		styleBookResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		styleBookResource.setRoleLocalService(_roleLocalService);
-		styleBookResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			Class<?> clazz = styleBookResource.getClass();
+
+			if (!_featureFlagChecker.isEnabled(
+					user.getCompanyId(),
+					clazz.getMethod(
+						method.getName(), method.getParameterTypes()))) {
+
+				throw new NotFoundException();
+			}
+
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			styleBookResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			styleBookResource.setContextCompany(company);
+
+			styleBookResource.setContextHttpServletRequest(httpServletRequest);
+			styleBookResource.setContextHttpServletResponse(
+				httpServletResponse);
+			styleBookResource.setContextUriInfo(uriInfo);
+			styleBookResource.setContextUser(user);
+			styleBookResource.setExpressionConvert(_expressionConvert);
+			styleBookResource.setFilterParserProvider(_filterParserProvider);
+			styleBookResource.setGroupLocalService(_groupLocalService);
+			styleBookResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			styleBookResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			styleBookResource.setRoleLocalService(_roleLocalService);
+			styleBookResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(styleBookResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -245,6 +260,9 @@ public class StyleBookResourceFactoryImpl implements StyleBookResource.Factory {
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
@@ -326,4 +344,4 @@ public class StyleBookResourceFactoryImpl implements StyleBookResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:631698797
+// LIFERAY-REST-BUILDER-HASH:-1825972611

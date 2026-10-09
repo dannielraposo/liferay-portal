@@ -179,47 +179,51 @@ public class SamlProviderResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		SamlProviderResource samlProviderResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		SamlProviderResource samlProviderResource =
-			_componentServiceObjects.getService();
-
-		samlProviderResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		samlProviderResource.setContextCompany(company);
-
-		samlProviderResource.setContextHttpServletRequest(httpServletRequest);
-		samlProviderResource.setContextHttpServletResponse(httpServletResponse);
-		samlProviderResource.setContextUriInfo(uriInfo);
-		samlProviderResource.setContextUser(user);
-		samlProviderResource.setExpressionConvert(_expressionConvert);
-		samlProviderResource.setFilterParserProvider(_filterParserProvider);
-		samlProviderResource.setGroupLocalService(_groupLocalService);
-		samlProviderResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		samlProviderResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		samlProviderResource.setRoleLocalService(_roleLocalService);
-		samlProviderResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			samlProviderResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			samlProviderResource.setContextCompany(company);
+
+			samlProviderResource.setContextHttpServletRequest(
+				httpServletRequest);
+			samlProviderResource.setContextHttpServletResponse(
+				httpServletResponse);
+			samlProviderResource.setContextUriInfo(uriInfo);
+			samlProviderResource.setContextUser(user);
+			samlProviderResource.setExpressionConvert(_expressionConvert);
+			samlProviderResource.setFilterParserProvider(_filterParserProvider);
+			samlProviderResource.setGroupLocalService(_groupLocalService);
+			samlProviderResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			samlProviderResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			samlProviderResource.setRoleLocalService(_roleLocalService);
+			samlProviderResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(samlProviderResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -329,4 +333,4 @@ public class SamlProviderResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1693331325
+// LIFERAY-REST-BUILDER-HASH:139714900

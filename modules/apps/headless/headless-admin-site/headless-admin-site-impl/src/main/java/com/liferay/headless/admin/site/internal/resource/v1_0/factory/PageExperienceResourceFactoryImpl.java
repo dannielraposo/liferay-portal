@@ -27,12 +27,14 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import jakarta.annotation.Generated;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Constructor;
@@ -179,48 +181,62 @@ public class PageExperienceResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		PageExperienceResource pageExperienceResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		PageExperienceResource pageExperienceResource =
-			_componentServiceObjects.getService();
-
-		pageExperienceResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		pageExperienceResource.setContextCompany(company);
-
-		pageExperienceResource.setContextHttpServletRequest(httpServletRequest);
-		pageExperienceResource.setContextHttpServletResponse(
-			httpServletResponse);
-		pageExperienceResource.setContextUriInfo(uriInfo);
-		pageExperienceResource.setContextUser(user);
-		pageExperienceResource.setExpressionConvert(_expressionConvert);
-		pageExperienceResource.setFilterParserProvider(_filterParserProvider);
-		pageExperienceResource.setGroupLocalService(_groupLocalService);
-		pageExperienceResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		pageExperienceResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		pageExperienceResource.setRoleLocalService(_roleLocalService);
-		pageExperienceResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			Class<?> clazz = pageExperienceResource.getClass();
+
+			if (!_featureFlagChecker.isEnabled(
+					user.getCompanyId(),
+					clazz.getMethod(
+						method.getName(), method.getParameterTypes()))) {
+
+				throw new NotFoundException();
+			}
+
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			pageExperienceResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			pageExperienceResource.setContextCompany(company);
+
+			pageExperienceResource.setContextHttpServletRequest(
+				httpServletRequest);
+			pageExperienceResource.setContextHttpServletResponse(
+				httpServletResponse);
+			pageExperienceResource.setContextUriInfo(uriInfo);
+			pageExperienceResource.setContextUser(user);
+			pageExperienceResource.setExpressionConvert(_expressionConvert);
+			pageExperienceResource.setFilterParserProvider(
+				_filterParserProvider);
+			pageExperienceResource.setGroupLocalService(_groupLocalService);
+			pageExperienceResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			pageExperienceResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			pageExperienceResource.setRoleLocalService(_roleLocalService);
+			pageExperienceResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(pageExperienceResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -249,6 +265,9 @@ public class PageExperienceResourceFactoryImpl
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
@@ -330,4 +349,4 @@ public class PageExperienceResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1126537391
+// LIFERAY-REST-BUILDER-HASH:-14366168

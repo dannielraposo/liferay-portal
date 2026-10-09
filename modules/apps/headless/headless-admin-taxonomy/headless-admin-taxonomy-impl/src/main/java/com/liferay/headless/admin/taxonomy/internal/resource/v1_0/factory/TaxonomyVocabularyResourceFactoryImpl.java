@@ -179,50 +179,53 @@ public class TaxonomyVocabularyResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		TaxonomyVocabularyResource taxonomyVocabularyResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		TaxonomyVocabularyResource taxonomyVocabularyResource =
-			_componentServiceObjects.getService();
-
-		taxonomyVocabularyResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		taxonomyVocabularyResource.setContextCompany(company);
-
-		taxonomyVocabularyResource.setContextHttpServletRequest(
-			httpServletRequest);
-		taxonomyVocabularyResource.setContextHttpServletResponse(
-			httpServletResponse);
-		taxonomyVocabularyResource.setContextUriInfo(uriInfo);
-		taxonomyVocabularyResource.setContextUser(user);
-		taxonomyVocabularyResource.setExpressionConvert(_expressionConvert);
-		taxonomyVocabularyResource.setFilterParserProvider(
-			_filterParserProvider);
-		taxonomyVocabularyResource.setGroupLocalService(_groupLocalService);
-		taxonomyVocabularyResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		taxonomyVocabularyResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		taxonomyVocabularyResource.setRoleLocalService(_roleLocalService);
-		taxonomyVocabularyResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			taxonomyVocabularyResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			taxonomyVocabularyResource.setContextCompany(company);
+
+			taxonomyVocabularyResource.setContextHttpServletRequest(
+				httpServletRequest);
+			taxonomyVocabularyResource.setContextHttpServletResponse(
+				httpServletResponse);
+			taxonomyVocabularyResource.setContextUriInfo(uriInfo);
+			taxonomyVocabularyResource.setContextUser(user);
+			taxonomyVocabularyResource.setExpressionConvert(_expressionConvert);
+			taxonomyVocabularyResource.setFilterParserProvider(
+				_filterParserProvider);
+			taxonomyVocabularyResource.setGroupLocalService(_groupLocalService);
+			taxonomyVocabularyResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			taxonomyVocabularyResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			taxonomyVocabularyResource.setRoleLocalService(_roleLocalService);
+			taxonomyVocabularyResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(taxonomyVocabularyResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -333,4 +336,4 @@ public class TaxonomyVocabularyResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1151079386
+// LIFERAY-REST-BUILDER-HASH:-999487441

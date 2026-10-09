@@ -183,54 +183,56 @@ public class DSRecipientViewDefinitionResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		DSRecipientViewDefinitionResource dsRecipientViewDefinitionResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		DSRecipientViewDefinitionResource dsRecipientViewDefinitionResource =
-			_componentServiceObjects.getService();
-
-		dsRecipientViewDefinitionResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		dsRecipientViewDefinitionResource.setContextCompany(company);
-
-		dsRecipientViewDefinitionResource.setContextHttpServletRequest(
-			httpServletRequest);
-		dsRecipientViewDefinitionResource.setContextHttpServletResponse(
-			httpServletResponse);
-		dsRecipientViewDefinitionResource.setContextUriInfo(uriInfo);
-		dsRecipientViewDefinitionResource.setContextUser(user);
-		dsRecipientViewDefinitionResource.setExpressionConvert(
-			_expressionConvert);
-		dsRecipientViewDefinitionResource.setFilterParserProvider(
-			_filterParserProvider);
-		dsRecipientViewDefinitionResource.setGroupLocalService(
-			_groupLocalService);
-		dsRecipientViewDefinitionResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		dsRecipientViewDefinitionResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		dsRecipientViewDefinitionResource.setRoleLocalService(
-			_roleLocalService);
-		dsRecipientViewDefinitionResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			dsRecipientViewDefinitionResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			dsRecipientViewDefinitionResource.setContextCompany(company);
+
+			dsRecipientViewDefinitionResource.setContextHttpServletRequest(
+				httpServletRequest);
+			dsRecipientViewDefinitionResource.setContextHttpServletResponse(
+				httpServletResponse);
+			dsRecipientViewDefinitionResource.setContextUriInfo(uriInfo);
+			dsRecipientViewDefinitionResource.setContextUser(user);
+			dsRecipientViewDefinitionResource.setExpressionConvert(
+				_expressionConvert);
+			dsRecipientViewDefinitionResource.setFilterParserProvider(
+				_filterParserProvider);
+			dsRecipientViewDefinitionResource.setGroupLocalService(
+				_groupLocalService);
+			dsRecipientViewDefinitionResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			dsRecipientViewDefinitionResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			dsRecipientViewDefinitionResource.setRoleLocalService(
+				_roleLocalService);
+			dsRecipientViewDefinitionResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(dsRecipientViewDefinitionResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -342,4 +344,4 @@ public class DSRecipientViewDefinitionResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:606625444
+// LIFERAY-REST-BUILDER-HASH:964331993

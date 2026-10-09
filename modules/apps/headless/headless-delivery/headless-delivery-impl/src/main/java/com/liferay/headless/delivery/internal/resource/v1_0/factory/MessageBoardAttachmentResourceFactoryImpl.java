@@ -182,51 +182,56 @@ public class MessageBoardAttachmentResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		MessageBoardAttachmentResource messageBoardAttachmentResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		MessageBoardAttachmentResource messageBoardAttachmentResource =
-			_componentServiceObjects.getService();
-
-		messageBoardAttachmentResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		messageBoardAttachmentResource.setContextCompany(company);
-
-		messageBoardAttachmentResource.setContextHttpServletRequest(
-			httpServletRequest);
-		messageBoardAttachmentResource.setContextHttpServletResponse(
-			httpServletResponse);
-		messageBoardAttachmentResource.setContextUriInfo(uriInfo);
-		messageBoardAttachmentResource.setContextUser(user);
-		messageBoardAttachmentResource.setExpressionConvert(_expressionConvert);
-		messageBoardAttachmentResource.setFilterParserProvider(
-			_filterParserProvider);
-		messageBoardAttachmentResource.setGroupLocalService(_groupLocalService);
-		messageBoardAttachmentResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		messageBoardAttachmentResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		messageBoardAttachmentResource.setRoleLocalService(_roleLocalService);
-		messageBoardAttachmentResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			messageBoardAttachmentResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			messageBoardAttachmentResource.setContextCompany(company);
+
+			messageBoardAttachmentResource.setContextHttpServletRequest(
+				httpServletRequest);
+			messageBoardAttachmentResource.setContextHttpServletResponse(
+				httpServletResponse);
+			messageBoardAttachmentResource.setContextUriInfo(uriInfo);
+			messageBoardAttachmentResource.setContextUser(user);
+			messageBoardAttachmentResource.setExpressionConvert(
+				_expressionConvert);
+			messageBoardAttachmentResource.setFilterParserProvider(
+				_filterParserProvider);
+			messageBoardAttachmentResource.setGroupLocalService(
+				_groupLocalService);
+			messageBoardAttachmentResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			messageBoardAttachmentResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			messageBoardAttachmentResource.setRoleLocalService(
+				_roleLocalService);
+			messageBoardAttachmentResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(messageBoardAttachmentResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -338,4 +343,4 @@ public class MessageBoardAttachmentResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1724516726
+// LIFERAY-REST-BUILDER-HASH:278035001

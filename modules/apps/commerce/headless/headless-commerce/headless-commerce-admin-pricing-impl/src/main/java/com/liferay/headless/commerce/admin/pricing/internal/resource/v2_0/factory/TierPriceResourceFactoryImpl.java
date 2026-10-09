@@ -177,47 +177,50 @@ public class TierPriceResourceFactoryImpl implements TierPriceResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		TierPriceResource tierPriceResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		TierPriceResource tierPriceResource =
-			_componentServiceObjects.getService();
-
-		tierPriceResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		tierPriceResource.setContextCompany(company);
-
-		tierPriceResource.setContextHttpServletRequest(httpServletRequest);
-		tierPriceResource.setContextHttpServletResponse(httpServletResponse);
-		tierPriceResource.setContextUriInfo(uriInfo);
-		tierPriceResource.setContextUser(user);
-		tierPriceResource.setExpressionConvert(_expressionConvert);
-		tierPriceResource.setFilterParserProvider(_filterParserProvider);
-		tierPriceResource.setGroupLocalService(_groupLocalService);
-		tierPriceResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		tierPriceResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		tierPriceResource.setRoleLocalService(_roleLocalService);
-		tierPriceResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			tierPriceResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			tierPriceResource.setContextCompany(company);
+
+			tierPriceResource.setContextHttpServletRequest(httpServletRequest);
+			tierPriceResource.setContextHttpServletResponse(
+				httpServletResponse);
+			tierPriceResource.setContextUriInfo(uriInfo);
+			tierPriceResource.setContextUser(user);
+			tierPriceResource.setExpressionConvert(_expressionConvert);
+			tierPriceResource.setFilterParserProvider(_filterParserProvider);
+			tierPriceResource.setGroupLocalService(_groupLocalService);
+			tierPriceResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			tierPriceResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			tierPriceResource.setRoleLocalService(_roleLocalService);
+			tierPriceResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(tierPriceResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -326,4 +329,4 @@ public class TierPriceResourceFactoryImpl implements TierPriceResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1766903811
+// LIFERAY-REST-BUILDER-HASH:1394233174

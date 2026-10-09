@@ -182,51 +182,56 @@ public class FIPSHealthVerificationResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		FIPSHealthVerificationResource fipsHealthVerificationResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		FIPSHealthVerificationResource fipsHealthVerificationResource =
-			_componentServiceObjects.getService();
-
-		fipsHealthVerificationResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		fipsHealthVerificationResource.setContextCompany(company);
-
-		fipsHealthVerificationResource.setContextHttpServletRequest(
-			httpServletRequest);
-		fipsHealthVerificationResource.setContextHttpServletResponse(
-			httpServletResponse);
-		fipsHealthVerificationResource.setContextUriInfo(uriInfo);
-		fipsHealthVerificationResource.setContextUser(user);
-		fipsHealthVerificationResource.setExpressionConvert(_expressionConvert);
-		fipsHealthVerificationResource.setFilterParserProvider(
-			_filterParserProvider);
-		fipsHealthVerificationResource.setGroupLocalService(_groupLocalService);
-		fipsHealthVerificationResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		fipsHealthVerificationResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		fipsHealthVerificationResource.setRoleLocalService(_roleLocalService);
-		fipsHealthVerificationResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			fipsHealthVerificationResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			fipsHealthVerificationResource.setContextCompany(company);
+
+			fipsHealthVerificationResource.setContextHttpServletRequest(
+				httpServletRequest);
+			fipsHealthVerificationResource.setContextHttpServletResponse(
+				httpServletResponse);
+			fipsHealthVerificationResource.setContextUriInfo(uriInfo);
+			fipsHealthVerificationResource.setContextUser(user);
+			fipsHealthVerificationResource.setExpressionConvert(
+				_expressionConvert);
+			fipsHealthVerificationResource.setFilterParserProvider(
+				_filterParserProvider);
+			fipsHealthVerificationResource.setGroupLocalService(
+				_groupLocalService);
+			fipsHealthVerificationResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			fipsHealthVerificationResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			fipsHealthVerificationResource.setRoleLocalService(
+				_roleLocalService);
+			fipsHealthVerificationResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(fipsHealthVerificationResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -338,4 +343,4 @@ public class FIPSHealthVerificationResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:133416870
+// LIFERAY-REST-BUILDER-HASH:1615289627

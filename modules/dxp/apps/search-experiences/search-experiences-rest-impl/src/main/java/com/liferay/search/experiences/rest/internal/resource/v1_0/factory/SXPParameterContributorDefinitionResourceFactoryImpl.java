@@ -187,55 +187,60 @@ public class SXPParameterContributorDefinitionResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		SXPParameterContributorDefinitionResource
 			sxpParameterContributorDefinitionResource =
 				_componentServiceObjects.getService();
 
-		sxpParameterContributorDefinitionResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		sxpParameterContributorDefinitionResource.setContextCompany(company);
-
-		sxpParameterContributorDefinitionResource.setContextHttpServletRequest(
-			httpServletRequest);
-		sxpParameterContributorDefinitionResource.setContextHttpServletResponse(
-			httpServletResponse);
-		sxpParameterContributorDefinitionResource.setContextUriInfo(uriInfo);
-		sxpParameterContributorDefinitionResource.setContextUser(user);
-		sxpParameterContributorDefinitionResource.setExpressionConvert(
-			_expressionConvert);
-		sxpParameterContributorDefinitionResource.setFilterParserProvider(
-			_filterParserProvider);
-		sxpParameterContributorDefinitionResource.setGroupLocalService(
-			_groupLocalService);
-		sxpParameterContributorDefinitionResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		sxpParameterContributorDefinitionResource.
-			setResourcePermissionLocalService(_resourcePermissionLocalService);
-		sxpParameterContributorDefinitionResource.setRoleLocalService(
-			_roleLocalService);
-		sxpParameterContributorDefinitionResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			sxpParameterContributorDefinitionResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			sxpParameterContributorDefinitionResource.setContextCompany(
+				company);
+
+			sxpParameterContributorDefinitionResource.
+				setContextHttpServletRequest(httpServletRequest);
+			sxpParameterContributorDefinitionResource.
+				setContextHttpServletResponse(httpServletResponse);
+			sxpParameterContributorDefinitionResource.setContextUriInfo(
+				uriInfo);
+			sxpParameterContributorDefinitionResource.setContextUser(user);
+			sxpParameterContributorDefinitionResource.setExpressionConvert(
+				_expressionConvert);
+			sxpParameterContributorDefinitionResource.setFilterParserProvider(
+				_filterParserProvider);
+			sxpParameterContributorDefinitionResource.setGroupLocalService(
+				_groupLocalService);
+			sxpParameterContributorDefinitionResource.
+				setResourceActionLocalService(_resourceActionLocalService);
+			sxpParameterContributorDefinitionResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			sxpParameterContributorDefinitionResource.setRoleLocalService(
+				_roleLocalService);
+			sxpParameterContributorDefinitionResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				sxpParameterContributorDefinitionResource, arguments);
 		}
@@ -348,4 +353,4 @@ public class SXPParameterContributorDefinitionResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1608482570
+// LIFERAY-REST-BUILDER-HASH:-1521378893

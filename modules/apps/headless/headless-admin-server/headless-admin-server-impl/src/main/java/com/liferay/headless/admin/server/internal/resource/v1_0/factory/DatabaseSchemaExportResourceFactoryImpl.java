@@ -181,50 +181,55 @@ public class DatabaseSchemaExportResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		DatabaseSchemaExportResource databaseSchemaExportResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		DatabaseSchemaExportResource databaseSchemaExportResource =
-			_componentServiceObjects.getService();
-
-		databaseSchemaExportResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		databaseSchemaExportResource.setContextCompany(company);
-
-		databaseSchemaExportResource.setContextHttpServletRequest(
-			httpServletRequest);
-		databaseSchemaExportResource.setContextHttpServletResponse(
-			httpServletResponse);
-		databaseSchemaExportResource.setContextUriInfo(uriInfo);
-		databaseSchemaExportResource.setContextUser(user);
-		databaseSchemaExportResource.setExpressionConvert(_expressionConvert);
-		databaseSchemaExportResource.setFilterParserProvider(
-			_filterParserProvider);
-		databaseSchemaExportResource.setGroupLocalService(_groupLocalService);
-		databaseSchemaExportResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		databaseSchemaExportResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		databaseSchemaExportResource.setRoleLocalService(_roleLocalService);
-		databaseSchemaExportResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			databaseSchemaExportResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			databaseSchemaExportResource.setContextCompany(company);
+
+			databaseSchemaExportResource.setContextHttpServletRequest(
+				httpServletRequest);
+			databaseSchemaExportResource.setContextHttpServletResponse(
+				httpServletResponse);
+			databaseSchemaExportResource.setContextUriInfo(uriInfo);
+			databaseSchemaExportResource.setContextUser(user);
+			databaseSchemaExportResource.setExpressionConvert(
+				_expressionConvert);
+			databaseSchemaExportResource.setFilterParserProvider(
+				_filterParserProvider);
+			databaseSchemaExportResource.setGroupLocalService(
+				_groupLocalService);
+			databaseSchemaExportResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			databaseSchemaExportResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			databaseSchemaExportResource.setRoleLocalService(_roleLocalService);
+			databaseSchemaExportResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(databaseSchemaExportResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -335,4 +340,4 @@ public class DatabaseSchemaExportResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1434898940
+// LIFERAY-REST-BUILDER-HASH:1119763479

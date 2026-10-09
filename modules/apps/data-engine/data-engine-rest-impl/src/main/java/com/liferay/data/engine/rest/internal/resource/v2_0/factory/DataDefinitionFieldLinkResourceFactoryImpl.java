@@ -182,53 +182,56 @@ public class DataDefinitionFieldLinkResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		DataDefinitionFieldLinkResource dataDefinitionFieldLinkResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		DataDefinitionFieldLinkResource dataDefinitionFieldLinkResource =
-			_componentServiceObjects.getService();
-
-		dataDefinitionFieldLinkResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		dataDefinitionFieldLinkResource.setContextCompany(company);
-
-		dataDefinitionFieldLinkResource.setContextHttpServletRequest(
-			httpServletRequest);
-		dataDefinitionFieldLinkResource.setContextHttpServletResponse(
-			httpServletResponse);
-		dataDefinitionFieldLinkResource.setContextUriInfo(uriInfo);
-		dataDefinitionFieldLinkResource.setContextUser(user);
-		dataDefinitionFieldLinkResource.setExpressionConvert(
-			_expressionConvert);
-		dataDefinitionFieldLinkResource.setFilterParserProvider(
-			_filterParserProvider);
-		dataDefinitionFieldLinkResource.setGroupLocalService(
-			_groupLocalService);
-		dataDefinitionFieldLinkResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		dataDefinitionFieldLinkResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		dataDefinitionFieldLinkResource.setRoleLocalService(_roleLocalService);
-		dataDefinitionFieldLinkResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			dataDefinitionFieldLinkResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			dataDefinitionFieldLinkResource.setContextCompany(company);
+
+			dataDefinitionFieldLinkResource.setContextHttpServletRequest(
+				httpServletRequest);
+			dataDefinitionFieldLinkResource.setContextHttpServletResponse(
+				httpServletResponse);
+			dataDefinitionFieldLinkResource.setContextUriInfo(uriInfo);
+			dataDefinitionFieldLinkResource.setContextUser(user);
+			dataDefinitionFieldLinkResource.setExpressionConvert(
+				_expressionConvert);
+			dataDefinitionFieldLinkResource.setFilterParserProvider(
+				_filterParserProvider);
+			dataDefinitionFieldLinkResource.setGroupLocalService(
+				_groupLocalService);
+			dataDefinitionFieldLinkResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			dataDefinitionFieldLinkResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			dataDefinitionFieldLinkResource.setRoleLocalService(
+				_roleLocalService);
+			dataDefinitionFieldLinkResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(dataDefinitionFieldLinkResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -340,4 +343,4 @@ public class DataDefinitionFieldLinkResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1717605702
+// LIFERAY-REST-BUILDER-HASH:-1727727943

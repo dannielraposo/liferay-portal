@@ -177,46 +177,48 @@ public class AccountResourceFactoryImpl implements AccountResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		AccountResource accountResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		AccountResource accountResource = _componentServiceObjects.getService();
-
-		accountResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		accountResource.setContextCompany(company);
-
-		accountResource.setContextHttpServletRequest(httpServletRequest);
-		accountResource.setContextHttpServletResponse(httpServletResponse);
-		accountResource.setContextUriInfo(uriInfo);
-		accountResource.setContextUser(user);
-		accountResource.setExpressionConvert(_expressionConvert);
-		accountResource.setFilterParserProvider(_filterParserProvider);
-		accountResource.setGroupLocalService(_groupLocalService);
-		accountResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		accountResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		accountResource.setRoleLocalService(_roleLocalService);
-		accountResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			accountResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			accountResource.setContextCompany(company);
+
+			accountResource.setContextHttpServletRequest(httpServletRequest);
+			accountResource.setContextHttpServletResponse(httpServletResponse);
+			accountResource.setContextUriInfo(uriInfo);
+			accountResource.setContextUser(user);
+			accountResource.setExpressionConvert(_expressionConvert);
+			accountResource.setFilterParserProvider(_filterParserProvider);
+			accountResource.setGroupLocalService(_groupLocalService);
+			accountResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			accountResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			accountResource.setRoleLocalService(_roleLocalService);
+			accountResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(accountResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -324,4 +326,4 @@ public class AccountResourceFactoryImpl implements AccountResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1456449108
+// LIFERAY-REST-BUILDER-HASH:654058939

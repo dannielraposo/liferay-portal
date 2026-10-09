@@ -183,54 +183,57 @@ public class DefaultCategoryDisplayPageResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		DefaultCategoryDisplayPageResource defaultCategoryDisplayPageResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		DefaultCategoryDisplayPageResource defaultCategoryDisplayPageResource =
-			_componentServiceObjects.getService();
-
-		defaultCategoryDisplayPageResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		defaultCategoryDisplayPageResource.setContextCompany(company);
-
-		defaultCategoryDisplayPageResource.setContextHttpServletRequest(
-			httpServletRequest);
-		defaultCategoryDisplayPageResource.setContextHttpServletResponse(
-			httpServletResponse);
-		defaultCategoryDisplayPageResource.setContextUriInfo(uriInfo);
-		defaultCategoryDisplayPageResource.setContextUser(user);
-		defaultCategoryDisplayPageResource.setExpressionConvert(
-			_expressionConvert);
-		defaultCategoryDisplayPageResource.setFilterParserProvider(
-			_filterParserProvider);
-		defaultCategoryDisplayPageResource.setGroupLocalService(
-			_groupLocalService);
-		defaultCategoryDisplayPageResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		defaultCategoryDisplayPageResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		defaultCategoryDisplayPageResource.setRoleLocalService(
-			_roleLocalService);
-		defaultCategoryDisplayPageResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			defaultCategoryDisplayPageResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			defaultCategoryDisplayPageResource.setContextCompany(company);
+
+			defaultCategoryDisplayPageResource.setContextHttpServletRequest(
+				httpServletRequest);
+			defaultCategoryDisplayPageResource.setContextHttpServletResponse(
+				httpServletResponse);
+			defaultCategoryDisplayPageResource.setContextUriInfo(uriInfo);
+			defaultCategoryDisplayPageResource.setContextUser(user);
+			defaultCategoryDisplayPageResource.setExpressionConvert(
+				_expressionConvert);
+			defaultCategoryDisplayPageResource.setFilterParserProvider(
+				_filterParserProvider);
+			defaultCategoryDisplayPageResource.setGroupLocalService(
+				_groupLocalService);
+			defaultCategoryDisplayPageResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			defaultCategoryDisplayPageResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			defaultCategoryDisplayPageResource.setRoleLocalService(
+				_roleLocalService);
+			defaultCategoryDisplayPageResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(defaultCategoryDisplayPageResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -342,4 +345,4 @@ public class DefaultCategoryDisplayPageResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-11044030
+// LIFERAY-REST-BUILDER-HASH:59667521

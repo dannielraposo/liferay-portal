@@ -182,51 +182,56 @@ public class WorkflowDefinitionLinkResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		WorkflowDefinitionLinkResource workflowDefinitionLinkResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		WorkflowDefinitionLinkResource workflowDefinitionLinkResource =
-			_componentServiceObjects.getService();
-
-		workflowDefinitionLinkResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		workflowDefinitionLinkResource.setContextCompany(company);
-
-		workflowDefinitionLinkResource.setContextHttpServletRequest(
-			httpServletRequest);
-		workflowDefinitionLinkResource.setContextHttpServletResponse(
-			httpServletResponse);
-		workflowDefinitionLinkResource.setContextUriInfo(uriInfo);
-		workflowDefinitionLinkResource.setContextUser(user);
-		workflowDefinitionLinkResource.setExpressionConvert(_expressionConvert);
-		workflowDefinitionLinkResource.setFilterParserProvider(
-			_filterParserProvider);
-		workflowDefinitionLinkResource.setGroupLocalService(_groupLocalService);
-		workflowDefinitionLinkResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		workflowDefinitionLinkResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		workflowDefinitionLinkResource.setRoleLocalService(_roleLocalService);
-		workflowDefinitionLinkResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			workflowDefinitionLinkResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			workflowDefinitionLinkResource.setContextCompany(company);
+
+			workflowDefinitionLinkResource.setContextHttpServletRequest(
+				httpServletRequest);
+			workflowDefinitionLinkResource.setContextHttpServletResponse(
+				httpServletResponse);
+			workflowDefinitionLinkResource.setContextUriInfo(uriInfo);
+			workflowDefinitionLinkResource.setContextUser(user);
+			workflowDefinitionLinkResource.setExpressionConvert(
+				_expressionConvert);
+			workflowDefinitionLinkResource.setFilterParserProvider(
+				_filterParserProvider);
+			workflowDefinitionLinkResource.setGroupLocalService(
+				_groupLocalService);
+			workflowDefinitionLinkResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			workflowDefinitionLinkResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			workflowDefinitionLinkResource.setRoleLocalService(
+				_roleLocalService);
+			workflowDefinitionLinkResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(workflowDefinitionLinkResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -338,4 +343,4 @@ public class WorkflowDefinitionLinkResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1973998733
+// LIFERAY-REST-BUILDER-HASH:-1478437136

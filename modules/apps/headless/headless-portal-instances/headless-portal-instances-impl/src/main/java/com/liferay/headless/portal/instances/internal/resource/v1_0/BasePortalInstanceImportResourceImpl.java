@@ -841,4 +841,4 @@ public abstract class BasePortalInstanceImportResourceImpl
 		LogFactoryUtil.getLog(BasePortalInstanceImportResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:123244122
+// LIFERAY-REST-BUILDER-HASH:-1843638340

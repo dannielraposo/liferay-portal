@@ -186,55 +186,58 @@ public class ObjectEntryAcquisitionChannelResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		ObjectEntryAcquisitionChannelResource
 			objectEntryAcquisitionChannelResource =
 				_componentServiceObjects.getService();
 
-		objectEntryAcquisitionChannelResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		objectEntryAcquisitionChannelResource.setContextCompany(company);
-
-		objectEntryAcquisitionChannelResource.setContextHttpServletRequest(
-			httpServletRequest);
-		objectEntryAcquisitionChannelResource.setContextHttpServletResponse(
-			httpServletResponse);
-		objectEntryAcquisitionChannelResource.setContextUriInfo(uriInfo);
-		objectEntryAcquisitionChannelResource.setContextUser(user);
-		objectEntryAcquisitionChannelResource.setExpressionConvert(
-			_expressionConvert);
-		objectEntryAcquisitionChannelResource.setFilterParserProvider(
-			_filterParserProvider);
-		objectEntryAcquisitionChannelResource.setGroupLocalService(
-			_groupLocalService);
-		objectEntryAcquisitionChannelResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		objectEntryAcquisitionChannelResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		objectEntryAcquisitionChannelResource.setRoleLocalService(
-			_roleLocalService);
-		objectEntryAcquisitionChannelResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			objectEntryAcquisitionChannelResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			objectEntryAcquisitionChannelResource.setContextCompany(company);
+
+			objectEntryAcquisitionChannelResource.setContextHttpServletRequest(
+				httpServletRequest);
+			objectEntryAcquisitionChannelResource.setContextHttpServletResponse(
+				httpServletResponse);
+			objectEntryAcquisitionChannelResource.setContextUriInfo(uriInfo);
+			objectEntryAcquisitionChannelResource.setContextUser(user);
+			objectEntryAcquisitionChannelResource.setExpressionConvert(
+				_expressionConvert);
+			objectEntryAcquisitionChannelResource.setFilterParserProvider(
+				_filterParserProvider);
+			objectEntryAcquisitionChannelResource.setGroupLocalService(
+				_groupLocalService);
+			objectEntryAcquisitionChannelResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			objectEntryAcquisitionChannelResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			objectEntryAcquisitionChannelResource.setRoleLocalService(
+				_roleLocalService);
+			objectEntryAcquisitionChannelResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				objectEntryAcquisitionChannelResource, arguments);
 		}
@@ -347,4 +350,4 @@ public class ObjectEntryAcquisitionChannelResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-873617880
+// LIFERAY-REST-BUILDER-HASH:1733969895

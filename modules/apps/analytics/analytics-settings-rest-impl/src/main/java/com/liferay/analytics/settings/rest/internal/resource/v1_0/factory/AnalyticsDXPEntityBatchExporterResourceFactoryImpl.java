@@ -186,55 +186,58 @@ public class AnalyticsDXPEntityBatchExporterResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		AnalyticsDXPEntityBatchExporterResource
 			analyticsDXPEntityBatchExporterResource =
 				_componentServiceObjects.getService();
 
-		analyticsDXPEntityBatchExporterResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		analyticsDXPEntityBatchExporterResource.setContextCompany(company);
-
-		analyticsDXPEntityBatchExporterResource.setContextHttpServletRequest(
-			httpServletRequest);
-		analyticsDXPEntityBatchExporterResource.setContextHttpServletResponse(
-			httpServletResponse);
-		analyticsDXPEntityBatchExporterResource.setContextUriInfo(uriInfo);
-		analyticsDXPEntityBatchExporterResource.setContextUser(user);
-		analyticsDXPEntityBatchExporterResource.setExpressionConvert(
-			_expressionConvert);
-		analyticsDXPEntityBatchExporterResource.setFilterParserProvider(
-			_filterParserProvider);
-		analyticsDXPEntityBatchExporterResource.setGroupLocalService(
-			_groupLocalService);
-		analyticsDXPEntityBatchExporterResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		analyticsDXPEntityBatchExporterResource.
-			setResourcePermissionLocalService(_resourcePermissionLocalService);
-		analyticsDXPEntityBatchExporterResource.setRoleLocalService(
-			_roleLocalService);
-		analyticsDXPEntityBatchExporterResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			analyticsDXPEntityBatchExporterResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			analyticsDXPEntityBatchExporterResource.setContextCompany(company);
+
+			analyticsDXPEntityBatchExporterResource.
+				setContextHttpServletRequest(httpServletRequest);
+			analyticsDXPEntityBatchExporterResource.
+				setContextHttpServletResponse(httpServletResponse);
+			analyticsDXPEntityBatchExporterResource.setContextUriInfo(uriInfo);
+			analyticsDXPEntityBatchExporterResource.setContextUser(user);
+			analyticsDXPEntityBatchExporterResource.setExpressionConvert(
+				_expressionConvert);
+			analyticsDXPEntityBatchExporterResource.setFilterParserProvider(
+				_filterParserProvider);
+			analyticsDXPEntityBatchExporterResource.setGroupLocalService(
+				_groupLocalService);
+			analyticsDXPEntityBatchExporterResource.
+				setResourceActionLocalService(_resourceActionLocalService);
+			analyticsDXPEntityBatchExporterResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			analyticsDXPEntityBatchExporterResource.setRoleLocalService(
+				_roleLocalService);
+			analyticsDXPEntityBatchExporterResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				analyticsDXPEntityBatchExporterResource, arguments);
 		}
@@ -347,4 +350,4 @@ public class AnalyticsDXPEntityBatchExporterResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1563185973
+// LIFERAY-REST-BUILDER-HASH:1907620266

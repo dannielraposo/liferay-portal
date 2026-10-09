@@ -183,54 +183,57 @@ public class ObjectEntryHistogramMetricResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		ObjectEntryHistogramMetricResource objectEntryHistogramMetricResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		ObjectEntryHistogramMetricResource objectEntryHistogramMetricResource =
-			_componentServiceObjects.getService();
-
-		objectEntryHistogramMetricResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		objectEntryHistogramMetricResource.setContextCompany(company);
-
-		objectEntryHistogramMetricResource.setContextHttpServletRequest(
-			httpServletRequest);
-		objectEntryHistogramMetricResource.setContextHttpServletResponse(
-			httpServletResponse);
-		objectEntryHistogramMetricResource.setContextUriInfo(uriInfo);
-		objectEntryHistogramMetricResource.setContextUser(user);
-		objectEntryHistogramMetricResource.setExpressionConvert(
-			_expressionConvert);
-		objectEntryHistogramMetricResource.setFilterParserProvider(
-			_filterParserProvider);
-		objectEntryHistogramMetricResource.setGroupLocalService(
-			_groupLocalService);
-		objectEntryHistogramMetricResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		objectEntryHistogramMetricResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		objectEntryHistogramMetricResource.setRoleLocalService(
-			_roleLocalService);
-		objectEntryHistogramMetricResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			objectEntryHistogramMetricResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			objectEntryHistogramMetricResource.setContextCompany(company);
+
+			objectEntryHistogramMetricResource.setContextHttpServletRequest(
+				httpServletRequest);
+			objectEntryHistogramMetricResource.setContextHttpServletResponse(
+				httpServletResponse);
+			objectEntryHistogramMetricResource.setContextUriInfo(uriInfo);
+			objectEntryHistogramMetricResource.setContextUser(user);
+			objectEntryHistogramMetricResource.setExpressionConvert(
+				_expressionConvert);
+			objectEntryHistogramMetricResource.setFilterParserProvider(
+				_filterParserProvider);
+			objectEntryHistogramMetricResource.setGroupLocalService(
+				_groupLocalService);
+			objectEntryHistogramMetricResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			objectEntryHistogramMetricResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			objectEntryHistogramMetricResource.setRoleLocalService(
+				_roleLocalService);
+			objectEntryHistogramMetricResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(objectEntryHistogramMetricResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -342,4 +345,4 @@ public class ObjectEntryHistogramMetricResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-580302356
+// LIFERAY-REST-BUILDER-HASH:-1051687527

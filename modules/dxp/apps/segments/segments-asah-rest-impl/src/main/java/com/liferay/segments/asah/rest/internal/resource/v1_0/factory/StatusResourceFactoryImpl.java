@@ -177,46 +177,48 @@ public class StatusResourceFactoryImpl implements StatusResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		StatusResource statusResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		StatusResource statusResource = _componentServiceObjects.getService();
-
-		statusResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		statusResource.setContextCompany(company);
-
-		statusResource.setContextHttpServletRequest(httpServletRequest);
-		statusResource.setContextHttpServletResponse(httpServletResponse);
-		statusResource.setContextUriInfo(uriInfo);
-		statusResource.setContextUser(user);
-		statusResource.setExpressionConvert(_expressionConvert);
-		statusResource.setFilterParserProvider(_filterParserProvider);
-		statusResource.setGroupLocalService(_groupLocalService);
-		statusResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		statusResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		statusResource.setRoleLocalService(_roleLocalService);
-		statusResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			statusResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			statusResource.setContextCompany(company);
+
+			statusResource.setContextHttpServletRequest(httpServletRequest);
+			statusResource.setContextHttpServletResponse(httpServletResponse);
+			statusResource.setContextUriInfo(uriInfo);
+			statusResource.setContextUser(user);
+			statusResource.setExpressionConvert(_expressionConvert);
+			statusResource.setFilterParserProvider(_filterParserProvider);
+			statusResource.setGroupLocalService(_groupLocalService);
+			statusResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			statusResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			statusResource.setRoleLocalService(_roleLocalService);
+			statusResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(statusResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -324,4 +326,4 @@ public class StatusResourceFactoryImpl implements StatusResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-854213842
+// LIFERAY-REST-BUILDER-HASH:-1894565635

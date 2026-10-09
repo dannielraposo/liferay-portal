@@ -177,46 +177,48 @@ public class DiagramResourceFactoryImpl implements DiagramResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		DiagramResource diagramResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		DiagramResource diagramResource = _componentServiceObjects.getService();
-
-		diagramResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		diagramResource.setContextCompany(company);
-
-		diagramResource.setContextHttpServletRequest(httpServletRequest);
-		diagramResource.setContextHttpServletResponse(httpServletResponse);
-		diagramResource.setContextUriInfo(uriInfo);
-		diagramResource.setContextUser(user);
-		diagramResource.setExpressionConvert(_expressionConvert);
-		diagramResource.setFilterParserProvider(_filterParserProvider);
-		diagramResource.setGroupLocalService(_groupLocalService);
-		diagramResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		diagramResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		diagramResource.setRoleLocalService(_roleLocalService);
-		diagramResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			diagramResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			diagramResource.setContextCompany(company);
+
+			diagramResource.setContextHttpServletRequest(httpServletRequest);
+			diagramResource.setContextHttpServletResponse(httpServletResponse);
+			diagramResource.setContextUriInfo(uriInfo);
+			diagramResource.setContextUser(user);
+			diagramResource.setExpressionConvert(_expressionConvert);
+			diagramResource.setFilterParserProvider(_filterParserProvider);
+			diagramResource.setGroupLocalService(_groupLocalService);
+			diagramResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			diagramResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			diagramResource.setRoleLocalService(_roleLocalService);
+			diagramResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(diagramResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -324,4 +326,4 @@ public class DiagramResourceFactoryImpl implements DiagramResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-206420084
+// LIFERAY-REST-BUILDER-HASH:-1130674329

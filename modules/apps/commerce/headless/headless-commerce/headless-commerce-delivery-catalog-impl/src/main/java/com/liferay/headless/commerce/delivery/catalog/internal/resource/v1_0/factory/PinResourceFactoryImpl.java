@@ -175,45 +175,48 @@ public class PinResourceFactoryImpl implements PinResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		PinResource pinResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		PinResource pinResource = _componentServiceObjects.getService();
-
-		pinResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		pinResource.setContextCompany(company);
-
-		pinResource.setContextHttpServletRequest(httpServletRequest);
-		pinResource.setContextHttpServletResponse(httpServletResponse);
-		pinResource.setContextUriInfo(uriInfo);
-		pinResource.setContextUser(user);
-		pinResource.setExpressionConvert(_expressionConvert);
-		pinResource.setFilterParserProvider(_filterParserProvider);
-		pinResource.setGroupLocalService(_groupLocalService);
-		pinResource.setResourceActionLocalService(_resourceActionLocalService);
-		pinResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		pinResource.setRoleLocalService(_roleLocalService);
-		pinResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			pinResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			pinResource.setContextCompany(company);
+
+			pinResource.setContextHttpServletRequest(httpServletRequest);
+			pinResource.setContextHttpServletResponse(httpServletResponse);
+			pinResource.setContextUriInfo(uriInfo);
+			pinResource.setContextUser(user);
+			pinResource.setExpressionConvert(_expressionConvert);
+			pinResource.setFilterParserProvider(_filterParserProvider);
+			pinResource.setGroupLocalService(_groupLocalService);
+			pinResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			pinResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			pinResource.setRoleLocalService(_roleLocalService);
+			pinResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(pinResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -321,4 +324,4 @@ public class PinResourceFactoryImpl implements PinResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:151863755
+// LIFERAY-REST-BUILDER-HASH:1212622562

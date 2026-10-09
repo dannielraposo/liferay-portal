@@ -177,46 +177,48 @@ public class CaptchaResourceFactoryImpl implements CaptchaResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		CaptchaResource captchaResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		CaptchaResource captchaResource = _componentServiceObjects.getService();
-
-		captchaResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		captchaResource.setContextCompany(company);
-
-		captchaResource.setContextHttpServletRequest(httpServletRequest);
-		captchaResource.setContextHttpServletResponse(httpServletResponse);
-		captchaResource.setContextUriInfo(uriInfo);
-		captchaResource.setContextUser(user);
-		captchaResource.setExpressionConvert(_expressionConvert);
-		captchaResource.setFilterParserProvider(_filterParserProvider);
-		captchaResource.setGroupLocalService(_groupLocalService);
-		captchaResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		captchaResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		captchaResource.setRoleLocalService(_roleLocalService);
-		captchaResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			captchaResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			captchaResource.setContextCompany(company);
+
+			captchaResource.setContextHttpServletRequest(httpServletRequest);
+			captchaResource.setContextHttpServletResponse(httpServletResponse);
+			captchaResource.setContextUriInfo(uriInfo);
+			captchaResource.setContextUser(user);
+			captchaResource.setExpressionConvert(_expressionConvert);
+			captchaResource.setFilterParserProvider(_filterParserProvider);
+			captchaResource.setGroupLocalService(_groupLocalService);
+			captchaResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			captchaResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			captchaResource.setRoleLocalService(_roleLocalService);
+			captchaResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(captchaResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -324,4 +326,4 @@ public class CaptchaResourceFactoryImpl implements CaptchaResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:397961696
+// LIFERAY-REST-BUILDER-HASH:-1224533979

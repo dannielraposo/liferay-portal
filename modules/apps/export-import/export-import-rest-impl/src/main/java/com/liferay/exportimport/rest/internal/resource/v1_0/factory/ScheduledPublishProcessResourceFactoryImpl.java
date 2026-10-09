@@ -182,53 +182,56 @@ public class ScheduledPublishProcessResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		ScheduledPublishProcessResource scheduledPublishProcessResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		ScheduledPublishProcessResource scheduledPublishProcessResource =
-			_componentServiceObjects.getService();
-
-		scheduledPublishProcessResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		scheduledPublishProcessResource.setContextCompany(company);
-
-		scheduledPublishProcessResource.setContextHttpServletRequest(
-			httpServletRequest);
-		scheduledPublishProcessResource.setContextHttpServletResponse(
-			httpServletResponse);
-		scheduledPublishProcessResource.setContextUriInfo(uriInfo);
-		scheduledPublishProcessResource.setContextUser(user);
-		scheduledPublishProcessResource.setExpressionConvert(
-			_expressionConvert);
-		scheduledPublishProcessResource.setFilterParserProvider(
-			_filterParserProvider);
-		scheduledPublishProcessResource.setGroupLocalService(
-			_groupLocalService);
-		scheduledPublishProcessResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		scheduledPublishProcessResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		scheduledPublishProcessResource.setRoleLocalService(_roleLocalService);
-		scheduledPublishProcessResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			scheduledPublishProcessResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			scheduledPublishProcessResource.setContextCompany(company);
+
+			scheduledPublishProcessResource.setContextHttpServletRequest(
+				httpServletRequest);
+			scheduledPublishProcessResource.setContextHttpServletResponse(
+				httpServletResponse);
+			scheduledPublishProcessResource.setContextUriInfo(uriInfo);
+			scheduledPublishProcessResource.setContextUser(user);
+			scheduledPublishProcessResource.setExpressionConvert(
+				_expressionConvert);
+			scheduledPublishProcessResource.setFilterParserProvider(
+				_filterParserProvider);
+			scheduledPublishProcessResource.setGroupLocalService(
+				_groupLocalService);
+			scheduledPublishProcessResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			scheduledPublishProcessResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			scheduledPublishProcessResource.setRoleLocalService(
+				_roleLocalService);
+			scheduledPublishProcessResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(scheduledPublishProcessResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -340,4 +343,4 @@ public class ScheduledPublishProcessResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-506627946
+// LIFERAY-REST-BUILDER-HASH:-1712019475

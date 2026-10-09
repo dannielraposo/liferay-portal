@@ -12,7 +12,9 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
@@ -54,6 +56,7 @@ import java.io.Serializable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -74,6 +77,7 @@ public abstract class BaseResourceFileResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/resource-files/{resourceFileExternalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Deletes a specific resource file of a site."
 	)
@@ -115,6 +119,7 @@ public abstract class BaseResourceFileResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/fragment-sets/{fragmentSetExternalReferenceCode}/resource-files'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves the direct child resource files of a fragment set."
 	)
@@ -175,6 +180,7 @@ public abstract class BaseResourceFileResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/resource-files/{resourceFileExternalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves a specific resource file of a site."
 	)
@@ -226,6 +232,7 @@ public abstract class BaseResourceFileResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/resource-files'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves the resource files of the site."
 	)
@@ -282,6 +289,7 @@ public abstract class BaseResourceFileResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/resource-folders/{resourceFolderExternalReferenceCode}/resource-files'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves the direct child resource files of the resource folder with the given external reference code."
 	)
@@ -342,6 +350,7 @@ public abstract class BaseResourceFileResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/fragment-sets/{fragmentSetExternalReferenceCode}/resource-files' -d $'{"dateCreated": ___, "dateModified": ___, "externalReferenceCode": ___, "fileURLReference": ___, "fragmentSet": ___, "fragmentSetExternalReferenceCode": ___, "name": ___, "resourceFolder": ___, "resourceFolderExternalReferenceCode": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Adds a new resource file to a fragment set."
 	)
@@ -387,6 +396,7 @@ public abstract class BaseResourceFileResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/resource-files' -d $'{"dateCreated": ___, "dateModified": ___, "externalReferenceCode": ___, "fileURLReference": ___, "fragmentSet": ___, "fragmentSetExternalReferenceCode": ___, "name": ___, "resourceFolder": ___, "resourceFolderExternalReferenceCode": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Adds a new resource file to the site."
 	)
@@ -422,6 +432,7 @@ public abstract class BaseResourceFileResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/resource-files/batch'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -476,6 +487,7 @@ public abstract class BaseResourceFileResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/resource-files/export-batch'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -553,6 +565,7 @@ public abstract class BaseResourceFileResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/resource-files/{resourceFileExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "externalReferenceCode": ___, "fileURLReference": ___, "fragmentSet": ___, "fragmentSetExternalReferenceCode": ___, "name": ___, "resourceFolder": ___, "resourceFolderExternalReferenceCode": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates the resource file with the given external reference code, or creates it if it does not exist. On update, `fileURLReference` and `name` are required, `dateModified` is honored, and any values sent for `dateCreated`, `externalReferenceCode`, `fragmentSet`, `fragmentSetExternalReferenceCode`, `resourceFolder`, and `resourceFolderExternalReferenceCode` are ignored."
 	)
@@ -614,7 +627,10 @@ public abstract class BaseResourceFileResourceImpl
 		String createStrategy = (String)parameters.getOrDefault(
 			"createStrategy", "INSERT");
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT")) {
+		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT") &&
+			FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-39244")) {
+
 			if (parameters.containsKey("siteExternalReferenceCode")) {
 				resourceFileUnsafeFunction =
 					resourceFile -> postSiteResourceFile(
@@ -627,7 +643,10 @@ public abstract class BaseResourceFileResourceImpl
 			}
 		}
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
+		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT") &&
+			FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-39244")) {
+
 			String updateStrategy = (String)parameters.getOrDefault(
 				"updateStrategy", "UPDATE");
 
@@ -678,6 +697,13 @@ public abstract class BaseResourceFileResourceImpl
 			Map<String, Serializable> parameters)
 		throws Exception {
 
+		if (!FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-39244")) {
+
+			throw new UnsupportedOperationException(
+				"This method needs to be implemented");
+		}
+
 		UnsafeFunction<ResourceFile, ResourceFile, Exception>
 			resourceFileUnsafeFunction = resourceFile -> {
 				if (parameters.containsKey("siteExternalReferenceCode")) {
@@ -708,7 +734,16 @@ public abstract class BaseResourceFileResourceImpl
 	}
 
 	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
+		Set<String> createStrategies = new HashSet<>();
+
+		if (FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-39244")) {
+
+			createStrategies.add("INSERT");
+			createStrategies.add("UPSERT");
+		}
+
+		return createStrategies;
 	}
 
 	public Set<String> getAvailableUpdateStrategies() {
@@ -738,6 +773,13 @@ public abstract class BaseResourceFileResourceImpl
 			com.liferay.portal.kernel.search.Sort[] sorts,
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-39244")) {
+
+			throw new UnsupportedOperationException(
+				"This method needs to be implemented");
+		}
 
 		if (parameters.containsKey("siteExternalReferenceCode")) {
 			return getSiteResourceFilesPage(
@@ -1352,4 +1394,4 @@ public abstract class BaseResourceFileResourceImpl
 		LogFactoryUtil.getLog(BaseResourceFileResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:910828700
+// LIFERAY-REST-BUILDER-HASH:-650594400

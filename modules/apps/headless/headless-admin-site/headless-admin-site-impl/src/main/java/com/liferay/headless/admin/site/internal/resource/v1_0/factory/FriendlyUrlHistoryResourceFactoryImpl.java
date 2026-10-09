@@ -179,50 +179,53 @@ public class FriendlyUrlHistoryResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		FriendlyUrlHistoryResource friendlyUrlHistoryResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		FriendlyUrlHistoryResource friendlyUrlHistoryResource =
-			_componentServiceObjects.getService();
-
-		friendlyUrlHistoryResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		friendlyUrlHistoryResource.setContextCompany(company);
-
-		friendlyUrlHistoryResource.setContextHttpServletRequest(
-			httpServletRequest);
-		friendlyUrlHistoryResource.setContextHttpServletResponse(
-			httpServletResponse);
-		friendlyUrlHistoryResource.setContextUriInfo(uriInfo);
-		friendlyUrlHistoryResource.setContextUser(user);
-		friendlyUrlHistoryResource.setExpressionConvert(_expressionConvert);
-		friendlyUrlHistoryResource.setFilterParserProvider(
-			_filterParserProvider);
-		friendlyUrlHistoryResource.setGroupLocalService(_groupLocalService);
-		friendlyUrlHistoryResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		friendlyUrlHistoryResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		friendlyUrlHistoryResource.setRoleLocalService(_roleLocalService);
-		friendlyUrlHistoryResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			friendlyUrlHistoryResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			friendlyUrlHistoryResource.setContextCompany(company);
+
+			friendlyUrlHistoryResource.setContextHttpServletRequest(
+				httpServletRequest);
+			friendlyUrlHistoryResource.setContextHttpServletResponse(
+				httpServletResponse);
+			friendlyUrlHistoryResource.setContextUriInfo(uriInfo);
+			friendlyUrlHistoryResource.setContextUser(user);
+			friendlyUrlHistoryResource.setExpressionConvert(_expressionConvert);
+			friendlyUrlHistoryResource.setFilterParserProvider(
+				_filterParserProvider);
+			friendlyUrlHistoryResource.setGroupLocalService(_groupLocalService);
+			friendlyUrlHistoryResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			friendlyUrlHistoryResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			friendlyUrlHistoryResource.setRoleLocalService(_roleLocalService);
+			friendlyUrlHistoryResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(friendlyUrlHistoryResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -333,4 +336,4 @@ public class FriendlyUrlHistoryResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:594531984
+// LIFERAY-REST-BUILDER-HASH:805130363

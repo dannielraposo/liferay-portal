@@ -183,54 +183,56 @@ public class SiteVisitorBehaviorMetricResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		SiteVisitorBehaviorMetricResource siteVisitorBehaviorMetricResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		SiteVisitorBehaviorMetricResource siteVisitorBehaviorMetricResource =
-			_componentServiceObjects.getService();
-
-		siteVisitorBehaviorMetricResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		siteVisitorBehaviorMetricResource.setContextCompany(company);
-
-		siteVisitorBehaviorMetricResource.setContextHttpServletRequest(
-			httpServletRequest);
-		siteVisitorBehaviorMetricResource.setContextHttpServletResponse(
-			httpServletResponse);
-		siteVisitorBehaviorMetricResource.setContextUriInfo(uriInfo);
-		siteVisitorBehaviorMetricResource.setContextUser(user);
-		siteVisitorBehaviorMetricResource.setExpressionConvert(
-			_expressionConvert);
-		siteVisitorBehaviorMetricResource.setFilterParserProvider(
-			_filterParserProvider);
-		siteVisitorBehaviorMetricResource.setGroupLocalService(
-			_groupLocalService);
-		siteVisitorBehaviorMetricResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		siteVisitorBehaviorMetricResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		siteVisitorBehaviorMetricResource.setRoleLocalService(
-			_roleLocalService);
-		siteVisitorBehaviorMetricResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			siteVisitorBehaviorMetricResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			siteVisitorBehaviorMetricResource.setContextCompany(company);
+
+			siteVisitorBehaviorMetricResource.setContextHttpServletRequest(
+				httpServletRequest);
+			siteVisitorBehaviorMetricResource.setContextHttpServletResponse(
+				httpServletResponse);
+			siteVisitorBehaviorMetricResource.setContextUriInfo(uriInfo);
+			siteVisitorBehaviorMetricResource.setContextUser(user);
+			siteVisitorBehaviorMetricResource.setExpressionConvert(
+				_expressionConvert);
+			siteVisitorBehaviorMetricResource.setFilterParserProvider(
+				_filterParserProvider);
+			siteVisitorBehaviorMetricResource.setGroupLocalService(
+				_groupLocalService);
+			siteVisitorBehaviorMetricResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			siteVisitorBehaviorMetricResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			siteVisitorBehaviorMetricResource.setRoleLocalService(
+				_roleLocalService);
+			siteVisitorBehaviorMetricResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(siteVisitorBehaviorMetricResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -342,4 +344,4 @@ public class SiteVisitorBehaviorMetricResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-791607185
+// LIFERAY-REST-BUILDER-HASH:-427547602

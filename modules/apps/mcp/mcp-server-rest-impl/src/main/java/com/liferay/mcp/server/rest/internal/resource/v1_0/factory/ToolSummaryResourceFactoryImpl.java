@@ -27,12 +27,14 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import jakarta.annotation.Generated;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Constructor;
@@ -179,47 +181,61 @@ public class ToolSummaryResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		ToolSummaryResource toolSummaryResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		ToolSummaryResource toolSummaryResource =
-			_componentServiceObjects.getService();
-
-		toolSummaryResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		toolSummaryResource.setContextCompany(company);
-
-		toolSummaryResource.setContextHttpServletRequest(httpServletRequest);
-		toolSummaryResource.setContextHttpServletResponse(httpServletResponse);
-		toolSummaryResource.setContextUriInfo(uriInfo);
-		toolSummaryResource.setContextUser(user);
-		toolSummaryResource.setExpressionConvert(_expressionConvert);
-		toolSummaryResource.setFilterParserProvider(_filterParserProvider);
-		toolSummaryResource.setGroupLocalService(_groupLocalService);
-		toolSummaryResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		toolSummaryResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		toolSummaryResource.setRoleLocalService(_roleLocalService);
-		toolSummaryResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			Class<?> clazz = toolSummaryResource.getClass();
+
+			if (!_featureFlagChecker.isEnabled(
+					user.getCompanyId(),
+					clazz.getMethod(
+						method.getName(), method.getParameterTypes()))) {
+
+				throw new NotFoundException();
+			}
+
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			toolSummaryResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			toolSummaryResource.setContextCompany(company);
+
+			toolSummaryResource.setContextHttpServletRequest(
+				httpServletRequest);
+			toolSummaryResource.setContextHttpServletResponse(
+				httpServletResponse);
+			toolSummaryResource.setContextUriInfo(uriInfo);
+			toolSummaryResource.setContextUser(user);
+			toolSummaryResource.setExpressionConvert(_expressionConvert);
+			toolSummaryResource.setFilterParserProvider(_filterParserProvider);
+			toolSummaryResource.setGroupLocalService(_groupLocalService);
+			toolSummaryResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			toolSummaryResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			toolSummaryResource.setRoleLocalService(_roleLocalService);
+			toolSummaryResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(toolSummaryResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -248,6 +264,9 @@ public class ToolSummaryResourceFactoryImpl
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
@@ -329,4 +348,4 @@ public class ToolSummaryResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1934165152
+// LIFERAY-REST-BUILDER-HASH:1810319646

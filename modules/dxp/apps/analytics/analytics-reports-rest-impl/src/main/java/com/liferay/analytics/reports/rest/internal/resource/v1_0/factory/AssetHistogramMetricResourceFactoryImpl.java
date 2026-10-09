@@ -181,50 +181,55 @@ public class AssetHistogramMetricResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		AssetHistogramMetricResource assetHistogramMetricResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		AssetHistogramMetricResource assetHistogramMetricResource =
-			_componentServiceObjects.getService();
-
-		assetHistogramMetricResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		assetHistogramMetricResource.setContextCompany(company);
-
-		assetHistogramMetricResource.setContextHttpServletRequest(
-			httpServletRequest);
-		assetHistogramMetricResource.setContextHttpServletResponse(
-			httpServletResponse);
-		assetHistogramMetricResource.setContextUriInfo(uriInfo);
-		assetHistogramMetricResource.setContextUser(user);
-		assetHistogramMetricResource.setExpressionConvert(_expressionConvert);
-		assetHistogramMetricResource.setFilterParserProvider(
-			_filterParserProvider);
-		assetHistogramMetricResource.setGroupLocalService(_groupLocalService);
-		assetHistogramMetricResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		assetHistogramMetricResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		assetHistogramMetricResource.setRoleLocalService(_roleLocalService);
-		assetHistogramMetricResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			assetHistogramMetricResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			assetHistogramMetricResource.setContextCompany(company);
+
+			assetHistogramMetricResource.setContextHttpServletRequest(
+				httpServletRequest);
+			assetHistogramMetricResource.setContextHttpServletResponse(
+				httpServletResponse);
+			assetHistogramMetricResource.setContextUriInfo(uriInfo);
+			assetHistogramMetricResource.setContextUser(user);
+			assetHistogramMetricResource.setExpressionConvert(
+				_expressionConvert);
+			assetHistogramMetricResource.setFilterParserProvider(
+				_filterParserProvider);
+			assetHistogramMetricResource.setGroupLocalService(
+				_groupLocalService);
+			assetHistogramMetricResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			assetHistogramMetricResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			assetHistogramMetricResource.setRoleLocalService(_roleLocalService);
+			assetHistogramMetricResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(assetHistogramMetricResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -335,4 +340,4 @@ public class AssetHistogramMetricResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-189869410
+// LIFERAY-REST-BUILDER-HASH:-1518698847

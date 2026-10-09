@@ -182,53 +182,56 @@ public class KnowledgeBaseAttachmentResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		KnowledgeBaseAttachmentResource knowledgeBaseAttachmentResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		KnowledgeBaseAttachmentResource knowledgeBaseAttachmentResource =
-			_componentServiceObjects.getService();
-
-		knowledgeBaseAttachmentResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		knowledgeBaseAttachmentResource.setContextCompany(company);
-
-		knowledgeBaseAttachmentResource.setContextHttpServletRequest(
-			httpServletRequest);
-		knowledgeBaseAttachmentResource.setContextHttpServletResponse(
-			httpServletResponse);
-		knowledgeBaseAttachmentResource.setContextUriInfo(uriInfo);
-		knowledgeBaseAttachmentResource.setContextUser(user);
-		knowledgeBaseAttachmentResource.setExpressionConvert(
-			_expressionConvert);
-		knowledgeBaseAttachmentResource.setFilterParserProvider(
-			_filterParserProvider);
-		knowledgeBaseAttachmentResource.setGroupLocalService(
-			_groupLocalService);
-		knowledgeBaseAttachmentResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		knowledgeBaseAttachmentResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		knowledgeBaseAttachmentResource.setRoleLocalService(_roleLocalService);
-		knowledgeBaseAttachmentResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			knowledgeBaseAttachmentResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			knowledgeBaseAttachmentResource.setContextCompany(company);
+
+			knowledgeBaseAttachmentResource.setContextHttpServletRequest(
+				httpServletRequest);
+			knowledgeBaseAttachmentResource.setContextHttpServletResponse(
+				httpServletResponse);
+			knowledgeBaseAttachmentResource.setContextUriInfo(uriInfo);
+			knowledgeBaseAttachmentResource.setContextUser(user);
+			knowledgeBaseAttachmentResource.setExpressionConvert(
+				_expressionConvert);
+			knowledgeBaseAttachmentResource.setFilterParserProvider(
+				_filterParserProvider);
+			knowledgeBaseAttachmentResource.setGroupLocalService(
+				_groupLocalService);
+			knowledgeBaseAttachmentResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			knowledgeBaseAttachmentResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			knowledgeBaseAttachmentResource.setRoleLocalService(
+				_roleLocalService);
+			knowledgeBaseAttachmentResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(knowledgeBaseAttachmentResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -340,4 +343,4 @@ public class KnowledgeBaseAttachmentResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:97411262
+// LIFERAY-REST-BUILDER-HASH:-42573101

@@ -179,48 +179,52 @@ public class ProcessMetricResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		ProcessMetricResource processMetricResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		ProcessMetricResource processMetricResource =
-			_componentServiceObjects.getService();
-
-		processMetricResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		processMetricResource.setContextCompany(company);
-
-		processMetricResource.setContextHttpServletRequest(httpServletRequest);
-		processMetricResource.setContextHttpServletResponse(
-			httpServletResponse);
-		processMetricResource.setContextUriInfo(uriInfo);
-		processMetricResource.setContextUser(user);
-		processMetricResource.setExpressionConvert(_expressionConvert);
-		processMetricResource.setFilterParserProvider(_filterParserProvider);
-		processMetricResource.setGroupLocalService(_groupLocalService);
-		processMetricResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		processMetricResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		processMetricResource.setRoleLocalService(_roleLocalService);
-		processMetricResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			processMetricResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			processMetricResource.setContextCompany(company);
+
+			processMetricResource.setContextHttpServletRequest(
+				httpServletRequest);
+			processMetricResource.setContextHttpServletResponse(
+				httpServletResponse);
+			processMetricResource.setContextUriInfo(uriInfo);
+			processMetricResource.setContextUser(user);
+			processMetricResource.setExpressionConvert(_expressionConvert);
+			processMetricResource.setFilterParserProvider(
+				_filterParserProvider);
+			processMetricResource.setGroupLocalService(_groupLocalService);
+			processMetricResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			processMetricResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			processMetricResource.setRoleLocalService(_roleLocalService);
+			processMetricResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(processMetricResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -330,4 +334,4 @@ public class ProcessMetricResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1599758181
+// LIFERAY-REST-BUILDER-HASH:-304064770

@@ -179,47 +179,51 @@ public class EmailAddressResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		EmailAddressResource emailAddressResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		EmailAddressResource emailAddressResource =
-			_componentServiceObjects.getService();
-
-		emailAddressResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		emailAddressResource.setContextCompany(company);
-
-		emailAddressResource.setContextHttpServletRequest(httpServletRequest);
-		emailAddressResource.setContextHttpServletResponse(httpServletResponse);
-		emailAddressResource.setContextUriInfo(uriInfo);
-		emailAddressResource.setContextUser(user);
-		emailAddressResource.setExpressionConvert(_expressionConvert);
-		emailAddressResource.setFilterParserProvider(_filterParserProvider);
-		emailAddressResource.setGroupLocalService(_groupLocalService);
-		emailAddressResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		emailAddressResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		emailAddressResource.setRoleLocalService(_roleLocalService);
-		emailAddressResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			emailAddressResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			emailAddressResource.setContextCompany(company);
+
+			emailAddressResource.setContextHttpServletRequest(
+				httpServletRequest);
+			emailAddressResource.setContextHttpServletResponse(
+				httpServletResponse);
+			emailAddressResource.setContextUriInfo(uriInfo);
+			emailAddressResource.setContextUser(user);
+			emailAddressResource.setExpressionConvert(_expressionConvert);
+			emailAddressResource.setFilterParserProvider(_filterParserProvider);
+			emailAddressResource.setGroupLocalService(_groupLocalService);
+			emailAddressResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			emailAddressResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			emailAddressResource.setRoleLocalService(_roleLocalService);
+			emailAddressResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(emailAddressResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -329,4 +333,4 @@ public class EmailAddressResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1361418169
+// LIFERAY-REST-BUILDER-HASH:-14540030

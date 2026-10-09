@@ -181,50 +181,55 @@ public class ObjectValidationRuleResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		ObjectValidationRuleResource objectValidationRuleResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		ObjectValidationRuleResource objectValidationRuleResource =
-			_componentServiceObjects.getService();
-
-		objectValidationRuleResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		objectValidationRuleResource.setContextCompany(company);
-
-		objectValidationRuleResource.setContextHttpServletRequest(
-			httpServletRequest);
-		objectValidationRuleResource.setContextHttpServletResponse(
-			httpServletResponse);
-		objectValidationRuleResource.setContextUriInfo(uriInfo);
-		objectValidationRuleResource.setContextUser(user);
-		objectValidationRuleResource.setExpressionConvert(_expressionConvert);
-		objectValidationRuleResource.setFilterParserProvider(
-			_filterParserProvider);
-		objectValidationRuleResource.setGroupLocalService(_groupLocalService);
-		objectValidationRuleResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		objectValidationRuleResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		objectValidationRuleResource.setRoleLocalService(_roleLocalService);
-		objectValidationRuleResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			objectValidationRuleResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			objectValidationRuleResource.setContextCompany(company);
+
+			objectValidationRuleResource.setContextHttpServletRequest(
+				httpServletRequest);
+			objectValidationRuleResource.setContextHttpServletResponse(
+				httpServletResponse);
+			objectValidationRuleResource.setContextUriInfo(uriInfo);
+			objectValidationRuleResource.setContextUser(user);
+			objectValidationRuleResource.setExpressionConvert(
+				_expressionConvert);
+			objectValidationRuleResource.setFilterParserProvider(
+				_filterParserProvider);
+			objectValidationRuleResource.setGroupLocalService(
+				_groupLocalService);
+			objectValidationRuleResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			objectValidationRuleResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			objectValidationRuleResource.setRoleLocalService(_roleLocalService);
+			objectValidationRuleResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(objectValidationRuleResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -335,4 +340,4 @@ public class ObjectValidationRuleResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1827471626
+// LIFERAY-REST-BUILDER-HASH:-351263015

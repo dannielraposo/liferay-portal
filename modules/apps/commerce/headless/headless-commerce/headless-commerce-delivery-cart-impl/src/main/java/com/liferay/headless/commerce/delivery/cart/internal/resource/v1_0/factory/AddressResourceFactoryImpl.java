@@ -177,46 +177,48 @@ public class AddressResourceFactoryImpl implements AddressResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		AddressResource addressResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		AddressResource addressResource = _componentServiceObjects.getService();
-
-		addressResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		addressResource.setContextCompany(company);
-
-		addressResource.setContextHttpServletRequest(httpServletRequest);
-		addressResource.setContextHttpServletResponse(httpServletResponse);
-		addressResource.setContextUriInfo(uriInfo);
-		addressResource.setContextUser(user);
-		addressResource.setExpressionConvert(_expressionConvert);
-		addressResource.setFilterParserProvider(_filterParserProvider);
-		addressResource.setGroupLocalService(_groupLocalService);
-		addressResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		addressResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		addressResource.setRoleLocalService(_roleLocalService);
-		addressResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			addressResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			addressResource.setContextCompany(company);
+
+			addressResource.setContextHttpServletRequest(httpServletRequest);
+			addressResource.setContextHttpServletResponse(httpServletResponse);
+			addressResource.setContextUriInfo(uriInfo);
+			addressResource.setContextUser(user);
+			addressResource.setExpressionConvert(_expressionConvert);
+			addressResource.setFilterParserProvider(_filterParserProvider);
+			addressResource.setGroupLocalService(_groupLocalService);
+			addressResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			addressResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			addressResource.setRoleLocalService(_roleLocalService);
+			addressResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(addressResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -324,4 +326,4 @@ public class AddressResourceFactoryImpl implements AddressResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:595637678
+// LIFERAY-REST-BUILDER-HASH:1370401375

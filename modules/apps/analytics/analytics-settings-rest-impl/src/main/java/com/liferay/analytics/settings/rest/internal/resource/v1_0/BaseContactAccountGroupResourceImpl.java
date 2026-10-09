@@ -548,4 +548,4 @@ public abstract class BaseContactAccountGroupResourceImpl
 		LogFactoryUtil.getLog(BaseContactAccountGroupResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-72845651
+// LIFERAY-REST-BUILDER-HASH:-677107712

@@ -179,48 +179,52 @@ public class MappedProductResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		MappedProductResource mappedProductResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		MappedProductResource mappedProductResource =
-			_componentServiceObjects.getService();
-
-		mappedProductResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		mappedProductResource.setContextCompany(company);
-
-		mappedProductResource.setContextHttpServletRequest(httpServletRequest);
-		mappedProductResource.setContextHttpServletResponse(
-			httpServletResponse);
-		mappedProductResource.setContextUriInfo(uriInfo);
-		mappedProductResource.setContextUser(user);
-		mappedProductResource.setExpressionConvert(_expressionConvert);
-		mappedProductResource.setFilterParserProvider(_filterParserProvider);
-		mappedProductResource.setGroupLocalService(_groupLocalService);
-		mappedProductResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		mappedProductResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		mappedProductResource.setRoleLocalService(_roleLocalService);
-		mappedProductResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			mappedProductResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			mappedProductResource.setContextCompany(company);
+
+			mappedProductResource.setContextHttpServletRequest(
+				httpServletRequest);
+			mappedProductResource.setContextHttpServletResponse(
+				httpServletResponse);
+			mappedProductResource.setContextUriInfo(uriInfo);
+			mappedProductResource.setContextUser(user);
+			mappedProductResource.setExpressionConvert(_expressionConvert);
+			mappedProductResource.setFilterParserProvider(
+				_filterParserProvider);
+			mappedProductResource.setGroupLocalService(_groupLocalService);
+			mappedProductResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			mappedProductResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			mappedProductResource.setRoleLocalService(_roleLocalService);
+			mappedProductResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(mappedProductResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -330,4 +334,4 @@ public class MappedProductResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1099244873
+// LIFERAY-REST-BUILDER-HASH:-779073558

@@ -51,7 +51,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceScope;
 
 /**
- * @author Marcos Martins
+ * @author Ivica Cardic
  * @generated
  */
 @Component(
@@ -177,46 +177,48 @@ public class GraphQLResourceFactoryImpl implements GraphQLResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		GraphQLResource graphQLResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		GraphQLResource graphQLResource = _componentServiceObjects.getService();
-
-		graphQLResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		graphQLResource.setContextCompany(company);
-
-		graphQLResource.setContextHttpServletRequest(httpServletRequest);
-		graphQLResource.setContextHttpServletResponse(httpServletResponse);
-		graphQLResource.setContextUriInfo(uriInfo);
-		graphQLResource.setContextUser(user);
-		graphQLResource.setExpressionConvert(_expressionConvert);
-		graphQLResource.setFilterParserProvider(_filterParserProvider);
-		graphQLResource.setGroupLocalService(_groupLocalService);
-		graphQLResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		graphQLResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		graphQLResource.setRoleLocalService(_roleLocalService);
-		graphQLResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			graphQLResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			graphQLResource.setContextCompany(company);
+
+			graphQLResource.setContextHttpServletRequest(httpServletRequest);
+			graphQLResource.setContextHttpServletResponse(httpServletResponse);
+			graphQLResource.setContextUriInfo(uriInfo);
+			graphQLResource.setContextUser(user);
+			graphQLResource.setExpressionConvert(_expressionConvert);
+			graphQLResource.setFilterParserProvider(_filterParserProvider);
+			graphQLResource.setGroupLocalService(_groupLocalService);
+			graphQLResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			graphQLResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			graphQLResource.setRoleLocalService(_roleLocalService);
+			graphQLResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(graphQLResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -324,4 +326,4 @@ public class GraphQLResourceFactoryImpl implements GraphQLResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-700597743
+// LIFERAY-REST-BUILDER-HASH:-2103322544

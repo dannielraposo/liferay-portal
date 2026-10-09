@@ -177,47 +177,49 @@ public class CurrencyResourceFactoryImpl implements CurrencyResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		CurrencyResource currencyResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		CurrencyResource currencyResource =
-			_componentServiceObjects.getService();
-
-		currencyResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		currencyResource.setContextCompany(company);
-
-		currencyResource.setContextHttpServletRequest(httpServletRequest);
-		currencyResource.setContextHttpServletResponse(httpServletResponse);
-		currencyResource.setContextUriInfo(uriInfo);
-		currencyResource.setContextUser(user);
-		currencyResource.setExpressionConvert(_expressionConvert);
-		currencyResource.setFilterParserProvider(_filterParserProvider);
-		currencyResource.setGroupLocalService(_groupLocalService);
-		currencyResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		currencyResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		currencyResource.setRoleLocalService(_roleLocalService);
-		currencyResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			currencyResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			currencyResource.setContextCompany(company);
+
+			currencyResource.setContextHttpServletRequest(httpServletRequest);
+			currencyResource.setContextHttpServletResponse(httpServletResponse);
+			currencyResource.setContextUriInfo(uriInfo);
+			currencyResource.setContextUser(user);
+			currencyResource.setExpressionConvert(_expressionConvert);
+			currencyResource.setFilterParserProvider(_filterParserProvider);
+			currencyResource.setGroupLocalService(_groupLocalService);
+			currencyResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			currencyResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			currencyResource.setRoleLocalService(_roleLocalService);
+			currencyResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(currencyResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -326,4 +328,4 @@ public class CurrencyResourceFactoryImpl implements CurrencyResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1736718323
+// LIFERAY-REST-BUILDER-HASH:167527514

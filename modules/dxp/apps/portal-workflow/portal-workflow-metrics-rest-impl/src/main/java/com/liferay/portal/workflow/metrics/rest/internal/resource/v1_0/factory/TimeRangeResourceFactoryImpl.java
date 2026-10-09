@@ -177,47 +177,50 @@ public class TimeRangeResourceFactoryImpl implements TimeRangeResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		TimeRangeResource timeRangeResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		TimeRangeResource timeRangeResource =
-			_componentServiceObjects.getService();
-
-		timeRangeResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		timeRangeResource.setContextCompany(company);
-
-		timeRangeResource.setContextHttpServletRequest(httpServletRequest);
-		timeRangeResource.setContextHttpServletResponse(httpServletResponse);
-		timeRangeResource.setContextUriInfo(uriInfo);
-		timeRangeResource.setContextUser(user);
-		timeRangeResource.setExpressionConvert(_expressionConvert);
-		timeRangeResource.setFilterParserProvider(_filterParserProvider);
-		timeRangeResource.setGroupLocalService(_groupLocalService);
-		timeRangeResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		timeRangeResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		timeRangeResource.setRoleLocalService(_roleLocalService);
-		timeRangeResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			timeRangeResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			timeRangeResource.setContextCompany(company);
+
+			timeRangeResource.setContextHttpServletRequest(httpServletRequest);
+			timeRangeResource.setContextHttpServletResponse(
+				httpServletResponse);
+			timeRangeResource.setContextUriInfo(uriInfo);
+			timeRangeResource.setContextUser(user);
+			timeRangeResource.setExpressionConvert(_expressionConvert);
+			timeRangeResource.setFilterParserProvider(_filterParserProvider);
+			timeRangeResource.setGroupLocalService(_groupLocalService);
+			timeRangeResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			timeRangeResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			timeRangeResource.setRoleLocalService(_roleLocalService);
+			timeRangeResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(timeRangeResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -326,4 +329,4 @@ public class TimeRangeResourceFactoryImpl implements TimeRangeResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:911084096
+// LIFERAY-REST-BUILDER-HASH:-1770562471

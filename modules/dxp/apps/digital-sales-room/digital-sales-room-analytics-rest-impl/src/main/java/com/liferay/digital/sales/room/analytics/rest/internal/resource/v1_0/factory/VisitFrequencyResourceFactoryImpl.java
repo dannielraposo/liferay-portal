@@ -179,48 +179,52 @@ public class VisitFrequencyResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		VisitFrequencyResource visitFrequencyResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		VisitFrequencyResource visitFrequencyResource =
-			_componentServiceObjects.getService();
-
-		visitFrequencyResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		visitFrequencyResource.setContextCompany(company);
-
-		visitFrequencyResource.setContextHttpServletRequest(httpServletRequest);
-		visitFrequencyResource.setContextHttpServletResponse(
-			httpServletResponse);
-		visitFrequencyResource.setContextUriInfo(uriInfo);
-		visitFrequencyResource.setContextUser(user);
-		visitFrequencyResource.setExpressionConvert(_expressionConvert);
-		visitFrequencyResource.setFilterParserProvider(_filterParserProvider);
-		visitFrequencyResource.setGroupLocalService(_groupLocalService);
-		visitFrequencyResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		visitFrequencyResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		visitFrequencyResource.setRoleLocalService(_roleLocalService);
-		visitFrequencyResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			visitFrequencyResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			visitFrequencyResource.setContextCompany(company);
+
+			visitFrequencyResource.setContextHttpServletRequest(
+				httpServletRequest);
+			visitFrequencyResource.setContextHttpServletResponse(
+				httpServletResponse);
+			visitFrequencyResource.setContextUriInfo(uriInfo);
+			visitFrequencyResource.setContextUser(user);
+			visitFrequencyResource.setExpressionConvert(_expressionConvert);
+			visitFrequencyResource.setFilterParserProvider(
+				_filterParserProvider);
+			visitFrequencyResource.setGroupLocalService(_groupLocalService);
+			visitFrequencyResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			visitFrequencyResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			visitFrequencyResource.setRoleLocalService(_roleLocalService);
+			visitFrequencyResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(visitFrequencyResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -330,4 +334,4 @@ public class VisitFrequencyResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1014065735
+// LIFERAY-REST-BUILDER-HASH:-1738688954

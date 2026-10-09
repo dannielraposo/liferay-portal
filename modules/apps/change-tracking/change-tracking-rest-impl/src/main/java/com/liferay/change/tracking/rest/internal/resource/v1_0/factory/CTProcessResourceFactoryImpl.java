@@ -177,47 +177,50 @@ public class CTProcessResourceFactoryImpl implements CTProcessResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		CTProcessResource ctProcessResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		CTProcessResource ctProcessResource =
-			_componentServiceObjects.getService();
-
-		ctProcessResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		ctProcessResource.setContextCompany(company);
-
-		ctProcessResource.setContextHttpServletRequest(httpServletRequest);
-		ctProcessResource.setContextHttpServletResponse(httpServletResponse);
-		ctProcessResource.setContextUriInfo(uriInfo);
-		ctProcessResource.setContextUser(user);
-		ctProcessResource.setExpressionConvert(_expressionConvert);
-		ctProcessResource.setFilterParserProvider(_filterParserProvider);
-		ctProcessResource.setGroupLocalService(_groupLocalService);
-		ctProcessResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		ctProcessResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		ctProcessResource.setRoleLocalService(_roleLocalService);
-		ctProcessResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			ctProcessResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			ctProcessResource.setContextCompany(company);
+
+			ctProcessResource.setContextHttpServletRequest(httpServletRequest);
+			ctProcessResource.setContextHttpServletResponse(
+				httpServletResponse);
+			ctProcessResource.setContextUriInfo(uriInfo);
+			ctProcessResource.setContextUser(user);
+			ctProcessResource.setExpressionConvert(_expressionConvert);
+			ctProcessResource.setFilterParserProvider(_filterParserProvider);
+			ctProcessResource.setGroupLocalService(_groupLocalService);
+			ctProcessResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			ctProcessResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			ctProcessResource.setRoleLocalService(_roleLocalService);
+			ctProcessResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(ctProcessResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -326,4 +329,4 @@ public class CTProcessResourceFactoryImpl implements CTProcessResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:189278692
+// LIFERAY-REST-BUILDER-HASH:1715374769

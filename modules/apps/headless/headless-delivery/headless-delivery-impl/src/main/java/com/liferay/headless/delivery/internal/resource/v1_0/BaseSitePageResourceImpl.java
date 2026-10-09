@@ -14,7 +14,9 @@ import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
@@ -56,6 +58,7 @@ import java.io.Serializable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -444,6 +447,7 @@ public abstract class BaseSitePageResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/site-pages' -d $'{"customFields": ___, "datePublished": ___, "experience": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "pageDefinition": ___, "pagePermissions": ___, "pageSettings": ___, "pageType": ___, "parentSitePage": ___, "renderedPage": ___, "taxonomyCategoryBriefs": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPS-178052")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Adds a new site page"
 	)
@@ -479,6 +483,7 @@ public abstract class BaseSitePageResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/site-pages/batch'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPS-178052")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -626,7 +631,10 @@ public abstract class BaseSitePageResourceImpl
 		String createStrategy = (String)parameters.getOrDefault(
 			"createStrategy", "INSERT");
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT")) {
+		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT") &&
+			FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPS-178052")) {
+
 			if (parameters.containsKey("siteId")) {
 				sitePageUnsafeFunction = sitePage -> postSiteSitePage(
 					(Long)parameters.get("siteId"), sitePage);
@@ -669,7 +677,15 @@ public abstract class BaseSitePageResourceImpl
 	}
 
 	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
+		Set<String> createStrategies = new HashSet<>();
+
+		if (FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPS-178052")) {
+
+			createStrategies.add("INSERT");
+		}
+
+		return createStrategies;
 	}
 
 	public Set<String> getAvailableUpdateStrategies() {
@@ -1312,4 +1328,4 @@ public abstract class BaseSitePageResourceImpl
 		LogFactoryUtil.getLog(BaseSitePageResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-848090239
+// LIFERAY-REST-BUILDER-HASH:-1404522386

@@ -187,55 +187,60 @@ public class ProductConfigurationListOrderTypeResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		ProductConfigurationListOrderTypeResource
 			productConfigurationListOrderTypeResource =
 				_componentServiceObjects.getService();
 
-		productConfigurationListOrderTypeResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		productConfigurationListOrderTypeResource.setContextCompany(company);
-
-		productConfigurationListOrderTypeResource.setContextHttpServletRequest(
-			httpServletRequest);
-		productConfigurationListOrderTypeResource.setContextHttpServletResponse(
-			httpServletResponse);
-		productConfigurationListOrderTypeResource.setContextUriInfo(uriInfo);
-		productConfigurationListOrderTypeResource.setContextUser(user);
-		productConfigurationListOrderTypeResource.setExpressionConvert(
-			_expressionConvert);
-		productConfigurationListOrderTypeResource.setFilterParserProvider(
-			_filterParserProvider);
-		productConfigurationListOrderTypeResource.setGroupLocalService(
-			_groupLocalService);
-		productConfigurationListOrderTypeResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		productConfigurationListOrderTypeResource.
-			setResourcePermissionLocalService(_resourcePermissionLocalService);
-		productConfigurationListOrderTypeResource.setRoleLocalService(
-			_roleLocalService);
-		productConfigurationListOrderTypeResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			productConfigurationListOrderTypeResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			productConfigurationListOrderTypeResource.setContextCompany(
+				company);
+
+			productConfigurationListOrderTypeResource.
+				setContextHttpServletRequest(httpServletRequest);
+			productConfigurationListOrderTypeResource.
+				setContextHttpServletResponse(httpServletResponse);
+			productConfigurationListOrderTypeResource.setContextUriInfo(
+				uriInfo);
+			productConfigurationListOrderTypeResource.setContextUser(user);
+			productConfigurationListOrderTypeResource.setExpressionConvert(
+				_expressionConvert);
+			productConfigurationListOrderTypeResource.setFilterParserProvider(
+				_filterParserProvider);
+			productConfigurationListOrderTypeResource.setGroupLocalService(
+				_groupLocalService);
+			productConfigurationListOrderTypeResource.
+				setResourceActionLocalService(_resourceActionLocalService);
+			productConfigurationListOrderTypeResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			productConfigurationListOrderTypeResource.setRoleLocalService(
+				_roleLocalService);
+			productConfigurationListOrderTypeResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				productConfigurationListOrderTypeResource, arguments);
 		}
@@ -348,4 +353,4 @@ public class ProductConfigurationListOrderTypeResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-20947874
+// LIFERAY-REST-BUILDER-HASH:1061226585

@@ -179,50 +179,53 @@ public class InventoryAnalysisResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		InventoryAnalysisResource inventoryAnalysisResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		InventoryAnalysisResource inventoryAnalysisResource =
-			_componentServiceObjects.getService();
-
-		inventoryAnalysisResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		inventoryAnalysisResource.setContextCompany(company);
-
-		inventoryAnalysisResource.setContextHttpServletRequest(
-			httpServletRequest);
-		inventoryAnalysisResource.setContextHttpServletResponse(
-			httpServletResponse);
-		inventoryAnalysisResource.setContextUriInfo(uriInfo);
-		inventoryAnalysisResource.setContextUser(user);
-		inventoryAnalysisResource.setExpressionConvert(_expressionConvert);
-		inventoryAnalysisResource.setFilterParserProvider(
-			_filterParserProvider);
-		inventoryAnalysisResource.setGroupLocalService(_groupLocalService);
-		inventoryAnalysisResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		inventoryAnalysisResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		inventoryAnalysisResource.setRoleLocalService(_roleLocalService);
-		inventoryAnalysisResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			inventoryAnalysisResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			inventoryAnalysisResource.setContextCompany(company);
+
+			inventoryAnalysisResource.setContextHttpServletRequest(
+				httpServletRequest);
+			inventoryAnalysisResource.setContextHttpServletResponse(
+				httpServletResponse);
+			inventoryAnalysisResource.setContextUriInfo(uriInfo);
+			inventoryAnalysisResource.setContextUser(user);
+			inventoryAnalysisResource.setExpressionConvert(_expressionConvert);
+			inventoryAnalysisResource.setFilterParserProvider(
+				_filterParserProvider);
+			inventoryAnalysisResource.setGroupLocalService(_groupLocalService);
+			inventoryAnalysisResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			inventoryAnalysisResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			inventoryAnalysisResource.setRoleLocalService(_roleLocalService);
+			inventoryAnalysisResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(inventoryAnalysisResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -333,4 +336,4 @@ public class InventoryAnalysisResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1382977405
+// LIFERAY-REST-BUILDER-HASH:1207853068

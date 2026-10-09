@@ -188,55 +188,61 @@ public class ProductConfigurationListAccountGroupResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		ProductConfigurationListAccountGroupResource
 			productConfigurationListAccountGroupResource =
 				_componentServiceObjects.getService();
 
-		productConfigurationListAccountGroupResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		productConfigurationListAccountGroupResource.setContextCompany(company);
-
-		productConfigurationListAccountGroupResource.
-			setContextHttpServletRequest(httpServletRequest);
-		productConfigurationListAccountGroupResource.
-			setContextHttpServletResponse(httpServletResponse);
-		productConfigurationListAccountGroupResource.setContextUriInfo(uriInfo);
-		productConfigurationListAccountGroupResource.setContextUser(user);
-		productConfigurationListAccountGroupResource.setExpressionConvert(
-			_expressionConvert);
-		productConfigurationListAccountGroupResource.setFilterParserProvider(
-			_filterParserProvider);
-		productConfigurationListAccountGroupResource.setGroupLocalService(
-			_groupLocalService);
-		productConfigurationListAccountGroupResource.
-			setResourceActionLocalService(_resourceActionLocalService);
-		productConfigurationListAccountGroupResource.
-			setResourcePermissionLocalService(_resourcePermissionLocalService);
-		productConfigurationListAccountGroupResource.setRoleLocalService(
-			_roleLocalService);
-		productConfigurationListAccountGroupResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			productConfigurationListAccountGroupResource.
+				setContextAcceptLanguage(
+					new AcceptLanguageImpl(
+						httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			productConfigurationListAccountGroupResource.setContextCompany(
+				company);
+
+			productConfigurationListAccountGroupResource.
+				setContextHttpServletRequest(httpServletRequest);
+			productConfigurationListAccountGroupResource.
+				setContextHttpServletResponse(httpServletResponse);
+			productConfigurationListAccountGroupResource.setContextUriInfo(
+				uriInfo);
+			productConfigurationListAccountGroupResource.setContextUser(user);
+			productConfigurationListAccountGroupResource.setExpressionConvert(
+				_expressionConvert);
+			productConfigurationListAccountGroupResource.
+				setFilterParserProvider(_filterParserProvider);
+			productConfigurationListAccountGroupResource.setGroupLocalService(
+				_groupLocalService);
+			productConfigurationListAccountGroupResource.
+				setResourceActionLocalService(_resourceActionLocalService);
+			productConfigurationListAccountGroupResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			productConfigurationListAccountGroupResource.setRoleLocalService(
+				_roleLocalService);
+			productConfigurationListAccountGroupResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				productConfigurationListAccountGroupResource, arguments);
 		}
@@ -349,4 +355,4 @@ public class ProductConfigurationListAccountGroupResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-5313042
+// LIFERAY-REST-BUILDER-HASH:-8947225

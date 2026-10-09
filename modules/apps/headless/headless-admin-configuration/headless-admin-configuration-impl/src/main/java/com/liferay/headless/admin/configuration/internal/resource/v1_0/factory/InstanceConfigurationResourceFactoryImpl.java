@@ -27,12 +27,14 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import jakarta.annotation.Generated;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Constructor;
@@ -181,51 +183,66 @@ public class InstanceConfigurationResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		InstanceConfigurationResource instanceConfigurationResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		InstanceConfigurationResource instanceConfigurationResource =
-			_componentServiceObjects.getService();
-
-		instanceConfigurationResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		instanceConfigurationResource.setContextCompany(company);
-
-		instanceConfigurationResource.setContextHttpServletRequest(
-			httpServletRequest);
-		instanceConfigurationResource.setContextHttpServletResponse(
-			httpServletResponse);
-		instanceConfigurationResource.setContextUriInfo(uriInfo);
-		instanceConfigurationResource.setContextUser(user);
-		instanceConfigurationResource.setExpressionConvert(_expressionConvert);
-		instanceConfigurationResource.setFilterParserProvider(
-			_filterParserProvider);
-		instanceConfigurationResource.setGroupLocalService(_groupLocalService);
-		instanceConfigurationResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		instanceConfigurationResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		instanceConfigurationResource.setRoleLocalService(_roleLocalService);
-		instanceConfigurationResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			Class<?> clazz = instanceConfigurationResource.getClass();
+
+			if (!_featureFlagChecker.isEnabled(
+					user.getCompanyId(),
+					clazz.getMethod(
+						method.getName(), method.getParameterTypes()))) {
+
+				throw new NotFoundException();
+			}
+
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			instanceConfigurationResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			instanceConfigurationResource.setContextCompany(company);
+
+			instanceConfigurationResource.setContextHttpServletRequest(
+				httpServletRequest);
+			instanceConfigurationResource.setContextHttpServletResponse(
+				httpServletResponse);
+			instanceConfigurationResource.setContextUriInfo(uriInfo);
+			instanceConfigurationResource.setContextUser(user);
+			instanceConfigurationResource.setExpressionConvert(
+				_expressionConvert);
+			instanceConfigurationResource.setFilterParserProvider(
+				_filterParserProvider);
+			instanceConfigurationResource.setGroupLocalService(
+				_groupLocalService);
+			instanceConfigurationResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			instanceConfigurationResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			instanceConfigurationResource.setRoleLocalService(
+				_roleLocalService);
+			instanceConfigurationResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(instanceConfigurationResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -255,6 +272,9 @@ public class InstanceConfigurationResourceFactoryImpl
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
@@ -337,4 +357,4 @@ public class InstanceConfigurationResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-165902088
+// LIFERAY-REST-BUILDER-HASH:-256850019

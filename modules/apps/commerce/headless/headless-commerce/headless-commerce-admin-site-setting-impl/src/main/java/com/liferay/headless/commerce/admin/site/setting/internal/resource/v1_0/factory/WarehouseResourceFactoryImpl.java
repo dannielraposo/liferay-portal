@@ -177,47 +177,50 @@ public class WarehouseResourceFactoryImpl implements WarehouseResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		WarehouseResource warehouseResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		WarehouseResource warehouseResource =
-			_componentServiceObjects.getService();
-
-		warehouseResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		warehouseResource.setContextCompany(company);
-
-		warehouseResource.setContextHttpServletRequest(httpServletRequest);
-		warehouseResource.setContextHttpServletResponse(httpServletResponse);
-		warehouseResource.setContextUriInfo(uriInfo);
-		warehouseResource.setContextUser(user);
-		warehouseResource.setExpressionConvert(_expressionConvert);
-		warehouseResource.setFilterParserProvider(_filterParserProvider);
-		warehouseResource.setGroupLocalService(_groupLocalService);
-		warehouseResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		warehouseResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		warehouseResource.setRoleLocalService(_roleLocalService);
-		warehouseResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			warehouseResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			warehouseResource.setContextCompany(company);
+
+			warehouseResource.setContextHttpServletRequest(httpServletRequest);
+			warehouseResource.setContextHttpServletResponse(
+				httpServletResponse);
+			warehouseResource.setContextUriInfo(uriInfo);
+			warehouseResource.setContextUser(user);
+			warehouseResource.setExpressionConvert(_expressionConvert);
+			warehouseResource.setFilterParserProvider(_filterParserProvider);
+			warehouseResource.setGroupLocalService(_groupLocalService);
+			warehouseResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			warehouseResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			warehouseResource.setRoleLocalService(_roleLocalService);
+			warehouseResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(warehouseResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -326,4 +329,4 @@ public class WarehouseResourceFactoryImpl implements WarehouseResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-859619197
+// LIFERAY-REST-BUILDER-HASH:1915455246

@@ -12,7 +12,9 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
@@ -54,6 +56,7 @@ import java.io.Serializable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -74,6 +77,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-admin-site/v1.0/design-libraries/{designLibraryExternalReferenceCode}/style-books/{styleBookExternalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Deletes a specific style book of a design library."
 	)
@@ -115,6 +119,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/style-books/{styleBookExternalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Deletes a specific style book of a site."
 	)
@@ -156,6 +161,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-site/v1.0/design-libraries/{designLibraryExternalReferenceCode}/style-books/{styleBookExternalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves a specific style book of a design library."
 	)
@@ -211,6 +217,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-site/v1.0/design-libraries/{designLibraryExternalReferenceCode}/style-books'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves the style books of a design library."
 	)
@@ -292,6 +299,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/page-specifications/{pageSpecificationExternalReferenceCode}/style-books'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves the style books that can be assigned to the page specification."
 	)
@@ -355,6 +363,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/style-books/{styleBookExternalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves a specific style book of a site."
 	)
@@ -410,6 +419,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/style-books'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves the style books of the site."
 	)
@@ -489,6 +499,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-admin-site/v1.0/design-libraries/{designLibraryExternalReferenceCode}/style-books/{styleBookExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "defaultStyleBook": ___, "externalReferenceCode": ___, "frontendTokensValues": ___, "key": ___, "name": ___, "previewFileEntryExternalReferenceCode": ___, "scope": ___, "themeId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates only the fields received in the request body, leaving any other fields untouched."
 	)
@@ -597,6 +608,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/style-books/{styleBookExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "defaultStyleBook": ___, "externalReferenceCode": ___, "frontendTokensValues": ___, "key": ___, "name": ___, "previewFileEntryExternalReferenceCode": ___, "scope": ___, "themeId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates only the fields received in the request body, leaving any other fields untouched."
 	)
@@ -705,6 +717,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-site/v1.0/design-libraries/{designLibraryExternalReferenceCode}/style-books' -d $'{"dateCreated": ___, "dateModified": ___, "defaultStyleBook": ___, "externalReferenceCode": ___, "frontendTokensValues": ___, "key": ___, "name": ___, "previewFileEntryExternalReferenceCode": ___, "scope": ___, "themeId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Adds a new style book to a design library."
 	)
@@ -742,6 +755,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/style-books' -d $'{"dateCreated": ___, "dateModified": ___, "defaultStyleBook": ___, "externalReferenceCode": ___, "frontendTokensValues": ___, "key": ___, "name": ___, "previewFileEntryExternalReferenceCode": ___, "scope": ___, "themeId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Adds a new style book."
 	)
@@ -777,6 +791,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/style-books/batch'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -829,6 +844,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/style-books/export-batch'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -918,6 +934,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-admin-site/v1.0/design-libraries/{designLibraryExternalReferenceCode}/style-books/{styleBookExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "defaultStyleBook": ___, "externalReferenceCode": ___, "frontendTokensValues": ___, "key": ___, "name": ___, "previewFileEntryExternalReferenceCode": ___, "scope": ___, "themeId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates the style book with the given external reference code, or creates it if it does not exist."
 	)
@@ -975,6 +992,7 @@ public abstract class BaseStyleBookResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/style-books/{styleBookExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "defaultStyleBook": ___, "externalReferenceCode": ___, "frontendTokensValues": ___, "key": ___, "name": ___, "previewFileEntryExternalReferenceCode": ___, "scope": ___, "themeId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-57283")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates the style book with the given external reference code, or creates it if it does not exist."
 	)
@@ -1040,7 +1058,10 @@ public abstract class BaseStyleBookResourceImpl
 		String createStrategy = (String)parameters.getOrDefault(
 			"createStrategy", "INSERT");
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT")) {
+		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT") &&
+			FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-57283")) {
+
 			if (parameters.containsKey("siteExternalReferenceCode")) {
 				styleBookUnsafeFunction = styleBook -> postSiteStyleBook(
 					(String)parameters.get("siteExternalReferenceCode"),
@@ -1052,7 +1073,10 @@ public abstract class BaseStyleBookResourceImpl
 			}
 		}
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
+		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT") &&
+			FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-57283")) {
+
 			String updateStrategy = (String)parameters.getOrDefault(
 				"updateStrategy", "UPDATE");
 
@@ -1102,6 +1126,13 @@ public abstract class BaseStyleBookResourceImpl
 			Map<String, Serializable> parameters)
 		throws Exception {
 
+		if (!FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-57283")) {
+
+			throw new UnsupportedOperationException(
+				"This method needs to be implemented");
+		}
+
 		UnsafeFunction<StyleBook, StyleBook, Exception>
 			styleBookUnsafeFunction = styleBook -> {
 				if (parameters.containsKey("siteExternalReferenceCode")) {
@@ -1132,7 +1163,16 @@ public abstract class BaseStyleBookResourceImpl
 	}
 
 	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
+		Set<String> createStrategies = new HashSet<>();
+
+		if (FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-57283")) {
+
+			createStrategies.add("INSERT");
+			createStrategies.add("UPSERT");
+		}
+
+		return createStrategies;
 	}
 
 	public Set<String> getAvailableUpdateStrategies() {
@@ -1162,6 +1202,13 @@ public abstract class BaseStyleBookResourceImpl
 			com.liferay.portal.kernel.search.Sort[] sorts,
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled(
+				CompanyThreadLocal.getCompanyId(), "LPD-57283")) {
+
+			throw new UnsupportedOperationException(
+				"This method needs to be implemented");
+		}
 
 		if (parameters.containsKey("siteExternalReferenceCode")) {
 			return getSiteStyleBooksPage(
@@ -1779,4 +1826,4 @@ public abstract class BaseStyleBookResourceImpl
 		LogFactoryUtil.getLog(BaseStyleBookResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1502766915
+// LIFERAY-REST-BUILDER-HASH:-1913165673

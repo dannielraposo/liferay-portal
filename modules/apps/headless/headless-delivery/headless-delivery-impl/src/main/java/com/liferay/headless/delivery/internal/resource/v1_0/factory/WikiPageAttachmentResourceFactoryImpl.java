@@ -179,50 +179,53 @@ public class WikiPageAttachmentResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		WikiPageAttachmentResource wikiPageAttachmentResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		WikiPageAttachmentResource wikiPageAttachmentResource =
-			_componentServiceObjects.getService();
-
-		wikiPageAttachmentResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		wikiPageAttachmentResource.setContextCompany(company);
-
-		wikiPageAttachmentResource.setContextHttpServletRequest(
-			httpServletRequest);
-		wikiPageAttachmentResource.setContextHttpServletResponse(
-			httpServletResponse);
-		wikiPageAttachmentResource.setContextUriInfo(uriInfo);
-		wikiPageAttachmentResource.setContextUser(user);
-		wikiPageAttachmentResource.setExpressionConvert(_expressionConvert);
-		wikiPageAttachmentResource.setFilterParserProvider(
-			_filterParserProvider);
-		wikiPageAttachmentResource.setGroupLocalService(_groupLocalService);
-		wikiPageAttachmentResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		wikiPageAttachmentResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		wikiPageAttachmentResource.setRoleLocalService(_roleLocalService);
-		wikiPageAttachmentResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			wikiPageAttachmentResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			wikiPageAttachmentResource.setContextCompany(company);
+
+			wikiPageAttachmentResource.setContextHttpServletRequest(
+				httpServletRequest);
+			wikiPageAttachmentResource.setContextHttpServletResponse(
+				httpServletResponse);
+			wikiPageAttachmentResource.setContextUriInfo(uriInfo);
+			wikiPageAttachmentResource.setContextUser(user);
+			wikiPageAttachmentResource.setExpressionConvert(_expressionConvert);
+			wikiPageAttachmentResource.setFilterParserProvider(
+				_filterParserProvider);
+			wikiPageAttachmentResource.setGroupLocalService(_groupLocalService);
+			wikiPageAttachmentResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			wikiPageAttachmentResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			wikiPageAttachmentResource.setRoleLocalService(_roleLocalService);
+			wikiPageAttachmentResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(wikiPageAttachmentResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -333,4 +336,4 @@ public class WikiPageAttachmentResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1893026102
+// LIFERAY-REST-BUILDER-HASH:-1900304007

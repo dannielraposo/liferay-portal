@@ -1317,4 +1317,4 @@ public abstract class BaseTierPriceResourceImpl
 		LogFactoryUtil.getLog(BaseTierPriceResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:774461973
+// LIFERAY-REST-BUILDER-HASH:619458824

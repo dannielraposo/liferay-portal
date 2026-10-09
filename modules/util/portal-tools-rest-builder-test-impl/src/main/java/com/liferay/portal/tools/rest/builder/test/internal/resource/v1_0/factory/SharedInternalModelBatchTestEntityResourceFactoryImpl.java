@@ -188,55 +188,60 @@ public class SharedInternalModelBatchTestEntityResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		SharedInternalModelBatchTestEntityResource
 			sharedInternalModelBatchTestEntityResource =
 				_componentServiceObjects.getService();
 
-		sharedInternalModelBatchTestEntityResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		sharedInternalModelBatchTestEntityResource.setContextCompany(company);
-
-		sharedInternalModelBatchTestEntityResource.setContextHttpServletRequest(
-			httpServletRequest);
-		sharedInternalModelBatchTestEntityResource.
-			setContextHttpServletResponse(httpServletResponse);
-		sharedInternalModelBatchTestEntityResource.setContextUriInfo(uriInfo);
-		sharedInternalModelBatchTestEntityResource.setContextUser(user);
-		sharedInternalModelBatchTestEntityResource.setExpressionConvert(
-			_expressionConvert);
-		sharedInternalModelBatchTestEntityResource.setFilterParserProvider(
-			_filterParserProvider);
-		sharedInternalModelBatchTestEntityResource.setGroupLocalService(
-			_groupLocalService);
-		sharedInternalModelBatchTestEntityResource.
-			setResourceActionLocalService(_resourceActionLocalService);
-		sharedInternalModelBatchTestEntityResource.
-			setResourcePermissionLocalService(_resourcePermissionLocalService);
-		sharedInternalModelBatchTestEntityResource.setRoleLocalService(
-			_roleLocalService);
-		sharedInternalModelBatchTestEntityResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			sharedInternalModelBatchTestEntityResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			sharedInternalModelBatchTestEntityResource.setContextCompany(
+				company);
+
+			sharedInternalModelBatchTestEntityResource.
+				setContextHttpServletRequest(httpServletRequest);
+			sharedInternalModelBatchTestEntityResource.
+				setContextHttpServletResponse(httpServletResponse);
+			sharedInternalModelBatchTestEntityResource.setContextUriInfo(
+				uriInfo);
+			sharedInternalModelBatchTestEntityResource.setContextUser(user);
+			sharedInternalModelBatchTestEntityResource.setExpressionConvert(
+				_expressionConvert);
+			sharedInternalModelBatchTestEntityResource.setFilterParserProvider(
+				_filterParserProvider);
+			sharedInternalModelBatchTestEntityResource.setGroupLocalService(
+				_groupLocalService);
+			sharedInternalModelBatchTestEntityResource.
+				setResourceActionLocalService(_resourceActionLocalService);
+			sharedInternalModelBatchTestEntityResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			sharedInternalModelBatchTestEntityResource.setRoleLocalService(
+				_roleLocalService);
+			sharedInternalModelBatchTestEntityResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				sharedInternalModelBatchTestEntityResource, arguments);
 		}
@@ -349,4 +354,4 @@ public class SharedInternalModelBatchTestEntityResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1590865998
+// LIFERAY-REST-BUILDER-HASH:993445565

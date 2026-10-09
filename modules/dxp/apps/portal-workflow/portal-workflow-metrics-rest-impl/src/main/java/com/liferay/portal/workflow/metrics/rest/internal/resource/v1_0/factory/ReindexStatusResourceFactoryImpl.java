@@ -179,48 +179,52 @@ public class ReindexStatusResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		ReindexStatusResource reindexStatusResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		ReindexStatusResource reindexStatusResource =
-			_componentServiceObjects.getService();
-
-		reindexStatusResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		reindexStatusResource.setContextCompany(company);
-
-		reindexStatusResource.setContextHttpServletRequest(httpServletRequest);
-		reindexStatusResource.setContextHttpServletResponse(
-			httpServletResponse);
-		reindexStatusResource.setContextUriInfo(uriInfo);
-		reindexStatusResource.setContextUser(user);
-		reindexStatusResource.setExpressionConvert(_expressionConvert);
-		reindexStatusResource.setFilterParserProvider(_filterParserProvider);
-		reindexStatusResource.setGroupLocalService(_groupLocalService);
-		reindexStatusResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		reindexStatusResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		reindexStatusResource.setRoleLocalService(_roleLocalService);
-		reindexStatusResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			reindexStatusResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			reindexStatusResource.setContextCompany(company);
+
+			reindexStatusResource.setContextHttpServletRequest(
+				httpServletRequest);
+			reindexStatusResource.setContextHttpServletResponse(
+				httpServletResponse);
+			reindexStatusResource.setContextUriInfo(uriInfo);
+			reindexStatusResource.setContextUser(user);
+			reindexStatusResource.setExpressionConvert(_expressionConvert);
+			reindexStatusResource.setFilterParserProvider(
+				_filterParserProvider);
+			reindexStatusResource.setGroupLocalService(_groupLocalService);
+			reindexStatusResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			reindexStatusResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			reindexStatusResource.setRoleLocalService(_roleLocalService);
+			reindexStatusResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(reindexStatusResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -330,4 +334,4 @@ public class ReindexStatusResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-742673643
+// LIFERAY-REST-BUILDER-HASH:-70939260

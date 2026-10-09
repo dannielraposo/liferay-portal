@@ -182,53 +182,56 @@ public class AccountCategoryForecastResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		AccountCategoryForecastResource accountCategoryForecastResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		AccountCategoryForecastResource accountCategoryForecastResource =
-			_componentServiceObjects.getService();
-
-		accountCategoryForecastResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		accountCategoryForecastResource.setContextCompany(company);
-
-		accountCategoryForecastResource.setContextHttpServletRequest(
-			httpServletRequest);
-		accountCategoryForecastResource.setContextHttpServletResponse(
-			httpServletResponse);
-		accountCategoryForecastResource.setContextUriInfo(uriInfo);
-		accountCategoryForecastResource.setContextUser(user);
-		accountCategoryForecastResource.setExpressionConvert(
-			_expressionConvert);
-		accountCategoryForecastResource.setFilterParserProvider(
-			_filterParserProvider);
-		accountCategoryForecastResource.setGroupLocalService(
-			_groupLocalService);
-		accountCategoryForecastResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		accountCategoryForecastResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		accountCategoryForecastResource.setRoleLocalService(_roleLocalService);
-		accountCategoryForecastResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			accountCategoryForecastResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			accountCategoryForecastResource.setContextCompany(company);
+
+			accountCategoryForecastResource.setContextHttpServletRequest(
+				httpServletRequest);
+			accountCategoryForecastResource.setContextHttpServletResponse(
+				httpServletResponse);
+			accountCategoryForecastResource.setContextUriInfo(uriInfo);
+			accountCategoryForecastResource.setContextUser(user);
+			accountCategoryForecastResource.setExpressionConvert(
+				_expressionConvert);
+			accountCategoryForecastResource.setFilterParserProvider(
+				_filterParserProvider);
+			accountCategoryForecastResource.setGroupLocalService(
+				_groupLocalService);
+			accountCategoryForecastResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			accountCategoryForecastResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			accountCategoryForecastResource.setRoleLocalService(
+				_roleLocalService);
+			accountCategoryForecastResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(accountCategoryForecastResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -340,4 +343,4 @@ public class AccountCategoryForecastResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1580845464
+// LIFERAY-REST-BUILDER-HASH:-1198824795

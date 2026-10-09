@@ -179,47 +179,50 @@ public class DSEnvelopeResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		DSEnvelopeResource dsEnvelopeResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		DSEnvelopeResource dsEnvelopeResource =
-			_componentServiceObjects.getService();
-
-		dsEnvelopeResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		dsEnvelopeResource.setContextCompany(company);
-
-		dsEnvelopeResource.setContextHttpServletRequest(httpServletRequest);
-		dsEnvelopeResource.setContextHttpServletResponse(httpServletResponse);
-		dsEnvelopeResource.setContextUriInfo(uriInfo);
-		dsEnvelopeResource.setContextUser(user);
-		dsEnvelopeResource.setExpressionConvert(_expressionConvert);
-		dsEnvelopeResource.setFilterParserProvider(_filterParserProvider);
-		dsEnvelopeResource.setGroupLocalService(_groupLocalService);
-		dsEnvelopeResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		dsEnvelopeResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		dsEnvelopeResource.setRoleLocalService(_roleLocalService);
-		dsEnvelopeResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			dsEnvelopeResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			dsEnvelopeResource.setContextCompany(company);
+
+			dsEnvelopeResource.setContextHttpServletRequest(httpServletRequest);
+			dsEnvelopeResource.setContextHttpServletResponse(
+				httpServletResponse);
+			dsEnvelopeResource.setContextUriInfo(uriInfo);
+			dsEnvelopeResource.setContextUser(user);
+			dsEnvelopeResource.setExpressionConvert(_expressionConvert);
+			dsEnvelopeResource.setFilterParserProvider(_filterParserProvider);
+			dsEnvelopeResource.setGroupLocalService(_groupLocalService);
+			dsEnvelopeResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			dsEnvelopeResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			dsEnvelopeResource.setRoleLocalService(_roleLocalService);
+			dsEnvelopeResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(dsEnvelopeResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -329,4 +332,4 @@ public class DSEnvelopeResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:931530923
+// LIFERAY-REST-BUILDER-HASH:2075966980

@@ -186,55 +186,58 @@ public class SkuSubscriptionConfigurationResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		SkuSubscriptionConfigurationResource
 			skuSubscriptionConfigurationResource =
 				_componentServiceObjects.getService();
 
-		skuSubscriptionConfigurationResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		skuSubscriptionConfigurationResource.setContextCompany(company);
-
-		skuSubscriptionConfigurationResource.setContextHttpServletRequest(
-			httpServletRequest);
-		skuSubscriptionConfigurationResource.setContextHttpServletResponse(
-			httpServletResponse);
-		skuSubscriptionConfigurationResource.setContextUriInfo(uriInfo);
-		skuSubscriptionConfigurationResource.setContextUser(user);
-		skuSubscriptionConfigurationResource.setExpressionConvert(
-			_expressionConvert);
-		skuSubscriptionConfigurationResource.setFilterParserProvider(
-			_filterParserProvider);
-		skuSubscriptionConfigurationResource.setGroupLocalService(
-			_groupLocalService);
-		skuSubscriptionConfigurationResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		skuSubscriptionConfigurationResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		skuSubscriptionConfigurationResource.setRoleLocalService(
-			_roleLocalService);
-		skuSubscriptionConfigurationResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			skuSubscriptionConfigurationResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			skuSubscriptionConfigurationResource.setContextCompany(company);
+
+			skuSubscriptionConfigurationResource.setContextHttpServletRequest(
+				httpServletRequest);
+			skuSubscriptionConfigurationResource.setContextHttpServletResponse(
+				httpServletResponse);
+			skuSubscriptionConfigurationResource.setContextUriInfo(uriInfo);
+			skuSubscriptionConfigurationResource.setContextUser(user);
+			skuSubscriptionConfigurationResource.setExpressionConvert(
+				_expressionConvert);
+			skuSubscriptionConfigurationResource.setFilterParserProvider(
+				_filterParserProvider);
+			skuSubscriptionConfigurationResource.setGroupLocalService(
+				_groupLocalService);
+			skuSubscriptionConfigurationResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			skuSubscriptionConfigurationResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			skuSubscriptionConfigurationResource.setRoleLocalService(
+				_roleLocalService);
+			skuSubscriptionConfigurationResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				skuSubscriptionConfigurationResource, arguments);
 		}
@@ -347,4 +350,4 @@ public class SkuSubscriptionConfigurationResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-983537065
+// LIFERAY-REST-BUILDER-HASH:-1583579318

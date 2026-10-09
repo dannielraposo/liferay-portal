@@ -183,54 +183,56 @@ public class PaymentMethodGroupRelTermResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		PaymentMethodGroupRelTermResource paymentMethodGroupRelTermResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		PaymentMethodGroupRelTermResource paymentMethodGroupRelTermResource =
-			_componentServiceObjects.getService();
-
-		paymentMethodGroupRelTermResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		paymentMethodGroupRelTermResource.setContextCompany(company);
-
-		paymentMethodGroupRelTermResource.setContextHttpServletRequest(
-			httpServletRequest);
-		paymentMethodGroupRelTermResource.setContextHttpServletResponse(
-			httpServletResponse);
-		paymentMethodGroupRelTermResource.setContextUriInfo(uriInfo);
-		paymentMethodGroupRelTermResource.setContextUser(user);
-		paymentMethodGroupRelTermResource.setExpressionConvert(
-			_expressionConvert);
-		paymentMethodGroupRelTermResource.setFilterParserProvider(
-			_filterParserProvider);
-		paymentMethodGroupRelTermResource.setGroupLocalService(
-			_groupLocalService);
-		paymentMethodGroupRelTermResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		paymentMethodGroupRelTermResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		paymentMethodGroupRelTermResource.setRoleLocalService(
-			_roleLocalService);
-		paymentMethodGroupRelTermResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			paymentMethodGroupRelTermResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			paymentMethodGroupRelTermResource.setContextCompany(company);
+
+			paymentMethodGroupRelTermResource.setContextHttpServletRequest(
+				httpServletRequest);
+			paymentMethodGroupRelTermResource.setContextHttpServletResponse(
+				httpServletResponse);
+			paymentMethodGroupRelTermResource.setContextUriInfo(uriInfo);
+			paymentMethodGroupRelTermResource.setContextUser(user);
+			paymentMethodGroupRelTermResource.setExpressionConvert(
+				_expressionConvert);
+			paymentMethodGroupRelTermResource.setFilterParserProvider(
+				_filterParserProvider);
+			paymentMethodGroupRelTermResource.setGroupLocalService(
+				_groupLocalService);
+			paymentMethodGroupRelTermResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			paymentMethodGroupRelTermResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			paymentMethodGroupRelTermResource.setRoleLocalService(
+				_roleLocalService);
+			paymentMethodGroupRelTermResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(paymentMethodGroupRelTermResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -342,4 +344,4 @@ public class PaymentMethodGroupRelTermResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-2066968667
+// LIFERAY-REST-BUILDER-HASH:-1807619524

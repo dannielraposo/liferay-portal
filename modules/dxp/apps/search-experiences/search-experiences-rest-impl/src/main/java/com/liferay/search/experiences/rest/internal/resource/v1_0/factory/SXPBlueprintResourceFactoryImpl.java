@@ -179,47 +179,51 @@ public class SXPBlueprintResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		SXPBlueprintResource sxpBlueprintResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		SXPBlueprintResource sxpBlueprintResource =
-			_componentServiceObjects.getService();
-
-		sxpBlueprintResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		sxpBlueprintResource.setContextCompany(company);
-
-		sxpBlueprintResource.setContextHttpServletRequest(httpServletRequest);
-		sxpBlueprintResource.setContextHttpServletResponse(httpServletResponse);
-		sxpBlueprintResource.setContextUriInfo(uriInfo);
-		sxpBlueprintResource.setContextUser(user);
-		sxpBlueprintResource.setExpressionConvert(_expressionConvert);
-		sxpBlueprintResource.setFilterParserProvider(_filterParserProvider);
-		sxpBlueprintResource.setGroupLocalService(_groupLocalService);
-		sxpBlueprintResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		sxpBlueprintResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		sxpBlueprintResource.setRoleLocalService(_roleLocalService);
-		sxpBlueprintResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			sxpBlueprintResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			sxpBlueprintResource.setContextCompany(company);
+
+			sxpBlueprintResource.setContextHttpServletRequest(
+				httpServletRequest);
+			sxpBlueprintResource.setContextHttpServletResponse(
+				httpServletResponse);
+			sxpBlueprintResource.setContextUriInfo(uriInfo);
+			sxpBlueprintResource.setContextUser(user);
+			sxpBlueprintResource.setExpressionConvert(_expressionConvert);
+			sxpBlueprintResource.setFilterParserProvider(_filterParserProvider);
+			sxpBlueprintResource.setGroupLocalService(_groupLocalService);
+			sxpBlueprintResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			sxpBlueprintResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			sxpBlueprintResource.setRoleLocalService(_roleLocalService);
+			sxpBlueprintResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(sxpBlueprintResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -329,4 +333,4 @@ public class SXPBlueprintResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:105829334
+// LIFERAY-REST-BUILDER-HASH:758578033

@@ -183,55 +183,58 @@ public class RecommendationConfigurationResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		RecommendationConfigurationResource
 			recommendationConfigurationResource =
 				_componentServiceObjects.getService();
 
-		recommendationConfigurationResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		recommendationConfigurationResource.setContextCompany(company);
-
-		recommendationConfigurationResource.setContextHttpServletRequest(
-			httpServletRequest);
-		recommendationConfigurationResource.setContextHttpServletResponse(
-			httpServletResponse);
-		recommendationConfigurationResource.setContextUriInfo(uriInfo);
-		recommendationConfigurationResource.setContextUser(user);
-		recommendationConfigurationResource.setExpressionConvert(
-			_expressionConvert);
-		recommendationConfigurationResource.setFilterParserProvider(
-			_filterParserProvider);
-		recommendationConfigurationResource.setGroupLocalService(
-			_groupLocalService);
-		recommendationConfigurationResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		recommendationConfigurationResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		recommendationConfigurationResource.setRoleLocalService(
-			_roleLocalService);
-		recommendationConfigurationResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			recommendationConfigurationResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			recommendationConfigurationResource.setContextCompany(company);
+
+			recommendationConfigurationResource.setContextHttpServletRequest(
+				httpServletRequest);
+			recommendationConfigurationResource.setContextHttpServletResponse(
+				httpServletResponse);
+			recommendationConfigurationResource.setContextUriInfo(uriInfo);
+			recommendationConfigurationResource.setContextUser(user);
+			recommendationConfigurationResource.setExpressionConvert(
+				_expressionConvert);
+			recommendationConfigurationResource.setFilterParserProvider(
+				_filterParserProvider);
+			recommendationConfigurationResource.setGroupLocalService(
+				_groupLocalService);
+			recommendationConfigurationResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			recommendationConfigurationResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			recommendationConfigurationResource.setRoleLocalService(
+				_roleLocalService);
+			recommendationConfigurationResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				recommendationConfigurationResource, arguments);
 		}
@@ -344,4 +347,4 @@ public class RecommendationConfigurationResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1228430484
+// LIFERAY-REST-BUILDER-HASH:955619355

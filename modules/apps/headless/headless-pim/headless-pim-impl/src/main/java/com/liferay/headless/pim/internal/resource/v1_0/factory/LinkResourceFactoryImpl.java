@@ -27,12 +27,14 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import jakarta.annotation.Generated;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Constructor;
@@ -177,45 +179,58 @@ public class LinkResourceFactoryImpl implements LinkResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		LinkResource linkResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		LinkResource linkResource = _componentServiceObjects.getService();
-
-		linkResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		linkResource.setContextCompany(company);
-
-		linkResource.setContextHttpServletRequest(httpServletRequest);
-		linkResource.setContextHttpServletResponse(httpServletResponse);
-		linkResource.setContextUriInfo(uriInfo);
-		linkResource.setContextUser(user);
-		linkResource.setExpressionConvert(_expressionConvert);
-		linkResource.setFilterParserProvider(_filterParserProvider);
-		linkResource.setGroupLocalService(_groupLocalService);
-		linkResource.setResourceActionLocalService(_resourceActionLocalService);
-		linkResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		linkResource.setRoleLocalService(_roleLocalService);
-		linkResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			Class<?> clazz = linkResource.getClass();
+
+			if (!_featureFlagChecker.isEnabled(
+					user.getCompanyId(),
+					clazz.getMethod(
+						method.getName(), method.getParameterTypes()))) {
+
+				throw new NotFoundException();
+			}
+
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			linkResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			linkResource.setContextCompany(company);
+
+			linkResource.setContextHttpServletRequest(httpServletRequest);
+			linkResource.setContextHttpServletResponse(httpServletResponse);
+			linkResource.setContextUriInfo(uriInfo);
+			linkResource.setContextUser(user);
+			linkResource.setExpressionConvert(_expressionConvert);
+			linkResource.setFilterParserProvider(_filterParserProvider);
+			linkResource.setGroupLocalService(_groupLocalService);
+			linkResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			linkResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			linkResource.setRoleLocalService(_roleLocalService);
+			linkResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(linkResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -243,6 +258,9 @@ public class LinkResourceFactoryImpl implements LinkResource.Factory {
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
@@ -323,4 +341,4 @@ public class LinkResourceFactoryImpl implements LinkResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1020225311
+// LIFERAY-REST-BUILDER-HASH:450191247

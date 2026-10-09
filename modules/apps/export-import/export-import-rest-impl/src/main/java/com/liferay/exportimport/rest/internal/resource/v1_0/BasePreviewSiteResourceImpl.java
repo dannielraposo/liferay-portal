@@ -853,4 +853,4 @@ public abstract class BasePreviewSiteResourceImpl
 		LogFactoryUtil.getLog(BasePreviewSiteResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1328620091
+// LIFERAY-REST-BUILDER-HASH:878101236

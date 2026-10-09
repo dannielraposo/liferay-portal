@@ -179,49 +179,52 @@ public class HistogramMetricResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		HistogramMetricResource histogramMetricResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		HistogramMetricResource histogramMetricResource =
-			_componentServiceObjects.getService();
-
-		histogramMetricResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		histogramMetricResource.setContextCompany(company);
-
-		histogramMetricResource.setContextHttpServletRequest(
-			httpServletRequest);
-		histogramMetricResource.setContextHttpServletResponse(
-			httpServletResponse);
-		histogramMetricResource.setContextUriInfo(uriInfo);
-		histogramMetricResource.setContextUser(user);
-		histogramMetricResource.setExpressionConvert(_expressionConvert);
-		histogramMetricResource.setFilterParserProvider(_filterParserProvider);
-		histogramMetricResource.setGroupLocalService(_groupLocalService);
-		histogramMetricResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		histogramMetricResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		histogramMetricResource.setRoleLocalService(_roleLocalService);
-		histogramMetricResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			histogramMetricResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			histogramMetricResource.setContextCompany(company);
+
+			histogramMetricResource.setContextHttpServletRequest(
+				httpServletRequest);
+			histogramMetricResource.setContextHttpServletResponse(
+				httpServletResponse);
+			histogramMetricResource.setContextUriInfo(uriInfo);
+			histogramMetricResource.setContextUser(user);
+			histogramMetricResource.setExpressionConvert(_expressionConvert);
+			histogramMetricResource.setFilterParserProvider(
+				_filterParserProvider);
+			histogramMetricResource.setGroupLocalService(_groupLocalService);
+			histogramMetricResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			histogramMetricResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			histogramMetricResource.setRoleLocalService(_roleLocalService);
+			histogramMetricResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(histogramMetricResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -332,4 +335,4 @@ public class HistogramMetricResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1841085292
+// LIFERAY-REST-BUILDER-HASH:-744620475

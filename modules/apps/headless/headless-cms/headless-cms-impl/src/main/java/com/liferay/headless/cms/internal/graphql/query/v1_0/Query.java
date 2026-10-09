@@ -114,6 +114,7 @@ public class Query {
 	 *
 	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {brokenLinkAssets(assetLibraryId: ___, page: ___, pageSize: ___, search: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-82226")
 	@GraphQLField
 	public BrokenLinkAssetPage brokenLinkAssets(
 			@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
@@ -333,4 +334,4 @@ public class Query {
 	private com.liferay.portal.kernel.model.User _user;
 
 }
-// LIFERAY-REST-BUILDER-HASH:480182766
+// LIFERAY-REST-BUILDER-HASH:539077422

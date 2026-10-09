@@ -177,47 +177,49 @@ public class CalendarResourceFactoryImpl implements CalendarResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		CalendarResource calendarResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		CalendarResource calendarResource =
-			_componentServiceObjects.getService();
-
-		calendarResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		calendarResource.setContextCompany(company);
-
-		calendarResource.setContextHttpServletRequest(httpServletRequest);
-		calendarResource.setContextHttpServletResponse(httpServletResponse);
-		calendarResource.setContextUriInfo(uriInfo);
-		calendarResource.setContextUser(user);
-		calendarResource.setExpressionConvert(_expressionConvert);
-		calendarResource.setFilterParserProvider(_filterParserProvider);
-		calendarResource.setGroupLocalService(_groupLocalService);
-		calendarResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		calendarResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		calendarResource.setRoleLocalService(_roleLocalService);
-		calendarResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			calendarResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			calendarResource.setContextCompany(company);
+
+			calendarResource.setContextHttpServletRequest(httpServletRequest);
+			calendarResource.setContextHttpServletResponse(httpServletResponse);
+			calendarResource.setContextUriInfo(uriInfo);
+			calendarResource.setContextUser(user);
+			calendarResource.setExpressionConvert(_expressionConvert);
+			calendarResource.setFilterParserProvider(_filterParserProvider);
+			calendarResource.setGroupLocalService(_groupLocalService);
+			calendarResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			calendarResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			calendarResource.setRoleLocalService(_roleLocalService);
+			calendarResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(calendarResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -326,4 +328,4 @@ public class CalendarResourceFactoryImpl implements CalendarResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:2022546084
+// LIFERAY-REST-BUILDER-HASH:1323389691

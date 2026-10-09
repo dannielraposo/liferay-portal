@@ -179,50 +179,53 @@ public class ListTypeDefinitionResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		ListTypeDefinitionResource listTypeDefinitionResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		ListTypeDefinitionResource listTypeDefinitionResource =
-			_componentServiceObjects.getService();
-
-		listTypeDefinitionResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		listTypeDefinitionResource.setContextCompany(company);
-
-		listTypeDefinitionResource.setContextHttpServletRequest(
-			httpServletRequest);
-		listTypeDefinitionResource.setContextHttpServletResponse(
-			httpServletResponse);
-		listTypeDefinitionResource.setContextUriInfo(uriInfo);
-		listTypeDefinitionResource.setContextUser(user);
-		listTypeDefinitionResource.setExpressionConvert(_expressionConvert);
-		listTypeDefinitionResource.setFilterParserProvider(
-			_filterParserProvider);
-		listTypeDefinitionResource.setGroupLocalService(_groupLocalService);
-		listTypeDefinitionResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		listTypeDefinitionResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		listTypeDefinitionResource.setRoleLocalService(_roleLocalService);
-		listTypeDefinitionResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			listTypeDefinitionResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			listTypeDefinitionResource.setContextCompany(company);
+
+			listTypeDefinitionResource.setContextHttpServletRequest(
+				httpServletRequest);
+			listTypeDefinitionResource.setContextHttpServletResponse(
+				httpServletResponse);
+			listTypeDefinitionResource.setContextUriInfo(uriInfo);
+			listTypeDefinitionResource.setContextUser(user);
+			listTypeDefinitionResource.setExpressionConvert(_expressionConvert);
+			listTypeDefinitionResource.setFilterParserProvider(
+				_filterParserProvider);
+			listTypeDefinitionResource.setGroupLocalService(_groupLocalService);
+			listTypeDefinitionResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			listTypeDefinitionResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			listTypeDefinitionResource.setRoleLocalService(_roleLocalService);
+			listTypeDefinitionResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(listTypeDefinitionResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -333,4 +336,4 @@ public class ListTypeDefinitionResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1846711722
+// LIFERAY-REST-BUILDER-HASH:1910025739

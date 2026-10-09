@@ -177,46 +177,48 @@ public class TicketResourceFactoryImpl implements TicketResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		TicketResource ticketResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		TicketResource ticketResource = _componentServiceObjects.getService();
-
-		ticketResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		ticketResource.setContextCompany(company);
-
-		ticketResource.setContextHttpServletRequest(httpServletRequest);
-		ticketResource.setContextHttpServletResponse(httpServletResponse);
-		ticketResource.setContextUriInfo(uriInfo);
-		ticketResource.setContextUser(user);
-		ticketResource.setExpressionConvert(_expressionConvert);
-		ticketResource.setFilterParserProvider(_filterParserProvider);
-		ticketResource.setGroupLocalService(_groupLocalService);
-		ticketResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		ticketResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		ticketResource.setRoleLocalService(_roleLocalService);
-		ticketResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			ticketResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			ticketResource.setContextCompany(company);
+
+			ticketResource.setContextHttpServletRequest(httpServletRequest);
+			ticketResource.setContextHttpServletResponse(httpServletResponse);
+			ticketResource.setContextUriInfo(uriInfo);
+			ticketResource.setContextUser(user);
+			ticketResource.setExpressionConvert(_expressionConvert);
+			ticketResource.setFilterParserProvider(_filterParserProvider);
+			ticketResource.setGroupLocalService(_groupLocalService);
+			ticketResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			ticketResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			ticketResource.setRoleLocalService(_roleLocalService);
+			ticketResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(ticketResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -324,4 +326,4 @@ public class TicketResourceFactoryImpl implements TicketResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:98570619
+// LIFERAY-REST-BUILDER-HASH:1619912798

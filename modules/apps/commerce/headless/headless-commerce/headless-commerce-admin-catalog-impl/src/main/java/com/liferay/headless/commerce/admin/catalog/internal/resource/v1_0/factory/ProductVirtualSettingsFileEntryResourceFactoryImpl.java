@@ -186,55 +186,58 @@ public class ProductVirtualSettingsFileEntryResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		ProductVirtualSettingsFileEntryResource
 			productVirtualSettingsFileEntryResource =
 				_componentServiceObjects.getService();
 
-		productVirtualSettingsFileEntryResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		productVirtualSettingsFileEntryResource.setContextCompany(company);
-
-		productVirtualSettingsFileEntryResource.setContextHttpServletRequest(
-			httpServletRequest);
-		productVirtualSettingsFileEntryResource.setContextHttpServletResponse(
-			httpServletResponse);
-		productVirtualSettingsFileEntryResource.setContextUriInfo(uriInfo);
-		productVirtualSettingsFileEntryResource.setContextUser(user);
-		productVirtualSettingsFileEntryResource.setExpressionConvert(
-			_expressionConvert);
-		productVirtualSettingsFileEntryResource.setFilterParserProvider(
-			_filterParserProvider);
-		productVirtualSettingsFileEntryResource.setGroupLocalService(
-			_groupLocalService);
-		productVirtualSettingsFileEntryResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		productVirtualSettingsFileEntryResource.
-			setResourcePermissionLocalService(_resourcePermissionLocalService);
-		productVirtualSettingsFileEntryResource.setRoleLocalService(
-			_roleLocalService);
-		productVirtualSettingsFileEntryResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			productVirtualSettingsFileEntryResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			productVirtualSettingsFileEntryResource.setContextCompany(company);
+
+			productVirtualSettingsFileEntryResource.
+				setContextHttpServletRequest(httpServletRequest);
+			productVirtualSettingsFileEntryResource.
+				setContextHttpServletResponse(httpServletResponse);
+			productVirtualSettingsFileEntryResource.setContextUriInfo(uriInfo);
+			productVirtualSettingsFileEntryResource.setContextUser(user);
+			productVirtualSettingsFileEntryResource.setExpressionConvert(
+				_expressionConvert);
+			productVirtualSettingsFileEntryResource.setFilterParserProvider(
+				_filterParserProvider);
+			productVirtualSettingsFileEntryResource.setGroupLocalService(
+				_groupLocalService);
+			productVirtualSettingsFileEntryResource.
+				setResourceActionLocalService(_resourceActionLocalService);
+			productVirtualSettingsFileEntryResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			productVirtualSettingsFileEntryResource.setRoleLocalService(
+				_roleLocalService);
+			productVirtualSettingsFileEntryResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				productVirtualSettingsFileEntryResource, arguments);
 		}
@@ -347,4 +350,4 @@ public class ProductVirtualSettingsFileEntryResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-950999038
+// LIFERAY-REST-BUILDER-HASH:-932536331

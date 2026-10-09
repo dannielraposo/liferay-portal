@@ -186,55 +186,58 @@ public class PaymentMethodGroupRelOrderTypeResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		PaymentMethodGroupRelOrderTypeResource
 			paymentMethodGroupRelOrderTypeResource =
 				_componentServiceObjects.getService();
 
-		paymentMethodGroupRelOrderTypeResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		paymentMethodGroupRelOrderTypeResource.setContextCompany(company);
-
-		paymentMethodGroupRelOrderTypeResource.setContextHttpServletRequest(
-			httpServletRequest);
-		paymentMethodGroupRelOrderTypeResource.setContextHttpServletResponse(
-			httpServletResponse);
-		paymentMethodGroupRelOrderTypeResource.setContextUriInfo(uriInfo);
-		paymentMethodGroupRelOrderTypeResource.setContextUser(user);
-		paymentMethodGroupRelOrderTypeResource.setExpressionConvert(
-			_expressionConvert);
-		paymentMethodGroupRelOrderTypeResource.setFilterParserProvider(
-			_filterParserProvider);
-		paymentMethodGroupRelOrderTypeResource.setGroupLocalService(
-			_groupLocalService);
-		paymentMethodGroupRelOrderTypeResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		paymentMethodGroupRelOrderTypeResource.
-			setResourcePermissionLocalService(_resourcePermissionLocalService);
-		paymentMethodGroupRelOrderTypeResource.setRoleLocalService(
-			_roleLocalService);
-		paymentMethodGroupRelOrderTypeResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			paymentMethodGroupRelOrderTypeResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			paymentMethodGroupRelOrderTypeResource.setContextCompany(company);
+
+			paymentMethodGroupRelOrderTypeResource.setContextHttpServletRequest(
+				httpServletRequest);
+			paymentMethodGroupRelOrderTypeResource.
+				setContextHttpServletResponse(httpServletResponse);
+			paymentMethodGroupRelOrderTypeResource.setContextUriInfo(uriInfo);
+			paymentMethodGroupRelOrderTypeResource.setContextUser(user);
+			paymentMethodGroupRelOrderTypeResource.setExpressionConvert(
+				_expressionConvert);
+			paymentMethodGroupRelOrderTypeResource.setFilterParserProvider(
+				_filterParserProvider);
+			paymentMethodGroupRelOrderTypeResource.setGroupLocalService(
+				_groupLocalService);
+			paymentMethodGroupRelOrderTypeResource.
+				setResourceActionLocalService(_resourceActionLocalService);
+			paymentMethodGroupRelOrderTypeResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			paymentMethodGroupRelOrderTypeResource.setRoleLocalService(
+				_roleLocalService);
+			paymentMethodGroupRelOrderTypeResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				paymentMethodGroupRelOrderTypeResource, arguments);
 		}
@@ -347,4 +350,4 @@ public class PaymentMethodGroupRelOrderTypeResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:1835113755
+// LIFERAY-REST-BUILDER-HASH:-1915306956

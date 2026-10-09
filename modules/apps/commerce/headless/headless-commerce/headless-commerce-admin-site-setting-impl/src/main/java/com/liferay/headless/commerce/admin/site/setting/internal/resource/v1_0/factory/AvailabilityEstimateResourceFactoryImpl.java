@@ -181,50 +181,55 @@ public class AvailabilityEstimateResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		AvailabilityEstimateResource availabilityEstimateResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		AvailabilityEstimateResource availabilityEstimateResource =
-			_componentServiceObjects.getService();
-
-		availabilityEstimateResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		availabilityEstimateResource.setContextCompany(company);
-
-		availabilityEstimateResource.setContextHttpServletRequest(
-			httpServletRequest);
-		availabilityEstimateResource.setContextHttpServletResponse(
-			httpServletResponse);
-		availabilityEstimateResource.setContextUriInfo(uriInfo);
-		availabilityEstimateResource.setContextUser(user);
-		availabilityEstimateResource.setExpressionConvert(_expressionConvert);
-		availabilityEstimateResource.setFilterParserProvider(
-			_filterParserProvider);
-		availabilityEstimateResource.setGroupLocalService(_groupLocalService);
-		availabilityEstimateResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		availabilityEstimateResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		availabilityEstimateResource.setRoleLocalService(_roleLocalService);
-		availabilityEstimateResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			availabilityEstimateResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			availabilityEstimateResource.setContextCompany(company);
+
+			availabilityEstimateResource.setContextHttpServletRequest(
+				httpServletRequest);
+			availabilityEstimateResource.setContextHttpServletResponse(
+				httpServletResponse);
+			availabilityEstimateResource.setContextUriInfo(uriInfo);
+			availabilityEstimateResource.setContextUser(user);
+			availabilityEstimateResource.setExpressionConvert(
+				_expressionConvert);
+			availabilityEstimateResource.setFilterParserProvider(
+				_filterParserProvider);
+			availabilityEstimateResource.setGroupLocalService(
+				_groupLocalService);
+			availabilityEstimateResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			availabilityEstimateResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			availabilityEstimateResource.setRoleLocalService(_roleLocalService);
+			availabilityEstimateResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(availabilityEstimateResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -335,4 +340,4 @@ public class AvailabilityEstimateResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1262382393
+// LIFERAY-REST-BUILDER-HASH:1044314664

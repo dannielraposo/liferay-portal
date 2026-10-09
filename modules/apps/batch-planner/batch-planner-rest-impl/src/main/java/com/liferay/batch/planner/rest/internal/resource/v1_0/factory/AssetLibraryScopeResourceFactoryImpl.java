@@ -179,50 +179,53 @@ public class AssetLibraryScopeResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		AssetLibraryScopeResource assetLibraryScopeResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		AssetLibraryScopeResource assetLibraryScopeResource =
-			_componentServiceObjects.getService();
-
-		assetLibraryScopeResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		assetLibraryScopeResource.setContextCompany(company);
-
-		assetLibraryScopeResource.setContextHttpServletRequest(
-			httpServletRequest);
-		assetLibraryScopeResource.setContextHttpServletResponse(
-			httpServletResponse);
-		assetLibraryScopeResource.setContextUriInfo(uriInfo);
-		assetLibraryScopeResource.setContextUser(user);
-		assetLibraryScopeResource.setExpressionConvert(_expressionConvert);
-		assetLibraryScopeResource.setFilterParserProvider(
-			_filterParserProvider);
-		assetLibraryScopeResource.setGroupLocalService(_groupLocalService);
-		assetLibraryScopeResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		assetLibraryScopeResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		assetLibraryScopeResource.setRoleLocalService(_roleLocalService);
-		assetLibraryScopeResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			assetLibraryScopeResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			assetLibraryScopeResource.setContextCompany(company);
+
+			assetLibraryScopeResource.setContextHttpServletRequest(
+				httpServletRequest);
+			assetLibraryScopeResource.setContextHttpServletResponse(
+				httpServletResponse);
+			assetLibraryScopeResource.setContextUriInfo(uriInfo);
+			assetLibraryScopeResource.setContextUser(user);
+			assetLibraryScopeResource.setExpressionConvert(_expressionConvert);
+			assetLibraryScopeResource.setFilterParserProvider(
+				_filterParserProvider);
+			assetLibraryScopeResource.setGroupLocalService(_groupLocalService);
+			assetLibraryScopeResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			assetLibraryScopeResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			assetLibraryScopeResource.setRoleLocalService(_roleLocalService);
+			assetLibraryScopeResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(assetLibraryScopeResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -333,4 +336,4 @@ public class AssetLibraryScopeResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-602553799
+// LIFERAY-REST-BUILDER-HASH:779934008

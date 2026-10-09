@@ -187,55 +187,60 @@ public class EmbeddingProviderValidationResultResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		EmbeddingProviderValidationResultResource
 			embeddingProviderValidationResultResource =
 				_componentServiceObjects.getService();
 
-		embeddingProviderValidationResultResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		embeddingProviderValidationResultResource.setContextCompany(company);
-
-		embeddingProviderValidationResultResource.setContextHttpServletRequest(
-			httpServletRequest);
-		embeddingProviderValidationResultResource.setContextHttpServletResponse(
-			httpServletResponse);
-		embeddingProviderValidationResultResource.setContextUriInfo(uriInfo);
-		embeddingProviderValidationResultResource.setContextUser(user);
-		embeddingProviderValidationResultResource.setExpressionConvert(
-			_expressionConvert);
-		embeddingProviderValidationResultResource.setFilterParserProvider(
-			_filterParserProvider);
-		embeddingProviderValidationResultResource.setGroupLocalService(
-			_groupLocalService);
-		embeddingProviderValidationResultResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		embeddingProviderValidationResultResource.
-			setResourcePermissionLocalService(_resourcePermissionLocalService);
-		embeddingProviderValidationResultResource.setRoleLocalService(
-			_roleLocalService);
-		embeddingProviderValidationResultResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			embeddingProviderValidationResultResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			embeddingProviderValidationResultResource.setContextCompany(
+				company);
+
+			embeddingProviderValidationResultResource.
+				setContextHttpServletRequest(httpServletRequest);
+			embeddingProviderValidationResultResource.
+				setContextHttpServletResponse(httpServletResponse);
+			embeddingProviderValidationResultResource.setContextUriInfo(
+				uriInfo);
+			embeddingProviderValidationResultResource.setContextUser(user);
+			embeddingProviderValidationResultResource.setExpressionConvert(
+				_expressionConvert);
+			embeddingProviderValidationResultResource.setFilterParserProvider(
+				_filterParserProvider);
+			embeddingProviderValidationResultResource.setGroupLocalService(
+				_groupLocalService);
+			embeddingProviderValidationResultResource.
+				setResourceActionLocalService(_resourceActionLocalService);
+			embeddingProviderValidationResultResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			embeddingProviderValidationResultResource.setRoleLocalService(
+				_roleLocalService);
+			embeddingProviderValidationResultResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				embeddingProviderValidationResultResource, arguments);
 		}
@@ -348,4 +353,4 @@ public class EmbeddingProviderValidationResultResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1966015526
+// LIFERAY-REST-BUILDER-HASH:-1594482825

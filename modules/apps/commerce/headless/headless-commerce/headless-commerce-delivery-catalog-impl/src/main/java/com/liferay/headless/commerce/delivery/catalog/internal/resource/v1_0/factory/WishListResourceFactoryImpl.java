@@ -177,47 +177,49 @@ public class WishListResourceFactoryImpl implements WishListResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		WishListResource wishListResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		WishListResource wishListResource =
-			_componentServiceObjects.getService();
-
-		wishListResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		wishListResource.setContextCompany(company);
-
-		wishListResource.setContextHttpServletRequest(httpServletRequest);
-		wishListResource.setContextHttpServletResponse(httpServletResponse);
-		wishListResource.setContextUriInfo(uriInfo);
-		wishListResource.setContextUser(user);
-		wishListResource.setExpressionConvert(_expressionConvert);
-		wishListResource.setFilterParserProvider(_filterParserProvider);
-		wishListResource.setGroupLocalService(_groupLocalService);
-		wishListResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		wishListResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		wishListResource.setRoleLocalService(_roleLocalService);
-		wishListResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			wishListResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			wishListResource.setContextCompany(company);
+
+			wishListResource.setContextHttpServletRequest(httpServletRequest);
+			wishListResource.setContextHttpServletResponse(httpServletResponse);
+			wishListResource.setContextUriInfo(uriInfo);
+			wishListResource.setContextUser(user);
+			wishListResource.setExpressionConvert(_expressionConvert);
+			wishListResource.setFilterParserProvider(_filterParserProvider);
+			wishListResource.setGroupLocalService(_groupLocalService);
+			wishListResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			wishListResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			wishListResource.setRoleLocalService(_roleLocalService);
+			wishListResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(wishListResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -326,4 +328,4 @@ public class WishListResourceFactoryImpl implements WishListResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1239517191
+// LIFERAY-REST-BUILDER-HASH:1393623294

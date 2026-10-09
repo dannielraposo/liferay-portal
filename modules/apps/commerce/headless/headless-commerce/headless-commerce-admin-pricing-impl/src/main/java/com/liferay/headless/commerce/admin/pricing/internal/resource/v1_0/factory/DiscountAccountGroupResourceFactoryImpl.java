@@ -181,50 +181,55 @@ public class DiscountAccountGroupResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		DiscountAccountGroupResource discountAccountGroupResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		DiscountAccountGroupResource discountAccountGroupResource =
-			_componentServiceObjects.getService();
-
-		discountAccountGroupResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		discountAccountGroupResource.setContextCompany(company);
-
-		discountAccountGroupResource.setContextHttpServletRequest(
-			httpServletRequest);
-		discountAccountGroupResource.setContextHttpServletResponse(
-			httpServletResponse);
-		discountAccountGroupResource.setContextUriInfo(uriInfo);
-		discountAccountGroupResource.setContextUser(user);
-		discountAccountGroupResource.setExpressionConvert(_expressionConvert);
-		discountAccountGroupResource.setFilterParserProvider(
-			_filterParserProvider);
-		discountAccountGroupResource.setGroupLocalService(_groupLocalService);
-		discountAccountGroupResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		discountAccountGroupResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		discountAccountGroupResource.setRoleLocalService(_roleLocalService);
-		discountAccountGroupResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			discountAccountGroupResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			discountAccountGroupResource.setContextCompany(company);
+
+			discountAccountGroupResource.setContextHttpServletRequest(
+				httpServletRequest);
+			discountAccountGroupResource.setContextHttpServletResponse(
+				httpServletResponse);
+			discountAccountGroupResource.setContextUriInfo(uriInfo);
+			discountAccountGroupResource.setContextUser(user);
+			discountAccountGroupResource.setExpressionConvert(
+				_expressionConvert);
+			discountAccountGroupResource.setFilterParserProvider(
+				_filterParserProvider);
+			discountAccountGroupResource.setGroupLocalService(
+				_groupLocalService);
+			discountAccountGroupResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			discountAccountGroupResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			discountAccountGroupResource.setRoleLocalService(_roleLocalService);
+			discountAccountGroupResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(discountAccountGroupResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -335,4 +340,4 @@ public class DiscountAccountGroupResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1397347062
+// LIFERAY-REST-BUILDER-HASH:-1649984517

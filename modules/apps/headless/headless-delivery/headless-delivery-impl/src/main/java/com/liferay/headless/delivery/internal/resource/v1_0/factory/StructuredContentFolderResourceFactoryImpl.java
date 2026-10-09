@@ -182,53 +182,56 @@ public class StructuredContentFolderResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		StructuredContentFolderResource structuredContentFolderResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		StructuredContentFolderResource structuredContentFolderResource =
-			_componentServiceObjects.getService();
-
-		structuredContentFolderResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		structuredContentFolderResource.setContextCompany(company);
-
-		structuredContentFolderResource.setContextHttpServletRequest(
-			httpServletRequest);
-		structuredContentFolderResource.setContextHttpServletResponse(
-			httpServletResponse);
-		structuredContentFolderResource.setContextUriInfo(uriInfo);
-		structuredContentFolderResource.setContextUser(user);
-		structuredContentFolderResource.setExpressionConvert(
-			_expressionConvert);
-		structuredContentFolderResource.setFilterParserProvider(
-			_filterParserProvider);
-		structuredContentFolderResource.setGroupLocalService(
-			_groupLocalService);
-		structuredContentFolderResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		structuredContentFolderResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		structuredContentFolderResource.setRoleLocalService(_roleLocalService);
-		structuredContentFolderResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			structuredContentFolderResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			structuredContentFolderResource.setContextCompany(company);
+
+			structuredContentFolderResource.setContextHttpServletRequest(
+				httpServletRequest);
+			structuredContentFolderResource.setContextHttpServletResponse(
+				httpServletResponse);
+			structuredContentFolderResource.setContextUriInfo(uriInfo);
+			structuredContentFolderResource.setContextUser(user);
+			structuredContentFolderResource.setExpressionConvert(
+				_expressionConvert);
+			structuredContentFolderResource.setFilterParserProvider(
+				_filterParserProvider);
+			structuredContentFolderResource.setGroupLocalService(
+				_groupLocalService);
+			structuredContentFolderResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			structuredContentFolderResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			structuredContentFolderResource.setRoleLocalService(
+				_roleLocalService);
+			structuredContentFolderResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(structuredContentFolderResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -340,4 +343,4 @@ public class StructuredContentFolderResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:919875210
+// LIFERAY-REST-BUILDER-HASH:1757079543

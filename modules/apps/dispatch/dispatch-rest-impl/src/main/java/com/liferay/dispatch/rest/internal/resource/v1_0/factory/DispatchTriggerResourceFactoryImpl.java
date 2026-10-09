@@ -179,49 +179,52 @@ public class DispatchTriggerResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		DispatchTriggerResource dispatchTriggerResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		DispatchTriggerResource dispatchTriggerResource =
-			_componentServiceObjects.getService();
-
-		dispatchTriggerResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		dispatchTriggerResource.setContextCompany(company);
-
-		dispatchTriggerResource.setContextHttpServletRequest(
-			httpServletRequest);
-		dispatchTriggerResource.setContextHttpServletResponse(
-			httpServletResponse);
-		dispatchTriggerResource.setContextUriInfo(uriInfo);
-		dispatchTriggerResource.setContextUser(user);
-		dispatchTriggerResource.setExpressionConvert(_expressionConvert);
-		dispatchTriggerResource.setFilterParserProvider(_filterParserProvider);
-		dispatchTriggerResource.setGroupLocalService(_groupLocalService);
-		dispatchTriggerResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		dispatchTriggerResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		dispatchTriggerResource.setRoleLocalService(_roleLocalService);
-		dispatchTriggerResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			dispatchTriggerResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			dispatchTriggerResource.setContextCompany(company);
+
+			dispatchTriggerResource.setContextHttpServletRequest(
+				httpServletRequest);
+			dispatchTriggerResource.setContextHttpServletResponse(
+				httpServletResponse);
+			dispatchTriggerResource.setContextUriInfo(uriInfo);
+			dispatchTriggerResource.setContextUser(user);
+			dispatchTriggerResource.setExpressionConvert(_expressionConvert);
+			dispatchTriggerResource.setFilterParserProvider(
+				_filterParserProvider);
+			dispatchTriggerResource.setGroupLocalService(_groupLocalService);
+			dispatchTriggerResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			dispatchTriggerResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			dispatchTriggerResource.setRoleLocalService(_roleLocalService);
+			dispatchTriggerResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(dispatchTriggerResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -332,4 +335,4 @@ public class DispatchTriggerResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:364572956
+// LIFERAY-REST-BUILDER-HASH:-1739418647

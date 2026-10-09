@@ -177,47 +177,49 @@ public class CTRemoteResourceFactoryImpl implements CTRemoteResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		CTRemoteResource ctRemoteResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		CTRemoteResource ctRemoteResource =
-			_componentServiceObjects.getService();
-
-		ctRemoteResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		ctRemoteResource.setContextCompany(company);
-
-		ctRemoteResource.setContextHttpServletRequest(httpServletRequest);
-		ctRemoteResource.setContextHttpServletResponse(httpServletResponse);
-		ctRemoteResource.setContextUriInfo(uriInfo);
-		ctRemoteResource.setContextUser(user);
-		ctRemoteResource.setExpressionConvert(_expressionConvert);
-		ctRemoteResource.setFilterParserProvider(_filterParserProvider);
-		ctRemoteResource.setGroupLocalService(_groupLocalService);
-		ctRemoteResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		ctRemoteResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		ctRemoteResource.setRoleLocalService(_roleLocalService);
-		ctRemoteResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			ctRemoteResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			ctRemoteResource.setContextCompany(company);
+
+			ctRemoteResource.setContextHttpServletRequest(httpServletRequest);
+			ctRemoteResource.setContextHttpServletResponse(httpServletResponse);
+			ctRemoteResource.setContextUriInfo(uriInfo);
+			ctRemoteResource.setContextUser(user);
+			ctRemoteResource.setExpressionConvert(_expressionConvert);
+			ctRemoteResource.setFilterParserProvider(_filterParserProvider);
+			ctRemoteResource.setGroupLocalService(_groupLocalService);
+			ctRemoteResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			ctRemoteResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			ctRemoteResource.setRoleLocalService(_roleLocalService);
+			ctRemoteResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(ctRemoteResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -326,4 +328,4 @@ public class CTRemoteResourceFactoryImpl implements CTRemoteResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-437648317
+// LIFERAY-REST-BUILDER-HASH:2097010940

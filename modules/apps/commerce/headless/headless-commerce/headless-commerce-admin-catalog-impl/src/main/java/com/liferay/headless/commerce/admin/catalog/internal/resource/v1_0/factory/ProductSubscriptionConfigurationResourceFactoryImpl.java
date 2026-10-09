@@ -187,55 +187,58 @@ public class ProductSubscriptionConfigurationResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		ProductSubscriptionConfigurationResource
 			productSubscriptionConfigurationResource =
 				_componentServiceObjects.getService();
 
-		productSubscriptionConfigurationResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		productSubscriptionConfigurationResource.setContextCompany(company);
-
-		productSubscriptionConfigurationResource.setContextHttpServletRequest(
-			httpServletRequest);
-		productSubscriptionConfigurationResource.setContextHttpServletResponse(
-			httpServletResponse);
-		productSubscriptionConfigurationResource.setContextUriInfo(uriInfo);
-		productSubscriptionConfigurationResource.setContextUser(user);
-		productSubscriptionConfigurationResource.setExpressionConvert(
-			_expressionConvert);
-		productSubscriptionConfigurationResource.setFilterParserProvider(
-			_filterParserProvider);
-		productSubscriptionConfigurationResource.setGroupLocalService(
-			_groupLocalService);
-		productSubscriptionConfigurationResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		productSubscriptionConfigurationResource.
-			setResourcePermissionLocalService(_resourcePermissionLocalService);
-		productSubscriptionConfigurationResource.setRoleLocalService(
-			_roleLocalService);
-		productSubscriptionConfigurationResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			productSubscriptionConfigurationResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			productSubscriptionConfigurationResource.setContextCompany(company);
+
+			productSubscriptionConfigurationResource.
+				setContextHttpServletRequest(httpServletRequest);
+			productSubscriptionConfigurationResource.
+				setContextHttpServletResponse(httpServletResponse);
+			productSubscriptionConfigurationResource.setContextUriInfo(uriInfo);
+			productSubscriptionConfigurationResource.setContextUser(user);
+			productSubscriptionConfigurationResource.setExpressionConvert(
+				_expressionConvert);
+			productSubscriptionConfigurationResource.setFilterParserProvider(
+				_filterParserProvider);
+			productSubscriptionConfigurationResource.setGroupLocalService(
+				_groupLocalService);
+			productSubscriptionConfigurationResource.
+				setResourceActionLocalService(_resourceActionLocalService);
+			productSubscriptionConfigurationResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			productSubscriptionConfigurationResource.setRoleLocalService(
+				_roleLocalService);
+			productSubscriptionConfigurationResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				productSubscriptionConfigurationResource, arguments);
 		}
@@ -348,4 +351,4 @@ public class ProductSubscriptionConfigurationResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:2135475505
+// LIFERAY-REST-BUILDER-HASH:712732448

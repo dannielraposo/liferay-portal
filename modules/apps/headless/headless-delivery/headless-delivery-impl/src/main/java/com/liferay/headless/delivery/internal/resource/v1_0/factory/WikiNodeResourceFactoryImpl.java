@@ -177,47 +177,49 @@ public class WikiNodeResourceFactoryImpl implements WikiNodeResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		WikiNodeResource wikiNodeResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		WikiNodeResource wikiNodeResource =
-			_componentServiceObjects.getService();
-
-		wikiNodeResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		wikiNodeResource.setContextCompany(company);
-
-		wikiNodeResource.setContextHttpServletRequest(httpServletRequest);
-		wikiNodeResource.setContextHttpServletResponse(httpServletResponse);
-		wikiNodeResource.setContextUriInfo(uriInfo);
-		wikiNodeResource.setContextUser(user);
-		wikiNodeResource.setExpressionConvert(_expressionConvert);
-		wikiNodeResource.setFilterParserProvider(_filterParserProvider);
-		wikiNodeResource.setGroupLocalService(_groupLocalService);
-		wikiNodeResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		wikiNodeResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		wikiNodeResource.setRoleLocalService(_roleLocalService);
-		wikiNodeResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			wikiNodeResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			wikiNodeResource.setContextCompany(company);
+
+			wikiNodeResource.setContextHttpServletRequest(httpServletRequest);
+			wikiNodeResource.setContextHttpServletResponse(httpServletResponse);
+			wikiNodeResource.setContextUriInfo(uriInfo);
+			wikiNodeResource.setContextUser(user);
+			wikiNodeResource.setExpressionConvert(_expressionConvert);
+			wikiNodeResource.setFilterParserProvider(_filterParserProvider);
+			wikiNodeResource.setGroupLocalService(_groupLocalService);
+			wikiNodeResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			wikiNodeResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			wikiNodeResource.setRoleLocalService(_roleLocalService);
+			wikiNodeResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(wikiNodeResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -326,4 +328,4 @@ public class WikiNodeResourceFactoryImpl implements WikiNodeResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1468654662
+// LIFERAY-REST-BUILDER-HASH:2056055945

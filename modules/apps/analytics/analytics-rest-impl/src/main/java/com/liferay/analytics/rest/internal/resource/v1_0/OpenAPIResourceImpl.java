@@ -33,7 +33,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Marcos Martins
+ * @author Ivica Cardic
  * @generated
  */
 @Component(
@@ -92,4 +92,4 @@ public class OpenAPIResourceImpl {
 	};
 
 }
-// LIFERAY-REST-BUILDER-HASH:2140612805
+// LIFERAY-REST-BUILDER-HASH:1377004093

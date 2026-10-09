@@ -179,47 +179,50 @@ public class TransitionResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		TransitionResource transitionResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		TransitionResource transitionResource =
-			_componentServiceObjects.getService();
-
-		transitionResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		transitionResource.setContextCompany(company);
-
-		transitionResource.setContextHttpServletRequest(httpServletRequest);
-		transitionResource.setContextHttpServletResponse(httpServletResponse);
-		transitionResource.setContextUriInfo(uriInfo);
-		transitionResource.setContextUser(user);
-		transitionResource.setExpressionConvert(_expressionConvert);
-		transitionResource.setFilterParserProvider(_filterParserProvider);
-		transitionResource.setGroupLocalService(_groupLocalService);
-		transitionResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		transitionResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		transitionResource.setRoleLocalService(_roleLocalService);
-		transitionResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			transitionResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			transitionResource.setContextCompany(company);
+
+			transitionResource.setContextHttpServletRequest(httpServletRequest);
+			transitionResource.setContextHttpServletResponse(
+				httpServletResponse);
+			transitionResource.setContextUriInfo(uriInfo);
+			transitionResource.setContextUser(user);
+			transitionResource.setExpressionConvert(_expressionConvert);
+			transitionResource.setFilterParserProvider(_filterParserProvider);
+			transitionResource.setGroupLocalService(_groupLocalService);
+			transitionResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			transitionResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			transitionResource.setRoleLocalService(_roleLocalService);
+			transitionResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(transitionResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -329,4 +332,4 @@ public class TransitionResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:24836204
+// LIFERAY-REST-BUILDER-HASH:-1131239151

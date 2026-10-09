@@ -179,48 +179,52 @@ public class PortalInstanceResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		PortalInstanceResource portalInstanceResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		PortalInstanceResource portalInstanceResource =
-			_componentServiceObjects.getService();
-
-		portalInstanceResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		portalInstanceResource.setContextCompany(company);
-
-		portalInstanceResource.setContextHttpServletRequest(httpServletRequest);
-		portalInstanceResource.setContextHttpServletResponse(
-			httpServletResponse);
-		portalInstanceResource.setContextUriInfo(uriInfo);
-		portalInstanceResource.setContextUser(user);
-		portalInstanceResource.setExpressionConvert(_expressionConvert);
-		portalInstanceResource.setFilterParserProvider(_filterParserProvider);
-		portalInstanceResource.setGroupLocalService(_groupLocalService);
-		portalInstanceResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		portalInstanceResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		portalInstanceResource.setRoleLocalService(_roleLocalService);
-		portalInstanceResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			portalInstanceResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			portalInstanceResource.setContextCompany(company);
+
+			portalInstanceResource.setContextHttpServletRequest(
+				httpServletRequest);
+			portalInstanceResource.setContextHttpServletResponse(
+				httpServletResponse);
+			portalInstanceResource.setContextUriInfo(uriInfo);
+			portalInstanceResource.setContextUser(user);
+			portalInstanceResource.setExpressionConvert(_expressionConvert);
+			portalInstanceResource.setFilterParserProvider(
+				_filterParserProvider);
+			portalInstanceResource.setGroupLocalService(_groupLocalService);
+			portalInstanceResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			portalInstanceResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			portalInstanceResource.setRoleLocalService(_roleLocalService);
+			portalInstanceResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(portalInstanceResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -330,4 +334,4 @@ public class PortalInstanceResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1017925493
+// LIFERAY-REST-BUILDER-HASH:1794655752

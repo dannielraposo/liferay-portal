@@ -27,12 +27,14 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import jakarta.annotation.Generated;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Constructor;
@@ -179,47 +181,61 @@ public class ResourceFileResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		ResourceFileResource resourceFileResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		ResourceFileResource resourceFileResource =
-			_componentServiceObjects.getService();
-
-		resourceFileResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		resourceFileResource.setContextCompany(company);
-
-		resourceFileResource.setContextHttpServletRequest(httpServletRequest);
-		resourceFileResource.setContextHttpServletResponse(httpServletResponse);
-		resourceFileResource.setContextUriInfo(uriInfo);
-		resourceFileResource.setContextUser(user);
-		resourceFileResource.setExpressionConvert(_expressionConvert);
-		resourceFileResource.setFilterParserProvider(_filterParserProvider);
-		resourceFileResource.setGroupLocalService(_groupLocalService);
-		resourceFileResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		resourceFileResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		resourceFileResource.setRoleLocalService(_roleLocalService);
-		resourceFileResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			Class<?> clazz = resourceFileResource.getClass();
+
+			if (!_featureFlagChecker.isEnabled(
+					user.getCompanyId(),
+					clazz.getMethod(
+						method.getName(), method.getParameterTypes()))) {
+
+				throw new NotFoundException();
+			}
+
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			resourceFileResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			resourceFileResource.setContextCompany(company);
+
+			resourceFileResource.setContextHttpServletRequest(
+				httpServletRequest);
+			resourceFileResource.setContextHttpServletResponse(
+				httpServletResponse);
+			resourceFileResource.setContextUriInfo(uriInfo);
+			resourceFileResource.setContextUser(user);
+			resourceFileResource.setExpressionConvert(_expressionConvert);
+			resourceFileResource.setFilterParserProvider(_filterParserProvider);
+			resourceFileResource.setGroupLocalService(_groupLocalService);
+			resourceFileResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			resourceFileResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			resourceFileResource.setRoleLocalService(_roleLocalService);
+			resourceFileResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(resourceFileResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -248,6 +264,9 @@ public class ResourceFileResourceFactoryImpl
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
@@ -329,4 +348,4 @@ public class ResourceFileResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1486935840
+// LIFERAY-REST-BUILDER-HASH:1339204352

@@ -27,12 +27,14 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import jakarta.annotation.Generated;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Constructor;
@@ -177,46 +179,58 @@ public class ToolSetResourceFactoryImpl implements ToolSetResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		ToolSetResource toolSetResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		ToolSetResource toolSetResource = _componentServiceObjects.getService();
-
-		toolSetResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		toolSetResource.setContextCompany(company);
-
-		toolSetResource.setContextHttpServletRequest(httpServletRequest);
-		toolSetResource.setContextHttpServletResponse(httpServletResponse);
-		toolSetResource.setContextUriInfo(uriInfo);
-		toolSetResource.setContextUser(user);
-		toolSetResource.setExpressionConvert(_expressionConvert);
-		toolSetResource.setFilterParserProvider(_filterParserProvider);
-		toolSetResource.setGroupLocalService(_groupLocalService);
-		toolSetResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		toolSetResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		toolSetResource.setRoleLocalService(_roleLocalService);
-		toolSetResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			Class<?> clazz = toolSetResource.getClass();
+
+			if (!_featureFlagChecker.isEnabled(
+					user.getCompanyId(),
+					clazz.getMethod(
+						method.getName(), method.getParameterTypes()))) {
+
+				throw new NotFoundException();
+			}
+
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			toolSetResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			toolSetResource.setContextCompany(company);
+
+			toolSetResource.setContextHttpServletRequest(httpServletRequest);
+			toolSetResource.setContextHttpServletResponse(httpServletResponse);
+			toolSetResource.setContextUriInfo(uriInfo);
+			toolSetResource.setContextUser(user);
+			toolSetResource.setExpressionConvert(_expressionConvert);
+			toolSetResource.setFilterParserProvider(_filterParserProvider);
+			toolSetResource.setGroupLocalService(_groupLocalService);
+			toolSetResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			toolSetResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			toolSetResource.setRoleLocalService(_roleLocalService);
+			toolSetResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(toolSetResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -244,6 +258,9 @@ public class ToolSetResourceFactoryImpl implements ToolSetResource.Factory {
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
@@ -324,4 +341,4 @@ public class ToolSetResourceFactoryImpl implements ToolSetResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:588864588
+// LIFERAY-REST-BUILDER-HASH:-1603875650

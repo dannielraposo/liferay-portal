@@ -183,55 +183,58 @@ public class PerformanceAssetConsumptionResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(user.getUserId());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
 		PerformanceAssetConsumptionResource
 			performanceAssetConsumptionResource =
 				_componentServiceObjects.getService();
 
-		performanceAssetConsumptionResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
+		String name = PrincipalThreadLocal.getName();
 
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		performanceAssetConsumptionResource.setContextCompany(company);
-
-		performanceAssetConsumptionResource.setContextHttpServletRequest(
-			httpServletRequest);
-		performanceAssetConsumptionResource.setContextHttpServletResponse(
-			httpServletResponse);
-		performanceAssetConsumptionResource.setContextUriInfo(uriInfo);
-		performanceAssetConsumptionResource.setContextUser(user);
-		performanceAssetConsumptionResource.setExpressionConvert(
-			_expressionConvert);
-		performanceAssetConsumptionResource.setFilterParserProvider(
-			_filterParserProvider);
-		performanceAssetConsumptionResource.setGroupLocalService(
-			_groupLocalService);
-		performanceAssetConsumptionResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		performanceAssetConsumptionResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		performanceAssetConsumptionResource.setRoleLocalService(
-			_roleLocalService);
-		performanceAssetConsumptionResource.setSortParserProvider(
-			_sortParserProvider);
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			performanceAssetConsumptionResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			performanceAssetConsumptionResource.setContextCompany(company);
+
+			performanceAssetConsumptionResource.setContextHttpServletRequest(
+				httpServletRequest);
+			performanceAssetConsumptionResource.setContextHttpServletResponse(
+				httpServletResponse);
+			performanceAssetConsumptionResource.setContextUriInfo(uriInfo);
+			performanceAssetConsumptionResource.setContextUser(user);
+			performanceAssetConsumptionResource.setExpressionConvert(
+				_expressionConvert);
+			performanceAssetConsumptionResource.setFilterParserProvider(
+				_filterParserProvider);
+			performanceAssetConsumptionResource.setGroupLocalService(
+				_groupLocalService);
+			performanceAssetConsumptionResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			performanceAssetConsumptionResource.
+				setResourcePermissionLocalService(
+					_resourcePermissionLocalService);
+			performanceAssetConsumptionResource.setRoleLocalService(
+				_roleLocalService);
+			performanceAssetConsumptionResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(
 				performanceAssetConsumptionResource, arguments);
 		}
@@ -344,4 +347,4 @@ public class PerformanceAssetConsumptionResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-2082599231
+// LIFERAY-REST-BUILDER-HASH:-298449140

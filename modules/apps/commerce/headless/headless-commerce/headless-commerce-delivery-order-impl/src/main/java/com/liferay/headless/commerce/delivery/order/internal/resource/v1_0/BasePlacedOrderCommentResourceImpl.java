@@ -996,4 +996,4 @@ public abstract class BasePlacedOrderCommentResourceImpl
 		LogFactoryUtil.getLog(BasePlacedOrderCommentResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1465937696
+// LIFERAY-REST-BUILDER-HASH:-670477537

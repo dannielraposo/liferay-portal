@@ -27,12 +27,14 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import jakarta.annotation.Generated;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Constructor;
@@ -179,49 +181,62 @@ public class PageTemplateSetResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		PageTemplateSetResource pageTemplateSetResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		PageTemplateSetResource pageTemplateSetResource =
-			_componentServiceObjects.getService();
-
-		pageTemplateSetResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		pageTemplateSetResource.setContextCompany(company);
-
-		pageTemplateSetResource.setContextHttpServletRequest(
-			httpServletRequest);
-		pageTemplateSetResource.setContextHttpServletResponse(
-			httpServletResponse);
-		pageTemplateSetResource.setContextUriInfo(uriInfo);
-		pageTemplateSetResource.setContextUser(user);
-		pageTemplateSetResource.setExpressionConvert(_expressionConvert);
-		pageTemplateSetResource.setFilterParserProvider(_filterParserProvider);
-		pageTemplateSetResource.setGroupLocalService(_groupLocalService);
-		pageTemplateSetResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		pageTemplateSetResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		pageTemplateSetResource.setRoleLocalService(_roleLocalService);
-		pageTemplateSetResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			Class<?> clazz = pageTemplateSetResource.getClass();
+
+			if (!_featureFlagChecker.isEnabled(
+					user.getCompanyId(),
+					clazz.getMethod(
+						method.getName(), method.getParameterTypes()))) {
+
+				throw new NotFoundException();
+			}
+
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			pageTemplateSetResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			pageTemplateSetResource.setContextCompany(company);
+
+			pageTemplateSetResource.setContextHttpServletRequest(
+				httpServletRequest);
+			pageTemplateSetResource.setContextHttpServletResponse(
+				httpServletResponse);
+			pageTemplateSetResource.setContextUriInfo(uriInfo);
+			pageTemplateSetResource.setContextUser(user);
+			pageTemplateSetResource.setExpressionConvert(_expressionConvert);
+			pageTemplateSetResource.setFilterParserProvider(
+				_filterParserProvider);
+			pageTemplateSetResource.setGroupLocalService(_groupLocalService);
+			pageTemplateSetResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			pageTemplateSetResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			pageTemplateSetResource.setRoleLocalService(_roleLocalService);
+			pageTemplateSetResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(pageTemplateSetResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -250,6 +265,9 @@ public class PageTemplateSetResourceFactoryImpl
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
@@ -332,4 +350,4 @@ public class PageTemplateSetResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:801564859
+// LIFERAY-REST-BUILDER-HASH:1163264994

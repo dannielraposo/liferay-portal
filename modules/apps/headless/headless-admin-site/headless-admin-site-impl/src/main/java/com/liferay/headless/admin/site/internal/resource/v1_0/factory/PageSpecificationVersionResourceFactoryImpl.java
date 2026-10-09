@@ -27,12 +27,14 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import jakarta.annotation.Generated;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Constructor;
@@ -182,53 +184,66 @@ public class PageSpecificationVersionResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		PageSpecificationVersionResource pageSpecificationVersionResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		PageSpecificationVersionResource pageSpecificationVersionResource =
-			_componentServiceObjects.getService();
-
-		pageSpecificationVersionResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		pageSpecificationVersionResource.setContextCompany(company);
-
-		pageSpecificationVersionResource.setContextHttpServletRequest(
-			httpServletRequest);
-		pageSpecificationVersionResource.setContextHttpServletResponse(
-			httpServletResponse);
-		pageSpecificationVersionResource.setContextUriInfo(uriInfo);
-		pageSpecificationVersionResource.setContextUser(user);
-		pageSpecificationVersionResource.setExpressionConvert(
-			_expressionConvert);
-		pageSpecificationVersionResource.setFilterParserProvider(
-			_filterParserProvider);
-		pageSpecificationVersionResource.setGroupLocalService(
-			_groupLocalService);
-		pageSpecificationVersionResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		pageSpecificationVersionResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		pageSpecificationVersionResource.setRoleLocalService(_roleLocalService);
-		pageSpecificationVersionResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			Class<?> clazz = pageSpecificationVersionResource.getClass();
+
+			if (!_featureFlagChecker.isEnabled(
+					user.getCompanyId(),
+					clazz.getMethod(
+						method.getName(), method.getParameterTypes()))) {
+
+				throw new NotFoundException();
+			}
+
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			pageSpecificationVersionResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			pageSpecificationVersionResource.setContextCompany(company);
+
+			pageSpecificationVersionResource.setContextHttpServletRequest(
+				httpServletRequest);
+			pageSpecificationVersionResource.setContextHttpServletResponse(
+				httpServletResponse);
+			pageSpecificationVersionResource.setContextUriInfo(uriInfo);
+			pageSpecificationVersionResource.setContextUser(user);
+			pageSpecificationVersionResource.setExpressionConvert(
+				_expressionConvert);
+			pageSpecificationVersionResource.setFilterParserProvider(
+				_filterParserProvider);
+			pageSpecificationVersionResource.setGroupLocalService(
+				_groupLocalService);
+			pageSpecificationVersionResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			pageSpecificationVersionResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			pageSpecificationVersionResource.setRoleLocalService(
+				_roleLocalService);
+			pageSpecificationVersionResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(pageSpecificationVersionResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -258,6 +273,9 @@ public class PageSpecificationVersionResourceFactoryImpl
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
@@ -340,4 +358,4 @@ public class PageSpecificationVersionResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-784715450
+// LIFERAY-REST-BUILDER-HASH:483226160

@@ -181,50 +181,55 @@ public class NotificationTemplateResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		NotificationTemplateResource notificationTemplateResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		NotificationTemplateResource notificationTemplateResource =
-			_componentServiceObjects.getService();
-
-		notificationTemplateResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		notificationTemplateResource.setContextCompany(company);
-
-		notificationTemplateResource.setContextHttpServletRequest(
-			httpServletRequest);
-		notificationTemplateResource.setContextHttpServletResponse(
-			httpServletResponse);
-		notificationTemplateResource.setContextUriInfo(uriInfo);
-		notificationTemplateResource.setContextUser(user);
-		notificationTemplateResource.setExpressionConvert(_expressionConvert);
-		notificationTemplateResource.setFilterParserProvider(
-			_filterParserProvider);
-		notificationTemplateResource.setGroupLocalService(_groupLocalService);
-		notificationTemplateResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		notificationTemplateResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		notificationTemplateResource.setRoleLocalService(_roleLocalService);
-		notificationTemplateResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			notificationTemplateResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			notificationTemplateResource.setContextCompany(company);
+
+			notificationTemplateResource.setContextHttpServletRequest(
+				httpServletRequest);
+			notificationTemplateResource.setContextHttpServletResponse(
+				httpServletResponse);
+			notificationTemplateResource.setContextUriInfo(uriInfo);
+			notificationTemplateResource.setContextUser(user);
+			notificationTemplateResource.setExpressionConvert(
+				_expressionConvert);
+			notificationTemplateResource.setFilterParserProvider(
+				_filterParserProvider);
+			notificationTemplateResource.setGroupLocalService(
+				_groupLocalService);
+			notificationTemplateResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			notificationTemplateResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			notificationTemplateResource.setRoleLocalService(_roleLocalService);
+			notificationTemplateResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(notificationTemplateResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -335,4 +340,4 @@ public class NotificationTemplateResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1957918248
+// LIFERAY-REST-BUILDER-HASH:-29467619

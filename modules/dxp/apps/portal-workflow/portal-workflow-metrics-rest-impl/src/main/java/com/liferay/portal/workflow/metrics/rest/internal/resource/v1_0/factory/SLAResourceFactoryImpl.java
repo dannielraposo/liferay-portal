@@ -175,45 +175,48 @@ public class SLAResourceFactoryImpl implements SLAResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		SLAResource slaResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		SLAResource slaResource = _componentServiceObjects.getService();
-
-		slaResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		slaResource.setContextCompany(company);
-
-		slaResource.setContextHttpServletRequest(httpServletRequest);
-		slaResource.setContextHttpServletResponse(httpServletResponse);
-		slaResource.setContextUriInfo(uriInfo);
-		slaResource.setContextUser(user);
-		slaResource.setExpressionConvert(_expressionConvert);
-		slaResource.setFilterParserProvider(_filterParserProvider);
-		slaResource.setGroupLocalService(_groupLocalService);
-		slaResource.setResourceActionLocalService(_resourceActionLocalService);
-		slaResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		slaResource.setRoleLocalService(_roleLocalService);
-		slaResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			slaResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			slaResource.setContextCompany(company);
+
+			slaResource.setContextHttpServletRequest(httpServletRequest);
+			slaResource.setContextHttpServletResponse(httpServletResponse);
+			slaResource.setContextUriInfo(uriInfo);
+			slaResource.setContextUser(user);
+			slaResource.setExpressionConvert(_expressionConvert);
+			slaResource.setFilterParserProvider(_filterParserProvider);
+			slaResource.setGroupLocalService(_groupLocalService);
+			slaResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			slaResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			slaResource.setRoleLocalService(_roleLocalService);
+			slaResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(slaResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -321,4 +324,4 @@ public class SLAResourceFactoryImpl implements SLAResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1703017064
+// LIFERAY-REST-BUILDER-HASH:-986896703

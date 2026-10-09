@@ -177,46 +177,48 @@ public class CatalogResourceFactoryImpl implements CatalogResource.Factory {
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		CatalogResource catalogResource = _componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		CatalogResource catalogResource = _componentServiceObjects.getService();
-
-		catalogResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		catalogResource.setContextCompany(company);
-
-		catalogResource.setContextHttpServletRequest(httpServletRequest);
-		catalogResource.setContextHttpServletResponse(httpServletResponse);
-		catalogResource.setContextUriInfo(uriInfo);
-		catalogResource.setContextUser(user);
-		catalogResource.setExpressionConvert(_expressionConvert);
-		catalogResource.setFilterParserProvider(_filterParserProvider);
-		catalogResource.setGroupLocalService(_groupLocalService);
-		catalogResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		catalogResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		catalogResource.setRoleLocalService(_roleLocalService);
-		catalogResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			catalogResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			catalogResource.setContextCompany(company);
+
+			catalogResource.setContextHttpServletRequest(httpServletRequest);
+			catalogResource.setContextHttpServletResponse(httpServletResponse);
+			catalogResource.setContextUriInfo(uriInfo);
+			catalogResource.setContextUser(user);
+			catalogResource.setExpressionConvert(_expressionConvert);
+			catalogResource.setFilterParserProvider(_filterParserProvider);
+			catalogResource.setGroupLocalService(_groupLocalService);
+			catalogResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			catalogResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			catalogResource.setRoleLocalService(_roleLocalService);
+			catalogResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(catalogResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -324,4 +326,4 @@ public class CatalogResourceFactoryImpl implements CatalogResource.Factory {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-528287606
+// LIFERAY-REST-BUILDER-HASH:1225556585

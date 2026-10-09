@@ -27,12 +27,14 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import jakarta.annotation.Generated;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Constructor;
@@ -179,47 +181,61 @@ public class FragmentSetResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		FragmentSetResource fragmentSetResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		FragmentSetResource fragmentSetResource =
-			_componentServiceObjects.getService();
-
-		fragmentSetResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		fragmentSetResource.setContextCompany(company);
-
-		fragmentSetResource.setContextHttpServletRequest(httpServletRequest);
-		fragmentSetResource.setContextHttpServletResponse(httpServletResponse);
-		fragmentSetResource.setContextUriInfo(uriInfo);
-		fragmentSetResource.setContextUser(user);
-		fragmentSetResource.setExpressionConvert(_expressionConvert);
-		fragmentSetResource.setFilterParserProvider(_filterParserProvider);
-		fragmentSetResource.setGroupLocalService(_groupLocalService);
-		fragmentSetResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		fragmentSetResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		fragmentSetResource.setRoleLocalService(_roleLocalService);
-		fragmentSetResource.setSortParserProvider(_sortParserProvider);
-
 		try {
+			Class<?> clazz = fragmentSetResource.getClass();
+
+			if (!_featureFlagChecker.isEnabled(
+					user.getCompanyId(),
+					clazz.getMethod(
+						method.getName(), method.getParameterTypes()))) {
+
+				throw new NotFoundException();
+			}
+
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			fragmentSetResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			fragmentSetResource.setContextCompany(company);
+
+			fragmentSetResource.setContextHttpServletRequest(
+				httpServletRequest);
+			fragmentSetResource.setContextHttpServletResponse(
+				httpServletResponse);
+			fragmentSetResource.setContextUriInfo(uriInfo);
+			fragmentSetResource.setContextUser(user);
+			fragmentSetResource.setExpressionConvert(_expressionConvert);
+			fragmentSetResource.setFilterParserProvider(_filterParserProvider);
+			fragmentSetResource.setGroupLocalService(_groupLocalService);
+			fragmentSetResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			fragmentSetResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			fragmentSetResource.setRoleLocalService(_roleLocalService);
+			fragmentSetResource.setSortParserProvider(_sortParserProvider);
+
 			return method.invoke(fragmentSetResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -248,6 +264,9 @@ public class FragmentSetResourceFactoryImpl
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
 	private ExpressionConvert<Filter> _expressionConvert;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
@@ -329,4 +348,4 @@ public class FragmentSetResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1833531134
+// LIFERAY-REST-BUILDER-HASH:1353785056

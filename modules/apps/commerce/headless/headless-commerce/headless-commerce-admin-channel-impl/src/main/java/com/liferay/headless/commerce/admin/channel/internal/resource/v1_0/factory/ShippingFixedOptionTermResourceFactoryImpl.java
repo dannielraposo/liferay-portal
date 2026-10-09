@@ -182,53 +182,56 @@ public class ShippingFixedOptionTermResourceFactoryImpl
 			UriInfo uriInfo, User user)
 		throws Throwable {
 
-		String name = PrincipalThreadLocal.getName();
+		ShippingFixedOptionTermResource shippingFixedOptionTermResource =
+			_componentServiceObjects.getService();
 
-		PrincipalThreadLocal.setName(user.getUserId());
+		String name = PrincipalThreadLocal.getName();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (checkPermissions) {
-			PermissionThreadLocal.setPermissionChecker(
-				_defaultPermissionCheckerFactory.create(user));
-		}
-		else {
-			PermissionThreadLocal.setPermissionChecker(
-				new LiberalPermissionChecker(user));
-		}
-
-		ShippingFixedOptionTermResource shippingFixedOptionTermResource =
-			_componentServiceObjects.getService();
-
-		shippingFixedOptionTermResource.setContextAcceptLanguage(
-			new AcceptLanguageImpl(httpServletRequest, preferredLocale, user));
-
-		Company company = _companyLocalService.getCompany(user.getCompanyId());
-
-		shippingFixedOptionTermResource.setContextCompany(company);
-
-		shippingFixedOptionTermResource.setContextHttpServletRequest(
-			httpServletRequest);
-		shippingFixedOptionTermResource.setContextHttpServletResponse(
-			httpServletResponse);
-		shippingFixedOptionTermResource.setContextUriInfo(uriInfo);
-		shippingFixedOptionTermResource.setContextUser(user);
-		shippingFixedOptionTermResource.setExpressionConvert(
-			_expressionConvert);
-		shippingFixedOptionTermResource.setFilterParserProvider(
-			_filterParserProvider);
-		shippingFixedOptionTermResource.setGroupLocalService(
-			_groupLocalService);
-		shippingFixedOptionTermResource.setResourceActionLocalService(
-			_resourceActionLocalService);
-		shippingFixedOptionTermResource.setResourcePermissionLocalService(
-			_resourcePermissionLocalService);
-		shippingFixedOptionTermResource.setRoleLocalService(_roleLocalService);
-		shippingFixedOptionTermResource.setSortParserProvider(
-			_sortParserProvider);
-
 		try {
+			PrincipalThreadLocal.setName(user.getUserId());
+
+			if (checkPermissions) {
+				PermissionThreadLocal.setPermissionChecker(
+					_defaultPermissionCheckerFactory.create(user));
+			}
+			else {
+				PermissionThreadLocal.setPermissionChecker(
+					new LiberalPermissionChecker(user));
+			}
+
+			shippingFixedOptionTermResource.setContextAcceptLanguage(
+				new AcceptLanguageImpl(
+					httpServletRequest, preferredLocale, user));
+
+			Company company = _companyLocalService.getCompany(
+				user.getCompanyId());
+
+			shippingFixedOptionTermResource.setContextCompany(company);
+
+			shippingFixedOptionTermResource.setContextHttpServletRequest(
+				httpServletRequest);
+			shippingFixedOptionTermResource.setContextHttpServletResponse(
+				httpServletResponse);
+			shippingFixedOptionTermResource.setContextUriInfo(uriInfo);
+			shippingFixedOptionTermResource.setContextUser(user);
+			shippingFixedOptionTermResource.setExpressionConvert(
+				_expressionConvert);
+			shippingFixedOptionTermResource.setFilterParserProvider(
+				_filterParserProvider);
+			shippingFixedOptionTermResource.setGroupLocalService(
+				_groupLocalService);
+			shippingFixedOptionTermResource.setResourceActionLocalService(
+				_resourceActionLocalService);
+			shippingFixedOptionTermResource.setResourcePermissionLocalService(
+				_resourcePermissionLocalService);
+			shippingFixedOptionTermResource.setRoleLocalService(
+				_roleLocalService);
+			shippingFixedOptionTermResource.setSortParserProvider(
+				_sortParserProvider);
+
 			return method.invoke(shippingFixedOptionTermResource, arguments);
 		}
 		catch (InvocationTargetException invocationTargetException) {
@@ -340,4 +343,4 @@ public class ShippingFixedOptionTermResourceFactoryImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-207902297
+// LIFERAY-REST-BUILDER-HASH:1648369786
