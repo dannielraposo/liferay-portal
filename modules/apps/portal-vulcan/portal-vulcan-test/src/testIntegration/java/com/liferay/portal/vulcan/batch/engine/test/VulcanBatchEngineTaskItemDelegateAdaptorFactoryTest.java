@@ -10,6 +10,7 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -38,8 +39,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+
 /**
  * @author Carlos Correa
+ * @author Daniel Raposo
  */
 @RunWith(Arquillian.class)
 public class VulcanBatchEngineTaskItemDelegateAdaptorFactoryTest {
@@ -70,6 +75,30 @@ public class VulcanBatchEngineTaskItemDelegateAdaptorFactoryTest {
 		Assert.assertSame(
 			_roleLocalService,
 			vulcanBatchEngineTaskItemDelegate._roleLocalService);
+	}
+
+	@Test
+	public void testCreateWithEveryRegisteredVulcanBatchEngineTaskItemDelegate()
+		throws Exception {
+
+		BundleContext bundleContext = SystemBundleUtil.getBundleContext();
+
+		for (ServiceReference<?> serviceReference :
+				bundleContext.getAllServiceReferences(
+					null, "(batch.engine.task.item.delegate=true)")) {
+
+			Object service = bundleContext.getService(serviceReference);
+
+			try {
+				if (service instanceof VulcanBatchEngineTaskItemDelegate) {
+					_vulcanBatchEngineTaskItemDelegateAdaptorFactory.create(
+						(VulcanBatchEngineTaskItemDelegate<?>)service);
+				}
+			}
+			finally {
+				bundleContext.ungetService(serviceReference);
+			}
+		}
 	}
 
 	@Inject
