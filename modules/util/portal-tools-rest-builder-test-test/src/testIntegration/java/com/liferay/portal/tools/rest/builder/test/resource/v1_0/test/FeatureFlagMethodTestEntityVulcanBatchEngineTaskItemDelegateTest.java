@@ -6,9 +6,7 @@
 package com.liferay.portal.tools.rest.builder.test.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.feature.flag.constants.FeatureFlagConstants;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.util.FeatureFlagTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
@@ -63,163 +61,126 @@ public class FeatureFlagMethodTestEntityVulcanBatchEngineTaskItemDelegateTest {
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Test
 	public void testCreate() throws Exception {
-		try (SafeCloseable safeCloseable =
-				CompanyThreadLocal.setCompanyIdWithSafeCloseable(
-					TestPropsValues.getCompanyId())) {
+		Map<String, Serializable> parameters =
+			HashMapBuilder.<String, Serializable>put(
+				"createStrategy", "UPSERT"
+			).build();
 
-			Map<String, Serializable> parameters =
-				HashMapBuilder.<String, Serializable>put(
-					"createStrategy", "UPSERT"
-				).build();
+		_setFeatureFlagEnabled(false);
 
-			_setFeatureFlagEnabled(false);
+		_vulcanBatchEngineTaskItemDelegate.create(
+			Collections.singletonList(new FeatureFlagMethodTestEntity()),
+			new HashMap<>());
 
-			_vulcanBatchEngineTaskItemDelegate.create(
+		AssertUtils.assertFailure(
+			NotSupportedException.class,
+			"Create strategy \"UPSERT\" is not supported for " +
+				"FeatureFlagMethodTestEntity",
+			() -> _vulcanBatchEngineTaskItemDelegate.create(
 				Collections.singletonList(new FeatureFlagMethodTestEntity()),
-				new HashMap<>());
+				parameters));
 
-			AssertUtils.assertFailure(
-				NotSupportedException.class,
-				"Create strategy \"UPSERT\" is not supported for " +
-					"FeatureFlagMethodTestEntity",
-				() -> _vulcanBatchEngineTaskItemDelegate.create(
-					Collections.singletonList(
-						new FeatureFlagMethodTestEntity()),
-					parameters));
+		_setFeatureFlagEnabled(true);
 
-			_setFeatureFlagEnabled(true);
-
-			_vulcanBatchEngineTaskItemDelegate.create(
-				Collections.singletonList(new FeatureFlagMethodTestEntity()),
-				parameters);
-		}
+		_vulcanBatchEngineTaskItemDelegate.create(
+			Collections.singletonList(new FeatureFlagMethodTestEntity()),
+			parameters);
 	}
 
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Test
 	public void testDelete() throws Exception {
-		try (SafeCloseable safeCloseable =
-				CompanyThreadLocal.setCompanyIdWithSafeCloseable(
-					TestPropsValues.getCompanyId())) {
+		_setFeatureFlagEnabled(false);
 
-			_setFeatureFlagEnabled(false);
-
-			AssertUtils.assertFailure(
-				UnsupportedOperationException.class,
-				"This method needs to be implemented",
-				() -> _vulcanBatchEngineTaskItemDelegate.delete(
-					Collections.singletonList(
-						new FeatureFlagMethodTestEntity()),
-					new HashMap<>()));
-
-			_setFeatureFlagEnabled(true);
-
-			_vulcanBatchEngineTaskItemDelegate.delete(
+		AssertUtils.assertFailure(
+			UnsupportedOperationException.class,
+			"This method needs to be implemented",
+			() -> _vulcanBatchEngineTaskItemDelegate.delete(
 				Collections.singletonList(new FeatureFlagMethodTestEntity()),
-				new HashMap<>());
-		}
+				new HashMap<>()));
+
+		_setFeatureFlagEnabled(true);
+
+		_vulcanBatchEngineTaskItemDelegate.delete(
+			Collections.singletonList(new FeatureFlagMethodTestEntity()),
+			new HashMap<>());
 	}
 
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Test
 	public void testGetAvailableCreateStrategies() throws Exception {
-		try (SafeCloseable safeCloseable =
-				CompanyThreadLocal.setCompanyIdWithSafeCloseable(
-					TestPropsValues.getCompanyId())) {
+		_setFeatureFlagEnabled(false);
 
-			_setFeatureFlagEnabled(false);
+		Assert.assertEquals(
+			SetUtil.fromArray("INSERT"),
+			_vulcanBatchEngineTaskItemDelegate.getAvailableCreateStrategies());
 
-			Assert.assertEquals(
-				SetUtil.fromArray("INSERT"),
-				_vulcanBatchEngineTaskItemDelegate.
-					getAvailableCreateStrategies());
+		_setFeatureFlagEnabled(true);
 
-			_setFeatureFlagEnabled(true);
-
-			Assert.assertEquals(
-				SetUtil.fromArray("INSERT", "UPSERT"),
-				_vulcanBatchEngineTaskItemDelegate.
-					getAvailableCreateStrategies());
-		}
+		Assert.assertEquals(
+			SetUtil.fromArray("INSERT", "UPSERT"),
+			_vulcanBatchEngineTaskItemDelegate.getAvailableCreateStrategies());
 	}
 
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Test
 	public void testGetAvailableUpdateStrategies() throws Exception {
-		try (SafeCloseable safeCloseable =
-				CompanyThreadLocal.setCompanyIdWithSafeCloseable(
-					TestPropsValues.getCompanyId())) {
+		_setFeatureFlagEnabled(false);
 
-			_setFeatureFlagEnabled(false);
+		Assert.assertEquals(
+			Collections.emptySet(),
+			_vulcanBatchEngineTaskItemDelegate.getAvailableUpdateStrategies());
 
-			Assert.assertEquals(
-				Collections.emptySet(),
-				_vulcanBatchEngineTaskItemDelegate.
-					getAvailableUpdateStrategies());
+		_setFeatureFlagEnabled(true);
 
-			_setFeatureFlagEnabled(true);
-
-			Assert.assertEquals(
-				SetUtil.fromArray("PARTIAL_UPDATE"),
-				_vulcanBatchEngineTaskItemDelegate.
-					getAvailableUpdateStrategies());
-		}
+		Assert.assertEquals(
+			SetUtil.fromArray("PARTIAL_UPDATE"),
+			_vulcanBatchEngineTaskItemDelegate.getAvailableUpdateStrategies());
 	}
 
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Test
 	public void testRead() throws Exception {
-		try (SafeCloseable safeCloseable =
-				CompanyThreadLocal.setCompanyIdWithSafeCloseable(
-					TestPropsValues.getCompanyId())) {
+		_setFeatureFlagEnabled(false);
 
-			_setFeatureFlagEnabled(false);
+		AssertUtils.assertFailure(
+			UnsupportedOperationException.class,
+			"This method needs to be implemented",
+			() -> _vulcanBatchEngineTaskItemDelegate.read(
+				null, Pagination.of(1, 20), null, new HashMap<>(), null));
 
-			AssertUtils.assertFailure(
-				UnsupportedOperationException.class,
-				"This method needs to be implemented",
-				() -> _vulcanBatchEngineTaskItemDelegate.read(
-					null, Pagination.of(1, 20), null, new HashMap<>(), null));
+		_setFeatureFlagEnabled(true);
 
-			_setFeatureFlagEnabled(true);
+		Page<FeatureFlagMethodTestEntity> page =
+			_vulcanBatchEngineTaskItemDelegate.read(
+				null, Pagination.of(1, 20), null, new HashMap<>(), null);
 
-			Page<FeatureFlagMethodTestEntity> page =
-				_vulcanBatchEngineTaskItemDelegate.read(
-					null, Pagination.of(1, 20), null, new HashMap<>(), null);
-
-			Assert.assertEquals(0, page.getTotalCount());
-		}
+		Assert.assertEquals(0, page.getTotalCount());
 	}
 
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Test
 	public void testUpdate() throws Exception {
-		try (SafeCloseable safeCloseable =
-				CompanyThreadLocal.setCompanyIdWithSafeCloseable(
-					TestPropsValues.getCompanyId())) {
+		Map<String, Serializable> parameters =
+			HashMapBuilder.<String, Serializable>put(
+				"updateStrategy", "PARTIAL_UPDATE"
+			).build();
 
-			Map<String, Serializable> parameters =
-				HashMapBuilder.<String, Serializable>put(
-					"updateStrategy", "PARTIAL_UPDATE"
-				).build();
+		_setFeatureFlagEnabled(false);
 
-			_setFeatureFlagEnabled(false);
-
-			AssertUtils.assertFailure(
-				NotSupportedException.class,
-				"Update strategy \"PARTIAL_UPDATE\" is not supported for " +
-					"FeatureFlagMethodTestEntity",
-				() -> _vulcanBatchEngineTaskItemDelegate.update(
-					Collections.singletonList(
-						new FeatureFlagMethodTestEntity()),
-					parameters));
-
-			_setFeatureFlagEnabled(true);
-
-			_vulcanBatchEngineTaskItemDelegate.update(
+		AssertUtils.assertFailure(
+			NotSupportedException.class,
+			"Update strategy \"PARTIAL_UPDATE\" is not supported for " +
+				"FeatureFlagMethodTestEntity",
+			() -> _vulcanBatchEngineTaskItemDelegate.update(
 				Collections.singletonList(new FeatureFlagMethodTestEntity()),
-				parameters);
-		}
+				parameters));
+
+		_setFeatureFlagEnabled(true);
+
+		_vulcanBatchEngineTaskItemDelegate.update(
+			Collections.singletonList(new FeatureFlagMethodTestEntity()),
+			parameters);
 	}
 
 	private void _setFeatureFlagEnabled(boolean enabled) throws Exception {
