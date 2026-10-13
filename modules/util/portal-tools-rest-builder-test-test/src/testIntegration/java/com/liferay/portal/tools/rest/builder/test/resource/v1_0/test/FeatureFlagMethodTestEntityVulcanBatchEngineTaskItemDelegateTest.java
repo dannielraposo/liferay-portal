@@ -6,23 +6,26 @@
 package com.liferay.portal.tools.rest.builder.test.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.batch.engine.BatchEngineTaskItemDelegate;
+import com.liferay.batch.engine.pagination.Pagination;
 import com.liferay.portal.kernel.feature.flag.constants.FeatureFlagConstants;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.test.AssertUtils;
-import com.liferay.portal.kernel.test.util.FeatureFlagTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.tools.rest.builder.test.dto.v1_0.FeatureFlagMethodTestEntity;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegate;
+import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegateAdaptorFactory;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegateRegistry;
-import com.liferay.portal.vulcan.pagination.Page;
-import com.liferay.portal.vulcan.pagination.Pagination;
 
-import jakarta.ws.rs.NotSupportedException;
+import jakarta.ws.rs.NotFoundException;
 
 import java.io.Serializable;
 
@@ -50,70 +53,126 @@ public class FeatureFlagMethodTestEntityVulcanBatchEngineTaskItemDelegateTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_vulcanBatchEngineTaskItemDelegate =
-			(VulcanBatchEngineTaskItemDelegate<FeatureFlagMethodTestEntity>)
-				_vulcanBatchEngineTaskItemDelegateRegistry.
-					getVulcanBatchEngineTaskItemDelegate(
-						TestPropsValues.getCompanyId(),
-						FeatureFlagMethodTestEntity.class.getName());
+		_batchEngineTaskItemDelegate =
+			_vulcanBatchEngineTaskItemDelegateAdaptorFactory.create(
+				(VulcanBatchEngineTaskItemDelegate<FeatureFlagMethodTestEntity>)
+					_vulcanBatchEngineTaskItemDelegateRegistry.
+						getVulcanBatchEngineTaskItemDelegate(
+							TestPropsValues.getCompanyId(),
+							FeatureFlagMethodTestEntity.class.getName()));
+
+		_batchEngineTaskItemDelegate.setContextCompany(
+			_companyLocalService.getCompany(TestPropsValues.getCompanyId()));
 	}
 
-	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
+	@FeatureFlags(
+		featureFlags = {
+			@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY),
+			@FeatureFlag(
+				enable = false,
+				value = _FEATURE_FLAG_KEY_GET_BY_EXTERNAL_REFERENCE_CODE
+			),
+			@FeatureFlag(
+				enable = false,
+				value = _FEATURE_FLAG_KEY_PUT_BY_EXTERNAL_REFERENCE_CODE
+			),
+			@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY_SITE)
+		}
+	)
 	@Test
 	public void testCreate() throws Exception {
-		_vulcanBatchEngineTaskItemDelegate.create(
-			Collections.singletonList(new FeatureFlagMethodTestEntity()),
-			new HashMap<>());
-
-		Map<String, Serializable> parameters =
-			HashMapBuilder.<String, Serializable>put(
-				"createStrategy", "UPSERT"
-			).build();
+		_create(new HashMap<>());
 
 		AssertUtils.assertFailure(
-			NotSupportedException.class,
-			"Create strategy \"UPSERT\" is not supported for " +
-				"FeatureFlagMethodTestEntity",
-			() -> _vulcanBatchEngineTaskItemDelegate.create(
-				Collections.singletonList(new FeatureFlagMethodTestEntity()),
-				parameters));
+			NotFoundException.class, "HTTP 404 Not Found",
+			() -> _create(_getSiteParameters()));
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY_SITE, true);
 
-		_vulcanBatchEngineTaskItemDelegate.create(
-			Collections.singletonList(new FeatureFlagMethodTestEntity()),
-			parameters);
+		_create(_getSiteParameters());
+
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
+
+		AssertUtils.assertFailure(
+			NotFoundException.class, "HTTP 404 Not Found",
+			() -> _create(_getUpsertParameters("PARTIAL_UPDATE")));
+
+		_setFeatureFlagEnabled(
+			_FEATURE_FLAG_KEY_GET_BY_EXTERNAL_REFERENCE_CODE, true);
+
+		_create(_getUpsertParameters("PARTIAL_UPDATE"));
+
+		AssertUtils.assertFailure(
+			NotFoundException.class, "HTTP 404 Not Found",
+			() -> _create(_getUpsertParameters("UPDATE")));
+
+		_setFeatureFlagEnabled(
+			_FEATURE_FLAG_KEY_PUT_BY_EXTERNAL_REFERENCE_CODE, true);
+
+		_create(_getUpsertParameters("UPDATE"));
 	}
 
-	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
+	@FeatureFlags(
+		featureFlags = {
+			@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY),
+			@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY_SITE)
+		}
+	)
 	@Test
 	public void testDelete() throws Exception {
 		AssertUtils.assertFailure(
-			UnsupportedOperationException.class,
-			"This method needs to be implemented",
-			() -> _vulcanBatchEngineTaskItemDelegate.delete(
-				Collections.singletonList(new FeatureFlagMethodTestEntity()),
-				new HashMap<>()));
+			NotFoundException.class, "HTTP 404 Not Found",
+			() -> _delete(_getSiteParameters()));
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY_SITE, true);
 
-		_vulcanBatchEngineTaskItemDelegate.delete(
-			Collections.singletonList(new FeatureFlagMethodTestEntity()),
-			new HashMap<>());
+		_delete(_getSiteParameters());
+
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
+
+		_delete(new HashMap<>());
 	}
 
-	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
+	@FeatureFlags(
+		featureFlags = {
+			@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY),
+			@FeatureFlag(
+				enable = false,
+				value = _FEATURE_FLAG_KEY_GET_BY_EXTERNAL_REFERENCE_CODE
+			),
+			@FeatureFlag(
+				enable = false,
+				value = _FEATURE_FLAG_KEY_PUT_BY_EXTERNAL_REFERENCE_CODE
+			)
+		}
+	)
 	@Test
 	public void testGetAvailableCreateStrategies() throws Exception {
 		Assert.assertEquals(
 			SetUtil.fromArray("INSERT"),
-			_vulcanBatchEngineTaskItemDelegate.getAvailableCreateStrategies());
+			_batchEngineTaskItemDelegate.getAvailableCreateStrategies());
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(
+			_FEATURE_FLAG_KEY_GET_BY_EXTERNAL_REFERENCE_CODE, true);
+
+		Assert.assertEquals(
+			SetUtil.fromArray("INSERT"),
+			_batchEngineTaskItemDelegate.getAvailableCreateStrategies());
+
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
 		Assert.assertEquals(
 			SetUtil.fromArray("INSERT", "UPSERT"),
-			_vulcanBatchEngineTaskItemDelegate.getAvailableCreateStrategies());
+			_batchEngineTaskItemDelegate.getAvailableCreateStrategies());
+
+		_setFeatureFlagEnabled(
+			_FEATURE_FLAG_KEY_GET_BY_EXTERNAL_REFERENCE_CODE, false);
+		_setFeatureFlagEnabled(
+			_FEATURE_FLAG_KEY_PUT_BY_EXTERNAL_REFERENCE_CODE, true);
+
+		Assert.assertEquals(
+			SetUtil.fromArray("INSERT", "UPSERT"),
+			_batchEngineTaskItemDelegate.getAvailableCreateStrategies());
 	}
 
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
@@ -121,31 +180,38 @@ public class FeatureFlagMethodTestEntityVulcanBatchEngineTaskItemDelegateTest {
 	public void testGetAvailableUpdateStrategies() throws Exception {
 		Assert.assertEquals(
 			Collections.emptySet(),
-			_vulcanBatchEngineTaskItemDelegate.getAvailableUpdateStrategies());
+			_batchEngineTaskItemDelegate.getAvailableUpdateStrategies());
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
 		Assert.assertEquals(
 			SetUtil.fromArray("PARTIAL_UPDATE"),
-			_vulcanBatchEngineTaskItemDelegate.getAvailableUpdateStrategies());
+			_batchEngineTaskItemDelegate.getAvailableUpdateStrategies());
 	}
 
-	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
+	@FeatureFlags(
+		featureFlags = {
+			@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY),
+			@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY_SITE)
+		}
+	)
 	@Test
 	public void testRead() throws Exception {
 		AssertUtils.assertFailure(
-			UnsupportedOperationException.class,
-			"This method needs to be implemented",
-			() -> _vulcanBatchEngineTaskItemDelegate.read(
-				null, Pagination.of(1, 20), null, new HashMap<>(), null));
+			NotFoundException.class, "HTTP 404 Not Found",
+			() -> _read(new HashMap<>()));
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
-		Page<FeatureFlagMethodTestEntity> page =
-			_vulcanBatchEngineTaskItemDelegate.read(
-				null, Pagination.of(1, 20), null, new HashMap<>(), null);
+		_read(new HashMap<>());
 
-		Assert.assertEquals(0, page.getTotalCount());
+		AssertUtils.assertFailure(
+			NotFoundException.class, "HTTP 404 Not Found",
+			() -> _read(_getSiteParameters()));
+
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY_SITE, true);
+
+		_read(_getSiteParameters());
 	}
 
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
@@ -157,33 +223,88 @@ public class FeatureFlagMethodTestEntityVulcanBatchEngineTaskItemDelegateTest {
 			).build();
 
 		AssertUtils.assertFailure(
-			NotSupportedException.class,
-			"Update strategy \"PARTIAL_UPDATE\" is not supported for " +
-				"FeatureFlagMethodTestEntity",
-			() -> _vulcanBatchEngineTaskItemDelegate.update(
+			NotFoundException.class, "HTTP 404 Not Found",
+			() -> _batchEngineTaskItemDelegate.update(
 				Collections.singletonList(new FeatureFlagMethodTestEntity()),
 				parameters));
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
-		_vulcanBatchEngineTaskItemDelegate.update(
+		_batchEngineTaskItemDelegate.update(
 			Collections.singletonList(new FeatureFlagMethodTestEntity()),
 			parameters);
 	}
 
-	private void _setFeatureFlagEnabled(boolean enabled) throws Exception {
-		PropsUtil.set(
-			FeatureFlagConstants.getKey(_FEATURE_FLAG_KEY),
-			String.valueOf(enabled));
+	private void _create(Map<String, Serializable> parameters)
+		throws Exception {
 
-		FeatureFlagTestUtil.invokeFeatureFlagListeners(
-			TestPropsValues.getCompanyId(), enabled, _FEATURE_FLAG_KEY);
+		_batchEngineTaskItemDelegate.create(
+			Collections.singletonList(new FeatureFlagMethodTestEntity()),
+			parameters);
+	}
+
+	private void _delete(Map<String, Serializable> parameters)
+		throws Exception {
+
+		_batchEngineTaskItemDelegate.delete(
+			Collections.singletonList(
+				new FeatureFlagMethodTestEntity() {
+					{
+						setExternalReferenceCode(RandomTestUtil.randomString());
+						setId(RandomTestUtil.randomLong());
+					}
+				}),
+			parameters);
+	}
+
+	private Map<String, Serializable> _getSiteParameters() throws Exception {
+		return HashMapBuilder.<String, Serializable>put(
+			"siteId", String.valueOf(TestPropsValues.getGroupId())
+		).build();
+	}
+
+	private Map<String, Serializable> _getUpsertParameters(
+		String updateStrategy) {
+
+		return HashMapBuilder.<String, Serializable>put(
+			"createStrategy", "UPSERT"
+		).put(
+			"updateStrategy", updateStrategy
+		).build();
+	}
+
+	private void _read(Map<String, Serializable> parameters) throws Exception {
+		_batchEngineTaskItemDelegate.read(
+			null, Pagination.of(1, 20), null, parameters, null);
+	}
+
+	private void _setFeatureFlagEnabled(
+		String featureFlagKey, boolean enabled) {
+
+		PropsUtil.set(
+			FeatureFlagConstants.getKey(featureFlagKey),
+			String.valueOf(enabled));
 	}
 
 	private static final String _FEATURE_FLAG_KEY = "METHOD-123";
 
-	private VulcanBatchEngineTaskItemDelegate<FeatureFlagMethodTestEntity>
-		_vulcanBatchEngineTaskItemDelegate;
+	private static final String
+		_FEATURE_FLAG_KEY_GET_BY_EXTERNAL_REFERENCE_CODE = "METHOD-124";
+
+	private static final String
+		_FEATURE_FLAG_KEY_PUT_BY_EXTERNAL_REFERENCE_CODE = "METHOD-125";
+
+	private static final String _FEATURE_FLAG_KEY_SITE = "METHOD-126";
+
+	private BatchEngineTaskItemDelegate<FeatureFlagMethodTestEntity>
+		_batchEngineTaskItemDelegate;
+
+	@Inject
+	private CompanyLocalService _companyLocalService;
+
+	@Inject
+	private VulcanBatchEngineTaskItemDelegateAdaptorFactory
+		_vulcanBatchEngineTaskItemDelegateAdaptorFactory;
 
 	@Inject
 	private VulcanBatchEngineTaskItemDelegateRegistry
