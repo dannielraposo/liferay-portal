@@ -300,8 +300,8 @@ public class GraphQLServletExtender {
 		ParentalSearch parentalSearch = new ParentalSearch(
 			graphQLObjectInfoRetriever);
 
-		SearchAlgorithm methodSearchAlgorithm = new FeatureFlagSearchAlgorithm(
-			breadthFirstSearch);
+		FeatureFlagSearchAlgorithm featureFlagSearchAlgorithm =
+			new FeatureFlagSearchAlgorithm(breadthFirstSearch);
 
 		GraphQLExtensionsHandler graphQLExtensionsHandler =
 			new GraphQLExtensionsHandler() {
@@ -309,7 +309,7 @@ public class GraphQLServletExtender {
 					setFieldRetriever(_liferayGraphQLFieldRetriever);
 					setFieldSearchAlgorithm(parentalSearch);
 					setGraphQLObjectInfoRetriever(graphQLObjectInfoRetriever);
-					setMethodSearchAlgorithm(methodSearchAlgorithm);
+					setMethodSearchAlgorithm(featureFlagSearchAlgorithm);
 				}
 			};
 
@@ -320,7 +320,7 @@ public class GraphQLServletExtender {
 				setGraphQLFieldRetriever(_liferayGraphQLFieldRetriever);
 				setGraphQLInterfaceRetriever(graphQLInterfaceRetriever);
 				setGraphQLObjectInfoRetriever(graphQLObjectInfoRetriever);
-				setMethodSearchAlgorithm(methodSearchAlgorithm);
+				setMethodSearchAlgorithm(featureFlagSearchAlgorithm);
 			}
 
 			public GraphQLType getGraphQLType(
