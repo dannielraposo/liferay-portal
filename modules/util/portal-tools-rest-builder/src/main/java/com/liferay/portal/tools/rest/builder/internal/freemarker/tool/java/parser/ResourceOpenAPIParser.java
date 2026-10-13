@@ -14,6 +14,7 @@ import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.TreeMapBuilder;
@@ -377,66 +378,216 @@ public class ResourceOpenAPIParser {
 		return null;
 	}
 
-	public static Set<String> getVulcanBatchImplementationCreateStrategies(
+	public static String getResourceMethodType(
+		ConfigYAML configYAML, JavaMethodSignature javaMethodSignature) {
+
+		String methodName = javaMethodSignature.getMethodName();
+		String parentSchemaName = GetterUtil.getString(
+			javaMethodSignature.getParentSchemaName());
+		String schemaName = javaMethodSignature.getSchemaName();
+
+		if (isExternalReferenceCodeMethod("delete", javaMethodSignature) &&
+			parentSchemaName.isEmpty()) {
+
+			return "deleteByExternalReferenceCode";
+		}
+
+		if (isExternalReferenceCodeMethod("get", javaMethodSignature)) {
+			if (parentSchemaName.isEmpty()) {
+				return "getByExternalReferenceCode";
+			}
+
+			return "getParentByExternalReferenceCode";
+		}
+
+		if (isExternalReferenceCodeMethod("post", javaMethodSignature) &&
+			!parentSchemaName.isEmpty()) {
+
+			return "postParentByExternalReferenceCode";
+		}
+
+		if (isExternalReferenceCodeMethod("put", javaMethodSignature)) {
+			if (parentSchemaName.isEmpty()) {
+				return "putByExternalReferenceCode";
+			}
+
+			return "putParentByExternalReferenceCode";
+		}
+
+		if (methodName.equals("deleteAssetLibrary" + schemaName) ||
+			methodName.equals(
+				"deleteAssetLibrary" + schemaName +
+					"ByExternalReferenceCode")) {
+
+			return "deleteAssetLibrary";
+		}
+
+		if (methodName.equals("delete" + schemaName) &&
+			!isExternalReferenceCodeMethod("delete", javaMethodSignature)) {
+
+			return "deleteById";
+		}
+
+		if (methodName.equals("deleteSite" + schemaName) ||
+			methodName.equals(
+				"deleteSite" + schemaName + "ByExternalReferenceCode")) {
+
+			return "deleteSite";
+		}
+
+		if (methodName.equals("get" + schemaName)) {
+			return "getById";
+		}
+
+		if (methodName.equals(
+				StringBundler.concat(
+					"get", parentSchemaName,
+					OpenAPIUtil.formatPlural(configYAML, schemaName),
+					"Page"))) {
+
+			if (parentSchemaName.isEmpty()) {
+				return "get";
+			}
+
+			return "getParent";
+		}
+
+		if (methodName.equals("patch" + schemaName) &&
+			!isExternalReferenceCodeMethod("patch", javaMethodSignature)) {
+
+			return "patch";
+		}
+
+		if (methodName.equals("post" + parentSchemaName + schemaName)) {
+			if (parentSchemaName.isEmpty()) {
+				return "post";
+			}
+
+			return "postParent";
+		}
+
+		if (methodName.equals("put" + schemaName)) {
+			return "put";
+		}
+
+		return null;
+	}
+
+	public static String getVulcanBatchEngineStrategyAnnotation(
+		ConfigYAML configYAML, JavaMethodSignature javaMethodSignature,
 		List<JavaMethodSignature> javaMethodSignatures,
+		Map<String, String> properties) {
+
+		String resourceMethodType = getResourceMethodType(
+			configYAML, javaMethodSignature);
+
+		if (resourceMethodType == null) {
+			return StringPool.BLANK;
+		}
+
+		Set<String> createStrategies =
+			getVulcanBatchImplementationCreateStrategies(
+				configYAML, javaMethodSignatures, properties);
+
+		if (_postResourceMethodTypes.contains(resourceMethodType) &&
+			createStrategies.contains("INSERT")) {
+
+			return _getVulcanBatchEngineStrategyAnnotation("INSERT", null);
+		}
+
+		if (_putByExternalReferenceCodeResourceMethodTypes.contains(
+				resourceMethodType) &&
+			createStrategies.contains("UPSERT")) {
+
+			return _getVulcanBatchEngineStrategyAnnotation("UPSERT", null);
+		}
+
+		if (_getByExternalReferenceCodeResourceMethodTypes.contains(
+				resourceMethodType) &&
+			createStrategies.contains("UPSERT") &&
+			hasPartialUpsertVulcanBatchImplementation(
+				configYAML, javaMethodSignatures)) {
+
+			return _getVulcanBatchEngineStrategyAnnotation(
+				"UPSERT", "PARTIAL_UPDATE");
+		}
+
+		if (resourceMethodType.equals("patch")) {
+			return _getVulcanBatchEngineStrategyAnnotation(
+				null, "PARTIAL_UPDATE");
+		}
+
+		if (resourceMethodType.equals("put")) {
+			return _getVulcanBatchEngineStrategyAnnotation(null, "UPDATE");
+		}
+
+		return StringPool.BLANK;
+	}
+
+	public static Set<String> getVulcanBatchImplementationCreateStrategies(
+		ConfigYAML configYAML, List<JavaMethodSignature> javaMethodSignatures,
 		Map<String, String> properties) {
 
 		Set<String> createStrategies = new TreeSet<>();
 
-		Set<String> propertyNames = properties.keySet();
+		Set<String> resourceMethodTypes = _getResourceMethodTypes(
+			configYAML, javaMethodSignatures);
 
-		for (JavaMethodSignature javaMethodSignature : javaMethodSignatures) {
-			String methodName = javaMethodSignature.getMethodName();
-			String parentSchemaName = javaMethodSignature.getParentSchemaName();
-			String schemaName = javaMethodSignature.getSchemaName();
+		if (!Collections.disjoint(
+				resourceMethodTypes, _postResourceMethodTypes)) {
 
-			if (parentSchemaName == null) {
-				parentSchemaName = "";
-			}
+			createStrategies.add("INSERT");
+		}
 
-			if (methodName.equals("post" + parentSchemaName + schemaName) ||
-				isExternalReferenceCodeMethod("post", javaMethodSignature)) {
+		if (properties.containsKey("externalReferenceCode") &&
+			(!Collections.disjoint(
+				resourceMethodTypes,
+				_putByExternalReferenceCodeResourceMethodTypes) ||
+			 hasPartialUpsertVulcanBatchImplementation(
+				 configYAML, javaMethodSignatures))) {
 
-				createStrategies.add("INSERT");
-			}
-			else if (propertyNames.contains("externalReferenceCode") &&
-					 isExternalReferenceCodeMethod(
-						 "put", javaMethodSignature)) {
-
-				createStrategies.add("UPSERT");
-			}
+			createStrategies.add("UPSERT");
 		}
 
 		return createStrategies;
 	}
 
 	public static Set<String> getVulcanBatchImplementationUpdateStrategies(
-		List<JavaMethodSignature> javaMethodSignatures) {
+		ConfigYAML configYAML, List<JavaMethodSignature> javaMethodSignatures) {
 
 		Set<String> updateStrategies = new TreeSet<>();
 
-		for (JavaMethodSignature javaMethodSignature : javaMethodSignatures) {
-			String methodName = javaMethodSignature.getMethodName();
+		Set<String> resourceMethodTypes = _getResourceMethodTypes(
+			configYAML, javaMethodSignatures);
 
-			String schemaName = javaMethodSignature.getSchemaName();
+		if (resourceMethodTypes.contains("patch")) {
+			updateStrategies.add("PARTIAL_UPDATE");
+		}
 
-			if (hasPathParameter(
-					javaMethodSignature,
-					OpenAPIParserUtil.getSchemaVarName(schemaName) +
-						"ExternalReferenceCode")) {
-
-				continue;
-			}
-
-			if (methodName.equals("patch" + schemaName)) {
-				updateStrategies.add("PARTIAL_UPDATE");
-			}
-			else if (methodName.equals("put" + schemaName)) {
-				updateStrategies.add("UPDATE");
-			}
+		if (resourceMethodTypes.contains("put")) {
+			updateStrategies.add("UPDATE");
 		}
 
 		return updateStrategies;
+	}
+
+	public static boolean hasPartialUpsertVulcanBatchImplementation(
+		ConfigYAML configYAML, List<JavaMethodSignature> javaMethodSignatures) {
+
+		Set<String> resourceMethodTypes = _getResourceMethodTypes(
+			configYAML, javaMethodSignatures);
+
+		if (!Collections.disjoint(
+				resourceMethodTypes,
+				_getByExternalReferenceCodeResourceMethodTypes) &&
+			resourceMethodTypes.contains("patch") &&
+			!Collections.disjoint(
+				resourceMethodTypes, _postResourceMethodTypes)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public static boolean hasPathParameter(
@@ -1664,6 +1815,23 @@ public class ResourceOpenAPIParser {
 			parameterType, ".class))");
 	}
 
+	private static Set<String> _getResourceMethodTypes(
+		ConfigYAML configYAML, List<JavaMethodSignature> javaMethodSignatures) {
+
+		Set<String> resourceMethodTypes = new HashSet<>();
+
+		for (JavaMethodSignature javaMethodSignature : javaMethodSignatures) {
+			String resourceMethodType = getResourceMethodType(
+				configYAML, javaMethodSignature);
+
+			if (resourceMethodType != null) {
+				resourceMethodTypes.add(resourceMethodType);
+			}
+		}
+
+		return resourceMethodTypes;
+	}
+
 	private static String _getReturnType(
 		ConfigYAML configYAML, Map<String, String> javaDataTypeMap,
 		Operation operation, String path) {
@@ -1770,6 +1938,25 @@ public class ResourceOpenAPIParser {
 		}
 
 		return configYAML.getJavaEEPackage() + ".ws.rs.core.Response";
+	}
+
+	private static String _getVulcanBatchEngineStrategyAnnotation(
+		String createStrategy, String updateStrategy) {
+
+		List<String> attributes = new ArrayList<>();
+
+		if (createStrategy != null) {
+			attributes.add("createStrategy = \"" + createStrategy + "\"");
+		}
+
+		if (updateStrategy != null) {
+			attributes.add("updateStrategy = \"" + updateStrategy + "\"");
+		}
+
+		return StringBundler.concat(
+			"@com.liferay.portal.vulcan.batch.engine.",
+			"VulcanBatchEngineStrategy(", StringUtil.merge(attributes, ", "),
+			")");
 	}
 
 	private static boolean _isSchemaMethod(
@@ -1895,6 +2082,16 @@ public class ResourceOpenAPIParser {
 			consumer.accept(Collections.emptySet());
 		}
 	}
+
+	private static final Set<String>
+		_getByExternalReferenceCodeResourceMethodTypes = SetUtil.fromArray(
+			"getByExternalReferenceCode", "getParentByExternalReferenceCode");
+	private static final Set<String> _postResourceMethodTypes =
+		SetUtil.fromArray(
+			"post", "postParent", "postParentByExternalReferenceCode");
+	private static final Set<String>
+		_putByExternalReferenceCodeResourceMethodTypes = SetUtil.fromArray(
+			"putByExternalReferenceCode", "putParentByExternalReferenceCode");
 
 	private enum BatchOperationType {
 

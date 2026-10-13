@@ -21,13 +21,11 @@ import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Resource;
 import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -45,6 +43,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.GroupThreadLocal;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -86,6 +85,7 @@ import ${configYAML.javaEEPackage}.ws.rs.core.UriInfo;
 import java.io.Serializable;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -116,9 +116,12 @@ public abstract class Base${schemaName}ResourceImpl
 		javaDataType = freeMarkerTool.getJavaDataType(configYAML, openAPIYAML, schemaName)!""
 		javaMethodSignatures = freeMarkerTool.getResourceJavaMethodSignatures(configYAML, openAPIYAML, schemaName)
 		generateBatch = freeMarkerTool.generateBatch(configYAML, javaDataType, javaMethodSignatures, schemaName)
+		generateContextBatchResource = generateBatch && freeMarkerTool.isGenerateFeatureFlag(configYAML, openAPIYAML, schemaName)
 		generateCRUD = freeMarkerTool.generateCRUD(configYAML, javaMethodSignatures, schemaName)
 		generateEntityModelResource = ((freeMarkerTool.containsParameterType(javaMethodSignatures, "com.liferay.portal.kernel.search.filter.Filter") || freeMarkerTool.containsParameterType(javaMethodSignatures, "[Lcom.liferay.portal.kernel.search.Sort;")) && freeMarkerTool.isVersionCompatible(configYAML, 10)) || generateBatch
 		properties = freeMarkerTool.getDTOProperties(configYAML, openAPIYAML, schema, allSchemas)
+		createStrategies = freeMarkerTool.getVulcanBatchImplementationCreateStrategies(configYAML, javaMethodSignatures, properties)
+		updateStrategies = freeMarkerTool.getVulcanBatchImplementationUpdateStrategies(configYAML, javaMethodSignatures)
 	/>
 
 	<#if generateEntityModelResource>
@@ -159,49 +162,42 @@ public abstract class Base${schemaName}ResourceImpl
 			httpMethod = freeMarkerTool.getHTTPMethod(javaMethodSignature.operation)
 			putParentPermissionsPageJavaMethodSignature = ""
 			putPermissionsPageJavaMethodSignature = ""
-			parentSchemaName = javaMethodSignature.parentSchemaName!
+			parentSchemaName = javaMethodSignature.parentSchemaName!""
+			resourceMethodType = freeMarkerTool.getResourceMethodType(configYAML, javaMethodSignature)!""
 		/>
 
-		<#if freeMarkerTool.isExternalReferenceCodeMethod("delete", javaMethodSignature) && !parentSchemaName?has_content>
-			<#assign deleteByExternalReferenceCodeBatchJavaMethodSignature = javaMethodSignature />
-		<#elseif freeMarkerTool.isExternalReferenceCodeMethod("get", javaMethodSignature)>
-			<#if parentSchemaName?has_content>
-				<#assign getParentByExternalReferenceCodeBatchJavaMethodSignatures = getParentByExternalReferenceCodeBatchJavaMethodSignatures + [javaMethodSignature] />
-			<#else>
-				<#assign getByExternalReferenceCodeBatchJavaMethodSignature = javaMethodSignature />
-			</#if>
-		<#elseif freeMarkerTool.isExternalReferenceCodeMethod("post", javaMethodSignature) && parentSchemaName?has_content>
-			<#assign postParentByExternalReferenceCodeBatchJavaMethodSignatures = postParentByExternalReferenceCodeBatchJavaMethodSignatures + [javaMethodSignature] />
-		<#elseif freeMarkerTool.isExternalReferenceCodeMethod("put", javaMethodSignature)>
-			<#if parentSchemaName?has_content>
-				<#assign putParentByExternalReferenceCodeBatchJavaMethodSignatures = putParentByExternalReferenceCodeBatchJavaMethodSignatures + [javaMethodSignature] />
-			<#else>
-				<#assign putByExternalReferenceCodeBatchJavaMethodSignature = javaMethodSignature />
-			</#if>
-		<#elseif stringUtil.equals(javaMethodSignature.methodName, "deleteAssetLibrary" + schemaName) || stringUtil.equals(javaMethodSignature.methodName, "deleteAssetLibrary" + schemaName + "ByExternalReferenceCode")>
+		<#if stringUtil.equals(resourceMethodType, "deleteAssetLibrary")>
 			<#assign deleteAssetLibraryBatchJavaMethodSignature = javaMethodSignature />
-		<#elseif stringUtil.equals(javaMethodSignature.methodName, "delete" + schemaName) && !freeMarkerTool.isExternalReferenceCodeMethod("delete", javaMethodSignature)>
+		<#elseif stringUtil.equals(resourceMethodType, "deleteByExternalReferenceCode")>
+			<#assign deleteByExternalReferenceCodeBatchJavaMethodSignature = javaMethodSignature />
+		<#elseif stringUtil.equals(resourceMethodType, "deleteById")>
 			<#assign deleteByIdBatchJavaMethodSignature = javaMethodSignature />
-		<#elseif stringUtil.equals(javaMethodSignature.methodName, "deleteSite" + schemaName) || stringUtil.equals(javaMethodSignature.methodName, "deleteSite" + schemaName + "ByExternalReferenceCode")>
+		<#elseif stringUtil.equals(resourceMethodType, "deleteSite")>
 			<#assign deleteSiteBatchJavaMethodSignature = javaMethodSignature />
-		<#elseif stringUtil.equals(javaMethodSignature.methodName, "get" + schemaName)>
+		<#elseif stringUtil.equals(resourceMethodType, "get")>
+			<#assign getBatchJavaMethodSignature = javaMethodSignature />
+		<#elseif stringUtil.equals(resourceMethodType, "getByExternalReferenceCode")>
+			<#assign getByExternalReferenceCodeBatchJavaMethodSignature = javaMethodSignature />
+		<#elseif stringUtil.equals(resourceMethodType, "getById")>
 			<#assign getByIdJavaMethodSignature = javaMethodSignature />
-		<#elseif stringUtil.equals(javaMethodSignature.methodName, "get" + parentSchemaName + schemaNames + "Page")>
-			<#if parentSchemaName?has_content>
-				<#assign getParentBatchJavaMethodSignatures = getParentBatchJavaMethodSignatures + [javaMethodSignature] />
-			<#else>
-				<#assign getBatchJavaMethodSignature = javaMethodSignature />
-			</#if>
-		<#elseif stringUtil.equals(javaMethodSignature.methodName, "patch" + schemaName) && !freeMarkerTool.isExternalReferenceCodeMethod("patch", javaMethodSignature)>
+		<#elseif stringUtil.equals(resourceMethodType, "getParent")>
+			<#assign getParentBatchJavaMethodSignatures = getParentBatchJavaMethodSignatures + [javaMethodSignature] />
+		<#elseif stringUtil.equals(resourceMethodType, "getParentByExternalReferenceCode")>
+			<#assign getParentByExternalReferenceCodeBatchJavaMethodSignatures = getParentByExternalReferenceCodeBatchJavaMethodSignatures + [javaMethodSignature] />
+		<#elseif stringUtil.equals(resourceMethodType, "patch")>
 			<#assign patchBatchJavaMethodSignature = javaMethodSignature />
-		<#elseif stringUtil.equals(javaMethodSignature.methodName, "post" + parentSchemaName + schemaName)>
-			<#if parentSchemaName?has_content>
-				<#assign postParentBatchJavaMethodSignatures = postParentBatchJavaMethodSignatures + [javaMethodSignature] />
-			<#else>
-				<#assign postBatchJavaMethodSignature = javaMethodSignature />
-			</#if>
-		<#elseif stringUtil.equals(javaMethodSignature.methodName, "put" + schemaName)>
+		<#elseif stringUtil.equals(resourceMethodType, "post")>
+			<#assign postBatchJavaMethodSignature = javaMethodSignature />
+		<#elseif stringUtil.equals(resourceMethodType, "postParent")>
+			<#assign postParentBatchJavaMethodSignatures = postParentBatchJavaMethodSignatures + [javaMethodSignature] />
+		<#elseif stringUtil.equals(resourceMethodType, "postParentByExternalReferenceCode")>
+			<#assign postParentByExternalReferenceCodeBatchJavaMethodSignatures = postParentByExternalReferenceCodeBatchJavaMethodSignatures + [javaMethodSignature] />
+		<#elseif stringUtil.equals(resourceMethodType, "put")>
 			<#assign putBatchJavaMethodSignature = javaMethodSignature />
+		<#elseif stringUtil.equals(resourceMethodType, "putByExternalReferenceCode")>
+			<#assign putByExternalReferenceCodeBatchJavaMethodSignature = javaMethodSignature />
+		<#elseif stringUtil.equals(resourceMethodType, "putParentByExternalReferenceCode")>
+			<#assign putParentByExternalReferenceCodeBatchJavaMethodSignatures = putParentByExternalReferenceCodeBatchJavaMethodSignatures + [javaMethodSignature] />
 		</#if>
 
 		<#if freeMarkerTool.isGeneratePermissions(configYAML, javaMethodSignature, javaMethodSignatures, schema, schemaName)>
@@ -229,6 +225,9 @@ public abstract class Base${schemaName}ResourceImpl
 				 */
 			</#if>
 			@Override
+			<#if generateBatch && freeMarkerTool.isVersionCompatible(configYAML, 17)>
+				${freeMarkerTool.getVulcanBatchEngineStrategyAnnotation(configYAML, javaMethodSignature, javaMethodSignatures, properties)}
+			</#if>
 			${freeMarkerTool.getResourceMethodAnnotations(configYAML, javaMethodSignature)}
 			public final ${javaMethodSignature.returnType} ${javaMethodSignature.methodName}(${freeMarkerTool.getResourceParameters(configYAML, javaMethodSignature.javaMethodParameters, javaMethodSignature.operation, allSchemas, true)}) throws Exception {
 				<#if stringUtil.equals(httpMethod, "get")>
@@ -368,6 +367,9 @@ public abstract class Base${schemaName}ResourceImpl
 			 */
 		</#if>
 		@Override
+		<#if generateBatch && freeMarkerTool.isVersionCompatible(configYAML, 17)>
+			${freeMarkerTool.getVulcanBatchEngineStrategyAnnotation(configYAML, javaMethodSignature, javaMethodSignatures, properties)}
+		</#if>
 		${freeMarkerTool.getResourceMethodAnnotations(configYAML, javaMethodSignature)}
 		public <#if generatePermissions>final</#if> ${javaMethodSignature.returnType} ${javaMethodSignature.methodName}(${freeMarkerTool.getResourceParameters(configYAML, javaMethodSignature.javaMethodParameters, javaMethodSignature.operation, allSchemas, true)}) throws Exception {
 			<#if stringUtil.equals(javaMethodSignature.returnType, "boolean")>
@@ -635,12 +637,8 @@ public abstract class Base${schemaName}ResourceImpl
 
 	<#if generateBatch>
 		<#assign
-			createInsertStrategyBatchJavaMethodSignatures = postParentBatchJavaMethodSignatures + postParentByExternalReferenceCodeBatchJavaMethodSignatures + (postBatchJavaMethodSignature??)?then([postBatchJavaMethodSignature], [])
-			createStrategies = freeMarkerTool.getVulcanBatchImplementationCreateStrategies(javaMethodSignatures, properties)
-			createUpsertStrategyBatchJavaMethodSignatures = putParentByExternalReferenceCodeBatchJavaMethodSignatures + (putByExternalReferenceCodeBatchJavaMethodSignature??)?then([putByExternalReferenceCodeBatchJavaMethodSignature], [])
+			contextBatchResourcePrefix = generateContextBatchResource?then("contextBatchResource.", "")
 			getIdMethodName = properties?keys?seq_contains("id")?then("getId", "get" + schemaName + "Id")
-			readBatchJavaMethodSignatures = getParentBatchJavaMethodSignatures + (getBatchJavaMethodSignature??)?then([getBatchJavaMethodSignature], [])
-			updateStrategies = freeMarkerTool.getVulcanBatchImplementationUpdateStrategies(javaMethodSignatures)
 
 			parserMethodDataTypes = []
 		/>
@@ -656,19 +654,19 @@ public abstract class Base${schemaName}ResourceImpl
 			<#if createStrategies?seq_contains("INSERT")>
 				<#assign parentParameterNames = [] />
 
-				if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT") <@appendAndFeatureFlagCondition javaMethodSignaturesList = [createInsertStrategyBatchJavaMethodSignatures] />) {
+				if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT")) {
 					<#if postParentBatchJavaMethodSignatures?has_content>
 						<#list postParentBatchJavaMethodSignatures as postParentBatchJavaMethodSignature>
 							<#assign parentParameterNames = parentParameterNames + [postParentBatchJavaMethodSignature.javaMethodParameters[0].parameterName] />
 
-							if (parameters.containsKey("${postParentBatchJavaMethodSignature.javaMethodParameters[0].parameterName}") <@appendAndBranchFeatureFlagCondition javaMethodSignature = postParentBatchJavaMethodSignature javaMethodSignatures = createInsertStrategyBatchJavaMethodSignatures />) {
+							if (parameters.containsKey("${postParentBatchJavaMethodSignature.javaMethodParameters[0].parameterName}")) {
 								${schemaVarName}UnsafeFunction = ${schemaVarName} ->
 
 								<#if !stringUtil.equals(javaDataType, postParentBatchJavaMethodSignature.returnType)>
 									{
 								</#if>
 
-								${postParentBatchJavaMethodSignature.methodName}(
+								${contextBatchResourcePrefix}${postParentBatchJavaMethodSignature.methodName}(
 
 								<@getCreateBatchJavaMethodParameters
 									javaMethodSignature = postParentBatchJavaMethodSignature
@@ -697,14 +695,14 @@ public abstract class Base${schemaName}ResourceImpl
 								else
 							</#if>
 
-							if (parameters.containsKey("${postParentByExternalReferenceCodeBatchJavaMethodSignature.javaMethodParameters[0].parameterName}") <@appendAndBranchFeatureFlagCondition javaMethodSignature = postParentByExternalReferenceCodeBatchJavaMethodSignature javaMethodSignatures = createInsertStrategyBatchJavaMethodSignatures />) {
+							if (parameters.containsKey("${postParentByExternalReferenceCodeBatchJavaMethodSignature.javaMethodParameters[0].parameterName}")) {
 								${schemaVarName}UnsafeFunction = ${schemaVarName} ->
 
 								<#if !stringUtil.equals(javaDataType, postParentByExternalReferenceCodeBatchJavaMethodSignature.returnType)>
 									{
 								</#if>
 
-								${postParentByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
+								${contextBatchResourcePrefix}${postParentByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
 
 								<@getCreateBatchJavaMethodParameters
 									javaMethodSignature = postParentByExternalReferenceCodeBatchJavaMethodSignature
@@ -727,17 +725,7 @@ public abstract class Base${schemaName}ResourceImpl
 
 					<#if postBatchJavaMethodSignature??>
 						<#if postParentBatchJavaMethodSignatures?has_content || postParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
-							else
-						</#if>
-
-						<#assign featureFlagCondition = (createInsertStrategyBatchJavaMethodSignatures?size > 1)?then(getFeatureFlagCondition([[postBatchJavaMethodSignature]]), "") />
-
-						<#if featureFlagCondition?has_content>
-							if (${featureFlagCondition})
-						</#if>
-
-						<#if featureFlagCondition?has_content || postParentBatchJavaMethodSignatures?has_content || postParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
-							{
+							else {
 						</#if>
 
 						${schemaVarName}UnsafeFunction = ${schemaVarName} ->
@@ -746,7 +734,7 @@ public abstract class Base${schemaName}ResourceImpl
 							{
 						</#if>
 
-						${postBatchJavaMethodSignature.methodName}(
+						${contextBatchResourcePrefix}${postBatchJavaMethodSignature.methodName}(
 
 						<@getCreateBatchJavaMethodParameters
 							javaMethodSignature = postBatchJavaMethodSignature
@@ -760,12 +748,12 @@ public abstract class Base${schemaName}ResourceImpl
 							};
 						</#if>
 
-						<#if featureFlagCondition?has_content || postParentBatchJavaMethodSignatures?has_content || postParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
+						<#if postParentBatchJavaMethodSignatures?has_content || postParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
 							}
 						</#if>
 					</#if>
 
-					<#if (!postBatchJavaMethodSignature?? || featureFlagCondition?has_content) && parentParameterNames?has_content>
+					<#if !postBatchJavaMethodSignature?? && parentParameterNames?has_content>
 						else {
 							throw new NotSupportedException("One of the following parameters must be specified: [${parentParameterNames?join(", ")}]");
 						}
@@ -774,16 +762,13 @@ public abstract class Base${schemaName}ResourceImpl
 			</#if>
 
 			<#if createStrategies?seq_contains("UPSERT")>
-				if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT") <@appendAndFeatureFlagCondition javaMethodSignaturesList = [createUpsertStrategyBatchJavaMethodSignatures] />) {
+				if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
 					String updateStrategy = (String)parameters.getOrDefault("updateStrategy", "UPDATE");
 
-					<#if (getByExternalReferenceCodeBatchJavaMethodSignature?? || getParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content) && patchBatchJavaMethodSignature?? && (postBatchJavaMethodSignature?? || postParentBatchJavaMethodSignatures?has_content || postParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content)>
-						<#assign
-							getByExternalReferenceCodeBatchJavaMethodSignatures = getParentByExternalReferenceCodeBatchJavaMethodSignatures + (getByExternalReferenceCodeBatchJavaMethodSignature??)?then([getByExternalReferenceCodeBatchJavaMethodSignature], [])
-							parentParameterNames = []
-						/>
+					<#if freeMarkerTool.hasPartialUpsertVulcanBatchImplementation(configYAML, javaMethodSignatures)>
+						<#assign parentParameterNames = [] />
 
-						if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE") <@appendAndFeatureFlagCondition javaMethodSignaturesList = [getByExternalReferenceCodeBatchJavaMethodSignatures, [patchBatchJavaMethodSignature], createInsertStrategyBatchJavaMethodSignatures] />) {
+						if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE")) {
 							${schemaVarName}UnsafeFunction = ${schemaVarName} -> {
 								${schemaName} get${schemaName} = null;
 								${schemaName} persisted${schemaName} = null;
@@ -792,8 +777,8 @@ public abstract class Base${schemaName}ResourceImpl
 									<#list getParentByExternalReferenceCodeBatchJavaMethodSignatures as getParentByExternalReferenceCodeBatchJavaMethodSignature>
 										<#assign parentParameterNames = parentParameterNames + [getParentByExternalReferenceCodeBatchJavaMethodSignature.javaMethodParameters[0].parameterName] />
 
-										if (parameters.containsKey("${getParentByExternalReferenceCodeBatchJavaMethodSignature.javaMethodParameters[0].parameterName}") <@appendAndBranchFeatureFlagCondition javaMethodSignature = getParentByExternalReferenceCodeBatchJavaMethodSignature javaMethodSignatures = getByExternalReferenceCodeBatchJavaMethodSignatures />) {
-											get${schemaName} = ${getParentByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
+										if (parameters.containsKey("${getParentByExternalReferenceCodeBatchJavaMethodSignature.javaMethodParameters[0].parameterName}")) {
+											get${schemaName} = ${contextBatchResourcePrefix}${getParentByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
 
 											<@getCreateBatchJavaMethodParameters
 												javaMethodSignature = getParentByExternalReferenceCodeBatchJavaMethodSignature
@@ -810,20 +795,10 @@ public abstract class Base${schemaName}ResourceImpl
 
 									<#if getByExternalReferenceCodeBatchJavaMethodSignature??>
 										<#if getParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
-											else
+											else {
 										</#if>
 
-										<#assign featureFlagCondition = (getByExternalReferenceCodeBatchJavaMethodSignatures?size > 1)?then(getFeatureFlagCondition([[getByExternalReferenceCodeBatchJavaMethodSignature]]), "") />
-
-										<#if featureFlagCondition?has_content>
-											if (${featureFlagCondition})
-										</#if>
-
-										<#if featureFlagCondition?has_content || getParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
-											{
-										</#if>
-
-										get${schemaName} = ${getByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
+										get${schemaName} = ${contextBatchResourcePrefix}${getByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
 
 										<@getCreateBatchJavaMethodParameters
 											javaMethodSignature = getByExternalReferenceCodeBatchJavaMethodSignature
@@ -832,21 +807,21 @@ public abstract class Base${schemaName}ResourceImpl
 
 										);
 
-										<#if featureFlagCondition?has_content || getParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
+										<#if getParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
 											}
 										</#if>
 									</#if>
 
-									<#if (!getByExternalReferenceCodeBatchJavaMethodSignature?? || featureFlagCondition?has_content) && parentParameterNames?has_content>
+									<#if !getByExternalReferenceCodeBatchJavaMethodSignature?? && parentParameterNames?has_content>
 										else {
 											throw new NotSupportedException("One of the following parameters must be specified: [${parentParameterNames?join(", ")}]");
 										}
 									</#if>
 
 									<#if stringUtil.equals(javaDataType, patchBatchJavaMethodSignature.returnType)>
-										persisted${schemaName} = patch${schemaName}(
+										persisted${schemaName} = ${contextBatchResourcePrefix}patch${schemaName}(
 									<#else>
-										patch${schemaName}(
+										${contextBatchResourcePrefix}patch${schemaName}(
 									</#if>
 
 									<#list patchBatchJavaMethodSignature.javaMethodParameters as javaMethodParameter>
@@ -871,12 +846,12 @@ public abstract class Base${schemaName}ResourceImpl
 										<#list postParentBatchJavaMethodSignatures as postParentBatchJavaMethodSignature>
 											<#assign parentParameterNames = parentParameterNames + [postParentBatchJavaMethodSignature.javaMethodParameters[0].parameterName] />
 
-											if (parameters.containsKey("${postParentBatchJavaMethodSignature.javaMethodParameters[0].parameterName}") <@appendAndBranchFeatureFlagCondition javaMethodSignature = postParentBatchJavaMethodSignature javaMethodSignatures = createInsertStrategyBatchJavaMethodSignatures />) {
+											if (parameters.containsKey("${postParentBatchJavaMethodSignature.javaMethodParameters[0].parameterName}")) {
 												<#if stringUtil.equals(javaDataType, postParentBatchJavaMethodSignature.returnType)>
 													persisted${schemaName} =
 												</#if>
 
-												${postParentBatchJavaMethodSignature.methodName}(
+												${contextBatchResourcePrefix}${postParentBatchJavaMethodSignature.methodName}(
 
 												<@getCreateBatchJavaMethodParameters
 													javaMethodSignature = postParentBatchJavaMethodSignature
@@ -900,12 +875,12 @@ public abstract class Base${schemaName}ResourceImpl
 												else
 											</#if>
 
-											if (parameters.containsKey("${postParentByExternalReferenceCodeBatchJavaMethodSignature.javaMethodParameters[0].parameterName}") <@appendAndBranchFeatureFlagCondition javaMethodSignature = postParentByExternalReferenceCodeBatchJavaMethodSignature javaMethodSignatures = createInsertStrategyBatchJavaMethodSignatures />) {
+											if (parameters.containsKey("${postParentByExternalReferenceCodeBatchJavaMethodSignature.javaMethodParameters[0].parameterName}")) {
 												<#if stringUtil.equals(javaDataType, postParentByExternalReferenceCodeBatchJavaMethodSignature.returnType)>
 													persisted${schemaName} =
 												</#if>
 
-												${postParentByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
+												${contextBatchResourcePrefix}${postParentByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
 
 												<@getCreateBatchJavaMethodParameters
 													javaMethodSignature = postParentByExternalReferenceCodeBatchJavaMethodSignature
@@ -923,24 +898,14 @@ public abstract class Base${schemaName}ResourceImpl
 
 									<#if postBatchJavaMethodSignature??>
 										<#if postParentBatchJavaMethodSignatures?has_content || postParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
-											else
-										</#if>
-
-										<#assign featureFlagCondition = (createInsertStrategyBatchJavaMethodSignatures?size > 1)?then(getFeatureFlagCondition([[postBatchJavaMethodSignature]]), "") />
-
-										<#if featureFlagCondition?has_content>
-											if (${featureFlagCondition})
-										</#if>
-
-										<#if featureFlagCondition?has_content || postParentBatchJavaMethodSignatures?has_content || postParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
-											{
+											else {
 										</#if>
 
 										<#if stringUtil.equals(javaDataType, postBatchJavaMethodSignature.returnType)>
 											persisted${schemaName} =
 										</#if>
 
-										${postBatchJavaMethodSignature.methodName}(
+										${contextBatchResourcePrefix}${postBatchJavaMethodSignature.methodName}(
 
 										<@getCreateBatchJavaMethodParameters
 											javaMethodSignature = postBatchJavaMethodSignature
@@ -949,12 +914,12 @@ public abstract class Base${schemaName}ResourceImpl
 
 										);
 
-										<#if featureFlagCondition?has_content || postParentBatchJavaMethodSignatures?has_content || postParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
+										<#if postParentBatchJavaMethodSignatures?has_content || postParentByExternalReferenceCodeBatchJavaMethodSignatures?has_content>
 											}
 										</#if>
 									</#if>
 
-									<#if (!postBatchJavaMethodSignature?? || featureFlagCondition?has_content) && parentParameterNames?has_content>
+									<#if !postBatchJavaMethodSignature?? && parentParameterNames?has_content>
 										else {
 											throw new NotSupportedException("One of the following parameters must be specified: [${parentParameterNames?join(", ")}]");
 										}
@@ -977,12 +942,12 @@ public abstract class Base${schemaName}ResourceImpl
 									<#list putParentByExternalReferenceCodeBatchJavaMethodSignatures as putParentByExternalReferenceCodeBatchJavaMethodSignature>
 										<#assign parentParameterNames = parentParameterNames + [putParentByExternalReferenceCodeBatchJavaMethodSignature.javaMethodParameters[0].parameterName] />
 
-										if (parameters.containsKey("${putParentByExternalReferenceCodeBatchJavaMethodSignature.javaMethodParameters[0].parameterName}") <@appendAndBranchFeatureFlagCondition javaMethodSignature = putParentByExternalReferenceCodeBatchJavaMethodSignature javaMethodSignatures = createUpsertStrategyBatchJavaMethodSignatures />) {
+										if (parameters.containsKey("${putParentByExternalReferenceCodeBatchJavaMethodSignature.javaMethodParameters[0].parameterName}")) {
 											<#if stringUtil.equals(javaDataType, putParentByExternalReferenceCodeBatchJavaMethodSignature.returnType)>
 												persisted${schemaName} =
 											</#if>
 
-											${putParentByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
+											${contextBatchResourcePrefix}${putParentByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
 
 											<@getCreateBatchJavaMethodParameters
 												javaMethodSignature = putParentByExternalReferenceCodeBatchJavaMethodSignature
@@ -1003,17 +968,11 @@ public abstract class Base${schemaName}ResourceImpl
 										else
 									</#if>
 
-									<#assign featureFlagCondition = (createUpsertStrategyBatchJavaMethodSignatures?size > 1)?then(getFeatureFlagCondition([[putByExternalReferenceCodeBatchJavaMethodSignature]]), "") />
-
-									<#if featureFlagCondition?has_content>
-										if (${featureFlagCondition}) {
-									</#if>
-
 									<#if stringUtil.equals(javaDataType, putByExternalReferenceCodeBatchJavaMethodSignature.returnType)>
 										persisted${schemaName} =
 									</#if>
 
-									${putByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
+									${contextBatchResourcePrefix}${putByExternalReferenceCodeBatchJavaMethodSignature.methodName}(
 
 									<@getCreateBatchJavaMethodParameters
 										javaMethodSignature = putByExternalReferenceCodeBatchJavaMethodSignature
@@ -1021,13 +980,9 @@ public abstract class Base${schemaName}ResourceImpl
 									/>
 
 									);
-
-									<#if featureFlagCondition?has_content>
-										}
-									</#if>
 								</#if>
 
-								<#if (!putByExternalReferenceCodeBatchJavaMethodSignature?? || featureFlagCondition?has_content) && parentParameterNames?has_content>
+								<#if !putByExternalReferenceCodeBatchJavaMethodSignature?? && parentParameterNames?has_content>
 									else {
 										throw new NotSupportedException("One of the following parameters must be specified: [${parentParameterNames?join(", ")}]");
 									}
@@ -1071,42 +1026,16 @@ public abstract class Base${schemaName}ResourceImpl
 			/>
 
 			<#if useDeleteAssetLibrary || useDeleteByExternalReferenceCode || useDeleteById || useDeleteSite>
-				<#assign deleteBatchJavaMethodSignatures = [] />
-
-				<#if useDeleteAssetLibrary>
-					<#assign deleteBatchJavaMethodSignatures = deleteBatchJavaMethodSignatures + [deleteAssetLibraryBatchJavaMethodSignature] />
-				</#if>
-
-				<#if useDeleteByExternalReferenceCode>
-					<#assign deleteBatchJavaMethodSignatures = deleteBatchJavaMethodSignatures + [deleteByExternalReferenceCodeBatchJavaMethodSignature] />
-				</#if>
-
-				<#if useDeleteById>
-					<#assign deleteBatchJavaMethodSignatures = deleteBatchJavaMethodSignatures + [deleteByIdBatchJavaMethodSignature] />
-				</#if>
-
-				<#if useDeleteSite>
-					<#assign deleteBatchJavaMethodSignatures = deleteBatchJavaMethodSignatures + [deleteSiteBatchJavaMethodSignature] />
-				</#if>
-
-				<#assign featureFlagCondition = getFeatureFlagCondition([deleteBatchJavaMethodSignatures]) />
-
-				<#if featureFlagCondition?has_content>
-					if (!${featureFlagCondition}) {
-						throw new UnsupportedOperationException("This method needs to be implemented");
-					}
-				</#if>
-
 				UnsafeFunction<${javaDataType}, ${javaDataType}, Exception> ${schemaVarName}UnsafeFunction = ${schemaVarName} -> {
 					<#if useDeleteById>
 						<#assign getterMethodName = properties?keys?seq_contains("id")?then("getId", "get" + schemaName + "Id") />
 
 						<#if useDeleteAssetLibrary || useDeleteByExternalReferenceCode || useDeleteSite>
-							if (${schemaVarName}.${getterMethodName}() != null <@appendAndBranchFeatureFlagCondition javaMethodSignature = deleteByIdBatchJavaMethodSignature javaMethodSignatures = deleteBatchJavaMethodSignatures />) {
+							if (${schemaVarName}.${getterMethodName}() != null) {
 								try {
 						</#if>
 
-						${deleteByIdBatchJavaMethodSignature.methodName}(${schemaVarName}.${getterMethodName}()
+						${contextBatchResourcePrefix}${deleteByIdBatchJavaMethodSignature.methodName}(${schemaVarName}.${getterMethodName}()
 
 						<#list deleteByIdBatchJavaMethodSignature.javaMethodParameters as javaMethodParameter>
 							<#if freeMarkerTool.isQueryParameter(javaMethodParameter, deleteByIdBatchJavaMethodSignature.operation)>
@@ -1126,9 +1055,9 @@ public abstract class Base${schemaName}ResourceImpl
 						<#if useDeleteAssetLibrary || useDeleteByExternalReferenceCode || useDeleteSite>
 							}
 							catch (Exception exception) {
-								if (${schemaVarName}.getExternalReferenceCode() != null <#if useDeleteByExternalReferenceCode><@appendAndBranchFeatureFlagCondition javaMethodSignature = deleteByExternalReferenceCodeBatchJavaMethodSignature javaMethodSignatures = deleteBatchJavaMethodSignatures /></#if>) {
+								if (${schemaVarName}.getExternalReferenceCode() != null) {
 									<#if useDeleteByExternalReferenceCode>
-												${deleteByExternalReferenceCodeBatchJavaMethodSignature.methodName}(${schemaVarName}.getExternalReferenceCode());
+												${contextBatchResourcePrefix}${deleteByExternalReferenceCodeBatchJavaMethodSignature.methodName}(${schemaVarName}.getExternalReferenceCode());
 
 												return ${schemaVarName};
 											}
@@ -1138,8 +1067,8 @@ public abstract class Base${schemaName}ResourceImpl
 										<#if useDeleteAssetLibrary>
 											<#assign assetLibraryParameter = freeMarkerTool.isExternalReferenceCodeExclusiveMethod("delete", deleteAssetLibraryBatchJavaMethodSignature)?then("assetLibraryExternalReferenceCode", "assetLibraryId") />
 
-											if (parameters.containsKey("${assetLibraryParameter}") <@appendAndBranchFeatureFlagCondition javaMethodSignature = deleteAssetLibraryBatchJavaMethodSignature javaMethodSignatures = deleteBatchJavaMethodSignatures />) {
-												${deleteAssetLibraryBatchJavaMethodSignature.methodName}(
+											if (parameters.containsKey("${assetLibraryParameter}")) {
+												${contextBatchResourcePrefix}${deleteAssetLibraryBatchJavaMethodSignature.methodName}(
 													<@getDeleteBatchJavaMethodParameters javaMethodParameters = deleteAssetLibraryBatchJavaMethodSignature.javaMethodParameters />
 												);
 
@@ -1150,8 +1079,8 @@ public abstract class Base${schemaName}ResourceImpl
 										<#if useDeleteSite>
 											<#assign siteParameter = freeMarkerTool.isExternalReferenceCodeExclusiveMethod("delete", deleteSiteBatchJavaMethodSignature)?then("siteExternalReferenceCode", "siteId") />
 
-											if (parameters.containsKey("${siteParameter}") <@appendAndBranchFeatureFlagCondition javaMethodSignature = deleteSiteBatchJavaMethodSignature javaMethodSignatures = deleteBatchJavaMethodSignatures />) {
-												${deleteSiteBatchJavaMethodSignature.methodName}(
+											if (parameters.containsKey("${siteParameter}")) {
+												${contextBatchResourcePrefix}${deleteSiteBatchJavaMethodSignature.methodName}(
 													<@getDeleteBatchJavaMethodParameters javaMethodParameters = deleteSiteBatchJavaMethodSignature.javaMethodParameters />
 												);
 
@@ -1171,8 +1100,8 @@ public abstract class Base${schemaName}ResourceImpl
 
 						<#if useDeleteById>else</#if>
 
-						if (parameters.containsKey("${assetLibraryParameter}") <@appendAndBranchFeatureFlagCondition javaMethodSignature = deleteAssetLibraryBatchJavaMethodSignature javaMethodSignatures = deleteBatchJavaMethodSignatures />) {
-							${deleteAssetLibraryBatchJavaMethodSignature.methodName}(
+						if (parameters.containsKey("${assetLibraryParameter}")) {
+							${contextBatchResourcePrefix}${deleteAssetLibraryBatchJavaMethodSignature.methodName}(
 								<@getDeleteBatchJavaMethodParameters javaMethodParameters = deleteAssetLibraryBatchJavaMethodSignature.javaMethodParameters />
 							);
 
@@ -1183,8 +1112,8 @@ public abstract class Base${schemaName}ResourceImpl
 					<#if useDeleteByExternalReferenceCode>
 						<#if useDeleteAssetLibrary || useDeleteById>else</#if>
 
-						if (${schemaVarName}.getExternalReferenceCode() != null <@appendAndBranchFeatureFlagCondition javaMethodSignature = deleteByExternalReferenceCodeBatchJavaMethodSignature javaMethodSignatures = deleteBatchJavaMethodSignatures />) {
-							${deleteByExternalReferenceCodeBatchJavaMethodSignature.methodName}(${schemaVarName}.getExternalReferenceCode());
+						if (${schemaVarName}.getExternalReferenceCode() != null) {
+							${contextBatchResourcePrefix}${deleteByExternalReferenceCodeBatchJavaMethodSignature.methodName}(${schemaVarName}.getExternalReferenceCode());
 
 							return ${schemaVarName};
 						}
@@ -1195,8 +1124,8 @@ public abstract class Base${schemaName}ResourceImpl
 
 						<#assign siteParameter = freeMarkerTool.isExternalReferenceCodeExclusiveMethod("delete", deleteSiteBatchJavaMethodSignature)?then("siteExternalReferenceCode", "siteId") />
 
-						if (parameters.containsKey("${siteParameter}") <@appendAndBranchFeatureFlagCondition javaMethodSignature = deleteSiteBatchJavaMethodSignature javaMethodSignatures = deleteBatchJavaMethodSignatures />) {
-							${deleteSiteBatchJavaMethodSignature.methodName}(
+						if (parameters.containsKey("${siteParameter}")) {
+							${contextBatchResourcePrefix}${deleteSiteBatchJavaMethodSignature.methodName}(
 								<@getDeleteBatchJavaMethodParameters javaMethodParameters = deleteSiteBatchJavaMethodSignature.javaMethodParameters />
 							);
 
@@ -1225,27 +1154,23 @@ public abstract class Base${schemaName}ResourceImpl
 			</#if>
 		}
 
-		public Set<String> getAvailableCreateStrategies() {
-			<@availableStrategies
-				strategies = createStrategies
-				strategyFeatureFlagConditions = {
-					"INSERT": createStrategies?seq_contains("INSERT")?then(getFeatureFlagCondition([createInsertStrategyBatchJavaMethodSignatures]), ""),
-					"UPSERT": createStrategies?seq_contains("UPSERT")?then(getFeatureFlagCondition([createUpsertStrategyBatchJavaMethodSignatures]), "")
-				}
-				variableName = "createStrategies"
-			/>
-		}
+		<#if !freeMarkerTool.isVersionCompatible(configYAML, 17)>
+			public Set<String> getAvailableCreateStrategies() {
+				return SetUtil.fromArray(
+					<#if createStrategies?has_content>
+						"${createStrategies?join("\", \"")}"
+					</#if>
+				);
+			}
 
-		public Set<String> getAvailableUpdateStrategies() {
-			<@availableStrategies
-				strategies = updateStrategies
-				strategyFeatureFlagConditions = {
-					"PARTIAL_UPDATE": updateStrategies?seq_contains("PARTIAL_UPDATE")?then(getFeatureFlagCondition([[patchBatchJavaMethodSignature]]), ""),
-					"UPDATE": updateStrategies?seq_contains("UPDATE")?then(getFeatureFlagCondition([[putBatchJavaMethodSignature]]), "")
-				}
-				variableName = "updateStrategies"
-			/>
-		}
+			public Set<String> getAvailableUpdateStrategies() {
+				return SetUtil.fromArray(
+					<#if updateStrategies?has_content>
+						"${updateStrategies?join("\", \"")}"
+					</#if>
+				);
+			}
+		</#if>
 
 		@Override
 		public EntityModel getEntityModel(Map<String, List<String>> multivaluedMap) throws Exception {
@@ -1263,22 +1188,13 @@ public abstract class Base${schemaName}ResourceImpl
 		@Override
 		public Page<${javaDataType}> read(com.liferay.portal.kernel.search.filter.Filter filter, Pagination pagination, com.liferay.portal.kernel.search.Sort[] sorts, Map<String, Serializable> parameters, String search) throws Exception {
 			<#if freeMarkerTool.hasReadVulcanBatchImplementation(configYAML, javaMethodSignatures)>
-				<#assign
-					parentParameterNames = []
-					featureFlagCondition = getFeatureFlagCondition([readBatchJavaMethodSignatures])
-				/>
-
-				<#if featureFlagCondition?has_content>
-					if (!${featureFlagCondition}) {
-						throw new UnsupportedOperationException("This method needs to be implemented");
-					}
-				</#if>
+				<#assign parentParameterNames = [] />
 
 				<#list getParentBatchJavaMethodSignatures as getParentBatchJavaMethodSignature>
 					<#assign parentParameterNames = parentParameterNames + [getParentBatchJavaMethodSignature.javaMethodParameters[0].parameterName] />
 
-					if (parameters.containsKey("${getParentBatchJavaMethodSignature.javaMethodParameters[0].parameterName}") <@appendAndBranchFeatureFlagCondition javaMethodSignature = getParentBatchJavaMethodSignature javaMethodSignatures = readBatchJavaMethodSignatures />) {
-						return ${getParentBatchJavaMethodSignature.methodName}(
+					if (parameters.containsKey("${getParentBatchJavaMethodSignature.javaMethodParameters[0].parameterName}")) {
+						return ${contextBatchResourcePrefix}${getParentBatchJavaMethodSignature.methodName}(
 							<@getReadBatchJavaMethodParameters javaMethodParameters = getParentBatchJavaMethodSignature.javaMethodParameters />
 						);
 					}
@@ -1290,21 +1206,9 @@ public abstract class Base${schemaName}ResourceImpl
 						{
 					</#if>
 
-					<#assign featureFlagCondition = (readBatchJavaMethodSignatures?size > 1)?then(getFeatureFlagCondition([[getBatchJavaMethodSignature]]), "") />
-
-					<#if featureFlagCondition?has_content>
-						if (${featureFlagCondition}) {
-					</#if>
-
-					return ${getBatchJavaMethodSignature.methodName}(
+					return ${contextBatchResourcePrefix}${getBatchJavaMethodSignature.methodName}(
 						<@getReadBatchJavaMethodParameters javaMethodParameters = getBatchJavaMethodSignature.javaMethodParameters />
 					);
-
-					<#if featureFlagCondition?has_content>
-						}
-
-						throw new NotSupportedException("One of the following parameters must be specified: [${parentParameterNames?join(", ")}]");
-					</#if>
 
 					<#if getParentBatchJavaMethodSignatures?has_content>
 						}
@@ -1361,11 +1265,11 @@ public abstract class Base${schemaName}ResourceImpl
 			</#if>
 
 			<#if updateStrategies?seq_contains("PARTIAL_UPDATE")>
-				if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE") <@appendAndFeatureFlagCondition javaMethodSignaturesList = [[patchBatchJavaMethodSignature]] />) {
+				if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE")) {
 					<#if stringUtil.equals(javaDataType, patchBatchJavaMethodSignature.returnType)>
-						${schemaVarName}UnsafeFunction = ${schemaVarName} -> patch${schemaName}(
+						${schemaVarName}UnsafeFunction = ${schemaVarName} -> ${contextBatchResourcePrefix}patch${schemaName}(
 					<#else>
-						${schemaVarName}UnsafeFunction = ${schemaVarName} -> { patch${schemaName}(
+						${schemaVarName}UnsafeFunction = ${schemaVarName} -> { ${contextBatchResourcePrefix}patch${schemaName}(
 					</#if>
 
 					<#list patchBatchJavaMethodSignature.javaMethodParameters as javaMethodParameter>
@@ -1395,11 +1299,11 @@ public abstract class Base${schemaName}ResourceImpl
 			</#if>
 
 			<#if updateStrategies?seq_contains("UPDATE")>
-				if (StringUtil.equalsIgnoreCase(updateStrategy, "UPDATE") <@appendAndFeatureFlagCondition javaMethodSignaturesList = [[putBatchJavaMethodSignature]] />) {
+				if (StringUtil.equalsIgnoreCase(updateStrategy, "UPDATE")) {
 					<#if stringUtil.equals(javaDataType, putBatchJavaMethodSignature.returnType)>
-						${schemaVarName}UnsafeFunction = ${schemaVarName} -> put${schemaName}(
+						${schemaVarName}UnsafeFunction = ${schemaVarName} -> ${contextBatchResourcePrefix}put${schemaName}(
 					<#else>
-						${schemaVarName}UnsafeFunction = ${schemaVarName} -> { put${schemaName}(
+						${schemaVarName}UnsafeFunction = ${schemaVarName} -> { ${contextBatchResourcePrefix}put${schemaName}(
 					</#if>
 
 					<#list putBatchJavaMethodSignature.javaMethodParameters as javaMethodParameter>
@@ -1635,6 +1539,13 @@ public abstract class Base${schemaName}ResourceImpl
 	}
 
 	<#if generateBatch>
+		<#if generateContextBatchResource>
+			@Override
+			public void setContextBatchResourceInvocationHandler(InvocationHandler contextBatchResourceInvocationHandler) {
+				contextBatchResource = (${schemaName}Resource)ProxyUtil.newProxyInstance(${schemaName}Resource.class.getClassLoader(), new Class<?>[] {${schemaName}Resource.class}, contextBatchResourceInvocationHandler);
+			}
+		</#if>
+
 		public void setContextBatchUnsafeBiConsumer(UnsafeBiConsumer<Collection<${javaDataType}>, UnsafeFunction<${javaDataType}, ${javaDataType}, Exception>, Exception> contextBatchUnsafeBiConsumer) {
 			this.contextBatchUnsafeBiConsumer = contextBatchUnsafeBiConsumer;
 		}
@@ -2000,6 +1911,10 @@ public abstract class Base${schemaName}ResourceImpl
 	protected AcceptLanguage contextAcceptLanguage;
 
 	<#if generateBatch>
+		<#if generateContextBatchResource>
+			protected ${schemaName}Resource contextBatchResource = this;
+		</#if>
+
 		protected UnsafeBiConsumer<Collection<${javaDataType}>, UnsafeFunction<${javaDataType}, ${javaDataType}, Exception>, Exception> contextBatchUnsafeBiConsumer;
 		protected UnsafeBiConsumer<Collection<${javaDataType}>, UnsafeConsumer<${javaDataType}, Exception>, Exception> contextBatchUnsafeConsumer;
 	</#if>
@@ -2064,72 +1979,6 @@ public abstract class Base${schemaName}ResourceImpl
 
 }
 
-<#macro appendAndBranchFeatureFlagCondition
-	javaMethodSignature
-	javaMethodSignatures
->
-	<#if (javaMethodSignatures?size > 1)>
-		<@appendAndFeatureFlagCondition javaMethodSignaturesList = [[javaMethodSignature]] />
-	</#if>
-</#macro>
-
-<#macro appendAndFeatureFlagCondition
-	javaMethodSignaturesList
->
-	<#local condition = getFeatureFlagCondition(javaMethodSignaturesList) />
-
-	<#if condition?has_content>
-		&& ${condition}
-	</#if>
-</#macro>
-
-<#macro availableStrategies
-	strategies
-	strategyFeatureFlagConditions
-	variableName
->
-	<#local
-		featureFlagConditions = []
-		unconditionalStrategies = []
-	/>
-
-	<#list strategies as strategy>
-		<#local featureFlagCondition = strategyFeatureFlagConditions[strategy] />
-
-		<#if !featureFlagCondition?has_content>
-			<#local unconditionalStrategies = unconditionalStrategies + [strategy] />
-		<#elseif !featureFlagConditions?seq_contains(featureFlagCondition)>
-			<#local featureFlagConditions = featureFlagConditions + [featureFlagCondition] />
-		</#if>
-	</#list>
-
-	<#if !featureFlagConditions?has_content>
-		return SetUtil.fromArray(
-			<#if strategies?has_content>
-				"${strategies?join("\", \"")}"
-			</#if>
-		);
-	<#else>
-		<#if unconditionalStrategies?has_content>
-			Set<String> ${variableName} = SetUtil.fromArray("${unconditionalStrategies?join("\", \"")}");
-		<#else>
-			Set<String> ${variableName} = new HashSet<>();
-		</#if>
-
-		<#list featureFlagConditions as featureFlagCondition>
-			if (${featureFlagCondition}) {
-				<#list strategies as strategy>
-					<#if stringUtil.equals(strategyFeatureFlagConditions[strategy], featureFlagCondition)>
-						${variableName}.add("${strategy}");
-					</#if>
-				</#list>
-			}
-		</#list>
-
-		return ${variableName};
-	</#if>
-</#macro>
-
 <#macro castParameters
 	type
 	value
@@ -2187,17 +2036,6 @@ public abstract class Base${schemaName}ResourceImpl
 	</#if>
 </#macro>
 
-<#macro defineCheckPermissionMethodVariables
-	identifierParameter
-	parentIdentifierParameter=""
->
-	<#assign hasParentSchema = parentIdentifierParameter?has_content />
-
-	Long groupId = getPermissionCheckerGroupId(${hasParentSchema?then(parentIdentifierParameter, identifierParameter)});
-	Long resourceId = getPermissionCheckerResourceId(${hasParentSchema?then(parentIdentifierParameter + ", ", "") + identifierParameter});
-	String resourceName = getPermissionCheckerResourceName(${hasParentSchema?then(parentIdentifierParameter + ", ", "") + identifierParameter});
-</#macro>
-
 <#function getActions
 	groupId
 	resourceId
@@ -2211,6 +2049,17 @@ public abstract class Base${schemaName}ResourceImpl
 		).build()"
 	>
 </#function>
+
+<#macro defineCheckPermissionMethodVariables
+	identifierParameter
+	parentIdentifierParameter=""
+>
+	<#assign hasParentSchema = parentIdentifierParameter?has_content />
+
+	Long groupId = getPermissionCheckerGroupId(${hasParentSchema?then(parentIdentifierParameter, identifierParameter)});
+	Long resourceId = getPermissionCheckerResourceId(${hasParentSchema?then(parentIdentifierParameter + ", ", "") + identifierParameter});
+	String resourceName = getPermissionCheckerResourceName(${hasParentSchema?then(parentIdentifierParameter + ", ", "") + identifierParameter});
+</#macro>
 
 <#macro getCreateBatchJavaMethodParameters
 	javaMethodSignature
@@ -2250,50 +2099,6 @@ public abstract class Base${schemaName}ResourceImpl
 		<#sep>, </#sep>
 	</#list>
 </#macro>
-
-<#function getFeatureFlagCondition javaMethodSignaturesList>
-	<#local featureFlagKeysList = [] />
-
-	<#list javaMethodSignaturesList as javaMethodSignatures>
-		<#local featureFlagKeys = [] />
-
-		<#list javaMethodSignatures as javaMethodSignature>
-			<#local featureFlagKey = openAPIYAML.info.featureFlag!"" />
-
-			<#if (javaMethodSignature.operation.featureFlag)?has_content>
-				<#local featureFlagKey = javaMethodSignature.operation.featureFlag />
-			</#if>
-
-			<#if !featureFlagKey?has_content>
-				<#local featureFlagKeys = [] />
-
-				<#break>
-			</#if>
-
-			<#if !featureFlagKeys?seq_contains(featureFlagKey)>
-				<#local featureFlagKeys = featureFlagKeys + [featureFlagKey] />
-			</#if>
-		</#list>
-
-		<#if featureFlagKeys?has_content>
-			<#local featureFlagKeysList = featureFlagKeysList + [featureFlagKeys] />
-		</#if>
-	</#list>
-
-	<#local featureFlagConditions = [] />
-
-	<#list featureFlagKeysList as featureFlagKeys>
-		<#local featureFlagCondition = featureFlagKeys?map(featureFlagKey -> "FeatureFlagManagerUtil.isEnabled(CompanyThreadLocal.getCompanyId(), \"${featureFlagKey}\")")?join(" || ") />
-
-		<#if (featureFlagKeys?size > 1)>
-			<#local featureFlagCondition = "(" + featureFlagCondition + ")" />
-		</#if>
-
-		<#local featureFlagConditions = featureFlagConditions + [featureFlagCondition] />
-	</#list>
-
-	<#return featureFlagConditions?join(" && ") />
-</#function>
 
 <#macro getReadBatchJavaMethodParameters
 	javaMethodParameters
