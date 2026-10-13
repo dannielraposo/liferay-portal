@@ -753,6 +753,7 @@ public class GraphQLServletExtender {
 	@Deactivate
 	protected void deactivate() {
 		_featureFlagListenerServiceRegistration.unregister();
+
 		_graphQLContributorServiceTrackerList.close();
 
 		_serviceTrackerMap.close();
