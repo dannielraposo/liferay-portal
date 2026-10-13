@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 /**
  * @author Alejandro Tardín
@@ -147,7 +148,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 							"' is undefined")
 					))
 			).toString(),
-			jsonObject.toString(), false);
+			jsonObject.toString(), JSONCompareMode.LENIENT);
 	}
 
 	private boolean _hasFeatureFlagExtension() throws Exception {

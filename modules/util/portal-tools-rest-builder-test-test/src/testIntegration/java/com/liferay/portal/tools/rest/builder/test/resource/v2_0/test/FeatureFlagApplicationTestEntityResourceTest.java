@@ -34,6 +34,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+
 /**
  * @author Alejandro Tardín
  */
@@ -131,19 +134,22 @@ public class FeatureFlagApplicationTestEntityResourceTest
 					new GraphQLField("totalCount")));
 		}
 
-		Assert.assertEquals(
-			"Validation error (FieldUndefined@[" +
-				"featureFlagApplicationTestEntities]) : Field " +
-					"'featureFlagApplicationTestEntities' in type 'query' is " +
-						"undefined",
-			JSONUtil.getValueAsString(
-				jsonObject, "JSONArray/errors", "Object/0", "Object/message"));
-		Assert.assertEquals(
-			400,
-			JSONUtil.getValueAsInt(
-				jsonObject, "JSONArray/errors", "Object/0",
-				"JSONObject/extensions", "JSONObject/exception",
-				"Object/errno"));
+		JSONAssert.assertEquals(
+			JSONUtil.put(
+				"errors",
+				JSONUtil.putAll(
+					JSONUtil.put(
+						"extensions",
+						JSONUtil.put("exception", JSONUtil.put("errno", 400))
+					).put(
+						"message",
+						"Validation error (FieldUndefined@[" +
+							"featureFlagApplicationTestEntities]) : Field " +
+								"'featureFlagApplicationTestEntities' in " +
+									"type 'query' is undefined"
+					))
+			).toString(),
+			jsonObject.toString(), JSONCompareMode.LENIENT);
 	}
 
 	private void _testGetFeatureFlagApplicationTestEntitiesPageWhenFeatureFlagIsEnabled()
