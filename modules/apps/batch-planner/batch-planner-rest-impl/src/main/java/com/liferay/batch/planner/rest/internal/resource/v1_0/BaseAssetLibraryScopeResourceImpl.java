@@ -529,4 +529,4 @@ public abstract class BaseAssetLibraryScopeResourceImpl
 		LogFactoryUtil.getLog(BaseAssetLibraryScopeResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1495043987
+// LIFERAY-REST-BUILDER-HASH:-1035873675

@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -57,7 +56,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Alberto Chaparro
@@ -222,6 +220,9 @@ public abstract class BasePortalInstanceResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-portal-instances/v1.0/portal-instances/{portalInstanceId}' -d $'{"active": ___, "admin": ___, "companyId": ___, "domain": ___, "maxUsers": ___, "portalInstanceId": ___, "siteInitializerKey": ___, "virtualHost": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates the portal instance's domain and virtual host with the values sent in the request body. Only the provided fields are updated."
 	)
@@ -259,6 +260,9 @@ public abstract class BasePortalInstanceResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-portal-instances/v1.0/portal-instances' -d $'{"active": ___, "admin": ___, "companyId": ___, "domain": ___, "maxUsers": ___, "portalInstanceId": ___, "siteInitializerKey": ___, "virtualHost": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Adds a new portal instance. Through /portal-instances/batch the same operation runs asynchronously; poll the returned import task and, when it is COMPLETED, GET /portal-instances/{portalInstanceId} returns each created instance."
 	)
@@ -525,14 +529,6 @@ public abstract class BasePortalInstanceResourceImpl
 				portalInstanceUnsafeFunction.apply(portalInstance);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -1203,4 +1199,4 @@ public abstract class BasePortalInstanceResourceImpl
 		LogFactoryUtil.getLog(BasePortalInstanceResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:2020425769
+// LIFERAY-REST-BUILDER-HASH:-584048171

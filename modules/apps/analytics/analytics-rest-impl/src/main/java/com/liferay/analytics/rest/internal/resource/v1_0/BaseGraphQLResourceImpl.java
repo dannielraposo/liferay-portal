@@ -505,4 +505,4 @@ public abstract class BaseGraphQLResourceImpl implements GraphQLResource {
 		LogFactoryUtil.getLog(BaseGraphQLResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1478799468
+// LIFERAY-REST-BUILDER-HASH:-951633308

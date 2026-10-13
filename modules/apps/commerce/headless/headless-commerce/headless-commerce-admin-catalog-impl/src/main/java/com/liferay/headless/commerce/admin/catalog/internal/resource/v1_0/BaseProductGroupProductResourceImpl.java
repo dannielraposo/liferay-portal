@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -57,7 +56,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Zoltán Takács
@@ -259,6 +257,9 @@ public abstract class BaseProductGroupProductResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/product-groups/by-externalReferenceCode/{externalReferenceCode}/product-group-products' -d $'{"catalogCurrencyCode": ___, "catalogCurrencyExternalReferenceCode": ___, "catalogExternalReferenceCode": ___, "id": ___, "productExternalReferenceCode": ___, "productGroupExternalReferenceCode": ___, "productGroupId": ___, "productId": ___, "productType": ___, "sku": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Binds a product to the product group identified by external reference code. Returns 404 when the product group external reference code is not found, and 404 when the product lookup fails. Side effects -- Creates a product group assignment binding the product to the group."
 	)
@@ -462,14 +463,6 @@ public abstract class BaseProductGroupProductResourceImpl
 				productGroupProductUnsafeFunction.apply(productGroupProduct);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
 	}
 
 	@Override
@@ -1105,4 +1098,4 @@ public abstract class BaseProductGroupProductResourceImpl
 		LogFactoryUtil.getLog(BaseProductGroupProductResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1123869779
+// LIFERAY-REST-BUILDER-HASH:916248286

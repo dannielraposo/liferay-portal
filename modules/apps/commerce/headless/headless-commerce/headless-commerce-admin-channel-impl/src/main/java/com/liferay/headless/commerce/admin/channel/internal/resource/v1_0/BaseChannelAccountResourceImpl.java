@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -57,7 +56,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Andrea Sbarra
@@ -283,6 +281,9 @@ public abstract class BaseChannelAccountResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/channels/by-externalReferenceCode/{externalReferenceCode}/channel-accounts' -d $'{"accountExternalReferenceCode": ___, "accountId": ___, "channelExternalReferenceCode": ___, "channelId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates a new channel-account binding under the parent Channel, addressed by external reference code (ERC). Calls CommerceChannelLocalService.fetchCommerceChannelByExternalReferenceCode + AccountEntryLocalService.getAccountEntry + CommerceChannelAccountEntryRelService.addCommerceChannelAccountEntryRel. Validation -- NoSuchChannelException -> 404 when channel ERC or body channel ref not found; NoSuchAccountEntryException -> 404 when account ID not found; AccountEntryTypeException -> 400 when account is a guest account; DuplicateCommerceChannelAccountEntryRelException -> 409 when channel-account rel already exists; DuplicateCommerceChannelAccountEntryIdException -> 409 when duplicate channel-account ID. Side effects -- creates an account-to-channel eligibility binding."
 	)
@@ -429,14 +430,6 @@ public abstract class BaseChannelAccountResourceImpl
 				channelAccountUnsafeFunction.apply(channelAccount);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
 	}
 
 	@Override
@@ -1070,4 +1063,4 @@ public abstract class BaseChannelAccountResourceImpl
 		LogFactoryUtil.getLog(BaseChannelAccountResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1944348707
+// LIFERAY-REST-BUILDER-HASH:56948577

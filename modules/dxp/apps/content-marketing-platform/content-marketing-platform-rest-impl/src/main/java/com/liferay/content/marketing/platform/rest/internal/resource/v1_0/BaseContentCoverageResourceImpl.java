@@ -519,4 +519,4 @@ public abstract class BaseContentCoverageResourceImpl
 		LogFactoryUtil.getLog(BaseContentCoverageResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-300104051
+// LIFERAY-REST-BUILDER-HASH:2071832469

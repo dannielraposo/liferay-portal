@@ -554,4 +554,4 @@ public abstract class BaseBrokenLinkAssetResourceImpl
 		LogFactoryUtil.getLog(BaseBrokenLinkAssetResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1619576417
+// LIFERAY-REST-BUILDER-HASH:-1269076375

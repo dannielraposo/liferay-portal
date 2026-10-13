@@ -10,16 +10,15 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -56,13 +55,13 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.io.Serializable;
 
+import java.lang.reflect.InvocationHandler;
+
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Alejandro Tardín
@@ -162,6 +161,49 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
+	 * curl -X 'DELETE' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/sites/{siteId}/feature-flag-method-test-entities/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
+	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-126")
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "siteId", required = true
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "externalReferenceCode", required = true
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {
+			@io.swagger.v3.oas.annotations.tags.Tag(
+				name = "FeatureFlagMethodTestEntity"
+			)
+		}
+	)
+	@jakarta.ws.rs.DELETE
+	@jakarta.ws.rs.Path(
+		"/sites/{siteId}/feature-flag-method-test-entities/by-external-reference-code/{externalReferenceCode}"
+	)
+	@jakarta.ws.rs.Produces({"application/json", "application/xml"})
+	@Override
+	public void deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode(
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.validation.constraints.NotNull
+			@jakarta.ws.rs.PathParam("siteId")
+			Long siteId,
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.validation.constraints.NotNull
+			@jakarta.ws.rs.PathParam("externalReferenceCode")
+			String externalReferenceCode)
+		throws Exception {
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/feature-flag-method-test-entities'  -u 'test@liferay.com:test'
 	 */
 	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-123")
@@ -186,8 +228,88 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/feature-flag-method-test-entities/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
+	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT", updateStrategy = "PARTIAL_UPDATE"
+	)
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-124")
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "externalReferenceCode", required = true
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {
+			@io.swagger.v3.oas.annotations.tags.Tag(
+				name = "FeatureFlagMethodTestEntity"
+			)
+		}
+	)
+	@jakarta.ws.rs.GET
+	@jakarta.ws.rs.Path(
+		"/feature-flag-method-test-entities/by-external-reference-code/{externalReferenceCode}"
+	)
+	@jakarta.ws.rs.Produces({"application/json", "application/xml"})
+	@Override
+	public FeatureFlagMethodTestEntity
+			getFeatureFlagMethodTestEntityByExternalReferenceCode(
+				@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+				@jakarta.validation.constraints.NotNull
+				@jakarta.ws.rs.PathParam("externalReferenceCode")
+				String externalReferenceCode)
+		throws Exception {
+
+		return new FeatureFlagMethodTestEntity();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/sites/{siteId}/feature-flag-method-test-entities'  -u 'test@liferay.com:test'
+	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-126")
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "siteId", required = true
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {
+			@io.swagger.v3.oas.annotations.tags.Tag(
+				name = "FeatureFlagMethodTestEntity"
+			)
+		}
+	)
+	@jakarta.ws.rs.GET
+	@jakarta.ws.rs.Path("/sites/{siteId}/feature-flag-method-test-entities")
+	@jakarta.ws.rs.Produces({"application/json", "application/xml"})
+	@Override
+	public Page<FeatureFlagMethodTestEntity>
+			getSiteFeatureFlagMethodTestEntitiesPage(
+				@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+				@jakarta.validation.constraints.NotNull
+				@jakarta.ws.rs.PathParam("siteId")
+				Long siteId)
+		throws Exception {
+
+		return Page.of(Collections.emptyList());
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/feature-flag-method-test-entities/{featureFlagMethodTestEntityId}' -d $'{"externalReferenceCode": ___, "name": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-123")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -293,6 +415,9 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/feature-flag-method-test-entities' -d $'{"externalReferenceCode": ___, "name": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
 			@io.swagger.v3.oas.annotations.tags.Tag(
@@ -364,9 +489,188 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
+	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/sites/{siteId}/feature-flag-method-test-entities/export-batch'  -u 'test@liferay.com:test'
+	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-126")
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "siteId", required = true
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "callbackURL"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "contentType"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "fieldNames"
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {
+			@io.swagger.v3.oas.annotations.tags.Tag(
+				name = "FeatureFlagMethodTestEntity"
+			)
+		}
+	)
+	@jakarta.ws.rs.Consumes("application/json")
+	@jakarta.ws.rs.Path(
+		"/sites/{siteId}/feature-flag-method-test-entities/export-batch"
+	)
+	@jakarta.ws.rs.POST
+	@jakarta.ws.rs.Produces("application/json")
+	@Override
+	public Response postSiteFeatureFlagMethodTestEntitiesPageExportBatch(
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.validation.constraints.NotNull
+			@jakarta.ws.rs.PathParam("siteId")
+			Long siteId,
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.ws.rs.QueryParam("callbackURL")
+			String callbackURL,
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.ws.rs.DefaultValue("JSON")
+			@jakarta.ws.rs.QueryParam("contentType")
+			String contentType,
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.ws.rs.QueryParam("fieldNames")
+			String fieldNames)
+		throws Exception {
+
+		vulcanBatchEngineExportTaskResource.setContextAcceptLanguage(
+			contextAcceptLanguage);
+		vulcanBatchEngineExportTaskResource.setContextCompany(contextCompany);
+		vulcanBatchEngineExportTaskResource.setContextHttpServletRequest(
+			contextHttpServletRequest);
+		vulcanBatchEngineExportTaskResource.setContextUriInfo(contextUriInfo);
+		vulcanBatchEngineExportTaskResource.setContextUser(contextUser);
+		vulcanBatchEngineExportTaskResource.setGroupLocalService(
+			groupLocalService);
+
+		Response.ResponseBuilder responseBuilder = Response.accepted();
+
+		return responseBuilder.entity(
+			vulcanBatchEngineExportTaskResource.postExportTask(
+				FeatureFlagMethodTestEntity.class.getName(), callbackURL,
+				contentType, fieldNames)
+		).build();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/sites/{siteId}/feature-flag-method-test-entities' -d $'{"externalReferenceCode": ___, "name": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-126")
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "siteId", required = true
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {
+			@io.swagger.v3.oas.annotations.tags.Tag(
+				name = "FeatureFlagMethodTestEntity"
+			)
+		}
+	)
+	@jakarta.ws.rs.Consumes({"application/json", "application/xml"})
+	@jakarta.ws.rs.Path("/sites/{siteId}/feature-flag-method-test-entities")
+	@jakarta.ws.rs.POST
+	@jakarta.ws.rs.Produces({"application/json", "application/xml"})
+	@Override
+	public FeatureFlagMethodTestEntity postSiteFeatureFlagMethodTestEntity(
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.validation.constraints.NotNull
+			@jakarta.ws.rs.PathParam("siteId")
+			Long siteId,
+			FeatureFlagMethodTestEntity featureFlagMethodTestEntity)
+		throws Exception {
+
+		return new FeatureFlagMethodTestEntity();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/sites/{siteId}/feature-flag-method-test-entities/batch'  -u 'test@liferay.com:test'
+	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-126")
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "siteId", required = true
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "callbackURL"
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {
+			@io.swagger.v3.oas.annotations.tags.Tag(
+				name = "FeatureFlagMethodTestEntity"
+			)
+		}
+	)
+	@jakarta.ws.rs.Consumes("application/json")
+	@jakarta.ws.rs.Path(
+		"/sites/{siteId}/feature-flag-method-test-entities/batch"
+	)
+	@jakarta.ws.rs.POST
+	@jakarta.ws.rs.Produces("application/json")
+	@Override
+	public Response postSiteFeatureFlagMethodTestEntityBatch(
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.validation.constraints.NotNull
+			@jakarta.ws.rs.PathParam("siteId")
+			Long siteId,
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.ws.rs.QueryParam("callbackURL")
+			String callbackURL,
+			Object object)
+		throws Exception {
+
+		vulcanBatchEngineImportTaskResource.setContextAcceptLanguage(
+			contextAcceptLanguage);
+		vulcanBatchEngineImportTaskResource.setContextCompany(contextCompany);
+		vulcanBatchEngineImportTaskResource.setContextHttpServletRequest(
+			contextHttpServletRequest);
+		vulcanBatchEngineImportTaskResource.setContextUriInfo(contextUriInfo);
+		vulcanBatchEngineImportTaskResource.setContextUser(contextUser);
+
+		Response.ResponseBuilder responseBuilder = Response.accepted();
+
+		return responseBuilder.entity(
+			vulcanBatchEngineImportTaskResource.postImportTask(
+				FeatureFlagMethodTestEntity.class.getName(), callbackURL, null,
+				object)
+		).build();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/feature-flag-method-test-entities/by-external-reference-code/{externalReferenceCode}' -d $'{"externalReferenceCode": ___, "name": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-123")
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-125")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -417,17 +721,66 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 			"createStrategy", "INSERT");
 
 		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT")) {
-			featureFlagMethodTestEntityUnsafeFunction =
-				featureFlagMethodTestEntity -> postFeatureFlagMethodTestEntity(
-					featureFlagMethodTestEntity);
+			if (parameters.containsKey("siteId")) {
+				featureFlagMethodTestEntityUnsafeFunction =
+					featureFlagMethodTestEntity ->
+						contextBatchResource.
+							postSiteFeatureFlagMethodTestEntity(
+								(Long)parameters.get("siteId"),
+								featureFlagMethodTestEntity);
+			}
+			else {
+				featureFlagMethodTestEntityUnsafeFunction =
+					featureFlagMethodTestEntity ->
+						contextBatchResource.postFeatureFlagMethodTestEntity(
+							featureFlagMethodTestEntity);
+			}
 		}
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT") &&
-			FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "METHOD-123")) {
-
+		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
 			String updateStrategy = (String)parameters.getOrDefault(
 				"updateStrategy", "UPDATE");
+
+			if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE")) {
+				featureFlagMethodTestEntityUnsafeFunction =
+					featureFlagMethodTestEntity -> {
+						FeatureFlagMethodTestEntity
+							getFeatureFlagMethodTestEntity = null;
+						FeatureFlagMethodTestEntity
+							persistedFeatureFlagMethodTestEntity = null;
+
+						try {
+							getFeatureFlagMethodTestEntity =
+								contextBatchResource.
+									getFeatureFlagMethodTestEntityByExternalReferenceCode(
+										featureFlagMethodTestEntity.
+											getExternalReferenceCode());
+
+							persistedFeatureFlagMethodTestEntity =
+								contextBatchResource.
+									patchFeatureFlagMethodTestEntity(
+										getFeatureFlagMethodTestEntity.getId(),
+										featureFlagMethodTestEntity);
+						}
+						catch (NoSuchModelException noSuchModelException) {
+							if (parameters.containsKey("siteId")) {
+								persistedFeatureFlagMethodTestEntity =
+									contextBatchResource.
+										postSiteFeatureFlagMethodTestEntity(
+											(Long)parameters.get("siteId"),
+											featureFlagMethodTestEntity);
+							}
+							else {
+								persistedFeatureFlagMethodTestEntity =
+									contextBatchResource.
+										postFeatureFlagMethodTestEntity(
+											featureFlagMethodTestEntity);
+							}
+						}
+
+						return persistedFeatureFlagMethodTestEntity;
+					};
+			}
 
 			if (StringUtil.equalsIgnoreCase(updateStrategy, "UPDATE")) {
 				featureFlagMethodTestEntityUnsafeFunction =
@@ -436,10 +789,11 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 							persistedFeatureFlagMethodTestEntity = null;
 
 						persistedFeatureFlagMethodTestEntity =
-							putFeatureFlagMethodTestEntityByExternalReferenceCode(
-								featureFlagMethodTestEntity.
-									getExternalReferenceCode(),
-								featureFlagMethodTestEntity);
+							contextBatchResource.
+								putFeatureFlagMethodTestEntityByExternalReferenceCode(
+									featureFlagMethodTestEntity.
+										getExternalReferenceCode(),
+									featureFlagMethodTestEntity);
 
 						return persistedFeatureFlagMethodTestEntity;
 					};
@@ -479,21 +833,46 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 			Map<String, Serializable> parameters)
 		throws Exception {
 
-		if (!FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "METHOD-123")) {
-
-			throw new UnsupportedOperationException(
-				"This method needs to be implemented");
-		}
-
 		UnsafeFunction
 			<FeatureFlagMethodTestEntity, FeatureFlagMethodTestEntity,
 			 Exception> featureFlagMethodTestEntityUnsafeFunction =
 				featureFlagMethodTestEntity -> {
-					deleteFeatureFlagMethodTestEntity(
-						featureFlagMethodTestEntity.getId());
+					if (featureFlagMethodTestEntity.getId() != null) {
+						try {
+							contextBatchResource.
+								deleteFeatureFlagMethodTestEntity(
+									featureFlagMethodTestEntity.getId());
 
-					return featureFlagMethodTestEntity;
+							return featureFlagMethodTestEntity;
+						}
+						catch (Exception exception) {
+							if (featureFlagMethodTestEntity.
+									getExternalReferenceCode() != null) {
+
+								if (parameters.containsKey("siteId")) {
+									contextBatchResource.
+										deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode(
+											(Long)parameters.get("siteId"),
+											featureFlagMethodTestEntity.
+												getExternalReferenceCode());
+
+									return featureFlagMethodTestEntity;
+								}
+							}
+						}
+					}
+					else if (parameters.containsKey("siteId")) {
+						contextBatchResource.
+							deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode(
+								(Long)parameters.get("siteId"),
+								featureFlagMethodTestEntity.
+									getExternalReferenceCode());
+
+						return featureFlagMethodTestEntity;
+					}
+
+					throw new UnsupportedOperationException(
+						"Unable to delete by external reference code or ID");
 				};
 
 		if (contextBatchUnsafeBiConsumer != null) {
@@ -514,30 +893,6 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 					featureFlagMethodTestEntity);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		Set<String> createStrategies = SetUtil.fromArray("INSERT");
-
-		if (FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "METHOD-123")) {
-
-			createStrategies.add("UPSERT");
-		}
-
-		return createStrategies;
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		Set<String> updateStrategies = new HashSet<>();
-
-		if (FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "METHOD-123")) {
-
-			updateStrategies.add("PARTIAL_UPDATE");
-		}
-
-		return updateStrategies;
 	}
 
 	@Override
@@ -564,14 +919,14 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
 
-		if (!FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "METHOD-123")) {
-
-			throw new UnsupportedOperationException(
-				"This method needs to be implemented");
+		if (parameters.containsKey("siteId")) {
+			return contextBatchResource.
+				getSiteFeatureFlagMethodTestEntitiesPage(
+					(Long)parameters.get("siteId"));
 		}
-
-		return getFeatureFlagMethodTestEntitiesPage();
+		else {
+			return contextBatchResource.getFeatureFlagMethodTestEntitiesPage();
+		}
 	}
 
 	@Override
@@ -619,14 +974,12 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 		String updateStrategy = (String)parameters.getOrDefault(
 			"updateStrategy", "UPDATE");
 
-		if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE") &&
-			FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "METHOD-123")) {
-
+		if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE")) {
 			featureFlagMethodTestEntityUnsafeFunction =
-				featureFlagMethodTestEntity -> patchFeatureFlagMethodTestEntity(
-					featureFlagMethodTestEntity.getId(),
-					featureFlagMethodTestEntity);
+				featureFlagMethodTestEntity ->
+					contextBatchResource.patchFeatureFlagMethodTestEntity(
+						featureFlagMethodTestEntity.getId(),
+						featureFlagMethodTestEntity);
 		}
 
 		if (featureFlagMethodTestEntityUnsafeFunction == null) {
@@ -664,6 +1017,17 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 
 	public void setContextAcceptLanguage(AcceptLanguage contextAcceptLanguage) {
 		this.contextAcceptLanguage = contextAcceptLanguage;
+	}
+
+	@Override
+	public void setContextBatchResourceInvocationHandler(
+		InvocationHandler contextBatchResourceInvocationHandler) {
+
+		contextBatchResource =
+			(FeatureFlagMethodTestEntityResource)ProxyUtil.newProxyInstance(
+				FeatureFlagMethodTestEntityResource.class.getClassLoader(),
+				new Class<?>[] {FeatureFlagMethodTestEntityResource.class},
+				contextBatchResourceInvocationHandler);
 	}
 
 	public void setContextBatchUnsafeBiConsumer(
@@ -1189,6 +1553,7 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 	}
 
 	protected AcceptLanguage contextAcceptLanguage;
+	protected FeatureFlagMethodTestEntityResource contextBatchResource = this;
 	protected UnsafeBiConsumer
 		<Collection<FeatureFlagMethodTestEntity>,
 		 UnsafeFunction
@@ -1223,4 +1588,4 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceImpl
 			BaseFeatureFlagMethodTestEntityResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:749329956
+// LIFERAY-REST-BUILDER-HASH:775676736

@@ -573,4 +573,4 @@ public abstract class BaseEventsResourceImpl implements EventsResource {
 		LogFactoryUtil.getLog(BaseEventsResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1809959208
+// LIFERAY-REST-BUILDER-HASH:-72367968

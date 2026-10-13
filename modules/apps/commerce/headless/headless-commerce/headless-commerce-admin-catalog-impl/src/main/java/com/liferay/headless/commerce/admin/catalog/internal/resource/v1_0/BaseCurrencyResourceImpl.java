@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -59,7 +58,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Zoltán Takács
@@ -279,6 +277,9 @@ public abstract class BaseCurrencyResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/currencies/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT", updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Fetches the commerce currency identified by external reference code. Returns 404 when the external reference code is not found."
 	)
@@ -315,6 +316,9 @@ public abstract class BaseCurrencyResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/currencies/{id}' -d $'{"active": ___, "code": ___, "externalReferenceCode": ___, "formatPattern": ___, "id": ___, "maxFractionDigits": ___, "minFractionDigits": ___, "name": ___, "primary": ___, "priority": ___, "rate": ___, "roundingMode": ___, "symbol": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Partially updates the commerce currency identified by ID. Returns 404 when the ID is not found. Side effects -- Reindexes the currency."
 	)
@@ -528,6 +532,9 @@ public abstract class BaseCurrencyResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/currencies' -d $'{"active": ___, "code": ___, "externalReferenceCode": ___, "formatPattern": ___, "id": ___, "maxFractionDigits": ___, "minFractionDigits": ___, "name": ___, "primary": ___, "priority": ___, "rate": ___, "roundingMode": ___, "symbol": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates a new commerce currency. Returns 409 when the record is not found. Side effects -- Indexes the new currency; localized format pattern populated from default if missing."
 	)
@@ -592,6 +599,9 @@ public abstract class BaseCurrencyResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/currencies/by-externalReferenceCode/{externalReferenceCode}' -d $'{"active": ___, "code": ___, "externalReferenceCode": ___, "formatPattern": ___, "id": ___, "maxFractionDigits": ___, "minFractionDigits": ___, "name": ___, "primary": ___, "priority": ___, "rate": ___, "roundingMode": ___, "symbol": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates or replaces the commerce currency identified by external reference code. Creates a new currency when the external reference code is unknown, otherwise replaces the existing one, so every omitted field falls back to its default rather than to the stored value. Side effects -- Reindexes the currency."
 	)
@@ -746,14 +756,6 @@ public abstract class BaseCurrencyResourceImpl
 				currencyUnsafeFunction.apply(currency);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -1420,4 +1422,4 @@ public abstract class BaseCurrencyResourceImpl
 		LogFactoryUtil.getLog(BaseCurrencyResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1706788613
+// LIFERAY-REST-BUILDER-HASH:423767436

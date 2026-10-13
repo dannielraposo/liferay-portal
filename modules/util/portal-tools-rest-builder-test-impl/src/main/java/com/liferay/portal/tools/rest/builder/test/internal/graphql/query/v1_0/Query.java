@@ -734,6 +734,49 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {featureFlagMethodTestEntityByExternalReferenceCode(externalReferenceCode: ___){externalReferenceCode, id, name}}"}' -u 'test@liferay.com:test'
+	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-124")
+	@GraphQLField
+	public FeatureFlagMethodTestEntity
+			featureFlagMethodTestEntityByExternalReferenceCode(
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_featureFlagMethodTestEntityResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			featureFlagMethodTestEntityResource ->
+				featureFlagMethodTestEntityResource.
+					getFeatureFlagMethodTestEntityByExternalReferenceCode(
+						externalReferenceCode));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteFeatureFlagMethodTestEntities(siteKey: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-126")
+	@GraphQLField
+	public FeatureFlagMethodTestEntityPage siteFeatureFlagMethodTestEntities(
+			@GraphQLName("siteKey") @NotEmpty String siteKey)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_featureFlagMethodTestEntityResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			featureFlagMethodTestEntityResource ->
+				new FeatureFlagMethodTestEntityPage(
+					featureFlagMethodTestEntityResource.
+						getSiteFeatureFlagMethodTestEntitiesPage(
+							Long.valueOf(siteKey))));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
 	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {filters{items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
@@ -1113,6 +1156,35 @@ public class Query {
 				companyTestEntityResource ->
 					companyTestEntityResource.
 						getCompanyTestEntityByExternalReferenceCode(
+							_batchTestEntity.getExternalReferenceCode()));
+		}
+
+		private BatchTestEntity _batchTestEntity;
+
+	}
+
+	@GraphQLTypeExtension(BatchTestEntity.class)
+	public class
+		GetFeatureFlagMethodTestEntityByExternalReferenceCodeTypeExtension {
+
+		public GetFeatureFlagMethodTestEntityByExternalReferenceCodeTypeExtension(
+			BatchTestEntity batchTestEntity) {
+
+			_batchTestEntity = batchTestEntity;
+		}
+
+		@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-124")
+		@GraphQLField
+		public FeatureFlagMethodTestEntity
+				featureFlagMethodTestEntityByExternalReferenceCode()
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_featureFlagMethodTestEntityResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				featureFlagMethodTestEntityResource ->
+					featureFlagMethodTestEntityResource.
+						getFeatureFlagMethodTestEntityByExternalReferenceCode(
 							_batchTestEntity.getExternalReferenceCode()));
 		}
 
@@ -2245,4 +2317,4 @@ public class Query {
 	private com.liferay.portal.kernel.model.User _user;
 
 }
-// LIFERAY-REST-BUILDER-HASH:658643902
+// LIFERAY-REST-BUILDER-HASH:1114445503

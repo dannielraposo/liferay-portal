@@ -527,4 +527,4 @@ public abstract class BaseSiteVisitorBehaviorMetricResourceImpl
 		LogFactoryUtil.getLog(BaseSiteVisitorBehaviorMetricResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1875178416
+// LIFERAY-REST-BUILDER-HASH:-1886061880

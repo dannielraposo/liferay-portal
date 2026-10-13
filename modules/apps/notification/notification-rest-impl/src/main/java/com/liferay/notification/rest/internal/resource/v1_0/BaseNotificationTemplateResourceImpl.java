@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -59,7 +58,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Gabriel Albuquerque
@@ -225,6 +223,9 @@ public abstract class BaseNotificationTemplateResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/notification/v1.0/notification-templates/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT", updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -321,6 +322,9 @@ public abstract class BaseNotificationTemplateResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/notification/v1.0/notification-templates/{notificationTemplateId}' -d $'{"attachmentObjectFieldExternalReferenceCodes": ___, "attachmentObjectFieldIds": ___, "body": ___, "description": ___, "editorType": ___, "externalReferenceCode": ___, "name": ___, "name_i18n": ___, "objectDefinitionExternalReferenceCode": ___, "objectDefinitionId": ___, "permissions": ___, "recipientType": ___, "recipients": ___, "subject": ___, "system": ___, "type": ___, "typeLabel": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -451,6 +455,9 @@ public abstract class BaseNotificationTemplateResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/notification/v1.0/notification-templates' -d $'{"attachmentObjectFieldExternalReferenceCodes": ___, "attachmentObjectFieldIds": ___, "body": ___, "description": ___, "editorType": ___, "externalReferenceCode": ___, "name": ___, "name_i18n": ___, "objectDefinitionExternalReferenceCode": ___, "objectDefinitionId": ___, "permissions": ___, "recipientType": ___, "recipients": ___, "subject": ___, "system": ___, "type": ___, "typeLabel": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
 			@io.swagger.v3.oas.annotations.tags.Tag(
@@ -641,6 +648,9 @@ public abstract class BaseNotificationTemplateResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/notification/v1.0/notification-templates/{notificationTemplateId}' -d $'{"attachmentObjectFieldExternalReferenceCodes": ___, "attachmentObjectFieldIds": ___, "body": ___, "description": ___, "editorType": ___, "externalReferenceCode": ___, "name": ___, "name_i18n": ___, "objectDefinitionExternalReferenceCode": ___, "objectDefinitionId": ___, "permissions": ___, "recipientType": ___, "recipients": ___, "subject": ___, "system": ___, "type": ___, "typeLabel": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -725,6 +735,9 @@ public abstract class BaseNotificationTemplateResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/notification/v1.0/notification-templates/by-external-reference-code/{externalReferenceCode}' -d $'{"attachmentObjectFieldExternalReferenceCodes": ___, "attachmentObjectFieldIds": ___, "body": ___, "description": ___, "editorType": ___, "externalReferenceCode": ___, "name": ___, "name_i18n": ___, "objectDefinitionExternalReferenceCode": ___, "objectDefinitionId": ___, "permissions": ___, "recipientType": ___, "recipients": ___, "subject": ___, "system": ___, "type": ___, "typeLabel": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -900,14 +913,6 @@ public abstract class BaseNotificationTemplateResourceImpl
 				notificationTemplateUnsafeFunction.apply(notificationTemplate);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE", "UPDATE");
 	}
 
 	@Override
@@ -1591,4 +1596,4 @@ public abstract class BaseNotificationTemplateResourceImpl
 		LogFactoryUtil.getLog(BaseNotificationTemplateResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:984415249
+// LIFERAY-REST-BUILDER-HASH:1445860910

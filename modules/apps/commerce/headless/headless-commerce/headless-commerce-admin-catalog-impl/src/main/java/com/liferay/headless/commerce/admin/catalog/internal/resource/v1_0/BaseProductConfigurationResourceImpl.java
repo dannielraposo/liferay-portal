@@ -12,6 +12,7 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -19,7 +20,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -58,7 +58,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Zoltán Takács
@@ -276,6 +275,9 @@ public abstract class BaseProductConfigurationResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/product-configurations/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT", updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Fetches the product configuration entry identified by external reference code. Returns 404 when the external reference code is not found."
 	)
@@ -562,6 +564,9 @@ public abstract class BaseProductConfigurationResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/product-configurations/{id}' -d $'{"allowBackOrder": ___, "allowedOrderQuantities": ___, "availabilityEstimateExternalReferenceCode": ___, "availabilityEstimateId": ___, "availabilityEstimateName": ___, "differences": ___, "displayAvailability": ___, "displayStockQuantity": ___, "entityExternalReferenceCode": ___, "entityId": ___, "entityName": ___, "entityType": ___, "externalReferenceCode": ___, "inventoryEngine": ___, "lowStockAction": ___, "maxOrderQuantity": ___, "minOrderQuantity": ___, "minStockQuantity": ___, "multipleOrderQuantity": ___, "productShippingConfiguration": ___, "productTaxConfiguration": ___, "purchasable": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Partially updates the product configuration entry identified by ID. Returns 404 when the ID is not found. Side effects -- Updates inventory, shipping, and tax fields on the entry."
 	)
@@ -687,6 +692,9 @@ public abstract class BaseProductConfigurationResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/product-configuration-lists/by-externalReferenceCode/{externalReferenceCode}/product-configurations' -d $'{"allowBackOrder": ___, "allowedOrderQuantities": ___, "availabilityEstimateExternalReferenceCode": ___, "availabilityEstimateId": ___, "availabilityEstimateName": ___, "differences": ___, "displayAvailability": ___, "displayStockQuantity": ___, "entityExternalReferenceCode": ___, "entityId": ___, "entityName": ___, "entityType": ___, "externalReferenceCode": ___, "inventoryEngine": ___, "lowStockAction": ___, "maxOrderQuantity": ___, "minOrderQuantity": ___, "minStockQuantity": ___, "multipleOrderQuantity": ___, "productShippingConfiguration": ___, "productTaxConfiguration": ___, "purchasable": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates a product configuration entry under the product configuration list identified by external reference code. Resolves the addressed record by external reference code, then applies the same behavior as the by-ID variant. Returns 404 when the external reference code is not found, and 404 when entityType=product and the referenced product is missing. Side effects -- Creates a configuration entry under the configuration list, scoped to a product or to the list as a template."
 	)
@@ -844,6 +852,45 @@ public abstract class BaseProductConfigurationResourceImpl
 			}
 		}
 
+		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
+			String updateStrategy = (String)parameters.getOrDefault(
+				"updateStrategy", "UPDATE");
+
+			if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE")) {
+				productConfigurationUnsafeFunction = productConfiguration -> {
+					ProductConfiguration getProductConfiguration = null;
+					ProductConfiguration persistedProductConfiguration = null;
+
+					try {
+						getProductConfiguration =
+							getProductConfigurationByExternalReferenceCode(
+								productConfiguration.
+									getExternalReferenceCode());
+
+						persistedProductConfiguration =
+							patchProductConfiguration(
+								getProductConfiguration.getId(),
+								productConfiguration);
+					}
+					catch (NoSuchModelException noSuchModelException) {
+						if (parameters.containsKey("externalReferenceCode")) {
+							persistedProductConfiguration =
+								postProductConfigurationListByExternalReferenceCodeProductConfiguration(
+									(String)parameters.get(
+										"externalReferenceCode"),
+									productConfiguration);
+						}
+						else {
+							throw new NotSupportedException(
+								"One of the following parameters must be specified: [externalReferenceCode]");
+						}
+					}
+
+					return persistedProductConfiguration;
+				};
+			}
+		}
+
 		if (productConfigurationUnsafeFunction == null) {
 			throw new NotSupportedException(
 				"Create strategy \"" + createStrategy +
@@ -924,14 +971,6 @@ public abstract class BaseProductConfigurationResourceImpl
 				productConfigurationUnsafeFunction.apply(productConfiguration);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -1604,4 +1643,4 @@ public abstract class BaseProductConfigurationResourceImpl
 		LogFactoryUtil.getLog(BaseProductConfigurationResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-2116385789
+// LIFERAY-REST-BUILDER-HASH:-697844408

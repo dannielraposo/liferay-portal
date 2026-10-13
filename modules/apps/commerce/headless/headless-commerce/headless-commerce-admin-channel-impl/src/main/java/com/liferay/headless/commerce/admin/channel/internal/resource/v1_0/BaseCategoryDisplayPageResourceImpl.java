@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -58,7 +57,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Andrea Sbarra
@@ -343,6 +341,9 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/category-display-pages/{id}' -d $'{"categoryExternalReferenceCode": ___, "categoryId": ___, "groupExternalReferenceCode": ___, "pageUuid": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Partially updates the category display page mapping addressed by its internal ID. Calls CPDisplayLayoutService.getCPDisplayLayout + GroupService.fetchGroupByExternalReferenceCode + AssetCategoryService.fetchCategoryByExternalReferenceCode + CPDisplayLayoutService.updateCPDisplayLayout. Validation -- NoSuchCPDisplayLayoutException -> 404 when display layout ID not found; NoSuchGroupException -> 404 when group ERC not found when category ERC supplied; CPDisplayLayoutEntryException -> 400 when invalid layout entry. Side effects -- updates category-to-display-page layout mapping. List query support — page and pageSize paginate the related entries."
 	)
@@ -383,6 +384,9 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/channels/by-externalReferenceCode/{externalReferenceCode}/category-display-pages' -d $'{"categoryExternalReferenceCode": ___, "categoryId": ___, "groupExternalReferenceCode": ___, "pageUuid": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates a new category display page mapping under the parent Channel, addressed by external reference code (ERC). Calls CommerceChannelLocalService.getCommerceChannelByExternalReferenceCode + GroupService.fetchGroupByExternalReferenceCode + AssetCategoryService.fetchCategoryByExternalReferenceCode + CPDisplayLayoutService.addCPDisplayLayout. Validation -- NoSuchChannelException -> 404 when channel ERC not found; NoSuchGroupException -> 404 when group ERC not found; NoSuchCategoryException -> 404 when category ERC not found; CPDisplayLayoutEntryException -> 400 when invalid layout entry. Side effects -- creates category-to-display-page layout mapping on the channel site group. List query support — page and pageSize paginate the related entries."
 	)
@@ -538,14 +542,6 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 				categoryDisplayPageUnsafeFunction.apply(categoryDisplayPage);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -1217,4 +1213,4 @@ public abstract class BaseCategoryDisplayPageResourceImpl
 		LogFactoryUtil.getLog(BaseCategoryDisplayPageResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1722579001
+// LIFERAY-REST-BUILDER-HASH:-865487843

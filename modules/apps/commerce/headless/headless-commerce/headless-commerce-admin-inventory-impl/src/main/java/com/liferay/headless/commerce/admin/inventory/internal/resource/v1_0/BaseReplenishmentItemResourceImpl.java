@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -59,7 +58,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Alessio Antonio Rendina
@@ -226,6 +224,9 @@ public abstract class BaseReplenishmentItemResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-inventory/v1.0/replenishment-items/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT", updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Returns the replenishment item identified by externalReferenceCode. Calls CommerceInventoryReplenishmentItemService.fetchCommerceInventoryReplenishmentItemByExternalReferenceCode. Validation -- NoSuchInventoryReplenishmentItemException -> 404 when the externalReferenceCode does not resolve."
 	)
@@ -351,6 +352,9 @@ public abstract class BaseReplenishmentItemResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-inventory/v1.0/replenishment-items/{replenishmentItemId}' -d $'{"availabilityDate": ___, "externalReferenceCode": ___, "id": ___, "quantity": ___, "sku": ___, "unitOfMeasureKey": ___, "warehouseId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Applies a JSON Merge Patch to the replenishment item identified by replenishmentItemId. Only the fields supplied in the body are modified -- availabilityDate and quantity fall back to the persisted value when omitted; externalReferenceCode in the body, when present, is written to the row. Validation -- CommerceInventoryReplenishmentQuantityException -> 400 when quantity is non-positive."
 	)
@@ -462,6 +466,9 @@ public abstract class BaseReplenishmentItemResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-inventory/v1.0/warehouses/{warehouseId}/skus/by-sku/{sku}/replenishment-items' -d $'{"availabilityDate": ___, "externalReferenceCode": ___, "id": ___, "quantity": ___, "sku": ___, "unitOfMeasureKey": ___, "warehouseId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates a replenishment item for the SKU at the warehouse identified by warehouseId. Validation -- the underlying warehouse item (warehouseId, sku, default unit of measure) must exist (NoSuchInventoryWarehouseItemException -> 404 otherwise); CommerceInventoryReplenishmentQuantityException -> 400 when quantity is non-positive; DuplicateCommerceInventoryReplenishmentItemException -> 400 when externalReferenceCode collides with an existing entry."
 	)
@@ -644,6 +651,9 @@ public abstract class BaseReplenishmentItemResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-commerce-admin-inventory/v1.0/replenishment-items/by-externalReferenceCode/{externalReferenceCode}' -d $'{"availabilityDate": ___, "externalReferenceCode": ___, "id": ___, "quantity": ___, "sku": ___, "unitOfMeasureKey": ___, "warehouseId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Upserts the replenishment item identified by externalReferenceCode. When a row with that externalReferenceCode already exists, every field is replaced (nulls are coerced to defaults). When it does not, a new replenishment item is created. Validation -- the underlying warehouse item identified by warehouseId and sku must exist (NoSuchInventoryWarehouseItemException -> 404 otherwise); duplicate externalReferenceCode raises DuplicateCommerceInventoryReplenishmentItemException -> 400."
 	)
@@ -809,14 +819,6 @@ public abstract class BaseReplenishmentItemResourceImpl
 				replenishmentItemUnsafeFunction.apply(replenishmentItem);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -1498,4 +1500,4 @@ public abstract class BaseReplenishmentItemResourceImpl
 		LogFactoryUtil.getLog(BaseReplenishmentItemResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-2083800327
+// LIFERAY-REST-BUILDER-HASH:-525248411

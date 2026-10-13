@@ -12,6 +12,7 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -19,7 +20,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -58,7 +58,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Zoltán Takács
@@ -320,6 +319,9 @@ public abstract class BaseTierPriceResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/tierPrices/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT", updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Fetches a tier price by externalReferenceCode. 404 when no entry with that ERC exists."
 	)
@@ -356,6 +358,9 @@ public abstract class BaseTierPriceResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/tierPrices/{id}' -d $'{"customFields": ___, "externalReferenceCode": ___, "id": ___, "minimumQuantity": ___, "price": ___, "priceEntryExternalReferenceCode": ___, "priceEntryId": ___, "promoPrice": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Partially updates a tier price by internal ID. JSON Merge Patch over price, promoPrice, and minimumQuantity."
 	)
@@ -434,6 +439,9 @@ public abstract class BaseTierPriceResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-pricing/v1.0/priceEntries/by-externalReferenceCode/{externalReferenceCode}/tierPrices' -d $'{"customFields": ___, "externalReferenceCode": ___, "id": ___, "minimumQuantity": ___, "price": ___, "priceEntryExternalReferenceCode": ___, "priceEntryId": ___, "promoPrice": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates a tier price under the parent price entry by externalReferenceCode. Same create pipeline as postPriceEntryIdTierPrice with ERC-based parent resolution."
 	)
@@ -573,6 +581,40 @@ public abstract class BaseTierPriceResourceImpl
 			}
 		}
 
+		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
+			String updateStrategy = (String)parameters.getOrDefault(
+				"updateStrategy", "UPDATE");
+
+			if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE")) {
+				tierPriceUnsafeFunction = tierPrice -> {
+					TierPrice getTierPrice = null;
+					TierPrice persistedTierPrice = null;
+
+					try {
+						getTierPrice = getTierPriceByExternalReferenceCode(
+							tierPrice.getExternalReferenceCode());
+
+						patchTierPrice(getTierPrice.getId(), tierPrice);
+					}
+					catch (NoSuchModelException noSuchModelException) {
+						if (parameters.containsKey("externalReferenceCode")) {
+							persistedTierPrice =
+								postPriceEntryByExternalReferenceCodeTierPrice(
+									(String)parameters.get(
+										"externalReferenceCode"),
+									tierPrice);
+						}
+						else {
+							throw new NotSupportedException(
+								"One of the following parameters must be specified: [externalReferenceCode]");
+						}
+					}
+
+					return persistedTierPrice;
+				};
+			}
+		}
+
 		if (tierPriceUnsafeFunction == null) {
 			throw new NotSupportedException(
 				"Create strategy \"" + createStrategy +
@@ -641,14 +683,6 @@ public abstract class BaseTierPriceResourceImpl
 				tierPriceUnsafeFunction.apply(tierPrice);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -1316,4 +1350,4 @@ public abstract class BaseTierPriceResourceImpl
 		LogFactoryUtil.getLog(BaseTierPriceResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1276934230
+// LIFERAY-REST-BUILDER-HASH:-1943737234

@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.filter.ExpressionConvert;
@@ -49,12 +49,13 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.io.Serializable;
 
+import java.lang.reflect.InvocationHandler;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Javier Gamarra
@@ -445,14 +446,6 @@ public abstract class BaseContentSetElementResourceImpl
 			"This method needs to be implemented");
 	}
 
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray();
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
-	}
-
 	@Override
 	public EntityModel getEntityModel(Map<String, List<String>> multivaluedMap)
 		throws Exception {
@@ -531,6 +524,17 @@ public abstract class BaseContentSetElementResourceImpl
 
 	public void setContextAcceptLanguage(AcceptLanguage contextAcceptLanguage) {
 		this.contextAcceptLanguage = contextAcceptLanguage;
+	}
+
+	@Override
+	public void setContextBatchResourceInvocationHandler(
+		InvocationHandler contextBatchResourceInvocationHandler) {
+
+		contextBatchResource =
+			(ContentSetElementResource)ProxyUtil.newProxyInstance(
+				ContentSetElementResource.class.getClassLoader(),
+				new Class<?>[] {ContentSetElementResource.class},
+				contextBatchResourceInvocationHandler);
 	}
 
 	public void setContextBatchUnsafeBiConsumer(
@@ -1054,6 +1058,7 @@ public abstract class BaseContentSetElementResourceImpl
 	}
 
 	protected AcceptLanguage contextAcceptLanguage;
+	protected ContentSetElementResource contextBatchResource = this;
 	protected UnsafeBiConsumer
 		<Collection<ContentSetElement>,
 		 UnsafeFunction<ContentSetElement, ContentSetElement, Exception>,
@@ -1085,4 +1090,4 @@ public abstract class BaseContentSetElementResourceImpl
 		LogFactoryUtil.getLog(BaseContentSetElementResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1027712373
+// LIFERAY-REST-BUILDER-HASH:-1475338095

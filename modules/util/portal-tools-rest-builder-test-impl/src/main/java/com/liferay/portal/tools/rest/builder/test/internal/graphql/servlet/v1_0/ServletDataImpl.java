@@ -430,6 +430,11 @@ public class ServletDataImpl implements ServletData {
 							FeatureFlagMethodTestEntityResourceImpl.class,
 							"deleteFeatureFlagMethodTestEntityBatch"));
 					put(
+						"mutation#deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode",
+						new ObjectValuePair<>(
+							FeatureFlagMethodTestEntityResourceImpl.class,
+							"deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode"));
+					put(
 						"mutation#patchFeatureFlagMethodTestEntity",
 						new ObjectValuePair<>(
 							FeatureFlagMethodTestEntityResourceImpl.class,
@@ -449,6 +454,21 @@ public class ServletDataImpl implements ServletData {
 						new ObjectValuePair<>(
 							FeatureFlagMethodTestEntityResourceImpl.class,
 							"postFeatureFlagMethodTestEntityBatch"));
+					put(
+						"mutation#createSiteFeatureFlagMethodTestEntitiesPageExportBatch",
+						new ObjectValuePair<>(
+							FeatureFlagMethodTestEntityResourceImpl.class,
+							"postSiteFeatureFlagMethodTestEntitiesPageExportBatch"));
+					put(
+						"mutation#createSiteFeatureFlagMethodTestEntity",
+						new ObjectValuePair<>(
+							FeatureFlagMethodTestEntityResourceImpl.class,
+							"postSiteFeatureFlagMethodTestEntity"));
+					put(
+						"mutation#createSiteFeatureFlagMethodTestEntityBatch",
+						new ObjectValuePair<>(
+							FeatureFlagMethodTestEntityResourceImpl.class,
+							"postSiteFeatureFlagMethodTestEntityBatch"));
 					put(
 						"mutation#updateFeatureFlagMethodTestEntityByExternalReferenceCode",
 						new ObjectValuePair<>(
@@ -831,6 +851,16 @@ public class ServletDataImpl implements ServletData {
 							FeatureFlagMethodTestEntityResourceImpl.class,
 							"getFeatureFlagMethodTestEntitiesPage"));
 					put(
+						"query#featureFlagMethodTestEntityByExternalReferenceCode",
+						new ObjectValuePair<>(
+							FeatureFlagMethodTestEntityResourceImpl.class,
+							"getFeatureFlagMethodTestEntityByExternalReferenceCode"));
+					put(
+						"query#siteFeatureFlagMethodTestEntities",
+						new ObjectValuePair<>(
+							FeatureFlagMethodTestEntityResourceImpl.class,
+							"getSiteFeatureFlagMethodTestEntitiesPage"));
+					put(
 						"query#filters",
 						new ObjectValuePair<>(
 							FilterResourceImpl.class, "getFiltersPage"));
@@ -935,6 +965,11 @@ public class ServletDataImpl implements ServletData {
 							CompanyTestEntityResourceImpl.class,
 							"getCompanyTestEntityByExternalReferenceCode"));
 					put(
+						"query#BatchTestEntity.featureFlagMethodTestEntityByExternalReferenceCode",
+						new ObjectValuePair<>(
+							FeatureFlagMethodTestEntityResourceImpl.class,
+							"getFeatureFlagMethodTestEntityByExternalReferenceCode"));
+					put(
 						"query#BatchTestEntity.sharedInternalModelBatchTestEntityByExternalReferenceCode",
 						new ObjectValuePair<>(
 							SharedInternalModelBatchTestEntityResourceImpl.
@@ -1034,4 +1069,4 @@ public class ServletDataImpl implements ServletData {
 		_testEntityAddressResourceComponentServiceObjects;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1408445739
+// LIFERAY-REST-BUILDER-HASH:440483044

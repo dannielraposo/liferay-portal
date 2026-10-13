@@ -525,4 +525,4 @@ public abstract class BaseFieldResourceImpl implements FieldResource {
 		LogFactoryUtil.getLog(BaseFieldResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:587978069
+// LIFERAY-REST-BUILDER-HASH:-895864739

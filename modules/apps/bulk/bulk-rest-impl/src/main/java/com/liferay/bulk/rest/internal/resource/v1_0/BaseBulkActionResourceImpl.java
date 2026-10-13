@@ -661,4 +661,4 @@ public abstract class BaseBulkActionResourceImpl
 		LogFactoryUtil.getLog(BaseBulkActionResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-887906318
+// LIFERAY-REST-BUILDER-HASH:-1404582550

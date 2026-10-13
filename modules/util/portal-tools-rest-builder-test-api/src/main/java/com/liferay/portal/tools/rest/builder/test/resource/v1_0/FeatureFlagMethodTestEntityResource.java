@@ -57,8 +57,21 @@ public interface FeatureFlagMethodTestEntityResource {
 			String callbackURL, Object object)
 		throws Exception;
 
+	public void deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode(
+			Long siteId, String externalReferenceCode)
+		throws Exception;
+
 	public Page<FeatureFlagMethodTestEntity>
 			getFeatureFlagMethodTestEntitiesPage()
+		throws Exception;
+
+	public FeatureFlagMethodTestEntity
+			getFeatureFlagMethodTestEntityByExternalReferenceCode(
+				String externalReferenceCode)
+		throws Exception;
+
+	public Page<FeatureFlagMethodTestEntity>
+			getSiteFeatureFlagMethodTestEntitiesPage(Long siteId)
 		throws Exception;
 
 	public FeatureFlagMethodTestEntity patchFeatureFlagMethodTestEntity(
@@ -76,6 +89,20 @@ public interface FeatureFlagMethodTestEntityResource {
 
 	public Response postFeatureFlagMethodTestEntityBatch(
 			String callbackURL, Object object)
+		throws Exception;
+
+	public Response postSiteFeatureFlagMethodTestEntitiesPageExportBatch(
+			Long siteId, String callbackURL, String contentType,
+			String fieldNames)
+		throws Exception;
+
+	public FeatureFlagMethodTestEntity postSiteFeatureFlagMethodTestEntity(
+			Long siteId,
+			FeatureFlagMethodTestEntity featureFlagMethodTestEntity)
+		throws Exception;
+
+	public Response postSiteFeatureFlagMethodTestEntityBatch(
+			Long siteId, String callbackURL, Object object)
 		throws Exception;
 
 	public FeatureFlagMethodTestEntity
@@ -180,4 +207,4 @@ public interface FeatureFlagMethodTestEntityResource {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1940388851
+// LIFERAY-REST-BUILDER-HASH:1007318099

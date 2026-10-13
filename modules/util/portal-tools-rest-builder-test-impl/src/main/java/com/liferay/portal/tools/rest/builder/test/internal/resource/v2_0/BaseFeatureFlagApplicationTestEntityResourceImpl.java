@@ -10,16 +10,14 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.filter.ExpressionConvert;
@@ -52,12 +50,13 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.io.Serializable;
 
+import java.lang.reflect.InvocationHandler;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Alejandro Tardín
@@ -182,14 +181,6 @@ public abstract class BaseFeatureFlagApplicationTestEntityResourceImpl
 			"This method needs to be implemented");
 	}
 
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray();
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
-	}
-
 	@Override
 	public EntityModel getEntityModel(Map<String, List<String>> multivaluedMap)
 		throws Exception {
@@ -214,14 +205,7 @@ public abstract class BaseFeatureFlagApplicationTestEntityResourceImpl
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
 
-		if (!FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "APPLICATION-123")) {
-
-			throw new UnsupportedOperationException(
-				"This method needs to be implemented");
-		}
-
-		return getFeatureFlagApplicationTestEntitiesPage();
+		return contextBatchResource.getFeatureFlagApplicationTestEntitiesPage();
 	}
 
 	@Override
@@ -275,6 +259,21 @@ public abstract class BaseFeatureFlagApplicationTestEntityResourceImpl
 
 	public void setContextAcceptLanguage(AcceptLanguage contextAcceptLanguage) {
 		this.contextAcceptLanguage = contextAcceptLanguage;
+	}
+
+	@Override
+	public void setContextBatchResourceInvocationHandler(
+		InvocationHandler contextBatchResourceInvocationHandler) {
+
+		contextBatchResource =
+			(FeatureFlagApplicationTestEntityResource)
+				ProxyUtil.newProxyInstance(
+					FeatureFlagApplicationTestEntityResource.class.
+						getClassLoader(),
+					new Class<?>[] {
+						FeatureFlagApplicationTestEntityResource.class
+					},
+					contextBatchResourceInvocationHandler);
 	}
 
 	public void setContextBatchUnsafeBiConsumer(
@@ -800,6 +799,8 @@ public abstract class BaseFeatureFlagApplicationTestEntityResourceImpl
 	}
 
 	protected AcceptLanguage contextAcceptLanguage;
+	protected FeatureFlagApplicationTestEntityResource contextBatchResource =
+		this;
 	protected UnsafeBiConsumer
 		<Collection<FeatureFlagApplicationTestEntity>,
 		 UnsafeFunction
@@ -834,4 +835,4 @@ public abstract class BaseFeatureFlagApplicationTestEntityResourceImpl
 			BaseFeatureFlagApplicationTestEntityResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-330893004
+// LIFERAY-REST-BUILDER-HASH:-2123603546

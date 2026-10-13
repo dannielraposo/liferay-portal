@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.GroupThreadLocal;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -495,6 +494,9 @@ public abstract class BaseObjectEntryFolderResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-object/v1.0/object-entry-folders/{objectEntryFolderId}' -d $'{"description": ___, "externalReferenceCode": ___, "label": ___, "label_i18n": ___, "parentObjectEntryFolderExternalReferenceCode": ___, "parentObjectEntryFolderId": ___, "permissions": ___, "scope": ___, "status": ___, "systemProperties": ___, "title": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates only the fields received in the request body, leaving any other fields untouched."
 	)
@@ -1025,6 +1027,9 @@ public abstract class BaseObjectEntryFolderResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-object/v1.0/object-entry-folders/{objectEntryFolderId}' -d $'{"description": ___, "externalReferenceCode": ___, "label": ___, "label_i18n": ___, "parentObjectEntryFolderExternalReferenceCode": ___, "parentObjectEntryFolderId": ___, "permissions": ___, "scope": ___, "status": ___, "systemProperties": ___, "title": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -1299,14 +1304,6 @@ public abstract class BaseObjectEntryFolderResourceImpl
 				objectEntryFolderUnsafeFunction.apply(objectEntryFolder);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray();
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE", "UPDATE");
 	}
 
 	@Override
@@ -2155,4 +2152,4 @@ public abstract class BaseObjectEntryFolderResourceImpl
 		LogFactoryUtil.getLog(BaseObjectEntryFolderResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1017145696
+// LIFERAY-REST-BUILDER-HASH:1994185992

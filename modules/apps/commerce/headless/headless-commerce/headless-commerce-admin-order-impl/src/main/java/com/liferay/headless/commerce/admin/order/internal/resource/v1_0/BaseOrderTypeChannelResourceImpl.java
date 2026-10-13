@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -57,7 +56,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Alessio Antonio Rendina
@@ -276,6 +274,9 @@ public abstract class BaseOrderTypeChannelResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-types/by-externalReferenceCode/{externalReferenceCode}/order-type-channels' -d $'{"channelExternalReferenceCode": ___, "channelId": ___, "orderTypeExternalReferenceCode": ___, "orderTypeId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Create an order-type-channel link for an order type accessed by externalReferenceCode. Resolves channel by either ID or externalReferenceCode. Returns created OrderTypeChannel DTO. Throws NoSuchOrderTypeException (404) or NoSuchChannelException (404) if either not found."
 	)
@@ -470,14 +471,6 @@ public abstract class BaseOrderTypeChannelResourceImpl
 				orderTypeChannelUnsafeFunction.apply(orderTypeChannel);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
 	}
 
 	@Override
@@ -1112,4 +1105,4 @@ public abstract class BaseOrderTypeChannelResourceImpl
 		LogFactoryUtil.getLog(BaseOrderTypeChannelResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-238944885
+// LIFERAY-REST-BUILDER-HASH:-1803242294

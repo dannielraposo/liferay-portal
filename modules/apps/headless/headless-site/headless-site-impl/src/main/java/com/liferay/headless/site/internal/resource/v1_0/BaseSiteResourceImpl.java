@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -59,7 +58,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Rubén Pulido
@@ -343,6 +341,9 @@ public abstract class BaseSiteResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-site/v1.0/sites' -d $'{"active": ___, "description": ___, "descriptiveName": ___, "descriptiveName_i18n": ___, "externalReferenceCode": ___, "friendlyUrlPath": ___, "manualMembership": ___, "membershipRestriction": ___, "membershipType": ___, "name": ___, "name_i18n": ___, "parentSiteExternalReferenceCode": ___, "parentSiteKey": ___, "templateKey": ___, "templateType": ___, "typeSettings": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@Deprecated
 	@io.swagger.v3.oas.annotations.Operation(
 		deprecated = true, description = "Adds a new site"
@@ -511,6 +512,9 @@ public abstract class BaseSiteResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-site/v1.0/sites' -d $'{"active": ___, "description": ___, "descriptiveName": ___, "descriptiveName_i18n": ___, "externalReferenceCode": ___, "friendlyUrlPath": ___, "manualMembership": ___, "membershipRestriction": ___, "membershipType": ___, "name": ___, "name_i18n": ___, "parentSiteExternalReferenceCode": ___, "parentSiteKey": ___, "templateKey": ___, "templateType": ___, "typeSettings": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "UPDATE"
+	)
 	@Deprecated
 	@io.swagger.v3.oas.annotations.Operation(
 		deprecated = true,
@@ -579,6 +583,9 @@ public abstract class BaseSiteResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-site/v1.0/sites/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@Deprecated
 	@io.swagger.v3.oas.annotations.Operation(
 		deprecated = true, description = "Adds or update a new site",
@@ -706,14 +713,6 @@ public abstract class BaseSiteResourceImpl
 				siteUnsafeFunction.apply(site);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("UPDATE");
 	}
 
 	@Override
@@ -1401,4 +1400,4 @@ public abstract class BaseSiteResourceImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:687108402
+// LIFERAY-REST-BUILDER-HASH:1647324981

@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -58,7 +57,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Zoltán Takács
@@ -323,6 +321,9 @@ public abstract class BaseProductOptionResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/productOptions/{id}' -d $'{"catalogId": ___, "customFields": ___, "definedExternally": ___, "description": ___, "externalReferenceCode": ___, "facetable": ___, "fieldType": ___, "infoItemServiceKey": ___, "key": ___, "name": ___, "optionExternalReferenceCode": ___, "optionId": ___, "priceType": ___, "priority": ___, "productOptionValues": ___, "required": ___, "skuContributor": ___, "typeSettings": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Partially updates the product option relation identified by ID, including any nested product option values. Returns 404 when the ID is not found. Side effects -- Reindexes the parent product; cascades into nested product option values."
 	)
@@ -474,14 +475,6 @@ public abstract class BaseProductOptionResourceImpl
 				productOptionUnsafeFunction.apply(productOption);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray();
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -1151,4 +1144,4 @@ public abstract class BaseProductOptionResourceImpl
 		LogFactoryUtil.getLog(BaseProductOptionResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1268149323
+// LIFERAY-REST-BUILDER-HASH:-1825316172

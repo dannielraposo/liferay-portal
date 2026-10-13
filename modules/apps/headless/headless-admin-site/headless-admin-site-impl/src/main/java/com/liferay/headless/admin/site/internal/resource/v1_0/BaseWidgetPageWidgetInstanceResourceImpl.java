@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.filter.ExpressionConvert;
@@ -49,12 +49,13 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.io.Serializable;
 
+import java.lang.reflect.InvocationHandler;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Rubén Pulido
@@ -526,14 +527,6 @@ public abstract class BaseWidgetPageWidgetInstanceResourceImpl
 			"This method needs to be implemented");
 	}
 
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray();
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
-	}
-
 	@Override
 	public EntityModel getEntityModel(Map<String, List<String>> multivaluedMap)
 		throws Exception {
@@ -612,6 +605,17 @@ public abstract class BaseWidgetPageWidgetInstanceResourceImpl
 
 	public void setContextAcceptLanguage(AcceptLanguage contextAcceptLanguage) {
 		this.contextAcceptLanguage = contextAcceptLanguage;
+	}
+
+	@Override
+	public void setContextBatchResourceInvocationHandler(
+		InvocationHandler contextBatchResourceInvocationHandler) {
+
+		contextBatchResource =
+			(WidgetPageWidgetInstanceResource)ProxyUtil.newProxyInstance(
+				WidgetPageWidgetInstanceResource.class.getClassLoader(),
+				new Class<?>[] {WidgetPageWidgetInstanceResource.class},
+				contextBatchResourceInvocationHandler);
 	}
 
 	public void setContextBatchUnsafeBiConsumer(
@@ -1142,6 +1146,7 @@ public abstract class BaseWidgetPageWidgetInstanceResourceImpl
 	}
 
 	protected AcceptLanguage contextAcceptLanguage;
+	protected WidgetPageWidgetInstanceResource contextBatchResource = this;
 	protected UnsafeBiConsumer
 		<Collection<WidgetPageWidgetInstance>,
 		 UnsafeFunction
@@ -1174,4 +1179,4 @@ public abstract class BaseWidgetPageWidgetInstanceResourceImpl
 		LogFactoryUtil.getLog(BaseWidgetPageWidgetInstanceResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1281823564
+// LIFERAY-REST-BUILDER-HASH:1817279400

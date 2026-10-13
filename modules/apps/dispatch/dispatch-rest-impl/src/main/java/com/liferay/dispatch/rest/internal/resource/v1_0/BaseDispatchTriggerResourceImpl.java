@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -57,7 +56,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Nilton Vieira
@@ -92,6 +90,9 @@ public abstract class BaseDispatchTriggerResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/dispatch-rest/v1.0/dispatch-triggers' -d $'{"active": ___, "companyId": ___, "cronExpression": ___, "dispatchTaskClusterMode": ___, "dispatchTaskExecutorType": ___, "dispatchTaskSettings": ___, "externalReferenceCode": ___, "id": ___, "name": ___, "overlapAllowed": ___, "system": ___, "timeZoneId": ___, "userId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
 			@io.swagger.v3.oas.annotations.tags.Tag(name = "DispatchTrigger")
@@ -294,14 +295,6 @@ public abstract class BaseDispatchTriggerResourceImpl
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
 	}
 
 	@Override
@@ -935,4 +928,4 @@ public abstract class BaseDispatchTriggerResourceImpl
 		LogFactoryUtil.getLog(BaseDispatchTriggerResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1427226241
+// LIFERAY-REST-BUILDER-HASH:1808750274

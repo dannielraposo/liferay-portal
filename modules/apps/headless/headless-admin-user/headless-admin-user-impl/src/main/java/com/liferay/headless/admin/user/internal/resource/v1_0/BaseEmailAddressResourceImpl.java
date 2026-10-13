@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -58,7 +57,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Javier Gamarra
@@ -459,6 +457,9 @@ public abstract class BaseEmailAddressResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-admin-user/v1.0/email-addresses/{emailAddressId}' -d $'{"emailAddress": ___, "externalReferenceCode": ___, "id": ___, "primary": ___, "type": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates the email address with the information sent in the request body. Fields not present in the request body are left unchanged."
 	)
@@ -795,14 +796,6 @@ public abstract class BaseEmailAddressResourceImpl
 				emailAddressUnsafeFunction.apply(emailAddress);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray();
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -1490,4 +1483,4 @@ public abstract class BaseEmailAddressResourceImpl
 		LogFactoryUtil.getLog(BaseEmailAddressResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:557969728
+// LIFERAY-REST-BUILDER-HASH:-689353841

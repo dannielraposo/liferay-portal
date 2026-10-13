@@ -578,4 +578,4 @@ public abstract class BaseDocumentsMetricResourceImpl
 		LogFactoryUtil.getLog(BaseDocumentsMetricResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1912813094
+// LIFERAY-REST-BUILDER-HASH:1467460254

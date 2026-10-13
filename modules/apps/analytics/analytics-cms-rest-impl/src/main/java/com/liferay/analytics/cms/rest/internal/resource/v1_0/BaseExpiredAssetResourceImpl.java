@@ -535,4 +535,4 @@ public abstract class BaseExpiredAssetResourceImpl
 		LogFactoryUtil.getLog(BaseExpiredAssetResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1853333015
+// LIFERAY-REST-BUILDER-HASH:2015989007

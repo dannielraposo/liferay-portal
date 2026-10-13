@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -57,7 +56,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Zoltán Takács
@@ -269,6 +267,9 @@ public abstract class BasePriceListOrderTypeResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-pricing/v2.0/price-lists/by-externalReferenceCode/{externalReferenceCode}/price-list-order-types' -d $'{"orderTypeExternalReferenceCode": ___, "orderTypeId": ___, "priceListExternalReferenceCode": ___, "priceListId": ___, "priority": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates price list order type link for PriceList by ERC. Throws NoSuchPriceListException when price list ERC is unknown."
 	)
@@ -455,14 +456,6 @@ public abstract class BasePriceListOrderTypeResourceImpl
 				priceListOrderTypeUnsafeFunction.apply(priceListOrderType);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
 	}
 
 	@Override
@@ -1097,4 +1090,4 @@ public abstract class BasePriceListOrderTypeResourceImpl
 		LogFactoryUtil.getLog(BasePriceListOrderTypeResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1787912190
+// LIFERAY-REST-BUILDER-HASH:1487781987

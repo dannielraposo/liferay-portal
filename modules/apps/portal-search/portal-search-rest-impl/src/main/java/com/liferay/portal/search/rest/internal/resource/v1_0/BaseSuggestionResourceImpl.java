@@ -566,4 +566,4 @@ public abstract class BaseSuggestionResourceImpl implements SuggestionResource {
 		LogFactoryUtil.getLog(BaseSuggestionResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1275777764
+// LIFERAY-REST-BUILDER-HASH:-933407212

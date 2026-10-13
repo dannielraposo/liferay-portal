@@ -535,4 +535,4 @@ public abstract class BaseObjectEntryTopPagesResourceImpl
 		LogFactoryUtil.getLog(BaseObjectEntryTopPagesResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1183677401
+// LIFERAY-REST-BUILDER-HASH:739369681

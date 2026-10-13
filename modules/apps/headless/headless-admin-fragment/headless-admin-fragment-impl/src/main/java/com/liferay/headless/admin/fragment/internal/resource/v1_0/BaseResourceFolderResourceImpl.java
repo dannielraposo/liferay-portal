@@ -12,16 +12,14 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -54,13 +52,13 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.io.Serializable;
 
+import java.lang.reflect.InvocationHandler;
+
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Rubén Pulido
@@ -408,6 +406,9 @@ public abstract class BaseResourceFolderResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/resource-folders' -d $'{"dateCreated": ___, "dateModified": ___, "externalReferenceCode": ___, "fragmentSet": ___, "fragmentSetExternalReferenceCode": ___, "name": ___, "parentResourceFolder": ___, "parentResourceFolderExternalReferenceCode": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Adds a new resource folder to the site."
@@ -583,6 +584,9 @@ public abstract class BaseResourceFolderResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/resource-folders/{resourceFolderExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "externalReferenceCode": ___, "fragmentSet": ___, "fragmentSetExternalReferenceCode": ___, "name": ___, "parentResourceFolder": ___, "parentResourceFolderExternalReferenceCode": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-39244")
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates the resource folder with the given external reference code, or creates it if it does not exist. On update, `dateModified` and `name` are honored; any values sent for `dateCreated`, `externalReferenceCode`, `fragmentSet`, `fragmentSetExternalReferenceCode`, `parentResourceFolder`, and `parentResourceFolderExternalReferenceCode` are ignored."
@@ -647,15 +651,13 @@ public abstract class BaseResourceFolderResourceImpl
 		String createStrategy = (String)parameters.getOrDefault(
 			"createStrategy", "INSERT");
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT") &&
-			FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-39244")) {
-
+		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT")) {
 			if (parameters.containsKey("siteExternalReferenceCode")) {
 				resourceFolderUnsafeFunction =
-					resourceFolder -> postSiteResourceFolder(
-						(String)parameters.get("siteExternalReferenceCode"),
-						resourceFolder);
+					resourceFolder ->
+						contextBatchResource.postSiteResourceFolder(
+							(String)parameters.get("siteExternalReferenceCode"),
+							resourceFolder);
 			}
 			else {
 				throw new NotSupportedException(
@@ -663,10 +665,7 @@ public abstract class BaseResourceFolderResourceImpl
 			}
 		}
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT") &&
-			FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-39244")) {
-
+		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
 			String updateStrategy = (String)parameters.getOrDefault(
 				"updateStrategy", "UPDATE");
 
@@ -675,10 +674,12 @@ public abstract class BaseResourceFolderResourceImpl
 					ResourceFolder persistedResourceFolder = null;
 
 					if (parameters.containsKey("siteExternalReferenceCode")) {
-						persistedResourceFolder = putSiteResourceFolder(
-							(String)parameters.get("siteExternalReferenceCode"),
-							resourceFolder.getExternalReferenceCode(),
-							resourceFolder);
+						persistedResourceFolder =
+							contextBatchResource.putSiteResourceFolder(
+								(String)parameters.get(
+									"siteExternalReferenceCode"),
+								resourceFolder.getExternalReferenceCode(),
+								resourceFolder);
 					}
 					else {
 						throw new NotSupportedException(
@@ -717,17 +718,10 @@ public abstract class BaseResourceFolderResourceImpl
 			Map<String, Serializable> parameters)
 		throws Exception {
 
-		if (!FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-39244")) {
-
-			throw new UnsupportedOperationException(
-				"This method needs to be implemented");
-		}
-
 		UnsafeFunction<ResourceFolder, ResourceFolder, Exception>
 			resourceFolderUnsafeFunction = resourceFolder -> {
 				if (parameters.containsKey("siteExternalReferenceCode")) {
-					deleteSiteResourceFolder(
+					contextBatchResource.deleteSiteResourceFolder(
 						(String)parameters.get("siteExternalReferenceCode"),
 						resourceFolder.getExternalReferenceCode());
 
@@ -751,23 +745,6 @@ public abstract class BaseResourceFolderResourceImpl
 				resourceFolderUnsafeFunction.apply(resourceFolder);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		Set<String> createStrategies = new HashSet<>();
-
-		if (FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-39244")) {
-
-			createStrategies.add("INSERT");
-			createStrategies.add("UPSERT");
-		}
-
-		return createStrategies;
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
 	}
 
 	@Override
@@ -794,15 +771,8 @@ public abstract class BaseResourceFolderResourceImpl
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
 
-		if (!FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-39244")) {
-
-			throw new UnsupportedOperationException(
-				"This method needs to be implemented");
-		}
-
 		if (parameters.containsKey("siteExternalReferenceCode")) {
-			return getSiteResourceFoldersPage(
+			return contextBatchResource.getSiteResourceFoldersPage(
 				(String)parameters.get("siteExternalReferenceCode"), filter,
 				pagination);
 		}
@@ -862,6 +832,17 @@ public abstract class BaseResourceFolderResourceImpl
 
 	public void setContextAcceptLanguage(AcceptLanguage contextAcceptLanguage) {
 		this.contextAcceptLanguage = contextAcceptLanguage;
+	}
+
+	@Override
+	public void setContextBatchResourceInvocationHandler(
+		InvocationHandler contextBatchResourceInvocationHandler) {
+
+		contextBatchResource =
+			(ResourceFolderResource)ProxyUtil.newProxyInstance(
+				ResourceFolderResource.class.getClassLoader(),
+				new Class<?>[] {ResourceFolderResource.class},
+				contextBatchResourceInvocationHandler);
 	}
 
 	public void setContextBatchUnsafeBiConsumer(
@@ -1385,6 +1366,7 @@ public abstract class BaseResourceFolderResourceImpl
 	}
 
 	protected AcceptLanguage contextAcceptLanguage;
+	protected ResourceFolderResource contextBatchResource = this;
 	protected UnsafeBiConsumer
 		<Collection<ResourceFolder>,
 		 UnsafeFunction<ResourceFolder, ResourceFolder, Exception>, Exception>
@@ -1415,4 +1397,4 @@ public abstract class BaseResourceFolderResourceImpl
 		LogFactoryUtil.getLog(BaseResourceFolderResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1666618860
+// LIFERAY-REST-BUILDER-HASH:-707761276

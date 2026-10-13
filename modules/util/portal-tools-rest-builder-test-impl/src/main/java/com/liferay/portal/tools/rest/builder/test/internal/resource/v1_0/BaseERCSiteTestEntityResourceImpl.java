@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.service.permission.ModelPermissions;
 import com.liferay.portal.kernel.util.GroupThreadLocal;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -418,6 +417,9 @@ public abstract class BaseERCSiteTestEntityResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/sites/{siteExternalReferenceCode}/erc-site-test-entities' -d $'{"dateCreated": ___, "dateModified": ___, "description": ___, "externalReferenceCode": ___, "permissions": ___, "siteExternalReferenceCode": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -540,6 +542,9 @@ public abstract class BaseERCSiteTestEntityResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/sites/{siteExternalReferenceCode}/erc-site-test-entities/{ercSiteTestEntityExternalReferenceCode}' -d $'{"dateCreated": ___, "dateModified": ___, "description": ___, "externalReferenceCode": ___, "permissions": ___, "siteExternalReferenceCode": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -812,14 +817,6 @@ public abstract class BaseERCSiteTestEntityResourceImpl
 				ercSiteTestEntityUnsafeFunction.apply(ercSiteTestEntity);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
 	}
 
 	@Override
@@ -1627,4 +1624,4 @@ public abstract class BaseERCSiteTestEntityResourceImpl
 		LogFactoryUtil.getLog(BaseERCSiteTestEntityResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-102935409
+// LIFERAY-REST-BUILDER-HASH:1832615519

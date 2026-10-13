@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -59,7 +58,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Alessio Antonio Rendina
@@ -226,6 +224,9 @@ public abstract class BaseOrderRuleResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT", updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves an order rule by externalReferenceCode _corEntryService.fetchCOREntryByExternalReferenceCode(). Identical response to getOrderRule. Throws NoSuchCOREntryException (404) if not found."
 	)
@@ -330,6 +331,9 @@ public abstract class BaseOrderRuleResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules/{id}' -d $'{"active": ___, "description": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "name": ___, "neverExpire": ___, "orderRuleAccount": ___, "orderRuleAccountGroup": ___, "orderRuleChannel": ___, "orderRuleOrderType": ___, "priority": ___, "type": ___, "typeSettings": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates an OrderRule by ID. Backed by the matching commerce service method on the target resource."
 	)
@@ -451,6 +455,9 @@ public abstract class BaseOrderRuleResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules' -d $'{"active": ___, "description": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "name": ___, "neverExpire": ___, "orderRuleAccount": ___, "orderRuleAccountGroup": ___, "orderRuleChannel": ___, "orderRuleOrderType": ___, "priority": ___, "type": ___, "typeSettings": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Create a new order rule. Calls _addCOREntry() which uses _corEntryService.addCOREntry() with externalReferenceCode, active, description, dates, name, priority, type, typeSettings. Also calls _updateNestedResources() to add linked accounts/groups/channels/order-types if provided in request body. Returns created OrderRule DTO."
 	)
@@ -597,6 +604,9 @@ public abstract class BaseOrderRuleResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-commerce-admin-order/v1.0/order-rules/by-externalReferenceCode/{externalReferenceCode}' -d $'{"active": ___, "description": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "name": ___, "neverExpire": ___, "orderRuleAccount": ___, "orderRuleAccountGroup": ___, "orderRuleChannel": ___, "orderRuleOrderType": ___, "priority": ___, "type": ___, "typeSettings": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Full replace of an order rule by externalReferenceCode (upsert semantics). If rule exists, updates all fields via _updateOrderRule() and _updateNestedResources(); if not, creates a new rule _addCOREntry(). Returns OrderRule DTO."
 	)
@@ -751,14 +761,6 @@ public abstract class BaseOrderRuleResourceImpl
 				orderRuleUnsafeFunction.apply(orderRule);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -1426,4 +1428,4 @@ public abstract class BaseOrderRuleResourceImpl
 		LogFactoryUtil.getLog(BaseOrderRuleResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1298731647
+// LIFERAY-REST-BUILDER-HASH:-1314175126

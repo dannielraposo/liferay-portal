@@ -12,16 +12,14 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -54,13 +52,13 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.io.Serializable;
 
+import java.lang.reflect.InvocationHandler;
+
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Manuele Castro
@@ -228,6 +226,9 @@ public abstract class BaseOAuthClientEntryResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/oauth-client/v1.0/oauth-client-entries' -d $'{"authRequestParametersJSON": ___, "authServerWellKnownURI": ___, "clientId": ___, "customClaims": ___, "dateCreated": ___, "dateModified": ___, "externalReferenceCode": ___, "infoJSON": ___, "matcherField": ___, "metadataCacheTime": ___, "oAuthClientASLocalMetadata": ___, "oidcUserInfoMapperJSON": ___, "tokenConnectionTimeout": ___, "tokenRequestParametersJSON": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-49855")
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
@@ -298,6 +299,9 @@ public abstract class BaseOAuthClientEntryResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/oauth-client/v1.0/oauth-client-entries/by-external-reference-code/{externalReferenceCode}' -d $'{"authRequestParametersJSON": ___, "authServerWellKnownURI": ___, "clientId": ___, "customClaims": ___, "dateCreated": ___, "dateModified": ___, "externalReferenceCode": ___, "infoJSON": ___, "matcherField": ___, "metadataCacheTime": ___, "oAuthClientASLocalMetadata": ___, "oidcUserInfoMapperJSON": ___, "tokenConnectionTimeout": ___, "tokenRequestParametersJSON": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("LPD-49855")
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -343,18 +347,13 @@ public abstract class BaseOAuthClientEntryResourceImpl
 		String createStrategy = (String)parameters.getOrDefault(
 			"createStrategy", "INSERT");
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT") &&
-			FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-49855")) {
-
+		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT")) {
 			oAuthClientEntryUnsafeFunction =
-				oAuthClientEntry -> postOAuthClientEntry(oAuthClientEntry);
+				oAuthClientEntry -> contextBatchResource.postOAuthClientEntry(
+					oAuthClientEntry);
 		}
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT") &&
-			FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-49855")) {
-
+		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
 			String updateStrategy = (String)parameters.getOrDefault(
 				"updateStrategy", "UPDATE");
 
@@ -363,9 +362,10 @@ public abstract class BaseOAuthClientEntryResourceImpl
 					OAuthClientEntry persistedOAuthClientEntry = null;
 
 					persistedOAuthClientEntry =
-						putOAuthClientEntryByExternalReferenceCode(
-							oAuthClientEntry.getExternalReferenceCode(),
-							oAuthClientEntry);
+						contextBatchResource.
+							putOAuthClientEntryByExternalReferenceCode(
+								oAuthClientEntry.getExternalReferenceCode(),
+								oAuthClientEntry);
 
 					return persistedOAuthClientEntry;
 				};
@@ -399,18 +399,12 @@ public abstract class BaseOAuthClientEntryResourceImpl
 			Map<String, Serializable> parameters)
 		throws Exception {
 
-		if (!FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-49855")) {
-
-			throw new UnsupportedOperationException(
-				"This method needs to be implemented");
-		}
-
 		UnsafeFunction<OAuthClientEntry, OAuthClientEntry, Exception>
 			oAuthClientEntryUnsafeFunction = oAuthClientEntry -> {
 				if (oAuthClientEntry.getExternalReferenceCode() != null) {
-					deleteOAuthClientEntryByExternalReferenceCode(
-						oAuthClientEntry.getExternalReferenceCode());
+					contextBatchResource.
+						deleteOAuthClientEntryByExternalReferenceCode(
+							oAuthClientEntry.getExternalReferenceCode());
 
 					return oAuthClientEntry;
 				}
@@ -432,23 +426,6 @@ public abstract class BaseOAuthClientEntryResourceImpl
 				oAuthClientEntryUnsafeFunction.apply(oAuthClientEntry);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		Set<String> createStrategies = new HashSet<>();
-
-		if (FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-49855")) {
-
-			createStrategies.add("INSERT");
-			createStrategies.add("UPSERT");
-		}
-
-		return createStrategies;
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
 	}
 
 	@Override
@@ -475,14 +452,7 @@ public abstract class BaseOAuthClientEntryResourceImpl
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
 
-		if (!FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-49855")) {
-
-			throw new UnsupportedOperationException(
-				"This method needs to be implemented");
-		}
-
-		return getOAuthClientEntriesPage();
+		return contextBatchResource.getOAuthClientEntriesPage();
 	}
 
 	@Override
@@ -535,6 +505,17 @@ public abstract class BaseOAuthClientEntryResourceImpl
 
 	public void setContextAcceptLanguage(AcceptLanguage contextAcceptLanguage) {
 		this.contextAcceptLanguage = contextAcceptLanguage;
+	}
+
+	@Override
+	public void setContextBatchResourceInvocationHandler(
+		InvocationHandler contextBatchResourceInvocationHandler) {
+
+		contextBatchResource =
+			(OAuthClientEntryResource)ProxyUtil.newProxyInstance(
+				OAuthClientEntryResource.class.getClassLoader(),
+				new Class<?>[] {OAuthClientEntryResource.class},
+				contextBatchResourceInvocationHandler);
 	}
 
 	public void setContextBatchUnsafeBiConsumer(
@@ -1058,6 +1039,7 @@ public abstract class BaseOAuthClientEntryResourceImpl
 	}
 
 	protected AcceptLanguage contextAcceptLanguage;
+	protected OAuthClientEntryResource contextBatchResource = this;
 	protected UnsafeBiConsumer
 		<Collection<OAuthClientEntry>,
 		 UnsafeFunction<OAuthClientEntry, OAuthClientEntry, Exception>,
@@ -1089,4 +1071,4 @@ public abstract class BaseOAuthClientEntryResourceImpl
 		LogFactoryUtil.getLog(BaseOAuthClientEntryResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:314449176
+// LIFERAY-REST-BUILDER-HASH:-599932582

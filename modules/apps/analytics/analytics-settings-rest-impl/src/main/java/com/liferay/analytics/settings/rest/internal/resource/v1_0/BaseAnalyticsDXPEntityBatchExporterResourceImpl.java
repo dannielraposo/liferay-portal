@@ -506,4 +506,4 @@ public abstract class BaseAnalyticsDXPEntityBatchExporterResourceImpl
 			BaseAnalyticsDXPEntityBatchExporterResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:763679454
+// LIFERAY-REST-BUILDER-HASH:709261670

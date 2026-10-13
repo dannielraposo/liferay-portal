@@ -539,4 +539,4 @@ public abstract class BaseVisitFrequencyResourceImpl
 		LogFactoryUtil.getLog(BaseVisitFrequencyResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1455123103
+// LIFERAY-REST-BUILDER-HASH:324606697

@@ -1098,6 +1098,24 @@ public class Mutation {
 						callbackURL, object));
 	}
 
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-126")
+	@GraphQLField
+	public boolean deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_featureFlagMethodTestEntityResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			featureFlagMethodTestEntityResource ->
+				featureFlagMethodTestEntityResource.
+					deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode(
+						Long.valueOf(siteKey), externalReferenceCode));
+
+		return true;
+	}
+
 	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-123")
 	@GraphQLField
 	public FeatureFlagMethodTestEntity patchFeatureFlagMethodTestEntity(
@@ -1163,7 +1181,60 @@ public class Mutation {
 					postFeatureFlagMethodTestEntityBatch(callbackURL, object));
 	}
 
-	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-123")
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-126")
+	@GraphQLField
+	public Response createSiteFeatureFlagMethodTestEntitiesPageExportBatch(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("contentType") String contentType,
+			@GraphQLName("fieldNames") String fieldNames)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_featureFlagMethodTestEntityResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			featureFlagMethodTestEntityResource ->
+				featureFlagMethodTestEntityResource.
+					postSiteFeatureFlagMethodTestEntitiesPageExportBatch(
+						Long.valueOf(siteKey), callbackURL, contentType,
+						fieldNames));
+	}
+
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-126")
+	@GraphQLField
+	public FeatureFlagMethodTestEntity createSiteFeatureFlagMethodTestEntity(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("featureFlagMethodTestEntity")
+				FeatureFlagMethodTestEntity featureFlagMethodTestEntity)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_featureFlagMethodTestEntityResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			featureFlagMethodTestEntityResource ->
+				featureFlagMethodTestEntityResource.
+					postSiteFeatureFlagMethodTestEntity(
+						Long.valueOf(siteKey), featureFlagMethodTestEntity));
+	}
+
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-126")
+	@GraphQLField
+	public Response createSiteFeatureFlagMethodTestEntityBatch(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_featureFlagMethodTestEntityResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			featureFlagMethodTestEntityResource ->
+				featureFlagMethodTestEntityResource.
+					postSiteFeatureFlagMethodTestEntityBatch(
+						Long.valueOf(siteKey), callbackURL, object));
+	}
+
+	@com.liferay.portal.vulcan.feature.flag.FeatureFlag("METHOD-125")
 	@GraphQLField
 	public FeatureFlagMethodTestEntity
 			updateFeatureFlagMethodTestEntityByExternalReferenceCode(
@@ -2466,4 +2537,4 @@ public class Mutation {
 		_vulcanBatchEngineImportTaskResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1611852504
+// LIFERAY-REST-BUILDER-HASH:-1829470675

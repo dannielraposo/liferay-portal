@@ -556,4 +556,4 @@ public abstract class BaseCategoryResourceImpl implements CategoryResource {
 		LogFactoryUtil.getLog(BaseCategoryResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1645309129
+// LIFERAY-REST-BUILDER-HASH:1234833745

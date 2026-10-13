@@ -229,8 +229,9 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceTestCase {
 			testDeleteFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return featureFlagMethodTestEntityResource.
+			postSiteFeatureFlagMethodTestEntity(
+				testGroup.getGroupId(), randomFeatureFlagMethodTestEntity());
 	}
 
 	@Test
@@ -325,6 +326,116 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceTestCase {
 		waitForFinish(
 			"COMPLETED",
 			JSONFactoryUtil.createJSONObject(httpResponse.getContent()));
+	}
+
+	@Test
+	public void testDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		FeatureFlagMethodTestEntity featureFlagMethodTestEntity =
+			testDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode_addFeatureFlagMethodTestEntity();
+
+		assertHttpResponseStatusCode(
+			204,
+			featureFlagMethodTestEntityResource.
+				deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCodeHttpResponse(
+					testDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode_getSiteId(),
+					featureFlagMethodTestEntity.getExternalReferenceCode()));
+	}
+
+	protected FeatureFlagMethodTestEntity
+			testDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode_addFeatureFlagMethodTestEntity()
+		throws Exception {
+
+		return featureFlagMethodTestEntityResource.
+			postSiteFeatureFlagMethodTestEntity(
+				testGroup.getGroupId(), randomFeatureFlagMethodTestEntity());
+	}
+
+	protected Long
+			testDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode_getSiteId()
+		throws Exception {
+
+		return testGroup.getGroupId();
+	}
+
+	@Test
+	public void testGraphQLDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode()
+		throws Exception {
+
+		// No namespace
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		FeatureFlagMethodTestEntity featureFlagMethodTestEntity1 =
+			testGraphQLDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode_addFeatureFlagMethodTestEntity();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"siteKey",
+									"\"" +
+										testGraphQLDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode_getSiteId() +
+											"\"");
+								put(
+									"externalReferenceCode",
+									"\"" +
+										featureFlagMethodTestEntity1.
+											getExternalReferenceCode() + "\"");
+							}
+						})),
+				"JSONObject/data",
+				"Object/deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode"));
+
+		// Using the namespace portalTools_v1_0
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		FeatureFlagMethodTestEntity featureFlagMethodTestEntity2 =
+			testGraphQLDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode_addFeatureFlagMethodTestEntity();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"portalTools_v1_0",
+						new GraphQLField(
+							"deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"siteKey",
+										"\"" +
+											testGraphQLDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode_getSiteId() +
+												"\"");
+									put(
+										"externalReferenceCode",
+										"\"" +
+											featureFlagMethodTestEntity2.
+												getExternalReferenceCode() +
+													"\"");
+								}
+							}))),
+				"JSONObject/data", "JSONObject/portalTools_v1_0",
+				"Object/deleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode"));
+	}
+
+	protected Long
+			testGraphQLDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode_getSiteId()
+		throws Exception {
+
+		return testGroup.getGroupId();
+	}
+
+	protected FeatureFlagMethodTestEntity
+			testGraphQLDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode_addFeatureFlagMethodTestEntity()
+		throws Exception {
+
+		return testGraphQLSiteFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity();
 	}
 
 	@Test
@@ -471,6 +582,349 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceTestCase {
 	}
 
 	@Test
+	public void testGetFeatureFlagMethodTestEntityByExternalReferenceCode()
+		throws Exception {
+
+		FeatureFlagMethodTestEntity postFeatureFlagMethodTestEntity =
+			testGetFeatureFlagMethodTestEntityByExternalReferenceCode_addFeatureFlagMethodTestEntity();
+
+		FeatureFlagMethodTestEntity getFeatureFlagMethodTestEntity =
+			featureFlagMethodTestEntityResource.
+				getFeatureFlagMethodTestEntityByExternalReferenceCode(
+					postFeatureFlagMethodTestEntity.getExternalReferenceCode());
+
+		assertEquals(
+			postFeatureFlagMethodTestEntity, getFeatureFlagMethodTestEntity);
+		assertValid(getFeatureFlagMethodTestEntity);
+	}
+
+	protected FeatureFlagMethodTestEntity
+			testGetFeatureFlagMethodTestEntityByExternalReferenceCode_addFeatureFlagMethodTestEntity()
+		throws Exception {
+
+		return featureFlagMethodTestEntityResource.
+			postSiteFeatureFlagMethodTestEntity(
+				testGroup.getGroupId(), randomFeatureFlagMethodTestEntity());
+	}
+
+	@Test
+	public void testGraphQLGetFeatureFlagMethodTestEntityByExternalReferenceCode()
+		throws Exception {
+
+		FeatureFlagMethodTestEntity featureFlagMethodTestEntity =
+			testGraphQLGetFeatureFlagMethodTestEntityByExternalReferenceCode_addFeatureFlagMethodTestEntity();
+
+		// No namespace
+
+		Assert.assertTrue(
+			equals(
+				featureFlagMethodTestEntity,
+				FeatureFlagMethodTestEntitySerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"featureFlagMethodTestEntityByExternalReferenceCode",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"externalReferenceCode",
+											"\"" +
+												featureFlagMethodTestEntity.
+													getExternalReferenceCode() +
+														"\"");
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data",
+						"Object/featureFlagMethodTestEntityByExternalReferenceCode"))));
+
+		// Using the namespace portalTools_v1_0
+
+		Assert.assertTrue(
+			equals(
+				featureFlagMethodTestEntity,
+				FeatureFlagMethodTestEntitySerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"portalTools_v1_0",
+								new GraphQLField(
+									"featureFlagMethodTestEntityByExternalReferenceCode",
+									new HashMap<String, Object>() {
+										{
+											put(
+												"externalReferenceCode",
+												"\"" +
+													featureFlagMethodTestEntity.
+														getExternalReferenceCode() +
+															"\"");
+										}
+									},
+									getGraphQLFields()))),
+						"JSONObject/data", "JSONObject/portalTools_v1_0",
+						"Object/featureFlagMethodTestEntityByExternalReferenceCode"))));
+	}
+
+	@Test
+	public void testGraphQLGetFeatureFlagMethodTestEntityByExternalReferenceCodeNotFound()
+		throws Exception {
+
+		String irrelevantExternalReferenceCode =
+			"\"" + RandomTestUtil.randomString() + "\"";
+
+		// No namespace
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"featureFlagMethodTestEntityByExternalReferenceCode",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"externalReferenceCode",
+									irrelevantExternalReferenceCode);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+
+		// Using the namespace portalTools_v1_0
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"portalTools_v1_0",
+						new GraphQLField(
+							"featureFlagMethodTestEntityByExternalReferenceCode",
+							new HashMap<String, Object>() {
+								{
+									put(
+										"externalReferenceCode",
+										irrelevantExternalReferenceCode);
+								}
+							},
+							getGraphQLFields()))),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+	}
+
+	protected FeatureFlagMethodTestEntity
+			testGraphQLGetFeatureFlagMethodTestEntityByExternalReferenceCode_addFeatureFlagMethodTestEntity()
+		throws Exception {
+
+		return testGraphQLFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity();
+	}
+
+	@Test
+	public void testGetSiteFeatureFlagMethodTestEntitiesPage()
+		throws Exception {
+
+		Long siteId = testGetSiteFeatureFlagMethodTestEntitiesPage_getSiteId();
+		Long irrelevantSiteId =
+			testGetSiteFeatureFlagMethodTestEntitiesPage_getIrrelevantSiteId();
+
+		Page<FeatureFlagMethodTestEntity> page =
+			featureFlagMethodTestEntityResource.
+				getSiteFeatureFlagMethodTestEntitiesPage(siteId);
+
+		long totalCount = page.getTotalCount();
+
+		if (irrelevantSiteId != null) {
+			FeatureFlagMethodTestEntity irrelevantFeatureFlagMethodTestEntity =
+				testGetSiteFeatureFlagMethodTestEntitiesPage_addFeatureFlagMethodTestEntity(
+					irrelevantSiteId,
+					randomIrrelevantFeatureFlagMethodTestEntity());
+
+			page =
+				featureFlagMethodTestEntityResource.
+					getSiteFeatureFlagMethodTestEntitiesPage(irrelevantSiteId);
+
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
+
+			assertContains(
+				irrelevantFeatureFlagMethodTestEntity,
+				(List<FeatureFlagMethodTestEntity>)page.getItems());
+			assertValid(
+				page,
+				testGetSiteFeatureFlagMethodTestEntitiesPage_getExpectedActions(
+					irrelevantSiteId));
+		}
+
+		FeatureFlagMethodTestEntity featureFlagMethodTestEntity1 =
+			testGetSiteFeatureFlagMethodTestEntitiesPage_addFeatureFlagMethodTestEntity(
+				siteId, randomFeatureFlagMethodTestEntity());
+
+		FeatureFlagMethodTestEntity featureFlagMethodTestEntity2 =
+			testGetSiteFeatureFlagMethodTestEntitiesPage_addFeatureFlagMethodTestEntity(
+				siteId, randomFeatureFlagMethodTestEntity());
+
+		page =
+			featureFlagMethodTestEntityResource.
+				getSiteFeatureFlagMethodTestEntitiesPage(siteId);
+
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
+
+		assertContains(
+			featureFlagMethodTestEntity1,
+			(List<FeatureFlagMethodTestEntity>)page.getItems());
+		assertContains(
+			featureFlagMethodTestEntity2,
+			(List<FeatureFlagMethodTestEntity>)page.getItems());
+		assertValid(
+			page,
+			testGetSiteFeatureFlagMethodTestEntitiesPage_getExpectedActions(
+				siteId));
+
+		featureFlagMethodTestEntityResource.deleteFeatureFlagMethodTestEntity(
+			featureFlagMethodTestEntity1.getId());
+
+		featureFlagMethodTestEntityResource.deleteFeatureFlagMethodTestEntity(
+			featureFlagMethodTestEntity2.getId());
+	}
+
+	protected Map<String, Map<String, String>>
+			testGetSiteFeatureFlagMethodTestEntitiesPage_getExpectedActions(
+				Long siteId)
+		throws Exception {
+
+		Map<String, Map<String, String>> expectedActions = new HashMap<>();
+
+		Map createBatchAction = new HashMap<>();
+		createBatchAction.put("method", "POST");
+		createBatchAction.put(
+			"href",
+			("http://localhost:" + PortalUtil.getPortalServerPort(false) +
+				"/o/portal-tools-rest-builder-test/v1.0/sites/{siteId}/feature-flag-method-test-entities/batch").
+					replace("{siteId}", String.valueOf(siteId)));
+
+		expectedActions.put("createBatch", createBatchAction);
+
+		return expectedActions;
+	}
+
+	protected FeatureFlagMethodTestEntity
+			testGetSiteFeatureFlagMethodTestEntitiesPage_addFeatureFlagMethodTestEntity(
+				Long siteId,
+				FeatureFlagMethodTestEntity featureFlagMethodTestEntity)
+		throws Exception {
+
+		return featureFlagMethodTestEntityResource.
+			postSiteFeatureFlagMethodTestEntity(
+				siteId, featureFlagMethodTestEntity);
+	}
+
+	protected Long testGetSiteFeatureFlagMethodTestEntitiesPage_getSiteId()
+		throws Exception {
+
+		return testGroup.getGroupId();
+	}
+
+	protected Long
+			testGetSiteFeatureFlagMethodTestEntitiesPage_getIrrelevantSiteId()
+		throws Exception {
+
+		return irrelevantGroup.getGroupId();
+	}
+
+	@Test
+	public void testGraphQLGetSiteFeatureFlagMethodTestEntitiesPage()
+		throws Exception {
+
+		Long siteId = testGetSiteFeatureFlagMethodTestEntitiesPage_getSiteId();
+
+		GraphQLField graphQLField =
+			testGraphQLGetSiteFeatureFlagMethodTestEntitiesPageSiteFeatureFlagMethodTestEntity_getGraphQLField(
+				siteId);
+
+		// No namespace
+
+		JSONObject siteFeatureFlagMethodTestEntitiesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteFeatureFlagMethodTestEntities");
+
+		long totalCount = siteFeatureFlagMethodTestEntitiesJSONObject.getLong(
+			"totalCount");
+
+		FeatureFlagMethodTestEntity featureFlagMethodTestEntity1 =
+			testGraphQLSiteFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity(
+				siteId, randomFeatureFlagMethodTestEntity());
+
+		FeatureFlagMethodTestEntity featureFlagMethodTestEntity2 =
+			testGraphQLSiteFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity(
+				siteId, randomFeatureFlagMethodTestEntity());
+
+		siteFeatureFlagMethodTestEntitiesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(graphQLField), "JSONObject/data",
+				"JSONObject/siteFeatureFlagMethodTestEntities");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteFeatureFlagMethodTestEntitiesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			featureFlagMethodTestEntity1,
+			Arrays.asList(
+				FeatureFlagMethodTestEntitySerDes.toDTOs(
+					siteFeatureFlagMethodTestEntitiesJSONObject.getString(
+						"items"))));
+		assertContains(
+			featureFlagMethodTestEntity2,
+			Arrays.asList(
+				FeatureFlagMethodTestEntitySerDes.toDTOs(
+					siteFeatureFlagMethodTestEntitiesJSONObject.getString(
+						"items"))));
+
+		// Using the namespace portalTools_v1_0
+
+		siteFeatureFlagMethodTestEntitiesJSONObject =
+			JSONUtil.getValueAsJSONObject(
+				invokeGraphQLQuery(
+					new GraphQLField("portalTools_v1_0", graphQLField)),
+				"JSONObject/data", "JSONObject/portalTools_v1_0",
+				"JSONObject/siteFeatureFlagMethodTestEntities");
+
+		Assert.assertEquals(
+			totalCount + 2,
+			siteFeatureFlagMethodTestEntitiesJSONObject.getLong("totalCount"));
+
+		assertContains(
+			featureFlagMethodTestEntity1,
+			Arrays.asList(
+				FeatureFlagMethodTestEntitySerDes.toDTOs(
+					siteFeatureFlagMethodTestEntitiesJSONObject.getString(
+						"items"))));
+		assertContains(
+			featureFlagMethodTestEntity2,
+			Arrays.asList(
+				FeatureFlagMethodTestEntitySerDes.toDTOs(
+					siteFeatureFlagMethodTestEntitiesJSONObject.getString(
+						"items"))));
+	}
+
+	protected GraphQLField
+			testGraphQLGetSiteFeatureFlagMethodTestEntitiesPageSiteFeatureFlagMethodTestEntity_getGraphQLField(
+				Long siteId)
+		throws Exception {
+
+		return new GraphQLField(
+			"siteFeatureFlagMethodTestEntities",
+			new HashMap<String, Object>() {
+				{
+					put("siteKey", "\"" + siteId + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
+	}
+
+	@Test
 	public void testPatchFeatureFlagMethodTestEntity() throws Exception {
 		Assert.assertTrue(false);
 	}
@@ -514,6 +968,48 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceTestCase {
 	}
 
 	@Test
+	public void testPostSiteFeatureFlagMethodTestEntity() throws Exception {
+		FeatureFlagMethodTestEntity randomFeatureFlagMethodTestEntity =
+			randomFeatureFlagMethodTestEntity();
+
+		FeatureFlagMethodTestEntity postFeatureFlagMethodTestEntity =
+			testPostSiteFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity(
+				randomFeatureFlagMethodTestEntity);
+
+		assertEquals(
+			randomFeatureFlagMethodTestEntity, postFeatureFlagMethodTestEntity);
+		assertValid(postFeatureFlagMethodTestEntity);
+	}
+
+	protected FeatureFlagMethodTestEntity
+			testPostSiteFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity(
+				FeatureFlagMethodTestEntity featureFlagMethodTestEntity)
+		throws Exception {
+
+		return featureFlagMethodTestEntityResource.
+			postSiteFeatureFlagMethodTestEntity(
+				testGetSiteFeatureFlagMethodTestEntitiesPage_getSiteId(),
+				featureFlagMethodTestEntity);
+	}
+
+	@Test
+	public void testGraphQLPostSiteFeatureFlagMethodTestEntity()
+		throws Exception {
+
+		FeatureFlagMethodTestEntity randomFeatureFlagMethodTestEntity =
+			randomFeatureFlagMethodTestEntity();
+
+		FeatureFlagMethodTestEntity featureFlagMethodTestEntity =
+			testGraphQLSiteFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity(
+				testGroup.getGroupId(), randomFeatureFlagMethodTestEntity);
+
+		Assert.assertTrue(
+			equals(
+				randomFeatureFlagMethodTestEntity,
+				featureFlagMethodTestEntity));
+	}
+
+	@Test
 	public void testPutFeatureFlagMethodTestEntityByExternalReferenceCode()
 		throws Exception {
 
@@ -534,8 +1030,9 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceTestCase {
 		assertValid(putFeatureFlagMethodTestEntity);
 
 		FeatureFlagMethodTestEntity getFeatureFlagMethodTestEntity =
-			testPutFeatureFlagMethodTestEntityByExternalReferenceCode_getFeatureFlagMethodTestEntity(
-				putFeatureFlagMethodTestEntity.getExternalReferenceCode());
+			featureFlagMethodTestEntityResource.
+				getFeatureFlagMethodTestEntityByExternalReferenceCode(
+					putFeatureFlagMethodTestEntity.getExternalReferenceCode());
 
 		assertEquals(
 			randomFeatureFlagMethodTestEntity, getFeatureFlagMethodTestEntity);
@@ -555,8 +1052,9 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceTestCase {
 		assertValid(putFeatureFlagMethodTestEntity);
 
 		getFeatureFlagMethodTestEntity =
-			testPutFeatureFlagMethodTestEntityByExternalReferenceCode_getFeatureFlagMethodTestEntity(
-				putFeatureFlagMethodTestEntity.getExternalReferenceCode());
+			featureFlagMethodTestEntityResource.
+				getFeatureFlagMethodTestEntityByExternalReferenceCode(
+					putFeatureFlagMethodTestEntity.getExternalReferenceCode());
 
 		assertEquals(
 			newFeatureFlagMethodTestEntity, getFeatureFlagMethodTestEntity);
@@ -567,19 +1065,12 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceTestCase {
 	}
 
 	protected FeatureFlagMethodTestEntity
-		testPutFeatureFlagMethodTestEntityByExternalReferenceCode_getFeatureFlagMethodTestEntity(
-			String externalReferenceCode) {
-
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
-	}
-
-	protected FeatureFlagMethodTestEntity
 			testPutFeatureFlagMethodTestEntityByExternalReferenceCode_addFeatureFlagMethodTestEntity()
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return featureFlagMethodTestEntityResource.
+			postSiteFeatureFlagMethodTestEntity(
+				testGroup.getGroupId(), randomFeatureFlagMethodTestEntity());
 	}
 
 	protected FeatureFlagMethodTestEntity
@@ -596,6 +1087,28 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceTestCase {
 
 		testBatchEngineDeleteImportTask_deleteFeatureFlagMethodTestEntity(
 			200, null, featureFlagMethodTestEntity1.getId());
+
+		featureFlagMethodTestEntity1 =
+			testBatchEngineDeleteImportTask_addSiteFeatureFlagMethodTestEntity();
+
+		testBatchEngineDeleteImportTask_deleteFeatureFlagMethodTestEntity(
+			200, featureFlagMethodTestEntity1.getExternalReferenceCode(), null,
+			"siteId", String.valueOf(testGroup.getGroupId()));
+
+		featureFlagMethodTestEntity1 =
+			testBatchEngineDeleteImportTask_addSiteFeatureFlagMethodTestEntity();
+		FeatureFlagMethodTestEntity featureFlagMethodTestEntity2 =
+			testBatchEngineDeleteImportTask_addSiteFeatureFlagMethodTestEntity();
+
+		testBatchEngineDeleteImportTask_deleteFeatureFlagMethodTestEntity(
+			200, featureFlagMethodTestEntity2.getExternalReferenceCode(),
+			featureFlagMethodTestEntity1.getId(), "siteId",
+			String.valueOf(testGroup.getGroupId()));
+
+		testBatchEngineDeleteImportTask_deleteFeatureFlagMethodTestEntity(
+			200, featureFlagMethodTestEntity2.getExternalReferenceCode(),
+			featureFlagMethodTestEntity1.getId(), "siteId",
+			String.valueOf(testGroup.getGroupId()));
 	}
 
 	protected FeatureFlagMethodTestEntity
@@ -603,6 +1116,13 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceTestCase {
 		throws Exception {
 
 		return testDeleteFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity();
+	}
+
+	protected FeatureFlagMethodTestEntity
+			testBatchEngineDeleteImportTask_addSiteFeatureFlagMethodTestEntity()
+		throws Exception {
+
+		return testDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode_addFeatureFlagMethodTestEntity();
 	}
 
 	protected void
@@ -696,6 +1216,65 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceTestCase {
 						graphQLFields)),
 				"JSONObject/data",
 				"JSONObject/createFeatureFlagMethodTestEntity"),
+			FeatureFlagMethodTestEntity.class);
+	}
+
+	protected FeatureFlagMethodTestEntity
+			testGraphQLSiteFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity()
+		throws Exception {
+
+		return testGraphQLSiteFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity(
+			testGroup.getGroupId(), randomFeatureFlagMethodTestEntity());
+	}
+
+	protected FeatureFlagMethodTestEntity
+			testGraphQLSiteFeatureFlagMethodTestEntity_addFeatureFlagMethodTestEntity(
+				Long siteId,
+				FeatureFlagMethodTestEntity featureFlagMethodTestEntity)
+		throws Exception {
+
+		JSONDeserializer<FeatureFlagMethodTestEntity> jsonDeserializer =
+			JSONFactoryUtil.createJSONDeserializer();
+
+		StringBuilder sb = new StringBuilder("{");
+
+		for (java.lang.reflect.Field field :
+				getDeclaredFields(FeatureFlagMethodTestEntity.class)) {
+
+			if (getGraphQLValue(field.get(featureFlagMethodTestEntity)) !=
+					null) {
+
+				if (sb.length() > 1) {
+					sb.append(", ");
+				}
+
+				sb.append(field.getName());
+				sb.append(": ");
+				sb.append(
+					getGraphQLValue(field.get(featureFlagMethodTestEntity)));
+			}
+		}
+
+		sb.append("}");
+
+		List<GraphQLField> graphQLFields = getGraphQLFields();
+
+		return jsonDeserializer.deserialize(
+			JSONUtil.getValueAsString(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"createSiteFeatureFlagMethodTestEntity",
+						new HashMap<String, Object>() {
+							{
+								put("siteKey", "\"" + siteId + "\"");
+								put(
+									"featureFlagMethodTestEntity",
+									sb.toString());
+							}
+						},
+						graphQLFields)),
+				"JSONObject/data",
+				"JSONObject/createSiteFeatureFlagMethodTestEntity"),
 			FeatureFlagMethodTestEntity.class);
 	}
 
@@ -1577,4 +2156,4 @@ public abstract class BaseFeatureFlagMethodTestEntityResourceTestCase {
 			_featureFlagMethodTestEntityResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-778903139
+// LIFERAY-REST-BUILDER-HASH:1217205956

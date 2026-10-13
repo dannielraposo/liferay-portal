@@ -555,4 +555,4 @@ public abstract class BaseMostActiveVisitorsResourceImpl
 		LogFactoryUtil.getLog(BaseMostActiveVisitorsResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1607629249
+// LIFERAY-REST-BUILDER-HASH:-505094473

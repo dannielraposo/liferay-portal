@@ -508,4 +508,4 @@ public abstract class BaseToolSetResourceImpl implements ToolSetResource {
 		LogFactoryUtil.getLog(BaseToolSetResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1475805354
+// LIFERAY-REST-BUILDER-HASH:-825252574

@@ -514,4 +514,4 @@ public abstract class BaseEmbeddingProviderValidationResultResourceImpl
 			BaseEmbeddingProviderValidationResultResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1151906189
+// LIFERAY-REST-BUILDER-HASH:216595707

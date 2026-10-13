@@ -12,16 +12,14 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -54,13 +52,13 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.io.Serializable;
 
+import java.lang.reflect.InvocationHandler;
+
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Thiago Buarque
@@ -152,6 +150,9 @@ public abstract class BaseInstanceConfigurationResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-configuration/v1.0/instance-configurations' -d $'{"externalReferenceCode": ___, "properties": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
 			@io.swagger.v3.oas.annotations.tags.Tag(
@@ -290,6 +291,9 @@ public abstract class BaseInstanceConfigurationResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-admin-configuration/v1.0/instance-configurations/{instanceConfigurationExternalReferenceCode}' -d $'{"externalReferenceCode": ___, "properties": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -387,19 +391,13 @@ public abstract class BaseInstanceConfigurationResourceImpl
 		String createStrategy = (String)parameters.getOrDefault(
 			"createStrategy", "INSERT");
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT") &&
-			FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-65399")) {
-
-			instanceConfigurationUnsafeFunction =
-				instanceConfiguration -> postInstanceConfiguration(
+		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT")) {
+			instanceConfigurationUnsafeFunction = instanceConfiguration ->
+				contextBatchResource.postInstanceConfiguration(
 					instanceConfiguration);
 		}
 
-		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT") &&
-			FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-65399")) {
-
+		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
 			String updateStrategy = (String)parameters.getOrDefault(
 				"updateStrategy", "UPDATE");
 
@@ -407,9 +405,10 @@ public abstract class BaseInstanceConfigurationResourceImpl
 				instanceConfigurationUnsafeFunction = instanceConfiguration -> {
 					InstanceConfiguration persistedInstanceConfiguration = null;
 
-					persistedInstanceConfiguration = putInstanceConfiguration(
-						instanceConfiguration.getExternalReferenceCode(),
-						instanceConfiguration);
+					persistedInstanceConfiguration =
+						contextBatchResource.putInstanceConfiguration(
+							instanceConfiguration.getExternalReferenceCode(),
+							instanceConfiguration);
 
 					return persistedInstanceConfiguration;
 				};
@@ -451,23 +450,6 @@ public abstract class BaseInstanceConfigurationResourceImpl
 			"This method needs to be implemented");
 	}
 
-	public Set<String> getAvailableCreateStrategies() {
-		Set<String> createStrategies = new HashSet<>();
-
-		if (FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-65399")) {
-
-			createStrategies.add("INSERT");
-			createStrategies.add("UPSERT");
-		}
-
-		return createStrategies;
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
-	}
-
 	@Override
 	public EntityModel getEntityModel(Map<String, List<String>> multivaluedMap)
 		throws Exception {
@@ -492,14 +474,7 @@ public abstract class BaseInstanceConfigurationResourceImpl
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
 
-		if (!FeatureFlagManagerUtil.isEnabled(
-				CompanyThreadLocal.getCompanyId(), "LPD-65399")) {
-
-			throw new UnsupportedOperationException(
-				"This method needs to be implemented");
-		}
-
-		return getInstanceConfigurationsPage(pagination);
+		return contextBatchResource.getInstanceConfigurationsPage(pagination);
 	}
 
 	@Override
@@ -552,6 +527,17 @@ public abstract class BaseInstanceConfigurationResourceImpl
 
 	public void setContextAcceptLanguage(AcceptLanguage contextAcceptLanguage) {
 		this.contextAcceptLanguage = contextAcceptLanguage;
+	}
+
+	@Override
+	public void setContextBatchResourceInvocationHandler(
+		InvocationHandler contextBatchResourceInvocationHandler) {
+
+		contextBatchResource =
+			(InstanceConfigurationResource)ProxyUtil.newProxyInstance(
+				InstanceConfigurationResource.class.getClassLoader(),
+				new Class<?>[] {InstanceConfigurationResource.class},
+				contextBatchResourceInvocationHandler);
 	}
 
 	public void setContextBatchUnsafeBiConsumer(
@@ -1076,6 +1062,7 @@ public abstract class BaseInstanceConfigurationResourceImpl
 	}
 
 	protected AcceptLanguage contextAcceptLanguage;
+	protected InstanceConfigurationResource contextBatchResource = this;
 	protected UnsafeBiConsumer
 		<Collection<InstanceConfiguration>,
 		 UnsafeFunction
@@ -1108,4 +1095,4 @@ public abstract class BaseInstanceConfigurationResourceImpl
 		LogFactoryUtil.getLog(BaseInstanceConfigurationResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-888438955
+// LIFERAY-REST-BUILDER-HASH:489001278

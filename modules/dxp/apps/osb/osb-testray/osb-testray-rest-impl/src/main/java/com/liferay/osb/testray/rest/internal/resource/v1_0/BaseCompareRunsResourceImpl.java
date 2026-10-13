@@ -525,4 +525,4 @@ public abstract class BaseCompareRunsResourceImpl
 		LogFactoryUtil.getLog(BaseCompareRunsResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1432441682
+// LIFERAY-REST-BUILDER-HASH:-548971594

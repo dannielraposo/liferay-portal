@@ -526,4 +526,4 @@ public abstract class BaseUserResourceImpl implements UserResource {
 		LogFactoryUtil.getLog(BaseUserResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1244737785
+// LIFERAY-REST-BUILDER-HASH:-1021125631

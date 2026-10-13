@@ -12,6 +12,7 @@ import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -19,7 +20,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -58,7 +58,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Andrea Sbarra
@@ -154,6 +153,9 @@ public abstract class BaseTaxCategoryResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/tax-categories/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT", updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Retrieves the tax category by its external reference code (ERC). Calls CPTaxCategoryService.getCPTaxCategoryByExternalReferenceCode. Validation -- NoSuchCPTaxCategoryException -> 404 when tax category ERC not found."
 	)
@@ -190,6 +192,9 @@ public abstract class BaseTaxCategoryResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/tax-categories/{id}' -d $'{"description": ___, "externalReferenceCode": ___, "name": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Partially updates the tax category addressed by its internal ID -- only the fields supplied in the body are replaced; omitted fields are left unchanged. Calls CPTaxCategoryService.getCPTaxCategory + CPTaxCategoryService.updateCPTaxCategory. Validation -- NoSuchCPTaxCategoryException -> 404 when tax category ID not found; CPTaxCategoryNameException -> 400 when the name is missing for the default locale."
 	)
@@ -333,6 +338,9 @@ public abstract class BaseTaxCategoryResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-channel/v1.0/tax-categories' -d $'{"description": ___, "externalReferenceCode": ___, "name": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates or updates a tax category. Calls CPTaxCategoryService.fetchCPTaxCategoryByExternalReferenceCode + CPTaxCategoryService.addCPTaxCategory or CPTaxCategoryService.updateCPTaxCategory. POST is upsert by external reference code -- creates a new entity when the code is unknown, otherwise updates the existing one. Validation -- CPTaxCategoryNameException -> 400 when the name is missing for the default locale."
 	)
@@ -412,6 +420,31 @@ public abstract class BaseTaxCategoryResourceImpl
 				taxCategory);
 		}
 
+		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
+			String updateStrategy = (String)parameters.getOrDefault(
+				"updateStrategy", "UPDATE");
+
+			if (StringUtil.equalsIgnoreCase(updateStrategy, "PARTIAL_UPDATE")) {
+				taxCategoryUnsafeFunction = taxCategory -> {
+					TaxCategory getTaxCategory = null;
+					TaxCategory persistedTaxCategory = null;
+
+					try {
+						getTaxCategory = getTaxCategoryByExternalReferenceCode(
+							taxCategory.getExternalReferenceCode());
+
+						persistedTaxCategory = patchTaxCategory(
+							getTaxCategory.getId(), taxCategory);
+					}
+					catch (NoSuchModelException noSuchModelException) {
+						persistedTaxCategory = postTaxCategory(taxCategory);
+					}
+
+					return persistedTaxCategory;
+				};
+			}
+		}
+
 		if (taxCategoryUnsafeFunction == null) {
 			throw new NotSupportedException(
 				"Create strategy \"" + createStrategy +
@@ -441,14 +474,6 @@ public abstract class BaseTaxCategoryResourceImpl
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -1113,4 +1138,4 @@ public abstract class BaseTaxCategoryResourceImpl
 		LogFactoryUtil.getLog(BaseTaxCategoryResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:913930448
+// LIFERAY-REST-BUILDER-HASH:1737574372

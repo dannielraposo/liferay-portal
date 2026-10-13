@@ -29,7 +29,7 @@ import com.liferay.portal.kernel.service.permission.ModelPermissions;
 import com.liferay.portal.kernel.util.GroupThreadLocal;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -65,6 +65,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -404,6 +406,9 @@ public abstract class BaseSiteResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-site/v1.0/sites' -d $'{"active": ___, "analyticsConfiguration": ___, "assetAutoTaggingEnabled": ___, "contentSharingWithChildrenEnabled": ___, "defaultLanguageId": ___, "description": ___, "description_i18n": ___, "directoryIndexingEnabled": ___, "externalReferenceCode": ___, "friendlyUrlPath": ___, "inheritLocales": ___, "locales": ___, "manualMembership": ___, "mapProviderKey": ___, "membershipRestriction": ___, "membershipType": ___, "mentionsEnabled": ___, "name": ___, "name_i18n": ___, "parentSiteExternalReferenceCode": ___, "permissions": ___, "ratingsTypes": ___, "sharingEnabled": ___, "templateKey": ___, "templateType": ___, "trashEnabled": ___, "trashEntriesMaxAge": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(description = "Adds a new site")
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "Site")}
@@ -601,6 +606,9 @@ public abstract class BaseSiteResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}' -d $'{"active": ___, "analyticsConfiguration": ___, "assetAutoTaggingEnabled": ___, "contentSharingWithChildrenEnabled": ___, "defaultLanguageId": ___, "description": ___, "description_i18n": ___, "directoryIndexingEnabled": ___, "externalReferenceCode": ___, "friendlyUrlPath": ___, "inheritLocales": ___, "locales": ___, "manualMembership": ___, "mapProviderKey": ___, "membershipRestriction": ___, "membershipType": ___, "mentionsEnabled": ___, "name": ___, "name_i18n": ___, "parentSiteExternalReferenceCode": ___, "permissions": ___, "ratingsTypes": ___, "sharingEnabled": ___, "templateKey": ___, "templateType": ___, "trashEnabled": ___, "trashEntriesMaxAge": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates a site and all of its associated content."
 	)
@@ -893,7 +901,7 @@ public abstract class BaseSiteResourceImpl
 			"createStrategy", "INSERT");
 
 		if (StringUtil.equalsIgnoreCase(createStrategy, "INSERT")) {
-			siteUnsafeFunction = site -> postSite(site);
+			siteUnsafeFunction = site -> contextBatchResource.postSite(site);
 		}
 
 		if (StringUtil.equalsIgnoreCase(createStrategy, "UPSERT")) {
@@ -904,7 +912,7 @@ public abstract class BaseSiteResourceImpl
 				siteUnsafeFunction = site -> {
 					Site persistedSite = null;
 
-					persistedSite = putSite(
+					persistedSite = contextBatchResource.putSite(
 						site.getExternalReferenceCode(), site);
 
 					return persistedSite;
@@ -938,7 +946,8 @@ public abstract class BaseSiteResourceImpl
 
 		UnsafeFunction<Site, Site, Exception> siteUnsafeFunction = site -> {
 			if (site.getExternalReferenceCode() != null) {
-				deleteSite(site.getExternalReferenceCode());
+				contextBatchResource.deleteSite(
+					site.getExternalReferenceCode());
 
 				return site;
 			}
@@ -958,14 +967,6 @@ public abstract class BaseSiteResourceImpl
 				siteUnsafeFunction.apply(site);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
 	}
 
 	@Override
@@ -992,7 +993,7 @@ public abstract class BaseSiteResourceImpl
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
 
-		return getSitesPage(
+		return contextBatchResource.getSitesPage(
 			_parseBoolean((String)parameters.get("active")),
 			(String[])parameters.get("excludedExternalReferenceCodes"),
 			(String[])parameters.get("externalReferenceCodes"), search,
@@ -1222,6 +1223,16 @@ public abstract class BaseSiteResourceImpl
 
 	public void setContextAcceptLanguage(AcceptLanguage contextAcceptLanguage) {
 		this.contextAcceptLanguage = contextAcceptLanguage;
+	}
+
+	@Override
+	public void setContextBatchResourceInvocationHandler(
+		InvocationHandler contextBatchResourceInvocationHandler) {
+
+		contextBatchResource = (SiteResource)ProxyUtil.newProxyInstance(
+			SiteResource.class.getClassLoader(),
+			new Class<?>[] {SiteResource.class},
+			contextBatchResourceInvocationHandler);
 	}
 
 	public void setContextBatchUnsafeBiConsumer(
@@ -1743,6 +1754,7 @@ public abstract class BaseSiteResourceImpl
 	}
 
 	protected AcceptLanguage contextAcceptLanguage;
+	protected SiteResource contextBatchResource = this;
 	protected UnsafeBiConsumer
 		<Collection<Site>, UnsafeFunction<Site, Site, Exception>, Exception>
 			contextBatchUnsafeBiConsumer;
@@ -1792,4 +1804,4 @@ public abstract class BaseSiteResourceImpl
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1443681522
+// LIFERAY-REST-BUILDER-HASH:132705872

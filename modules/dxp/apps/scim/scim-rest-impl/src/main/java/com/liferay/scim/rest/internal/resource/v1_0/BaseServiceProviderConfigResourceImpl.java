@@ -512,4 +512,4 @@ public abstract class BaseServiceProviderConfigResourceImpl
 		LogFactoryUtil.getLog(BaseServiceProviderConfigResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1992456294
+// LIFERAY-REST-BUILDER-HASH:1274141534

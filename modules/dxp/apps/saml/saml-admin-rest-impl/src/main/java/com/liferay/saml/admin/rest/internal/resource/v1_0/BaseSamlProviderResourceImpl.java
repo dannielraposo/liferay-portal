@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -57,7 +56,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Stian Sigvartsen
@@ -93,6 +91,9 @@ public abstract class BaseSamlProviderResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/saml-admin/v1.0/saml-provider' -d $'{"enabled": ___, "entityId": ___, "idp": ___, "keyStoreCredentialPassword": ___, "role": ___, "signMetadata": ___, "sp": ___, "sslRequired": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Patch the SAML Provider configuration."
 	)
@@ -115,6 +116,9 @@ public abstract class BaseSamlProviderResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/saml-admin/v1.0/saml-provider' -d $'{"enabled": ___, "entityId": ___, "idp": ___, "keyStoreCredentialPassword": ___, "role": ___, "signMetadata": ___, "sp": ___, "sslRequired": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates a full SAML Provider configuration with peer connections."
 	)
@@ -223,14 +227,6 @@ public abstract class BaseSamlProviderResourceImpl
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -891,4 +887,4 @@ public abstract class BaseSamlProviderResourceImpl
 		LogFactoryUtil.getLog(BaseSamlProviderResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-568204746
+// LIFERAY-REST-BUILDER-HASH:-430346996

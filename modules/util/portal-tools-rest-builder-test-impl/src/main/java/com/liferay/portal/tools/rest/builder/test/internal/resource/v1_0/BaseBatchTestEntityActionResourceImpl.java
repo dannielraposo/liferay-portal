@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -59,7 +58,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Alejandro Tardín
@@ -76,6 +74,9 @@ public abstract class BaseBatchTestEntityActionResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/batch-test-entities/action' -d $'{"name": ___, "sourceBatchTestEntityId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
 		value = {
 			@io.swagger.v3.oas.annotations.tags.Tag(
@@ -196,14 +197,6 @@ public abstract class BaseBatchTestEntityActionResourceImpl
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
 	}
 
 	@Override
@@ -840,4 +833,4 @@ public abstract class BaseBatchTestEntityActionResourceImpl
 		LogFactoryUtil.getLog(BaseBatchTestEntityActionResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1314274774
+// LIFERAY-REST-BUILDER-HASH:1029317312

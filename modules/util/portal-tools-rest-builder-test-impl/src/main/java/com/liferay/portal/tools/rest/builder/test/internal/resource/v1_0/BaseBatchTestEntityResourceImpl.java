@@ -17,7 +17,6 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -61,7 +60,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Alejandro Tardín
@@ -267,6 +265,9 @@ public abstract class BaseBatchTestEntityResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/batch-test-entities' -d $'{"acceptAllLanguages": ___, "customFields": ___, "embeddedNestedField": ___, "externalReferenceCode": ___, "name": ___, "nestedField1": ___, "nestedField2": ___, "relatedCompanyTestEntity": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BatchTestEntity.class)), description = "The Batch Test Entity to create. Supply the entity fields directly in the body; the server assigns the identifier.")
 	)
@@ -337,6 +338,9 @@ public abstract class BaseBatchTestEntityResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/portal-tools-rest-builder-test/v1.0/batch-test-entities/by-external-reference-code/{externalReferenceCode}' -d $'{"acceptAllLanguages": ___, "customFields": ___, "embeddedNestedField": ___, "externalReferenceCode": ___, "name": ___, "nestedField1": ___, "nestedField2": ___, "relatedCompanyTestEntity": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -457,14 +461,6 @@ public abstract class BaseBatchTestEntityResourceImpl
 				batchTestEntityUnsafeFunction.apply(batchTestEntity);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray();
 	}
 
 	@Override
@@ -1103,4 +1099,4 @@ public abstract class BaseBatchTestEntityResourceImpl
 		LogFactoryUtil.getLog(BaseBatchTestEntityResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-2033719556
+// LIFERAY-REST-BUILDER-HASH:-750832803

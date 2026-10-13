@@ -535,4 +535,4 @@ public abstract class BaseSearchResponseResourceImpl
 		LogFactoryUtil.getLog(BaseSearchResponseResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:1105713225
+// LIFERAY-REST-BUILDER-HASH:-59887023

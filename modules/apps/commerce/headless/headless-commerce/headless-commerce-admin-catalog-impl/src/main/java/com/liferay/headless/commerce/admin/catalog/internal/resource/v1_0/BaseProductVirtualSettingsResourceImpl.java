@@ -566,4 +566,4 @@ public abstract class BaseProductVirtualSettingsResourceImpl
 		LogFactoryUtil.getLog(BaseProductVirtualSettingsResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1247618629
+// LIFERAY-REST-BUILDER-HASH:2113973427

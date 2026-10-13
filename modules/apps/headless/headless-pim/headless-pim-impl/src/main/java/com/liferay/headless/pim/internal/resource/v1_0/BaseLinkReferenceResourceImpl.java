@@ -555,4 +555,4 @@ public abstract class BaseLinkReferenceResourceImpl
 		LogFactoryUtil.getLog(BaseLinkReferenceResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:688218401
+// LIFERAY-REST-BUILDER-HASH:1492026537

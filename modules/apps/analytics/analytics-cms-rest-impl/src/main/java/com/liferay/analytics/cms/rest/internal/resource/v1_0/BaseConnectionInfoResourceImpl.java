@@ -519,4 +519,4 @@ public abstract class BaseConnectionInfoResourceImpl
 		LogFactoryUtil.getLog(BaseConnectionInfoResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:90495325
+// LIFERAY-REST-BUILDER-HASH:108973413

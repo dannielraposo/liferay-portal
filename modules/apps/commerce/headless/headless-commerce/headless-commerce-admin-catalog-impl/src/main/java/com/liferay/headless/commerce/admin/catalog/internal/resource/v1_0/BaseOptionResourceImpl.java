@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.GroupThreadLocal;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -272,6 +271,9 @@ public abstract class BaseOptionResourceImpl
 	 *
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/options/by-externalReferenceCode/{externalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT", updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Fetches the option identified by external reference code. Returns 404 when the eRC not found (or NPE when fetch returns null - unguarded)."
 	)
@@ -486,6 +488,9 @@ public abstract class BaseOptionResourceImpl
 	 *
 	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/options/{id}' -d $'{"catalogId": ___, "customFields": ___, "description": ___, "externalReferenceCode": ___, "facetable": ___, "fieldType": ___, "key": ___, "name": ___, "optionValues": ___, "permissions": ___, "priority": ___, "required": ___, "skuContributor": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		updateStrategy = "PARTIAL_UPDATE"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Partially updates the option identified by ID. Returns 404 when the ID is not found. Side effects -- Reindexes the option."
 	)
@@ -566,6 +571,9 @@ public abstract class BaseOptionResourceImpl
 	 *
 	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/options' -d $'{"catalogId": ___, "customFields": ___, "description": ___, "externalReferenceCode": ___, "facetable": ___, "fieldType": ___, "key": ___, "name": ___, "optionValues": ___, "permissions": ___, "priority": ___, "required": ___, "skuContributor": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "INSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates or updates an option (with optional nested option values) using the supplied external reference code. POST is upsert by external reference code -- creates a new entity when the ERC is unknown, otherwise updates the existing one. Returns 400 when the key is invalid, and 409 when the eRC collides. Side effects -- Creates nested option values via option value endpoint; reindexes the option."
 	)
@@ -736,6 +744,9 @@ public abstract class BaseOptionResourceImpl
 	 *
 	 * curl -X 'PUT' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/options/by-externalReferenceCode/{externalReferenceCode}' -d $'{"catalogId": ___, "customFields": ___, "description": ___, "externalReferenceCode": ___, "facetable": ___, "fieldType": ___, "key": ___, "name": ___, "optionValues": ___, "permissions": ___, "priority": ___, "required": ___, "skuContributor": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
+	@com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy(
+		createStrategy = "UPSERT"
+	)
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Creates or replaces the option identified by external reference code, including optional nested option values. POST is upsert by external reference code -- creates a new entity when the ERC is unknown, otherwise updates the existing one. Returns 400 when the record is not found. Side effects -- Creates nested option values; reindexes the option."
 	)
@@ -996,14 +1007,6 @@ public abstract class BaseOptionResourceImpl
 				optionUnsafeFunction.apply(option);
 			}
 		}
-	}
-
-	public Set<String> getAvailableCreateStrategies() {
-		return SetUtil.fromArray("INSERT", "UPSERT");
-	}
-
-	public Set<String> getAvailableUpdateStrategies() {
-		return SetUtil.fromArray("PARTIAL_UPDATE");
 	}
 
 	@Override
@@ -1835,4 +1838,4 @@ public abstract class BaseOptionResourceImpl
 		LogFactoryUtil.getLog(BaseOptionResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:83401026
+// LIFERAY-REST-BUILDER-HASH:-489229348

@@ -569,4 +569,4 @@ public abstract class BaseLinkResourceImpl implements LinkResource {
 		LogFactoryUtil.getLog(BaseLinkResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-962564045
+// LIFERAY-REST-BUILDER-HASH:824561323
