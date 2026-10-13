@@ -46,9 +46,9 @@ public class FeatureFlagCheckerImpl implements FeatureFlagChecker {
 
 		Class<?> declaringClass = method.getDeclaringClass();
 
-		for (Class<?> superclass = declaringClass.getSuperclass();
-			 superclass != null; superclass = superclass.getSuperclass()) {
+		Class<?> superclass = declaringClass.getSuperclass();
 
+		while (superclass != null) {
 			for (Method declaredMethod : superclass.getDeclaredMethods()) {
 				if (!Objects.equals(
 						declaredMethod.getName(), method.getName()) ||
@@ -65,6 +65,8 @@ public class FeatureFlagCheckerImpl implements FeatureFlagChecker {
 					return featureFlag.value();
 				}
 			}
+
+			superclass = superclass.getSuperclass();
 		}
 
 		return getFeatureFlagKey(declaringClass);
