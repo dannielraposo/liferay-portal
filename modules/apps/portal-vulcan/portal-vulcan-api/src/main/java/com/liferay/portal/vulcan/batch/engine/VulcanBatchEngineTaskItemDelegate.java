@@ -15,6 +15,7 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.fields.NestedFieldsContext;
 import com.liferay.portal.vulcan.pagination.Page;
@@ -24,10 +25,14 @@ import jakarta.ws.rs.core.UriInfo;
 
 import java.io.Serializable;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -52,11 +57,49 @@ public interface VulcanBatchEngineTaskItemDelegate<T> {
 		throws Exception;
 
 	public default Set<String> getAvailableCreateStrategies() {
-		return null;
+		Set<String> createStrategies = new TreeSet<>();
+
+		for (Class<?> clazz = getClass(); clazz != null;
+			 clazz = clazz.getSuperclass()) {
+
+			for (Method method : clazz.getDeclaredMethods()) {
+				VulcanBatchEngineStrategy vulcanBatchEngineStrategy =
+					method.getAnnotation(VulcanBatchEngineStrategy.class);
+
+				if ((vulcanBatchEngineStrategy != null) &&
+					Validator.isNotNull(
+						vulcanBatchEngineStrategy.createStrategy())) {
+
+					createStrategies.add(
+						vulcanBatchEngineStrategy.createStrategy());
+				}
+			}
+		}
+
+		return createStrategies;
 	}
 
 	public default Set<String> getAvailableUpdateStrategies() {
-		return null;
+		Set<String> updateStrategies = new TreeSet<>();
+
+		for (Class<?> clazz = getClass(); clazz != null;
+			 clazz = clazz.getSuperclass()) {
+
+			for (Method method : clazz.getDeclaredMethods()) {
+				VulcanBatchEngineStrategy vulcanBatchEngineStrategy =
+					method.getAnnotation(VulcanBatchEngineStrategy.class);
+
+				if ((vulcanBatchEngineStrategy != null) &&
+					Validator.isNotNull(
+						vulcanBatchEngineStrategy.updateStrategy())) {
+
+					updateStrategies.add(
+						vulcanBatchEngineStrategy.updateStrategy());
+				}
+			}
+		}
+
+		return updateStrategies;
 	}
 
 	public EntityModel getEntityModel(Map<String, List<String>> multivaluedMap)
@@ -78,6 +121,10 @@ public interface VulcanBatchEngineTaskItemDelegate<T> {
 			Filter filter, Pagination pagination, Sort[] sorts,
 			Map<String, Serializable> parameters, String search)
 		throws Exception;
+
+	public default void setContextBatchResourceInvocationHandler(
+		InvocationHandler contextBatchResourceInvocationHandler) {
+	}
 
 	public void setContextBatchUnsafeBiConsumer(
 		UnsafeBiConsumer

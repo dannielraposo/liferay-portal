@@ -6,36 +6,49 @@
 package com.liferay.portal.vulcan.internal.batch.engine;
 
 import com.liferay.batch.engine.BatchEngineTaskItemDelegate;
+import com.liferay.batch.engine.constants.CreateStrategy;
+import com.liferay.batch.engine.constants.UpdateStrategy;
 import com.liferay.batch.engine.pagination.Page;
 import com.liferay.batch.engine.pagination.Pagination;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityModel;
+import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegate;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 import com.liferay.portal.vulcan.fields.NestedFieldsContextThreadLocal;
 import com.liferay.portal.vulcan.util.GroupUtil;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.io.Serializable;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * @author Preston Crary
@@ -45,6 +58,7 @@ public class VulcanBatchEngineTaskItemDelegateAdaptor<T>
 
 	public VulcanBatchEngineTaskItemDelegateAdaptor(
 		DepotEntryLocalService depotEntryLocalService,
+		FeatureFlagChecker featureFlagChecker,
 		GroupLocalService groupLocalService,
 		ResourceActionLocalService resourceActionLocalService,
 		ResourcePermissionLocalService resourcePermissionLocalService,
@@ -53,8 +67,46 @@ public class VulcanBatchEngineTaskItemDelegateAdaptor<T>
 			vulcanBatchEngineTaskItemDelegate) {
 
 		_depotEntryLocalService = depotEntryLocalService;
+		_featureFlagChecker = featureFlagChecker;
 		_groupLocalService = groupLocalService;
 		_vulcanBatchEngineTaskItemDelegate = vulcanBatchEngineTaskItemDelegate;
+
+		Class<?> clazz = vulcanBatchEngineTaskItemDelegate.getClass();
+
+		for (Class<?> currentClass = clazz; currentClass != null;
+			 currentClass = currentClass.getSuperclass()) {
+
+			for (Method method : currentClass.getDeclaredMethods()) {
+				if (method.isAnnotationPresent(
+						VulcanBatchEngineStrategy.class)) {
+
+					_vulcanBatchEngineStrategyMethods.add(method);
+				}
+			}
+		}
+
+		vulcanBatchEngineTaskItemDelegate.
+			setContextBatchResourceInvocationHandler(
+				(proxy, method, arguments) -> {
+					if (!featureFlagChecker.isEnabled(
+							CompanyThreadLocal.getCompanyId(),
+							clazz.getMethod(
+								method.getName(),
+								method.getParameterTypes()))) {
+
+						throw new NotFoundException();
+					}
+
+					try {
+						return method.invoke(
+							vulcanBatchEngineTaskItemDelegate, arguments);
+					}
+					catch (InvocationTargetException
+								invocationTargetException) {
+
+						throw invocationTargetException.getTargetException();
+					}
+				});
 
 		vulcanBatchEngineTaskItemDelegate.setGroupLocalService(
 			groupLocalService);
@@ -85,14 +137,24 @@ public class VulcanBatchEngineTaskItemDelegateAdaptor<T>
 
 	@Override
 	public Set<String> getAvailableCreateStrategies() {
-		return _vulcanBatchEngineTaskItemDelegate.
-			getAvailableCreateStrategies();
+		Set<String> createStrategies = new HashSet<>(
+			_vulcanBatchEngineTaskItemDelegate.getAvailableCreateStrategies());
+
+		createStrategies.removeIf(
+			createStrategy -> !_isCreateStrategyEnabled(createStrategy));
+
+		return createStrategies;
 	}
 
 	@Override
 	public Set<String> getAvailableUpdateStrategies() {
-		return _vulcanBatchEngineTaskItemDelegate.
-			getAvailableUpdateStrategies();
+		Set<String> updateStrategies = new HashSet<>(
+			_vulcanBatchEngineTaskItemDelegate.getAvailableUpdateStrategies());
+
+		updateStrategies.removeIf(
+			updateStrategy -> !_isUpdateStrategyEnabled(updateStrategy));
+
+		return updateStrategies;
 	}
 
 	@Override
@@ -128,16 +190,14 @@ public class VulcanBatchEngineTaskItemDelegateAdaptor<T>
 
 	@Override
 	public boolean hasCreateStrategy(String createStrategy) {
-		Set<String> createStrategies =
-			_vulcanBatchEngineTaskItemDelegate.getAvailableCreateStrategies();
+		Set<String> createStrategies = getAvailableCreateStrategies();
 
 		return createStrategies.contains(createStrategy);
 	}
 
 	@Override
 	public boolean hasUpdateStrategy(String updateStrategy) {
-		Set<String> updateStrategies =
-			_vulcanBatchEngineTaskItemDelegate.getAvailableUpdateStrategies();
+		Set<String> updateStrategies = getAvailableUpdateStrategies();
 
 		return updateStrategies.contains(updateStrategy);
 	}
@@ -259,9 +319,92 @@ public class VulcanBatchEngineTaskItemDelegateAdaptor<T>
 		return null;
 	}
 
+	private boolean _hasEnabledMethod(
+		String createStrategy, String updateStrategy) {
+
+		for (Method method : _vulcanBatchEngineStrategyMethods) {
+			VulcanBatchEngineStrategy vulcanBatchEngineStrategy =
+				method.getAnnotation(VulcanBatchEngineStrategy.class);
+
+			if (StringUtil.equalsIgnoreCase(
+					createStrategy,
+					vulcanBatchEngineStrategy.createStrategy()) &&
+				StringUtil.equalsIgnoreCase(
+					updateStrategy,
+					vulcanBatchEngineStrategy.updateStrategy()) &&
+				_featureFlagChecker.isEnabled(
+					CompanyThreadLocal.getCompanyId(), method)) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _isAnnotated(
+		Function<VulcanBatchEngineStrategy, String> function, String strategy) {
+
+		for (Method method : _vulcanBatchEngineStrategyMethods) {
+			if (StringUtil.equalsIgnoreCase(
+					strategy,
+					function.apply(
+						method.getAnnotation(
+							VulcanBatchEngineStrategy.class)))) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _isCreateStrategyEnabled(String createStrategy) {
+		if (!_isAnnotated(
+				VulcanBatchEngineStrategy::createStrategy, createStrategy)) {
+
+			return true;
+		}
+
+		if (!StringUtil.equalsIgnoreCase(
+				createStrategy, CreateStrategy.UPSERT.getDBOperation())) {
+
+			return _hasEnabledMethod(createStrategy, StringPool.BLANK);
+		}
+
+		if ((_hasEnabledMethod(
+				CreateStrategy.INSERT.getDBOperation(), StringPool.BLANK) &&
+			 _hasEnabledMethod(
+				 StringPool.BLANK,
+				 UpdateStrategy.PARTIAL_UPDATE.getDBOperation()) &&
+			 _hasEnabledMethod(
+				 CreateStrategy.UPSERT.getDBOperation(),
+				 UpdateStrategy.PARTIAL_UPDATE.getDBOperation())) ||
+			_hasEnabledMethod(
+				CreateStrategy.UPSERT.getDBOperation(), StringPool.BLANK)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _isUpdateStrategyEnabled(String updateStrategy) {
+		if (!_isAnnotated(
+				VulcanBatchEngineStrategy::updateStrategy, updateStrategy)) {
+
+			return true;
+		}
+
+		return _hasEnabledMethod(StringPool.BLANK, updateStrategy);
+	}
+
 	private Company _company;
 	private final DepotEntryLocalService _depotEntryLocalService;
+	private final FeatureFlagChecker _featureFlagChecker;
 	private final GroupLocalService _groupLocalService;
+	private final List<Method> _vulcanBatchEngineStrategyMethods =
+		new ArrayList<>();
 	private final VulcanBatchEngineTaskItemDelegate<T>
 		_vulcanBatchEngineTaskItemDelegate;
 

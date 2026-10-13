@@ -13,6 +13,7 @@ import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegate;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegateAdaptorFactory;
+import com.liferay.portal.vulcan.feature.flag.FeatureFlagChecker;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -30,13 +31,16 @@ public class VulcanBatchEngineTaskItemDelegateAdaptorFactoryImpl
 			vulcanBatchEngineTaskItemDelegate) {
 
 		return new VulcanBatchEngineTaskItemDelegateAdaptor<>(
-			_depotEntryLocalService, _groupLocalService,
+			_depotEntryLocalService, _featureFlagChecker, _groupLocalService,
 			_resourceActionLocalService, _resourcePermissionLocalService,
 			_roleLocalService, vulcanBatchEngineTaskItemDelegate);
 	}
 
 	@Reference
 	private DepotEntryLocalService _depotEntryLocalService;
+
+	@Reference
+	private FeatureFlagChecker _featureFlagChecker;
 
 	@Reference
 	private GroupLocalService _groupLocalService;
