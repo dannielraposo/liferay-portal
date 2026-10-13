@@ -37,7 +37,9 @@ public class JavaFeatureFlagAnnotationCheck extends BaseFileCheck {
 		while (matcher.find()) {
 			if (ToolsUtil.isInsideQuotes(content, matcher.start()) ||
 				((matcher.group(1) == null) &&
-				 !content.contains(_FEATURE_FLAG_IMPORT))) {
+				 !content.contains(
+					 "import com.liferay.portal.vulcan.feature.flag." +
+						 "FeatureFlag;"))) {
 
 				continue;
 			}
@@ -52,9 +54,6 @@ public class JavaFeatureFlagAnnotationCheck extends BaseFileCheck {
 
 		return content;
 	}
-
-	private static final String _FEATURE_FLAG_IMPORT =
-		"import com.liferay.portal.vulcan.feature.flag.FeatureFlag;";
 
 	private static final Pattern _featureFlagAnnotationPattern =
 		Pattern.compile(
