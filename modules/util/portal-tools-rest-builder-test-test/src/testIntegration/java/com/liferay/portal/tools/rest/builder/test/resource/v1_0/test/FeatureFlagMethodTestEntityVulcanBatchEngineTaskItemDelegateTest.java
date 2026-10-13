@@ -61,16 +61,14 @@ public class FeatureFlagMethodTestEntityVulcanBatchEngineTaskItemDelegateTest {
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Test
 	public void testCreate() throws Exception {
+		_vulcanBatchEngineTaskItemDelegate.create(
+			Collections.singletonList(new FeatureFlagMethodTestEntity()),
+			new HashMap<>());
+
 		Map<String, Serializable> parameters =
 			HashMapBuilder.<String, Serializable>put(
 				"createStrategy", "UPSERT"
 			).build();
-
-		_setFeatureFlagEnabled(false);
-
-		_vulcanBatchEngineTaskItemDelegate.create(
-			Collections.singletonList(new FeatureFlagMethodTestEntity()),
-			new HashMap<>());
 
 		AssertUtils.assertFailure(
 			NotSupportedException.class,
@@ -90,8 +88,6 @@ public class FeatureFlagMethodTestEntityVulcanBatchEngineTaskItemDelegateTest {
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Test
 	public void testDelete() throws Exception {
-		_setFeatureFlagEnabled(false);
-
 		AssertUtils.assertFailure(
 			UnsupportedOperationException.class,
 			"This method needs to be implemented",
@@ -109,8 +105,6 @@ public class FeatureFlagMethodTestEntityVulcanBatchEngineTaskItemDelegateTest {
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Test
 	public void testGetAvailableCreateStrategies() throws Exception {
-		_setFeatureFlagEnabled(false);
-
 		Assert.assertEquals(
 			SetUtil.fromArray("INSERT"),
 			_vulcanBatchEngineTaskItemDelegate.getAvailableCreateStrategies());
@@ -125,8 +119,6 @@ public class FeatureFlagMethodTestEntityVulcanBatchEngineTaskItemDelegateTest {
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Test
 	public void testGetAvailableUpdateStrategies() throws Exception {
-		_setFeatureFlagEnabled(false);
-
 		Assert.assertEquals(
 			Collections.emptySet(),
 			_vulcanBatchEngineTaskItemDelegate.getAvailableUpdateStrategies());
@@ -141,8 +133,6 @@ public class FeatureFlagMethodTestEntityVulcanBatchEngineTaskItemDelegateTest {
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Test
 	public void testRead() throws Exception {
-		_setFeatureFlagEnabled(false);
-
 		AssertUtils.assertFailure(
 			UnsupportedOperationException.class,
 			"This method needs to be implemented",
@@ -165,8 +155,6 @@ public class FeatureFlagMethodTestEntityVulcanBatchEngineTaskItemDelegateTest {
 			HashMapBuilder.<String, Serializable>put(
 				"updateStrategy", "PARTIAL_UPDATE"
 			).build();
-
-		_setFeatureFlagEnabled(false);
 
 		AssertUtils.assertFailure(
 			NotSupportedException.class,
