@@ -6,6 +6,7 @@
 package com.liferay.portal.vulcan.batch.engine.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.batch.engine.BatchEngineTaskItemDelegate;
 import com.liferay.petra.function.UnsafeBiConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.model.Company;
@@ -17,9 +18,11 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineStrategy;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegate;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegateAdaptorFactory;
 import com.liferay.portal.vulcan.pagination.Page;
@@ -32,6 +35,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -101,6 +105,20 @@ public class VulcanBatchEngineTaskItemDelegateAdaptorFactoryTest {
 		}
 	}
 
+	@Test
+	public void testCreateWithOverriddenStrategies() {
+		BatchEngineTaskItemDelegate<Object> batchEngineTaskItemDelegate =
+			_vulcanBatchEngineTaskItemDelegateAdaptorFactory.create(
+				new OverriddenStrategiesVulcanBatchEngineTaskItemDelegate());
+
+		Assert.assertEquals(
+			SetUtil.fromArray("INSERT"),
+			batchEngineTaskItemDelegate.getAvailableCreateStrategies());
+		Assert.assertEquals(
+			SetUtil.fromArray("UPDATE"),
+			batchEngineTaskItemDelegate.getAvailableUpdateStrategies());
+	}
+
 	@Inject
 	private GroupLocalService _groupLocalService;
 
@@ -116,6 +134,21 @@ public class VulcanBatchEngineTaskItemDelegateAdaptorFactoryTest {
 	@Inject
 	private VulcanBatchEngineTaskItemDelegateAdaptorFactory
 		_vulcanBatchEngineTaskItemDelegateAdaptorFactory;
+
+	private static class OverriddenStrategiesVulcanBatchEngineTaskItemDelegate
+		extends TestVulcanBatchEngineTaskItemDelegate {
+
+		@Override
+		public Set<String> getAvailableCreateStrategies() {
+			return SetUtil.fromArray("INSERT");
+		}
+
+		@VulcanBatchEngineStrategy(updateStrategy = "UPDATE")
+		public Object putObject(Object object) {
+			return object;
+		}
+
+	}
 
 	private static class TestVulcanBatchEngineTaskItemDelegate
 		implements VulcanBatchEngineTaskItemDelegate<Object> {
