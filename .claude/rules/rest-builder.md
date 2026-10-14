@@ -99,7 +99,7 @@ application:
     name: "Liferay.<Title>.REST"
 author: "<Your Name>"
 clientDir: "../<name>-rest-client/src/main/java"
-compatibilityVersion: 15
+compatibilityVersion: 17
 forcePredictableOperationId: true
 javaEEPackage: "jakarta"
 testDir: "../<name>-rest-test/src/testIntegration/java"
