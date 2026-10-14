@@ -68,6 +68,16 @@ public class FeatureFlagMethodTestEntityResourceTest
 		_testDeleteFeatureFlagMethodTestEntityBatchWhenFeatureFlagIsEnabled();
 	}
 
+	@Ignore
+	@Override
+	@Test
+	public void testDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode()
+		throws Exception {
+
+		super.
+			testDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode();
+	}
+
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Override
 	@Test
@@ -75,6 +85,24 @@ public class FeatureFlagMethodTestEntityResourceTest
 		_testGetFeatureFlagMethodTestEntitiesPageWhenFeatureFlagIsDisabled();
 		_testGetFeatureFlagMethodTestEntitiesPageWhenFeatureFlagIsEnabled();
 		_testGetFeatureFlagMethodTestEntitiesPageWhenOperationIdIsExcluded();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGetFeatureFlagMethodTestEntityByExternalReferenceCode()
+		throws Exception {
+
+		super.testGetFeatureFlagMethodTestEntityByExternalReferenceCode();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGetSiteFeatureFlagMethodTestEntitiesPage()
+		throws Exception {
+
+		super.testGetSiteFeatureFlagMethodTestEntitiesPage();
 	}
 
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
@@ -87,6 +115,16 @@ public class FeatureFlagMethodTestEntityResourceTest
 		_testGraphQLDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabled();
 	}
 
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode()
+		throws Exception {
+
+		super.
+			testGraphQLDeleteSiteFeatureFlagMethodTestEntityByExternalReferenceCode();
+	}
+
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Override
 	@Test
@@ -97,11 +135,49 @@ public class FeatureFlagMethodTestEntityResourceTest
 		_testGraphQLGetFeatureFlagMethodTestEntitiesPageWhenFeatureFlagIsEnabled();
 	}
 
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLGetFeatureFlagMethodTestEntityByExternalReferenceCode()
+		throws Exception {
+
+		super.
+			testGraphQLGetFeatureFlagMethodTestEntityByExternalReferenceCode();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLGetFeatureFlagMethodTestEntityByExternalReferenceCodeNotFound()
+		throws Exception {
+
+		super.
+			testGraphQLGetFeatureFlagMethodTestEntityByExternalReferenceCodeNotFound();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLGetSiteFeatureFlagMethodTestEntitiesPage()
+		throws Exception {
+
+		super.testGraphQLGetSiteFeatureFlagMethodTestEntitiesPage();
+	}
+
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
 	@Override
 	@Test
 	public void testGraphQLPostFeatureFlagMethodTestEntity() throws Exception {
 		_testGraphQLPostFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled();
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLPostSiteFeatureFlagMethodTestEntity()
+		throws Exception {
+
+		super.testGraphQLPostSiteFeatureFlagMethodTestEntity();
 	}
 
 	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
@@ -119,7 +195,16 @@ public class FeatureFlagMethodTestEntityResourceTest
 		_testPostFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled();
 	}
 
-	@FeatureFlag(enable = false, value = _FEATURE_FLAG_KEY)
+	@Ignore
+	@Override
+	@Test
+	public void testPostSiteFeatureFlagMethodTestEntity() throws Exception {
+		super.testPostSiteFeatureFlagMethodTestEntity();
+	}
+
+	@FeatureFlag(
+		enable = false, value = _FEATURE_FLAG_KEY_PUT_BY_EXTERNAL_REFERENCE_CODE
+	)
 	@Override
 	@Test
 	public void testPutFeatureFlagMethodTestEntityByExternalReferenceCode()
@@ -180,19 +265,21 @@ public class FeatureFlagMethodTestEntityResourceTest
 		return pathJSONObject.has(httpMethod);
 	}
 
-	private void _setFeatureFlagEnabled(boolean enabled) throws Exception {
+	private void _setFeatureFlagEnabled(String featureFlagKey, boolean enabled)
+		throws Exception {
+
 		PropsUtil.set(
-			FeatureFlagConstants.getKey(_FEATURE_FLAG_KEY),
+			FeatureFlagConstants.getKey(featureFlagKey),
 			String.valueOf(enabled));
 
 		FeatureFlagTestUtil.invokeFeatureFlagListeners(
-			TestPropsValues.getCompanyId(), enabled, _FEATURE_FLAG_KEY);
+			TestPropsValues.getCompanyId(), enabled, featureFlagKey);
 	}
 
 	private void _testDeleteFeatureFlagMethodTestEntityBatchWhenFeatureFlagIsDisabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(false);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, false);
 
 		assertHttpResponseStatusCode(
 			404,
@@ -208,7 +295,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testDeleteFeatureFlagMethodTestEntityBatchWhenFeatureFlagIsEnabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
 		testDeleteFeatureFlagMethodTestEntityBatch_deleteFeatureFlagMethodTestEntity(
 			202, null, RandomTestUtil.randomLong());
@@ -219,7 +306,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(false);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, false);
 
 		assertHttpResponseStatusCode(
 			404,
@@ -235,7 +322,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabledUsingFactory()
 		throws Exception {
 
-		_setFeatureFlagEnabled(false);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, false);
 
 		FeatureFlagMethodTestEntityResource
 			factoryFeatureFlagMethodTestEntityResource =
@@ -255,7 +342,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
 		assertHttpResponseStatusCode(
 			204,
@@ -271,7 +358,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabledUsingFactory()
 		throws Exception {
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
 		FeatureFlagMethodTestEntityResource
 			factoryFeatureFlagMethodTestEntityResource =
@@ -287,7 +374,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testGetFeatureFlagMethodTestEntitiesPageWhenFeatureFlagIsDisabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(false);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, false);
 
 		assertHttpResponseStatusCode(
 			404,
@@ -319,7 +406,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testGetFeatureFlagMethodTestEntitiesPageWhenFeatureFlagIsEnabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
 		assertHttpResponseStatusCode(
 			200,
@@ -353,7 +440,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 			).build());
 
 		try {
-			_setFeatureFlagEnabled(true);
+			_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
 			assertHttpResponseStatusCode(
 				409,
@@ -363,7 +450,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 			Assert.assertFalse(_hasOperation("get", _PATH));
 			Assert.assertTrue(_hasOperation("post", _PATH));
 
-			_setFeatureFlagEnabled(false);
+			_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, false);
 
 			assertHttpResponseStatusCode(
 				404,
@@ -378,7 +465,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testGraphQLDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(false);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, false);
 
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
 				"notprivacysafe.graphql.GraphQL", LoggerTestUtil.ERROR)) {
@@ -399,7 +486,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testGraphQLDeleteFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
 		Assert.assertTrue(
 			JSONUtil.getValueAsBoolean(
@@ -416,7 +503,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testGraphQLGetFeatureFlagMethodTestEntitiesPageWhenFeatureFlagIsDisabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(false);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, false);
 
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
 				"notprivacysafe.graphql.GraphQL", LoggerTestUtil.ERROR)) {
@@ -434,7 +521,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testGraphQLGetFeatureFlagMethodTestEntitiesPageWhenFeatureFlagIsEnabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
 		Assert.assertEquals(
 			0,
@@ -450,7 +537,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testGraphQLPostFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(false);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, false);
 
 		JSONObject dataJSONObject = JSONUtil.getValueAsJSONObject(
 			invokeGraphQLMutation(
@@ -469,7 +556,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testPatchFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(false);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, false);
 
 		assertHttpResponseStatusCode(
 			404,
@@ -485,7 +572,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testPatchFeatureFlagMethodTestEntityWhenFeatureFlagIsEnabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, true);
 
 		assertHttpResponseStatusCode(
 			200,
@@ -501,7 +588,7 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testPostFeatureFlagMethodTestEntityWhenFeatureFlagIsDisabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(false);
+		_setFeatureFlagEnabled(_FEATURE_FLAG_KEY, false);
 
 		assertHttpResponseStatusCode(
 			200,
@@ -516,7 +603,8 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testPutFeatureFlagMethodTestEntityByExternalReferenceCodeWhenFeatureFlagIsDisabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(false);
+		_setFeatureFlagEnabled(
+			_FEATURE_FLAG_KEY_PUT_BY_EXTERNAL_REFERENCE_CODE, false);
 
 		assertHttpResponseStatusCode(
 			404,
@@ -534,7 +622,8 @@ public class FeatureFlagMethodTestEntityResourceTest
 	private void _testPutFeatureFlagMethodTestEntityByExternalReferenceCodeWhenFeatureFlagIsEnabled()
 		throws Exception {
 
-		_setFeatureFlagEnabled(true);
+		_setFeatureFlagEnabled(
+			_FEATURE_FLAG_KEY_PUT_BY_EXTERNAL_REFERENCE_CODE, true);
 
 		assertHttpResponseStatusCode(
 			200,
@@ -550,6 +639,9 @@ public class FeatureFlagMethodTestEntityResourceTest
 	}
 
 	private static final String _FEATURE_FLAG_KEY = "METHOD-123";
+
+	private static final String
+		_FEATURE_FLAG_KEY_PUT_BY_EXTERNAL_REFERENCE_CODE = "METHOD-125";
 
 	private static final String _PATH = "feature-flag-method-test-entities";
 
