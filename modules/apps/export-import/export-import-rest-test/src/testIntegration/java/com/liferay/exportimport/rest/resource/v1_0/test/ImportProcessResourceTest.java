@@ -17,8 +17,10 @@ import com.liferay.exportimport.kernel.service.ExportImportLocalServiceUtil;
 import com.liferay.exportimport.rest.client.dto.v1_0.ImportPreview;
 import com.liferay.exportimport.rest.client.dto.v1_0.ImportProcess;
 import com.liferay.exportimport.rest.client.dto.v1_0.ImportProcessRequest;
+import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandler;
+import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandlerControl;
+import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandlerTreeSelection;
 import com.liferay.exportimport.rest.client.dto.v1_0.ProcessProgress;
-import com.liferay.exportimport.rest.client.dto.v1_0.RequestPortletDataHandler;
 import com.liferay.exportimport.rest.client.http.HttpInvoker;
 import com.liferay.exportimport.rest.client.pagination.Page;
 import com.liferay.exportimport.rest.client.pagination.Pagination;
@@ -683,7 +685,29 @@ public class ImportProcessResourceTest
 		postImportPreviewUnsafeFunction.apply(file);
 
 		ImportProcess importProcess = postImportProcessUnsafeFunction.apply(
-			new ImportProcessRequest());
+			new ImportProcessRequest() {
+				{
+					portletDataHandlers = new PortletDataHandler[] {
+						new PortletDataHandler() {
+							{
+								name = _PORTLET_DATA_HANDLER_NAME_LAYOUT_SET;
+								portletDataHandlerControls =
+									new PortletDataHandlerControl[] {
+										new PortletDataHandlerTreeSelection() {
+											{
+												name = _CONTROL_NAME_PAGES;
+												selected = true;
+												type =
+													PortletDataHandlerControl.
+														Type.TREE_SELECTION;
+											}
+										}
+									};
+							}
+						}
+					};
+				}
+			});
 
 		assertValid(importProcess);
 
@@ -809,9 +833,9 @@ public class ImportProcessResourceTest
 
 		ImportProcessRequest importProcessRequest = new ImportProcessRequest();
 
-		importProcessRequest.setRequestPortletDataHandlers(
-			new RequestPortletDataHandler[] {
-				new RequestPortletDataHandler() {
+		importProcessRequest.setPortletDataHandlers(
+			new PortletDataHandler[] {
+				new PortletDataHandler() {
 					{
 						name =
 							"PORTLET_DATA_" + objectDefinition.getPortletId();
@@ -957,9 +981,9 @@ public class ImportProcessResourceTest
 
 		ImportProcessRequest importProcessRequest = new ImportProcessRequest();
 
-		importProcessRequest.setRequestPortletDataHandlers(
-			new RequestPortletDataHandler[] {
-				new RequestPortletDataHandler() {
+		importProcessRequest.setPortletDataHandlers(
+			new PortletDataHandler[] {
+				new PortletDataHandler() {
 					{
 						name = "PORTLET_DATA_" + portletId;
 					}
@@ -1064,6 +1088,12 @@ public class ImportProcessResourceTest
 			_layoutLocalService.fetchLayoutByUuidAndGroupId(
 				layout.getUuid(), group.getGroupId(), false));
 	}
+
+	private static final String _CONTROL_NAME_PAGES = "_layout_set_pages";
+
+	private static final String _PORTLET_DATA_HANDLER_NAME_LAYOUT_SET =
+		"PORTLET_DATA_com_liferay_layout_admin_web_portlet_" +
+			"LayoutSetLayoutsPortlet";
 
 	private static final String _STATUS_MESSAGE =
 		"java.lang.NullPointerException\n\tat com.liferay.exportimport." +

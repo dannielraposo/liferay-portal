@@ -105,12 +105,25 @@ public class ScheduledPublishProcessResourceTest
 				scheduledPublishProcess.getId());
 
 		Assert.assertEquals(
-			_CRON_EXPRESSION, getScheduledPublishProcess.getCronExpression());
-		Assert.assertEquals(
 			scheduledPublishProcess.getName(),
 			getScheduledPublishProcess.getName());
 		Assert.assertNotNull(getScheduledPublishProcess.getDateCreated());
-		Assert.assertNotNull(getScheduledPublishProcess.getPublishParameters());
+
+		PublishProcessRequest publishProcessRequest =
+			getScheduledPublishProcess.getPublishProcessRequest();
+
+		Assert.assertEquals(
+			_CRON_EXPRESSION, publishProcessRequest.getCronExpression());
+		Assert.assertEquals(
+			PublishProcessRequest.DateRangeType.ALL,
+			publishProcessRequest.getDateRangeType());
+		Assert.assertEquals(
+			scheduledPublishProcess.getName(), publishProcessRequest.getName());
+		Assert.assertEquals(
+			getScheduledPublishProcess.getScheduleStartDate(),
+			publishProcessRequest.getScheduleStartDate());
+		Assert.assertEquals("UTC", publishProcessRequest.getTimeZoneId());
+
 		Assert.assertNotNull(getScheduledPublishProcess.getScheduleStartDate());
 	}
 

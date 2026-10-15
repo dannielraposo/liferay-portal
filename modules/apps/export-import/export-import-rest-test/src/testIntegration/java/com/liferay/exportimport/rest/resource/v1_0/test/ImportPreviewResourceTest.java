@@ -13,8 +13,8 @@ import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
 import com.liferay.exportimport.kernel.service.ExportImportLocalServiceUtil;
 import com.liferay.exportimport.rest.client.dto.v1_0.ImportPreview;
-import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandler;
-import com.liferay.exportimport.rest.client.dto.v1_0.PreviewPortletDataHandlerSection;
+import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandler;
+import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandlerControl;
 import com.liferay.exportimport.rest.client.dto.v1_0.PreviewSite;
 import com.liferay.exportimport.rest.client.http.HttpInvoker;
 import com.liferay.exportimport.rest.client.resource.v1_0.ImportPreviewResource;
@@ -370,25 +370,18 @@ public class ImportPreviewResourceTest
 	private long _getAdditionCount(
 		ImportPreview importPreview, String portletId) {
 
-		PreviewPortletDataHandlerSection[] previewPortletDataHandlerSections =
-			importPreview.getPreviewPortletDataHandlerSections();
+		PortletDataHandler[] portletDataHandlers =
+			importPreview.getPortletDataHandlers();
 
-		if (previewPortletDataHandlerSections == null) {
+		if (portletDataHandlers == null) {
 			return 0L;
 		}
 
 		String handlerName = "PORTLET_DATA_" + portletId;
 
-		for (PreviewPortletDataHandlerSection previewPortletDataHandlerSection :
-				previewPortletDataHandlerSections) {
-
-			for (PreviewPortletDataHandler previewPortletDataHandler :
-					previewPortletDataHandlerSection.
-						getPreviewPortletDataHandlers()) {
-
-				if (handlerName.equals(previewPortletDataHandler.getName())) {
-					return previewPortletDataHandler.getAdditionCount();
-				}
+		for (PortletDataHandler portletDataHandler : portletDataHandlers) {
+			if (handlerName.equals(portletDataHandler.getName())) {
+				return portletDataHandler.getAdditionCount();
 			}
 		}
 
@@ -422,6 +415,23 @@ public class ImportPreviewResourceTest
 			groupExternalReferenceCodes);
 
 		return parameterMap;
+	}
+
+	private PortletDataHandler _getPortletDataHandler(
+		ImportPreview importPreview, String portletId) {
+
+		for (PortletDataHandler portletDataHandler :
+				importPreview.getPortletDataHandlers()) {
+
+			if (Objects.equals(
+					"PORTLET_DATA_" + portletId,
+					portletDataHandler.getName())) {
+
+				return portletDataHandler;
+			}
+		}
+
+		return null;
 	}
 
 	private PreviewSite _getPreviewSite(
@@ -604,6 +614,18 @@ public class ImportPreviewResourceTest
 			importPreview, LayoutAdminPortletKeys.LAYOUT_SET_LAYOUTS);
 
 		Assert.assertTrue(additionCount > 0);
+
+		PortletDataHandler portletDataHandler = _getPortletDataHandler(
+			importPreview, LayoutAdminPortletKeys.LAYOUT_SET_LAYOUTS);
+
+		PortletDataHandlerControl[] portletDataHandlerControls =
+			portletDataHandler.getPortletDataHandlerControls();
+
+		Assert.assertEquals(
+			"_layout_set_pages", portletDataHandlerControls[0].getName());
+		Assert.assertEquals(
+			PortletDataHandlerControl.Type.TREE_SELECTION,
+			portletDataHandlerControls[0].getType());
 	}
 
 	private void _testPostSiteImportPreviewWithLayoutSetPrototypeGroup()
