@@ -8,7 +8,7 @@ import ClayLoadingIndicator from '@clayui/loading-indicator';
 import React from 'react';
 
 import {ExportImportProcess} from '../types/exportImportProcess';
-import {PreviewPortletDataHandlerSection} from '../types/portletDataHandler';
+import {PortletDataHandlerSection} from '../types/portletDataHandler';
 import {PageTreeModalConfiguration} from './PageTreeModal';
 import SectionHeader from './SectionHeader';
 import {DateFilterValues} from './date_filter';
@@ -28,12 +28,11 @@ export default function DataSelection({
 	itemsCount,
 	lastPublishDate,
 	loading = false,
-	lookAndFeelEnabled = false,
 	onApplyFilter,
 	pageTreeModalConfiguration,
 	permissionsDescription,
 	permissionsLabel,
-	previewPortletDataHandlerSections,
+	portletDataHandlerSections,
 	process = 'export',
 	subtitle,
 	timeZoneId,
@@ -45,12 +44,11 @@ export default function DataSelection({
 	itemsCount?: number;
 	lastPublishDate?: string;
 	loading?: boolean;
-	lookAndFeelEnabled?: boolean;
 	onApplyFilter: (dateFilterValues: DateFilterValues) => void;
 	pageTreeModalConfiguration: PageTreeModalConfiguration;
 	permissionsDescription: string;
 	permissionsLabel: string;
-	previewPortletDataHandlerSections: PreviewPortletDataHandlerSection[];
+	portletDataHandlerSections: PortletDataHandlerSection[];
 	process?: ExportImportProcess;
 	subtitle: string;
 	timeZoneId: string;
@@ -103,12 +101,9 @@ export default function DataSelection({
 					<FormikFieldContentSelector
 						aria-labelledby={LABEL_ID}
 						commentsAndRatingsEnabled={commentsAndRatingsEnabled}
-						lookAndFeelEnabled={lookAndFeelEnabled}
 						name="contentSelection"
 						pageTreeModalConfiguration={pageTreeModalConfiguration}
-						previewPortletDataHandlerSections={
-							previewPortletDataHandlerSections
-						}
+						portletDataHandlerSections={portletDataHandlerSections}
 						process={process}
 					/>
 				)}
