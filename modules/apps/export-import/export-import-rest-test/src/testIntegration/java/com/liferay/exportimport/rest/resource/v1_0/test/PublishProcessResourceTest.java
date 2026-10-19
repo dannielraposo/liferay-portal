@@ -6,31 +6,22 @@
 package com.liferay.exportimport.rest.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.blogs.constants.BlogsPortletKeys;
-import com.liferay.blogs.model.BlogsEntry;
-import com.liferay.exportimport.changeset.constants.ChangesetPortletKeys;
-import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandler;
-import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandlerBoolean;
 import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandlerChoice;
 import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandlerControl;
 import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandlerTreeSelection;
 import com.liferay.exportimport.rest.client.dto.v1_0.ProcessProgress;
 import com.liferay.exportimport.rest.client.dto.v1_0.PublishProcess;
 import com.liferay.exportimport.rest.client.dto.v1_0.PublishProcessRequest;
-import com.liferay.exportimport.rest.client.dto.v1_0.ScheduledPublishProcess;
 import com.liferay.exportimport.rest.client.pagination.Page;
 import com.liferay.exportimport.rest.client.pagination.Pagination;
 import com.liferay.exportimport.rest.client.resource.v1_0.PublishProcessResource;
-import com.liferay.exportimport.rest.client.resource.v1_0.ScheduledPublishProcessResource;
 import com.liferay.exportimport.test.util.ExportImportTestUtil;
-import com.liferay.journal.model.JournalArticle;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.background.task.model.BackgroundTask;
 import com.liferay.portal.background.task.service.BackgroundTaskLocalService;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatus;
@@ -47,14 +38,10 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
-import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.Time;
-import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
@@ -63,12 +50,9 @@ import com.liferay.staging.StagingGroupHelper;
 
 import java.io.Serializable;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -97,17 +81,6 @@ public class PublishProcessResourceTest
 		String password = RandomTestUtil.randomString();
 
 		_user = UserTestUtil.addUser(testCompany, password);
-
-		_scheduledPublishProcessResource =
-			ScheduledPublishProcessResource.builder(
-			).authentication(
-				_getAdminUserEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
-			).endpoint(
-				testCompany.getVirtualHostname(),
-				PortalUtil.getPortalServerPort(false), "http"
-			).locale(
-				LocaleUtil.getDefault()
-			).build();
 
 		_publishProcessResource = PublishProcessResource.builder(
 		).authentication(
@@ -180,12 +153,8 @@ public class PublishProcessResourceTest
 				}));
 
 		_testPostSitePublishProcessWithInvalidDateRange();
-		_testPostSitePublishProcessWithInvalidCronExpression();
-		_testPostSitePublishProcessWithOneTimeCronExpression();
 		_testPostSitePublishProcessWithoutStaging();
-		_testPostSitePublishProcessWithoutTimeZoneId();
 		_testPostSitePublishProcessWithLayoutSet();
-		_testPostSitePublishProcessWithDateRangeType();
 		_testPostSitePublishProcessPerformsDirectBinaryImport();
 	}
 
@@ -273,134 +242,6 @@ public class PublishProcessResourceTest
 		return publishProcess;
 	}
 
-	private void _assertScheduledPublishProcess(
-			String expectedRange,
-			PublishProcessRequest.DateRangeType publishProcessDateRangeType,
-			Date publishProcessStartDate, Date publishProcessEndDate,
-			PortletDataHandler... publishProcessPortletDataHandlers)
-		throws Exception {
-
-		String publishProcessName = RandomTestUtil.randomString();
-
-		publishProcessResource.postSitePublishProcess(
-			testGroup.getExternalReferenceCode(),
-			new PublishProcessRequest() {
-				{
-					cronExpression = _CRON_EXPRESSION;
-					dateRangeType = publishProcessDateRangeType;
-					endDate = publishProcessEndDate;
-					name = publishProcessName;
-					portletDataHandlers = publishProcessPortletDataHandlers;
-					startDate = publishProcessStartDate;
-					timeZoneId = "UTC";
-				}
-			});
-
-		Page<ScheduledPublishProcess> page =
-			_scheduledPublishProcessResource.
-				getSiteScheduledPublishProcessesPage(
-					testGroup.getExternalReferenceCode(), publishProcessName,
-					Pagination.of(1, 1), null);
-
-		ScheduledPublishProcess scheduledPublishProcess = page.fetchFirstItem();
-
-		PublishProcessRequest publishProcessRequest =
-			scheduledPublishProcess.getPublishProcessRequest();
-
-		Assert.assertEquals(
-			_toDateRangeType(expectedRange),
-			publishProcessRequest.getDateRangeType());
-
-		if (ArrayUtil.isNotEmpty(publishProcessPortletDataHandlers)) {
-			PortletDataHandler portletDataHandler = null;
-
-			for (PortletDataHandler curPortletDataHandler :
-					publishProcessRequest.getPortletDataHandlers()) {
-
-				if (!Objects.equals(
-						curPortletDataHandler.getName(),
-						PortletDataHandlerKeys.PORTLET_DATA +
-							StringPool.UNDERLINE +
-								BlogsPortletKeys.BLOGS_ADMIN)) {
-
-					continue;
-				}
-
-				portletDataHandler = curPortletDataHandler;
-			}
-
-			Assert.assertNotNull(portletDataHandler);
-
-			PortletDataHandlerControl[] portletDataHandlerControls =
-				portletDataHandler.getPortletDataHandlerControls();
-
-			PortletDataHandlerBoolean portletDataHandlerBoolean =
-				(PortletDataHandlerBoolean)portletDataHandlerControls[0];
-
-			Assert.assertEquals(
-				Boolean.TRUE, portletDataHandlerBoolean.getSelected());
-		}
-
-		ExportImportConfiguration exportImportConfiguration =
-			_exportImportConfigurationLocalService.getExportImportConfiguration(
-				scheduledPublishProcess.getId());
-
-		Map<String, Serializable> settingsMap =
-			exportImportConfiguration.getSettingsMap();
-
-		Map<String, String[]> parameterMap =
-			(Map<String, String[]>)settingsMap.get("parameterMap");
-
-		Assert.assertEquals(
-			expectedRange, MapUtil.getString(parameterMap, "range"));
-
-		if (expectedRange.equals(
-				ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE)) {
-
-			Assert.assertTrue(
-				MapUtil.getBoolean(
-					parameterMap,
-					PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE +
-						ChangesetPortletKeys.CHANGESET));
-
-			Assert.assertFalse(
-				MapUtil.getBoolean(
-					parameterMap, PortletDataHandlerKeys.PORTLET_DATA_ALL));
-
-			if (ArrayUtil.isEmpty(publishProcessPortletDataHandlers)) {
-				Assert.assertFalse(
-					parameterMap.containsKey(BlogsEntry.class.getName()));
-			}
-			else {
-				Assert.assertTrue(
-					MapUtil.getBoolean(
-						parameterMap, BlogsEntry.class.getName()));
-				Assert.assertFalse(
-					parameterMap.containsKey(JournalArticle.class.getName()));
-			}
-		}
-
-		if (expectedRange.equals(ExportImportDateUtil.RANGE_DATE_RANGE)) {
-			Assert.assertEquals(
-				publishProcessEndDate != null,
-				parameterMap.containsKey("endDateSecond"));
-			Assert.assertEquals(
-				publishProcessEndDate != null,
-				parameterMap.containsKey("endDateYear"));
-			Assert.assertTrue(parameterMap.containsKey("startDateSecond"));
-			Assert.assertTrue(parameterMap.containsKey("startDateYear"));
-		}
-		else if (expectedRange.equals(ExportImportDateUtil.RANGE_LAST)) {
-			Assert.assertEquals("1", MapUtil.getString(parameterMap, "last"));
-		}
-	}
-
-	private String _getAdminUserEmailAddress() throws Exception {
-		User adminUser = UserTestUtil.getAdminUser(testCompany.getCompanyId());
-
-		return adminUser.getEmailAddress();
-	}
-
 	private Group _getStagingGroup(String siteExternalReferenceCode) {
 		return _stagingGroupHelper.fetchLocalStagingGroup(
 			_groupLocalService.fetchGroupByExternalReferenceCode(
@@ -475,83 +316,6 @@ public class PublishProcessResourceTest
 			MapUtil.getBoolean(
 				parameterMap,
 				PortletDataHandlerKeys.PERFORM_DIRECT_BINARY_IMPORT));
-	}
-
-	private void _testPostSitePublishProcessWithDateRangeType()
-		throws Exception {
-
-		long time = System.currentTimeMillis();
-
-		_assertScheduledPublishProcess(
-			ExportImportDateUtil.RANGE_ALL, null, null, null);
-		_assertScheduledPublishProcess(
-			ExportImportDateUtil.RANGE_LAST,
-			PublishProcessRequest.DateRangeType.LAST,
-			new Date(time - Time.HOUR), null);
-		_assertScheduledPublishProcess(
-			ExportImportDateUtil.RANGE_DATE_RANGE, null,
-			new Date(time - (2 * Time.HOUR)), new Date(time - Time.HOUR));
-		_assertScheduledPublishProcess(
-			ExportImportDateUtil.RANGE_DATE_RANGE, null,
-			new Date(time - (2 * Time.HOUR)), null);
-		_assertScheduledPublishProcess(
-			ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE,
-			PublishProcessRequest.DateRangeType.FROM_LAST_PUBLISH_DATE, null,
-			null);
-		_assertScheduledPublishProcess(
-			ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE,
-			PublishProcessRequest.DateRangeType.FROM_LAST_PUBLISH_DATE, null,
-			null,
-			new PortletDataHandler() {
-				{
-					name =
-						PortletDataHandlerKeys.PORTLET_DATA +
-							StringPool.UNDERLINE + BlogsPortletKeys.BLOGS_ADMIN;
-					portletDataHandlerControls =
-						new PortletDataHandlerControl[] {
-							new PortletDataHandlerBoolean() {
-								{
-									name =
-										com.liferay.exportimport.kernel.lar.
-											PortletDataHandlerControl.
-												getNamespacedName(
-													"blogs", "entries");
-									selected = true;
-									type =
-										PortletDataHandlerControl.Type.BOOLEAN;
-								}
-							}
-						};
-				}
-			});
-	}
-
-	private void _testPostSitePublishProcessWithInvalidCronExpression()
-		throws Exception {
-
-		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
-				"com.liferay.portal.vulcan.internal.jaxrs.exception.mapper." +
-					"WebApplicationExceptionMapper",
-				LoggerTestUtil.WARN)) {
-
-			for (String publishProcessCronExpression :
-					new String[] {
-						RandomTestUtil.randomString(), _CRON_EXPRESSION_PAST,
-						_CRON_EXPRESSION_NEVER_FIRING
-					}) {
-
-				assertHttpResponseStatusCode(
-					400,
-					publishProcessResource.postSitePublishProcessHttpResponse(
-						testGroup.getExternalReferenceCode(),
-						new PublishProcessRequest() {
-							{
-								cronExpression = publishProcessCronExpression;
-								name = RandomTestUtil.randomString();
-							}
-						}));
-			}
-		}
 	}
 
 	private void _testPostSitePublishProcessWithInvalidDateRange()
@@ -685,41 +449,6 @@ public class PublishProcessResourceTest
 		}
 	}
 
-	private void _testPostSitePublishProcessWithOneTimeCronExpression()
-		throws Exception {
-
-		Calendar calendar = CalendarFactoryUtil.getCalendar(
-			TimeZoneUtil.getTimeZone("UTC"));
-
-		calendar.clear();
-
-		calendar.set(2099, Calendar.JANUARY, 1, 3, 0, 0);
-
-		String publishProcessName = RandomTestUtil.randomString();
-
-		publishProcessResource.postSitePublishProcess(
-			testGroup.getExternalReferenceCode(),
-			new PublishProcessRequest() {
-				{
-					cronExpression = _CRON_EXPRESSION_ONE_TIME;
-					name = publishProcessName;
-					scheduleStartDate = calendar.getTime();
-					timeZoneId = "UTC";
-				}
-			});
-
-		Page<ScheduledPublishProcess> page =
-			_scheduledPublishProcessResource.
-				getSiteScheduledPublishProcessesPage(
-					testGroup.getExternalReferenceCode(), publishProcessName,
-					Pagination.of(1, 1), null);
-
-		ScheduledPublishProcess scheduledPublishProcess = page.fetchFirstItem();
-
-		Assert.assertEquals(
-			publishProcessName, scheduledPublishProcess.getName());
-	}
-
 	private void _testPostSitePublishProcessWithoutStaging() throws Exception {
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
 				"com.liferay.portal.vulcan.internal.jaxrs.exception.mapper." +
@@ -743,60 +472,6 @@ public class PublishProcessResourceTest
 				GroupTestUtil.deleteGroup(group);
 			}
 		}
-	}
-
-	private void _testPostSitePublishProcessWithoutTimeZoneId()
-		throws Exception {
-
-		String publishProcessName = RandomTestUtil.randomString();
-
-		publishProcessResource.postSitePublishProcess(
-			testGroup.getExternalReferenceCode(),
-			new PublishProcessRequest() {
-				{
-					cronExpression = _CRON_EXPRESSION;
-					name = publishProcessName;
-				}
-			});
-
-		Page<ScheduledPublishProcess> page =
-			_scheduledPublishProcessResource.
-				getSiteScheduledPublishProcessesPage(
-					testGroup.getExternalReferenceCode(), publishProcessName,
-					Pagination.of(1, 1), null);
-
-		ScheduledPublishProcess scheduledPublishProcess = page.fetchFirstItem();
-
-		ExportImportConfiguration exportImportConfiguration =
-			_exportImportConfigurationLocalService.getExportImportConfiguration(
-				scheduledPublishProcess.getId());
-
-		Map<String, Serializable> settingsMap =
-			exportImportConfiguration.getSettingsMap();
-
-		Map<String, String[]> parameterMap =
-			(Map<String, String[]>)settingsMap.get("parameterMap");
-
-		TimeZone timeZone = TimeZoneUtil.getDefault();
-
-		Assert.assertEquals(
-			timeZone.getID(), MapUtil.getString(parameterMap, "timeZoneId"));
-	}
-
-	private PublishProcessRequest.DateRangeType _toDateRangeType(String range) {
-		if (range.equals(ExportImportDateUtil.RANGE_DATE_RANGE)) {
-			return PublishProcessRequest.DateRangeType.DATE_RANGE;
-		}
-
-		if (range.equals(ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE)) {
-			return PublishProcessRequest.DateRangeType.FROM_LAST_PUBLISH_DATE;
-		}
-
-		if (range.equals(ExportImportDateUtil.RANGE_LAST)) {
-			return PublishProcessRequest.DateRangeType.LAST;
-		}
-
-		return PublishProcessRequest.DateRangeType.ALL;
 	}
 
 	private String[] _toExternalReferenceCodes(Layout[] layouts) {
@@ -870,15 +545,6 @@ public class PublishProcessResourceTest
 	private static final String _CONTROL_NAME_VISIBILITY =
 		"_layout_set_visibility";
 
-	private static final String _CRON_EXPRESSION = "0 0 3 * * ?";
-
-	private static final String _CRON_EXPRESSION_NEVER_FIRING =
-		"0 0 12 31 2 ? *";
-
-	private static final String _CRON_EXPRESSION_ONE_TIME = "0 0 3 1 1 ? 2099";
-
-	private static final String _CRON_EXPRESSION_PAST = "0 30 9 22 8 ? 2020";
-
 	private static final String _PORTLET_DATA_HANDLER_NAME_LAYOUT_SET =
 		"PORTLET_DATA_com_liferay_layout_admin_web_portlet_" +
 			"LayoutSetLayoutsPortlet";
@@ -902,7 +568,6 @@ public class PublishProcessResourceTest
 	private LayoutLocalService _layoutLocalService;
 
 	private PublishProcessResource _publishProcessResource;
-	private ScheduledPublishProcessResource _scheduledPublishProcessResource;
 
 	@Inject
 	private StagingGroupHelper _stagingGroupHelper;
