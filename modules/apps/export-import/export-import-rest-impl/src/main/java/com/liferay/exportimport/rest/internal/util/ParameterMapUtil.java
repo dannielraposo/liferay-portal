@@ -336,9 +336,6 @@ public class ParameterMapUtil {
 					setComments(
 						() -> MapUtil.getBoolean(
 							parameterMap, PortletDataHandlerKeys.COMMENTS));
-					setCronExpression(
-						() -> MapUtil.getString(
-							parameterMap, CRON_EXPRESSION, null));
 					setDateRangeType(
 						() -> PublishProcessRequest.DateRangeType.ALL);
 					setDeletions(
@@ -353,9 +350,6 @@ public class ParameterMapUtil {
 					setRatings(
 						() -> MapUtil.getBoolean(
 							parameterMap, PortletDataHandlerKeys.RATINGS));
-					setTimeZoneId(
-						() -> MapUtil.getString(
-							parameterMap, TIME_ZONE_ID, null));
 				}
 			};
 
