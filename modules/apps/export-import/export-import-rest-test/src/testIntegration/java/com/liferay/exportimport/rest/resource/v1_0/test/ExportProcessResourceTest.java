@@ -7,11 +7,14 @@ package com.liferay.exportimport.rest.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.exportimport.kernel.background.task.BackgroundTaskExecutorNames;
+import com.liferay.exportimport.kernel.lar.ExportImportGroup;
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.rest.client.dto.v1_0.DateRangeDateFilter;
 import com.liferay.exportimport.rest.client.dto.v1_0.ExportPreview;
 import com.liferay.exportimport.rest.client.dto.v1_0.ExportProcess;
 import com.liferay.exportimport.rest.client.dto.v1_0.ExportProcessRequest;
 import com.liferay.exportimport.rest.client.dto.v1_0.FromLastPublishDateFilter;
+import com.liferay.exportimport.rest.client.dto.v1_0.InstanceExportProcessRequest;
 import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandler;
 import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandlerBoolean;
 import com.liferay.exportimport.rest.client.dto.v1_0.PortletDataHandlerChoice;
@@ -314,6 +317,7 @@ public class ExportProcessResourceTest
 		_objectDefinitionLocalService.deleteObjectDefinition(objectDefinition);
 	}
 
+	@FeatureFlag("LPD-85946")
 	@Override
 	@Test
 	public void testPostExportProcess() throws Exception {
@@ -321,7 +325,7 @@ public class ExportProcessResourceTest
 			403,
 			_exportProcessResource.postExportProcessHttpResponse(
 				0L, null,
-				new ExportProcessRequest() {
+				new InstanceExportProcessRequest() {
 					{
 						name = RandomTestUtil.randomString();
 					}
@@ -333,7 +337,8 @@ public class ExportProcessResourceTest
 		_testPostExportProcessWithInvalidDateRange(
 			exportProcessRequest ->
 				exportProcessResource.postExportProcessHttpResponse(
-					0L, null, exportProcessRequest));
+					0L, null,
+					_toInstanceExportProcessRequest(exportProcessRequest)));
 
 		ObjectDefinition objectDefinition = _publishObjectDefinition(
 			ObjectDefinitionConstants.SCOPE_COMPANY);
@@ -343,7 +348,8 @@ public class ExportProcessResourceTest
 
 		_testPostExportProcessWithObjectDefinition(
 			exportProcessRequest -> exportProcessResource.postExportProcess(
-				0L, null, exportProcessRequest),
+				0L, null,
+				_toInstanceExportProcessRequest(exportProcessRequest)),
 			companyGroup.getGroupId(), objectDefinition, objectEntries);
 		_testPostExportProcessWithDateRange(
 			companyGroup.getGroupId(), objectDefinition, objectEntries);
@@ -351,6 +357,7 @@ public class ExportProcessResourceTest
 			companyGroup.getGroupId(), objectDefinition, objectEntries);
 
 		_testPostExportProcessWithSameName(companyGroup.getGroupId());
+		_testPostExportProcessWithSiteExternalReferenceCodes();
 
 		String portletId = objectDefinition.getPortletId();
 
@@ -358,13 +365,15 @@ public class ExportProcessResourceTest
 
 		_testPostExportProcessWithObjectDefinition(
 			exportProcessRequest -> exportProcessResource.postExportProcess(
-				plid, portletId, exportProcessRequest),
+				plid, portletId,
+				_toInstanceExportProcessRequest(exportProcessRequest)),
 			companyGroup.getGroupId(), objectDefinition, objectEntries);
 
 		_testPostExportProcessWithoutPlid(
 			exportProcessRequest ->
 				exportProcessResource.postExportProcessHttpResponse(
-					0L, portletId, exportProcessRequest));
+					0L, portletId,
+					_toInstanceExportProcessRequest(exportProcessRequest)));
 
 		_objectDefinitionLocalService.deleteObjectDefinition(objectDefinition);
 	}
@@ -902,7 +911,9 @@ public class ExportProcessResourceTest
 				_postExportProcess(
 					exportProcessRequest ->
 						exportProcessResource.postExportProcess(
-							0L, null, exportProcessRequest),
+							0L, null,
+							_toInstanceExportProcessRequest(
+								exportProcessRequest)),
 					objectDefinition,
 					exportProcessRequest -> exportProcessRequest.setDateFilter(
 						_toDateRangeDateFilter(
@@ -912,7 +923,8 @@ public class ExportProcessResourceTest
 
 		ExportProcess exportProcess = _postExportProcess(
 			exportProcessRequest -> exportProcessResource.postExportProcess(
-				0L, null, exportProcessRequest),
+				0L, null,
+				_toInstanceExportProcessRequest(exportProcessRequest)),
 			objectDefinition,
 			exportProcessRequest -> exportProcessRequest.setDateFilter(
 				_toDateRangeDateFilter(
@@ -1089,7 +1101,8 @@ public class ExportProcessResourceTest
 		JSONArray jsonArray = _getExportedJSONArray(
 			_postExportProcess(
 				exportProcessRequest -> exportProcessResource.postExportProcess(
-					0L, null, exportProcessRequest),
+					0L, null,
+					_toInstanceExportProcessRequest(exportProcessRequest)),
 				objectDefinition,
 				exportProcessRequest -> exportProcessRequest.setPermissions(
 					true)),
@@ -1255,7 +1268,8 @@ public class ExportProcessResourceTest
 
 		ExportProcess exportProcess1 = _postExportProcess(
 			exportProcessRequest -> exportProcessResource.postExportProcess(
-				0L, null, exportProcessRequest),
+				0L, null,
+				_toInstanceExportProcessRequest(exportProcessRequest)),
 			objectDefinition,
 			exportProcessRequest -> exportProcessRequest.setName(name));
 
@@ -1264,7 +1278,8 @@ public class ExportProcessResourceTest
 
 		ExportProcess exportProcess2 = _postExportProcess(
 			exportProcessRequest -> exportProcessResource.postExportProcess(
-				0L, null, exportProcessRequest),
+				0L, null,
+				_toInstanceExportProcessRequest(exportProcessRequest)),
 			objectDefinition,
 			exportProcessRequest -> exportProcessRequest.setName(name));
 
@@ -1279,6 +1294,39 @@ public class ExportProcessResourceTest
 		Assert.assertEquals(2, jsonArray2.length());
 
 		_objectDefinitionLocalService.deleteObjectDefinition(objectDefinition);
+	}
+
+	private void _testPostExportProcessWithSiteExternalReferenceCodes()
+		throws Exception {
+
+		ExportProcess exportProcess = exportProcessResource.postExportProcess(
+			0L, null,
+			new InstanceExportProcessRequest() {
+				{
+					name = RandomTestUtil.randomString();
+					siteExternalReferenceCodes = new String[] {
+						testGroup.getExternalReferenceCode()
+					};
+				}
+			});
+
+		ExportImportTestUtil.assertBackgroundTaskSuccessful(
+			exportProcess.getId());
+
+		BackgroundTask backgroundTask =
+			_backgroundTaskLocalService.getBackgroundTask(
+				exportProcess.getId());
+
+		List<FileEntry> fileEntries =
+			backgroundTask.getAttachmentsFileEntries();
+
+		Assert.assertEquals(fileEntries.toString(), 1, fileEntries.size());
+
+		Assert.assertEquals(
+			Collections.singletonList(testGroup.getExternalReferenceCode()),
+			TransformUtil.transform(
+				_exportImportHelper.getExportImportGroups(fileEntries.get(0)),
+				ExportImportGroup::getExternalReferenceCode));
 	}
 
 	private void _testPostExportProcessWithoutPlid(
@@ -1372,6 +1420,13 @@ public class ExportProcessResourceTest
 			layouts, Layout::getExternalReferenceCode, String.class);
 	}
 
+	private InstanceExportProcessRequest _toInstanceExportProcessRequest(
+		ExportProcessRequest exportProcessRequest) {
+
+		return InstanceExportProcessRequest.toDTO(
+			exportProcessRequest.toString());
+	}
+
 	private PortletDataHandler _toLayoutSetPortletDataHandler(
 		PortletDataHandlerTreeSelection pagesPortletDataHandlerTreeSelection,
 		String visibilityChoice) {
@@ -1462,6 +1517,9 @@ public class ExportProcessResourceTest
 
 	@Inject
 	private BackgroundTaskLocalService _backgroundTaskLocalService;
+
+	@Inject
+	private ExportImportHelper _exportImportHelper;
 
 	private ExportProcessResource _exportProcessResource;
 

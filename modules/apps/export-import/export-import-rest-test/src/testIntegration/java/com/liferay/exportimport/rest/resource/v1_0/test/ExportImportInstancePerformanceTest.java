@@ -12,6 +12,8 @@ import com.liferay.exportimport.rest.client.dto.v1_0.ExportProcessRequest;
 import com.liferay.exportimport.rest.client.dto.v1_0.ImportPreview;
 import com.liferay.exportimport.rest.client.dto.v1_0.ImportProcess;
 import com.liferay.exportimport.rest.client.dto.v1_0.ImportProcessRequest;
+import com.liferay.exportimport.rest.client.dto.v1_0.InstanceExportProcessRequest;
+import com.liferay.exportimport.rest.client.dto.v1_0.InstanceImportProcessRequest;
 import com.liferay.exportimport.rest.client.http.HttpInvoker;
 import com.liferay.exportimport.rest.client.resource.v1_0.ExportPreviewResource;
 import com.liferay.exportimport.rest.client.resource.v1_0.ExportProcessResource;
@@ -122,7 +124,8 @@ public class ExportImportInstancePerformanceTest {
 
 			ImportProcess importProcess =
 				_importProcessResource.postImportProcess(
-					null, null, importProcessRequest);
+					null, null,
+					_toInstanceImportProcessRequest(importProcessRequest));
 
 			ExportImportTestUtil.assertBackgroundTaskSuccessful(
 				importProcess.getId(), _IMPORT_BACKGROUND_TASK_MAX_WAIT_TIME,
@@ -143,13 +146,27 @@ public class ExportImportInstancePerformanceTest {
 			exportPreview.getPortletDataHandlers());
 
 		ExportProcess exportProcess = _exportProcessResource.postExportProcess(
-			null, null, exportProcessRequest);
+			null, null, _toInstanceExportProcessRequest(exportProcessRequest));
 
 		ExportImportTestUtil.assertBackgroundTaskSuccessful(
 			exportProcess.getId(), backgroundTaskMaxWaitTime,
 			TimeUnit.MILLISECONDS);
 
 		return exportProcess;
+	}
+
+	private InstanceExportProcessRequest _toInstanceExportProcessRequest(
+		ExportProcessRequest exportProcessRequest) {
+
+		return InstanceExportProcessRequest.toDTO(
+			exportProcessRequest.toString());
+	}
+
+	private InstanceImportProcessRequest _toInstanceImportProcessRequest(
+		ImportProcessRequest importProcessRequest) {
+
+		return InstanceImportProcessRequest.toDTO(
+			importProcessRequest.toString());
 	}
 
 	private static final long _EXPORT_BACKGROUND_TASK_MAX_WAIT_TIME = 150000;
