@@ -222,7 +222,8 @@ public class ParameterMapUtilTest {
 				_PORTLET_DATA_HANDLER_NAME, null,
 				_toPortletDataHandlerTreeSelection(_CONTROL_NAME_PAGES, true)));
 		_assertBadRequest(
-			"No portlet data handler exists with name \"unknown\"",
+			"No portlet data handler exists with name \"unknown\" in the " +
+				"preview of this scope",
 			_toPortletDataHandler("unknown", null));
 	}
 
