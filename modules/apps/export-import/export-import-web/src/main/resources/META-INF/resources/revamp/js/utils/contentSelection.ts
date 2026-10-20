@@ -12,18 +12,19 @@ import {
 	PortletDataHandlerSection,
 } from '../types/portletDataHandler';
 
+import type {SitePageTreeSelection} from '@liferay/layout-js-components-web';
+
 import type {ContentSelection} from '../components/forms/content_selector/ContentSelector';
 
 export type PortletDataHandlerSelection =
 	| {
-			[key: string]: PortletDataHandlerSelection | boolean;
+			[key: string]: PortletDataHandlerSelection | boolean | string[];
 	  }
 	| string
 	| true;
 
-export interface LayoutSetSelection {
-	privateLayout?: boolean;
-}
+export type LayoutSetSelection = Omit<SitePageTreeSelection, 'privateLayout'> &
+	Partial<Pick<SitePageTreeSelection, 'privateLayout'>>;
 
 export const CHOICE_NAME_PRIVATE_PAGES = 'private-pages';
 
@@ -50,6 +51,22 @@ export const SECTION_KEY_CONTENT_AND_DATA =
 
 export const SECTION_KEY_SITE_BUILDER = 'category.site_administration.build';
 
+export function isAllLayoutsSelected(
+	portletDataHandlerSelection: PortletDataHandlerSelection | undefined
+): boolean {
+	if (
+		typeof portletDataHandlerSelection !== 'object' ||
+		!portletDataHandlerSelection.all
+	) {
+		return false;
+	}
+
+	const {excludedItems = [], excludedSubtrees = []} =
+		portletDataHandlerSelection as LayoutSetSelection;
+
+	return !excludedItems.length && !excludedSubtrees.length;
+}
+
 export function getNestedPortletDataHandlerControls(
 	portletDataHandlerControl: PortletDataHandlerControl
 ): PortletDataHandlerControl[] {
@@ -71,7 +88,7 @@ export function isSelected(
 	if (
 		portletDataHandlerControl.name === PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
 	) {
-		return true;
+		return isAllLayoutsSelected(portletDataHandlerSelection);
 	}
 
 	if (portletDataHandlerControl.type === 'Choice') {
@@ -120,6 +137,7 @@ export function getPortletDataHandlerSelection(
 		portletDataHandlerControl.name === PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS
 	) {
 		return {
+			all: true,
 			privateLayout: isPrivateLayoutDefault(portletDataHandlerControl),
 		};
 	}
