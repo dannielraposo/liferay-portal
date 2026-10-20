@@ -122,12 +122,6 @@ components:
                 ratings:
                     default: false
                     type: boolean
-                siteExternalReferenceCodes:
-                    description:
-                        The external reference codes of the sites to export in full, as listed by the export preview sites. Applies only to the instance.
-                    items:
-                        type: string
-                    type: array
             required:
                 -   name
             type: object
@@ -256,18 +250,40 @@ components:
                 ratings:
                     default: false
                     type: boolean
-                siteExternalReferenceCodes:
-                    description:
-                        The external reference codes of the sites to import in full, as listed in the previewSites of the import preview. Applies only to the instance.
-                    items:
-                        type: string
-                    type: array
                 userIdStrategy:
                     default: CURRENT_USER_ID
                     description:
                         Who owns the imported items. CURRENT_USER_ID keeps the original owner when it exists, and ALWAYS_CURRENT_USER_ID assigns every item to the current user.
                     enum: [CURRENT_USER_ID, ALWAYS_CURRENT_USER_ID]
                     type: string
+            type: object
+        InstanceExportProcessRequest:
+            allOf:
+                -   $ref: "#/components/schemas/ExportProcessRequest"
+                -   properties:
+                        siteExternalReferenceCodes:
+                            description:
+                                The external reference codes of the sites to export in full, as listed by the export preview sites.
+                            items:
+                                type: string
+                            type: array
+            description:
+                Represents an export of the instance, which can include whole sites.
+            required:
+                -   name
+            type: object
+        InstanceImportProcessRequest:
+            allOf:
+                -   $ref: "#/components/schemas/ImportProcessRequest"
+                -   properties:
+                        siteExternalReferenceCodes:
+                            description:
+                                The external reference codes of the sites to import in full, as listed in the previewSites of the import preview.
+                            items:
+                                type: string
+                            type: array
+            description:
+                Represents an import into the instance, which can include whole sites.
             type: object
         LastHoursDateFilter:
             allOf:
@@ -1277,7 +1293,7 @@ paths:
             tags: ["ExportProcess"]
         post:
             description:
-                Starts an export of the instance, or of one of its portlets.
+                Starts an export of the instance, or of one of its portlets. The sites in the request are exported in full, unless a portlet ID is given.
             operationId: postExportProcess
             parameters:
                 -   in: query
@@ -1297,10 +1313,10 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/ExportProcessRequest"
+                            $ref: "#/components/schemas/InstanceExportProcessRequest"
                     application/xml:
                         schema:
-                            $ref: "#/components/schemas/ExportProcessRequest"
+                            $ref: "#/components/schemas/InstanceExportProcessRequest"
             responses:
                 200:
                     content:
@@ -1529,7 +1545,7 @@ paths:
             tags: ["ImportProcess"]
         post:
             description:
-                Imports the user's last uploaded file into the instance, or into one of its portlets. Returns a 404 when there is no uploaded file.
+                Imports the user's last uploaded file into the instance, or into one of its portlets. The sites in the request are imported in full, unless a portlet ID is given. Returns a 404 when there is no uploaded file.
             operationId: postImportProcess
             parameters:
                 -   in: query
@@ -1549,10 +1565,10 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/ImportProcessRequest"
+                            $ref: "#/components/schemas/InstanceImportProcessRequest"
                     application/xml:
                         schema:
-                            $ref: "#/components/schemas/ImportProcessRequest"
+                            $ref: "#/components/schemas/InstanceImportProcessRequest"
             responses:
                 200:
                     content:
