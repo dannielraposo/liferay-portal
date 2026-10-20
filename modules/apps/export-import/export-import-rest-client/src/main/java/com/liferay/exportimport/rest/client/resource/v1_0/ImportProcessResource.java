@@ -7,6 +7,7 @@ package com.liferay.exportimport.rest.client.resource.v1_0;
 
 import com.liferay.exportimport.rest.client.dto.v1_0.ImportProcess;
 import com.liferay.exportimport.rest.client.dto.v1_0.ImportProcessRequest;
+import com.liferay.exportimport.rest.client.dto.v1_0.InstanceImportProcessRequest;
 import com.liferay.exportimport.rest.client.dto.v1_0.ProcessProgress;
 import com.liferay.exportimport.rest.client.http.HttpInvoker;
 import com.liferay.exportimport.rest.client.pagination.Page;
@@ -138,24 +139,24 @@ public interface ImportProcessResource {
 
 	public ImportProcess postImportProcess(
 			Long plid, String portletId,
-			ImportProcessRequest importProcessRequest)
+			InstanceImportProcessRequest instanceImportProcessRequest)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse postImportProcessHttpResponse(
 			Long plid, String portletId,
-			ImportProcessRequest importProcessRequest)
+			InstanceImportProcessRequest instanceImportProcessRequest)
 		throws Exception;
 
 	public void postImportProcessBatch(
 			Long plid, String portletId,
-			ImportProcessRequest importProcessRequest, String callbackURL,
-			Object object)
+			InstanceImportProcessRequest instanceImportProcessRequest,
+			String callbackURL, Object object)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse postImportProcessBatchHttpResponse(
 			Long plid, String portletId,
-			ImportProcessRequest importProcessRequest, String callbackURL,
-			Object object)
+			InstanceImportProcessRequest instanceImportProcessRequest,
+			String callbackURL, Object object)
 		throws Exception;
 
 	public void postImportProcessesPageExportBatch(
@@ -1533,12 +1534,12 @@ public interface ImportProcessResource {
 
 		public ImportProcess postImportProcess(
 				Long plid, String portletId,
-				ImportProcessRequest importProcessRequest)
+				InstanceImportProcessRequest instanceImportProcessRequest)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				postImportProcessHttpResponse(
-					plid, portletId, importProcessRequest);
+					plid, portletId, instanceImportProcessRequest);
 
 			String content = httpResponse.getContent();
 
@@ -1601,13 +1602,13 @@ public interface ImportProcessResource {
 
 		public HttpInvoker.HttpResponse postImportProcessHttpResponse(
 				Long plid, String portletId,
-				ImportProcessRequest importProcessRequest)
+				InstanceImportProcessRequest instanceImportProcessRequest)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
 
 			httpInvoker.body(
-				importProcessRequest.toString(), "application/json");
+				instanceImportProcessRequest.toString(), "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -1651,13 +1652,14 @@ public interface ImportProcessResource {
 
 		public void postImportProcessBatch(
 				Long plid, String portletId,
-				ImportProcessRequest importProcessRequest, String callbackURL,
-				Object object)
+				InstanceImportProcessRequest instanceImportProcessRequest,
+				String callbackURL, Object object)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				postImportProcessBatchHttpResponse(
-					plid, portletId, importProcessRequest, callbackURL, object);
+					plid, portletId, instanceImportProcessRequest, callbackURL,
+					object);
 
 			String content = httpResponse.getContent();
 
@@ -1709,8 +1711,8 @@ public interface ImportProcessResource {
 
 		public HttpInvoker.HttpResponse postImportProcessBatchHttpResponse(
 				Long plid, String portletId,
-				ImportProcessRequest importProcessRequest, String callbackURL,
-				Object object)
+				InstanceImportProcessRequest instanceImportProcessRequest,
+				String callbackURL, Object object)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -2290,4 +2292,4 @@ public interface ImportProcessResource {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:384493994
+// LIFERAY-REST-BUILDER-HASH:1993203132

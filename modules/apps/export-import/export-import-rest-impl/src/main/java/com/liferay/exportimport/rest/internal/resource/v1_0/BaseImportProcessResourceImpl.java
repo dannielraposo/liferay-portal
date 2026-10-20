@@ -8,6 +8,7 @@ package com.liferay.exportimport.rest.internal.resource.v1_0;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.rest.dto.v1_0.ImportProcess;
 import com.liferay.exportimport.rest.dto.v1_0.ImportProcessRequest;
+import com.liferay.exportimport.rest.dto.v1_0.InstanceImportProcessRequest;
 import com.liferay.exportimport.rest.dto.v1_0.ProcessProgress;
 import com.liferay.exportimport.rest.resource.v1_0.ImportProcessResource;
 import com.liferay.petra.function.UnsafeBiConsumer;
@@ -504,7 +505,7 @@ public abstract class BaseImportProcessResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/export-import/v1.0/asset-libraries/{assetLibraryExternalReferenceCode}/import-processes' -d $'{"comments": ___, "dataStrategy": ___, "deletions": ___, "name": ___, "permissions": ___, "portletDataHandlers": ___, "ratings": ___, "siteExternalReferenceCodes": ___, "userIdStrategy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/export-import/v1.0/asset-libraries/{assetLibraryExternalReferenceCode}/import-processes' -d $'{"comments": ___, "dataStrategy": ___, "deletions": ___, "name": ___, "permissions": ___, "portletDataHandlers": ___, "ratings": ___, "userIdStrategy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Imports the user's last uploaded file into the specified asset library, or into one of its portlets. Returns a 404 when there is no uploaded file."
@@ -559,7 +560,7 @@ public abstract class BaseImportProcessResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/export-import/v1.0/asset-libraries/{assetLibraryExternalReferenceCode}/import-processes/batch' -d $'{"comments": ___, "dataStrategy": ___, "deletions": ___, "name": ___, "permissions": ___, "portletDataHandlers": ___, "ratings": ___, "siteExternalReferenceCodes": ___, "userIdStrategy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/export-import/v1.0/asset-libraries/{assetLibraryExternalReferenceCode}/import-processes/batch' -d $'{"comments": ___, "dataStrategy": ___, "deletions": ___, "name": ___, "permissions": ___, "portletDataHandlers": ___, "ratings": ___, "userIdStrategy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -743,7 +744,7 @@ public abstract class BaseImportProcessResourceImpl
 	 * curl -X 'POST' 'http://localhost:8080/o/export-import/v1.0/import-processes' -d $'{"comments": ___, "dataStrategy": ___, "deletions": ___, "name": ___, "permissions": ___, "portletDataHandlers": ___, "ratings": ___, "siteExternalReferenceCodes": ___, "userIdStrategy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Imports the user's last uploaded file into the instance, or into one of its portlets. Returns a 404 when there is no uploaded file."
+		description = "Imports the user's last uploaded file into the instance, or into one of its portlets. The sites in the request are imported in full, unless a portlet ID is given. Returns a 404 when there is no uploaded file."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -776,7 +777,7 @@ public abstract class BaseImportProcessResourceImpl
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@jakarta.ws.rs.QueryParam("portletId")
 			String portletId,
-			ImportProcessRequest importProcessRequest)
+			InstanceImportProcessRequest instanceImportProcessRequest)
 		throws Exception {
 
 		return new ImportProcess();
@@ -822,7 +823,7 @@ public abstract class BaseImportProcessResourceImpl
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@jakarta.ws.rs.QueryParam("portletId")
 			String portletId,
-			ImportProcessRequest importProcessRequest,
+			InstanceImportProcessRequest instanceImportProcessRequest,
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@jakarta.ws.rs.QueryParam("callbackURL")
 			String callbackURL,
@@ -946,7 +947,7 @@ public abstract class BaseImportProcessResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/export-import/v1.0/sites/{siteExternalReferenceCode}/import-processes' -d $'{"comments": ___, "dataStrategy": ___, "deletions": ___, "name": ___, "permissions": ___, "portletDataHandlers": ___, "ratings": ___, "siteExternalReferenceCodes": ___, "userIdStrategy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/export-import/v1.0/sites/{siteExternalReferenceCode}/import-processes' -d $'{"comments": ___, "dataStrategy": ___, "deletions": ___, "name": ___, "permissions": ___, "portletDataHandlers": ___, "ratings": ___, "userIdStrategy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Imports the user's last uploaded file into the specified site, or into one of its portlets. Returns a 404 when there is no uploaded file."
@@ -999,7 +1000,7 @@ public abstract class BaseImportProcessResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/export-import/v1.0/sites/{siteExternalReferenceCode}/import-processes/batch' -d $'{"comments": ___, "dataStrategy": ___, "deletions": ___, "name": ___, "permissions": ___, "portletDataHandlers": ___, "ratings": ___, "siteExternalReferenceCodes": ___, "userIdStrategy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/export-import/v1.0/sites/{siteExternalReferenceCode}/import-processes/batch' -d $'{"comments": ___, "dataStrategy": ___, "deletions": ___, "name": ___, "permissions": ___, "portletDataHandlers": ___, "ratings": ___, "userIdStrategy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -1215,8 +1216,8 @@ public abstract class BaseImportProcessResourceImpl
 					importProcess -> postImportProcess(
 						_parseLong((String)parameters.get("plid")),
 						(String)parameters.get("portletId"),
-						(ImportProcessRequest)parameters.get(
-							"importProcessRequest"));
+						(InstanceImportProcessRequest)parameters.get(
+							"instanceImportProcessRequest"));
 			}
 		}
 
@@ -1950,4 +1951,4 @@ public abstract class BaseImportProcessResourceImpl
 		LogFactoryUtil.getLog(BaseImportProcessResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-70952457
+// LIFERAY-REST-BUILDER-HASH:1227891814
