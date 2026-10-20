@@ -50,6 +50,7 @@ const DEFAULT_PROPS = {
 		groupId: 20121,
 		pageSize: 20,
 		privateLayoutsAvailable: false,
+		siteExternalReferenceCode: 'site-erc',
 	},
 	timeZoneId: 'UTC',
 };
@@ -622,7 +623,10 @@ describe('NewExport', () => {
 
 		const previewWithPages = toPreviewWithPages('public-pages');
 
-		const toLayoutSetPortletDataHandlers = (choice: string) => [
+		const toLayoutSetPortletDataHandlers = (
+			choice: string,
+			treeSelection?: object
+		) => [
 			{
 				name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 				portletDataHandlerControls: [
@@ -631,6 +635,7 @@ describe('NewExport', () => {
 						name: CONTROL_NAME_VISIBILITY,
 						portletDataHandlerControls: [
 							{
+								...treeSelection,
 								name: CONTROL_NAME_PAGES,
 								selected: true,
 								type: 'TreeSelection',
@@ -641,6 +646,11 @@ describe('NewExport', () => {
 				],
 			},
 		];
+
+		const privatePageTreeModalConfiguration = {
+			...DEFAULT_PROPS.pageTreeModalConfiguration,
+			privateLayoutsAvailable: true,
+		};
 
 		const getExportRequest = () =>
 			JSON.parse(String(getExportCall()?.[1]?.body));
@@ -668,9 +678,32 @@ describe('NewExport', () => {
 			jest.clearAllMocks();
 
 			fetch.resetMocks();
-			fetch.mockResponse(
-				JSON.stringify({exportImportConfigurationId: 1})
-			);
+			fetch.mockResponse(async (request) => {
+				const url = new URL(request.url, window.location.origin);
+
+				if (/\/site-pages\/[^/]+\/site-pages$/.test(url.pathname)) {
+					return JSON.stringify({items: [], totalCount: 0});
+				}
+
+				if (url.pathname.endsWith('/site-pages')) {
+					return JSON.stringify({
+						items: [
+							{
+								externalReferenceCode: 'page-1-erc',
+								name_i18n: {'en-US': 'page-1'},
+							},
+							{
+								externalReferenceCode: 'page-2-erc',
+								name_i18n: {'en-US': 'page-2'},
+							},
+						],
+						lastPage: 1,
+						totalCount: 2,
+					});
+				}
+
+				return JSON.stringify({exportImportConfigurationId: 1});
+			});
 		});
 
 		it('exports all public pages selected by default', async () => {
@@ -713,21 +746,50 @@ describe('NewExport', () => {
 			);
 		});
 
-		it('hides the visibility radios when private pages are not available', async () => {
+		it('hides the visibility radios and excludes a page deselected in the modal', async () => {
 			renderComponent({exportPreview: previewWithPages});
 
+			await typeFileName();
 			await expandSection();
 
 			expect(screen.queryAllByRole('radio')).toHaveLength(0);
+
+			await userEvent.click(
+				screen.getByRole('button', {name: 'select-x'})
+			);
+
+			expect(
+				await screen.findByText('pages-to-export')
+			).toBeInTheDocument();
+
+			expect(
+				await screen.findByRole('checkbox', {name: 'page-1'})
+			).toBeChecked();
+			expect(
+				screen.getByRole('checkbox', {name: 'page-2'})
+			).toBeChecked();
+
+			await userEvent.click(
+				screen.getByRole('checkbox', {name: 'page-2'})
+			);
+			await userEvent.click(screen.getByRole('button', {name: 'select'}));
+
+			await submitExport();
+
+			await waitFor(() =>
+				expect(getExportRequest().portletDataHandlers).toEqual(
+					toLayoutSetPortletDataHandlers('public-pages', {
+						excludedItemExternalReferenceCodes: ['page-2-erc'],
+						selectAll: true,
+					})
+				)
+			);
 		});
 
 		it('shows the visibility radios and exports all private pages', async () => {
 			renderComponent({
 				exportPreview: previewWithPages,
-				pageTreeModalConfiguration: {
-					...DEFAULT_PROPS.pageTreeModalConfiguration,
-					privateLayoutsAvailable: true,
-				},
+				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
 			});
 
 			await typeFileName();
@@ -755,10 +817,7 @@ describe('NewExport', () => {
 		it('resets the selection to public when the public radio is selected', async () => {
 			renderComponent({
 				exportPreview: previewWithPages,
-				pageTreeModalConfiguration: {
-					...DEFAULT_PROPS.pageTreeModalConfiguration,
-					privateLayoutsAvailable: true,
-				},
+				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
 			});
 
 			await expandSection();
@@ -776,10 +835,7 @@ describe('NewExport', () => {
 		it('clears the page selection when the main checkbox is toggled off', async () => {
 			renderComponent({
 				exportPreview: previewWithPages,
-				pageTreeModalConfiguration: {
-					...DEFAULT_PROPS.pageTreeModalConfiguration,
-					privateLayoutsAvailable: true,
-				},
+				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
 			});
 
 			await expandSection();
@@ -795,6 +851,44 @@ describe('NewExport', () => {
 			expect(
 				screen.getByRole('checkbox', {name: 'Pages'})
 			).not.toBeChecked();
+		});
+
+		it('excludes a private page deselected in the modal', async () => {
+			renderComponent({
+				exportPreview: previewWithPages,
+				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
+			});
+
+			await typeFileName();
+			await expandSection();
+
+			await userEvent.click(screen.getAllByRole('radio')[1]);
+			await userEvent.click(
+				screen.getByRole('button', {name: 'select-x'})
+			);
+
+			expect(
+				await screen.findByRole('checkbox', {name: 'page-1'})
+			).toBeChecked();
+			expect(
+				screen.getByRole('checkbox', {name: 'page-2'})
+			).toBeChecked();
+
+			await userEvent.click(
+				screen.getByRole('checkbox', {name: 'page-2'})
+			);
+			await userEvent.click(screen.getByRole('button', {name: 'select'}));
+
+			await submitExport();
+
+			await waitFor(() =>
+				expect(getExportRequest().portletDataHandlers).toEqual(
+					toLayoutSetPortletDataHandlers('private-pages', {
+						excludedItemExternalReferenceCodes: ['page-2-erc'],
+						selectAll: true,
+					})
+				)
+			);
 		});
 	});
 

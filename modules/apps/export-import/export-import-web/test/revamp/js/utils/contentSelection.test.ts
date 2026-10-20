@@ -70,13 +70,16 @@ function mockLayoutSetSections({
 
 const privateSelection = {
 	[SECTION_KEY_SITE_BUILDER]: {
-		[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {privateLayout: true},
+		[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {all: true, privateLayout: true},
 	},
 };
 
 const publicSelection = {
 	[SECTION_KEY_SITE_BUILDER]: {
-		[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {privateLayout: false},
+		[PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS]: {
+			all: true,
+			privateLayout: false,
+		},
 	},
 };
 
