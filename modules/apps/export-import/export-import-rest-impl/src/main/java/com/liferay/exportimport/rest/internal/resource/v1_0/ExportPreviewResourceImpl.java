@@ -44,12 +44,13 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 
 	@Override
 	public ExportPreview getAssetLibraryExportPreview(
-			String assetLibraryExternalReferenceCode, String dateRangeType,
-			Date endDate, Long plid, String portletId, Date startDate)
+			String assetLibraryExternalReferenceCode, String dateFilterType,
+			Date endDate, Integer hours, Long plid, String portletId,
+			Date startDate)
 		throws Exception {
 
 		return _getExportPreview(
-			dateRangeType, endDate,
+			dateFilterType, endDate, hours,
 			GroupUtil.getAssetLibraryGroup(
 				contextCompany.getCompanyId(),
 				assetLibraryExternalReferenceCode),
@@ -58,32 +59,33 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 
 	@Override
 	public ExportPreview getExportPreview(
-			String dateRangeType, Date endDate, Long plid, String portletId,
-			Date startDate)
+			String dateFilterType, Date endDate, Integer hours, Long plid,
+			String portletId, Date startDate)
 		throws Exception {
 
 		return _getExportPreview(
-			dateRangeType, endDate,
+			dateFilterType, endDate, hours,
 			GroupUtil.getCompanyGroup(contextCompany.getCompanyId()),
 			GetterUtil.getLong(plid), portletId, startDate);
 	}
 
 	@Override
 	public ExportPreview getSiteExportPreview(
-			String siteExternalReferenceCode, String dateRangeType,
-			Date endDate, Long plid, String portletId, Date startDate)
+			String siteExternalReferenceCode, String dateFilterType,
+			Date endDate, Integer hours, Long plid, String portletId,
+			Date startDate)
 		throws Exception {
 
 		return _getExportPreview(
-			dateRangeType, endDate,
+			dateFilterType, endDate, hours,
 			GroupUtil.getSiteGroup(
 				contextCompany.getCompanyId(), siteExternalReferenceCode),
 			GetterUtil.getLong(plid), portletId, startDate);
 	}
 
 	private ExportPreview _getExportPreview(
-			String dateRangeType, Date endDate, Group group, long plid,
-			String portletId, Date startDate)
+			String dateFilterType, Date endDate, Integer hours, Group group,
+			long plid, String portletId, Date startDate)
 		throws Exception {
 
 		long groupId = group.getGroupId();
@@ -110,8 +112,8 @@ public class ExportPreviewResourceImpl extends BaseExportPreviewResourceImpl {
 
 		Map<String, String[]> parameterMap =
 			ParameterMapUtil.putDateRangeParameters(
-				dateRangeType, startDate, endDate, new LinkedHashMap<>(),
-				contextUser);
+				dateFilterType, startDate, endDate, hours,
+				new LinkedHashMap<>(), contextUser);
 
 		PortletDataHandler[] exportPortletDataHandlers =
 			PortletDataHandlerUtil.getExportPortletDataHandlers(
