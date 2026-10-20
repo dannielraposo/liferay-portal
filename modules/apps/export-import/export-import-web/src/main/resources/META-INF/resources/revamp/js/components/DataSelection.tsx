@@ -82,7 +82,7 @@ export default function DataSelection({
 				<FormikFieldDateFilter
 					itemsCount={itemsCount}
 					lastPublishDate={lastPublishDate}
-					name="dateFilter"
+					name="dateFilterValues"
 					onApplyFilter={onApplyFilter}
 					timeZoneId={timeZoneId}
 				/>
