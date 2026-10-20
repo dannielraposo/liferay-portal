@@ -28,6 +28,9 @@ export interface ExportProcessRequest {
 	permissions?: boolean;
 	portletDataHandlers?: PortletDataHandler[];
 	ratings?: boolean;
+}
+
+export interface InstanceExportProcessRequest extends ExportProcessRequest {
 	siteExternalReferenceCodes?: string[];
 }
 
@@ -63,8 +66,11 @@ export interface ImportProcessRequest {
 	permissions?: boolean;
 	portletDataHandlers?: PortletDataHandler[];
 	ratings?: boolean;
-	siteExternalReferenceCodes?: string[];
 	userIdStrategy?: UserIdStrategy;
+}
+
+export interface InstanceImportProcessRequest extends ImportProcessRequest {
+	siteExternalReferenceCodes?: string[];
 }
 
 export interface PublishProcess {

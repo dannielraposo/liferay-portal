@@ -127,8 +127,10 @@ export function NewImport({
 								),
 								values.contentSelection
 							),
-							siteExternalReferenceCodes:
-								values.siteExternalReferenceCodes,
+							...(siteSelectionEnabled && {
+								siteExternalReferenceCodes:
+									values.siteExternalReferenceCodes,
+							}),
 							userIdStrategy:
 								values.userIdStrategy as UserIdStrategy,
 						},

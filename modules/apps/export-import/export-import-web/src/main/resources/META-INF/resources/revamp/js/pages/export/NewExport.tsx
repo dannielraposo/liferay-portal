@@ -96,8 +96,10 @@ export function NewExport({
 							portletDataHandlerSections,
 							values.contentSelection
 						),
-						siteExternalReferenceCodes:
-							values.siteExternalReferenceCodes,
+						...(siteSelectionEnabled && {
+							siteExternalReferenceCodes:
+								values.siteExternalReferenceCodes,
+						}),
 					},
 					url: exportProcessAPIURL,
 				});
