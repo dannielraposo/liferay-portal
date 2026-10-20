@@ -8,7 +8,10 @@ package com.liferay.exportimport.rest.internal.util;
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.rest.dto.v1_0.Choice;
+import com.liferay.exportimport.rest.dto.v1_0.DateFilter;
+import com.liferay.exportimport.rest.dto.v1_0.DateRangeDateFilter;
 import com.liferay.exportimport.rest.dto.v1_0.ExportProcessRequest;
+import com.liferay.exportimport.rest.dto.v1_0.LastHoursDateFilter;
 import com.liferay.exportimport.rest.dto.v1_0.PortletDataHandler;
 import com.liferay.exportimport.rest.dto.v1_0.PortletDataHandlerBoolean;
 import com.liferay.exportimport.rest.dto.v1_0.PortletDataHandlerChoice;
@@ -258,9 +261,15 @@ public class ParameterMapUtilTest {
 			new PublishProcessRequest();
 
 		publishProcessRequest.setComments(true);
-		publishProcessRequest.setDateRangeType(
-			PublishProcessRequest.DateRangeType.DATE_RANGE);
-		publishProcessRequest.setEndDate(endDate);
+
+		DateRangeDateFilter dateRangeDateFilter = new DateRangeDateFilter();
+
+		dateRangeDateFilter.setEndDate(endDate);
+		dateRangeDateFilter.setStartDate(startDate);
+		dateRangeDateFilter.setType(DateFilter.Type.DATE_RANGE);
+
+		publishProcessRequest.setDateFilter(dateRangeDateFilter);
+
 		publishProcessRequest.setPortletDataHandlers(
 			new PortletDataHandler[] {
 				_toPortletDataHandler(
@@ -272,7 +281,6 @@ public class ParameterMapUtilTest {
 						_CONTROL_NAME_VISIBILITY, "y",
 						portletDataHandlerTreeSelection))
 			});
-		publishProcessRequest.setStartDate(startDate);
 
 		PortletDataHandler[] availablePortletDataHandlers =
 			_getAvailablePortletDataHandlers();
@@ -281,9 +289,7 @@ public class ParameterMapUtilTest {
 			ParameterMapUtil.toPublishProcessRequest(
 				availablePortletDataHandlers, LocaleUtil.US,
 				ParameterMapUtil.putDateRangeParameters(
-					publishProcessRequest.getDateRangeTypeAsString(),
-					publishProcessRequest.getStartDate(),
-					publishProcessRequest.getEndDate(),
+					publishProcessRequest.getDateFilter(),
 					ParameterMapUtil.toParameterMap(
 						publishProcessRequest, availablePortletDataHandlers),
 					user),
@@ -292,15 +298,18 @@ public class ParameterMapUtilTest {
 		Assert.assertEquals(
 			Boolean.TRUE, reversedPublishProcessRequest.getComments());
 		Assert.assertEquals(
-			PublishProcessRequest.DateRangeType.DATE_RANGE,
-			reversedPublishProcessRequest.getDateRangeType());
-		Assert.assertEquals(
 			Boolean.FALSE, reversedPublishProcessRequest.getDeletions());
+
+		DateRangeDateFilter reversedDateRangeDateFilter =
+			(DateRangeDateFilter)reversedPublishProcessRequest.getDateFilter();
+
 		Assert.assertEquals(
 			_toSeconds(endDate),
-			_toSeconds(reversedPublishProcessRequest.getEndDate()));
+			_toSeconds(reversedDateRangeDateFilter.getEndDate()));
 		Assert.assertEquals(
-			startDate, reversedPublishProcessRequest.getStartDate());
+			startDate, reversedDateRangeDateFilter.getStartDate());
+		Assert.assertEquals(
+			DateFilter.Type.DATE_RANGE, reversedDateRangeDateFilter.getType());
 
 		PortletDataHandler[] portletDataHandlers =
 			reversedPublishProcessRequest.getPortletDataHandlers();
@@ -373,7 +382,7 @@ public class ParameterMapUtilTest {
 	}
 
 	@Test
-	public void testToPublishProcessRequestWhenDateRangeIsLast() {
+	public void testToPublishProcessRequestWhenDateFilterIsLastHours() {
 		PublishProcessRequest publishProcessRequest =
 			ParameterMapUtil.toPublishProcessRequest(
 				_getAvailablePortletDataHandlers(), null,
@@ -385,18 +394,12 @@ public class ParameterMapUtilTest {
 				).build(),
 				null);
 
+		LastHoursDateFilter lastHoursDateFilter =
+			(LastHoursDateFilter)publishProcessRequest.getDateFilter();
+
+		Assert.assertEquals(Integer.valueOf(2), lastHoursDateFilter.getHours());
 		Assert.assertEquals(
-			PublishProcessRequest.DateRangeType.LAST,
-			publishProcessRequest.getDateRangeType());
-
-		Date startDate = publishProcessRequest.getStartDate();
-
-		Assert.assertTrue(
-			startDate.before(
-				new Date(System.currentTimeMillis() - (2 * Time.HOUR) + 1000)));
-		Assert.assertTrue(
-			startDate.after(
-				new Date(System.currentTimeMillis() - (2 * Time.HOUR) - 1000)));
+			DateFilter.Type.LAST_HOURS, lastHoursDateFilter.getType());
 	}
 
 	private void _assertBadRequest(
