@@ -167,6 +167,20 @@ public class ParameterMapUtil {
 		return parameterMap;
 	}
 
+	public static void putSiteExternalReferenceCodes(
+		Map<String, String[]> parameterMap,
+		String[] siteExternalReferenceCodes) {
+
+		siteExternalReferenceCodes = ArrayUtil.filter(
+			siteExternalReferenceCodes, Validator::isNotNull);
+
+		if (ArrayUtil.isNotEmpty(siteExternalReferenceCodes)) {
+			parameterMap.put(
+				PortletDataHandlerKeys.GROUP_EXTERNAL_REFERENCE_CODES,
+				ArrayUtil.unique(siteExternalReferenceCodes));
+		}
+	}
+
 	public static Map<String, String[]> toParameterMap(
 		ExportProcessRequest exportProcessRequest,
 		PortletDataHandler[] portletDataHandlers, boolean portletScoped) {
@@ -190,16 +204,6 @@ public class ParameterMapUtil {
 				String.valueOf(
 					GetterUtil.getBoolean(exportProcessRequest.getDeletions()))
 			});
-
-		String[] siteExternalReferenceCodes = ArrayUtil.filter(
-			exportProcessRequest.getSiteExternalReferenceCodes(),
-			Validator::isNotNull);
-
-		if (ArrayUtil.isNotEmpty(siteExternalReferenceCodes)) {
-			parameterMap.put(
-				PortletDataHandlerKeys.GROUP_EXTERNAL_REFERENCE_CODES,
-				ArrayUtil.unique(siteExternalReferenceCodes));
-		}
 
 		parameterMap.put(
 			PortletDataHandlerKeys.PERMISSIONS,
@@ -251,16 +255,6 @@ public class ParameterMapUtil {
 				String.valueOf(
 					GetterUtil.getBoolean(importProcessRequest.getDeletions()))
 			});
-
-		String[] siteExternalReferenceCodes = ArrayUtil.filter(
-			importProcessRequest.getSiteExternalReferenceCodes(),
-			Validator::isNotNull);
-
-		if (ArrayUtil.isNotEmpty(siteExternalReferenceCodes)) {
-			parameterMap.put(
-				PortletDataHandlerKeys.GROUP_EXTERNAL_REFERENCE_CODES,
-				ArrayUtil.unique(siteExternalReferenceCodes));
-		}
 
 		parameterMap.put(
 			PortletDataHandlerKeys.PERMISSIONS,
