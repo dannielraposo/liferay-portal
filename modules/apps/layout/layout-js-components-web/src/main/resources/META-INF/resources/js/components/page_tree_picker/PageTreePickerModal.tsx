@@ -11,12 +11,14 @@ import React, {useMemo, useState} from 'react';
 import {PageTreePickerSelectionEntry} from '../../types/PageTreePicker';
 import PageTreePickerPanel from './PageTreePickerPanel';
 import createSitePageDataSource, {
+	DateModifiedRange,
 	ROOT_ITEM_ID,
 	SitePage,
 	SitePageTreeSelection,
 } from './createSitePageDataSource';
 
 interface Props {
+	dateModifiedRange?: DateModifiedRange;
 	initialSelection?: SitePageTreeSelection | null;
 	onClose: () => void;
 	onSubmit: (selection: SitePageTreeSelection | null) => void;
@@ -28,6 +30,7 @@ interface Props {
 }
 
 export default function PageTreePickerModal({
+	dateModifiedRange,
 	initialSelection,
 	onClose,
 	onSubmit,
@@ -45,12 +48,19 @@ export default function PageTreePickerModal({
 	const dataSource = useMemo(
 		() =>
 			createSitePageDataSource({
+				dateModifiedRange,
 				pageSize,
 				privateLayout,
 				rootLabel,
 				siteExternalReferenceCode,
 			}),
-		[pageSize, privateLayout, rootLabel, siteExternalReferenceCode]
+		[
+			dateModifiedRange,
+			pageSize,
+			privateLayout,
+			rootLabel,
+			siteExternalReferenceCode,
+		]
 	);
 
 	const [defaultSelectedEntries] = useState(() =>
@@ -70,6 +80,14 @@ export default function PageTreePickerModal({
 			</ClayModal.Header>
 
 			<ClayModal.Body className="cadmin p-0">
+				{dateModifiedRange && (
+					<p className="mb-0 pt-3 px-3 text-secondary">
+						{Liferay.Language.get(
+							'only-pages-modified-in-the-selected-date-range-can-be-selected'
+						)}
+					</p>
+				)}
+
 				<PageTreePickerPanel<SitePage | null>
 					dataSource={dataSource}
 					defaultExpandedIds={[ROOT_ITEM_ID]}
