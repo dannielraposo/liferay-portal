@@ -319,7 +319,7 @@ public abstract class BaseSitePageResourceTestCase {
 
 		Page<SitePage> page = sitePageResource.getSiteSitePageSitePagesPage(
 			siteExternalReferenceCode, sitePageExternalReferenceCode, null,
-			Pagination.of(1, 10));
+			null, Pagination.of(1, 10));
 
 		long totalCount = page.getTotalCount();
 
@@ -334,7 +334,7 @@ public abstract class BaseSitePageResourceTestCase {
 
 			page = sitePageResource.getSiteSitePageSitePagesPage(
 				irrelevantSiteExternalReferenceCode,
-				irrelevantSitePageExternalReferenceCode, null,
+				irrelevantSitePageExternalReferenceCode, null, null,
 				Pagination.of(1, (int)totalCount + 1));
 
 			Assert.assertEquals(totalCount + 1, page.getTotalCount());
@@ -357,7 +357,7 @@ public abstract class BaseSitePageResourceTestCase {
 
 		page = sitePageResource.getSiteSitePageSitePagesPage(
 			siteExternalReferenceCode, sitePageExternalReferenceCode, null,
-			Pagination.of(1, (int)totalCount + 2));
+			null, Pagination.of(1, (int)totalCount + 2));
 
 		Assert.assertEquals(totalCount + 2, page.getTotalCount());
 
@@ -381,6 +381,108 @@ public abstract class BaseSitePageResourceTestCase {
 	}
 
 	@Test
+	public void testGetSiteSitePageSitePagesPageWithFilterDateTimeEquals()
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(
+			EntityField.Type.DATE_TIME);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		String siteExternalReferenceCode =
+			testGetSiteSitePageSitePagesPage_getSiteExternalReferenceCode();
+		String sitePageExternalReferenceCode =
+			testGetSiteSitePageSitePagesPage_getSitePageExternalReferenceCode();
+
+		SitePage sitePage1 = randomSitePage();
+
+		sitePage1 = testGetSiteSitePageSitePagesPage_addSitePage(
+			siteExternalReferenceCode, sitePageExternalReferenceCode,
+			sitePage1);
+
+		for (EntityField entityField : entityFields) {
+			Page<SitePage> page = sitePageResource.getSiteSitePageSitePagesPage(
+				siteExternalReferenceCode, sitePageExternalReferenceCode, null,
+				getFilterString(entityField, "between", sitePage1),
+				Pagination.of(1, 2));
+
+			assertEquals(
+				Collections.singletonList(sitePage1),
+				(List<SitePage>)page.getItems());
+		}
+	}
+
+	@Test
+	public void testGetSiteSitePageSitePagesPageWithFilterDoubleEquals()
+		throws Exception {
+
+		testGetSiteSitePageSitePagesPageWithFilter(
+			"eq", EntityField.Type.DOUBLE);
+	}
+
+	@Test
+	public void testGetSiteSitePageSitePagesPageWithFilterStringContains()
+		throws Exception {
+
+		testGetSiteSitePageSitePagesPageWithFilter(
+			"contains", EntityField.Type.STRING);
+	}
+
+	@Test
+	public void testGetSiteSitePageSitePagesPageWithFilterStringEquals()
+		throws Exception {
+
+		testGetSiteSitePageSitePagesPageWithFilter(
+			"eq", EntityField.Type.STRING);
+	}
+
+	@Test
+	public void testGetSiteSitePageSitePagesPageWithFilterStringStartsWith()
+		throws Exception {
+
+		testGetSiteSitePageSitePagesPageWithFilter(
+			"startswith", EntityField.Type.STRING);
+	}
+
+	protected void testGetSiteSitePageSitePagesPageWithFilter(
+			String operator, EntityField.Type type)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		String siteExternalReferenceCode =
+			testGetSiteSitePageSitePagesPage_getSiteExternalReferenceCode();
+		String sitePageExternalReferenceCode =
+			testGetSiteSitePageSitePagesPage_getSitePageExternalReferenceCode();
+
+		SitePage sitePage1 = testGetSiteSitePageSitePagesPage_addSitePage(
+			siteExternalReferenceCode, sitePageExternalReferenceCode,
+			randomSitePage());
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		SitePage sitePage2 = testGetSiteSitePageSitePagesPage_addSitePage(
+			siteExternalReferenceCode, sitePageExternalReferenceCode,
+			randomSitePage());
+
+		for (EntityField entityField : entityFields) {
+			Page<SitePage> page = sitePageResource.getSiteSitePageSitePagesPage(
+				siteExternalReferenceCode, sitePageExternalReferenceCode, null,
+				getFilterString(entityField, operator, sitePage1),
+				Pagination.of(1, 2));
+
+			assertEquals(
+				Collections.singletonList(sitePage1),
+				(List<SitePage>)page.getItems());
+		}
+	}
+
+	@Test
 	public void testGetSiteSitePageSitePagesPageWithPagination()
 		throws Exception {
 
@@ -392,7 +494,7 @@ public abstract class BaseSitePageResourceTestCase {
 		Page<SitePage> sitePagesPage =
 			sitePageResource.getSiteSitePageSitePagesPage(
 				siteExternalReferenceCode, sitePageExternalReferenceCode, null,
-				null);
+				null, null);
 
 		int totalCount = GetterUtil.getInteger(sitePagesPage.getTotalCount());
 
@@ -416,7 +518,7 @@ public abstract class BaseSitePageResourceTestCase {
 			Page<SitePage> page1 =
 				sitePageResource.getSiteSitePageSitePagesPage(
 					siteExternalReferenceCode, sitePageExternalReferenceCode,
-					null,
+					null, null,
 					Pagination.of(
 						(int)Math.ceil((totalCount + 1.0) / pageSizeLimit),
 						pageSizeLimit));
@@ -428,7 +530,7 @@ public abstract class BaseSitePageResourceTestCase {
 			Page<SitePage> page2 =
 				sitePageResource.getSiteSitePageSitePagesPage(
 					siteExternalReferenceCode, sitePageExternalReferenceCode,
-					null,
+					null, null,
 					Pagination.of(
 						(int)Math.ceil((totalCount + 2.0) / pageSizeLimit),
 						pageSizeLimit));
@@ -438,7 +540,7 @@ public abstract class BaseSitePageResourceTestCase {
 			Page<SitePage> page3 =
 				sitePageResource.getSiteSitePageSitePagesPage(
 					siteExternalReferenceCode, sitePageExternalReferenceCode,
-					null,
+					null, null,
 					Pagination.of(
 						(int)Math.ceil((totalCount + 3.0) / pageSizeLimit),
 						pageSizeLimit));
@@ -449,7 +551,7 @@ public abstract class BaseSitePageResourceTestCase {
 			Page<SitePage> page1 =
 				sitePageResource.getSiteSitePageSitePagesPage(
 					siteExternalReferenceCode, sitePageExternalReferenceCode,
-					null, Pagination.of(1, totalCount + 2));
+					null, null, Pagination.of(1, totalCount + 2));
 
 			List<SitePage> sitePages1 = (List<SitePage>)page1.getItems();
 
@@ -459,7 +561,7 @@ public abstract class BaseSitePageResourceTestCase {
 			Page<SitePage> page2 =
 				sitePageResource.getSiteSitePageSitePagesPage(
 					siteExternalReferenceCode, sitePageExternalReferenceCode,
-					null, Pagination.of(2, totalCount + 2));
+					null, null, Pagination.of(2, totalCount + 2));
 
 			Assert.assertEquals(totalCount + 3, page2.getTotalCount());
 
@@ -470,7 +572,7 @@ public abstract class BaseSitePageResourceTestCase {
 			Page<SitePage> page3 =
 				sitePageResource.getSiteSitePageSitePagesPage(
 					siteExternalReferenceCode, sitePageExternalReferenceCode,
-					null, Pagination.of(1, (int)totalCount + 3));
+					null, null, Pagination.of(1, (int)totalCount + 3));
 
 			assertContains(sitePage1, (List<SitePage>)page3.getItems());
 			assertContains(sitePage2, (List<SitePage>)page3.getItems());
@@ -2594,4 +2696,4 @@ public abstract class BaseSitePageResourceTestCase {
 		_sitePageResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-203616901
+// LIFERAY-REST-BUILDER-HASH:2135612734
