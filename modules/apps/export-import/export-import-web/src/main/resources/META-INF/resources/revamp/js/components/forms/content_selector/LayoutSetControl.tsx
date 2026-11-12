@@ -6,10 +6,14 @@
 import ClayButton from '@clayui/button';
 import {ClayCheckbox, ClayRadio} from '@clayui/form';
 import ClayLayout from '@clayui/layout';
-import {PageTreePickerModal} from '@liferay/layout-js-components-web';
+import {
+	DateModifiedRange,
+	PageTreePickerModal,
+} from '@liferay/layout-js-components-web';
 import {sub} from 'frontend-js-web';
 import React, {useId, useState} from 'react';
 
+import {DateFilter} from '../../../types/exportImportProcess';
 import {
 	LayoutSetSelection,
 	LayoutSetVisibility,
@@ -27,6 +31,24 @@ interface Props {
 	onChange: (value: PortletDataHandlerSelection | undefined) => void;
 	pageTreeModalConfiguration: PageTreeModalConfiguration;
 	portletDataHandlerSelection: PortletDataHandlerSelection | undefined;
+}
+
+function toDateModifiedRange(
+	dateFilter: DateFilter | undefined
+): DateModifiedRange | undefined {
+	if (dateFilter?.type === 'DateRange') {
+		return {endDate: dateFilter.endDate, startDate: dateFilter.startDate};
+	}
+
+	if (dateFilter?.type === 'LastHours') {
+		return {
+			startDate: new Date(
+				Date.now() - dateFilter.hours * 60 * 60 * 1000
+			).toISOString(),
+		};
+	}
+
+	return undefined;
 }
 
 function SelectPagesButton({
@@ -103,11 +125,14 @@ export default function LayoutSetControl({
 	pageTreeModalConfiguration,
 	portletDataHandlerSelection,
 }: Props) {
-	const {pageSize, siteExternalReferenceCode, title} =
+	const {dateFilter, pageSize, siteExternalReferenceCode, title} =
 		pageTreeModalConfiguration;
 
 	const checkboxId = useId();
 
+	const [dateModifiedRange, setDateModifiedRange] = useState<
+		DateModifiedRange | undefined
+	>();
 	const [showModal, setShowModal] = useState(false);
 
 	const layoutSetSelection = (
@@ -161,7 +186,12 @@ export default function LayoutSetControl({
 						</div>
 
 						<SelectPagesButton
-							onClick={() => setShowModal(true)}
+							onClick={() => {
+								setDateModifiedRange(
+									toDateModifiedRange(dateFilter)
+								);
+								setShowModal(true);
+							}}
 							privateLayout={
 								multipleLayoutSetVisibilities
 									? privateLayout
@@ -184,6 +214,7 @@ export default function LayoutSetControl({
 
 			{showModal && (
 				<PageTreePickerModal
+					dateModifiedRange={dateModifiedRange}
 					initialSelection={
 						selected ? {...layoutSetSelection, privateLayout} : null
 					}

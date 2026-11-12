@@ -4,12 +4,13 @@
  */
 
 import ClayLoadingIndicator from '@clayui/loading-indicator';
+import {useField} from 'formik';
 import React from 'react';
 
 import {PortletDataHandlerSection} from '../types/portletDataHandler';
 import {PageTreeModalConfiguration} from './PageTreeModal';
 import SectionHeader from './SectionHeader';
-import {DateFilterValues} from './date_filter';
+import {DateFilterValues, toDateFilter} from './date_filter';
 import {
 	FormikFieldCheckbox,
 	FormikFieldContentSelector,
@@ -63,6 +64,9 @@ export default function DataSelection(props: Props) {
 		title = Liferay.Language.get('data-selection'),
 	} = props;
 
+	const [{value: dateFilterValues}] =
+		useField<DateFilterValues>('dateFilterValues');
+
 	return (
 		<>
 			<SectionHeader id={LABEL_ID} subtitle={subtitle} title={title} />
@@ -107,7 +111,16 @@ export default function DataSelection(props: Props) {
 						aria-labelledby={LABEL_ID}
 						commentsAndRatingsEnabled={commentsAndRatingsEnabled}
 						name="contentSelection"
-						pageTreeModalConfiguration={pageTreeModalConfiguration}
+						pageTreeModalConfiguration={{
+							...pageTreeModalConfiguration,
+							dateFilter:
+								props.process === 'sync'
+									? undefined
+									: toDateFilter(
+											dateFilterValues,
+											timeZoneId
+										),
+						}}
 						portletDataHandlerSections={portletDataHandlerSections}
 						process={process}
 					/>
