@@ -11,6 +11,8 @@ import {fetch} from 'frontend-js-web';
 import React, {useEffect, useRef, useState} from 'react';
 import {PagesTree} from 'staging-taglib';
 
+import {DateFilter} from '../types/exportImportProcess';
+
 const PAGES_TREE_NAMESPACE = '_pageTreeModal_';
 
 const PATH_MAIN = Liferay.ThemeDisplay.getPathMain();
@@ -18,6 +20,7 @@ const GET_LAYOUTS_TREE_URL = `${PATH_MAIN}/portal/get_layouts_tree`;
 const SESSION_TREE_JS_CLICK_URL = `${PATH_MAIN}/portal/session_tree_js_click`;
 
 export interface PageTreeModalConfiguration {
+	dateFilter?: DateFilter;
 	groupId: number;
 	pageSize: number;
 	privateLayoutsAvailable: boolean;
