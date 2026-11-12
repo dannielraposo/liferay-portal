@@ -66,6 +66,7 @@ public interface SitePageResource {
 	public Page<SitePage> getSiteSitePageSitePagesPage(
 			String siteExternalReferenceCode,
 			String sitePageExternalReferenceCode, Boolean flatten,
+			com.liferay.portal.kernel.search.filter.Filter filter,
 			Pagination pagination)
 		throws Exception;
 
@@ -217,4 +218,4 @@ public interface SitePageResource {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1868149358
+// LIFERAY-REST-BUILDER-HASH:972129674
