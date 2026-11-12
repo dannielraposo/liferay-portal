@@ -16,7 +16,6 @@ import {
 	PageTreePickerSelectionEntry,
 	PageTreePickerSelectionMode,
 } from '../../types/PageTreePicker';
-import isNullOrUndefined from '../../utils/isNullOrUndefined';
 import PageTreePicker from './PageTreePicker';
 import PageTreePickerSearchResults from './PageTreePickerSearchResults';
 import computeSelectionCount from './computeSelectionCount';
@@ -189,7 +188,8 @@ export default function PageTreePickerPanel<T>({
 						computeSelectionCount(
 							entries,
 							new Map(subtreeCounts),
-							isDescendant
+							isDescendant,
+							dataSource.matches
 						)
 					);
 					setResolvingCount(false);
@@ -218,9 +218,7 @@ export default function PageTreePickerPanel<T>({
 	]);
 
 	const selectedItemsCount =
-		exactCount ??
-		getSelectedItems().filter((item) => !isNullOrUndefined(item.page))
-			.length;
+		exactCount ?? getSelectedItems().filter(dataSource.matches).length;
 
 	return (
 		<div className="page-tree-picker">

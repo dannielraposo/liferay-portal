@@ -22,6 +22,18 @@ type PageTreePickerNode<T> = PageTreePickerItem<T> & {
 	children?: Array<PageTreePickerNode<T>>;
 };
 
+function DisabledCheckbox({labelId}: {labelId: string}) {
+	return (
+		<ClayCheckbox
+			aria-labelledby={labelId}
+			checked={false}
+			containerProps={{className: 'my-0'}}
+			disabled
+			tabIndex={-1}
+		/>
+	);
+}
+
 function usePageTreePickerItems<T>({
 	dataSource,
 	defaultExpandedIds,
@@ -264,31 +276,33 @@ export default function PageTreePicker<T>({
 	}
 
 	const renderItemContent = (item: PageTreePickerNode<T>) => [
-		!singleSelection && !item.disabled && (
-			<ClayCheckbox
-				aria-labelledby={`${pageTreePickerId}-${item.id}`}
-				checked={selectedKeys.has(item.id)}
-				containerProps={{className: 'my-0'}}
-				key="checkbox"
-				onChange={(event) =>
-					handleToggle(
-						item,
-						(event.nativeEvent as MouseEvent).shiftKey
-					)
-				}
-				onClick={(event) => event.stopPropagation()}
-				tabIndex={-1}
-			/>
-		),
+		!singleSelection &&
+			(item.disabled ? (
+				<DisabledCheckbox
+					key="checkbox"
+					labelId={`${pageTreePickerId}-${item.id}`}
+				/>
+			) : (
+				<ClayCheckbox
+					aria-labelledby={`${pageTreePickerId}-${item.id}`}
+					checked={selectedKeys.has(item.id)}
+					containerProps={{className: 'my-0'}}
+					key="checkbox"
+					onChange={(event) =>
+						handleToggle(
+							item,
+							(event.nativeEvent as MouseEvent).shiftKey
+						)
+					}
+					onClick={(event) => event.stopPropagation()}
+					tabIndex={-1}
+				/>
+			)),
 
 		item.icon && <ClayIcon key="icon" symbol={item.icon} />,
 
 		<div className="align-items-center c-ml-1 d-flex" key="label">
-			<span
-				className="flex-grow-0"
-				id={`${pageTreePickerId}-${item.id}`}
-				title={item.title}
-			>
+			<span className="flex-grow-0" id={`${pageTreePickerId}-${item.id}`}>
 				{item.label}
 			</span>
 
@@ -381,12 +395,14 @@ export default function PageTreePicker<T>({
 								active={
 									singleSelection && selectedKeys.has(item.id)
 								}
+								aria-disabled={item.disabled}
 								onClick={getClickHandler(item, expand, load)}
 								onKeyDown={getKeyDownHandler(
 									item,
 									expand,
 									load
 								)}
+								title={item.title}
 							>
 								{renderItemContent(item)}
 							</ClayTreeView.ItemStack>
@@ -398,6 +414,7 @@ export default function PageTreePicker<T>({
 											singleSelection &&
 											selectedKeys.has(childItem.id)
 										}
+										aria-disabled={childItem.disabled}
 										disabled={
 											childItem.disabled &&
 											!childItem.hasChildren
@@ -413,6 +430,7 @@ export default function PageTreePicker<T>({
 											expand,
 											load
 										)}
+										title={childItem.title}
 									>
 										{renderItemContent(childItem)}
 									</ClayTreeView.Item>
@@ -440,10 +458,12 @@ export default function PageTreePicker<T>({
 							active={
 								singleSelection && selectedKeys.has(item.id)
 							}
+							aria-disabled={item.disabled}
 							disabled={item.disabled && !item.hasChildren}
 							expandable={item.hasChildren}
 							onClick={getClickHandler(item, expand, load)}
 							onKeyDown={getKeyDownHandler(item, expand, load)}
+							title={item.title}
 						>
 							{renderItemContent(item)}
 						</ClayTreeView.Item>
