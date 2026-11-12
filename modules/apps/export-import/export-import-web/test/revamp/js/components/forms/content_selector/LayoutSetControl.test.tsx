@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {DateModifiedRange} from '@liferay/layout-js-components-web';
+
 // eslint-disable-next-line @liferay/portal/no-cross-module-deep-import
 import {checkAccessibility} from '@liferay/layout-js-components-web/test/__lib__/index';
 import {render, screen} from '@testing-library/react';
@@ -12,22 +14,27 @@ import React from 'react';
 import '@testing-library/jest-dom';
 
 import LayoutSetControl from '../../../../../../src/main/resources/META-INF/resources/revamp/js/components/forms/content_selector/LayoutSetControl';
+import {DateFilter} from '../../../../../../src/main/resources/META-INF/resources/revamp/js/types/exportImportProcess';
 import {
 	LayoutSetVisibility,
 	PortletDataHandlerSelection,
 } from '../../../../../../src/main/resources/META-INF/resources/revamp/js/utils/contentSelection';
 
+const mockPageTreePickerModal = jest.fn((_props: unknown) => null);
+
 jest.mock('@liferay/layout-js-components-web', () => ({
-	PageTreePickerModal: () => null,
+	PageTreePickerModal: (props: unknown) => mockPageTreePickerModal(props),
 }));
 
 function renderLayoutSetControl(
 	{
 		availableLayoutSetVisibilities = ['public'],
+		dateFilter,
 		onChange = jest.fn(),
 		portletDataHandlerSelection,
 	}: {
 		availableLayoutSetVisibilities?: LayoutSetVisibility[];
+		dateFilter?: DateFilter;
 		onChange?: jest.Mock;
 		portletDataHandlerSelection?: PortletDataHandlerSelection;
 	} = {portletDataHandlerSelection: {all: true, privateLayout: false}}
@@ -38,6 +45,7 @@ function renderLayoutSetControl(
 			label="Pages"
 			onChange={onChange}
 			pageTreeModalConfiguration={{
+				dateFilter,
 				groupId: 20121,
 				pageSize: 20,
 				siteExternalReferenceCode: 'site',
@@ -48,6 +56,10 @@ function renderLayoutSetControl(
 }
 
 describe('LayoutSetControl', () => {
+	afterEach(() => {
+		jest.restoreAllMocks();
+	});
+
 	it('shows the pages as partially selected when some pages are excluded', () => {
 		renderLayoutSetControl({
 			portletDataHandlerSelection: {
@@ -141,6 +153,59 @@ describe('LayoutSetControl', () => {
 		expect(
 			screen.getByRole('button', {name: 'select-x'})
 		).toBeInTheDocument();
+	});
+
+	it('limits the page picker to the pages modified in the date filter', async () => {
+		jest.spyOn(Date, 'now').mockReturnValue(
+			Date.parse('2026-11-12T12:00:00.000Z')
+		);
+
+		const user = userEvent.setup();
+
+		const cases: Array<{
+			dateFilter: DateFilter | undefined;
+			dateModifiedRange: DateModifiedRange | undefined;
+		}> = [
+			{
+				dateFilter: {
+					endDate: '2026-11-10T00:00:00.000Z',
+					startDate: '2026-11-01T00:00:00.000Z',
+					type: 'DateRange',
+				},
+				dateModifiedRange: {
+					endDate: '2026-11-10T00:00:00.000Z',
+					startDate: '2026-11-01T00:00:00.000Z',
+				},
+			},
+			{
+				dateFilter: {type: 'FromLastPublishDate'},
+				dateModifiedRange: undefined,
+			},
+			{
+				dateFilter: {hours: 24, type: 'LastHours'},
+				dateModifiedRange: {startDate: '2026-11-11T12:00:00.000Z'},
+			},
+			{dateFilter: undefined, dateModifiedRange: undefined},
+		];
+
+		for (const {dateFilter, dateModifiedRange} of cases) {
+			mockPageTreePickerModal.mockClear();
+
+			const {unmount} = renderLayoutSetControl({
+				dateFilter,
+				portletDataHandlerSelection: {all: true, privateLayout: false},
+			});
+
+			await user.click(
+				screen.getByRole('button', {name: 'select-layouts'})
+			);
+
+			expect(mockPageTreePickerModal).toHaveBeenLastCalledWith(
+				expect.objectContaining({dateModifiedRange})
+			);
+
+			unmount();
+		}
 	});
 
 	it('has no accessibility violations', async () => {
