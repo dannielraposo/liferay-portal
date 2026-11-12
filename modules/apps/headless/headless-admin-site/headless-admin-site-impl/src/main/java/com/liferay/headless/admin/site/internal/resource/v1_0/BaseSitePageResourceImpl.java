@@ -289,7 +289,7 @@ public abstract class BaseSitePageResourceImpl
 	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/site-pages/{sitePageExternalReferenceCode}/site-pages'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves the child pages of a page. Results can be paginated and flattened. Without flatten, only the direct child pages are returned."
+		description = "Retrieves the child pages of a page. Results can be paginated, filtered, and flattened. Without flatten, only the direct child pages are returned."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -304,6 +304,10 @@ public abstract class BaseSitePageResourceImpl
 			@io.swagger.v3.oas.annotations.Parameter(
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "fields"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
@@ -348,6 +352,8 @@ public abstract class BaseSitePageResourceImpl
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@jakarta.ws.rs.QueryParam("flatten")
 			Boolean flatten,
+			@jakarta.ws.rs.core.Context
+				com.liferay.portal.kernel.search.filter.Filter filter,
 			@jakarta.ws.rs.core.Context Pagination pagination)
 		throws Exception {
 
@@ -2013,4 +2019,4 @@ public abstract class BaseSitePageResourceImpl
 		LogFactoryUtil.getLog(BaseSitePageResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-437180410
+// LIFERAY-REST-BUILDER-HASH:2071553676

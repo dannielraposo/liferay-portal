@@ -72,13 +72,13 @@ public interface SitePageResource {
 	public Page<SitePage> getSiteSitePageSitePagesPage(
 			String siteExternalReferenceCode,
 			String sitePageExternalReferenceCode, Boolean flatten,
-			Pagination pagination)
+			String filterString, Pagination pagination)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getSiteSitePageSitePagesPageHttpResponse(
 			String siteExternalReferenceCode,
 			String sitePageExternalReferenceCode, Boolean flatten,
-			Pagination pagination)
+			String filterString, Pagination pagination)
 		throws Exception;
 
 	public Page<SitePage> getSiteSitePagesPage(
@@ -625,13 +625,13 @@ public interface SitePageResource {
 		public Page<SitePage> getSiteSitePageSitePagesPage(
 				String siteExternalReferenceCode,
 				String sitePageExternalReferenceCode, Boolean flatten,
-				Pagination pagination)
+				String filterString, Pagination pagination)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getSiteSitePageSitePagesPageHttpResponse(
 					siteExternalReferenceCode, sitePageExternalReferenceCode,
-					flatten, pagination);
+					flatten, filterString, pagination);
 
 			String content = httpResponse.getContent();
 
@@ -696,7 +696,7 @@ public interface SitePageResource {
 				getSiteSitePageSitePagesPageHttpResponse(
 					String siteExternalReferenceCode,
 					String sitePageExternalReferenceCode, Boolean flatten,
-					Pagination pagination)
+					String filterString, Pagination pagination)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -722,6 +722,10 @@ public interface SitePageResource {
 
 			if (flatten != null) {
 				httpInvoker.parameter("flatten", String.valueOf(flatten));
+			}
+
+			if (filterString != null) {
+				httpInvoker.parameter("filter", filterString);
 			}
 
 			if (pagination != null) {
@@ -1753,4 +1757,4 @@ public interface SitePageResource {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1859295461
+// LIFERAY-REST-BUILDER-HASH:1647932649
