@@ -10595,7 +10595,7 @@ paths:
         get:
             # @review
             description:
-                Retrieves the child pages of a page. Results can be paginated and flattened. Without flatten, only the direct child pages are returned.
+                Retrieves the child pages of a page. Results can be paginated, filtered, and flattened. Without flatten, only the direct child pages are returned.
             operationId: getSiteSitePageSitePagesPage
             parameters:
                 -   in: path
@@ -10610,6 +10610,10 @@ paths:
                         type: string
                 -   in: query
                     name: fields
+                    schema:
+                        type: string
+                -   in: query
+                    name: filter
                     schema:
                         type: string
                 -   in: query
